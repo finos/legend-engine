@@ -1,0 +1,38 @@
+name: quiet-beacon-3
+title: "Coastal Beacon Maintenance Register — Station Conditions and Keeper Assignments"
+description: |
+  A coastal maintenance register for beacon stations, their keepers, and the processing-time
+  versions of station condition records. Two included part mappings decode status vocabularies,
+  while the main mapping combines those parts with an inner join to keeper details. The mapping
+  suite queries a fixed processing instant and proves that a row outside that instant is excluded.
+modelSources:
+  model:
+    root: quiet-beacon-3
+    files:
+      - test/quietbeacon3/domain/BeaconDomain.pure
+      - test/quietbeacon3/mapping/BeaconMapping.pure
+      - test/quietbeacon3/mapping/BeaconPartMappings.pure
+      - test/quietbeacon3/reference/BeaconEnums.pure
+      - test/quietbeacon3/store/BeaconDB.pure
+features:
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - beacon-maintenance
+  - duckdb
+  - enumeration-mapping
+  - h2
+  - inner-join
+  - mapping-include
+  - processing-temporal

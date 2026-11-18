@@ -1,0 +1,131 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::embermarsh3::service::PatrolHazardFeed
+{
+  pattern: '/embermarsh3/v1/patrol-hazard';
+  title: 'Ember Marsh - Hazard Patrols Of One Warden With The Patrolled Section Resolved';
+  documentation: 'Keeps the patrols of one reserve warden that recorded a hazard and projects the patrol code, the hazard count and the reserve name and plank count of the patrolled boardwalk section, which are read across the declared relational join.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'marsh-warden-desk'
+  ];
+  execution: Single
+  {
+    query: {warden: String[1]|test::embermarsh3::domain::WardenPatrol.all()->filter(
+      p|($p.wardenCode == $warden) && ($p.hazardCount > 0)
+    )->project(
+      [
+        col(
+          p|$p.patrolCode,
+          'PatrolCode'
+        ),
+        col(
+          p|$p.section.reserveName,
+          'Reserve'
+        ),
+        col(
+          p|$p.section.plankCount,
+          'PlankCount'
+        ),
+        col(
+          p|$p.hazardCount,
+          'HazardCount'
+        )
+      ]
+    )->sort(
+      [
+        asc('PatrolCode')
+      ]
+    )};
+    mapping: test::embermarsh3::mapping::MarshMapping;
+    runtime: test::embermarsh3::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    patrolHazardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              marsh.boardwalk_section:
+                'section_code,reserve_name,plank_count,length_m,surveyed_on\n'+
+                'BS-01,Alder Fen,240,120.5,2026-04-02\n'+
+                'BS-02,Alder Fen,180,90.25,2026-04-09\n'+
+                'BS-03,Sedge Mire,320,160.75,2026-04-16\n'+
+                'BS-04,Sedge Mire,60,30.5,2026-04-23\n';
+
+              marsh.warden_patrol:
+                'patrol_code,section_code,warden_code,patrolled_on,hazard_count,patrol_note\n'+
+                'WP-01,BS-01,WD-1,2026-05-01,3,loose planks\n'+
+                'WP-02,BS-01,WD-2,2026-05-08,0,clear\n'+
+                'WP-03,BS-03,WD-1,2026-05-15,5,rotten rail\n'+
+                'WP-04,BS-04,WD-3,2026-05-22,1,silted step\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        hazardPatrolsOfOneWardenAcrossTheJoin:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            warden = 'WD-1'
+          ]
+          asserts:
+          [
+            patrolRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PatrolCode":"WP-01","Reserve":"Alder Fen","PlankCount":240,"HazardCount":3},{"PatrolCode":"WP-03","Reserve":"Sedge Mire","PlankCount":320,"HazardCount":5}]';
+                  }#;
+              }#
+          ]
+        },
+        aWardenWhoRecordedNoHazardSelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            warden = 'WD-2'
+          ]
+          asserts:
+          [
+            noPatrolRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelisle4::mapping::AllotmentBaseMapping
+(
+  include mapping test::hazelisle4::mapping::AllotmentEnumMappings
+
+  *test::hazelisle4::domain::AllotmentPlot[allotmentPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelisle4::store::AllotmentDb]island.allotment_plot.plot_code
+    )
+    ~mainTable [test::hazelisle4::store::AllotmentDb]island.allotment_plot
+    plotCode: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.plot_code,
+    plotName: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.plot_name,
+    bedCount: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.bed_count,
+    soil: EnumerationMapping SoilSource: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.soil_code,
+    tenure: EnumerationMapping TenureSource: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.tenure_code,
+    plotRegistry: 'HAZEL ISLE ALLOTMENT REGISTER',
+    noticeBoard
+    (
+      noticeLabel: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.notice_text,
+      soilLabel: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.soil_code,
+      tenureLabel: [test::hazelisle4::store::AllotmentDb]island.allotment_plot.tenure_code
+    )
+  }
+
+  *test::hazelisle4::domain::Grower[grower]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelisle4::store::AllotmentDb]island.grower.grower_code
+    )
+    ~mainTable [test::hazelisle4::store::AllotmentDb]island.grower
+    growerCode: [test::hazelisle4::store::AllotmentDb]island.grower.grower_code,
+    growerName: [test::hazelisle4::store::AllotmentDb]island.grower.grower_name,
+    parishName: [test::hazelisle4::store::AllotmentDb]island.grower.parish_name,
+    growerRegistry: 'HAZEL ISLE GROWER ROLL'
+  }
+
+  testSuites:
+  [
+    allotmentPlotSuite:
+    {
+      function: |test::hazelisle4::domain::AllotmentPlot.all()->project(
+        [
+          p|$p.plotCode,
+          p|$p.plotName,
+          p|$p.bedCount,
+          p|$p.soil,
+          p|$p.tenure,
+          p|$p.plotRegistry,
+          p|$p.noticeBoard.noticeLabel,
+          p|$p.noticeBoard.soilLabel,
+          p|$p.noticeBoard.tenureLabel
+        ],
+        [
+          'Plot',
+          'Name',
+          'Beds',
+          'Soil',
+          'Tenure',
+          'Registry',
+          'Notice',
+          'NoticeSoil',
+          'NoticeTenure'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        plotRegisterRows:
+        {
+          doc: 'Covers both enumeration mappings over raw code columns including a soil code listed nowhere and a null tenure code, the register literal every row repeats and the embedded notice block whose labels read the same columns the enumerations decode.';
+          data:
+          [
+            test::hazelisle4::store::AllotmentDb:
+              Relational
+              #{
+                island.allotment_plot:
+                  'plot_code,plot_name,grower_code,bed_count,soil_code,tenure_code,notice_text\n'+
+                  'P-01,Hazel Row,G-1,6,LOAM,A,water butt shared\n'+
+                  'P-02,Willow Corner,G-1,4,CLAY,S,path repair due\n'+
+                  'P-03,Quarry Edge,G-2,9,SHALE,W,fence panel loose\n'+
+                  'P-04,Chapel Strip,G-2,3,PEAT,,gate key with warden\n';
+              }#
+          ];
+          asserts:
+          [
+            plotRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Name":"Hazel Row","Beds":6,"Soil":"LOAM","Tenure":"ANNUAL","Registry":"HAZEL ISLE ALLOTMENT REGISTER","Notice":"water butt shared","NoticeSoil":"LOAM","NoticeTenure":"A"},{"Plot":"P-02","Name":"Willow Corner","Beds":4,"Soil":"CLAY","Tenure":"SEASONAL","Registry":"HAZEL ISLE ALLOTMENT REGISTER","Notice":"path repair due","NoticeSoil":"CLAY","NoticeTenure":"S"},{"Plot":"P-03","Name":"Quarry Edge","Beds":9,"Soil":null,"Tenure":"WAITING","Registry":"HAZEL ISLE ALLOTMENT REGISTER","Notice":"fence panel loose","NoticeSoil":"SHALE","NoticeTenure":"W"},{"Plot":"P-04","Name":"Chapel Strip","Beds":3,"Soil":"PEAT","Tenure":null,"Registry":"HAZEL ISLE ALLOTMENT REGISTER","Notice":"gate key with warden","NoticeSoil":"PEAT","NoticeTenure":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    growerRollSuite:
+    {
+      function: |test::hazelisle4::domain::Grower.all()->project(
+        [
+          g|$g.growerCode,
+          g|$g.growerName,
+          g|$g.parishName,
+          g|$g.growerRegistry
+        ],
+        [
+          'Grower',
+          'Name',
+          'Parish',
+          'Registry'
+        ]
+      )->sort([asc('Grower')]);
+      tests:
+      [
+        growerRollRows:
+        {
+          doc: 'Covers the second main table of the store reached from the same mapping and the roll literal every grower row repeats.';
+          data:
+          [
+            test::hazelisle4::store::AllotmentDb:
+              Relational
+              #{
+                island.grower:
+                  'grower_code,grower_name,parish_name\n'+
+                  'G-1,Hollow Lane Trust,North Parish\n'+
+                  'G-2,Quay Street Group,South Parish\n';
+              }#
+          ];
+          asserts:
+          [
+            growerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Grower":"G-1","Name":"Hollow Lane Trust","Parish":"North Parish","Registry":"HAZEL ISLE GROWER ROLL"},{"Grower":"G-2","Name":"Quay Street Group","Parish":"South Parish","Registry":"HAZEL ISLE GROWER ROLL"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

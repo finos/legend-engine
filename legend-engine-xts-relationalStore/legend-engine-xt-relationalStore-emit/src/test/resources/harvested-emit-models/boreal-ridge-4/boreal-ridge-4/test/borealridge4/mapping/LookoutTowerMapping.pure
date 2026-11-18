@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealridge4::mapping::LookoutTowerMapping
+(
+  *test::borealridge4::domain::LookoutTower[tower]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.tower_code
+    )
+    ~mainTable [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw
+    towerCode: [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.tower_code,
+    towerName: [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.tower_name,
+    regionName: [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.region_name,
+    elevationM: [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m,
+    elevationBand: case(
+                     lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 600),
+                     'BAND-1',
+                     case(
+                       lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 800),
+                       'BAND-2',
+                       case(
+                         lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 1000),
+                         'BAND-3',
+                         case(
+                           lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 1200),
+                           'BAND-4',
+                           case(
+                             lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 1400),
+                             'BAND-5',
+                             case(
+                               lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 1600),
+                               'BAND-6',
+                               case(
+                                 lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 1800),
+                                 'BAND-7',
+                                 case(
+                                   lessThan([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_m, 2000),
+                                   'BAND-8',
+                                   sqlNull()
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   ),
+    staffedLabel: case(equal([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.staffed_flag, 'Y'), 'STAFFED', 'UNSTAFFED'),
+    parentTowerName: [test::borealridge4::store::LookoutNetworkDb]@CardParent | [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.tower_name,
+    siting
+    (
+      aspectCode: [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.aspect_code,
+      elevationText: [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.elevation_text
+    ),
+    beacon() Inline[towerBeacon]
+  }
+
+  test::borealridge4::domain::TowerBeacon[towerBeacon]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.tower_code
+    )
+    ~mainTable [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw
+    beaconColor: case(isEmpty([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.beacon_color), 'UNLIT', toUpper([test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.beacon_color)),
+    beaconRangeKm: [test::borealridge4::store::LookoutNetworkDb]tower.tower_card_vw.beacon_range_km
+  }
+)

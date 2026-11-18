@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::wistfulmarsh2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A delineated stretch of wetland that survey work is attributed to.'} test::wistfulmarsh2::domain::MarshZone
+{
+  zoneCode: String[1];
+  tidalRegime: TidalRegime[1];
+  salinity: SalinityBand[1];
+  hectares: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wetland zone lying between the low and high tide marks.'} test::wistfulmarsh2::domain::IntertidalZone extends MarshZone
+{
+  substrate: SubstrateType[1];
+  meanInundationHours: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The transitional slope above the tidal wetland where terrestrial vegetation takes over.'} test::wistfulmarsh2::domain::UplandFringeZone extends MarshZone
+{
+  slopePercent: Integer[1];
+  aspect: SlopeAspect[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An intertidal zone whose channels are actively re-cut to restore drainage.'} test::wistfulmarsh2::domain::RestoredCreekZone extends IntertidalZone
+{
+  restorationYear: Integer[1];
+}

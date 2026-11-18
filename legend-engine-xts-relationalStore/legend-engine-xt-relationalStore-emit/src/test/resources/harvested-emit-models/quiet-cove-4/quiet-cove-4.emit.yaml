@@ -1,0 +1,36 @@
+name: quiet-cove-4
+title: "Sheltered Cove Mooring Register — One Tabular Query Planned Under Two Keyed Environments"
+description: |
+  A sheltered-cove mooring and dive register. A single multi-execution service binds one
+  tabular query to two keyed environments that share the mapping and differ only in runtime
+  and connection. The query opens its window by date arithmetic from a requested start date
+  and day count, restricts the berth vocabulary with a literal set membership test, and
+  projects a day-offset column computed as a date difference. Berth kinds themselves are
+  decided in the relational mapping by a nested conditional over the stored berth code, and
+  each keyed environment has its own assertion-bearing suite over its own fixture.
+modelSources:
+  model:
+    root: quiet-cove-4
+    files:
+      - test/quietcove4/connection/CoveConnections.pure
+      - test/quietcove4/domain/CoveDomain.pure
+      - test/quietcove4/mapping/CoveMapping.pure
+      - test/quietcove4/runtime/CoveRuntimes.pure
+      - test/quietcove4/service/CoveVisitRegister.pure
+      - test/quietcove4/store/CoveDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: basic
+tags:
+  - date-arithmetic
+  - h2
+  - mooring
+  - multi-execution
+  - service
+  - tabular-data-set

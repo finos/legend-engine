@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sableridge2::service::StayRegister
+{
+  pattern: '/sableridge/v1/stay-register/{hutCode}';
+  title: 'Sable Ridge - Hut Stay Register';
+  documentation: 'Graph-fetches the recorded hut stays for one hut code, carrying the arithmetic occupancy, the banded load and the two-hop trail segment name so an unmatched hut code yields nothing.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: hutCode: String[1]|test::sableridge2::domain::HutStay.all()->filter(s|$s.hut.hutCode == $hutCode->toUpper())->graphFetch(
+      #{
+        test::sableridge2::domain::HutStay
+        {
+          stayRef,
+          bunkCount,
+          guestCount,
+          occupancyPercent,
+          spareBunks,
+          loadBand,
+          segmentName
+        }
+      }#
+    )->serialize(
+      #{
+        test::sableridge2::domain::HutStay
+        {
+          stayRef,
+          bunkCount,
+          guestCount,
+          occupancyPercent,
+          spareBunks,
+          loadBand,
+          segmentName
+        }
+      }#
+    );
+    mapping: test::sableridge2::mapping::RidgeMapping;
+    runtime: test::sableridge2::runtime::RidgeSummitRuntime;
+  }
+  testSuites:
+  [
+    stayRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          summitConnection:
+            Relational
+            #{
+              alpine.hut_stay:
+                'stay_ref,hut_code,stay_date,bunk_count,guest_count,supply_kg,party_note\n'+
+                'ST-01,HT-1,2026-04-02,20,20,140,summer traverse party\n'+
+                'ST-02,HT-1,2026-04-05,20,7,90,\n'+
+                'ST-03,HT-2,2026-04-07,16,15,40,school ridge walk\n';
+              alpine.mountain_hut:
+                'hut_code,hut_name,class_code,segment_code,elevation_m\n'+
+                'HT-1,Sable Col Lodge,LDG,SG-1,2140\n'+
+                'HT-2,Ridge Notch Shelter,SHL,SG-2,1880\n';
+              alpine.trail_segment:
+                'segment_code,segment_name,grade_code\n'+
+                'SG-1,Sable Ridge Traverse,MOD\n'+
+                'SG-2,Glacier Rim Link,GLC\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        matchedHutReturnsItsStays:
+        {
+          parameters:
+          [
+            hutCode = 'ht-1'
+          ]
+          asserts:
+          [
+            twoStaysForTheLodge:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"stayRef":"ST-01","bunkCount":20,"guestCount":20,"occupancyPercent":100.0,"spareBunks":0,"loadBand":"full-hut","segmentName":"Sable Ridge Traverse"},{"stayRef":"ST-02","bunkCount":20,"guestCount":7,"occupancyPercent":35.0,"spareBunks":13,"loadBand":"settled-hut","segmentName":"Sable Ridge Traverse"}]}';
+                  }#;
+              }#
+          ]
+        },
+        unmatchedHutReturnsNothing:
+        {
+          parameters:
+          [
+            hutCode = 'ht-9'
+          ]
+          asserts:
+          [
+            emptyRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

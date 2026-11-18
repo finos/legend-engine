@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedglacier::mapping::GlacierRegistryMapping
+(
+  test::frostedglacier::domain::GlacierClass: EnumerationMapping GlacierClassMap
+  {
+    Valley: ['V'],
+    Cirque: ['C'],
+    Piedmont: ['P'],
+    Tidewater: ['T']
+  }
+
+  *test::frostedglacier::domain::MonitoringStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedglacier::store::GlacierRegistryDb]registry.station.station_code
+    )
+    ~mainTable [test::frostedglacier::store::GlacierRegistryDb]registry.station
+    stationCode: [test::frostedglacier::store::GlacierRegistryDb]registry.station.station_code,
+    stationName: [test::frostedglacier::store::GlacierRegistryDb]registry.station.station_name,
+    glacierClass: EnumerationMapping GlacierClassMap: [test::frostedglacier::store::GlacierRegistryDb]registry.station.glacier_class_code,
+    elevationMeters: [test::frostedglacier::store::GlacierRegistryDb]registry.station.elevation_m
+  }
+
+  testSuites:
+  [
+    stationRegistrySuite:
+    {
+      function: |test::frostedglacier::domain::MonitoringStation.all()->project(
+  [
+    s|$s.stationName,
+    s|$s.glacierClass,
+    s|$s.elevationMeters
+  ],
+  [
+    'StationName',
+    'GlacierClass',
+    'ElevationMeters'
+  ]
+);
+      tests:
+      [
+        storedCodesResolveToEnumMembers:
+        {
+          doc: 'Every stored morphology code resolves through the enumeration mapping to its enum member, and the main-table alias keeps all three column reads inside the single station relation.';
+          data:
+          [
+            test::frostedglacier::store::GlacierRegistryDb:
+              Relational
+              #{
+                registry.station:
+                  'station_code,station_name,glacier_class_code,elevation_m,basin_name,country_code,commissioned_on\n'+
+                  'GLC-014,Upper Frost Cirque,C,3120,Frost Hollow,ISL,1998-05-01\n'+
+                  'GLC-027,Long Valley Tongue,V,1740,Long Valley,ISL,2004-09-12\n'+
+                  'GLC-041,Tidewater Snout,T,60,Cold Inlet,GRL,2011-03-30\n';
+              }#
+          ];
+          asserts:
+          [
+            threeStationsWithResolvedClasses:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationName":"Upper Frost Cirque","GlacierClass":"Cirque","ElevationMeters":3120},{"StationName":"Long Valley Tongue","GlacierClass":"Valley","ElevationMeters":1740},{"StationName":"Tidewater Snout","GlacierClass":"Tidewater","ElevationMeters":60}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

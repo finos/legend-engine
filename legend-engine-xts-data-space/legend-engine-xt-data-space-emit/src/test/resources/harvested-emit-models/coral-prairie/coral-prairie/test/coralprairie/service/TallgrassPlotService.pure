@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralprairie::service::TallgrassPlotService
+{
+  pattern: '/prairie/v1/plots/tallgrass';
+  title: 'Coral Prairie - Tallgrass plot selection';
+  owners:
+  [
+    'prairie-restoration',
+    'seed-store'
+  ];
+  documentation: 'Narrows the plot register to plots sown with a species-rich mix and reaching a burn unit on the short rotation, projecting the surviving plots with the zone and burn unit resolved through the association chain.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralprairie::domain::RestorationPlot.all()->filter(
+      x|($x.seedMix.speciesCount > 20) && ($x.plotBurnUnit.rotationYears < 4)
+    )->project(
+      [
+        x|$x.plotCode,
+        x|$x.plotName,
+        x|$x.zone.zoneName,
+        x|$x.seedMix.mixLabel,
+        x|$x.plotBurnUnit.burnName
+      ],
+      [
+        'PlotCode',
+        'PlotName',
+        'Zone',
+        'SeedMix',
+        'BurnUnit'
+      ]
+    )->sort(
+      [
+        asc('PlotCode')
+      ]
+    );
+    mapping: test::coralprairie::mapping::PrairieMapping;
+    runtime: test::coralprairie::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    tallgrassPlotServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection: Reference
+            #{
+              test::coralprairie::data::PrairieTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        speciesRichShortRotation:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            survivingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PLOT-1","PlotName":"NORTH TERRACE STRI","Zone":"NORTH TERRACE","SeedMix":"Tallgrass Mix","BurnUnit":"Spring Rotation"},{"PlotCode":"PLOT-3","PlotName":"SOUTH TERRACE FLAT","Zone":"SOUTH TERRACE","SeedMix":"Tallgrass Mix","BurnUnit":"Spring Rotation"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

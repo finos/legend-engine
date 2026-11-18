@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::meadowsummit::domain::*;
+
+Class test::meadowsummit::domain::TrailSegment
+{
+  segmentCode: String[1];
+  segmentName: String[1];
+  surfaceLabel: String[0..1];
+  terrainKind: String[0..1];
+  gradeLabel: String[0..1];
+  lengthM: Integer[1];
+  waypointLabel: String[1];
+}
+
+Class test::meadowsummit::domain::MaintenanceVisit
+{
+  visitCode: String[1];
+  visitKindLabel: String[1];
+  workHours: Float[1];
+  crewName: String[0..1];
+  depotName: String[0..1];
+  noteLabel: String[1];
+}
+
+Class test::meadowsummit::domain::SegmentVisitTally
+{
+  segmentKey: String[1];
+  visitCount: Integer[1];
+  totalHours: Float[1];
+  segmentName: String[0..1];
+}
+
+Association test::meadowsummit::domain::SegmentVisits
+{
+  visits: MaintenanceVisit[*];
+  segment: TrailSegment[0..1];
+}

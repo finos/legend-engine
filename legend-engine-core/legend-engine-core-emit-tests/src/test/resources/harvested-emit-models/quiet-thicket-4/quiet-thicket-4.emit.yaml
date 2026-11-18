@@ -1,0 +1,35 @@
+name: quiet-thicket-4
+title: "Quiet Thicket 4 — allotment site register wiring an annotated tenancy hierarchy through six associations across a business-temporal boundary"
+description: |
+  A community allotment register whose navigable graph crosses a versioning boundary. Sites,
+  plots, tenants, cultivation notes and water points are plain classes; a tenancy supertype is
+  narrowed by full-plot, half-plot and shared tenancies, and the tenancy along with the annual
+  plot assessment is business-temporal, so a renegotiated tenancy or a re-scored assessment
+  supersedes the earlier row over the same business period instead of overwriting it. Six
+  associations wire the graph into one navigable structure — site to plot, plot to tenancy,
+  tenant to tenancy, plot to assessment, plot to cultivation note and site to water point — so
+  three of them have a versioned end that has to be resolved as at a business date while the
+  other end is read unversioned. A custom profile marks which types are published to the
+  parish committee and carries the custodian team and review cadence of each as tagged values.
+modelSources:
+  model:
+    root: quiet-thicket-4
+    files:
+      - test/quietthicket4/domain/AllotmentAssociations.pure
+      - test/quietthicket4/domain/AllotmentDomain.pure
+      - test/quietthicket4/domain/AllotmentProfile.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:profile
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - allotment-register
+  - association
+  - business-temporal
+  - class-inheritance
+  - profile
+  - store-less

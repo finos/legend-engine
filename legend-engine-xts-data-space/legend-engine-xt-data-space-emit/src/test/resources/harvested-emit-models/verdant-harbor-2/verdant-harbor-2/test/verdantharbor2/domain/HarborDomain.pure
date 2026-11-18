@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A mooring berth of the harbour register, keyed by its numeric berth identifier.'} test::verdantharbor2::domain::BerthSlot
+{
+  berthId: Integer[1];
+  berthCode: String[0..1];
+  berthName: String[0..1];
+  draftLimitM: Float[0..1];
+  openedOn: StrictDate[0..1];
+  surveyedAt: DateTime[0..1];
+  litFlag: Boolean[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A quayside crane of the harbour register, keyed by its numeric crane identifier.'} test::verdantharbor2::domain::CraneUnit
+{
+  craneId: Integer[1];
+  craneCode: String[0..1];
+  craneModel: String[0..1];
+  liftTonnes: Float[0..1];
+  commissionedOn: StrictDate[0..1];
+  inspectedAt: DateTime[0..1];
+  railMountedFlag: Boolean[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One water-level reading taken at a harbour tide gauge.'} test::verdantharbor2::domain::TideReading
+{
+  readingId: Integer[1];
+  gaugeCode: String[0..1];
+  waterLevelM: Float[0..1];
+  observedOn: StrictDate[0..1];
+  recordedAt: DateTime[0..1];
+  provisionalFlag: Boolean[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One dredging survey of a harbour approach channel.'} test::verdantharbor2::domain::DredgeSurvey
+{
+  surveyId: Integer[1];
+  channelCode: String[0..1];
+  clearedVolumeM3: Float[0..1];
+  surveyedOn: StrictDate[0..1];
+  siltNote: String[0..1];
+}

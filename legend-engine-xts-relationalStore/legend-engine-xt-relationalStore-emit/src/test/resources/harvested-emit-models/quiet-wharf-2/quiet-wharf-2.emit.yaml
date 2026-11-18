@@ -1,0 +1,58 @@
+name: quiet-wharf-2
+title: "Quiet Wharf 2 - a business-milestoned berth register bound over an include chain and reached one hop out through an association implementation"
+description: |
+  A harbour berth register in two relational stores, the reference one pulled into the mooring
+  one so a single database spans both schemas and the named equality join between them. A
+  business-temporal berth allocation binds only its own berth scalars on its aliased main table
+  under an explicit primary key, and reaches the quay name and the warden who keeps the register
+  over an association implementation that binds both ends of the association onto that one inner
+  join. Two mappings chain through one another: the inner one owns the unmilestoned quay class,
+  the outer one owns the milestoned extent and the association implementation, so the outer
+  extent resolves quay columns it never binds itself. One shared relational data element feeds
+  every test. Three mapping tests read the same fixture at two different points in business
+  time: the quay register with no milestoning of its own, the current berths where the closed
+  allocation is out of range, and an earlier date where only the closed allocation is in range
+  and the two current ones are the out of range rows instead.
+modelSources:
+  model:
+    root: quiet-wharf-2
+    files:
+      - test/quietwharf2/connection/WharfConnections.pure
+      - test/quietwharf2/data/WharfTestData.pure
+      - test/quietwharf2/domain/WharfDomain.pure
+      - test/quietwharf2/mapping/BerthAllocationMapping.pure
+      - test/quietwharf2/mapping/WharfReferenceMapping.pure
+      - test/quietwharf2/runtime/WharfRuntimes.pure
+      - test/quietwharf2/store/WharfStores.pure
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - business-temporal
+  - harbour-berth-register
+  - mapping-include
+  - milestoning
+  - point-in-time
+  - relational-inner-join
+  - shared-data-element
+  - store-include
+  - tabular-data-set

@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::indigowarren3::contract::*;
+import test::indigowarren3::vocabulary::*;
+
+Class <<ContractDoc.indexed>> {meta::pure::profiles::doc.doc = 'Register of one surveyed warren and the entrances recorded against it.'} test::indigowarren3::contract::BurrowRegistry
+{
+  <<ContractDoc.keyField>> {meta::pure::profiles::doc.doc = 'Identifier the warren is published under.', ContractDoc.description = 'Stable warren reference issued by the reserve survey office.', ContractDoc.exampleSet = 'WRN-0001, WRN-0002'} warrenCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name field crews use for the warren.', ContractDoc.description = 'Free-text warren name, unique only within a reserve.'} warrenName: String[0..1];
+  {ContractDoc.description = 'Reserve the warren sits in.'} reserveName: String[0..1];
+  {ContractDoc.description = 'Compartment of the reserve holding the warren.'} compartmentLabel: String[0..1];
+  {ContractDoc.description = 'Habitat class recorded at the last visit.'} habitatClass: String[0..1];
+  {ContractDoc.description = 'Dominant ground cover over the warren.'} groundCover: String[0..1];
+  {ContractDoc.description = 'Soil description taken from the entrance spoil.'} soilNote: String[0..1];
+  {ContractDoc.description = 'Slope aspect the warren faces.'} slopeAspect: String[0..1];
+  <<WireShape.int32>> {meta::pure::profiles::doc.doc = 'How many entrances were counted.', ContractDoc.description = 'Entrance tally from the most recent walkover; absent when the walkover was partial.', ContractDoc.unitLabel = 'entrances'} entranceCount: Integer[0..1];
+  {ContractDoc.description = 'Estimated occupied share of the counted entrances.'} occupiedShare: Float[0..1];
+  {ContractDoc.description = 'Measured extent of the warren surface.', ContractDoc.unitLabel = 'square metres'} surfaceAreaM2: Float[0..1];
+  {ContractDoc.description = 'Height of the warren above sea level.', ContractDoc.unitLabel = 'metres'} elevationM: Float[0..1];
+  {ContractDoc.description = 'Latitude of the warren centroid.'} centroidLatitude: Float[0..1];
+  {ContractDoc.description = 'Longitude of the warren centroid.'} centroidLongitude: Float[0..1];
+  <<ContractDoc.sortable>> {ContractDoc.description = 'Date the warren was first registered.'} registeredOn: StrictDate[0..1];
+  {ContractDoc.description = 'Date of the most recent walkover.'} lastVisitedOn: StrictDate[0..1];
+  {ContractDoc.description = 'Whether the warren is currently thought to be active.'} activeFlag: Boolean[0..1];
+  {ContractDoc.description = 'Whether the warren lies inside a fenced exclosure.'} exclosureFlag: Boolean[0..1];
+  {ContractDoc.metadata = 'crew', ContractDoc.description = 'Crew that owns the record.'} surveyCrew: String[0..1];
+  {ContractDoc.retired = 'superseded by habitatClass', ContractDoc.description = 'Legacy habitat wording kept for older records.'} legacyHabitatNote: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Entrances recorded against the warren; an empty list is indistinguishable from none recorded.', ContractDoc.description = 'Repeated entrance structures nested one level below the warren.'} entrances: BurrowEntrance[*];
+}
+
+Class <<ContractDoc.indexed>> {meta::pure::profiles::doc.doc = 'Forage survey walked across a warren and the samples taken on it.'} test::indigowarren3::contract::ForageSurvey
+{
+  <<ContractDoc.keyField>> {meta::pure::profiles::doc.doc = 'Identifier of the forage survey.', ContractDoc.description = 'Survey reference issued when the walk is planned.', ContractDoc.exampleSet = 'FSV-1001, FSV-1002'} surveyCode: String[0..1];
+  {ContractDoc.description = 'Warren reference the survey was walked over.'} warrenCode: String[0..1];
+  {ContractDoc.description = 'Transect walked during the survey.'} transectLabel: String[0..1];
+  {ContractDoc.description = 'Recording method used on the transect.'} methodName: String[0..1];
+  {ContractDoc.description = 'Weather noted at the start of the walk.'} weatherNote: String[0..1];
+  {ContractDoc.description = 'Season the walk falls in.'} seasonLabel: String[0..1];
+  <<WireShape.int32>> {meta::pure::profiles::doc.doc = 'How many plots were walked.', ContractDoc.description = 'Plot tally for the transect; absent when the walk was abandoned.', ContractDoc.unitLabel = 'plots'} plotCount: Integer[0..1];
+  {ContractDoc.description = 'Mean sward height measured across the plots.', ContractDoc.unitLabel = 'centimetres'} meanSwardHeightCm: Float[0..1];
+  {ContractDoc.description = 'Share of plots showing grazing pressure.'} grazedShare: Float[0..1];
+  <<ContractDoc.sortable>> {ContractDoc.description = 'Date the survey was walked.'} walkedOn: StrictDate[0..1];
+  {ContractDoc.description = 'Instant the survey record was closed.'} closedAt: DateTime[0..1];
+  {ContractDoc.description = 'Whether the survey was signed off by the reserve warden.'} signedOffFlag: Boolean[0..1];
+  {ContractDoc.indexHint = 'warrenCode', ContractDoc.description = 'Surveyor who walked the transect.'} surveyorName: String[0..1];
+  {ContractDoc.metadata = 'source-system', ContractDoc.description = 'Where the record was keyed in.'} captureSource: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Samples taken on the survey; optional and unbounded.', ContractDoc.description = 'Repeated sample structures nested one level below the survey.'} samples: test::indigowarren3::contract::ForageSample[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single burrow entrance observed on a warren walkover.'} test::indigowarren3::contract::BurrowEntrance
+{
+  <<ContractDoc.keyField>> {ContractDoc.description = 'Tag number painted on the entrance marker.'} entranceTag: String[0..1];
+  {ContractDoc.description = 'Whether the entrance showed fresh use.'} freshUseFlag: Boolean[0..1];
+  <<WireShape.int32>> {ContractDoc.description = 'Measured depth of the entrance throat.', ContractDoc.unitLabel = 'centimetres'} depthCm: Integer[0..1];
+  {ContractDoc.description = 'Width of the entrance mouth.', ContractDoc.unitLabel = 'centimetres'} mouthWidthCm: Float[0..1];
+  {ContractDoc.description = 'Compass bearing the entrance faces.'} bearingLabel: String[0..1];
+  {ContractDoc.description = 'Note left by the crew about the entrance.'} observationNote: String[0..1];
+}

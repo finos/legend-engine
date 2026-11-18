@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::zephyrridge::store::RidgeSoaringDB
+(
+  Schema ridge
+  (
+    Table region
+    (
+      region_code VARCHAR(12) PRIMARY KEY,
+      region_name VARCHAR(64),
+      terrain_side VARCHAR(16)
+    )
+
+    Table launch_site
+    (
+      site_id INTEGER PRIMARY KEY,
+      site_code VARCHAR(16),
+      site_name VARCHAR(64),
+      region_code VARCHAR(12),
+      aspect_code VARCHAR(8),
+      elevation_m INTEGER,
+      status_code VARCHAR(4)
+    )
+
+    Table glider
+    (
+      glider_id INTEGER PRIMARY KEY,
+      glider_code VARCHAR(16),
+      wing_code VARCHAR(8),
+      service_state VARCHAR(16),
+      seat_count INTEGER
+    )
+
+    Table pilot
+    (
+      pilot_id INTEGER PRIMARY KEY,
+      pilot_code VARCHAR(16),
+      pilot_name VARCHAR(64),
+      rating_code VARCHAR(8),
+      home_region_code VARCHAR(16),
+      addr_line VARCHAR(64),
+      addr_town VARCHAR(32),
+      addr_post_code VARCHAR(12)
+    )
+
+    Table soaring_flight
+    (
+      flight_id INTEGER PRIMARY KEY,
+      flight_ref VARCHAR(16),
+      site_id INTEGER,
+      glider_id INTEGER,
+      pilot_id INTEGER,
+      launch_on DATE,
+      land_on DATE,
+      climb_score INTEGER,
+      duration_min INTEGER,
+      log_status VARCHAR(16)
+    )
+
+    Table beacon
+    (
+      beacon_id INTEGER PRIMARY KEY,
+      site_id INTEGER,
+      beacon_code VARCHAR(16),
+      band_code VARCHAR(8),
+      active_flag VARCHAR(2)
+    )
+
+    Table wind_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      site_id INTEGER,
+      read_on DATE,
+      gust_kph INTEGER,
+      veer_deg INTEGER
+    )
+
+    View site_roster_vw
+    (
+      site_id: ridge.launch_site.site_id PRIMARY KEY,
+      site_code: ridge.launch_site.site_code,
+      roster_label: concat('ROSTER-', ridge.launch_site.region_code)
+    )
+
+    View region_summary_vw
+    (
+      ~groupBy (ridge.launch_site.region_code)
+      region_code: ridge.launch_site.region_code PRIMARY KEY,
+      site_count: count(ridge.launch_site.site_id),
+      max_elevation_m: max(ridge.launch_site.elevation_m)
+    )
+  )
+
+  Filter OpenSite(ridge.launch_site.status_code != 'X')
+  Filter ServiceableGlider(ridge.glider.service_state != 'RETIRED')
+  Filter LoggedFlight(toUpper(ridge.soaring_flight.log_status) = 'LOGGED')
+  Filter ActiveBeacon(coalesce(ridge.beacon.active_flag, 'Y') = 'Y')
+  Filter NamedRegion(ridge.region.region_name != '')
+
+  Join Site_Region(ridge.launch_site.region_code = ridge.region.region_code)
+  Join Site_Roster(ridge.launch_site.site_id = ridge.site_roster_vw.site_id)
+  Join Region_Summary(ridge.region.region_code = ridge.region_summary_vw.region_code)
+  Join Flight_Site(ridge.soaring_flight.site_id = ridge.launch_site.site_id)
+  Join Flight_Glider(ridge.soaring_flight.glider_id = ridge.glider.glider_id)
+  Join Flight_Pilot(ridge.soaring_flight.pilot_id = ridge.pilot.pilot_id)
+  Join Beacon_Site(ridge.beacon.site_id = ridge.launch_site.site_id)
+  Join Reading_Site(ridge.wind_reading.site_id = ridge.launch_site.site_id)
+  Join Pilot_Home_Region(toUpper(ridge.pilot.home_region_code) = concat('RG-', ridge.region.region_code))
+)

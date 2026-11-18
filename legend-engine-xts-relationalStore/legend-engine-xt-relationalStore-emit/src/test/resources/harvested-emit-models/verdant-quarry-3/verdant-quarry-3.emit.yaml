@@ -1,0 +1,57 @@
+name: verdant-quarry-3
+title: "Quarry Face Surveys — Four Single-Execution Services From A Windowed Predicate Down To An Unfiltered Wide Projection"
+description: |
+  A stone-quarry survey model whose consumer surface is four single-execution
+  services over one relational store. The deepest service closes a survey date
+  window with a three-operand predicate spanning two comparison kinds and a
+  joined regional equality, then bands the bench height through a three-level
+  nested conditional inside the projection. A second service narrows the core
+  samples to one mineral code across a single inner hop, and two unfiltered
+  services publish a counted site register and a seven-column sample manifest
+  whose last two columns are resolved two hops away. Every service is exercised
+  by its own test suite against in-process fixture rows.
+
+modelSources:
+  model:
+    root: verdant-quarry-3
+    files:
+      - test/verdantquarry3/connection/QuarryConnections.pure
+      - test/verdantquarry3/domain/QuarryDomain.pure
+      - test/verdantquarry3/mapping/QuarryMapping.pure
+      - test/verdantquarry3/runtime/QuarryRuntimes.pure
+      - test/verdantquarry3/service/FaceSurveyWindow.pure
+      - test/verdantquarry3/service/MineralGradeBoard.pure
+      - test/verdantquarry3/service/QuarrySiteRegister.pure
+      - test/verdantquarry3/service/SampleManifest.pure
+      - test/verdantquarry3/store/QuarryDB.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:filter
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-projection
+  - date-window
+  - distinct
+  - h2
+  - quarry-surveys
+  - service-test
+  - single-execution
+  - two-hop-join

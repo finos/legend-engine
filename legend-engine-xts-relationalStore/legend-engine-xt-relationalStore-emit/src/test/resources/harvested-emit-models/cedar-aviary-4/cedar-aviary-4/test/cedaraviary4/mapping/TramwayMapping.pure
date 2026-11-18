@@ -1,0 +1,267 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedaraviary4::mapping::TramwayMapping
+(
+  test::cedaraviary4::domain::LiveryClass: EnumerationMapping LiveryClassMap
+  {
+    HERITAGE: ['HERITAGE'],
+    MODERN: ['MODERN'],
+    WORKS: ['WORKS'],
+    UNLIVERIED: ['UNLIVERIED']
+  }
+
+  test::cedaraviary4::domain::ShelterKind: EnumerationMapping ShelterKindMap
+  {
+    OPEN: ['OPEN'],
+    COVERED: ['COVERED'],
+    UNRECORDED: ['UNRECORDED']
+  }
+
+  *test::cedaraviary4::domain::Region[region_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedaraviary4::store::TramwayDb]tramway.region.region_id
+    )
+    ~mainTable [test::cedaraviary4::store::TramwayDb]tramway.region
+    regionId: [test::cedaraviary4::store::TramwayDb]tramway.region.region_id,
+    regionName: [test::cedaraviary4::store::TramwayDb]tramway.region.region_name
+  }
+
+  *test::cedaraviary4::domain::TramLine[line_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedaraviary4::store::TramwayDb]tramway.tram_line.line_id
+    )
+    ~mainTable [test::cedaraviary4::store::TramwayDb]tramway.tram_line
+    lineId: [test::cedaraviary4::store::TramwayDb]tramway.tram_line.line_id,
+    lineName: [test::cedaraviary4::store::TramwayDb]tramway.tram_line.line_name,
+    gaugeCode: [test::cedaraviary4::store::TramwayDb]tramway.tram_line.gauge_code
+  }
+
+  *test::cedaraviary4::domain::Depot[depot_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedaraviary4::store::TramwayDb]tramway.depot.depot_id
+    )
+    ~mainTable [test::cedaraviary4::store::TramwayDb]tramway.depot
+    depotId: [test::cedaraviary4::store::TramwayDb]tramway.depot.depot_id,
+    depotName: [test::cedaraviary4::store::TramwayDb]tramway.depot.depot_name,
+    shelterCode: [test::cedaraviary4::store::TramwayDb]tramway.depot.shelter_code
+  }
+
+  *test::cedaraviary4::domain::TramCar[car_set]: Relational
+  {
+    ~filter [test::cedaraviary4::store::TramwayDb]RunningCars
+    ~primaryKey
+    (
+      [test::cedaraviary4::store::TramwayDb]tramway.tram_car.car_id
+    )
+    ~mainTable [test::cedaraviary4::store::TramwayDb]tramway.tram_car
+    carTag: toUpper(trim([test::cedaraviary4::store::TramwayDb]tramway.tram_car.car_ref)),
+    seatCount: [test::cedaraviary4::store::TramwayDb]tramway.tram_car.seat_count,
+    liveryLabel: case(
+                   isNull([test::cedaraviary4::store::TramwayDb]tramway.tram_car.livery_code),
+                   'UNLIVERIED',
+                   [test::cedaraviary4::store::TramwayDb]tramway.tram_car.livery_code
+                 ),
+    liveryClass: EnumerationMapping LiveryClassMap: case(
+                   isNull([test::cedaraviary4::store::TramwayDb]tramway.tram_car.livery_code),
+                   'UNLIVERIED',
+                   case(
+                     equal([test::cedaraviary4::store::TramwayDb]tramway.tram_car.livery_code, 'HER'),
+                     'HERITAGE',
+                     case(
+                       equal([test::cedaraviary4::store::TramwayDb]tramway.tram_car.livery_code, 'MOD'),
+                       'MODERN',
+                       'WORKS'
+                     )
+                   )
+                 ),
+    shelterState: EnumerationMapping ShelterKindMap: case(
+                    isNull([test::cedaraviary4::store::TramwayDb]@Car_Depot | [test::cedaraviary4::store::TramwayDb]tramway.depot.shelter_code),
+                    'UNRECORDED',
+                    [test::cedaraviary4::store::TramwayDb]@Car_Depot | [test::cedaraviary4::store::TramwayDb]tramway.depot.shelter_code
+                  ),
+    depotLabel: case(
+                  equal([test::cedaraviary4::store::TramwayDb]@Car_Depot | [test::cedaraviary4::store::TramwayDb]tramway.depot.shelter_code, 'OPEN'),
+                  [test::cedaraviary4::store::TramwayDb]@Car_Depot | [test::cedaraviary4::store::TramwayDb]tramway.depot.depot_name,
+                  'covered shed'
+                ),
+    gaugeLabel: case(
+                  equal([test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line | [test::cedaraviary4::store::TramwayDb]tramway.tram_line.gauge_code, 'NG'),
+                  'narrow gauge',
+                  'standard gauge'
+                ),
+    routeTag: case(
+                isNull([test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line | [test::cedaraviary4::store::TramwayDb]tramway.tram_line.line_name),
+                'UNROUTED',
+                case(
+                  isNull([test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line > @Line_Region | [test::cedaraviary4::store::TramwayDb]tramway.region.region_name),
+                  concat(
+                    concat(
+                      concat('L/', [test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line | [test::cedaraviary4::store::TramwayDb]tramway.tram_line.line_name),
+                      ':'
+                    ),
+                    [test::cedaraviary4::store::TramwayDb]tramway.tram_car.car_ref
+                  ),
+                  concat(
+                    concat(
+                      concat(
+                        concat(
+                          concat(
+                            concat('L/', [test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line | [test::cedaraviary4::store::TramwayDb]tramway.tram_line.line_name),
+                            ':'
+                          ),
+                          [test::cedaraviary4::store::TramwayDb]tramway.tram_car.car_ref
+                        ),
+                        '@'
+                      ),
+                      [test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line > @Line_Region | [test::cedaraviary4::store::TramwayDb]tramway.region.region_name
+                    ),
+                    ']'
+                  )
+                )
+              ),
+    alignmentFlag: case(
+                     and(
+                       equal(
+                         [test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line | [test::cedaraviary4::store::TramwayDb]tramway.tram_line.region_id,
+                         [test::cedaraviary4::store::TramwayDb]@Car_Depot | [test::cedaraviary4::store::TramwayDb]tramway.depot.region_id
+                       ),
+                       equal(
+                         [test::cedaraviary4::store::TramwayDb]@Car_Depot | [test::cedaraviary4::store::TramwayDb]tramway.depot.line_id,
+                         [test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line | [test::cedaraviary4::store::TramwayDb]tramway.tram_line.line_id
+                       )
+                     ),
+                     'ALIGNED',
+                     'DIVERGED'
+                   ),
+    regionLabel: case(
+                   isNull([test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line > @Line_Region | [test::cedaraviary4::store::TramwayDb]tramway.region.region_name),
+                   'UNREGIONED',
+                   [test::cedaraviary4::store::TramwayDb]@Car_Depot > @Depot_Line > @Line_Region | [test::cedaraviary4::store::TramwayDb]tramway.region.region_name
+                 )
+  }
+
+  *test::cedaraviary4::domain::ServiceEntry[entry_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedaraviary4::store::TramwayDb]tramway.service_entry.entry_id
+    )
+    ~mainTable [test::cedaraviary4::store::TramwayDb]tramway.service_entry
+    entryId: [test::cedaraviary4::store::TramwayDb]tramway.service_entry.entry_id,
+    entryNote: [test::cedaraviary4::store::TramwayDb]tramway.service_entry.entry_note,
+    loggedOn: [test::cedaraviary4::store::TramwayDb]tramway.service_entry.logged_on
+  }
+
+  test::cedaraviary4::domain::Car_ServiceEntries: Relational
+  {
+    AssociationMapping
+    (
+      entries[car_set, entry_set]: [test::cedaraviary4::store::TramwayDb]@Car_Entry,
+      car[entry_set, car_set]: [test::cedaraviary4::store::TramwayDb]@Car_Entry
+    )
+  }
+
+  testSuites:
+  [
+    runningFleetSuite:
+    {
+      function: |test::cedaraviary4::domain::TramCar.all()->project(
+  ~[
+     Car: c|$c.carTag,
+     Seats: c|$c.seatCount,
+     Livery: c|$c.liveryLabel,
+     Class: c|$c.liveryClass->toOne(),
+     Shelter: c|$c.shelterState->toOne(),
+     Shed: c|$c.depotLabel,
+     Gauge: c|$c.gaugeLabel,
+     Route: c|$c.routeTag,
+     Align: c|$c.alignmentFlag,
+     Region: c|$c.regionLabel
+   ]
+)->sort(~Car->ascending());
+      tests:
+      [
+        everyDerivationArm:
+        {
+          doc: 'Drives every arm of the fleet derivations over one fixture: both livery arms and all four livery-class arms, both shelter arms, both shed-name arms, both gauge arms, all three route-tag arms including the unrouted fallback taken when the line carries no name, both alignment arms, both region-label arms, the three-hop car-shed-line-region path and the running-cars filter, which drops the retired car and the car still flagged active but already stamped with a retirement time.';
+          data:
+          [
+            test::cedaraviary4::store::TramwayDb:
+              Relational
+              #{
+                tramway.region:
+                  'region_id,region_name\n'+
+                  '1,Northern Uplands\n'+
+                  '2,Coastal Plain\n'+
+                  '3,\n';
+
+                tramway.tram_line:
+                  'line_id,line_name,region_id,gauge_code\n'+
+                  '10,Summit Loop,1,NG\n'+
+                  '11,Quay Circular,2,SG\n'+
+                  '12,,1,NG\n'+
+                  '13,Cliff Branch,3,SG\n';
+
+                tramway.depot:
+                  'depot_id,depot_name,line_id,region_id,shelter_code\n'+
+                  '20,Summit Shed,10,1,OPEN\n'+
+                  '21,Quay Shed,11,2,COVERED\n'+
+                  '22,Halt Shed,12,1,\n'+
+                  '23,Cliff Shed,13,1,OPEN\n';
+
+                tramway.tram_car:
+                  'car_id,car_ref,depot_id,livery_code,seat_count,status_code,retired_ts\n'+
+                  '100,tc-01,20,HER,48,ACTIVE,\n'+
+                  '101,tc-02,21,MOD,64,ACTIVE,\n'+
+                  '102,tc-03,22,,32,ACTIVE,\n'+
+                  '103,tc-04,23,WRK,12,ACTIVE,\n'+
+                  '104,tc-05,20,HER,50,ACTIVE,\n'+
+                  '105,tc-06,21,MOD,60,RETIRED,2026-01-04 06:00:00\n'+
+                  '106,tc-07,23,,20,ACTIVE,\n'+
+                  '107,tc-08,22,WRK,26,ACTIVE,\n'+
+                  '108,tc-09,20,HER,44,ACTIVE,2026-02-09 06:00:00\n';
+
+                tramway.service_entry:
+                  'entry_id,car_id,entry_note,logged_on\n'+
+                  '900,100,brake overhaul,2026-01-05\n'+
+                  '901,100,repaint,2026-02-11\n'+
+                  '902,101,wheel turning,2026-03-02\n';
+              }#
+          ];
+          asserts:
+          [
+            sevenRunningCars:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Car":"TC-01","Seats":48,"Livery":"HER","Class":"HERITAGE","Shelter":"OPEN","Shed":"Summit Shed","Gauge":"narrow gauge","Route":"L/Summit Loop:tc-01@Northern Uplands]","Align":"ALIGNED","Region":"Northern Uplands"},{"Car":"TC-02","Seats":64,"Livery":"MOD","Class":"MODERN","Shelter":"COVERED","Shed":"covered shed","Gauge":"standard gauge","Route":"L/Quay Circular:tc-02@Coastal Plain]","Align":"ALIGNED","Region":"Coastal Plain"},{"Car":"TC-03","Seats":32,"Livery":"UNLIVERIED","Class":"UNLIVERIED","Shelter":"UNRECORDED","Shed":"covered shed","Gauge":"narrow gauge","Route":"UNROUTED","Align":"ALIGNED","Region":"Northern Uplands"},{"Car":"TC-04","Seats":12,"Livery":"WRK","Class":"WORKS","Shelter":"OPEN","Shed":"Cliff Shed","Gauge":"standard gauge","Route":"L/Cliff Branch:tc-04","Align":"DIVERGED","Region":"UNREGIONED"},{"Car":"TC-05","Seats":50,"Livery":"HER","Class":"HERITAGE","Shelter":"OPEN","Shed":"Summit Shed","Gauge":"narrow gauge","Route":"L/Summit Loop:tc-05@Northern Uplands]","Align":"ALIGNED","Region":"Northern Uplands"},{"Car":"TC-07","Seats":20,"Livery":"UNLIVERIED","Class":"UNLIVERIED","Shelter":"OPEN","Shed":"Cliff Shed","Gauge":"standard gauge","Route":"L/Cliff Branch:tc-07","Align":"DIVERGED","Region":"UNREGIONED"},{"Car":"TC-08","Seats":26,"Livery":"WRK","Class":"WORKS","Shelter":"UNRECORDED","Shed":"covered shed","Gauge":"narrow gauge","Route":"UNROUTED","Align":"ALIGNED","Region":"Northern Uplands"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

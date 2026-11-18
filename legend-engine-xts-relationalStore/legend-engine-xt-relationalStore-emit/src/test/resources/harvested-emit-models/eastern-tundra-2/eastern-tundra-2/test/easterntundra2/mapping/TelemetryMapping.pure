@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easterntundra2::mapping::TelemetryMapping
+(
+  *test::easterntundra2::domain::CaribouFix[fix]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.collar_code
+    )
+    ~mainTable [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix
+    collarCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.collar_code,
+    animalCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.animal_code,
+    herdCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.herd_code,
+    fixDate: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.fix_date,
+    latitude: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.latitude,
+    longitude: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.longitude,
+    altitudeMetres: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.altitude_metres,
+    collarStatus: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.collar_status,
+    signalCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.signal_code,
+    habitatCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.habitat_code,
+    movementCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.movement_code,
+    distanceKm: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.distance_km,
+    temperatureC: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.temperature_c,
+    snowDepthCm: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.snow_depth_cm,
+    vegetationCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.vegetation_code,
+    observerNote: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.observer_note,
+    deploymentYearText: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.deployment_year_text,
+    captureYearText: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.capture_year_text,
+    surveyYearText: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.survey_year_text,
+    ageYearsText: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.age_years_text,
+    distanceBandText: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.distance_band_text,
+    batteryText: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.battery_text,
+    trackingCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.tracking_code,
+    gpsQuality: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.gps_quality,
+    satelliteCount: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.satellite_count,
+    transmissionSeq: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.transmission_seq,
+    routeCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.route_code,
+    sexCode: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.sex_code,
+    ageClass: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.age_class,
+    bodyMassKg: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.body_mass_kg,
+    antlerStage: [test::easterntundra2::store::TelemetryStore]telemetry.collar_fix.antler_stage
+  }
+  testSuites:
+  [
+    telemetryMappingSuite:
+    {
+      function: |test::easterntundra2::domain::CaribouFix.all()->project(
+        ~[
+          Collar: x|$x.collarCode,
+          Band: x|$x.movementBand(),
+          Deployment: x|$x.deploymentYearLabel(),
+          Battery: x|$x.batteryReading(),
+          TotalKm: x|$x.reportingDistance()
+        ]
+      )->sort(~Collar->ascending());
+      tests:
+      [
+        allMovementBandsAndFallback:
+        {
+          data:
+          [
+            test::easterntundra2::store::TelemetryStore:
+              Relational
+              #{
+                telemetry.collar_fix:
+                  'collar_code,animal_code,herd_code,fix_date,latitude,longitude,altitude_metres,collar_status,signal_code,habitat_code,movement_code,distance_km,temperature_c,snow_depth_cm,vegetation_code,observer_note,deployment_year_text,capture_year_text,survey_year_text,age_years_text,distance_band_text,battery_text,tracking_code,gps_quality,satellite_count,transmission_seq,route_code,sex_code,age_class,body_mass_kg,antler_stage\n'+
+                  'COL-01,AN-01,HERD-A,2026-01-10,65.1,-145.2,310.0,ACTIVE,GOOD,LICHEN,REST,1.0,-18.0,42.0,MOSS,quiet,2019,2018,2026,7,1,98.4,TRK-01,HIGH,8,1,R-01,F,ADULT,110.0,FULL\n'+
+                  'COL-02,AN-02,HERD-A,2026-01-11,65.2,-145.3,315.0,ACTIVE,GOOD,LICHEN,GRAZE,2.0,-17.0,41.0,MOSS,browse,2019,2018,2026,7,2,97.0,TRK-02,HIGH,8,2,R-01,F,ADULT,112.0,FULL\n'+
+                  'COL-03,AN-03,HERD-A,2026-01-12,65.3,-145.4,320.0,ACTIVE,GOOD,SHRUB,TRAVEL,3.0,-16.0,40.0,SHRUB,steady,2020,2019,2026,6,3,95.2,TRK-03,HIGH,7,3,R-02,M,ADULT,125.0,GROWING\n'+
+                  'COL-04,AN-04,HERD-B,2026-01-13,65.4,-145.5,325.0,ACTIVE,FAIR,SHRUB,CROSS,4.0,-15.0,39.0,SHRUB,river crossing,2020,2019,2026,6,4,92.1,TRK-04,MEDIUM,7,4,R-02,F,YOUNG,88.0,GROWING\n'+
+                  'COL-05,AN-05,HERD-B,2026-01-14,65.5,-145.6,330.0,ACTIVE,FAIR,TUNDRA,CALVE,5.0,-14.0,38.0,SEDGE,new calf,2021,2020,2026,5,5,91.0,TRK-05,MEDIUM,6,5,R-03,F,ADULT,105.0,FULL\n'+
+                  'COL-06,AN-06,HERD-B,2026-01-15,65.6,-145.7,335.0,ACTIVE,FAIR,TUNDRA,MIGRATE,6.0,-13.0,37.0,SEDGE,northbound,2021,2020,2026,5,6,89.5,TRK-06,MEDIUM,6,6,R-03,M,ADULT,130.0,FULL\n'+
+                  'COL-07,AN-07,HERD-C,2026-01-16,65.7,-145.8,340.0,ACTIVE,WEAK,TAIGA,RETURN,7.0,-12.0,36.0,SPRUCE,turning south,2022,2021,2026,4,7,87.3,TRK-07,LOW,5,7,R-04,F,YOUNG,82.0,GROWING\n'+
+                  'COL-08,AN-08,HERD-C,2026-01-17,65.8,-145.9,345.0,ACTIVE,WEAK,TAIGA,WINTER,8.0,-11.0,35.0,SPRUCE,winter range,2022,2021,2026,4,8,85.0,TRK-08,LOW,5,8,R-04,M,ADULT,118.0,FULL\n'+
+                  'COL-09,AN-09,HERD-C,2026-01-18,65.9,-146.0,350.0,RETIRED,NONE,TAIGA,UNKNOWN,9.0,-10.0,34.0,SPRUCE,retired collar,UNKNOWN,2021,2026,UNKNOWN,UNKNOWN,NA,TRK-09,LOW,4,9,R-05,F,ADULT,90.0,NONE;';
+              }#
+          ];
+          asserts:
+          [
+            nineMeaningfulTelemetryRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Collar":"COL-01","Band":"RESTING","Deployment":"2019","Battery":98.4,"TotalKm":2.5},{"Collar":"COL-02","Band":"GRAZING","Deployment":"2019","Battery":97.0,"TotalKm":3.5},{"Collar":"COL-03","Band":"TRAVELLING","Deployment":"2020","Battery":95.2,"TotalKm":4.5},{"Collar":"COL-04","Band":"CROSSING","Deployment":"2020","Battery":92.1,"TotalKm":5.5},{"Collar":"COL-05","Band":"CALVING","Deployment":"2021","Battery":91.0,"TotalKm":6.5},{"Collar":"COL-06","Band":"MIGRATING","Deployment":"2021","Battery":89.5,"TotalKm":7.5},{"Collar":"COL-07","Band":"RETURNING","Deployment":"2022","Battery":87.3,"TotalKm":8.5},{"Collar":"COL-08","Band":"WINTERING","Deployment":"2022","Battery":85.0,"TotalKm":9.5},{"Collar":"COL-09","Band":null,"Deployment":"UNRECORDED","Battery":0.0,"TotalKm":10.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

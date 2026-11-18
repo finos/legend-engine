@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emberwharf2::store::WharfDb
+(
+  Schema wharf
+  (
+    Table berth_slot
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      slot_code VARCHAR(16) PRIMARY KEY,
+      slot_name VARCHAR(128) NOT NULL,
+      quay_side VARCHAR(16) NOT NULL,
+      draught_metres DECIMAL(9, 2),
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table crane_unit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      crane_code VARCHAR(16) PRIMARY KEY,
+      crane_label VARCHAR(128) NOT NULL,
+      lift_capacity_tonnes FLOAT NOT NULL,
+      last_serviced_on DATE,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table vessel_call
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      call_code VARCHAR(16) PRIMARY KEY,
+      vessel_name VARCHAR(128) NOT NULL,
+      slot_code VARCHAR(16) NOT NULL,
+      berthed_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table pallet_lot
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      lot_code VARCHAR(16) PRIMARY KEY,
+      commodity_class VARCHAR(64) NOT NULL,
+      gross_weight_kg DECIMAL(12, 3),
+      packed_on DATE,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+)

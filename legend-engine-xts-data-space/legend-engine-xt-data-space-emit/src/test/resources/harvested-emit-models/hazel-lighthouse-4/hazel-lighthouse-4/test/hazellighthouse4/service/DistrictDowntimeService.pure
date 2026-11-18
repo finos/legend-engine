@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazellighthouse4::service::DistrictDowntimeService
+{
+  pattern: '/waterworks/v1/service-call/downtime-rollup';
+  title: 'Waterworks - Reservoir Downtime Rollup';
+  owners:
+  [
+    'waterworks-network-office'
+  ];
+  documentation: 'Single-execution aggregate rolling recorded service-call downtime up to the reservoir reached through the chained two-hop join, then ordering the rollup by reservoir name.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazellighthouse4::domain::ServiceCall.all()->groupBy(
+      [
+        c|$c.reservoirName
+      ],
+      [
+        agg(
+          c|$c.downtimeHours,
+          y|$y->sum()
+        )
+      ],
+      [
+        'ReservoirName',
+        'TotalDowntimeHours'
+      ]
+    )->sort(
+      [
+        asc('ReservoirName')
+      ]
+    );
+    mapping: test::hazellighthouse4::mapping::WaterworksMapping;
+    runtime: test::hazellighthouse4::runtime::WaterworksRuntime;
+  }
+  testSuites:
+  [
+    downtimeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          waterworksWarehouseConnection:
+            Relational
+            #{
+              waterworks.reservoir:
+                'reservoir_code,reservoir_name,district_name,commissioned_on\n'+
+                'RS-1,Hazel Ridge Reservoir,North Ridge,2015-04-01\n'+
+                'RS-2,Alder Flat Reservoir,South Fen,2017-06-15\n'+
+                'RS-3,Basalt Mesa Reservoir,South Fen,2019-09-30\n'+
+                'RS-4,Granite Bay Reservoir,East Bay,2021-03-20\n';
+
+              waterworks.pump_station:
+                'station_code,reservoir_code,model_name,rated_flow_lps,head_metres,active_flag\n'+
+                'PS-1,RS-1,GX-40,3.5,90.0,true\n'+
+                'PS-2,RS-1,GX-40,3.5,85.0,true\n'+
+                'PS-3,RS-2,HX-52,4.0,110.0,true\n'+
+                'PS-4,RS-9,GX-40,1.5,70.0,false\n'+
+                'PS-5,RS-4,LX-30,2.0,75.0,true\n';
+
+              waterworks.service_call:
+                'call_code,station_code,crew_code,called_on,downtime_hours,completed\n'+
+                'SC-1,PS-1,CR-1,2026-02-10,4.5,true\n'+
+                'SC-2,PS-2,CR-2,2026-02-12,2.0,true\n'+
+                'SC-3,PS-3,CR-9,2026-03-01,6.5,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rolledUpDowntime:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            downtimeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReservoirName":"Alder Flat Reservoir","TotalDowntimeHours":6.5},{"ReservoirName":"Hazel Ridge Reservoir","TotalDowntimeHours":6.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

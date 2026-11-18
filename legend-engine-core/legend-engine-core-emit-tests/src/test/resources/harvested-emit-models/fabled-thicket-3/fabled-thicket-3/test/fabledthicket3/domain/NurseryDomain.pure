@@ -1,0 +1,237 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::functions::date::*;
+import meta::pure::profiles::*;
+import test::fabledthicket3::domain::*;
+import test::fabledthicket3::profile::*;
+
+Enum {doc.doc = 'How far a propagated plant has travelled from the parent stock towards a saleable liner.'} test::fabledthicket3::domain::GrowthStage
+{
+  CUTTING,
+  ROOTED,
+  POTTED,
+  HARDENED
+}
+
+Enum {doc.doc = 'The rooting medium a propagation record was struck into.'} test::fabledthicket3::domain::MediumKind
+{
+  PEAT_FREE,
+  LOAM_MIX,
+  PERLITE_MIX,
+  COIR_BLOCK
+}
+
+Enum {doc.doc = 'What the last bench inspection concluded about a propagation record.'} test::fabledthicket3::domain::HealthVerdict
+{
+  CLEAR,
+  WATCH,
+  QUARANTINE
+}
+
+Enum {doc.doc = 'The kind of bench a propagation record occupies while it establishes.'} test::fabledthicket3::domain::BenchClass
+{
+  MIST,
+  HEATED,
+  COLD_FRAME
+}
+
+Class {doc.doc = 'Anything the propagation glasshouse strikes, sows or grafts and then tracks on a bench. Every record kind carries the same identity, start date, medium and bench class, and the record kinds below add only what their own technique needs.'} test::fabledthicket3::domain::PropagationRecord
+{
+  {doc.doc = 'Identifier the record is tracked under across the glasshouse.'} recordCode: String[1];
+  {doc.doc = 'Date the record was struck, sown or grafted.'} startedOn: StrictDate[1];
+  {doc.doc = 'Rooting medium the record was started in.'} medium: MediumKind[1];
+  {doc.doc = 'Bench the record establishes on.'} benchClass: BenchClass[1];
+  {doc.doc = 'Free note the bench crew keeps against the record.'} benchNote: String[0..1];
+
+  {doc.doc = 'Bench routing keyword built from the inherited medium and bench class, so every record kind resolves the same two inherited enumerated properties through the supertype.'}
+  routingKeyword()
+  {
+    $this.medium->toString()->toUpper() + '/' + $this.benchClass->toString()->toUpper()
+  }: String[1];
+}
+
+Class <<Stewardship.criticalTier, Provenance.surveyed>> {doc.doc = 'A tray of softwood cuttings struck from parent stock, inspected on the bench until the rooted cuttings can be potted on.', Stewardship.reviewCadence = 'weekly', Provenance.collectionRound = 'spring-strike'} test::fabledthicket3::domain::CuttingBatch extends PropagationRecord
+{
+  {doc.doc = 'The individual cuttings struck into the batch.'} cuttings: Cutting[*];
+  {doc.doc = 'Bench inspections recorded against the batch.'} checks: HealthCheck[*];
+  {doc.doc = 'How many rooted cuttings the batch was struck to deliver.'} targetCount: Integer[1];
+
+  {doc.doc = 'The cuttings of the batch that have rooted.'}
+  rootedCuttings()
+  {
+    $this.cuttings->filter(c|$c.stage == GrowthStage.ROOTED)
+  }: Cutting[*];
+
+  {doc.doc = 'How far short of its struck target the batch has rooted.'}
+  shortfall()
+  {
+    $this.targetCount - $this.cuttings->filter(c|$c.stage == GrowthStage.ROOTED)->size()
+  }: Integer[1];
+
+  {doc.doc = 'The verdict of the most recent bench inspection, absent while the batch has never been inspected.'}
+  latestVerdict()
+  {
+    $this.checks->sortBy(c|$c.checkedOn)->last()->map(c|$c.verdict)
+  }: HealthVerdict[0..1];
+}
+
+Class <<Stewardship.routineTier>> {doc.doc = 'A seed tray sown cell by cell, where germination is counted per cell rather than per tray.', Stewardship.reviewCadence = 'fortnightly'} test::fabledthicket3::domain::SeedTray extends PropagationRecord
+{
+  {doc.doc = 'The cells of the tray.'} cells: TrayCell[*];
+  {doc.doc = 'Bench inspections recorded against the tray.'} checks: HealthCheck[*];
+
+  {doc.doc = 'How many cells of the tray have germinated.'}
+  germinatedCellCount()
+  {
+    $this.cells->filter(c|$c.germinatedOn->isNotEmpty())->size()
+  }: Integer[1];
+
+  {doc.doc = 'Germination rate of the tray in whole percent, zero while nothing has been sown.'}
+  germinationPercent()
+  {
+    if($this.cells->map(c|$c.sownCount)->sum() == 0,
+       | 0,
+       | ($this.cells->filter(c|$c.germinatedOn->isNotEmpty())->map(c|$c.viableCount)->sum() * 100) / $this.cells->map(c|$c.sownCount)->sum())
+  }: Number[1];
+}
+
+Class <<Provenance.provisional>> {doc.doc = 'A grafted batch worked onto rootstock, the record kind whose inspections decide whether the union took.', Provenance.collectionRound = 'winter-graft'} test::fabledthicket3::domain::GraftBatch extends PropagationRecord
+{
+  {doc.doc = 'Rootstock the scions were worked onto.'} rootstockCode: String[1];
+  {doc.doc = 'How many unions were worked in the batch.'} unionCount: Integer[1];
+  {doc.doc = 'Bench inspections recorded against the batch.'} checks: HealthCheck[*];
+
+  {doc.doc = 'Whether every recorded inspection of the batch cleared it.'}
+  everyCheckCleared()
+  {
+    $this.checks->forAll(c|$c.verdict == HealthVerdict.CLEAR)
+  }: Boolean[1];
+}
+
+Class <<Stewardship.routineTier, Presentation.published>> {doc.doc = 'A batch of young liners potted on from an earlier record and grown to a saleable size.', Presentation.caption = 'Liner production'} test::fabledthicket3::domain::LinerBatch extends PropagationRecord
+{
+  {doc.doc = 'How many liners were potted on into the batch.'} pottedCount: Integer[1];
+  {doc.doc = 'How many liners have hardened off.'} hardenedCount: Integer[1];
+  {doc.doc = 'Stage the batch as a whole is reported at.'} reportedStage: GrowthStage[1];
+
+  {doc.doc = 'Whether the batch is fully hardened off, resolving the inherited medium through the supertype so that a coir block is never reported as hardened.'}
+  hardenedOff()
+  {
+    ($this.hardenedCount == $this.pottedCount) && !($this.medium == MediumKind.COIR_BLOCK)
+  }: Boolean[1];
+}
+
+Class {doc.doc = 'One cutting struck into a batch, tracked from the day it was taken to the day it rooted.'} test::fabledthicket3::domain::Cutting
+{
+  {doc.doc = 'Identifier of the cutting within its batch.'} cuttingCode: String[1];
+  {doc.doc = 'Date the cutting was taken from the parent stock.'} takenOn: StrictDate[1];
+  {doc.doc = 'Stage the cutting has reached.'} stage: GrowthStage[1];
+  {doc.doc = 'Date the cutting rooted, absent while it has not.'} rootedOn: StrictDate[0..1];
+  {doc.doc = 'Length of the cutting in millimetres when it was struck.'} lengthMm: Integer[1];
+}
+
+Class {doc.doc = 'One cell of a seed tray, sown with a counted number of seeds.'} test::fabledthicket3::domain::TrayCell
+{
+  {doc.doc = 'Identifier of the cell within its tray.'} cellCode: String[1];
+  {doc.doc = 'Date the cell was sown.'} sownOn: StrictDate[1];
+  {doc.doc = 'Seeds sown into the cell.'} sownCount: Integer[1];
+  {doc.doc = 'Seedlings of the cell judged viable.'} viableCount: Integer[1];
+  {doc.doc = 'Date the cell germinated, absent while it has not.'} germinatedOn: StrictDate[0..1];
+  {doc.doc = 'Note the sowing crew keeps against the cell.'} cellNote: String[0..1];
+}
+
+Class {doc.doc = 'One bench inspection of a propagation record, carrying the crew that made it and the verdict it reached.'} test::fabledthicket3::domain::HealthCheck
+{
+  {doc.doc = 'Date the inspection was made.'} checkedOn: StrictDate[1];
+  {doc.doc = 'Verdict the inspection reached.'} verdict: HealthVerdict[1];
+  {doc.doc = 'Crew that made the inspection.'} inspector: InspectionCrew[1];
+  {doc.doc = 'Note the inspecting crew left.'} checkNote: String[0..1];
+}
+
+Class {doc.doc = 'A crew that walks the benches and records inspections.'} test::fabledthicket3::domain::InspectionCrew
+{
+  {doc.doc = 'Roster code of the crew.'} crewCode: String[1];
+  {doc.doc = 'Name the crew is published under.'} crewName: String[1];
+  {doc.doc = 'Glasshouse the crew is based in.'} houseCode: String[1];
+}
+
+Class <<Presentation.published>> {doc.doc = 'A bench run inside the glasshouse, holding the cutting batches that establish on it. The bay is where the cutting-side bench rules are asserted, because a rule about rooting pace only means something across the batches sharing one bench.', Presentation.caption = 'Propagation bay'} test::fabledthicket3::domain::PropagationBay
+[
+  rootedCuttingsAreDatedWithinTheSeason
+  (
+    ~function: (($this.batches->map(b|$b.cuttings)->isEmpty() || $this.batches->map(b|$b.cuttings)->filter(c|($c.stage->toString()->toUpper() == 'ROOTED') && ($c.cuttingCode->toUpper() == 'UNKNOWN'))->isEmpty()) || $this.batches->map(b|$b.cuttings)->filter(c|dateDiff($c.takenOn, $this.batches->map(b|$b.cuttings)->filter(x|$x.stage == GrowthStage.ROOTED)->map(x|$x.takenOn)->sort()->last()->toOne(), DurationUnit.DAYS) > 120)->isEmpty())
+    ~enforcementLevel: Error
+    ~message: 'Propagation bay ' + $this.bayCode + ' must root every cutting on the bench within one propagation season'
+  ),
+  inspectionCrewsAreNamed
+  (
+    ~function: ($this.batches->map(b|$b.checks)->map(c|$c.inspector)->map(i|$i.crewCode)->isEmpty() || (((!$this.batches->map(b|$b.checks)->map(c|$c.inspector)->map(i|$i.crewCode)->joinStrings(',')->contains('DRAFT') && !($this.batches->map(b|$b.checks)->map(c|$c.inspector)->map(i|$i.crewCode)->joinStrings(',')->toUpper() == 'TBC')) && !($this.batches->map(b|$b.checks)->map(c|$c.inspector)->map(i|$i.crewCode)->joinStrings(',')->toUpper() == 'NONE')) && !($this.batches->map(b|$b.checks)->map(c|$c.inspector)->map(i|$i.crewCode)->joinStrings(',')->toUpper() == 'UNASSIGNED')))
+    ~enforcementLevel: Error
+    ~message: 'Propagation bay ' + $this.bayCode + ' must name a real crew on every bench inspection it holds'
+  )
+]
+{
+  {doc.doc = 'Identifier of the bay.'} bayCode: String[1];
+  {doc.doc = 'Name the bay is signed with.'} bayName: String[1];
+  {doc.doc = 'Bench kind the bay is fitted out as.'} benchClass: BenchClass[1];
+  {doc.doc = 'Cutting batches establishing in the bay.'} batches: CuttingBatch[*];
+
+  {doc.doc = 'The batches of the bay still carrying unrooted cuttings, resolved through the inherited record identity of each batch.'}
+  unrootedBatchCodes()
+  {
+    $this.batches->filter(b|$b.cuttings->exists(c|!($c.stage == GrowthStage.ROOTED)))->map(b|$b.recordCode)->sort()
+  }: String[*];
+}
+
+Class <<Stewardship.criticalTier>> {doc.doc = 'One propagation season of the glasshouse, gathering the seed trays sown and the batches grafted between its opening and closing dates. The sowing and grafting rules are asserted here, because both compare a record against the season it belongs to.', Stewardship.reviewCadence = 'seasonal'} test::fabledthicket3::domain::PropagationSeason
+[
+  viableSeedlingsNeverOutnumberTheSowing
+  (
+    ~function: (($this.trays->map(t|$t.cells)->isEmpty() || $this.trays->map(t|$t.cells)->filter(c|$c.germinatedOn->isNotEmpty() && $c.cellCode->toUpper()->startsWith('A'))->isEmpty()) || $this.trays->map(t|$t.cells)->filter(c|$c.germinatedOn->isNotEmpty() && ($c.viableCount > $this.trays->map(t|$t.cells)->filter(x|$x.germinatedOn->isNotEmpty())->map(x|$x.sownCount)->sum()))->isEmpty())
+    ~enforcementLevel: Error
+    ~message: 'Propagation season ' + $this.seasonLabel + ' must not count more viable seedlings than it sowed'
+  ),
+  germinationFollowsSowing
+  (
+    ~function: (($this.trays->map(t|$t.cells)->isEmpty() || $this.trays->map(t|$t.cells)->filter(c|$c.germinatedOn->isNotEmpty())->isEmpty()) || $this.trays->map(t|$t.cells)->filter(c|dateDiff($this.openedOn, $this.trays->map(t|$t.cells)->filter(x|$x.germinatedOn->isNotEmpty())->map(x|$x.germinatedOn->toOne())->sort()->last()->toOne(), DurationUnit.DAYS) < 0)->isEmpty())
+    ~enforcementLevel: Error
+    ~message: 'Propagation season ' + $this.seasonLabel + ' must not germinate a cell before the season opened'
+  ),
+  graftUnionsAreClearedInTime
+  (
+    ~function: (($this.grafts->map(g|$g.checks)->isEmpty() || !$this.grafts->map(g|$g.checks)->exists(c|($c.verdict == HealthVerdict.QUARANTINE) && ($c.inspector.crewCode->toUpper() == 'TBC'))) || $this.grafts->map(g|$g.checks)->filter(c|($c.verdict == HealthVerdict.CLEAR) && (dateDiff($this.openedOn, $c.checkedOn, DurationUnit.DAYS) > 400))->isEmpty())
+    ~enforcementLevel: Error
+    ~message: 'Propagation season ' + $this.seasonLabel + ' must clear every graft union within the grafting year'
+  )
+]
+{
+  {doc.doc = 'Label the season is published under.'} seasonLabel: String[1];
+  {doc.doc = 'Date the season opened.'} openedOn: StrictDate[1];
+  {doc.doc = 'Seed trays sown in the season.'} trays: SeedTray[*];
+  {doc.doc = 'Batches grafted in the season.'} grafts: GraftBatch[*];
+
+  {doc.doc = 'How many cells were sown across the season, resolved through the inherited record identity of each tray.'}
+  sownCellCount()
+  {
+    $this.trays->map(t|$t.cells)->size()
+  }: Integer[1];
+
+  {doc.doc = 'Codes of the graft batches of the season that no inspection has cleared, resolved through the supertype identity.'}
+  unclearedGraftCodes()
+  {
+    $this.grafts->filter(g|!$g.checks->exists(c|$c.verdict == HealthVerdict.CLEAR))->map(g|$g.recordCode)->sort()
+  }: String[*];
+}

@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealquokka::mapping::SightingDigestMapping
+(
+  include mapping test::tealquokka::mapping::WildlifeEnumMappings
+
+  *test::tealquokka::domain::SightingDigest: Pure
+  {
+    ~src test::tealquokka::domain::SightingStaging
+    digestKey: $src.stationCode + '/' + $src.animalCode->toUpper(),
+    conditionBand: if($src.bodyCondition < 2,
+                      | 'BAND_1',
+                      | if($src.bodyCondition < 8,
+                           | 'BAND_LOW',
+                           | if($src.bodyCondition < 16,
+                                | 'BAND_HIGH',
+                                | 'BAND_OUT'))),
+    tagStatus: EnumerationMapping TagStatusMapping: [if($src.tagState->toUpper() == 'A', |'A', |if($src.tagState->toUpper() == 'R', |'R', |'L'))],
+    habitat: EnumerationMapping HabitatMapping: [if($src.habitatCode->toUpper() == 'H', |'H', |if($src.habitatCode->toUpper() == 'W', |'W', |'D'))]
+  }
+
+  testSuites:
+  [
+    digestSuite:
+    {
+      function: |test::tealquokka::domain::SightingDigest.all()->graphFetch(#{test::tealquokka::domain::SightingDigest{digestKey, conditionBand, tagStatus, habitat}}#)->serialize(#{test::tealquokka::domain::SightingDigest{digestKey, conditionBand, tagStatus, habitat}}#);
+      tests:
+      [
+        digestArms:
+        {
+          doc: 'Staging records covering each band arm of the digest conditional and each arm of the two enumeration mappings computed over an expression.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::tealquokka::domain::SightingStaging:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stationCode":"ST1","animalCode":"a1","bodyCondition":1,"tagState":"a","habitatCode":"h"},{"stationCode":"ST1","animalCode":"a2","bodyCondition":5,"tagState":"r","habitatCode":"w"},{"stationCode":"ST2","animalCode":"a3","bodyCondition":12,"tagState":"l","habitatCode":"d"},{"stationCode":"ST2","animalCode":"a4","bodyCondition":20,"tagState":"z","habitatCode":"z"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digestPerArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestKey":"ST1/A1","conditionBand":"BAND_1","tagStatus":"ACTIVE","habitat":"HEATH"},{"digestKey":"ST1/A2","conditionBand":"BAND_LOW","tagStatus":"RETIRED","habitat":"WOODLAND"},{"digestKey":"ST2/A3","conditionBand":"BAND_HIGH","tagStatus":"LOST","habitat":"DUNE"},{"digestKey":"ST2/A4","conditionBand":"BAND_OUT","tagStatus":"LOST","habitat":"DUNE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::quiettundra4::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of sky conditions recorded at the start of an observing run.'} test::quiettundra4::domain::SkyCondition
+{
+  PHOTOMETRIC,
+  CLEAR,
+  HAZY,
+  PARTLY_CLOUDY,
+  OVERCAST
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of instrument kinds an observing station can put on the sky.'} test::quiettundra4::domain::InstrumentKind
+{
+  REFRACTOR,
+  REFLECTOR,
+  ALL_SKY_CAMERA,
+  RADIO_DISH,
+  UNAIDED_EYE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of curatorial review outcomes for a catalogued observing log.'} test::quiettundra4::domain::ReviewOutcome
+{
+  ACCEPTED,
+  PROVISIONAL,
+  RETURNED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of cadences at which a catalogued target is revisited.'} test::quiettundra4::domain::WatchCadence
+{
+  NIGHTLY,
+  WEEKLY,
+  MONTHLY,
+  ON_ALERT
+}
+
+Class {meta::pure::profiles::doc.doc = 'An instrument an observing station can point at a target, identified by its instrument code.'} test::quiettundra4::domain::Instrument
+{
+  instrumentCode: String[1];
+  instrumentName: String[1];
+  instrumentKind: InstrumentKind[1];
+  apertureMillimetres: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A narrow-band filter fitted in front of an instrument for a given observing run.'} test::quiettundra4::domain::FilterSet
+{
+  filterCode: String[1];
+  filterName: String[1];
+  centralWavelengthNanometres: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A person named on an observing log, either as the observer or as the reviewing curator.'} test::quiettundra4::domain::Observer
+{
+  observerCode: String[1];
+  observerName: String[1];
+  homeStationCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The named place an observing run was made from, with the reserve the dark-sky site sits in.'} test::quiettundra4::domain::ObservingStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  reserveName: String[1];
+  latitudeDegrees: Float[1];
+  longitudeDegrees: Float[1];
+  elevationMetres: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared supertype of everything held in the observation catalogue: a log code, the night it was catalogued, its review outcome and the optional instrument, filter and curator references the validation constraints fold together.'} test::quiettundra4::domain::CatalogueLogRecord
+[
+  logCodeWellFormed: $this.logCode->startsWith('NS-') && ($this.logCode->length() >= 9),
+  returnedLogsCarryANote: ($this.reviewOutcome != ReviewOutcome.RETURNED) || $this.curatorNote->isNotEmpty(),
+  distinctAttributionTrailWithinLimit: $this.observer.observerCode->concatenate(if($this.primaryInstrument->isNotEmpty(), | $this.primaryInstrument->toOne().instrumentCode, | []))->concatenate(if($this.backupInstrument->isNotEmpty(), | $this.backupInstrument->toOne().instrumentCode, | []))->concatenate(if($this.fittedFilter->isNotEmpty(), | $this.fittedFilter->toOne().filterCode, | []))->concatenate(if($this.reviewingCurator->isNotEmpty(), | $this.reviewingCurator->toOne().observerCode, | []))->removeDuplicates()->size() <= 5,
+  reviewedLogsNameADistinctCurator: ($this.reviewOutcome == ReviewOutcome.PROVISIONAL) || ($this.reviewingCurator->map(c | $c.observerCode)->concatenate(if($this.observer.homeStationCode->isNotEmpty(), | $this.observer.homeStationCode->toOne()->toUpper(), | []))->removeDuplicates()->sort()->joinStrings('/')->length() >= 1)
+]
+{
+  logCode: String[1];
+  cataloguedOn: StrictDate[1];
+  reviewOutcome: ReviewOutcome[1];
+  curatorNote: String[0..1];
+  observer: Observer[1];
+  reviewingCurator: Observer[0..1];
+  primaryInstrument: Instrument[0..1];
+  backupInstrument: Instrument[0..1];
+  fittedFilter: FilterSet[0..1];
+  shortLabel() {$this.logCode + ' (' + $this.reviewOutcome->toString() + ')'}: String[1];
+  awaitingReview() {$this.reviewOutcome == ReviewOutcome.PROVISIONAL}: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An observing run made from a station under recorded sky conditions, extending the shared catalogue record with the seeing detail every sky watch shares.'} test::quiettundra4::domain::SkyWatchRecord extends CatalogueLogRecord
+[
+  darkSkyRunsAreNotOvercast: ($this.skyCondition != SkyCondition.OVERCAST) || ($this.seeingArcSeconds >= 4.0),
+  seeingIsPlausible: ($this.seeingArcSeconds > 0.0) && ($this.seeingArcSeconds <= 10.0)
+]
+{
+  station: ObservingStation[1];
+  observedOn: StrictDate[1];
+  skyCondition: SkyCondition[1];
+  seeingArcSeconds: Float[1];
+  limitingMagnitude: Float[1];
+  cadence: WatchCadence[1];
+  skyQualityBand() {if($this.limitingMagnitude >= 6.5, | 'PRISTINE', | if($this.limitingMagnitude >= 5.0, | 'RURAL', | 'SUBURBAN'))}: String[1];
+  runSummary() {$this.station.stationName + ' / ' + $this.skyCondition->toString() + ' @ ' + $this.seeingArcSeconds->toString() + '"'}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A meteor-shower watch, extending the sky watch with the counted meteors and the radiant it was counted against.'} test::quiettundra4::domain::MeteorWatch extends SkyWatchRecord
+[
+  countedMeteorsFitTheWatchLength: $this.meteorCount <= ($this.watchMinutes * 12),
+  radiantNamed: $this.radiantName->length() >= 3
+]
+{
+  radiantName: String[1];
+  meteorCount: Integer[1];
+  watchMinutes: Integer[1];
+  brightestMagnitude: Float[0..1];
+  meteorsPerHour() {($this.meteorCount * 60) / $this.watchMinutes}: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A variable-star watch, extending the sky watch with the estimated magnitudes of the catalogued target.'} test::quiettundra4::domain::VariableStarWatch extends SkyWatchRecord
+[
+  estimatesWithinPlausibleRange: $this.estimatedMagnitudes->filter(m | ($m < -2.0) || ($m > 16.0))->isEmpty(),
+  targetDesignationGiven: $this.targetDesignation->length() >= 4
+]
+{
+  targetDesignation: String[1];
+  estimatedMagnitudes: Float[*];
+  comparisonStarCodes: String[*];
+  confidencePercent: Integer[1];
+  estimateCount() {$this.estimatedMagnitudes->size()}: Integer[1];
+  comparisonTrail() {$this.comparisonStarCodes->removeDuplicates()->sort()->joinStrings(',')}: String[1];
+  confident() {$this.confidencePercent >= 80}: Boolean[1];
+}

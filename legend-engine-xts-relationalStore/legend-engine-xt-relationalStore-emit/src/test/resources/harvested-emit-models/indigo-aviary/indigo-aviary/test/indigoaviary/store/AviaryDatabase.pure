@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigoaviary::store::WindFarmDatabase
+(
+  Schema ops
+  (
+    Table unit_registry
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_date, BUS_THRU = thru_date)
+      )
+      unit_code VARCHAR(24) PRIMARY KEY,
+      unit_name VARCHAR(120) NOT NULL,
+      sector_code VARCHAR(24) NOT NULL,
+      turbine_kind VARCHAR(24) NOT NULL,
+      foundation_type VARCHAR(48),
+      blade_span_metres FLOAT,
+      platform_code VARCHAR(48),
+      water_depth_metres FLOAT,
+      from_date DATE NOT NULL,
+      thru_date DATE NOT NULL
+    )
+    Table nacelle_registry
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_date, BUS_THRU = thru_date)
+      )
+      nacelle_code VARCHAR(24) PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      model_name VARCHAR(80) NOT NULL,
+      condition_code VARCHAR(24) NOT NULL,
+      from_date DATE NOT NULL,
+      thru_date DATE NOT NULL
+    )
+    Table inspection_visit
+    (
+      visit_code VARCHAR(24) PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      visit_kind VARCHAR(24) NOT NULL,
+      visited_on DATE NOT NULL,
+      visit_note VARCHAR(200)
+    )
+    Table work_item
+    (
+      work_code VARCHAR(24) PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      work_state VARCHAR(24) NOT NULL,
+      opened_on DATE NOT NULL,
+      work_note VARCHAR(200)
+    )
+    Table downtime_event
+    (
+      event_code VARCHAR(24) PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      downtime_kind VARCHAR(24) NOT NULL,
+      started_on DATE NOT NULL,
+      duration_hours FLOAT NOT NULL
+    )
+  )
+  Schema telemetry
+  (
+    Table sensor_reading
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_date, PROCESSING_OUT = out_date)
+      )
+      reading_code VARCHAR(24) PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      sensor_code VARCHAR(24) NOT NULL,
+      reading_value FLOAT NOT NULL,
+      captured_on DATE NOT NULL,
+      condition_code VARCHAR(24),
+      in_date DATE NOT NULL,
+      out_date DATE NOT NULL
+    )
+    Table sensor_reading_archive
+    (
+      reading_code VARCHAR(24) PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      sensor_code VARCHAR(24) NOT NULL,
+      reading_value FLOAT NOT NULL,
+      captured_on DATE NOT NULL,
+      condition_code VARCHAR(24),
+      in_date DATE NOT NULL,
+      out_date DATE NOT NULL
+    )
+  )
+  Schema ref
+  (
+    Table site_sector
+    (
+      sector_code VARCHAR(24) PRIMARY KEY,
+      sector_name VARCHAR(120) NOT NULL,
+      region_name VARCHAR(120) NOT NULL
+    )
+    Table weather_snapshot
+    (
+      snapshot_code VARCHAR(24) PRIMARY KEY,
+      sector_code VARCHAR(24) NOT NULL,
+      observed_on DATE NOT NULL,
+      wind_speed_metres FLOAT NOT NULL
+    )
+    View sector_reading_summary
+    (
+      ~groupBy (ref.site_sector.sector_code)
+      sector_code: ref.site_sector.sector_code PRIMARY KEY,
+      reading_count: count(ref.site_sector.sector_code)
+    )
+  )
+  Filter ActiveUnit(ops.unit_registry.unit_code != '')
+  Filter CurrentReading(telemetry.sensor_reading.reading_value >= 0)
+  Join Unit_Nacelle(ops.unit_registry.unit_code = ops.nacelle_registry.unit_code)
+  Join Unit_Reading(ops.unit_registry.unit_code = telemetry.sensor_reading.unit_code)
+  Join Unit_Inspection(ops.unit_registry.unit_code = ops.inspection_visit.unit_code)
+  Join Unit_Work(ops.unit_registry.unit_code = ops.work_item.unit_code)
+  Join Unit_Downtime(ops.unit_registry.unit_code = ops.downtime_event.unit_code)
+  Join Unit_Sector(ops.unit_registry.sector_code = ref.site_sector.sector_code)
+  Join Sector_Weather(ref.site_sector.sector_code = ref.weather_snapshot.sector_code)
+  Join Sector_Summary(ref.site_sector.sector_code = ref.sector_reading_summary.sector_code)
+)

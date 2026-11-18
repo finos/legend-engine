@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietprairie4::mapping::PrairiePlotMapping
+(
+  test::quietprairie4::domain::BurnState: EnumerationMapping BurnStateCodeMapping
+  {
+    RECENT: ['R'],
+    RESTED: ['S', 'T'],
+    UNBURNT: ['U']
+  }
+
+  *test::quietprairie4::domain::GrassPlot[plot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietprairie4::store::PrairieDb]prairie.grass_plot.plot_id
+    )
+    ~mainTable [test::quietprairie4::store::PrairieDb]prairie.grass_plot
+    plotCode: [test::quietprairie4::store::PrairieDb]prairie.grass_plot.plot_code,
+    plotName: [test::quietprairie4::store::PrairieDb]prairie.grass_plot.plot_name,
+    seedKg: [test::quietprairie4::store::PrairieDb]prairie.grass_plot.seed_kg,
+    burnState: EnumerationMapping BurnStateCodeMapping: [test::quietprairie4::store::PrairieDb]prairie.grass_plot.burn_state_code,
+    tractName: [test::quietprairie4::store::PrairieDb]@Plot_Tract | [test::quietprairie4::store::PrairieDb]prairie.prairie_tract.tract_name
+  }
+
+  testSuites:
+  [
+    restedSeedPlotSuite:
+    {
+      function: |test::quietprairie4::domain::GrassPlot.all()->filter(
+  p|($p.seedKg >= 2.0) && ($p.burnState == test::quietprairie4::domain::BurnState.RESTED)
+)->project(
+  [
+    p|$p.plotCode,
+    p|$p.plotName,
+    p|$p.seedKg,
+    p|$p.tractName
+  ],
+  [
+    'PlotCode',
+    'PlotName',
+    'SeedKg',
+    'TractName'
+  ]
+)->distinct()->sort(
+  [
+    asc('PlotCode')
+  ]
+);
+      tests:
+      [
+        onlyTheRestedSeedPlot:
+        {
+          doc: 'Narrows the grassland plots to the well-yielding one standing in the rested burn state, so that one of the two codes folded onto that state is matched, a plot in another state is dropped, and the tract name is read across the single join hop.';
+          data:
+          [
+            test::quietprairie4::store::PrairieDb:
+              Relational
+              #{
+                prairie.prairie_tract:
+                  'tract_code,tract_name\n'+
+                  'TR-1,North Bluestem Tract\n'+
+                  'TR-2,South Sandhill Tract\n';
+
+                prairie.grass_plot:
+                  'plot_id,plot_code,plot_name,seed_kg,burn_state_code,tract_code\n'+
+                  '1,GP-01,Bluestem Rise,4.5,T,TR-1\n'+
+                  '2,GP-02,Sandhill Flat,3.0,R,TR-2\n'+
+                  '3,GP-03,Coneflower Dip,0.5,S,TR-1\n';
+              }#
+          ];
+          asserts:
+          [
+            oneRestedSeedPlot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"GP-01","PlotName":"Bluestem Rise","SeedKg":4.5,"TractName":"North Bluestem Tract"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

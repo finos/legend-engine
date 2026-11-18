@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::silverthistle2::dataspace::TrailNetworkDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'network';
+      description: 'Trail network context - the single trail mapping served through the single warehouse runtime.';
+      mapping: test::silverthistle2::mapping::TrailNetworkMapping;
+      defaultRuntime: test::silverthistle2::runtime::TrailNetworkRuntime;
+    }
+  ];
+  defaultExecutionContext: 'network';
+  title: 'Silver Thistle Alpine Trail Network';
+  description: 'Discovery surface over the alpine trail network: segments, the ranger stations that keep them, the regions above those stations and the patrol log behind each segment.';
+  elements:
+  [
+    test::silverthistle2::domain::TrailSegment,
+    test::silverthistle2::domain::RangerStation,
+    test::silverthistle2::domain::TrailRegion,
+    test::silverthistle2::domain::PatrolLog
+  ];
+  supportInfo: Email
+  {
+    address: 'trail-network-support-group';
+  };
+}

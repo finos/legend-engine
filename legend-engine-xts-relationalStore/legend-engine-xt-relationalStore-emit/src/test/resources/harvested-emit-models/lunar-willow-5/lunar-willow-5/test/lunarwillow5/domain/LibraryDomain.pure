@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One public-library catalogue record with a deliberately wide flat scalar shape: forty-eight descriptive strings, seven circulation integers, five physical or quality floats and four lifecycle timestamps.'} test::lunarwillow5::domain::CatalogueRecord
+{
+  catalogueCode: String[1];
+  title: String[1];
+  subtitle: String[1];
+  authorName: String[1];
+  imprintName: String[1];
+  editionLabel: String[1];
+  languageCode: String[1];
+  shelfMark: String[1];
+  collectionName: String[1];
+  branchName: String[1];
+  sectionName: String[1];
+  genreLabel: String[1];
+  formatLabel: String[1];
+  bindingLabel: String[1];
+  summaryText: String[1];
+  subjectHeading: String[1];
+  seriesLabel: String[1];
+  contributorName: String[1];
+  illustratorName: String[1];
+  translatorName: String[1];
+  publicationPlace: String[1];
+  publisherCode: String[1];
+  circulationStatus: String[1];
+  availabilityLabel: String[1];
+  audienceLabel: String[1];
+  readingLevel: String[1];
+  conditionLabel: String[1];
+  acquisitionSource: String[1];
+  callNumber: String[1];
+  barcodeValue: String[1];
+  recordStatus: String[1];
+  coverColor: String[1];
+  spineColor: String[1];
+  cataloguerNote: String[1];
+  displayNote: String[1];
+  searchKeywords: String[1];
+  alternateTitle: String[1];
+  originalLanguage: String[1];
+  countryOfOrigin: String[1];
+  donorName: String[1];
+  accessionNote: String[1];
+  reviewLabel: String[1];
+  routeLabel: String[1];
+  storageZone: String[1];
+  handlingNote: String[1];
+  replacementCode: String[1];
+  recordGroup: String[1];
+  classificationNote: String[1];
+  pageCount: Integer[1];
+  copyCount: Integer[1];
+  borrowingPeriodDays: Integer[1];
+  branchNumber: Integer[1];
+  shelfLevel: Integer[1];
+  volumeNumber: Integer[1];
+  printRun: Integer[1];
+  heightCm: Float[1];
+  widthCm: Float[1];
+  weightKg: Float[1];
+  readingScore: Float[1];
+  conditionScore: Float[1];
+  publishedAt: DateTime[1];
+  acquiredAt: DateTime[1];
+  lastReviewedAt: DateTime[1];
+  withdrawnAt: DateTime[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A short curator note attached to a catalogue record, stored in a secondary relation to exercise the multi-table store shape.'} test::lunarwillow5::domain::CatalogueNote
+{
+  noteCode: String[1];
+  catalogueCode: String[1];
+  noteText: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One circulation event associated with a catalogue record, stored in the second supporting relation.'} test::lunarwillow5::domain::CirculationEvent
+{
+  eventCode: String[1];
+  catalogueCode: String[1];
+  eventType: String[1];
+  eventAt: DateTime[1];
+}

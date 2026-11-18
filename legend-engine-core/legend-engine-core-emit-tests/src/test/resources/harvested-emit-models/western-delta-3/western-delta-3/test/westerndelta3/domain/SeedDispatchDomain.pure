@@ -1,0 +1,258 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::westerndelta3::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Where a seed-lot dispatch has reached in the nursery despatch desk workflow.'} test::westerndelta3::domain::DispatchStatus
+{
+  {meta::pure::profiles::doc.doc = 'Cleared by the despatch desk and handed to a courier run.'} RELEASED,
+  {meta::pure::profiles::doc.doc = 'Parked by the despatch desk until an outstanding query is answered.'} HELD,
+  {meta::pure::profiles::doc.doc = 'Lodged but not yet looked at by the despatch desk.'} LODGED,
+  {meta::pure::profiles::doc.doc = 'Withdrawn by the raising nursery before release.'} WITHDRAWN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Physical state of the packed crate carrying a seed-lot dispatch.'} test::westerndelta3::domain::DispatchState
+{
+  {meta::pure::profiles::doc.doc = 'Crate closed and tamper-taped, ready to travel.'} SEALED,
+  {meta::pure::profiles::doc.doc = 'Crate still open on the packing shelf.'} OPEN,
+  {meta::pure::profiles::doc.doc = 'Crate opened again after sealing so a lot could be pulled.'} REOPENED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Outcome recorded by the seed-health inspector for a dispatch.'} test::westerndelta3::domain::InspectionStatus
+{
+  {meta::pure::profiles::doc.doc = 'Inspector found nothing to raise.'} CLEAR,
+  {meta::pure::profiles::doc.doc = 'Inspector raised a finding that must be answered before release.'} FLAGGED,
+  {meta::pure::profiles::doc.doc = 'No inspector has looked at the dispatch yet.'} UNCHECKED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Handling method applied to a crate while it waits on the despatch floor.'} test::westerndelta3::domain::HandlingMethod
+{
+  {meta::pure::profiles::doc.doc = 'Held in a chilled cabinet.'} CHILLED,
+  {meta::pure::profiles::doc.doc = 'Held at shed temperature.'} AMBIENT,
+  {meta::pure::profiles::doc.doc = 'Held in a dried-air cabinet over desiccant.'} DESICCATED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Whether the paperwork releasing a dispatch to a courier has been signed.'} test::westerndelta3::domain::ReleaseStatus
+{
+  {meta::pure::profiles::doc.doc = 'Release note signed by the despatch supervisor.'} SIGNED,
+  {meta::pure::profiles::doc.doc = 'Release note prepared but unsigned.'} PENDING,
+  {meta::pure::profiles::doc.doc = 'Release note refused and returned to the packing shelf.'} REFUSED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Whether a crate label photograph is held against the dispatch.'} test::westerndelta3::domain::ImageAvailability
+{
+  {meta::pure::profiles::doc.doc = 'Label photograph captured and stored.'} STORED,
+  {meta::pure::profiles::doc.doc = 'Label photograph expected but not captured.'} MISSING,
+  {meta::pure::profiles::doc.doc = 'No label photograph is expected for this crate.'} NOT_REQUIRED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Grade of the outer packaging used for a crate.'} test::westerndelta3::domain::PackagingGrade
+{
+  {meta::pure::profiles::doc.doc = 'Rigid crate with a moisture liner.'} LINED_CRATE,
+  {meta::pure::profiles::doc.doc = 'Plain rigid crate.'} PLAIN_CRATE,
+  {meta::pure::profiles::doc.doc = 'Woven sack, used for bulk field seed only.'} SACK
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Storage class of the bay a crate is allocated to.'} test::westerndelta3::domain::StorageClass
+{
+  {meta::pure::profiles::doc.doc = 'Cold bay held below five degrees.'} COLD_BAY,
+  {meta::pure::profiles::doc.doc = 'Dry bay with controlled humidity.'} DRY_BAY,
+  {meta::pure::profiles::doc.doc = 'Open shelving on the despatch floor.'} OPEN_SHELF
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared identifier shape reused by every record in the seed-lot despatch graph: the issuing scheme and the value it issued.'} test::westerndelta3::domain::RecordIdentifier
+{
+  {meta::pure::profiles::doc.doc = 'Name of the scheme that issued the value, e.g. the nursery register or the courier manifest.'} scheme: String[1];
+  {meta::pure::profiles::doc.doc = 'The issued value itself, unique within its scheme.'} value: String[1];
+  {meta::pure::profiles::doc.doc = 'Scheme and value rendered as one readable token.'} qualified() {$this.scheme + ':' + $this.value}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A seed-lot dispatch: the hub record of the despatch graph, guarded by four cross-property rules pairing its optional flags and states against its despatch status.'} test::westerndelta3::domain::SeedDispatch
+[
+  coolChainAgreesWithStatus
+  (
+    ~function: ($this.coolChainRequired->isEmpty() ||
+                (($this.coolChainRequired->toOne() == true) && ($this.dispatchStatus == DispatchStatus.RELEASED))) ||
+               (($this.coolChainRequired->toOne() == false) && ($this.dispatchStatus == DispatchStatus.HELD))
+    ~enforcementLevel: Error
+    ~message: 'A dispatch that names a cool-chain requirement may only be released when the requirement is set, and may only be held when it is not'
+  ),
+  sealedCrateIsReleased
+  (
+    ~function: $this.dispatchState->isEmpty() ||
+               (($this.dispatchState->toOne() == DispatchState.SEALED) && ($this.dispatchStatus == DispatchStatus.RELEASED))
+    ~enforcementLevel: Error
+    ~message: 'A crate recorded as sealed must belong to a released dispatch'
+  ),
+  flaggedInspectionHoldsTheDispatch
+  (
+    ~function: $this.inspectionStatus->isEmpty() ||
+               (($this.inspectionStatus->toOne() == InspectionStatus.FLAGGED) && ($this.dispatchStatus == DispatchStatus.HELD))
+    ~enforcementLevel: Warn
+    ~message: 'A dispatch carrying a flagged seed-health inspection is expected to be held rather than released'
+  ),
+  signedReleaseNoteMatchesStatus
+  (
+    ~function: $this.releaseStatus->isEmpty() ||
+               (($this.releaseStatus->toOne() == ReleaseStatus.SIGNED) && ($this.dispatchStatus == DispatchStatus.RELEASED))
+    ~enforcementLevel: Error
+    ~message: 'A signed release note may only sit on a released dispatch'
+  )
+]
+{
+  {meta::pure::profiles::doc.doc = 'Identifier issued for this dispatch by the nursery register.'} dispatchIdentifier: RecordIdentifier[1];
+  {meta::pure::profiles::doc.doc = 'Where the dispatch has reached in the despatch desk workflow.'} dispatchStatus: DispatchStatus[1];
+  {meta::pure::profiles::doc.doc = 'Physical state of the packed crate, absent while the crate is still being made up.'} dispatchState: DispatchState[0..1];
+  {meta::pure::profiles::doc.doc = 'Outcome of the seed-health inspection, absent until an inspector has looked.'} inspectionStatus: InspectionStatus[0..1];
+  {meta::pure::profiles::doc.doc = 'State of the release note, absent until a note has been prepared.'} releaseStatus: ReleaseStatus[0..1];
+  {meta::pure::profiles::doc.doc = 'Whether the lots in this crate must travel chilled, absent when nobody has decided.'} coolChainRequired: Boolean[0..1];
+  {meta::pure::profiles::doc.doc = 'Whether a crate label photograph is held.'} labelImage: ImageAvailability[0..1];
+  {meta::pure::profiles::doc.doc = 'Start of the hand-rolled validity window of this dispatch record.'} validFrom: DateTime[0..1];
+  {meta::pure::profiles::doc.doc = 'End of the hand-rolled validity window of this dispatch record.'} validThrough: DateTime[0..1];
+  {meta::pure::profiles::doc.doc = 'Free-text note left by the despatch desk.'} deskNote: String[0..1];
+  {meta::pure::profiles::doc.doc = 'True when the as-of instant falls inside the inclusive validity window of this record; both bounds are optional, so a missing bound makes the comparison degenerate.'} inWindow(asOf: DateTime[1]) {($this.validFrom->toOne() <= $asOf) && ($this.validThrough->toOne() >= $asOf)}: Boolean[1];
+  {meta::pure::profiles::doc.doc = 'True when the crate was sealed and the record is still inside its validity window at the as-of instant; an unsealed crate is excused rather than rejected.'} sealedInWindow(asOf: DateTime[1]) {($this.dispatchState->isEmpty() || (($this.dispatchState->toOne() == DispatchState.SEALED) && $this.inWindow($asOf)))}: Boolean[1];
+  {meta::pure::profiles::doc.doc = 'Dispatch identifier and status rendered as one readable label.'} deskLabel() {$this.dispatchIdentifier.qualified() + ' / ' + $this.dispatchStatus->toString()}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A nursery that raises seed lots and lodges dispatches with the despatch desk.'} test::westerndelta3::domain::Nursery
+{
+  {meta::pure::profiles::doc.doc = 'Identifier issued for the nursery by the growers register.'} nurseryIdentifier: RecordIdentifier[1];
+  {meta::pure::profiles::doc.doc = 'Registered name of the nursery.'} nurseryName: String[1];
+  {meta::pure::profiles::doc.doc = 'Region the nursery sits in.'} region: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One seed lot on a dispatch, with the packed quantity and the packaging grade used for it.'} test::westerndelta3::domain::DispatchLine
+{
+  {meta::pure::profiles::doc.doc = 'Position of this lot within the dispatch.'} lineNumber: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Botanical name of the taxon the lot was collected from.'} taxonName: String[1];
+  {meta::pure::profiles::doc.doc = 'Packed weight of the lot in grams.'} packedGrams: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Grade of the outer packaging used for the lot.'} packaging: PackagingGrade[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A handling step applied to a crate while it waits on the despatch floor.'} test::westerndelta3::domain::HandlingComponent
+{
+  {meta::pure::profiles::doc.doc = 'Short code naming the handling step.'} componentCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Method applied by the step.'} method: HandlingMethod[0..1];
+  {meta::pure::profiles::doc.doc = 'Hours the step was applied for.'} appliedHours: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A seed-health inspection carried out against a dispatch.'} test::westerndelta3::domain::InspectionRecord
+{
+  {meta::pure::profiles::doc.doc = 'Identifier issued for the inspection by the inspectorate.'} inspectionIdentifier: RecordIdentifier[1];
+  {meta::pure::profiles::doc.doc = 'Outcome recorded by the inspector.'} outcome: InspectionStatus[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the inspector who signed the record.'} inspectorName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Instant the inspection was carried out.'} inspectedAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The bay a crate is allocated to while it waits for a courier run.'} test::westerndelta3::domain::StorageAllocation
+{
+  {meta::pure::profiles::doc.doc = 'Bay reference on the despatch floor plan.'} bayCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Storage class of the bay.'} storageClass: StorageClass[0..1];
+  {meta::pure::profiles::doc.doc = 'Shelf temperature of the bay in degrees.'} shelfTemperature: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A courier run collecting released crates from the despatch floor.'} test::westerndelta3::domain::CourierRun
+{
+  {meta::pure::profiles::doc.doc = 'Identifier issued for the run by the courier manifest.'} runIdentifier: RecordIdentifier[1];
+  {meta::pure::profiles::doc.doc = 'Instant the run left the despatch floor.'} departedAt: DateTime[0..1];
+  {meta::pure::profiles::doc.doc = 'Destination the run is bound for.'} destination: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A germination test drawn from one seed lot on a dispatch.'} test::westerndelta3::domain::GerminationSample
+{
+  {meta::pure::profiles::doc.doc = 'Reference of the sample drawn from the lot.'} sampleCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Seeds that germinated out of a hundred sown.'} germinatedPerHundred: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Instant the sample was sown on the test bench.'} sownAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The printed label sheet fixed to a crate, and the photograph held of it.'} test::westerndelta3::domain::LabelSheet
+{
+  {meta::pure::profiles::doc.doc = 'Reference printed at the foot of the label sheet.'} sheetCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Whether a photograph of the sheet is held.'} imageAvailability: ImageAvailability[0..1];
+  {meta::pure::profiles::doc.doc = 'Number of lots printed on the sheet.'} printedLines: Integer[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dispatch to the nursery that lodged it.'} test::westerndelta3::domain::Dispatch_Nursery
+{
+  {meta::pure::profiles::doc.doc = 'The nursery that lodged the dispatch, absent for a walk-in lodgement.'} raisingNursery: Nursery[0..1];
+  lodgedDispatches: SeedDispatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dispatch to the seed lots packed into it.'} test::westerndelta3::domain::Dispatch_Line
+{
+  {meta::pure::profiles::doc.doc = 'The lots packed into the dispatch.'} lines: DispatchLine[*];
+  parentDispatch: SeedDispatch[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dispatch to the handling steps applied to its crate.'} test::westerndelta3::domain::Dispatch_Handling
+{
+  handlingSteps: HandlingComponent[*];
+  handledDispatch: SeedDispatch[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dispatch to the seed-health inspections raised against it.'} test::westerndelta3::domain::Dispatch_Inspection
+{
+  inspections: InspectionRecord[*];
+  inspectedDispatch: SeedDispatch[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dispatch to the bay its crate waits in.'} test::westerndelta3::domain::Dispatch_Storage
+{
+  allocation: StorageAllocation[0..1];
+  storedDispatches: SeedDispatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dispatch to the courier run that collected it.'} test::westerndelta3::domain::Dispatch_Courier
+{
+  collectingRun: CourierRun[0..1];
+  collectedDispatches: SeedDispatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dispatch to the label sheet fixed to its crate.'} test::westerndelta3::domain::Dispatch_Label
+{
+  labelSheet: LabelSheet[0..1];
+  labelledDispatches: SeedDispatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a packed lot to the germination samples drawn from it.'} test::westerndelta3::domain::Line_Sample
+{
+  samples: GerminationSample[*];
+  sampledLine: DispatchLine[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a packed lot to the handling steps that named it.'} test::westerndelta3::domain::Line_Handling
+{
+  lineHandlingSteps: HandlingComponent[*];
+  handledLine: DispatchLine[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a nursery to the courier runs that serve it.'} test::westerndelta3::domain::Nursery_Courier
+{
+  servingRuns: CourierRun[*];
+  servedNursery: Nursery[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links an inspection to the germination samples it relied on.'} test::westerndelta3::domain::Inspection_Sample
+{
+  citedSamples: GerminationSample[*];
+  citingInspection: InspectionRecord[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a bay to the label sheets printed for the crates it holds.'} test::westerndelta3::domain::Storage_Label
+{
+  baySheets: LabelSheet[*];
+  holdingBay: StorageAllocation[0..1];
+}

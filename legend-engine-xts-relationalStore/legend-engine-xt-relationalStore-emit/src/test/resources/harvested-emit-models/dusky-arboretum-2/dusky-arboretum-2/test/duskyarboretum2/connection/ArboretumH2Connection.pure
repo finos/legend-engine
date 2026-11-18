@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::duskyarboretum2::connection::ArboretumH2Connection
+{
+  store: test::duskyarboretum2::store::ArboretumDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists arboretum;',
+      'create schema arboretum;',
+      'create table arboretum.grove (grove_id integer primary key, grove_name varchar(200) not null);',
+      'create table arboretum.specimen (specimen_id integer, label varchar(200) not null, health_rating integer not null, grove_id integer not null, from_z date, thru_z date);',
+      'insert into arboretum.grove values (1, \'North Grove\');',
+      'insert into arboretum.specimen values (1, \'Copper Beech\', 7, 1, DATE \'2023-01-01\', DATE \'2023-06-01\');',
+      'insert into arboretum.specimen values (1, \'Copper Beech\', 9, 1, DATE \'2023-06-01\', DATE \'9999-12-31\');'
+      ];
+  };
+  auth: DefaultH2;
+}

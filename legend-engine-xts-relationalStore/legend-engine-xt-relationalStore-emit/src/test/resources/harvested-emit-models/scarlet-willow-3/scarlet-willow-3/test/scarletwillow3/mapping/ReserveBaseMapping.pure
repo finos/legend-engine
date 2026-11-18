@@ -1,0 +1,260 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletwillow3::mapping::ReserveBaseMapping
+(
+  include mapping test::scarletwillow3::mapping::ReserveEnumMappings
+
+  *test::scarletwillow3::domain::ReserveSite[site]: Relational
+  {
+    ~filter [test::scarletwillow3::store::ReserveWarehouseDB]ActiveSiteFilter
+    ~primaryKey
+    (
+      [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.reserve_site.site_id
+    )
+    ~mainTable [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.reserve_site
+    entityCode: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.reserve_site.site_id,
+    siteName: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.reserve_site.site_name,
+    status: EnumerationMapping SiteStatusMapping: toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.reserve_site.status_code)),
+    regionName: [test::scarletwillow3::store::ReserveWarehouseDB]@Site_Region | [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.region.region_name
+  }
+
+  *test::scarletwillow3::domain::SiteLink[siteLink]: Relational
+  {
+    ~filter [test::scarletwillow3::store::ReserveWarehouseDB]NonSelfLinkFilter
+    ~primaryKey
+    (
+      [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.site_link.child_site_id,
+      [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.site_link.parent_site_id
+    )
+    ~mainTable [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.site_link
+    entityCode: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.site_link.child_site_id,
+    parentSiteId: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.site_link.parent_site_id
+  }
+
+  *test::scarletwillow3::domain::Observer[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.observer.observer_id
+    )
+    ~mainTable [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.observer
+    entityCode: [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.observer.observer_id,
+    observerName: [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.observer.observer_name,
+    roleCode: [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.observer.role_code
+  }
+
+  *test::scarletwillow3::domain::HabitatPatch[patch]: Relational
+  {
+    ~filter [test::scarletwillow3::store::ReserveWarehouseDB]WetPatchFilter
+    ~primaryKey
+    (
+      [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.patch_id
+    )
+    ~mainTable [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch
+    entityCode: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.patch_id,
+    patchCode: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.patch_code,
+    habitatKind: EnumerationMapping HabitatKindMapping: concat(
+                   concat(
+                     case(
+                       equal(toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.habitat_code)), 'WILLOW CARR'),
+                       'CARR',
+                       toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.habitat_code))
+                     ),
+                     '/'
+                   ),
+                   case(
+                     greaterThan([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.wetness_pct, 40),
+                     'WET',
+                     'DRY'
+                   )
+                 ),
+    scrubDensity: EnumerationMapping ScrubDensityMapping: case(
+                    equal(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.scrub_code), ''),
+                    sqlNull(),
+                    case(
+                      equal(toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.scrub_code)), 'D'),
+                      'DENSE/HIGH',
+                      case(
+                        equal(toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.scrub_code)), 'S'),
+                        'SCATTERED/MID',
+                        'OPEN/LOW'
+                      )
+                    )
+                  ),
+    areaHectares: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.area_hectares,
+    wetnessPct: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.wetness_pct,
+    handlingNote: case(
+                    greaterThan([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.wetness_pct, 80),
+                    concat('BOARDWALK-', toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.patch_code))),
+                    case(
+                      greaterThan([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.area_hectares, 4.0),
+                      'WIDE ACCESS',
+                      case(
+                        equal(toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.scrub_code)), 'D'),
+                        'CUT BACK',
+                        sqlNull()
+                      )
+                    )
+                  ),
+    displayLabel: concat(
+                    concat(
+                      toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.patch_code)),
+                      '-'
+                    ),
+                    toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.habitat_code))
+                  ),
+    schemeName: 'RESERVE-SCHEME-1',
+    wardenName: [test::scarletwillow3::store::ReserveWarehouseDB]@Patch_Site > @Site_Region > @Region_Warden | [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.warden.warden_name,
+    sitePatchCount: [test::scarletwillow3::store::ReserveWarehouseDB]@Patch_Site > @Site_Yield | [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.site_yield_view.patch_count,
+    siteAreaHectares: [test::scarletwillow3::store::ReserveWarehouseDB]@Patch_Site > @Site_Yield | [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.site_yield_view.total_area_hectares,
+    drainageNote: [test::scarletwillow3::store::ReserveWarehouseDB]@Patch_Drainage | [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.patch_attribute.attribute_value
+  }
+
+  test::scarletwillow3::domain::PeatPatch[peatPatch] extends [patch]: Relational
+  {
+    ~filter [test::scarletwillow3::store::ReserveWarehouseDB]PeatPatchFilter
+    ~primaryKey
+    (
+      [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.patch_id
+    )
+    ~mainTable [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch
+    peatDepthCm: [test::scarletwillow3::store::ReserveWarehouseDB]reserve_core.habitat_patch.peat_depth_cm
+  }
+
+  *test::scarletwillow3::domain::SurveyVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.visit_id
+    )
+    ~mainTable [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit
+    entityCode: [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.visit_id,
+    visitCode: [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.visit_code,
+    visitKind: EnumerationMapping VisitKindMapping: case(
+                 greaterThan([test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.species_count, 8),
+                 'TRANSECT/LINE',
+                 case(
+                   equal(toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.visit_code_kind)), 'FP'),
+                   'FIXEDPOINT/GRID',
+                   'WALKOVER/FOOT'
+                 )
+               ),
+    speciesCount: [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.species_count,
+    remarkText: case(
+                  equal(trim([test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.remark_text), ''),
+                  sqlNull(),
+                  concat('NOTE:', toUpper(trim([test::scarletwillow3::store::ReserveWarehouseDB]survey_core.survey_visit.remark_text)))
+                ),
+    observerName: [test::scarletwillow3::store::ReserveWarehouseDB]@Visit_Observer | [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.observer.observer_name,
+    teamName: [test::scarletwillow3::store::ReserveWarehouseDB]@Visit_Observer > @Observer_Team | [test::scarletwillow3::store::ReserveWarehouseDB]survey_core.observer_team.team_name
+  }
+
+  test::scarletwillow3::domain::Patch_Site: Relational
+  {
+    AssociationMapping
+    (
+      site[patch, site]: [test::scarletwillow3::store::ReserveWarehouseDB]@Patch_Site,
+      sitePatches[site, patch]: [test::scarletwillow3::store::ReserveWarehouseDB]@Patch_Site
+    )
+  }
+
+  test::scarletwillow3::domain::Visit_Patch: Relational
+  {
+    AssociationMapping
+    (
+      patch[visit, patch]: [test::scarletwillow3::store::ReserveWarehouseDB]@Visit_Patch,
+      visits[patch, visit]: [test::scarletwillow3::store::ReserveWarehouseDB]@Visit_Patch
+    )
+  }
+
+  test::scarletwillow3::domain::Visit_Observer: Relational
+  {
+    AssociationMapping
+    (
+      observer[visit, observer]: [test::scarletwillow3::store::ReserveWarehouseDB]@Visit_Observer,
+      observedVisits[observer, visit]: [test::scarletwillow3::store::ReserveWarehouseDB]@Visit_Observer
+    )
+  }
+
+  testSuites:
+  [
+    patchTransformSuite:
+    {
+      function: |test::scarletwillow3::domain::HabitatPatch.all(%2026-06-01)->project(
+        [
+          col(p|$p.patchCode, 'PatchCode'),
+          col(p|$p.habitatKind, 'HabitatKind'),
+          col(p|$p.scrubDensity, 'ScrubDensity'),
+          col(p|$p.displayLabel, 'DisplayLabel'),
+          col(p|$p.handlingNote, 'HandlingNote'),
+          col(p|$p.schemeName, 'Scheme'),
+          col(p|$p.wardenName, 'Warden'),
+          col(p|$p.sitePatchCount, 'SitePatches'),
+          col(p|$p.drainageNote, 'Drainage'),
+          col(p|$p.areaBand(), 'AreaBand')
+        ]
+      )->sort([asc('PatchCode')]);
+      tests:
+      [
+        derivedColumns:
+        {
+          doc: 'Projects the conditional, string-built, literal, enum-of-expression, view-backed and three-hop columns of the patches recorded at one processing instant, with an out-of-window row, an unmapped habitat code, a blank scrub code and a patch whose site has no warden.';
+          data:
+          [
+            test::scarletwillow3::store::ReserveWarehouseDB:
+              Relational
+              #{
+                reserve_core.warden:
+                  'warden_code,warden_name,contact_kind\n'+
+                  'WD-1,Ash Warden,RADIO\n';
+                reserve_core.region:
+                  'region_code,region_name,warden_code\n'+
+                  'RG-1,Northern Levels,WD-1\n'+
+                  'RG-2,Southern Levels,WD-9\n';
+                reserve_core.reserve_site:
+                  'site_id,site_name,region_code,status_code,deactivated_on\n'+
+                  'ST-1,Willow Carr Reserve,RG-1,ACTIVE,\n'+
+                  'ST-2,Reed Levels Reserve,RG-2,ACTIVE,\n';
+                reserve_core.habitat_patch:
+                  'patch_id,patch_code,site_id,habitat_code,scrub_code,area_hectares,wetness_pct,peat_depth_cm,in_z,out_z\n'+
+                  'HP-1,hp-1,ST-1,willow carr,D,6.5,35,120,2026-01-01,9999-12-31\n'+
+                  'HP-2,hp-2,ST-1,fen, ,1.5,85,,2026-01-01,9999-12-31\n'+
+                  'HP-3,hp-3,ST-2,scrubland,O,3.0,12,,2026-01-01,9999-12-31\n'+
+                  'HP-4,hp-4,ST-2,fen,S,2.0,25,,2020-01-01,2021-01-01\n';
+                survey_core.patch_attribute:
+                  'patch_id,attribute_id,attribute_value\n'+
+                  'HP-1,7,DITCH CLEARED\n'+
+                  'HP-2,9,PUMP FITTED\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PatchCode": "hp-1", "HabitatKind": "CARR", "ScrubDensity": "DENSE", "DisplayLabel": "HP-1-WILLOW CARR", "HandlingNote": "WIDE ACCESS", "Scheme": "RESERVE-SCHEME-1", "Warden": "Ash Warden", "SitePatches": 2, "Drainage": "DITCH CLEARED", "AreaBand": "LARGE"}, {"PatchCode": "hp-2", "HabitatKind": "FEN", "ScrubDensity": null, "DisplayLabel": "HP-2-FEN", "HandlingNote": "BOARDWALK-HP-2", "Scheme": "RESERVE-SCHEME-1", "Warden": "Ash Warden", "SitePatches": 2, "Drainage": null, "AreaBand": "SMALL"}, {"PatchCode": "hp-3", "HabitatKind": null, "ScrubDensity": "OPEN", "DisplayLabel": "HP-3-SCRUBLAND", "HandlingNote": null, "Scheme": "RESERVE-SCHEME-1", "Warden": null, "SitePatches": 1, "Drainage": null, "AreaBand": "MEDIUM"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

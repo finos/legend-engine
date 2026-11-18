@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarlagoon3::service::GaugeLevelBoard
+{
+  pattern: '/lunarlagoon/v1/level-board/{asOf}/{districtCodes}/{minLevelCm}';
+  title: 'Tidewatch - Gauge Level Board';
+  documentation: 'Lists the accepted gauge readings taken in the requested districts inside the week that closes on the requested day, dropping the spare sensors and the readings below the requested level, so the generated plan carries a folded date window beside a set membership test and a join bound district label.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['tidewatch-survey-desk'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], districtCodes: String[*], minLevelCm: Integer[1]|test::lunarlagoon3::domain::GaugeReading.all()->filter(
+      r|($r.districtCode->toOne()->in($districtCodes)) && ((!($r.sensorCode->in(['XS-1', 'XS-2']))) && (($r.readingState == 'ACCEPTED') && (($r.takenOn >= $asOf->adjust(-7, meta::pure::functions::date::DurationUnit.DAYS)) && (($r.takenOn <= $asOf) && ($r.waterLevelCm >= $minLevelCm)))))
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.stationName,
+        r|$r.districtCode,
+        r|$r.waterLevelCm,
+        r|$r.salinityPpt
+      ],
+      [
+        'Reading',
+        'Station',
+        'District',
+        'LevelCm',
+        'SalinityPpt'
+      ]
+    )->sort(
+      [
+        asc('Reading')
+      ]
+    )};
+    mapping: test::lunarlagoon3::mapping::GaugeMapping;
+    runtime: test::lunarlagoon3::runtime::GaugeH2Runtime;
+  }
+  testSuites:
+  [
+    levelBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection: Reference
+            #{
+              test::lunarlagoon3::data::GaugeTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        readingsInsideTheWeekWindowOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-07-05,
+            districtCodes = ['DC-N', 'DC-S'],
+            minLevelCm = 80
+          ]
+          asserts:
+          [
+            olderRejectedAndSpareSensorReadingsAllFallAway:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"GR-01","Station":"North Weir","District":"DC-N","LevelCm":180,"SalinityPpt":12},{"Reading":"GR-03","Station":"Reed Cut","District":"DC-S","LevelCm":90,"SalinityPpt":18}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

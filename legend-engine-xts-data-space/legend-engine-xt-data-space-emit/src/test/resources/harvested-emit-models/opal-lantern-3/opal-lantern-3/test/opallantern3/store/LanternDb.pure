@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::opallantern3::store::LanternDb
+(
+  Schema lantern
+  (
+    Table lamp_unit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      unit_code VARCHAR(16) PRIMARY KEY,
+      station_name VARCHAR(128) NOT NULL,
+      lens_grade VARCHAR(24) NOT NULL,
+      keeper_code VARCHAR(16),
+      focal_height_m FLOAT,
+      rated_candela DECIMAL(11, 2),
+      commissioned_on DATE,
+      surveyed_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table service_visit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      visit_code VARCHAR(16) PRIMARY KEY,
+      unit_code VARCHAR(16) NOT NULL,
+      technician_name VARCHAR(128) NOT NULL,
+      outcome_code VARCHAR(24) NOT NULL,
+      duration_hours FLOAT,
+      visited_on DATE,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table lamp_keeper
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      keeper_code VARCHAR(16) PRIMARY KEY,
+      keeper_name VARCHAR(128) NOT NULL,
+      district_name VARCHAR(128) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Join Lantern_Unit_Keeper(lantern.lamp_unit.keeper_code = lantern.lamp_keeper.keeper_code)
+  Join Lantern_Unit_Visit(lantern.service_visit.unit_code = lantern.lamp_unit.unit_code)
+)

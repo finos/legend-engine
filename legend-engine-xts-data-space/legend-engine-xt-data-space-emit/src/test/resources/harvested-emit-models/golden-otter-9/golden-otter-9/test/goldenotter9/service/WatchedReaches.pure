@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter9::service::WatchedReaches
+{
+  pattern: '/goldenotter9/v1/reaches/watched';
+  title: 'Otter Sanctuary - Watched Reaches';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the reaches holding at least one holt that has any sighting, nesting a non-empty test inside an existence test over two to-many hops, and deduplicates the rows.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::goldenotter9::domain::RiverReach.all()->filter(
+      r|$r.holts->exists(h|$h.sightings->isNotEmpty())
+    )->project(
+      [
+        r|$r.reachCode,
+        r|$r.reachName,
+        r|$r.catchmentName,
+        r|$r.flowBand
+      ],
+      [
+        'Reach',
+        'Name',
+        'Catchment',
+        'Flow'
+      ]
+    )->distinct()->sort([asc('Reach')]);
+    mapping: test::goldenotter9::mapping::SanctuaryMapping;
+    runtime: test::goldenotter9::runtime::SanctuaryRuntime;
+  }
+  testSuites:
+  [
+    watchedReachesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryWarehouse:
+            Reference
+            #{
+              test::goldenotter9::data::SanctuaryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        reachesWithSightedHolts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoWatchedReaches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reach":"RR-1","Name":"Tamar Upper","Catchment":"Tamar","Flow":"FAST"},{"Reach":"RR-2","Name":"Wye Middle","Catchment":"Wye","Flow":"MODERATE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

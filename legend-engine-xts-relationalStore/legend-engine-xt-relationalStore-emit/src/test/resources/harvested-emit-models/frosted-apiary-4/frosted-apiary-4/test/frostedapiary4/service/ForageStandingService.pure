@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedapiary4::service::ForageStandingService
+{
+  pattern: '/frostedapiary4/v1/hive/forage-standing';
+  title: 'Frosted Apiary - Forage Standing';
+  owners:
+  [
+    'apiary-register-platform',
+    'forage-survey-eng'
+  ];
+  documentation: 'Single-execution service projecting every hive live at a caller-supplied processing instant with a caller-prefixed forage label and a frame-count band evaluated against a caller-supplied threshold, so all three parameters are bound into the generated plan.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], zonePrefix: String[1], minFrames: Integer[1]|test::frostedapiary4::domain::Hive.all($asOf)->project(
+      [
+        col(
+          h|$h.hiveName,
+          'HiveName'
+        ),
+        col(
+          h|$zonePrefix + $h.zoneLabel(),
+          'ZoneLabel'
+        ),
+        col(
+          h|if($h.frameCount >= $minFrames, | 'AT_OR_ABOVE', | 'BELOW'),
+          'FrameBand'
+        )
+      ]
+    )->sort([asc('HiveName')])};
+    mapping: test::frostedapiary4::mapping::ApiaryMapping;
+    runtime: test::frostedapiary4::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    forageStandingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryConnection:
+            Relational
+            #{
+              apiary.hive:
+                'hive_id,hive_name,forage_zone,frame_count,queen_tag,audit_note,in_z,out_z\n'+
+                '1,Clover Row,ORCHARD,24,QT-1,frames drawn,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '2,Willow Verge,MEADOW,12,,,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '3,Bramble End,HEATHLAND,6,QT-3,split performed,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '4,Retired Skep,ORCHARD,30,QT-4,decommissioned,2024-01-01 00:00:00,2024-06-01 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        prefixedLabelsAndThresholdBands:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2025-06-15T00:00:00,
+            zonePrefix = 'apiary:',
+            minFrames = 15
+          ]
+          asserts:
+          [
+            standingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HiveName":"Bramble End","ZoneLabel":"apiary:heathland/Bramble End","FrameBand":"BELOW"},{"HiveName":"Clover Row","ZoneLabel":"apiary:orchard/Clover Row","FrameBand":"AT_OR_ABOVE"},{"HiveName":"Willow Verge","ZoneLabel":"apiary:meadow/Willow Verge","FrameBand":"BELOW"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

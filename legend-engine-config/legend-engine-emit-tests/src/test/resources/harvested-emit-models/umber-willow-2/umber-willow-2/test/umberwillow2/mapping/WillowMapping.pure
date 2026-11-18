@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberwillow2::mapping::WillowMapping
+(
+  *test::umberwillow2::domain::NurseryScheme[scheme]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberwillow2::store::WillowDB]riparian.scheme.scheme_id
+    )
+    ~mainTable [test::umberwillow2::store::WillowDB]riparian.scheme
+    schemeName: [test::umberwillow2::store::WillowDB]riparian.scheme.scheme_name,
+    steward: [test::umberwillow2::store::WillowDB]riparian.scheme.steward
+  }
+
+  *test::umberwillow2::domain::StandDesignation[designation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberwillow2::store::WillowDB]riparian.designation.designation_id
+    )
+    ~mainTable [test::umberwillow2::store::WillowDB]riparian.designation
+    designationCode: [test::umberwillow2::store::WillowDB]riparian.designation.designation_code,
+    schemeRef: [test::umberwillow2::store::WillowDB]riparian.designation.scheme_ref
+  }
+
+  *test::umberwillow2::domain::WillowStand[stand]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberwillow2::store::WillowDB]riparian.stand.stand_id
+    )
+    ~mainTable [test::umberwillow2::store::WillowDB]riparian.stand
+    standCode: [test::umberwillow2::store::WillowDB]riparian.stand.stand_code,
+    cloneName: [test::umberwillow2::store::WillowDB]riparian.stand.clone_name,
+    canopyHeightM: [test::umberwillow2::store::WillowDB]riparian.stand.canopy_height_m,
+    reachZone: [test::umberwillow2::store::WillowDB]riparian.stand.reach_zone
+  }
+
+  *test::umberwillow2::domain::CanopySection[section]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberwillow2::store::WillowDB]riparian.section.section_id
+    )
+    ~mainTable [test::umberwillow2::store::WillowDB]riparian.section
+    sectionCode: [test::umberwillow2::store::WillowDB]riparian.section.section_code,
+    stemCount: [test::umberwillow2::store::WillowDB]riparian.section.stem_count
+  }
+
+  *test::umberwillow2::domain::SurveyReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberwillow2::store::WillowDB]riparian.reading.reading_id
+    )
+    ~mainTable [test::umberwillow2::store::WillowDB]riparian.reading
+    readingRef: [test::umberwillow2::store::WillowDB]riparian.reading.reading_ref,
+    soilMoisturePct: [test::umberwillow2::store::WillowDB]riparian.reading.soil_moisture_pct
+  }
+
+  *test::umberwillow2::domain::NurseryBatch[batch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberwillow2::store::WillowDB]riparian.batch.batch_id
+    )
+    ~mainTable [test::umberwillow2::store::WillowDB]riparian.batch
+    batchRef: [test::umberwillow2::store::WillowDB]riparian.batch.batch_ref,
+    cuttingCount: [test::umberwillow2::store::WillowDB]riparian.batch.cutting_count
+  }
+)

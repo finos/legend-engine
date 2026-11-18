@@ -1,0 +1,64 @@
+name: zephyr-gecko-4
+title: "Terrarium Feeding Tally — Single-Execution Service Pair with Hop-Reached Grouping Keys"
+description: |
+  A reptile-house husbandry corpus whose feeding-event fact class is aggregated
+  by two single-execution services that share one mapping and runtime. One takes
+  a mandatory lower-bound date, excludes three feeding modes of an enumerated
+  attribute through three separate negated equalities inside a right-nested
+  ten-level conjunction, pins the refusal count to one, rejects the current date,
+  and groups on nine keys reached through to-one hops into four dimensions
+  (three of them attributes of the same enclosure dimension) while summing six
+  unit measures. The other takes no parameter, pins its population to the single
+  day obtained by shifting the current date backwards by a fixed day count, and
+  groups on three keys - one reached through two chained hops from enclosure into
+  room - while summing two measures. Column labels are hierarchical strings
+  mirroring the hop path, so grouping width is what distinguishes the two result
+  shapes. The optional diet hop is left-outer joined, so an event with no diet
+  reference contributes a group whose keys are empty.
+
+modelSources:
+  model:
+    root: zephyr-gecko-4
+    files:
+      - test/zephyrgecko4/connection/TerrariumH2Connection.pure
+      - test/zephyrgecko4/domain/TerrariumDomain.pure
+      - test/zephyrgecko4/mapping/TerrariumMapping.pure
+      - test/zephyrgecko4/runtime/TerrariumRuntime.pure
+      - test/zephyrgecko4/service/FeedingTallyFromDate.pure
+      - test/zephyrgecko4/service/FeedingTallyRelativeDay.pure
+      - test/zephyrgecko4/store/TerrariumDB.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-left-outer-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - date-arithmetic
+  - enumeration
+  - group-by
+  - h2
+  - husbandry
+  - relative-date
+  - service-test
+  - terrarium
+  - to-one-hop

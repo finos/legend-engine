@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+function test::easternquokka4::function::labelForBand(band: String[1]): String[0..1]
+{
+  if($band == 'CORE', |'core-route', |if($band == 'FLEX', |'flex-route', |[]))
+}
+
+function test::easternquokka4::function::routeLabel(band: String[1]): String[0..1]
+{
+  test::easternquokka4::function::labelForBand($band)
+}
+
+function test::easternquokka4::function::riderCount(count: Integer[1]): Integer[1]
+{
+  if($count >= 20, |$count * 2, |$count + 3)
+}
+
+function test::easternquokka4::function::schoolRoute(school: String[1], route: String[1]): String[1]
+{
+  $school->toUpper() + '/' + $route->toUpper()
+}
+
+function test::easternquokka4::function::driverRoute(driver: String[1], route: String[1]): String[1]
+{
+  $driver->toUpper() + '/' + $route->toUpper()
+}
+
+function test::easternquokka4::function::routePriority(band: String[1]): Integer[1]
+{
+  if($band == 'CORE', |1, |if($band == 'FLEX', |2, |3))
+}
+
+function test::easternquokka4::function::wideRouteRows(): meta::pure::metamodel::relation::Relation<(Assignment:String[1], Route:String[1], School:String[1], Driver:String[1], Riders:Integer[1], Band:String[1], Label:String[0..1])>[1]
+{
+  test::easternquokka4::domain::RouteAssignment.all()->filter(
+    r|$r.riderCount >= 10
+  )->project(
+    ~[
+      Assignment: r|$r.assignmentCode,
+      Route: r|$r.routeCode,
+      School: r|$r.schoolCode,
+      Driver: r|$r.driverCode,
+      Riders: r|test::easternquokka4::function::riderCount($r.riderCount),
+      Band: r|$r.serviceBand,
+      Label: r|test::easternquokka4::function::routeLabel($r.serviceBand)
+    ]
+  )
+}
+
+function test::easternquokka4::function::activeRosterRows(processingDate: StrictDate[1]): meta::pure::metamodel::relation::Relation<(Assignment:String[1], Route:String[1], School:String[1], Driver:String[1], Riders:Integer[1], Band:String[1], Label:String[0..1])>[1]
+{
+  test::easternquokka4::domain::RouteAssignment.all($processingDate)->filter(
+    r|$r.riderCount >= 10 && $r.serviceBand->in(['CORE', 'FLEX'])
+  )->filter(
+    r|$r.routeCode->in(['ROUTE-6', 'ROUTE-7', 'ROUTE-8', 'ROUTE-9']) && $r.schoolCode != 'SCHOOL-Z'
+  )->project(
+    ~[
+      Assignment: r|$r.assignmentCode,
+      Route: r|test::easternquokka4::function::schoolRoute($r.schoolCode, $r.routeCode),
+      School: r|$r.schoolCode,
+      Driver: r|test::easternquokka4::function::driverRoute($r.driverCode, $r.routeCode),
+      Riders: r|test::easternquokka4::function::riderCount($r.riderCount),
+      Band: r|$r.serviceBand,
+      Label: r|test::easternquokka4::function::routeLabel($r.serviceBand)
+    ]
+  )
+}

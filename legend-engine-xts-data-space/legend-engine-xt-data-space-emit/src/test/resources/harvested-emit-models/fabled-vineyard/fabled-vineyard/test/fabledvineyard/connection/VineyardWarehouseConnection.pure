@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::fabledvineyard::connection::VineyardWarehouseConnection
+{
+  store: test::fabledvineyard::store::VineyardDb;
+  type: Snowflake;
+  quoteIdentifiers: true;
+  specification: Snowflake
+  {
+    name: 'VINEYARD_TRELLIS_DB';
+    account: 'vineyard_trellis_account';
+    warehouse: 'VINEYARD_TRELLIS_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'vineyard_estate';
+    role: 'VINEYARD_TRELLIS_ROLE';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'VINEYARD_TRELLIS_READER';
+    privateKeyVaultReference: 'vineyard-trellis-private-key';
+    passPhraseVaultReference: 'vineyard-trellis-pass-phrase';
+  };
+}

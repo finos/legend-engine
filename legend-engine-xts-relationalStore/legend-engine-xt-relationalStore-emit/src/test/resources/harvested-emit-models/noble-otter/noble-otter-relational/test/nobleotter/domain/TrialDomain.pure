@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::nobleotter::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Soil classification recorded for a trial plot.'} test::nobleotter::domain::SoilClass
+{
+  LOAM,
+  CLAY,
+  SILT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Crop family a trial plot is sown with.'} test::nobleotter::domain::CropForm
+{
+  CEREAL,
+  LEGUME
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Reporting form a nutrient line belongs to.'} test::nobleotter::domain::ReportForm
+{
+  DRAFT,
+  FINAL
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Season a plot observation was rounded up in.'} test::nobleotter::domain::SurveyRound
+{
+  SPRING,
+  AUTUMN
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A trial plot observation valid over a business window, banded from the aggregated sample readings.'} test::nobleotter::domain::PlotObservation
+{
+  plotCode: String[1];
+  soilClass: SoilClass[1];
+  cropForm: CropForm[1];
+  surveyRound: SurveyRound[1];
+  soilLabel: String[1];
+  moistureFlag: String[1];
+  nutrientBand: String[0..1];
+  nitrateTotal: Integer[0..1];
+  loadTotal: Integer[0..1];
+  regionName: String[0..1];
+  blockFlag: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A cereal trial plot observation.'} test::nobleotter::domain::CerealObservation extends test::nobleotter::domain::PlotObservation
+{
+  grainScore: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A legume trial plot observation.'} test::nobleotter::domain::LegumeObservation extends test::nobleotter::domain::PlotObservation
+{
+  noduleScore: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One nutrient reading line as published under a reporting form.'} test::nobleotter::domain::NutrientLine
+{
+  sampleId: Integer[1];
+  valueName: String[1];
+  reportForm: ReportForm[1];
+  lineTotal: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field station that administers the trial blocks.'} test::nobleotter::domain::TrialStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  regionName: String[1];
+}

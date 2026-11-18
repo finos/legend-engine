@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::goldenotter9::data::SanctuaryFixture
+{
+  Relational
+  #{
+    holt.habitat:
+      'habitat_code,habitat_label\n'+
+      'HB-R,Reedbed\n'+
+      'HB-W,Woodland\n'+
+      'HB-G,Gravel bar\n';
+
+    atlas.river_reach:
+      'reach_code,reach_name,catchment_name,habitat_code,flow_class\n'+
+      'RR-1,Tamar Upper,Tamar,HB-R,f\n'+
+      'RR-2,Wye Middle,Wye,HB-W,m\n'+
+      'RR-3,Tamar Lower,Tamar,HB-G,\n'+
+      'RR-4,Usk Head,Usk,HB-R,s\n';
+
+    staff.observer:
+      'observer_code,observer_name,team_name,grade_code\n'+
+      'OB-1,Ana Rees,North Watch,S\n'+
+      'OB-2,Tom Vale,South Watch,V\n'+
+      'OB-3,Liv Penn,North Watch,R\n';
+
+    holt.holt:
+      'holt_code,reach_code,warden_code,holt_name,protected_flag,entrance_count\n'+
+      'HT-1,RR-1,OB-1,Alder Holt,1,4\n'+
+      'HT-2,RR-1,OB-2,Willow Holt,0,1\n'+
+      'HT-3,RR-2,OB-3,Root Holt,1,2\n'+
+      'HT-4,RR-3,OB-1,Stone Holt,1,1\n';
+
+    survey.sighting:
+      'sighting_code,holt_code,observer_code,period_month,period_year,head_count,status_code,latest_flag\n'+
+      'SG-01,HT-1,OB-1,5,2026,3,CONFIRMED,0\n'+
+      'SG-02,HT-1,OB-3,6,2026,2,PROBABLE,1\n'+
+      'SG-03,HT-2,OB-2,6,2026,1,SPRAINT,1\n'+
+      'SG-04,HT-3,OB-2,6,2026,1,REJECTED,0\n'+
+      'SG-05,HT-3,OB-3,6,2025,2,CONFIRMED,1\n';
+  }#
+}

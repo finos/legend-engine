@@ -1,0 +1,69 @@
+name: meadow-beacon
+title: "Allotment Plot Allocation — a composing store over four included stores, three multi-condition joins and two-hop reference-data reads"
+description: |
+  A community allotment consumer model whose store owns almost nothing: one local
+  schema holding a single plot-allocation view table, and four store includes that
+  pull in a plot-register store, a holding-body record-master store and two
+  reference-data stores so their schemas and tables resolve as if declared
+  locally. Only three joins are declared locally and each is multi-condition —
+  one correlates the local view with the register table on a seasonal business
+  date together with two identifier columns, one correlates the register table
+  with the record-master table on a record number together with a body
+  identifier, and one correlates the record master with a crop-synonym table
+  while restricting the row to a literal synonym-type code and requiring the
+  synonym's end date to be absent, so an expired synonym silently produces no
+  match. One mapping carries eight class mappings, each pinning its root through
+  an explicit main-table alias and an explicit primary key — seven onto tables
+  that only the included stores declare, one onto the local view, and one keyed on
+  a two-column category-and-marker composite. Its bindings mix aliased direct
+  reads with twelve properties reached one join away and six reached two joins
+  away, and a single binding wraps a padded reference-data synonym column in a
+  whitespace-trimming call so the mapped value differs from the stored one.
+  Three documented associations relate the register type, the record-master type,
+  the reference synonym type and the locally declared allocation type with
+  sharply differing multiplicities — many-to-many, mandatory-to-optional and
+  optional-to-one — and their annotations describe intended cardinality in prose
+  that in one case disagrees with the declared multiplicity. Three association
+  mappings realise them purely by naming the local joins, and the mapping tests
+  walk a complete two-hop path, a missing intermediate row, a row failing the
+  embedded code restriction and an expired synonym row.
+
+modelSources:
+  model:
+    root: meadow-beacon
+    files:
+      - test/meadowbeacon/domain/AllotmentAssociations.pure
+      - test/meadowbeacon/domain/AllotmentDomain.pure
+      - test/meadowbeacon/mapping/AllotmentMapping.pure
+      - test/meadowbeacon/store/AllotmentComposedDb.pure
+      - test/meadowbeacon/store/CropCodeDb.pure
+      - test/meadowbeacon/store/HolderRecordDb.pure
+      - test/meadowbeacon/store/PlotRegisterDb.pure
+      - test/meadowbeacon/store/ZoneCodeDb.pure
+
+features:
+  - grammar:association
+  - grammar:profile
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-store-include
+stores:
+  - relational
+tags:
+  - allotment
+  - association-mapping
+  - composite-primary-key
+  - h2
+  - join-filter
+  - multi-hop-join
+  - relational
+  - store-include
+  - trim-transform
+complexity: intermediate

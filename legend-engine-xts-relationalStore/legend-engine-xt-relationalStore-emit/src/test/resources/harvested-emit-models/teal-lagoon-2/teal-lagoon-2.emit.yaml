@@ -1,0 +1,49 @@
+name: teal-lagoon-2
+title: "Teal Lagoon - Seagrass Patch Register With Multi-Hop Warden Attribution"
+description: |
+  A tidal-lagoon seagrass register whose single relational store carries five
+  related relations - mapped seagrass patches, the meadow zones they sit in, the
+  lagoon sectors those zones belong to, the wardens accountable for each sector
+  and the survey visits made to each patch - wired together by four named joins.
+  One mapping binds every class to a main-table alias with an explicit primary
+  key, derives the patch label and the visit code from column expressions and
+  resolves the meadow, sector and warden of a patch and of a visit by walking
+  one, two, three and four hop join paths through the same four joins. Two
+  mapping test suites assert the assembled patch roster and the full visit trace
+  against seeded fixture rows, and one service composes a seven-part predicate
+  over the reporting window, tide state, shoot tally, survey round, visibility
+  code and warden presence into a de-duplicated and trimmed roster.
+modelSources:
+  model:
+    root: teal-lagoon-2
+    files:
+      - test/teallagoon2/connection/LagoonH2Connection.pure
+      - test/teallagoon2/domain/LagoonDomain.pure
+      - test/teallagoon2/mapping/LagoonSurveyMapping.pure
+      - test/teallagoon2/runtime/LagoonH2Runtime.pure
+      - test/teallagoon2/service/PatchWardenRosterService.pure
+      - test/teallagoon2/store/LagoonSurveyStore.pure
+features:
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - inner-join
+  - mapping-test
+  - multi-hop-join-path
+  - relational
+  - service-test
+  - tabular-data-set

@@ -1,0 +1,392 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrfossil6::mapping::SpecimenMapping
+(
+  include mapping test::zephyrfossil6::mapping::SpecimenEnumMappings
+
+  *test::zephyrfossil6::domain::CatalogedSpecimen[catalogedSpecimen]: Pure
+  {
+    ~src test::zephyrfossil6::domain::SpecimenSheet
+    specimenRef: $src.ref->toUpper()->trim(),
+    siteLabel: $src.site->toUpper()->trim() + '/' + $src.bed->toUpper()->trim(),
+    completenessPct: if($src.partsFound->isEmpty() || ($src.partsExpected <= 0),
+                        | 0.0,
+                        | ($src.partsFound->toOne() * 100) / $src.partsExpected),
+    crackTally: if($src.crackCount->isEmpty(),
+                   | 0,
+                   | $src.crackCount->toOne()),
+    grade: EnumerationMapping SpecimenGradeMapping: [if($src.partsFound->isEmpty(), |'G/Z', |if($src.gradeText->toUpper()->trim()->startsWith('ARTICULATED'), |'G/A', |if($src.gradeText->toUpper()->trim()->startsWith('ASSOCIATED'), |'G/B', |if($src.crackCount->isNotEmpty() && ($src.crackCount->toOne() > 12), |'G/F', |if((($src.partsFound->toOne() * 100) / $src.partsExpected) >= 80.0, |'G/C', |if((($src.partsFound->toOne() * 100) / $src.partsExpected) >= 40.0, |'G/D', |if($src.gradeText->toUpper()->trim()->startsWith('FRAGMENT'), |'G/E', |if($src.matrixText->toUpper()->trim()->in(['SHALE', 'MUDSTONE']), |'G/G', |'G/H'))))))))],
+    prepState: EnumerationMapping SpecimenPrepMapping: [if($src.prepText->toUpper()->trim()->startsWith('ACID'), |'P/ACID', |if($src.prepText->toUpper()->trim()->startsWith('SCRIBE'), |'P/SCRIBE', |if($src.prepText->toUpper()->trim()->startsWith('CONSOL'), |'P/CONSOL', |'P/NONE')))],
+    matrix: EnumerationMapping SpecimenMatrixMapping: [if($src.matrixText->toUpper()->trim() == 'SHALE', |'M/SHALE', |if($src.matrixText->toUpper()->trim() == 'MUDSTONE', |'M/MUD', |if($src.matrixText->toUpper()->trim() == 'LIMESTONE', |'M/LIME', |if($src.matrixText->toUpper()->trim() == 'SANDSTONE', |'M/SAND', |'M/UNKNOWN'))))],
+    loggedOn: $src.loggedOn
+  }
+
+  testSuites:
+  [
+    catalogedSpecimenSuite:
+    {
+      function: |test::zephyrfossil6::domain::CatalogedSpecimen.all()->graphFetch(
+        #{
+          test::zephyrfossil6::domain::CatalogedSpecimen{
+            specimenRef,
+            siteLabel,
+            completenessPct,
+            crackTally,
+            grade,
+            prepState,
+            matrix,
+            loggedOn
+          }
+        }#
+      )->serialize(
+        #{
+          test::zephyrfossil6::domain::CatalogedSpecimen{
+            specimenRef,
+            siteLabel,
+            completenessPct,
+            crackTally,
+            grade,
+            prepState,
+            matrix,
+            loggedOn
+          }
+        }#
+      );
+      tests:
+      [
+        articulatedBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-101 ","site":"otter quarry","bed":"upper marl","gradeText":"Articulated skeleton","matrixText":"Shale","prepText":"acid bath","partsFound":9,"partsExpected":10,"crackCount":2,"loggedOn":"2026-04-02"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-101","siteLabel":"OTTER QUARRY/UPPER MARL","completenessPct":90.0,"crackTally":2,"grade":"Articulated","prepState":"AcidPrepped","matrix":"Shale","loggedOn":"2026-04-02"}';
+                  }#;
+              }#
+          ];
+        },
+        associatedBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-102","site":"otter quarry","bed":"upper marl","gradeText":"Associated bones","matrixText":"Mudstone","prepText":"air scribe","partsFound":7,"partsExpected":10,"crackCount":3,"loggedOn":"2026-04-03"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-102","siteLabel":"OTTER QUARRY/UPPER MARL","completenessPct":70.0,"crackTally":3,"grade":"Associated","prepState":"Unprepared","matrix":"Mudstone","loggedOn":"2026-04-03"}';
+                  }#;
+              }#
+          ];
+        },
+        shatteredBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-103","site":"lichen scarp","bed":"lower marl","gradeText":"Crushed block","matrixText":"Limestone","prepText":"scribe pass","partsFound":5,"partsExpected":10,"crackCount":15,"loggedOn":"2026-04-04"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-103","siteLabel":"LICHEN SCARP/LOWER MARL","completenessPct":50.0,"crackTally":15,"grade":"Shattered","prepState":"AirScribed","matrix":"Limestone","loggedOn":"2026-04-04"}';
+                  }#;
+              }#
+          ];
+        },
+        nearCompleteBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-104","site":"lichen scarp","bed":"lower marl","gradeText":"Partial limb","matrixText":"Limestone","prepText":"consolidant only","partsFound":8,"partsExpected":10,"crackCount":2,"loggedOn":"2026-04-05"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-104","siteLabel":"LICHEN SCARP/LOWER MARL","completenessPct":80.0,"crackTally":2,"grade":"NearComplete","prepState":"Consolidated","matrix":"Limestone","loggedOn":"2026-04-05"}';
+                  }#;
+              }#
+          ];
+        },
+        partlyCompleteBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-105","site":"lichen scarp","bed":"lower marl","gradeText":"Partial limb","matrixText":"Limestone","prepText":"none","partsFound":5,"partsExpected":10,"crackCount":2,"loggedOn":"2026-04-06"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-105","siteLabel":"LICHEN SCARP/LOWER MARL","completenessPct":50.0,"crackTally":2,"grade":"PartlyComplete","prepState":"Unprepared","matrix":"Limestone","loggedOn":"2026-04-06"}';
+                  }#;
+              }#
+          ];
+        },
+        fragmentaryBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-106","site":"headwall pit","bed":"basal grit","gradeText":"Fragment of jaw","matrixText":"Sandstone","prepText":"acid bath","partsFound":1,"partsExpected":10,"crackCount":1,"loggedOn":"2026-04-07"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-106","siteLabel":"HEADWALL PIT/BASAL GRIT","completenessPct":10.0,"crackTally":1,"grade":"Fragmentary","prepState":"AcidPrepped","matrix":"Sandstone","loggedOn":"2026-04-07"}';
+                  }#;
+              }#
+          ];
+        },
+        matrixBoundBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-107","site":"headwall pit","bed":"basal grit","gradeText":"Scattered scrap","matrixText":"Shale","prepText":"none","partsFound":1,"partsExpected":10,"crackCount":1,"loggedOn":"2026-04-08"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-107","siteLabel":"HEADWALL PIT/BASAL GRIT","completenessPct":10.0,"crackTally":1,"grade":"MatrixBound","prepState":"Unprepared","matrix":"Shale","loggedOn":"2026-04-08"}';
+                  }#;
+              }#
+          ];
+        },
+        indeterminateBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-108","site":"headwall pit","bed":"basal grit","gradeText":"Scattered scrap","matrixText":"Sandstone","prepText":"none","partsFound":1,"partsExpected":10,"crackCount":1,"loggedOn":"2026-04-09"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-108","siteLabel":"HEADWALL PIT/BASAL GRIT","completenessPct":10.0,"crackTally":1,"grade":"Indeterminate","prepState":"Unprepared","matrix":"Sandstone","loggedOn":"2026-04-09"}';
+                  }#;
+              }#
+          ];
+        },
+        uncountedPartsBlock:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-109","site":"plateau trench","bed":"marl cap","gradeText":"Articulated skeleton","matrixText":"Shale","prepText":"acid bath","partsExpected":10,"loggedOn":"2026-04-10"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-109","siteLabel":"PLATEAU TRENCH/MARL CAP","completenessPct":0.0,"crackTally":0,"grade":"Unassessed","prepState":"AcidPrepped","matrix":"Shale","loggedOn":"2026-04-10"}';
+                  }#;
+              }#
+          ];
+        },
+        unrecognisedSheetWording:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"ref":"sp-110","site":"plateau trench","bed":"marl cap","gradeText":"Scattered scrap","matrixText":"Chert nodule","prepText":"washed by hand","partsFound":1,"partsExpected":10,"crackCount":1,"loggedOn":"2026-04-11"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"specimenRef":"SP-110","siteLabel":"PLATEAU TRENCH/MARL CAP","completenessPct":10.0,"crackTally":1,"grade":"Indeterminate","prepState":"Unprepared","matrix":"UnknownMatrix","loggedOn":"2026-04-11"}';
+                  }#;
+              }#
+          ];
+        },
+        twoSheetsAtOnce:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrfossil6::domain::SpecimenSheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ref":"sp-111","site":"otter quarry","bed":"upper marl","gradeText":"Articulated skeleton","matrixText":"Mudstone","prepText":"scribe pass","partsFound":9,"partsExpected":10,"crackCount":1,"loggedOn":"2026-04-12"},{"ref":"sp-112","site":"otter quarry","bed":"upper marl","gradeText":"Crushed block","matrixText":"Mudstone","prepText":"consolidant only","partsFound":2,"partsExpected":10,"crackCount":20,"loggedOn":"2026-04-13"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"specimenRef":"SP-111","siteLabel":"OTTER QUARRY/UPPER MARL","completenessPct":90.0,"crackTally":1,"grade":"Articulated","prepState":"AirScribed","matrix":"Mudstone","loggedOn":"2026-04-12"},{"specimenRef":"SP-112","siteLabel":"OTTER QUARRY/UPPER MARL","completenessPct":20.0,"crackTally":20,"grade":"Shattered","prepState":"Consolidated","matrix":"Mudstone","loggedOn":"2026-04-13"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

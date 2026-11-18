@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::coralfossil2::profile::FossilCatalogue.fieldTeamAudience>> {test::coralfossil2::profile::FossilCatalogue.taxonomyNode = 'earth-sciences/palaeontology/fossil-reefs', test::coralfossil2::profile::FossilCatalogue.licenseStatus = 'open-research', test::coralfossil2::profile::FossilCatalogue.providerName = 'Coral Fossil Survey'} test::coralfossil2::dataspace::FossilSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier - the four survey tables served through the key-pair authenticated warehouse connection.';
+      mapping: test::coralfossil2::mapping::FossilMapping;
+      defaultRuntime: test::coralfossil2::runtime::FossilRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Coral Fossil Survey';
+  description: '# Coral Fossil Survey\n\nA governed entry point over a fossil-reef field survey: **dig sites**, the **specimens** catalogued from them, **coral colony** readings and the **field collectors** on each survey date.';
+  diagrams:
+  [
+    {
+      title: 'Survey Layout';
+      diagram: test::coralfossil2::diagram::FossilSurveyDiagram;
+    }
+  ];
+  elements:
+  [
+    test::coralfossil2::domain
+  ];
+  executables:
+  [
+    {
+      title: 'Specimen roster';
+      description: 'Every catalogued specimen in renamed columns.';
+      executable: test::coralfossil2::service::SpecimenRoster;
+    },
+    {
+      title: 'Deep dig-site register';
+      description: 'Dig-site surveys two metres or deeper.';
+      executable: test::coralfossil2::service::DigSiteRegister;
+    },
+    {
+      title: 'Coral colony register';
+      description: 'Every coral colony reading in renamed columns.';
+      executable: test::coralfossil2::service::CoralColonyRegister;
+    },
+    {
+      title: 'Field collector register';
+      description: 'Every field collector per survey date.';
+      executable: test::coralfossil2::service::FieldCollectorRegister;
+    }
+  ];
+  supportInfo: Email {
+    address: 'coral-fossil-survey-desk@survey-office';
+  };
+}

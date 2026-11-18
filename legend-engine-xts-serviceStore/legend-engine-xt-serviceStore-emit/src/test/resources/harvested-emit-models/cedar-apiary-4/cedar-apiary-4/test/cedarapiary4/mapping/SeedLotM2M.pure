@@ -1,0 +1,255 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarapiary4::mapping::SeedLotM2M
+(
+  *test::cedarapiary4::domain::SeedLot[lot_set]: Pure
+  {
+    ~src test::cedarapiary4::external::SeedLotDoc
+    lotReference: 'LOT-' + $src.lotRef->trim()->toUpper(),
+    speciesName: $src.species->trim(),
+    keeperName: $src.keeper->trim()->toUpper(),
+    seasonLabel: if($src.harvestSeason->isEmpty(), | 'SEASON UNRECORDED', | $src.harvestSeason->toOne()->trim()->toUpper()),
+    packetCount: $src.packets->size(),
+    totalGrams: $src.packets->map(p | $p.grams)->sum(),
+    packetSummary: if($src.packets->isEmpty(), | 'NO PACKETS', | $src.packets->map(p | $p.packetCode->trim()->toUpper())->removeDuplicates()->sort()->joinStrings(' | ')),
+    germinationBand: if($src.packets->filter(p | $p.germinationRate->isNotEmpty())->isEmpty(), | 'UNRATED', | if(($src.packets->filter(p | $p.germinationRate->isNotEmpty())->map(p | $p.germinationRate->toOne())->sum() / $src.packets->filter(p | $p.germinationRate->isNotEmpty())->size()) >= 80, | 'STRONG', | 'FAIR')),
+    labelDigest: $src.packets->map(p | $p.labels)->removeDuplicates()->size()->toString() + ' labels across ' + $src.packets->size()->toString() + ' packets'
+  }
+
+  *test::cedarapiary4::domain::SeedKeeper[keeper_set]: Pure
+  {
+    ~src test::cedarapiary4::external::KeeperDoc
+    keeperReference: 'KEEP-' + $src.keeperCode->trim()->toUpper(),
+    keeperName: $src.displayName->trim(),
+    shedLabel: if($src.shedName->isEmpty(), | 'SHED UNASSIGNED', | $src.shedName->toOne()->trim()->toUpper())
+  }
+
+  testSuites:
+  [
+    seedLotSuite:
+    {
+      function: |test::cedarapiary4::domain::SeedLot.all()->graphFetch(
+        #{
+          test::cedarapiary4::domain::SeedLot
+          {
+            lotReference,
+            speciesName,
+            keeperName,
+            seasonLabel,
+            packetCount,
+            totalGrams,
+            packetSummary,
+            germinationBand,
+            labelDigest
+          }
+        }#
+      )->serialize(
+        #{
+          test::cedarapiary4::domain::SeedLot
+          {
+            lotReference,
+            speciesName,
+            keeperName,
+            seasonLabel,
+            packetCount,
+            totalGrams,
+            packetSummary,
+            germinationBand,
+            labelDigest
+          }
+        }#
+      );
+      tests:
+      [
+        ratedLotSummarisesEveryPacketArm:
+        {
+          doc: 'A padded lot document with two rated packets trims and folds its text, totals its packet weights, orders the deduplicated packet codes and lands on the strong germination arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cedarapiary4::external::SeedLotDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"lotRef":" cl-01 ","species":" Scarlet Runner Bean ","keeper":" maya ","harvestSeason":" late summer ","packets":[{"packetCode":" pk-a ","grams":120,"germinationRate":88,"labels":["heritage","dry-stored"]},{"packetCode":"pk-b","grams":80,"germinationRate":76,"labels":["heritage"]}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            ratedLot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"lotReference":"LOT-CL-01","speciesName":"Scarlet Runner Bean","keeperName":"MAYA","seasonLabel":"LATE SUMMER","packetCount":2,"totalGrams":200,"packetSummary":"PK-A | PK-B","germinationBand":"STRONG","labelDigest":"2 labels across 2 packets"}';
+                  }#;
+              }#
+          ];
+        },
+        packetlessLotTakesEveryFallbackArm:
+        {
+          doc: 'A lot document with neither season nor packets takes the season fallback, the empty-packet summary, the unrated germination arm and still resolves both counters.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cedarapiary4::external::SeedLotDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"lotRef":"cl-02","species":"Sunflower","keeper":"otto"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            packetlessLot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"lotReference":"LOT-CL-02","speciesName":"Sunflower","keeperName":"OTTO","seasonLabel":"SEASON UNRECORDED","packetCount":0,"totalGrams":0,"packetSummary":"NO PACKETS","germinationBand":"UNRATED","labelDigest":"0 labels across 0 packets"}';
+                  }#;
+              }#
+          ];
+        },
+        partlyRatedLotCollapsesDuplicateCodes:
+        {
+          doc: 'A lot whose two packets share one code after folding keeps a single summary entry, averages only the rated packet and lands on the fair germination arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cedarapiary4::external::SeedLotDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"lotRef":"cl-03","species":"Blue Kale","keeper":"iris","harvestSeason":"spring","packets":[{"packetCode":"pk-c","grams":50,"labels":[]},{"packetCode":"PK-C","grams":70,"germinationRate":60,"labels":["damp"]}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            partlyRatedLot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"lotReference":"LOT-CL-03","speciesName":"Blue Kale","keeperName":"IRIS","seasonLabel":"SPRING","packetCount":2,"totalGrams":120,"packetSummary":"PK-C","germinationBand":"FAIR","labelDigest":"1 labels across 2 packets"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    seedKeeperSuite:
+    {
+      function: |test::cedarapiary4::domain::SeedKeeper.all()->graphFetch(
+        #{
+          test::cedarapiary4::domain::SeedKeeper
+          {
+            keeperReference,
+            keeperName,
+            shedLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::cedarapiary4::domain::SeedKeeper
+          {
+            keeperReference,
+            keeperName,
+            shedLabel
+          }
+        }#
+      );
+      tests:
+      [
+        keeperWithShedKeepsItsFoldedLabel:
+        {
+          doc: 'A keeper document carrying a shed name folds that name to upper case behind a stamped reference.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cedarapiary4::external::KeeperDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"keeperCode":" kp-a ","displayName":" Maya Thorne ","shedName":" north shed "}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            shedKeeper:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"keeperReference":"KEEP-KP-A","keeperName":"Maya Thorne","shedLabel":"NORTH SHED"}';
+                  }#;
+              }#
+          ];
+        },
+        shedlessKeeperTakesTheFallbackLabel:
+        {
+          doc: 'A keeper document with no shed name resolves the unassigned fallback label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cedarapiary4::external::KeeperDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"keeperCode":"kp-b","displayName":"Otto Vane"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            shedlessKeeper:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"keeperReference":"KEEP-KP-B","keeperName":"Otto Vane","shedLabel":"SHED UNASSIGNED"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

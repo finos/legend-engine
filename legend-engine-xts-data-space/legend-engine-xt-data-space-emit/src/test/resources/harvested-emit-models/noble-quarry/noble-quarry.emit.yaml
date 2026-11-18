@@ -1,0 +1,97 @@
+name: noble-quarry
+title: "Noble Quarry — Bench Surveys Cross-Referenced To A Shared Site Registry"
+description: |
+  A quarry bench logbook held in two package copies of the same model - a live
+  copy whose bench surveys and blast records are processing-temporal, and an
+  archive copy frozen into numbered archive cycles. In each copy surveys and
+  blasts are linked through a validity-window containment join, and both reach
+  a site declared in a shared registry model only through association mappings
+  that walk an identifier-scheme table: blasts reach their site over a two-hop
+  chain, surveys over a three-hop chain that crosses the scheme table's
+  self-join, and every hop is filtered on a source-key literal and a live-batch
+  sentinel. Both mappings include the shared registry mapping, every table
+  carries a multi-column primary key, and both Snowflake connections rewrite
+  their schemas through a schema-mapper post-processor. Three DID-owned
+  services publish wide projections - two parameterless registers and one
+  bench lookup filtered on a path parameter and also exposed as a tool-server
+  endpoint - and a data space features the two registers over the live
+  execution context. Mapping test suites exercise each chain in both
+  directions, including chains broken at each hop and superseded processing
+  versions.
+modelSources:
+  model:
+    root: noble-quarry
+    files:
+      - test/noblequarry/archive/connection/QuarryArchiveConnection.pure
+      - test/noblequarry/archive/domain/ArchiveQuarryDomain.pure
+      - test/noblequarry/archive/mapping/QuarryArchiveMapping.pure
+      - test/noblequarry/archive/runtime/QuarryArchiveRuntime.pure
+      - test/noblequarry/archive/service/ArchivedSurveyRegister.pure
+      - test/noblequarry/archive/store/QuarryArchiveDB.pure
+      - test/noblequarry/data/QuarryFixtures.pure
+      - test/noblequarry/dataspace/QuarryLogbook.pure
+      - test/noblequarry/live/connection/QuarryLiveConnection.pure
+      - test/noblequarry/live/domain/LiveQuarryDomain.pure
+      - test/noblequarry/live/mapping/QuarryLiveMapping.pure
+      - test/noblequarry/live/runtime/QuarryLiveRuntime.pure
+      - test/noblequarry/live/service/LiveBlastLookup.pure
+      - test/noblequarry/live/service/LiveSurveyRegister.pure
+      - test/noblequarry/live/store/QuarryLiveDB.pure
+      - test/noblequarry/profile/QuarryCatalogue.pure
+      - test/noblequarry/shared/domain/QuarrySite.pure
+      - test/noblequarry/shared/mapping/SiteRegistryMapping.pure
+      - test/noblequarry/shared/store/CodeSchemeDB.pure
+      - test/noblequarry/shared/store/SiteRegistryDB.pure
+features:
+  - connection:mapper-postprocessor
+  - connection:snowflake
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:mapping-test
+  - execution:test-data
+  - execution:service
+  - execution:service-mcp-server
+  - execution:service-ownership-did
+  - execution:service-test
+  - grammar:association
+  - grammar:class-temporal-stereotype
+  - grammar:profile
+  - grammar:tagged-value
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - execution:service-parameter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-column-primary-key
+  - store:relational-self-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - cross-reference
+  - data-space
+  - h2
+  - mapping-include
+  - multi-hop-join
+  - processing-temporal
+  - quarry
+  - relational
+  - self-join
+  - service
+  - snowflake
+  - tabular-data-set

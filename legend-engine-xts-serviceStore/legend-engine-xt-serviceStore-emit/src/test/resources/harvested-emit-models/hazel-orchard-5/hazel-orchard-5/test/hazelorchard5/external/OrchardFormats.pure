@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ExternalFormat
+Binding test::hazelorchard5::external::HiveVisitFeedFlatDataBinding
+{
+  schemaSet: test::hazelorchard5::external::HiveVisitFeedSchemas;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [
+    test::hazelorchard5::domain::HiveVisitFeedRow
+  ];
+}
+
+Binding test::hazelorchard5::external::PollinatorNoteFlatDataBinding
+{
+  schemaSet: test::hazelorchard5::external::PollinatorNoteSchemas;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [
+    test::hazelorchard5::domain::PollinatorNoteRow
+  ];
+}
+
+Binding test::hazelorchard5::external::OrchardDocumentBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::hazelorchard5::domain::HiveVisitEntry,
+    test::hazelorchard5::domain::HiveVisitEnvelope,
+    test::hazelorchard5::domain::HiveVisitQuery,
+    test::hazelorchard5::domain::VisitNoteEntry
+  ];
+}
+
+SchemaSet test::hazelorchard5::external::HiveVisitFeedSchemas
+{
+  format: FlatData;
+  schemas: [
+    {
+      id: hiveVisitFeedCsv;
+      location: 'hive-visit-feed.csv';
+      content: 'section visitFeed: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n  Record\n  {\n    feedRowRef            : STRING;\n    hiveCode              : STRING;\n    observedOnDate        : STRING;\n    foragerCountPerMinute : INTEGER(optional);\n  }\n}';
+    }
+  ];
+}
+
+SchemaSet test::hazelorchard5::external::PollinatorNoteSchemas
+{
+  format: FlatData;
+  schemas: [
+    {
+      id: pollinatorNoteCsv;
+      location: 'pollinator-note-feed.csv';
+      content: 'section noteFeed: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n  Record\n  {\n    noteRowRef : STRING;\n    hiveCode   : STRING;\n    noteText   : STRING(optional);\n  }\n}';
+    }
+  ];
+}

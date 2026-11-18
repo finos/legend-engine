@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A propagation tray standing on a glasshouse misting bench, with its banded moisture reading and the bench zone and keeper reached through the reference relations.'} test::russetwarren2::domain::PropagationTray
+{
+  trayId: Integer[1];
+  trayCode: String[1];
+  trayName: String[1];
+  trayTail: String[0..1];
+  cellCount: Integer[1];
+  mistSeconds: Float[1];
+  mistPerCell: Float[0..1];
+  band: String[0..1];
+  noteLabel: String[0..1];
+  stage: test::russetwarren2::domain::TrayStage[0..1];
+  kind: test::russetwarren2::domain::CuttingKind[0..1];
+  zoneName: String[0..1];
+  keeperName: String[0..1];
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Stage a propagation tray has reached on the misting bench.'} test::russetwarren2::domain::TrayStage
+{
+  ROOTING,
+  HARDENING,
+  POTTING,
+  RESTING
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Wood ripeness of the cuttings a tray was struck with.'} test::russetwarren2::domain::CuttingKind
+{
+  SOFTWOOD,
+  SEMIRIPE
+}
+
+Class {meta::pure::profiles::doc.doc = 'Root of the tray submission document handed in by a bench keeper.'} test::russetwarren2::domain::TrayPayload
+{
+  trayRef: String[0..1];
+  revision: Integer[0..1];
+  record: test::russetwarren2::domain::TrayRecordNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The single reading node of a tray submission document.'} test::russetwarren2::domain::TrayRecordNode
+{
+  keeperCode: String[0..1];
+  mistPct: Integer[0..1];
+  kindCode: String[0..1];
+  bed: test::russetwarren2::domain::BedNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The propagation bed a submitted reading was taken on.'} test::russetwarren2::domain::BedNode
+{
+  bedName: String[0..1];
+  aisle: test::russetwarren2::domain::AisleNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The glasshouse aisle a propagation bed stands in.'} test::russetwarren2::domain::AisleNode
+{
+  aisleCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Refined tray digest assembled from a submitted tray document.'} test::russetwarren2::domain::TrayDigest
+{
+  trayRef: String[1];
+  keeperLabel: String[1];
+  aisleHint: String[1];
+  mistBand: String[1];
+  kind: test::russetwarren2::domain::CuttingKind[1];
+}

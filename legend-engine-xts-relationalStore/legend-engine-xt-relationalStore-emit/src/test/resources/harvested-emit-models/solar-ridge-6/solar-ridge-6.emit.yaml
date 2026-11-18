@@ -1,0 +1,57 @@
+name: solar-ridge-6
+title: "Ridge-Top Solar Array Rollups — Two Aggregating Services over Collection-Parameterised Predicates"
+description: |
+  A non-financial relational EMIT model over the daily panel-string readings of a ridge-top solar array.
+  One reading relation keyed on the reading date, the array and the panel string feeds a relational
+  mapping that owns every derivation: a composed siting label with a placeholder for an unsited array,
+  a three-arm tilt band read off the case-folded tilt class, a three-arm soiling band whose heaviest arm
+  folds the inverter state into its label, an irradiance index scaled off the measured irradiance, a
+  guarded per-panel yield that resolves to no value for a string with no panels, and a note measurement
+  over a coalesced observer note. Two single-execution services then expose the aggregation surfaces:
+  one rolls the readings up per array and tilt band, the other per soiling band, and each restricts its
+  input with a predicate that combines a date floor with a membership test against a collection the
+  endpoint takes as a parameter. Assertion-backed coverage: five service tests across two suites,
+  covering every band arm, the fallback and null-resolving derivations, the date floor, the collection
+  predicate including a register that matches nothing, and the ordering of the rolled-up groups.
+modelSources:
+  model:
+    root: solar-ridge-6
+    files:
+      - test/solarridge6/connection/RidgeConnections.pure
+      - test/solarridge6/domain/RidgeDomain.pure
+      - test/solarridge6/mapping/RidgeMapping.pure
+      - test/solarridge6/runtime/RidgeRuntimes.pure
+      - test/solarridge6/service/ArrayYieldRollup.pure
+      - test/solarridge6/service/SoilingDowntimeRollup.pure
+      - test/solarridge6/store/RidgeStores.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-conditional-transform
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - aggregation
+  - collection-op
+  - conditional-transform
+  - dyna-function
+  - filter
+  - group-by
+  - h2
+  - primary-key
+  - relational
+  - service
+  - service-test
+  - solar

@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ServiceStore
+ServiceStore test::cedarapiary4::store::SeedExchangeApi
+(
+  description: 'Remote read-only endpoint set publishing community seed-library lot and keeper documents.';
+
+  ServiceGroup LotServices
+  (
+    path: '/seed-library/lots';
+
+    Service LotFeedService
+    (
+      path: '/feed';
+      method: GET;
+      security: [];
+      response: [test::cedarapiary4::external::SeedLotDoc <- test::cedarapiary4::binding::SeedExchangeBinding];
+    )
+
+    Service LotLookupService
+    (
+      path: '/{lotRef}/detail';
+      method: GET;
+      parameters:
+      (
+        lotRef: String ( location = path )
+      );
+      security: [];
+      response: [test::cedarapiary4::external::SeedLotDoc <- test::cedarapiary4::binding::SeedExchangeBinding];
+    )
+
+    Service LotSeasonSearchService
+    (
+      path: '/search';
+      method: GET;
+      parameters:
+      (
+        season: String ( location = query ),
+        speciesFilter: String ( location = query )
+      );
+      security: [];
+      response: [test::cedarapiary4::external::SeedLotDoc <- test::cedarapiary4::binding::SeedExchangeBinding];
+    )
+  )
+
+  ServiceGroup KeeperServices
+  (
+    path: '/seed-library/keepers';
+
+    Service KeeperFeedService
+    (
+      path: '/feed';
+      method: GET;
+      security: [];
+      response: [test::cedarapiary4::external::KeeperDoc <- test::cedarapiary4::binding::SeedExchangeBinding];
+    )
+
+    Service KeeperLookupService
+    (
+      path: '/{keeperCode}';
+      method: GET;
+      parameters:
+      (
+        keeperCode: String ( location = path ),
+        shedFilter: String ( location = query )
+      );
+      security: [];
+      response: [test::cedarapiary4::external::KeeperDoc <- test::cedarapiary4::binding::SeedExchangeBinding];
+    )
+  )
+)

@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::cobaltcove::service::StationAuditAsOf
+{
+  pattern: '/civic/v1/dock-audit/{districtCodes}';
+  title: 'Cobalt Cove - District Dock Audit As Of';
+  owners:
+  [
+    'cove-cycle-network',
+    'cove-city-planning'
+  ];
+  documentation: 'Opens the cycle-dock extent at a fixed business date, keeps only active docks whose district is one of the requested districts, then projects the district name reached through the association together with the derived capacity band and de-duplicates the projection. The response rows follow the station-audit external-format binding.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {districtCodes: String[*]|demo::cobaltcove::domain::DockStation.all(%2026-03-01)->filter(
+      s|$s.districtCode->in($districtCodes) && ($s.statusCode == 'ACTIVE')
+    )->project(
+      [
+        s|$s.stationCode,
+        s|$s.districtCode,
+        s|$s.district.districtName,
+        s|$s.capacity,
+        s|$s.capacityBand
+      ],
+      [
+        'Station Code',
+        'District Code',
+        'District Name',
+        'Capacity',
+        'Capacity Band'
+      ]
+    )->distinct()};
+    mapping: demo::cobaltcove::mapping::CoveMapping;
+    runtime: demo::cobaltcove::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    stationAuditSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              civic.district:
+                'district_id,district_code,district_name\n'+
+                '1,DST-NORTH,North Quarter\n'+
+                '2,DST-EAST,East Quarter\n';
+
+              civic.dock_station:
+                'station_id,station_code,capacity,status_code,district_id,from_z,thru_z\n'+
+                '1,DK-101,34,ACTIVE,1,2026-01-01,9999-12-31\n'+
+                '2,DK-102,18,ACTIVE,2,2026-01-01,9999-12-31\n'+
+                '3,DK-103,10,SUSPENDED,1,2026-01-01,9999-12-31\n'+
+                '4,DK-104,26,ACTIVE,1,2025-01-01,2025-06-30\n';
+
+              civic.dock_inspection:
+                'inspection_id,inspection_ref,condition_code,fault_count,station_id,in_z,out_z,from_z,thru_z\n'+
+                '10,INS-9001,BLOCKED,3,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northQuarterOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districtCodes = ['DST-NORTH']
+          ]
+          asserts:
+          [
+            activeInRangeNorthDockOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station Code":"DK-101","District Code":"DST-NORTH","District Name":"North Quarter","Capacity":34,"Capacity Band":"LARGE"}]';
+                  }#;
+              }#
+          ]
+        },
+        twoDistrictsKeepsBothActive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districtCodes = ['DST-NORTH', 'DST-EAST']
+          ]
+          asserts:
+          [
+            bothActiveInRangeDocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station Code":"DK-101","District Code":"DST-NORTH","District Name":"North Quarter","Capacity":34,"Capacity Band":"LARGE"},{"Station Code":"DK-102","District Code":"DST-EAST","District Name":"East Quarter","Capacity":18,"Capacity Band":"MEDIUM"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

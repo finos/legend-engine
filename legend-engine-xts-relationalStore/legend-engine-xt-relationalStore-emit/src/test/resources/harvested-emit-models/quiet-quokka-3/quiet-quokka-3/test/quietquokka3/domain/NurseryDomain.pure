@@ -1,0 +1,162 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::quietquokka3::domain::ConditionGrade
+{
+  Prime,
+  Sound,
+  Watched,
+  Cull,
+  Unrecorded
+}
+
+Enum test::quietquokka3::domain::VigourBand
+{
+  Dwarf,
+  SemiDwarf,
+  Vigorous,
+  Unbanded
+}
+
+Enum test::quietquokka3::domain::CultivarKind
+{
+  Accepted,
+  Synonym,
+  Blank,
+  Unstated
+}
+
+Enum test::quietquokka3::domain::ListingClass
+{
+  NorthAccepted,
+  SouthAccepted,
+  NorthSynonym,
+  SouthSynonym,
+  Unclassed
+}
+
+Enum test::quietquokka3::domain::ClimateBand
+{
+  Cool,
+  Temperate,
+  Warm,
+  Unbanded
+}
+
+Class test::quietquokka3::domain::GraftRecord
+{
+  graftCode: String[1];
+  levelCode: String[0..1];
+  caliperMm: Integer[0..1];
+  graftedOn: StrictDate[0..1];
+  conditionGrade: test::quietquokka3::domain::ConditionGrade[0..1];
+  vigourBand: test::quietquokka3::domain::VigourBand[0..1];
+  cultivarKind: test::quietquokka3::domain::CultivarKind[0..1];
+  handlingNote: String[0..1];
+  climateName: String[0..1];
+  acceptedName: String[0..1];
+  rootstockName: String[0..1];
+  bay: test::quietquokka3::domain::BayPlacement[0..1];
+}
+
+Class test::quietquokka3::domain::BayPlacement
+{
+  bayLabel: String[0..1];
+  rowLabel: String[0..1];
+  placementKind: String[0..1];
+  benchName: String[0..1];
+  tray: test::quietquokka3::domain::TrayDetail[0..1];
+}
+
+Class test::quietquokka3::domain::TrayDetail
+{
+  trayCode: String[0..1];
+  trayNote: String[0..1];
+}
+
+Class test::quietquokka3::domain::NurseryBlock
+{
+  blockCode: String[1];
+  blockName: String[0..1];
+}
+
+Class test::quietquokka3::domain::Bench
+{
+  benchCode: String[1];
+  benchName: String[0..1];
+  shelterLabel: String[0..1];
+}
+
+Class test::quietquokka3::domain::ClimateZone
+{
+  climateCode: String[1];
+  climateName: String[0..1];
+  climateBand: test::quietquokka3::domain::ClimateBand[0..1];
+}
+
+Class test::quietquokka3::domain::Rootstock
+{
+  rootstockCode: String[1];
+  rootstockName: String[0..1];
+  vigourBand: test::quietquokka3::domain::VigourBand[0..1];
+}
+
+Class test::quietquokka3::domain::Cultivar
+{
+  cultivarCode: String[1];
+  cultivarName: String[0..1];
+  cultivarKind: test::quietquokka3::domain::CultivarKind[0..1];
+}
+
+Class <<temporal.businesstemporal>> test::quietquokka3::domain::CultivarRegistration
+{
+  registrationCode: String[1];
+  listingLevel: String[0..1];
+  listingClass: test::quietquokka3::domain::ListingClass[0..1];
+  grantedOn: StrictDate[0..1];
+  custodianName: String[0..1];
+  cultivarName: String[0..1];
+  listingLabel(asOf: Date[1])
+  {
+    if($asOf >= $this.grantedOn->toOne(),
+      | 'LISTED ' + $this.registrationCode,
+      | 'PENDING ' + $this.registrationCode
+    )
+  }: String[1];
+}
+
+Association test::quietquokka3::domain::GraftRecord_NurseryBlock
+{
+  block: test::quietquokka3::domain::NurseryBlock[0..1];
+  blockGrafts: test::quietquokka3::domain::GraftRecord[*];
+}
+
+Association test::quietquokka3::domain::GraftRecord_Cultivar
+{
+  scion: test::quietquokka3::domain::Cultivar[0..1];
+  scionGrafts: test::quietquokka3::domain::GraftRecord[*];
+}
+
+Association test::quietquokka3::domain::NurseryBlock_Bench
+{
+  bench: test::quietquokka3::domain::Bench[0..1];
+  benchBlocks: test::quietquokka3::domain::NurseryBlock[*];
+}
+
+Association test::quietquokka3::domain::Bench_ClimateZone
+{
+  climate: test::quietquokka3::domain::ClimateZone[0..1];
+  climateBenches: test::quietquokka3::domain::Bench[*];
+}

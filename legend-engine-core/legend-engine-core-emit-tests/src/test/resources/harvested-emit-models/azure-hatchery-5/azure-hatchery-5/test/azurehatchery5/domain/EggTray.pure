@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::azurehatchery5::domain::*;
+
+Class {doc.doc = 'One incubation tray of a trout hatchery. Four class-level constraints close the tray: the tray code is bounded on both sides by a trimmed width window, the eyed count may never exceed the count of eggs actually set, and a picked-loss count, where recorded, may never exceed the shortfall between what was set and what eyed up. The two collection-op derived properties read the daily counts held on the tray rather than a stored total.'} test::azurehatchery5::domain::EggTray
+[
+  trayCodeMinWidth: $this.trayCode->trim()->length() >= 6,
+  trayCodeMaxWidth: $this.trayCode->trim()->length() <= 14,
+  eyedNeverExceedsSet: $this.eyedCount <= $this.setCount,
+  pickedLossWithinShortfall: $this.pickedLossCount->isEmpty() || ($this.pickedLossCount->toOne() <= ($this.setCount - $this.eyedCount))
+]
+{
+  {doc.doc = 'Required tray code the width window is asserted against.'} trayCode: String[1];
+  {doc.doc = 'Eggs laid into the tray at setting.'} setCount: Integer[1];
+  {doc.doc = 'Eggs that reached the eyed stage.'} eyedCount: Integer[1];
+  {doc.doc = 'Eggs picked off as losses, absent on a tray that was never picked over.'} pickedLossCount: Integer[0..1];
+  {doc.doc = 'Water source the tray is fed from.'} waterSource: WaterSource[1];
+  {doc.doc = 'Daily degree-day and mortality counts taken on the tray.'} dailyCounts: TrayDayCount[*];
+  {doc.doc = 'Degree-days accumulated over the recorded incubation days, read straight off the daily counts.'}
+  accumulatedDegreeDays()
+  {
+    $this.dailyCounts->map(c | $c.degreeDays)->sum()
+  }: Float[1];
+  {doc.doc = 'Days on which a mortality was counted, and only those, so a tray whose losses were never picked over reports none.'}
+  daysWithMortality()
+  {
+    $this.dailyCounts->filter(c | $c.mortalityCount->isNotEmpty() && ($c.mortalityCount->toOne() > 0))->size()
+  }: Integer[1];
+}
+
+Class {doc.doc = 'One day of readings taken on an incubation tray, holding the degree-days the water carried and the mortalities counted off it. Two constraints keep a day physically readable: the day index is one-based and the degree-days a single day can carry are bounded above.'} test::azurehatchery5::domain::TrayDayCount
+[
+  dayIndexIsOneBased: $this.dayIndex >= 1,
+  degreeDaysWithinOneDay: $this.degreeDays <= 24.0
+]
+{
+  {doc.doc = 'One-based index of the incubation day.'} dayIndex: Integer[1];
+  {doc.doc = 'Degree-days the tray water carried on this day.'} degreeDays: Float[1];
+  {doc.doc = 'Mortalities counted off the tray on this day, absent on a day the tray was not picked over.'} mortalityCount: Integer[0..1];
+}

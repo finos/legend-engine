@@ -1,0 +1,61 @@
+name: golden-otter-5
+title: "Glasshouse Plant Nursery Propagation Register"
+description: |
+  A relational glasshouse nursery model for propagation batches, benches and
+  house zones. The store combines filtered tables, grouped inline views,
+  inner-join paths and view-backed properties, while four tested services
+  exercise deep date windows, conditional batch grading and derived seasonal
+  roster queries. A DataSpace packages the mapping and runtime for both the
+  propagation and published execution contexts.
+modelSources:
+  model:
+    root: golden-otter-5
+    files:
+      - test/goldenotter5/connection/NurseryConnections.pure
+      - test/goldenotter5/dataspace/NurseryDataSpace.pure
+      - test/goldenotter5/domain/NurseryDomain.pure
+      - test/goldenotter5/mapping/NurseryMapping.pure
+      - test/goldenotter5/runtime/NurseryRuntime.pure
+      - test/goldenotter5/service/BenchLoadByHouse.pure
+      - test/goldenotter5/service/PropagationBatchesInWindow.pure
+      - test/goldenotter5/service/RootedBatchRoster.pure
+      - test/goldenotter5/service/VigourBandRoster.pure
+      - test/goldenotter5/store/NurseryDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:constraint
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional
+  - dataspace
+  - glasshouse
+  - grouped-views
+  - h2
+  - nursery
+  - propagation
+  - relational
+  - seasonal
+  - service-tests
+  - tabular
+  - view-backed
+  - vigour

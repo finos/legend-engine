@@ -1,0 +1,177 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyquokka3::service::BrowseObservationFieldWide
+{
+  pattern: '/kindlyquokka3/browse/fieldWide';
+  ownership: UserList { users: ['sanctuary-browse-log'] };
+  documentation: 'Wide flat projection of the browse-observation row centred on colony, habitat and transect columns.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::kindlyquokka3::domain::BrowseObservation.all()->project(
+      [
+        o|$o.observationRef,
+        o|$o.colonyLabel,
+        o|$o.sanctuaryName,
+        o|$o.habitatBand,
+        o|$o.shelterCode,
+        o|$o.browseSpeciesCode,
+        o|$o.forageStage,
+        o|$o.observerInitials,
+        o|$o.observedOn,
+        o|$o.sightedAt,
+        o|$o.quokkaCount,
+        o|$o.browseCoverPct,
+        o|$o.transectLengthM,
+        o|$o.notesText
+      ],
+      [
+        'observationRef',
+        'colonyLabel',
+        'sanctuaryName',
+        'habitatBand',
+        'shelterCode',
+        'browseSpeciesCode',
+        'forageStage',
+        'observerInitials',
+        'observedOn',
+        'sightedAt',
+        'quokkaCount',
+        'browseCoverPct',
+        'transectLengthM',
+        'notesText'
+      ]
+    )->sort([asc('observationRef')])};
+    mapping: test::kindlyquokka3::mapping::BrowseObservationMapping;
+    runtime: test::kindlyquokka3::runtime::SanctuaryFieldRuntime;
+  }
+  testSuites:
+  [
+    fieldWideSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryH2Connection:
+            Relational
+            #{
+              fieldlog.browse_observation:
+                'obs_ref,col_lbl,sanct_nm,hab_bnd,shltr_cd,brws_spc_cd,frg_stg,obsvr_init,wthr_summ,moon_phs_lbl,trk_surf_knd,obs_dt,sght_ts,qkka_cnt,pch_yng_cnt,brws_cov_pct,trnsct_len_m,notes_txt\n'+
+                'QK-01,North Ridge Colony,Wattle Hollow Reserve,RIDGE,SH-01,SP-ACAC,EARLY,RJ,clear,WAXING,SAND,2026-03-02,2026-03-02 06:45:00,12,3,24.75,120.5,browse heavily cropped\n'+
+                'QK-02,,,,,,,,,,,,,,,,,\n'+
+                'QK-03,South Gully Colony,Wattle Hollow Reserve,GULLY,SH-03,SP-MELA,LATE,TM,overcast,WANING,LOAM,2026-03-05,2026-03-05 05:30:00,7,1,18.5,95.0,fresh scats near shelter\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        wideRowsIncludingNullTail:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"observationRef":"QK-01","colonyLabel":"North Ridge Colony","sanctuaryName":"Wattle Hollow Reserve","habitatBand":"RIDGE","shelterCode":"SH-01","browseSpeciesCode":"SP-ACAC","forageStage":"EARLY","observerInitials":"RJ","observedOn":"2026-03-02","sightedAt":"2026-03-02T06:45:00.000000000+0000","quokkaCount":12,"browseCoverPct":24.75,"transectLengthM":120.5,"notesText":"browse heavily cropped"},{"observationRef":"QK-02","colonyLabel":null,"sanctuaryName":null,"habitatBand":null,"shelterCode":null,"browseSpeciesCode":null,"forageStage":null,"observerInitials":null,"observedOn":null,"sightedAt":null,"quokkaCount":null,"browseCoverPct":null,"transectLengthM":null,"notesText":null},{"observationRef":"QK-03","colonyLabel":"South Gully Colony","sanctuaryName":"Wattle Hollow Reserve","habitatBand":"GULLY","shelterCode":"SH-03","browseSpeciesCode":"SP-MELA","forageStage":"LATE","observerInitials":"TM","observedOn":"2026-03-05","sightedAt":"2026-03-05T05:30:00.000000000+0000","quokkaCount":7,"browseCoverPct":18.5,"transectLengthM":95.0,"notesText":"fresh scats near shelter"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::kindlyquokka3::service::BrowseHabitatDigest
+{
+  pattern: '/kindlyquokka3/browse/habitatDigest';
+  ownership: UserList { users: ['sanctuary-browse-log'] };
+  documentation: 'De-duplicated habitat-centric projection of the browse-observation row.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::kindlyquokka3::domain::BrowseObservation.all()->project(
+      [
+        o|$o.observationRef,
+        o|$o.habitatBand,
+        o|$o.shelterCode,
+        o|$o.forageStage,
+        o|$o.weatherSummary,
+        o|$o.browseCoverPct,
+        o|$o.transectLengthM
+      ],
+      [
+        'observationRef',
+        'habitatBand',
+        'shelterCode',
+        'forageStage',
+        'weatherSummary',
+        'browseCoverPct',
+        'transectLengthM'
+      ]
+    )->distinct()->sort([asc('observationRef')])};
+    mapping: test::kindlyquokka3::mapping::BrowseObservationMapping;
+    runtime: test::kindlyquokka3::runtime::SanctuaryFieldRuntime;
+  }
+  testSuites:
+  [
+    habitatDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryH2Connection:
+            Relational
+            #{
+              fieldlog.browse_observation:
+                'obs_ref,col_lbl,sanct_nm,hab_bnd,shltr_cd,brws_spc_cd,frg_stg,obsvr_init,wthr_summ,moon_phs_lbl,trk_surf_knd,obs_dt,sght_ts,qkka_cnt,pch_yng_cnt,brws_cov_pct,trnsct_len_m,notes_txt\n'+
+                'QK-01,North Ridge Colony,Wattle Hollow Reserve,RIDGE,SH-01,SP-ACAC,EARLY,RJ,clear,WAXING,SAND,2026-03-02,2026-03-02 06:45:00,12,3,24.75,120.5,browse heavily cropped\n'+
+                'QK-02,,,,,,,,,,,,,,,,,\n'+
+                'QK-03,South Gully Colony,Wattle Hollow Reserve,GULLY,SH-03,SP-MELA,LATE,TM,overcast,WANING,LOAM,2026-03-05,2026-03-05 05:30:00,7,1,18.5,95.0,fresh scats near shelter\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        distinctHabitatRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"observationRef":"QK-01","habitatBand":"RIDGE","shelterCode":"SH-01","forageStage":"EARLY","weatherSummary":"clear","browseCoverPct":24.75,"transectLengthM":120.5},{"observationRef":"QK-02","habitatBand":null,"shelterCode":null,"forageStage":null,"weatherSummary":null,"browseCoverPct":null,"transectLengthM":null},{"observationRef":"QK-03","habitatBand":"GULLY","shelterCode":"SH-03","forageStage":"LATE","weatherSummary":"overcast","browseCoverPct":18.5,"transectLengthM":95.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

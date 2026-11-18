@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::embercavern2::store::CavernDb
+(
+  Schema survey
+  (
+    Table expedition
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      expedition_id INTEGER PRIMARY KEY,
+      expedition_code VARCHAR(16),
+      region_code VARCHAR(12),
+      status_code VARCHAR(4),
+      grade_code VARCHAR(4),
+      rescue_cleared BIT,
+      leader_note VARCHAR(120),
+      departed_at TIMESTAMP,
+      due_back_at TIMESTAMP,
+      depth_m INTEGER,
+      cave_code VARCHAR(12),
+      rope_kit_code VARCHAR(12),
+      lamp_kit_code VARCHAR(12),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+
+    Table cave
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      cave_id INTEGER PRIMARY KEY,
+      cave_code VARCHAR(12),
+      cave_name VARCHAR(64),
+      entrance_kind VARCHAR(16),
+      massif_code VARCHAR(12),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+
+    Table expedition_member
+    (
+      expedition_code VARCHAR(16) PRIMARY KEY,
+      caver_code VARCHAR(12) PRIMARY KEY
+    )
+  )
+
+  Schema registry
+  (
+    Table caver
+    (
+      caver_code VARCHAR(12) PRIMARY KEY,
+      caver_name VARCHAR(64),
+      diver_flag BIT
+    )
+
+    Table massif
+    (
+      massif_code VARCHAR(12) PRIMARY KEY,
+      massif_name VARCHAR(64),
+      district_code VARCHAR(12)
+    )
+
+    Table district
+    (
+      district_code VARCHAR(12) PRIMARY KEY,
+      district_name VARCHAR(64),
+      authority_code VARCHAR(12)
+    )
+
+    Table authority
+    (
+      authority_code VARCHAR(12) PRIMARY KEY,
+      authority_name VARCHAR(64)
+    )
+
+    Table kit
+    (
+      kit_code VARCHAR(12) PRIMARY KEY,
+      kit_kind VARCHAR(8),
+      rope_length_m INTEGER,
+      lumens INTEGER
+    )
+  )
+
+  Join Expedition_Cave(survey.expedition.cave_code = survey.cave.cave_code)
+  Join Cave_Massif(survey.cave.massif_code = registry.massif.massif_code)
+  Join Massif_District(registry.massif.district_code = registry.district.district_code)
+  Join District_Authority(registry.district.authority_code = registry.authority.authority_code)
+  Join Expedition_Member(survey.expedition.expedition_code = survey.expedition_member.expedition_code)
+  Join Member_Caver(survey.expedition_member.caver_code = registry.caver.caver_code)
+  Join Expedition_RopeKit(survey.expedition.rope_kit_code = registry.kit.kit_code and registry.kit.kit_kind = 'ROPE')
+  Join Expedition_LampKit(survey.expedition.lamp_kit_code = registry.kit.kit_code and registry.kit.kit_kind = 'LAMP')
+
+  Filter RopeKind(registry.kit.kit_kind = 'ROPE')
+  Filter LampKind(registry.kit.kit_kind = 'LAMP')
+)

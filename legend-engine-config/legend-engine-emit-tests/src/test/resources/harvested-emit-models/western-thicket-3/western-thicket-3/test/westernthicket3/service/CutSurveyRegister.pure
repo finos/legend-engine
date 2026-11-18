@@ -1,0 +1,149 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernthicket3::service::CutSurveyRegister
+{
+  pattern: '/westernthicket3/v1/cut-survey-register/{minStems}';
+  title: 'Coppice Wood - Cut Survey Register Ranked Within Each Cut';
+  ownership: DID { identifier: 'coppice-survey-desk' };
+  documentation: 'Reads the cutting register at a business date the caller passes, keeps the surveys of the cuts the caller names that cleared a stem floor, were walked by a warden on the grove rota and sat on an open cutting cycle for at least twenty days, ranks what is left inside each cut by counted stems over a window, keeps the two strongest surveys of each cut and bands the stools of each surveyed stand through a nested conditional. The same query is served by two keyed executions, one against the working wood tier and one against the archive tier.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query:
+    {
+      asOfDate: StrictDate[1], minStems: Integer[1], cutKinds: String[*]|
+      test::westernthicket3::domain::CutSurveyRecord.all($asOfDate)->filter(
+        x|($x.stemCount >= $minStems) &&
+          ($x.cutKind->in($cutKinds)) &&
+          ($x.warden->isNotEmpty()) &&
+          (dateDiff($x.cycleStartedOn, $x.surveyedOn, DurationUnit.DAYS) >= 20)
+      )->project(
+        [
+          x|$x.surveyCode,
+          x|$x.cutKind,
+          x|$x.stemCount,
+          x|dateDiff($x.cycleStartedOn, $x.surveyedOn, DurationUnit.DAYS),
+          x|$x.warden->toOne()->cast(@test::westernthicket3::domain::GroveWarden).rotaCode,
+          x|if($x.stoolHeightCm >= 30.0,
+               | 'TALL STOOL',
+               | if($x.canopyGapPct >= 40.0,
+                    | 'OPEN GAP',
+                    | 'LOW STOOL'))
+        ],
+        [
+          'Survey',
+          'Cut',
+          'Stems',
+          'CycleDays',
+          'Rota',
+          'Stool Band'
+        ]
+      )->olapGroupBy(
+        ['Cut'],
+        desc('Stems'),
+        w|$w->rank(),
+        'Stem Rank'
+      )->filter(
+        r|$r.getInteger('Stem Rank') <= 2
+      )->sort(
+        [
+          asc('Cut'),
+          asc('Stem Rank'),
+          asc('Survey')
+        ]
+      )->limit(8)
+    };
+    key: 'tier';
+    executions['wood']:
+    {
+      mapping: test::westernthicket3::mapping::ThicketSurveyMapping;
+      runtime: test::westernthicket3::runtime::ThicketWoodRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::westernthicket3::mapping::ThicketSurveyMapping;
+      runtime: test::westernthicket3::runtime::ThicketArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    cutSurveyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketConnection:
+            Reference
+            #{
+              test::westernthicket3::data::ThicketTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        woodTierRankedWithinEachCut:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['wood'];
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            minStems = 10,
+            cutKinds = ['COPPICE', 'LAYERING']
+          ]
+          asserts:
+          [
+            twoStrongestSurveysOfEachNamedCut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"CS-01","Cut":"COPPICE","Stems":100,"CycleDays":59,"Rota":"D","Stool Band":"TALL STOOL","Stem Rank":1},{"Survey":"CS-10","Cut":"COPPICE","Stems":90,"CycleDays":59,"Rota":"N","Stool Band":"TALL STOOL","Stem Rank":2},{"Survey":"CS-05","Cut":"LAYERING","Stems":30,"CycleDays":59,"Rota":"N","Stool Band":"OPEN GAP","Stem Rank":1},{"Survey":"CS-06","Cut":"LAYERING","Stems":20,"CycleDays":59,"Rota":"N","Stool Band":"LOW STOOL","Stem Rank":2}]';
+                  }#;
+              }#
+          ]
+        },
+        archiveTierAtADateInsideTheClosedWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            asOfDate = %2024-06-01,
+            minStems = 10,
+            cutKinds = ['COPPICE', 'LAYERING']
+          ]
+          asserts:
+          [
+            onlyTheSurveyWhoseWindowWasOpenThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"CS-11","Cut":"COPPICE","Stems":50,"CycleDays":121,"Rota":"D","Stool Band":"TALL STOOL","Stem Rank":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

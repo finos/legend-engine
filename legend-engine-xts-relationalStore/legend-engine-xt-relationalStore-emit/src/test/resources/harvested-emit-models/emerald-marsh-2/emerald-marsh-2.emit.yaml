@@ -1,0 +1,47 @@
+name: emerald-marsh-2
+title: "Emerald Marsh 2 - Point-In-Time Reed Stand Boards With Environment-Keyed Multi Execution"
+description: |
+  A wetland reed-stand monitor whose business-temporal class is resolved at an
+  instant pinned far in the future, so only the version whose validity window
+  contains that instant survives. Two single-execution services publish the
+  resolved board: one gating on a height floor, a cover floor and a recording
+  date that is not in the future, the other testing membership of a
+  multi-valued sector parameter with an existential quantifier. Each has an
+  environment-keyed multi-execution twin whose key selects a whole
+  mapping/runtime binding. Both tested services carry deterministic relational
+  fixtures including a version that closed on the business timeline before the
+  pinned instant.
+modelSources:
+  model:
+    root: emerald-marsh-2
+    files:
+      - test/emeraldmarsh2/connection/MarshConnection.pure
+      - test/emeraldmarsh2/domain/MarshDomain.pure
+      - test/emeraldmarsh2/mapping/MarshMapping.pure
+      - test/emeraldmarsh2/runtime/MarshRuntime.pure
+      - test/emeraldmarsh2/service/ReedStandBoards.pure
+      - test/emeraldmarsh2/store/MarshMonitorDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - multi-execution
+  - point-in-time
+  - service-test
+  - wetland

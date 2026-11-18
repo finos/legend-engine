@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::crimsonwharf4::store::KilnDB
+(
+  Schema pottery
+  (
+    Table kiln_firing
+    (
+      firing_code VARCHAR(24) PRIMARY KEY,
+      kiln_code VARCHAR(16),
+      studio_code VARCHAR(16),
+      firing_date DATE,
+      started_at TIMESTAMP,
+      peak_celsius INTEGER,
+      hold_minutes INTEGER,
+      firing_state INTEGER,
+      firing_note VARCHAR(160),
+      lead_potter VARCHAR(96)
+    )
+    Table pottery_piece
+    (
+      piece_code VARCHAR(24) PRIMARY KEY,
+      firing_code VARCHAR(24),
+      glaze_code VARCHAR(16),
+      piece_name VARCHAR(96),
+      clay_body VARCHAR(32),
+      wall_mm FLOAT,
+      mass_grams INTEGER,
+      piece_state INTEGER
+    )
+    Table glaze_batch
+    (
+      glaze_code VARCHAR(16) PRIMARY KEY,
+      glaze_name VARCHAR(96),
+      cone_number INTEGER,
+      matte_flag VARCHAR(1),
+      batch_state INTEGER
+    )
+    Table firing_review
+    (
+      review_code VARCHAR(24) PRIMARY KEY,
+      firing_code VARCHAR(24),
+      passed_flag VARCHAR(1),
+      reviewed_at TIMESTAMP,
+      reviewer_name VARCHAR(96)
+    )
+  )
+
+  Filter LoggedFiring(pottery.kiln_firing.firing_state = 1)
+  Filter NamedPiece(trim(pottery.pottery_piece.piece_name) != '')
+  Filter PassedFiring(pottery.kiln_firing.firing_code = pottery.firing_review.firing_code and pottery.firing_review.passed_flag = 'Y')
+
+  Join Firing_Piece(pottery.kiln_firing.firing_code = pottery.pottery_piece.firing_code)
+  Join Piece_Glaze(pottery.pottery_piece.glaze_code = pottery.glaze_batch.glaze_code)
+  Join Firing_Review(pottery.kiln_firing.firing_code = pottery.firing_review.firing_code)
+)

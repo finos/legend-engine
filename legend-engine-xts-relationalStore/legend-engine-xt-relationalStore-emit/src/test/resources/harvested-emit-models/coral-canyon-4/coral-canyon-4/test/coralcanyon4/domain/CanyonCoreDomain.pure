@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::coralcanyon4::domain::GrainClass
+{
+  CLAY,
+  SILT,
+  SAND,
+  GRIT
+}
+
+Enum test::coralcanyon4::domain::WeatheringClass
+{
+  SEVERE,
+  MODERATE,
+  SLIGHT
+}
+
+Enum test::coralcanyon4::domain::HazardLevel
+{
+  HIGH,
+  LOW
+}
+
+Class test::coralcanyon4::domain::CoreSample
+{
+  sampleCode: String[1];
+  sampleKey: String[0..1];
+  strataBand: String[0..1];
+  grain: test::coralcanyon4::domain::GrainClass[0..1];
+  weathering: test::coralcanyon4::domain::WeatheringClass[0..1];
+  hazard: test::coralcanyon4::domain::HazardLevel[0..1];
+  loggedYear: Integer[0..1];
+  outcropLabel: String[0..1];
+  ridgeLabel: String[0..1];
+  lastVisitNo: Integer[0..1];
+}
+
+Class test::coralcanyon4::domain::SampleReading
+{
+  kind: String[1];
+  reading: Integer[0..1];
+  takenOn: StrictDate[0..1];
+}
+
+Class test::coralcanyon4::domain::OutcropBundle
+{
+  bundleCode: String[1];
+  readings: test::coralcanyon4::domain::SampleReading[*];
+}
+
+Class test::coralcanyon4::domain::OutcropDigest
+{
+  bundleCode: String[1];
+  gammaCount: Integer[1];
+  datingLabel: String[1];
+}

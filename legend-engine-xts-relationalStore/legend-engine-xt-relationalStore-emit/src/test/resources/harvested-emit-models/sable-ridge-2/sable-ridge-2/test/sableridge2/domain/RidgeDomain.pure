@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::sableridge2::domain::HutClass
+{
+  SHELTER,
+  LODGE,
+  BIVOUAC,
+  DORMITORY
+}
+
+Enum test::sableridge2::domain::TrailGrade
+{
+  EASY,
+  MODERATE,
+  ALPINE,
+  GLACIER
+}
+
+Class test::sableridge2::domain::HutStay
+{
+  stayRef: String[1];
+  stayDate: StrictDate[1];
+  bunkCount: Integer[1];
+  guestCount: Integer[1];
+  supplyKg: Integer[0..1];
+  occupancyPercent: Float[1];
+  spareBunks: Integer[1];
+  stayLabel: String[1];
+  loadBand: String[1];
+  segmentName: String[0..1];
+  hut: test::sableridge2::domain::MountainHut[0..1];
+}
+
+Class test::sableridge2::domain::MountainHut
+{
+  hutCode: String[1];
+  hutName: String[1];
+  hutClass: test::sableridge2::domain::HutClass[1];
+  elevationM: Integer[1];
+  segment: test::sableridge2::domain::TrailSegment[0..1];
+}
+
+Class test::sableridge2::domain::TrailSegment
+{
+  segmentCode: String[1];
+  segmentName: String[1];
+  grade: test::sableridge2::domain::TrailGrade[1];
+}
+
+Class test::sableridge2::domain::Warden
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+}
+
+Association test::sableridge2::domain::SegmentPatrol
+{
+  wardens: test::sableridge2::domain::Warden[*];
+  patrolSegment: test::sableridge2::domain::TrailSegment[0..1];
+}
+
+Class test::sableridge2::domain::StayFeedRow
+{
+  rowRef: String[1];
+  rawHut: String[1];
+  rawGuests: String[1];
+  rawBunks: String[1];
+  rawClass: String[0..1];
+  rawNote: String[0..1];
+}
+
+Class test::sableridge2::domain::StayDigest
+{
+  digestKey: String[1];
+  hutCode: String[1];
+  guestTally: Integer[1];
+  bunkTally: Integer[1];
+  loadBand: String[1];
+  feedClass: test::sableridge2::domain::HutClass[1];
+  noteDigest: String[1];
+}
+
+Association test::sableridge2::domain::DigestOnHut
+{
+  hutDigests: test::sableridge2::domain::StayDigest[*];
+  digestHut: test::sableridge2::domain::MountainHut[0..1];
+}

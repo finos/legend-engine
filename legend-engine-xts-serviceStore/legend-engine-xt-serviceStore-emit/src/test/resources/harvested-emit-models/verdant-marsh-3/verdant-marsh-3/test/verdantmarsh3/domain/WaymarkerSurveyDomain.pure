@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class test::verdantmarsh3::domain::SurveyPage
+{
+  pageIndex: Integer[0..1];
+  pageSize: Integer[0..1];
+}
+
+Class test::verdantmarsh3::domain::SurveyMetadata
+{
+  pageCount: Integer[0..1];
+  sourcePath: String[0..1];
+  page: test::verdantmarsh3::domain::SurveyPage[0..1];
+}
+
+Class test::verdantmarsh3::domain::AnswerScale
+{
+  scaleCode: String[0..1];
+  upperBound: Integer[0..1];
+}
+
+Class test::verdantmarsh3::domain::QuestionOption
+{
+  optionCode: String[0..1];
+  optionText: String[0..1];
+}
+
+Class test::verdantmarsh3::domain::AnswerRevision
+{
+  revisionCount: Integer[0..1];
+  revisedBy: String[0..1];
+}
+
+Class test::verdantmarsh3::domain::SurveyQuestion
+{
+  questionCode: String[0..1];
+  promptText: String[0..1];
+  answerText: String[0..1];
+  scale: test::verdantmarsh3::domain::AnswerScale[0..1];
+  options: test::verdantmarsh3::domain::QuestionOption[*];
+  revision: test::verdantmarsh3::domain::AnswerRevision[0..1];
+}
+
+Class test::verdantmarsh3::domain::ValidationNote
+{
+  statusCode: String[0..1];
+  message: String[0..1];
+  checkedOn: StrictDate[0..1];
+}
+
+Class test::verdantmarsh3::domain::EntryType
+{
+  typeCode: String[0..1];
+  typeLabel: String[0..1];
+}
+
+Class test::verdantmarsh3::domain::EntryExpiration
+{
+  graceDays: Integer[0..1];
+  reviewDays: Integer[0..1];
+  expiresOn: StrictDate[0..1];
+}
+
+Class test::verdantmarsh3::domain::WaymarkerLocation
+{
+  zoneCode: String[0..1];
+  districtName: String[0..1];
+}
+
+Class test::verdantmarsh3::domain::WaymarkerDetailResult
+{
+  waymarkerRef: String[1];
+  waymarkerName: String[0..1];
+  location: test::verdantmarsh3::domain::WaymarkerLocation[0..1];
+  question: test::verdantmarsh3::domain::SurveyQuestion[0..1];
+  validation: test::verdantmarsh3::domain::ValidationNote[0..1];
+  entryType: test::verdantmarsh3::domain::EntryType[0..1];
+  expiration: test::verdantmarsh3::domain::EntryExpiration[0..1];
+}
+
+Class test::verdantmarsh3::domain::WaymarkerDetailResponse
+{
+  metadata: test::verdantmarsh3::domain::SurveyMetadata[0..1];
+  results: test::verdantmarsh3::domain::WaymarkerDetailResult[*];
+}
+
+Class test::verdantmarsh3::domain::RamblerSurveyResult
+{
+  entryRef: String[1];
+  populationCode: String[0..1];
+  question: test::verdantmarsh3::domain::SurveyQuestion[0..1];
+  expiration: test::verdantmarsh3::domain::EntryExpiration[0..1];
+}
+
+Class test::verdantmarsh3::domain::RamblerSurveyResponse
+{
+  metadata: test::verdantmarsh3::domain::SurveyMetadata[0..1];
+  results: test::verdantmarsh3::domain::RamblerSurveyResult[*];
+}
+
+Class test::verdantmarsh3::domain::WardenSurveyResult
+{
+  entryRef: String[1];
+  populationCode: String[0..1];
+  question: test::verdantmarsh3::domain::SurveyQuestion[0..1];
+  expiration: test::verdantmarsh3::domain::EntryExpiration[0..1];
+}
+
+Class test::verdantmarsh3::domain::WardenSurveyResponse
+{
+  metadata: test::verdantmarsh3::domain::SurveyMetadata[0..1];
+  results: test::verdantmarsh3::domain::WardenSurveyResult[*];
+}
+
+Class test::verdantmarsh3::domain::VolunteerSurveyResult
+{
+  entryRef: String[1];
+  populationCode: String[0..1];
+  question: test::verdantmarsh3::domain::SurveyQuestion[0..1];
+  expiration: test::verdantmarsh3::domain::EntryExpiration[0..1];
+}
+
+Class test::verdantmarsh3::domain::VolunteerSurveyResponse
+{
+  metadata: test::verdantmarsh3::domain::SurveyMetadata[0..1];
+  results: test::verdantmarsh3::domain::VolunteerSurveyResult[*];
+}
+
+Class test::verdantmarsh3::domain::ContractorSurveyResult
+{
+  entryRef: String[1];
+  populationCode: String[0..1];
+  question: test::verdantmarsh3::domain::SurveyQuestion[0..1];
+  expiration: test::verdantmarsh3::domain::EntryExpiration[0..1];
+}
+
+Class test::verdantmarsh3::domain::ContractorSurveyResponse
+{
+  metadata: test::verdantmarsh3::domain::SurveyMetadata[0..1];
+  results: test::verdantmarsh3::domain::ContractorSurveyResult[*];
+}
+
+Class test::verdantmarsh3::domain::RefinedWaymarkerRecord
+{
+  waymarkerRef: String[1];
+  waymarkerName: String[0..1];
+  districtName: String[0..1];
+  promptText: String[0..1];
+  scaleCode: String[0..1];
+  leadOptionText: String[0..1];
+  revisedBy: String[0..1];
+  validationStatus: String[0..1];
+  typeLabel: String[0..1];
+  expiresOnShifted: Date[0..1];
+  checkedOnShifted: Date[0..1];
+}

@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opalvineyard::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Identity of a planted vineyard block.'} test::opalvineyard::domain::VineyardBlock
+{
+  blockCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Identity of a grafting rootstock.'} test::opalvineyard::domain::Rootstock
+{
+  rootstockCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A flat, wide harvest observation used as the scope of the generated document schema.'} test::opalvineyard::domain::HarvestRecord
+{
+  recordCode: String[1];
+  pickDate: StrictDate[1];
+  pickCrew: String[1];
+  varietyName: String[1];
+  clonalSelection: String[0..1];
+  trellisSystem: String[0..1];
+  qualityGrade: String[1];
+  pressCode: String[0..1];
+  inspectorNote: String[0..1];
+  rowNumber: Integer[1];
+  vineCount: Integer[1];
+  binCount: Integer[1];
+  bunchCount: Integer[0..1];
+  fruitWeightKg: Float[1];
+  sugarBrix: Float[1];
+  pulpTemperatureC: Float[1];
+  soilMoisturePct: Float[1];
+  sortingRejectKg: Float[1];
+  binTareKg: Float[1];
+  titratableAcidity: Float[0..1];
+  ambientTemperatureC: Float[0..1];
+  canopyDensityIndex: Float[0..1];
+  irrigationHours: Float[0..1];
+  blocks: VineyardBlock[*];
+  rootstock: Rootstock[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A harvest batch whose record collection is reached through the association, so navigation is bidirectional.'} test::opalvineyard::domain::HarvestBatch
+{
+  systemReference: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A harvest submission that owns its record collection as a plain property.'} test::opalvineyard::domain::HarvestSubmission
+{
+  systemReference: String[1];
+  records: HarvestRecord[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Bidirectional link between a harvest batch and the records it carries.'} test::opalvineyard::domain::HarvestBatchRecords
+{
+  batch: HarvestBatch[1];
+  records: HarvestRecord[*];
+}

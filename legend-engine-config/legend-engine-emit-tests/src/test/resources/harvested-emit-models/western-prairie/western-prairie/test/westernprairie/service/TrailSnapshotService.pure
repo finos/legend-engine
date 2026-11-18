@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernprairie::service::TrailSnapshotService
+{
+  pattern: '/prairie/v1/trails/snapshot';
+  title: 'Trail Snapshot';
+  owners:
+  [
+    'prairie-preserve',
+    'trail-registry'
+  ];
+  documentation: 'Projects every trail with its identifier, name and conservation region over the prairie relational mapping, crossing the Trail_Region inner join. Forms the tabular source that the trail-snapshot persistence materializes into a unitemporal target relation.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::westernprairie::domain::Trail.all()->project(
+      [
+        t|$t.id,
+        t|$t.name,
+        t|$t.region.name
+      ],
+      [
+        'ID',
+        'NAME',
+        'REGION'
+      ]
+    )->sort(
+      [
+        asc('ID')
+      ]
+    );
+    mapping: test::westernprairie::mapping::PrairieMapping;
+    runtime: test::westernprairie::runtime::PrairieH2Runtime;
+  }
+  testSuites:
+  [
+    trailSnapshotSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              prairie.trail:
+                'trail_id,trail_name,region_id\n'+
+                '1,Ridge Loop,10\n'+
+                '2,Marsh Walk,20\n';
+              prairie.region:
+                'region_id,region_name\n'+
+                '10,North\n'+
+                '20,South\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allTrails:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoTrails:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1,"NAME":"Ridge Loop","REGION":"North"},{"ID":2,"NAME":"Marsh Walk","REGION":"South"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+name: sable-beacon-2
+title: "Sable Beacon 2 - street-tree inventory with single-table subtyping, computed enumerations and a multi-hop steward chain behind a girth-filtered service"
+description: |
+  A municipal street-tree inventory spanning a cross-schema relational graph and an inline
+  tally view. One mapping resolves the tree extent through a three-hop species-genus-steward
+  join path, folds string and numeric column functions into scalar properties, resolves canopy
+  health and paving surface through enumeration mappings and narrows a heritage subtype off the
+  same table. A relational association binds trees to their planting site while a cross-store
+  association reaches the crew extent, and a single-execution service projects the roster above
+  a caller-supplied girth threshold.
+modelSources:
+  model:
+    root: sable-beacon-2
+    files:
+      - test/sablebeacon2/connection/BeaconConnections.pure
+      - test/sablebeacon2/domain/BeaconDomain.pure
+      - test/sablebeacon2/mapping/BeaconMapping.pure
+      - test/sablebeacon2/mapping/BeaconTranslationMapping.pure
+      - test/sablebeacon2/runtime/BeaconRuntimes.pure
+      - test/sablebeacon2/service/CanopyRosterService.pure
+      - test/sablebeacon2/store/BeaconInventoryStore.pure
+      - test/sablebeacon2/store/BeaconReferenceStore.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:cross-store
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-single-table-inheritance
+  - mapping:relational-string-function-transform
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - cross-store
+  - db2
+  - duckdb
+  - enumeration-mapping
+  - inline-view
+  - mapping-test
+  - multi-hop-join
+  - service-test
+  - single-table-inheritance
+  - street-tree-inventory
+  - urban-canopy

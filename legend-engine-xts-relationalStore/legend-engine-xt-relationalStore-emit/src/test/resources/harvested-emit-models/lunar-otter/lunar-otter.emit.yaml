@@ -1,0 +1,42 @@
+name: lunar-otter
+title: "River Otter Survey — Relational Mapping, Nested Join, Service & Mapping Tests"
+description: |
+  A river-otter wildlife-tracking corpus exercising a relational service over
+  a three-table H2 store. Otters map to habitats and habitats to regions, so
+  a query from otter to region resolves the chained Otter_Habitat >
+  Habitat_Region nested join. A mapping testSuite asserts a nested-join
+  projection and a service testSuite asserts a parameterised query, driving
+  EMIT test execution and execution-plan generation.
+modelSources:
+  model:
+    root: lunar-otter
+    files:
+      - test/lunarotter/connection/WildlifeH2Connection.pure
+      - test/lunarotter/domain/WildlifeDomain.pure
+      - test/lunarotter/mapping/WildlifeMapping.pure
+      - test/lunarotter/runtime/WildlifeRuntime.pure
+      - test/lunarotter/service/OttersByRegion.pure
+      - test/lunarotter/store/WildlifeDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - nested-join
+  - plan-generation
+  - relational
+  - service-test
+  - wildlife

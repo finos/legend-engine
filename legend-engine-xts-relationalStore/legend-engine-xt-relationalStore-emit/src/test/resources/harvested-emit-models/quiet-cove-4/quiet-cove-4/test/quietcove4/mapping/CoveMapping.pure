@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietcove4::mapping::CoveMapping
+(
+  *test::quietcove4::domain::MooringVisit[mooringVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcove4::store::CoveDB]cove.mooring_visit.visit_id
+    )
+    ~mainTable [test::quietcove4::store::CoveDB]cove.mooring_visit
+    visitCode: [test::quietcove4::store::CoveDB]cove.mooring_visit.visit_code,
+    coveCode: [test::quietcove4::store::CoveDB]cove.mooring_visit.cove_code,
+    vesselName: [test::quietcove4::store::CoveDB]cove.mooring_visit.vessel_name,
+    berthKind: case(
+      equal([test::quietcove4::store::CoveDB]cove.mooring_visit.berth_code, 'SW'),
+      'SWING',
+      case(
+        equal([test::quietcove4::store::CoveDB]cove.mooring_visit.berth_code, 'PN'),
+        'PONTOON',
+        case(
+          equal([test::quietcove4::store::CoveDB]cove.mooring_visit.berth_code, 'PL'),
+          'PILE',
+          case(
+            equal([test::quietcove4::store::CoveDB]cove.mooring_visit.berth_code, 'AN'),
+            'ANCHORAGE',
+            'UNBERTHED'
+          )
+        )
+      )
+    ),
+    nights: [test::quietcove4::store::CoveDB]cove.mooring_visit.nights,
+    arrivedOn: [test::quietcove4::store::CoveDB]cove.mooring_visit.arrived_on
+  }
+
+  *test::quietcove4::domain::DiveLog[diveLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietcove4::store::CoveDB]cove.dive_log.log_id
+    )
+    ~mainTable [test::quietcove4::store::CoveDB]cove.dive_log
+    logCode: [test::quietcove4::store::CoveDB]cove.dive_log.log_code,
+    coveCode: [test::quietcove4::store::CoveDB]cove.dive_log.cove_code,
+    siteName: [test::quietcove4::store::CoveDB]cove.dive_log.site_name,
+    depthM: [test::quietcove4::store::CoveDB]cove.dive_log.depth_m,
+    visibilityM: [test::quietcove4::store::CoveDB]cove.dive_log.visibility_m,
+    teamSize: [test::quietcove4::store::CoveDB]cove.dive_log.team_size,
+    divedOn: [test::quietcove4::store::CoveDB]cove.dive_log.dived_on
+  }
+)

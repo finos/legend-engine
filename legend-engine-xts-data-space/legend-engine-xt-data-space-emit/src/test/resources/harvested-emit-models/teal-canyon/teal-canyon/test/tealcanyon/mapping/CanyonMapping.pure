@@ -1,0 +1,207 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealcanyon::mapping::CanyonMapping
+(
+  *test::tealcanyon::domain::GaugeStation[gauge_station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealcanyon::store::CanyonDb]canyon.gauge_station.station_code,
+      [test::tealcanyon::store::CanyonDb]canyon.gauge_station.installed_on
+    )
+    ~mainTable [test::tealcanyon::store::CanyonDb]canyon.gauge_station
+    stationCode: [test::tealcanyon::store::CanyonDb]canyon.gauge_station.station_code,
+    installedOn: [test::tealcanyon::store::CanyonDb]canyon.gauge_station.installed_on,
+    stationName: [test::tealcanyon::store::CanyonDb]canyon.gauge_station.station_name,
+    elevationM: [test::tealcanyon::store::CanyonDb]canyon.gauge_station.elevation_m,
+    telemetryLive: [test::tealcanyon::store::CanyonDb]canyon.gauge_station.telemetry_live,
+    reachName: [test::tealcanyon::store::CanyonDb]@Station_Reach | [test::tealcanyon::store::CanyonDb]canyon.river_reach.reach_name
+  }
+
+  *test::tealcanyon::domain::RiverReach[river_reach]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealcanyon::store::CanyonDb]canyon.river_reach.reach_code
+    )
+    ~mainTable [test::tealcanyon::store::CanyonDb]canyon.river_reach
+    reachCode: [test::tealcanyon::store::CanyonDb]canyon.river_reach.reach_code,
+    reachName: [test::tealcanyon::store::CanyonDb]canyon.river_reach.reach_name,
+    reachLengthKm: [test::tealcanyon::store::CanyonDb]canyon.river_reach.reach_length_km
+  }
+
+  *test::tealcanyon::domain::FieldSurvey[field_survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealcanyon::store::CanyonDb]canyon.field_survey.survey_id,
+      [test::tealcanyon::store::CanyonDb]canyon.field_survey.surveyed_at
+    )
+    ~mainTable [test::tealcanyon::store::CanyonDb]canyon.field_survey
+    surveyId: [test::tealcanyon::store::CanyonDb]canyon.field_survey.survey_id,
+    surveyedAt: [test::tealcanyon::store::CanyonDb]canyon.field_survey.surveyed_at,
+    dischargeCms: [test::tealcanyon::store::CanyonDb]canyon.field_survey.discharge_cms,
+    turbidityNtu: [test::tealcanyon::store::CanyonDb]canyon.field_survey.turbidity_ntu
+  }
+
+  *test::tealcanyon::domain::SurveyTeam[survey_team]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealcanyon::store::CanyonDb]canyon.survey_team.team_code
+    )
+    ~mainTable [test::tealcanyon::store::CanyonDb]canyon.survey_team
+    teamCode: [test::tealcanyon::store::CanyonDb]canyon.survey_team.team_code,
+    teamName: [test::tealcanyon::store::CanyonDb]canyon.survey_team.team_name
+  }
+
+  test::tealcanyon::domain::ReachStations: Relational
+  {
+    AssociationMapping
+    (
+      stations[river_reach, gauge_station]: [test::tealcanyon::store::CanyonDb]@Station_Reach,
+      reach[gauge_station, river_reach]: [test::tealcanyon::store::CanyonDb]@Station_Reach
+    )
+  }
+
+  test::tealcanyon::domain::StationSurveys: Relational
+  {
+    AssociationMapping
+    (
+      surveys[gauge_station, field_survey]: [test::tealcanyon::store::CanyonDb]@Survey_Station,
+      station[field_survey, gauge_station]: [test::tealcanyon::store::CanyonDb]@Survey_Station
+    )
+  }
+
+  test::tealcanyon::domain::TeamSurveys: Relational
+  {
+    AssociationMapping
+    (
+      teamSurveys[survey_team, field_survey]: [test::tealcanyon::store::CanyonDb]@Survey_Team,
+      team[field_survey, survey_team]: [test::tealcanyon::store::CanyonDb]@Survey_Team
+    )
+  }
+
+  testSuites:
+  [
+    testSuite_FieldSurvey:
+    {
+      function: |test::tealcanyon::domain::FieldSurvey.all()->project(
+        [
+          x|$x.surveyId,
+          x|$x.station.stationName,
+          x|$x.team.teamName,
+          x|$x.turbidityNtu
+        ],
+        [
+          'Survey',
+          'Station',
+          'Team',
+          'Turbidity'
+        ]
+      )->sort([asc('Survey')]);
+      tests:
+      [
+        test_survey_associations:
+        {
+          data:
+          [
+            test::tealcanyon::store::CanyonDb:
+              Relational
+              #{
+                canyon.field_survey:
+                  'survey_id,surveyed_at,station_code,team_code,discharge_cms,turbidity_ntu\n'+
+                  'FS-1,2026-03-01 08:00:00.000,GS-1,TM-1,4.50,12\n'+
+                  'FS-2,2026-03-02 09:30:00.000,GS-1,TM-2,5.25,9\n'+
+                  'FS-3,2026-03-03 10:15:00.000,GS-2,TM-1,2.10,21\n';
+                canyon.gauge_station:
+                  'station_code,installed_on,reach_code,station_name,elevation_m,telemetry_live\n'+
+                  'GS-1,2021-04-01,RC-1,Cliffside Gauge,845,true\n'+
+                  'GS-2,2022-06-15,RC-2,Willow Bend Gauge,612,false\n';
+                canyon.survey_team:
+                  'team_code,team_name\n'+
+                  'TM-1,Canyon Hydrology Crew\n'+
+                  'TM-2,Ridge Survey Crew\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_survey_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"FS-1","Station":"Cliffside Gauge","Team":"Canyon Hydrology Crew","Turbidity":12},{"Survey":"FS-2","Station":"Cliffside Gauge","Team":"Ridge Survey Crew","Turbidity":9},{"Survey":"FS-3","Station":"Willow Bend Gauge","Team":"Canyon Hydrology Crew","Turbidity":21}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    testSuite_GaugeStation:
+    {
+      function: |test::tealcanyon::domain::GaugeStation.all()->project(
+        [
+          x|$x.stationCode,
+          x|$x.installedOn,
+          x|$x.elevationM,
+          x|$x.telemetryLive,
+          x|$x.reachName
+        ],
+        [
+          'Station',
+          'Installed',
+          'Elevation',
+          'Telemetry',
+          'Reach'
+        ]
+      )->sort([asc('Station'), asc('Installed')]);
+      tests:
+      [
+        test_station_keys_and_join:
+        {
+          data:
+          [
+            test::tealcanyon::store::CanyonDb:
+              Relational
+              #{
+                canyon.gauge_station:
+                  'station_code,installed_on,reach_code,station_name,elevation_m,telemetry_live\n'+
+                  'GS-1,2021-04-01,RC-1,Cliffside Gauge,845,true\n'+
+                  'GS-1,2024-05-10,RC-2,Cliffside Gauge Rebuild,850,true\n'+
+                  'GS-2,2022-06-15,RC-2,Willow Bend Gauge,612,false\n';
+                canyon.river_reach:
+                  'reach_code,reach_name,reach_length_km\n'+
+                  'RC-1,Upper Teal Narrows,12.40\n'+
+                  'RC-2,Lower Teal Flats,8.75\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_station_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"GS-1","Installed":"2021-04-01","Elevation":845,"Telemetry":true,"Reach":"Upper Teal Narrows"},{"Station":"GS-1","Installed":"2024-05-10","Elevation":850,"Telemetry":true,"Reach":"Lower Teal Flats"},{"Station":"GS-2","Installed":"2022-06-15","Elevation":612,"Telemetry":false,"Reach":"Lower Teal Flats"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

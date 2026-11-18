@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulestuary::mapping::ReserveDigestM2M
+(
+  *test::wistfulestuary::domain::ReserveNode[reserveNodeSet]: Pure
+  {
+    ~src test::wistfulestuary::domain::ParcelEnvelope
+    +stewardTag: String[1]: 'K' + $src.content.stewardTag->toUpper()->trim() + '/' + $src.content.revisionTag->length()->toString(),
+    qualifiedPath: $src.parcelPath,
+    nodeKey: '',
+    treeName: $src.treeName,
+    summary: if($src.content.contentKind->toUpper()->trim() == 'RESERVE',
+                | 'TIER-1',
+                | if($src.content.contentKind->toUpper()->trim() == 'MARSH',
+                     | 'TIER-2',
+                     | if($src.content.contentKind->toUpper()->trim() == 'MUDFLAT',
+                          | 'TIER-3',
+                          | if($src.content.contentKind->toUpper()->trim() == 'LAGOON',
+                               | 'TIER-4',
+                               | if($src.content.contentKind->toUpper()->trim() == 'DUNE',
+                                    | 'TIER-5',
+                                    | if($src.content.contentKind->toUpper()->trim() == 'CREEK',
+                                         | 'TIER-6',
+                                         | if($src.content.contentKind->toUpper()->trim() == 'ISLET',
+                                              | 'TIER-7',
+                                              | if($src.content.contentKind->toUpper()->trim() == 'CHANNEL',
+                                                   | 'TIER-8',
+                                                   | []))))))))
+  }
+
+  testSuites:
+  [
+    reserveTierArmsSuite:
+    {
+      function: |test::wistfulestuary::domain::ReserveNode.all()->graphFetch(
+        #{
+          test::wistfulestuary::domain::ReserveNode
+          {
+            qualifiedPath,
+            nodeKey,
+            summary,
+            treeName
+          }
+        }#
+      )->serialize(
+        #{
+          test::wistfulestuary::domain::ReserveNode
+          {
+            qualifiedPath,
+            nodeKey,
+            summary,
+            treeName
+          }
+        }#
+      );
+      tests:
+      [
+        everyParcelKindArmAndTheUnknownKindFallback:
+        {
+          doc: 'Hits all eight parcel-kind arms of the tier conditional in order and the unknown-kind fallback that leaves the tier summary and the absent tree name null, while the registry key stays pinned to the hard-wired constant.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::wistfulestuary::domain::ParcelEnvelope:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"parcelPath":"registry/tideflat/p-01","classifierPath":"meta::reserve::Parcel","treeName":"tideflat","content":{"contentKind":"reserve","title":"North Tideflat","summaryText":"Open tideflat under seasonal watch","stewardTag":"tideflat-crew","revisionTag":"r1","origin":{"startLine":1,"startColumn":1,"endLine":8,"endColumn":2,"charOffset":0,"sourceFile":"tideflat.json"}}},{"parcelPath":"registry/tideflat/p-02","classifierPath":"meta::reserve::Parcel","treeName":"tideflat","content":{"contentKind":"marsh","title":"Salt Marsh Flat","summaryText":"Reed marsh with nesting hides","stewardTag":"marsh-crew","revisionTag":"r12","origin":{"startLine":9,"startColumn":1,"endLine":18,"endColumn":2,"charOffset":240,"sourceFile":"tideflat.json"}}},{"parcelPath":"registry/tideflat/p-03","classifierPath":"meta::reserve::Parcel","treeName":"tideflat","content":{"contentKind":"mudflat","title":"Inner Mudflat","summaryText":"Wader feeding ground","stewardTag":"mudflat-crew","revisionTag":"r3"}},{"parcelPath":"registry/lagoon/p-04","classifierPath":"meta::reserve::Parcel","treeName":"lagoon","content":{"contentKind":"lagoon","title":"Brackish Lagoon","summaryText":"Shallow lagoon behind the bar","stewardTag":"lagoon-crew","revisionTag":"r4"}},{"parcelPath":"registry/lagoon/p-05","classifierPath":"meta::reserve::Parcel","treeName":"lagoon","content":{"contentKind":"dune","title":"Fore Dune Ridge","summaryText":"Marram dune ridge","stewardTag":"dune-crew","revisionTag":"r5"}},{"parcelPath":"registry/lagoon/p-06","classifierPath":"meta::reserve::Parcel","treeName":"lagoon","content":{"contentKind":"creek","title":"Tidal Creek","summaryText":"Creek draining the upper marsh","stewardTag":"creek-crew","revisionTag":"r6"}},{"parcelPath":"registry/channel/p-07","classifierPath":"meta::reserve::Parcel","treeName":"channel","content":{"contentKind":"islet","title":"Gull Islet","summaryText":"Shell islet closed in spring","stewardTag":"islet-crew","revisionTag":"r7"}},{"parcelPath":"registry/channel/p-08","classifierPath":"meta::reserve::Parcel","treeName":"channel","content":{"contentKind":"channel","title":"Main Channel","summaryText":"Navigable channel margin","stewardTag":"channel-crew","revisionTag":"r8"}},{"parcelPath":"registry/channel/p-09","classifierPath":"meta::reserve::Parcel","content":{"contentKind":"boardwalk","title":"Visitor Boardwalk","summaryText":"Raised boardwalk over the marsh","stewardTag":"access-crew","revisionTag":"r9"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            nineTieredNodes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"qualifiedPath":"registry/tideflat/p-01","nodeKey":"","summary":"TIER-1","treeName":"tideflat"},{"qualifiedPath":"registry/tideflat/p-02","nodeKey":"","summary":"TIER-2","treeName":"tideflat"},{"qualifiedPath":"registry/tideflat/p-03","nodeKey":"","summary":"TIER-3","treeName":"tideflat"},{"qualifiedPath":"registry/lagoon/p-04","nodeKey":"","summary":"TIER-4","treeName":"lagoon"},{"qualifiedPath":"registry/lagoon/p-05","nodeKey":"","summary":"TIER-5","treeName":"lagoon"},{"qualifiedPath":"registry/lagoon/p-06","nodeKey":"","summary":"TIER-6","treeName":"lagoon"},{"qualifiedPath":"registry/channel/p-07","nodeKey":"","summary":"TIER-7","treeName":"channel"},{"qualifiedPath":"registry/channel/p-08","nodeKey":"","summary":"TIER-8","treeName":"channel"},{"qualifiedPath":"registry/channel/p-09","nodeKey":"","summary":null,"treeName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

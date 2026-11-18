@@ -1,0 +1,474 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigowarren5::mapping::CellarMapping
+(
+  include mapping test::indigowarren5::mapping::CellarDetailMapping
+
+  test::indigowarren5::domain::Dairy_Cave: Relational
+  {
+    AssociationMapping
+    (
+      caves[dairy, cave]: [test::indigowarren5::store::CellarDb]@Dairy_Cave,
+      dairy[cave, dairy]: [test::indigowarren5::store::CellarDb]@Dairy_Cave
+    )
+  }
+
+  test::indigowarren5::domain::Cave_Shelf: Relational
+  {
+    AssociationMapping
+    (
+      shelves[cave, shelf]: [test::indigowarren5::store::CellarDb]@Cave_Shelf,
+      cave[shelf, cave]: [test::indigowarren5::store::CellarDb]@Cave_Shelf
+    )
+  }
+
+  test::indigowarren5::domain::Shelf_Wheel: Relational
+  {
+    AssociationMapping
+    (
+      wheels[shelf, wheel]: [test::indigowarren5::store::CellarDb]@Shelf_Wheel,
+      shelf[wheel, shelf]: [test::indigowarren5::store::CellarDb]@Shelf_Wheel
+    )
+  }
+
+  test::indigowarren5::domain::Wheel_RindCheck: Relational
+  {
+    AssociationMapping
+    (
+      checks[wheel, rindCheck]: [test::indigowarren5::store::CellarDb]@Wheel_Check,
+      wheel[rindCheck, wheel]: [test::indigowarren5::store::CellarDb]@Wheel_Check
+    )
+  }
+
+  test::indigowarren5::domain::Turner_Wheel: Relational
+  {
+    AssociationMapping
+    (
+      turnedWheels[turner, wheel]: [test::indigowarren5::store::CellarDb]@Turner_Wheel,
+      turner[wheel, turner]: [test::indigowarren5::store::CellarDb]@Turner_Wheel
+    )
+  }
+
+  test::indigowarren5::domain::Cave_Turner: Relational
+  {
+    AssociationMapping
+    (
+      turners[cave, turner]: [test::indigowarren5::store::CellarDb]@Cave_Turner,
+      turnerCave[turner, cave]: [test::indigowarren5::store::CellarDb]@Cave_Turner
+    )
+  }
+
+  test::indigowarren5::domain::Wheel_AffinageEntry: Relational
+  {
+    AssociationMapping
+    (
+      entries[wheel, affinageEntry]: [test::indigowarren5::store::CellarDb]@Wheel_Entry,
+      entryWheel[affinageEntry, wheel]: [test::indigowarren5::store::CellarDb]@Wheel_Entry
+    )
+  }
+
+  test::indigowarren5::domain::Dairy_Turner: Relational
+  {
+    AssociationMapping
+    (
+      dairyTurners[dairy, turner]: [test::indigowarren5::store::CellarDb]@Dairy_Turner,
+      turnerDairy[turner, dairy]: [test::indigowarren5::store::CellarDb]@Dairy_Turner
+    )
+  }
+
+  testSuites:
+  [
+    gradeBandSuite:
+    {
+      function: |test::indigowarren5::domain::AffinageEntry.all(%2026-05-10)->project(~[
+                    entry: e | $e.entryCode,
+                    wheel: e | $e.entryWheel.wheelCode,
+                    band: e | $e.gradeBand,
+                    turns: e | $e.turnCount,
+                    note: e | $e.roomNote
+                  ])->sort([~entry->ascending()]);
+      tests:
+      [
+        everyGradeArmIsReachedAndTheClosedEntryStaysOutOfTheWindow:
+        {
+          doc: 'Reads the cellar book as it stood on one processing date so each of the seven rind treatments reaches its own grade arm, the bare wheel reaches the no-treatment arm, the treatment the cellar never listed falls through to the unlisted arm, the entry whose room note was never written publishes no note, and the entry whose window closed before the read date stays out of the cast.';
+          data:
+          [
+            test::indigowarren5::store::CellarDb:
+              Relational
+              #{
+                cellar.affinage_entry:
+                  'entry_code,wheel_code,rind_code,turn_count,room_note,in_z,out_z\n'+
+                  'AE-01,WH-01,BLOOMY,4,cool corner,2026-04-01,9999-12-31\n'+
+                  'AE-02,WH-02,WASHED,6,damp wall,2026-04-01,9999-12-31\n'+
+                  'AE-03,WH-03,NATURAL,2,,2026-04-01,9999-12-31\n'+
+                  'AE-04,WH-04,WAXED,8,dry end,2026-04-01,9999-12-31\n'+
+                  'AE-05,WH-05,ASHED,3,near the door,2026-04-01,9999-12-31\n'+
+                  'AE-06,WH-06,CLOTH,5,under the vault,2026-04-01,9999-12-31\n'+
+                  'AE-07,WH-07,BRINED,7,brine bench,2026-04-01,9999-12-31\n'+
+                  'AE-08,WH-08,,1,unwrapped shelf,2026-04-01,9999-12-31\n'+
+                  'AE-09,WH-09,SMOKED,,smoke loft,2026-04-01,9999-12-31\n'+
+                  'AE-10,WH-01,WASHED,9,rewrapped corner,2026-04-20,9999-12-31\n'+
+                  'AE-11,WH-02,NATURAL,3,closed window,2026-03-01,2026-04-15\n';
+
+                cellar.cave:
+                  'cave_code,dairy_code,cave_name,humidity_pct,temp_c\n'+
+                  'CV-1,DY-1,Long Barrel Cave,92,11\n'+
+                  'CV-2,DY-1,Chalk Drift Cave,88,9\n'+
+                  'CV-3,DY-2,,,13\n';
+
+                cellar.dairy:
+                  'dairy_code,dairy_name,county_label\n'+
+                  'DY-1,Wold Edge Dairy,north wold\n'+
+                  'DY-2,Fen Hollow Dairy,low fen\n';
+
+                cellar.rind_check:
+                  'check_code,wheel_code,rind_score,checked_on,note_text\n'+
+                  'RC-1,WH-01,12,2026-04-02,rind even\n'+
+                  'RC-2,WH-03,18,2026-04-03,  crust firm  \n'+
+                  'RC-3,WH-05,,2026-04-04,gauge unread\n'+
+                  'RC-4,WH-08,7,2026-04-05,\n'+
+                  'RC-5,WH-09,20,2026-04-06,smoke mark\n';
+
+                cellar.shelf:
+                  'shelf_code,cave_code,tier,capacity\n'+
+                  'SH-1,CV-1,1,40\n'+
+                  'SH-2,CV-1,2,30\n'+
+                  'SH-3,CV-2,1,25\n'+
+                  'SH-4,CV-3,3,20\n';
+
+                cellar.turner:
+                  'turner_code,cave_code,dairy_code,turner_name,rota_label\n'+
+                  'TN-1,CV-1,DY-1,Alma Reed,rota-a\n'+
+                  'TN-2,CV-2,DY-1,Bram Hollis,rota-b\n'+
+                  'TN-3,CV-3,DY-2,Cadi Vaughan,\n';
+
+                cellar.wheel:
+                  'wheel_code,shelf_code,turner_code,milk_kind,rind_code,weight_grams,wrapped_on\n'+
+                  'WH-01,SH-1,TN-1,ewe,BLOOMY,3200,2026-01-05\n'+
+                  'WH-02,SH-1,TN-1,goat,WASHED,1800,2026-01-09\n'+
+                  'WH-03,SH-2,TN-1,cow,NATURAL,5400,2026-01-14\n'+
+                  'WH-04,SH-2,TN-2,buffalo,WAXED,2600,2026-01-18\n'+
+                  'WH-05,SH-3,TN-2,ewe,ASHED,1200,2026-01-22\n'+
+                  'WH-06,SH-3,TN-2,goat,CLOTH,4400,2026-01-27\n'+
+                  'WH-07,SH-4,TN-3,cow,BRINED,3000,2026-02-02\n'+
+                  'WH-08,SH-4,TN-3,ewe,,2100,2026-02-06\n'+
+                  'WH-09,SH-1,TN-3,goat,SMOKED,,2026-02-11\n';
+              }#
+          ];
+          asserts:
+          [
+            tenStandingEntriesGradeAcrossEveryArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"entry":"AE-01","wheel":"WH-01","band":"BAND-1","turns":4,"note":"cool corner"},{"entry":"AE-02","wheel":"WH-02","band":"BAND-2","turns":6,"note":"damp wall"},{"entry":"AE-03","wheel":"WH-03","band":"BAND-3","turns":2,"note":null},{"entry":"AE-04","wheel":"WH-04","band":"BAND-4","turns":8,"note":"dry end"},{"entry":"AE-05","wheel":"WH-05","band":"BAND-5","turns":3,"note":"near the door"},{"entry":"AE-06","wheel":"WH-06","band":"BAND-6","turns":5,"note":"under the vault"},{"entry":"AE-07","wheel":"WH-07","band":"BAND-7","turns":7,"note":"brine bench"},{"entry":"AE-08","wheel":"WH-08","band":"BAND-NONE","turns":1,"note":"unwrapped shelf"},{"entry":"AE-09","wheel":"WH-09","band":"BAND-UNLISTED","turns":null,"note":"smoke loft"},{"entry":"AE-10","wheel":"WH-01","band":"BAND-2","turns":9,"note":"rewrapped corner"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    cellarWalkSuite:
+    {
+      function: |test::indigowarren5::domain::Wheel.all()->project(~[
+                    wheel: w | $w.wheelCode,
+                    milk: w | $w.milkKind,
+                    label: w | $w.preferredLabel('BARE WHEEL'),
+                    heavy: w | $w.heavyOnTheTurn(),
+                    tier: w | $w.shelf.tier,
+                    cave: w | $w.shelf.cave.caveName,
+                    county: w | $w.shelf.cave.dairy.countyLabel,
+                    rota: w | $w.turner.rotaLabel
+                  ])->sort([~wheel->ascending()]);
+      tests:
+      [
+        aWheelWalksItsShelfCaveAndDairyAndCarriesBothDerivations:
+        {
+          doc: 'Walks every wheel three association hops out to the shelf, the cave it is racked in and the dairy the cave is cut under, and publishes both derivations of the wheel beside the walk: the label falls back to the handed-in token for the wheel that is still bare, and the two-handed flag reads false for the wheel that was never weighed.';
+          data:
+          [
+            test::indigowarren5::store::CellarDb:
+              Relational
+              #{
+                cellar.affinage_entry:
+                  'entry_code,wheel_code,rind_code,turn_count,room_note,in_z,out_z\n'+
+                  'AE-01,WH-01,BLOOMY,4,cool corner,2026-04-01,9999-12-31\n'+
+                  'AE-02,WH-02,WASHED,6,damp wall,2026-04-01,9999-12-31\n'+
+                  'AE-03,WH-03,NATURAL,2,,2026-04-01,9999-12-31\n'+
+                  'AE-04,WH-04,WAXED,8,dry end,2026-04-01,9999-12-31\n'+
+                  'AE-05,WH-05,ASHED,3,near the door,2026-04-01,9999-12-31\n'+
+                  'AE-06,WH-06,CLOTH,5,under the vault,2026-04-01,9999-12-31\n'+
+                  'AE-07,WH-07,BRINED,7,brine bench,2026-04-01,9999-12-31\n'+
+                  'AE-08,WH-08,,1,unwrapped shelf,2026-04-01,9999-12-31\n'+
+                  'AE-09,WH-09,SMOKED,,smoke loft,2026-04-01,9999-12-31\n'+
+                  'AE-10,WH-01,WASHED,9,rewrapped corner,2026-04-20,9999-12-31\n'+
+                  'AE-11,WH-02,NATURAL,3,closed window,2026-03-01,2026-04-15\n';
+
+                cellar.cave:
+                  'cave_code,dairy_code,cave_name,humidity_pct,temp_c\n'+
+                  'CV-1,DY-1,Long Barrel Cave,92,11\n'+
+                  'CV-2,DY-1,Chalk Drift Cave,88,9\n'+
+                  'CV-3,DY-2,,,13\n';
+
+                cellar.dairy:
+                  'dairy_code,dairy_name,county_label\n'+
+                  'DY-1,Wold Edge Dairy,north wold\n'+
+                  'DY-2,Fen Hollow Dairy,low fen\n';
+
+                cellar.rind_check:
+                  'check_code,wheel_code,rind_score,checked_on,note_text\n'+
+                  'RC-1,WH-01,12,2026-04-02,rind even\n'+
+                  'RC-2,WH-03,18,2026-04-03,  crust firm  \n'+
+                  'RC-3,WH-05,,2026-04-04,gauge unread\n'+
+                  'RC-4,WH-08,7,2026-04-05,\n'+
+                  'RC-5,WH-09,20,2026-04-06,smoke mark\n';
+
+                cellar.shelf:
+                  'shelf_code,cave_code,tier,capacity\n'+
+                  'SH-1,CV-1,1,40\n'+
+                  'SH-2,CV-1,2,30\n'+
+                  'SH-3,CV-2,1,25\n'+
+                  'SH-4,CV-3,3,20\n';
+
+                cellar.turner:
+                  'turner_code,cave_code,dairy_code,turner_name,rota_label\n'+
+                  'TN-1,CV-1,DY-1,Alma Reed,rota-a\n'+
+                  'TN-2,CV-2,DY-1,Bram Hollis,rota-b\n'+
+                  'TN-3,CV-3,DY-2,Cadi Vaughan,\n';
+
+                cellar.wheel:
+                  'wheel_code,shelf_code,turner_code,milk_kind,rind_code,weight_grams,wrapped_on\n'+
+                  'WH-01,SH-1,TN-1,ewe,BLOOMY,3200,2026-01-05\n'+
+                  'WH-02,SH-1,TN-1,goat,WASHED,1800,2026-01-09\n'+
+                  'WH-03,SH-2,TN-1,cow,NATURAL,5400,2026-01-14\n'+
+                  'WH-04,SH-2,TN-2,buffalo,WAXED,2600,2026-01-18\n'+
+                  'WH-05,SH-3,TN-2,ewe,ASHED,1200,2026-01-22\n'+
+                  'WH-06,SH-3,TN-2,goat,CLOTH,4400,2026-01-27\n'+
+                  'WH-07,SH-4,TN-3,cow,BRINED,3000,2026-02-02\n'+
+                  'WH-08,SH-4,TN-3,ewe,,2100,2026-02-06\n'+
+                  'WH-09,SH-1,TN-3,goat,SMOKED,,2026-02-11\n';
+              }#
+          ];
+          asserts:
+          [
+            nineWheelsWalkOutToTheirDairy:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"wheel":"WH-01","milk":"EWE","label":"WH-01/BLOOMY","heavy":true,"tier":1,"cave":"LONG BARREL CAVE","county":"NORTH WOLD","rota":"ROTA-A"},{"wheel":"WH-02","milk":"GOAT","label":"WH-02/WASHED","heavy":false,"tier":1,"cave":"LONG BARREL CAVE","county":"NORTH WOLD","rota":"ROTA-A"},{"wheel":"WH-03","milk":"COW","label":"WH-03/NATURAL","heavy":true,"tier":2,"cave":"LONG BARREL CAVE","county":"NORTH WOLD","rota":"ROTA-A"},{"wheel":"WH-04","milk":"BUFFALO","label":"WH-04/WAXED","heavy":false,"tier":2,"cave":"LONG BARREL CAVE","county":"NORTH WOLD","rota":"ROTA-B"},{"wheel":"WH-05","milk":"EWE","label":"WH-05/ASHED","heavy":false,"tier":1,"cave":"CHALK DRIFT CAVE","county":"NORTH WOLD","rota":"ROTA-B"},{"wheel":"WH-06","milk":"GOAT","label":"WH-06/CLOTH","heavy":true,"tier":1,"cave":"CHALK DRIFT CAVE","county":"NORTH WOLD","rota":"ROTA-B"},{"wheel":"WH-07","milk":"COW","label":"WH-07/BRINED","heavy":true,"tier":3,"cave":"UNNAMED CUT","county":"LOW FEN","rota":"ROTA-TN-3"},{"wheel":"WH-08","milk":"EWE","label":"BARE WHEEL","heavy":false,"tier":3,"cave":"UNNAMED CUT","county":"LOW FEN","rota":"ROTA-TN-3"},{"wheel":"WH-09","milk":"GOAT","label":"WH-09/SMOKED","heavy":false,"tier":1,"cave":"LONG BARREL CAVE","county":"NORTH WOLD","rota":"ROTA-TN-3"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    checkCardSuite:
+    {
+      function: |test::indigowarren5::domain::RindCheck.all()->project(~[
+                    check: c | $c.checkCode,
+                    wheel: c | $c.wheel.wheelCode,
+                    score: c | $c.rindScore,
+                    note: c | $c.noteText,
+                    cave: c | $c.wheel.shelf.cave.caveName
+                  ])->sort([~check->ascending()]);
+      tests:
+      [
+        checkCardsReachTheirWheelAndTheCaveItStandsIn:
+        {
+          doc: 'Reads the check cards out to the wheel they were written against and on to the cave it stands in, keeping the card whose gauge was never read without a score and the card the checker left unannotated without a note.';
+          data:
+          [
+            test::indigowarren5::store::CellarDb:
+              Relational
+              #{
+                cellar.affinage_entry:
+                  'entry_code,wheel_code,rind_code,turn_count,room_note,in_z,out_z\n'+
+                  'AE-01,WH-01,BLOOMY,4,cool corner,2026-04-01,9999-12-31\n'+
+                  'AE-02,WH-02,WASHED,6,damp wall,2026-04-01,9999-12-31\n'+
+                  'AE-03,WH-03,NATURAL,2,,2026-04-01,9999-12-31\n'+
+                  'AE-04,WH-04,WAXED,8,dry end,2026-04-01,9999-12-31\n'+
+                  'AE-05,WH-05,ASHED,3,near the door,2026-04-01,9999-12-31\n'+
+                  'AE-06,WH-06,CLOTH,5,under the vault,2026-04-01,9999-12-31\n'+
+                  'AE-07,WH-07,BRINED,7,brine bench,2026-04-01,9999-12-31\n'+
+                  'AE-08,WH-08,,1,unwrapped shelf,2026-04-01,9999-12-31\n'+
+                  'AE-09,WH-09,SMOKED,,smoke loft,2026-04-01,9999-12-31\n'+
+                  'AE-10,WH-01,WASHED,9,rewrapped corner,2026-04-20,9999-12-31\n'+
+                  'AE-11,WH-02,NATURAL,3,closed window,2026-03-01,2026-04-15\n';
+
+                cellar.cave:
+                  'cave_code,dairy_code,cave_name,humidity_pct,temp_c\n'+
+                  'CV-1,DY-1,Long Barrel Cave,92,11\n'+
+                  'CV-2,DY-1,Chalk Drift Cave,88,9\n'+
+                  'CV-3,DY-2,,,13\n';
+
+                cellar.dairy:
+                  'dairy_code,dairy_name,county_label\n'+
+                  'DY-1,Wold Edge Dairy,north wold\n'+
+                  'DY-2,Fen Hollow Dairy,low fen\n';
+
+                cellar.rind_check:
+                  'check_code,wheel_code,rind_score,checked_on,note_text\n'+
+                  'RC-1,WH-01,12,2026-04-02,rind even\n'+
+                  'RC-2,WH-03,18,2026-04-03,  crust firm  \n'+
+                  'RC-3,WH-05,,2026-04-04,gauge unread\n'+
+                  'RC-4,WH-08,7,2026-04-05,\n'+
+                  'RC-5,WH-09,20,2026-04-06,smoke mark\n';
+
+                cellar.shelf:
+                  'shelf_code,cave_code,tier,capacity\n'+
+                  'SH-1,CV-1,1,40\n'+
+                  'SH-2,CV-1,2,30\n'+
+                  'SH-3,CV-2,1,25\n'+
+                  'SH-4,CV-3,3,20\n';
+
+                cellar.turner:
+                  'turner_code,cave_code,dairy_code,turner_name,rota_label\n'+
+                  'TN-1,CV-1,DY-1,Alma Reed,rota-a\n'+
+                  'TN-2,CV-2,DY-1,Bram Hollis,rota-b\n'+
+                  'TN-3,CV-3,DY-2,Cadi Vaughan,\n';
+
+                cellar.wheel:
+                  'wheel_code,shelf_code,turner_code,milk_kind,rind_code,weight_grams,wrapped_on\n'+
+                  'WH-01,SH-1,TN-1,ewe,BLOOMY,3200,2026-01-05\n'+
+                  'WH-02,SH-1,TN-1,goat,WASHED,1800,2026-01-09\n'+
+                  'WH-03,SH-2,TN-1,cow,NATURAL,5400,2026-01-14\n'+
+                  'WH-04,SH-2,TN-2,buffalo,WAXED,2600,2026-01-18\n'+
+                  'WH-05,SH-3,TN-2,ewe,ASHED,1200,2026-01-22\n'+
+                  'WH-06,SH-3,TN-2,goat,CLOTH,4400,2026-01-27\n'+
+                  'WH-07,SH-4,TN-3,cow,BRINED,3000,2026-02-02\n'+
+                  'WH-08,SH-4,TN-3,ewe,,2100,2026-02-06\n'+
+                  'WH-09,SH-1,TN-3,goat,SMOKED,,2026-02-11\n';
+              }#
+          ];
+          asserts:
+          [
+            fiveCardsResolveWheelAndCave:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"check":"RC-1","wheel":"WH-01","score":12,"note":"rind even","cave":"LONG BARREL CAVE"},{"check":"RC-2","wheel":"WH-03","score":18,"note":"crust firm","cave":"LONG BARREL CAVE"},{"check":"RC-3","wheel":"WH-05","score":null,"note":"gauge unread","cave":"CHALK DRIFT CAVE"},{"check":"RC-4","wheel":"WH-08","score":7,"note":null,"cave":"UNNAMED CUT"},{"check":"RC-5","wheel":"WH-09","score":20,"note":"smoke mark","cave":"LONG BARREL CAVE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    turnerRotaSuite:
+    {
+      function: |test::indigowarren5::domain::Turner.all()->project(~[
+                    turner: t | $t.turnerCode,
+                    name: t | $t.turnerName,
+                    rota: t | $t.rotaLabel,
+                    cave: t | $t.turnerCave.caveName,
+                    county: t | $t.turnerDairy.countyLabel
+                  ])->sort([~turner->ascending()]);
+      tests:
+      [
+        everyTurnerResolvesBothOfItsEndsAndTheUnrosteredWalkGetsALabel:
+        {
+          doc: 'Reads the turners across both of the ends they carry, the cave rota they walk and the dairy that hired them, and settles a rota label from the turner code for the turner the rota book never listed.';
+          data:
+          [
+            test::indigowarren5::store::CellarDb:
+              Relational
+              #{
+                cellar.affinage_entry:
+                  'entry_code,wheel_code,rind_code,turn_count,room_note,in_z,out_z\n'+
+                  'AE-01,WH-01,BLOOMY,4,cool corner,2026-04-01,9999-12-31\n'+
+                  'AE-02,WH-02,WASHED,6,damp wall,2026-04-01,9999-12-31\n'+
+                  'AE-03,WH-03,NATURAL,2,,2026-04-01,9999-12-31\n'+
+                  'AE-04,WH-04,WAXED,8,dry end,2026-04-01,9999-12-31\n'+
+                  'AE-05,WH-05,ASHED,3,near the door,2026-04-01,9999-12-31\n'+
+                  'AE-06,WH-06,CLOTH,5,under the vault,2026-04-01,9999-12-31\n'+
+                  'AE-07,WH-07,BRINED,7,brine bench,2026-04-01,9999-12-31\n'+
+                  'AE-08,WH-08,,1,unwrapped shelf,2026-04-01,9999-12-31\n'+
+                  'AE-09,WH-09,SMOKED,,smoke loft,2026-04-01,9999-12-31\n'+
+                  'AE-10,WH-01,WASHED,9,rewrapped corner,2026-04-20,9999-12-31\n'+
+                  'AE-11,WH-02,NATURAL,3,closed window,2026-03-01,2026-04-15\n';
+
+                cellar.cave:
+                  'cave_code,dairy_code,cave_name,humidity_pct,temp_c\n'+
+                  'CV-1,DY-1,Long Barrel Cave,92,11\n'+
+                  'CV-2,DY-1,Chalk Drift Cave,88,9\n'+
+                  'CV-3,DY-2,,,13\n';
+
+                cellar.dairy:
+                  'dairy_code,dairy_name,county_label\n'+
+                  'DY-1,Wold Edge Dairy,north wold\n'+
+                  'DY-2,Fen Hollow Dairy,low fen\n';
+
+                cellar.rind_check:
+                  'check_code,wheel_code,rind_score,checked_on,note_text\n'+
+                  'RC-1,WH-01,12,2026-04-02,rind even\n'+
+                  'RC-2,WH-03,18,2026-04-03,  crust firm  \n'+
+                  'RC-3,WH-05,,2026-04-04,gauge unread\n'+
+                  'RC-4,WH-08,7,2026-04-05,\n'+
+                  'RC-5,WH-09,20,2026-04-06,smoke mark\n';
+
+                cellar.shelf:
+                  'shelf_code,cave_code,tier,capacity\n'+
+                  'SH-1,CV-1,1,40\n'+
+                  'SH-2,CV-1,2,30\n'+
+                  'SH-3,CV-2,1,25\n'+
+                  'SH-4,CV-3,3,20\n';
+
+                cellar.turner:
+                  'turner_code,cave_code,dairy_code,turner_name,rota_label\n'+
+                  'TN-1,CV-1,DY-1,Alma Reed,rota-a\n'+
+                  'TN-2,CV-2,DY-1,Bram Hollis,rota-b\n'+
+                  'TN-3,CV-3,DY-2,Cadi Vaughan,\n';
+
+                cellar.wheel:
+                  'wheel_code,shelf_code,turner_code,milk_kind,rind_code,weight_grams,wrapped_on\n'+
+                  'WH-01,SH-1,TN-1,ewe,BLOOMY,3200,2026-01-05\n'+
+                  'WH-02,SH-1,TN-1,goat,WASHED,1800,2026-01-09\n'+
+                  'WH-03,SH-2,TN-1,cow,NATURAL,5400,2026-01-14\n'+
+                  'WH-04,SH-2,TN-2,buffalo,WAXED,2600,2026-01-18\n'+
+                  'WH-05,SH-3,TN-2,ewe,ASHED,1200,2026-01-22\n'+
+                  'WH-06,SH-3,TN-2,goat,CLOTH,4400,2026-01-27\n'+
+                  'WH-07,SH-4,TN-3,cow,BRINED,3000,2026-02-02\n'+
+                  'WH-08,SH-4,TN-3,ewe,,2100,2026-02-06\n'+
+                  'WH-09,SH-1,TN-3,goat,SMOKED,,2026-02-11\n';
+              }#
+          ];
+          asserts:
+          [
+            threeTurnersResolveCaveAndDairy:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"turner":"TN-1","name":"Alma Reed","rota":"ROTA-A","cave":"LONG BARREL CAVE","county":"NORTH WOLD"},{"turner":"TN-2","name":"Bram Hollis","rota":"ROTA-B","cave":"CHALK DRIFT CAVE","county":"NORTH WOLD"},{"turner":"TN-3","name":"Cadi Vaughan","rota":"ROTA-TN-3","cave":"UNNAMED CUT","county":"LOW FEN"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

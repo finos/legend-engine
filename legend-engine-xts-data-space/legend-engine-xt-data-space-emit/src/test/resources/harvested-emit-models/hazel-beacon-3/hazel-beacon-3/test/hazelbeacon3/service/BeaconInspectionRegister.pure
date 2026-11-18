@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelbeacon3::service::BeaconInspectionRegister
+{
+  pattern: '/hazelbeacon/v1/inspections/register';
+  title: 'Hazel Beacon - Recent Inspection Register';
+  owners:
+  [
+    'coastal-trust-beacon-register',
+    'volunteer-keeper-scheme'
+  ];
+  documentation: 'Publishes the visits of the rostered keepers within the fortnight before the reporting date, with the battery label derived on the visit and the beacon name resolved across the beacon hop. The window end is a stated reporting date and the window start is derived from it by day arithmetic, so the register moves with the reporting date rather than with a second literal.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazelbeacon3::domain::BeaconInspection.all()->filter(
+      i|($i.inspectedOn >= %2026-04-16->adjust(-14, meta::pure::functions::date::DurationUnit.DAYS)) && ($i.inspectorCode->in(['keeper-a', 'keeper-b', 'keeper-c']))
+    )->project(
+      [
+        i|$i.inspectionRef,
+        i|$i.beaconName,
+        i|$i.batteryLabel,
+        i|$i.lensScore,
+        i|$i.inspectedOn
+      ],
+      [
+        'INSPECTION_REF',
+        'BEACON',
+        'BATTERY_LABEL',
+        'LENS_SCORE',
+        'INSPECTED_ON'
+      ]
+    )->sort(
+      [
+        asc('INSPECTION_REF')
+      ]
+    )->limit(10);
+    mapping: test::hazelbeacon3::mapping::BeaconRegistryMapping;
+    runtime: test::hazelbeacon3::runtime::BeaconH2Runtime;
+  }
+  testSuites:
+  [
+    recentInspectionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconH2Connection:
+            Relational
+            #{
+              registry.station_record:
+                'station_code,station_name,coast_sector\n'+
+                'ST-01,Hazel Point Station,north-shore\n';
+              registry.beacon_record:
+                'beacon_code,beacon_name,station_code,lamp_code,grade_code,commissioned_on,focal_height_m\n'+
+                'BC-01,Hazel Point Light,ST-01,LP-01,G1,1998-04-12,32\n'+
+                'BC-02,Shingle Spit Light,ST-01,LP-01,G2,2001-06-01,18\n';
+              survey.inspection_record:
+                'inspection_ref,beacon_code,inspected_on,inspector_code,lens_score,battery_pct\n'+
+                'IN-01,BC-01,2026-04-02,keeper-a,88,96\n'+
+                'IN-02,BC-01,2026-04-09,keeper-b,74,35\n'+
+                'IN-03,BC-02,2026-04-09,keeper-c,62,60\n'+
+                'IN-04,BC-02,2026-04-16,keeper-d,50,20\n'+
+                'IN-05,BC-01,2026-03-20,keeper-a,91,99\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosteredKeepersInsideTheDerivedFortnight:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeVisitsSurviveTheWindowAndTheRoster:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"INSPECTION_REF":"IN-01","BEACON":"Hazel Point Light","BATTERY_LABEL":"CHARGED-KEEPER-A","LENS_SCORE":88,"INSPECTED_ON":"2026-04-02"},{"INSPECTION_REF":"IN-02","BEACON":"Hazel Point Light","BATTERY_LABEL":"RECHARGE-DUE","LENS_SCORE":74,"INSPECTED_ON":"2026-04-09"},{"INSPECTION_REF":"IN-03","BEACON":"Shingle Spit Light","BATTERY_LABEL":null,"LENS_SCORE":62,"INSPECTED_ON":"2026-04-09"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

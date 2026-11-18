@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::hazelglacier5::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'The broad catalogue section holding a specimen.'} test::hazelglacier5::domain::CatalogueSection
+{
+  Herbarium,
+  Mineralogy,
+  Reference
+}
+
+Enum <<test::hazelglacier5::domain::HandlingNotes.requiresGloves>> {meta::pure::profiles::doc.doc = 'The method used to preserve a specimen for long-term study.', test::hazelglacier5::domain::HandlingNotes.handlingNote = 'preserve without abrading'} test::hazelglacier5::domain::PreservationMethod
+{
+  AirDried,
+  FreezeDried,
+  Pressed,
+  Mounted,
+  ResinSet,
+  SilicaDried,
+  VacuumDried,
+  Wrapped,
+  Encapsulated,
+  Unprepared
+}
+
+Enum <<test::hazelglacier5::domain::CurationGovernance.provisionalDetermination>> {meta::pure::profiles::doc.doc = 'The observed condition grade assigned during examination.', test::hazelglacier5::domain::CurationGovernance.examinationCadence = 'each review'} test::hazelglacier5::domain::ConditionGrade
+{
+  Excellent,
+  Good,
+  Stable,
+  Fair,
+  Poor
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The physical style used to hold a sheet or specimen.', test::hazelglacier5::domain::HandlingNotes.mountingNote = 'inspect supports'} test::hazelglacier5::domain::MountingStyle
+{
+  Folder,
+  Frame,
+  Tray,
+  Box
+}
+
+Enum <<test::hazelglacier5::domain::CurationGovernance.accessioned>> {meta::pure::profiles::doc.doc = 'The taxonomic rank recorded for a specimen determination.', test::hazelglacier5::domain::CurationGovernance.retentionBand = 'reference'} test::hazelglacier5::domain::TaxonRank
+{
+  Domain,
+  Kingdom,
+  Phylum,
+  Class,
+  Order,
+  Family,
+  Genus,
+  Species,
+  Subspecies,
+  Variety,
+  Form
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The habitat band in which a specimen was collected.', test::hazelglacier5::domain::CurationGovernance.custodianRole = 'field-curator'} test::hazelglacier5::domain::HabitatBand
+{
+  Alpine,
+  Coastal,
+  Forest,
+  Grassland,
+  Wetland
+}
+
+Enum <<test::hazelglacier5::domain::CurationGovernance.fieldCollected>> {meta::pure::profiles::doc.doc = 'The intake route by which a catalogue item entered the collection.', test::hazelglacier5::domain::CurationGovernance.custodianRole = 'intake-desk'} test::hazelglacier5::domain::IntakeMode
+{
+  FieldVisit,
+  Exchange,
+  Donation,
+  TeachingSet
+}
+
+Enum <<test::hazelglacier5::domain::HandlingNotes.fragile>> {meta::pure::profiles::doc.doc = 'The stable storage environment selected for an item.', test::hazelglacier5::domain::HandlingNotes.storageNote = 'maintain stable enclosure'} test::hazelglacier5::domain::StorageEnvironment
+{
+  Drawer,
+  Cabinet,
+  ColdRoom,
+  OpenDisplay
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The sensitivity of an item to illumination.', test::hazelglacier5::domain::HandlingNotes.handlingNote = 'limit exposure'} test::hazelglacier5::domain::LightSensitivity
+{
+  Low,
+  Moderate,
+  High
+}
+
+Enum <<test::hazelglacier5::domain::CurationGovernance.published>> {meta::pure::profiles::doc.doc = 'The writing system used on a specimen label.', test::hazelglacier5::domain::CurationGovernance.retentionBand = 'catalogue'} test::hazelglacier5::domain::LabelScript
+{
+  Latin,
+  Greek,
+  Cyrillic
+}
+
+Enum <<test::hazelglacier5::domain::HandlingNotes.fragile, test::hazelglacier5::domain::CurationGovernance.provisionalDetermination>> {meta::pure::profiles::doc.doc = 'The external form of a mineral crystal.', test::hazelglacier5::domain::HandlingNotes.handlingNote = 'support crystal edges'} test::hazelglacier5::domain::CrystalHabit
+{
+  Cubic,
+  Prismatic,
+  Tabular,
+  Acicular,
+  Fibrous,
+  Massive,
+  Granular,
+  Botryoidal,
+  Radiating
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The interval at which a catalogue item is re-examined.', test::hazelglacier5::domain::CurationGovernance.examinationCadence = 'scheduled'} test::hazelglacier5::domain::ExaminationCadence
+{
+  Monthly,
+  Quarterly,
+  Annual,
+  Biennial
+}

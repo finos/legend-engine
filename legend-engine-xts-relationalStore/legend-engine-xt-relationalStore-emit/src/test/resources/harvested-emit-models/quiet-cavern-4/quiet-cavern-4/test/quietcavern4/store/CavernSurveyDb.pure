@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietcavern4::store::CavernSurveyDb
+(
+  Schema survey
+  (
+    Table passage
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      passage_code VARCHAR(16) PRIMARY KEY,
+      kind_code VARCHAR(12) NOT NULL,
+      length_m INTEGER NOT NULL,
+      chamber_code VARCHAR(16) NOT NULL,
+      entrance_code VARCHAR(16),
+      rule_code VARCHAR(16),
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table marker
+    (
+      marker_code VARCHAR(16) PRIMARY KEY,
+      passage_code VARCHAR(16) NOT NULL,
+      marker_kind VARCHAR(12) NOT NULL
+    )
+    Table chamber
+    (
+      chamber_code VARCHAR(16) PRIMARY KEY,
+      chamber_label VARCHAR(60) NOT NULL
+    )
+    Table entrance
+    (
+      entrance_code VARCHAR(16) PRIMARY KEY,
+      entrance_label VARCHAR(60) NOT NULL,
+      trail_code VARCHAR(16)
+    )
+    Table approach_trail
+    (
+      trail_code VARCHAR(16) PRIMARY KEY,
+      trail_label VARCHAR(60) NOT NULL
+    )
+    Table access_rule
+    (
+      rule_code VARCHAR(16) PRIMARY KEY,
+      access_level VARCHAR(16) NOT NULL,
+      gate_code VARCHAR(16)
+    )
+    Table gate
+    (
+      gate_code VARCHAR(16) PRIMARY KEY,
+      key_holder VARCHAR(60) NOT NULL
+    )
+    Table survey_visit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      visit_code VARCHAR(16) PRIMARY KEY,
+      passage_code VARCHAR(16) NOT NULL,
+      team_code VARCHAR(16),
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE NOT NULL
+    )
+    Table survey_team
+    (
+      team_code VARCHAR(16) PRIMARY KEY,
+      team_label VARCHAR(60) NOT NULL
+    )
+    Table team_member
+    (
+      member_code VARCHAR(16) PRIMARY KEY,
+      team_code VARCHAR(16) NOT NULL
+    )
+  )
+
+  Filter FloodedPassageFilter(survey.passage.kind_code = 'FLOODED')
+  Filter CrawlPassageFilter(survey.passage.kind_code = 'CRAWL')
+  Filter DryPassageFilter(survey.passage.kind_code = 'DRY')
+
+  Join Passage_Marker(survey.passage.passage_code = survey.marker.passage_code)
+  Join Passage_Chamber(survey.passage.chamber_code = survey.chamber.chamber_code)
+  Join Passage_Entrance(survey.passage.entrance_code = survey.entrance.entrance_code)
+  Join Entrance_Trail(survey.entrance.trail_code = survey.approach_trail.trail_code)
+  Join Passage_Rule(survey.passage.rule_code = survey.access_rule.rule_code)
+  Join Rule_Gate(survey.access_rule.gate_code = survey.gate.gate_code)
+  Join Passage_Visit(survey.passage.passage_code = survey.survey_visit.passage_code)
+  Join Visit_Team(survey.survey_visit.team_code = survey.survey_team.team_code)
+  Join Team_Member(survey.survey_team.team_code = survey.team_member.team_code)
+)

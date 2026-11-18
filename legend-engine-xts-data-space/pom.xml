@@ -36,5 +36,6 @@
         <module>legend-engine-xt-data-space-protocol</module>
         <module>legend-engine-xt-data-space-pure</module>
         <module>legend-engine-xt-data-space-pure-metamodel</module>
+        <module>legend-engine-xt-data-space-emit</module>
     </modules>
 </project>

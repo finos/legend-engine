@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarhatchery::mapping::HatcheryMeasureMapping
+(
+  *test::cedarhatchery::domain::RiverUnitMeasure[riverFromTank]: Pure
+  {
+    ~src test::cedarhatchery::domain::TankFact
+    measureCode: $src.tankCode->toUpper(),
+    periodMonth: $src.cycleMonth,
+    unitCode: $src.unitRef->toUpper(),
+    speciesLabel: $src.species,
+    keeperName: if($src.leadKeeper->isEmpty(), |if($src.reliefKeeper->isEmpty(), |'keeper unassigned', |$src.reliefKeeper->toOne()), |$src.leadKeeper->toOne()),
+    stockCount: if($src.batchCounts->isEmpty(), |if($src.fryCount->isEmpty(), |0, |$src.fryCount->toOne()), |$src.batchCounts->sum() + if($src.fryCount->isEmpty(), |0, |$src.fryCount->toOne())),
+    releaseCount: if($src.releasedCount->isEmpty(), |0, |if($src.releasedCount->toOne() > 0, |$src.releasedCount->toOne(), |0)),
+    lossBand: if($src.lossCount->isEmpty(), |'loss-unknown', |if($src.lossCount->toOne() >= 100, |'high-loss', |if($src.lossCount->toOne() >= 20, |'moderate-loss', |'low-loss'))),
+    gradeLabel: if($src.transferFlag->isEmpty(), |'external stock', |if($src.transferFlag->toOne() == 'INTERNAL', |'internal transfer', |'external stock')),
+    recordedOn: $src.loggedOn
+  }
+
+  *test::cedarhatchery::domain::LakeUnitMeasure[lakeFromPond]: Pure
+  {
+    ~src test::cedarhatchery::domain::PondFact
+    measureCode: $src.pondRef->toUpper(),
+    periodMonth: $src.cycleMonth,
+    unitCode: $src.unitRef->toUpper(),
+    speciesLabel: $src.species,
+    keeperName: if($src.wardenName->isEmpty(), |if($src.standInWarden->isEmpty(), |'keeper unassigned', |$src.standInWarden->toOne()), |$src.wardenName->toOne()),
+    stockCount: if($src.netCounts->isEmpty(), |if($src.fingerlingCount->isEmpty(), |0, |$src.fingerlingCount->toOne()), |$src.netCounts->sum() + if($src.fingerlingCount->isEmpty(), |0, |$src.fingerlingCount->toOne())),
+    releaseCount: if($src.releasedCount->isEmpty(), |0, |if($src.releasedCount->toOne() > 0, |$src.releasedCount->toOne(), |0)),
+    lossBand: if($src.lossCount->isEmpty(), |'loss-unknown', |if($src.lossCount->toOne() >= 100, |'high-loss', |if($src.lossCount->toOne() >= 20, |'moderate-loss', |'low-loss'))),
+    gradeLabel: if($src.transferFlag->isEmpty(), |'external stock', |if($src.transferFlag->toOne() == 'INTERNAL', |'internal transfer', |'external stock')),
+    recordedOn: $src.loggedOn
+  }
+
+  *test::cedarhatchery::domain::CreekUnitMeasure[creekFromRaceway]: Pure
+  {
+    ~src test::cedarhatchery::domain::CreekFact
+    measureCode: $src.racewayRef->toUpper(),
+    periodMonth: $src.cycleMonth,
+    unitCode: $src.unitRef->toUpper(),
+    speciesLabel: $src.species,
+    keeperName: if($src.stewardName->isEmpty(), |if($src.coverStewardName->isEmpty(), |'keeper unassigned', |$src.coverStewardName->toOne()), |$src.stewardName->toOne()),
+    stockCount: if($src.screenCounts->isEmpty(), |if($src.parrCount->isEmpty(), |0, |$src.parrCount->toOne()), |$src.screenCounts->sum() + if($src.parrCount->isEmpty(), |0, |$src.parrCount->toOne())),
+    releaseCount: if($src.releasedCount->isEmpty(), |0, |if($src.releasedCount->toOne() > 0, |$src.releasedCount->toOne(), |0)),
+    lossBand: if($src.lossCount->isEmpty(), |'loss-unknown', |if($src.lossCount->toOne() >= 100, |'high-loss', |if($src.lossCount->toOne() >= 20, |'moderate-loss', |'low-loss'))),
+    gradeLabel: if($src.transferFlag->isEmpty(), |'external stock', |if($src.transferFlag->toOne() == 'INTERNAL', |'internal transfer', |'external stock')),
+    recordedOn: $src.loggedOn
+  }
+
+  *test::cedarhatchery::domain::MarshUnitMeasure[marshFromTrough]: Pure
+  {
+    ~src test::cedarhatchery::domain::MarshFact
+    measureCode: $src.troughRef->toUpper(),
+    periodMonth: $src.cycleMonth,
+    unitCode: $src.unitRef->toUpper(),
+    speciesLabel: $src.species,
+    keeperName: if($src.handlerName->isEmpty(), |if($src.reserveHandlerName->isEmpty(), |'keeper unassigned', |$src.reserveHandlerName->toOne()), |$src.handlerName->toOne()),
+    stockCount: if($src.trayCounts->isEmpty(), |if($src.smoltCount->isEmpty(), |0, |$src.smoltCount->toOne()), |$src.trayCounts->sum() + if($src.smoltCount->isEmpty(), |0, |$src.smoltCount->toOne())),
+    releaseCount: if($src.releasedCount->isEmpty(), |0, |if($src.releasedCount->toOne() > 0, |$src.releasedCount->toOne(), |0)),
+    lossBand: if($src.lossCount->isEmpty(), |'loss-unknown', |if($src.lossCount->toOne() >= 100, |'high-loss', |if($src.lossCount->toOne() >= 20, |'moderate-loss', |'low-loss'))),
+    gradeLabel: if($src.transferFlag->isEmpty(), |'external stock', |if($src.transferFlag->toOne() == 'INTERNAL', |'internal transfer', |'external stock')),
+    recordedOn: $src.loggedOn
+  }
+
+  testSuites:
+  [
+    riverMeasureSuite:
+    {
+      function: |test::cedarhatchery::domain::RiverUnitMeasure.all()->graphFetch(#{test::cedarhatchery::domain::RiverUnitMeasure{measureCode, periodMonth, unitCode, speciesLabel, keeperName, stockCount, releaseCount, lossBand, gradeLabel}}#)->serialize(#{test::cedarhatchery::domain::RiverUnitMeasure{measureCode, periodMonth, unitCode, speciesLabel, keeperName, stockCount, releaseCount, lossBand, gradeLabel}}#);
+      tests:
+      [
+        everyKeeperStockAndLossArm:
+        {
+          doc: 'Supplies tank facts that differ only in which optional count or keeper field is absent, so the lead-keeper, relief-keeper and unassigned arms, the batch-collection and single-count stock arms, the zero-defaulted stock and release arms and each of the four loss bands are all reached, including a release volume on the wrong side of the threshold.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cedarhatchery::domain::TankFact:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tankCode":"tk-01","cycleMonth":"2026-01","unitRef":"river-a","species":"Brook Trout","leadKeeper":"Ada Vance","fryCount":120,"batchCounts":[30,20],"releasedCount":45,"lossCount":150,"loggedOn":"2026-01-31","transferFlag":"INTERNAL"},{"tankCode":"tk-02","cycleMonth":"2026-01","unitRef":"river-a","species":"Brook Trout","reliefKeeper":"Ben Sole","fryCount":80,"batchCounts":[],"releasedCount":0,"lossCount":25,"loggedOn":"2026-01-31","transferFlag":"EXTERNAL"},{"tankCode":"tk-03","cycleMonth":"2026-02","unitRef":"river-b","species":"Grayling","batchCounts":[5],"releasedCount":7,"lossCount":5},{"tankCode":"tk-04","cycleMonth":"2026-02","unitRef":"river-b","species":"Grayling","leadKeeper":"Cy Rowe"},{"tankCode":"tk-05","cycleMonth":"2026-02","unitRef":"river-b","species":"Chub","leadKeeper":"Dee Kwan","fryCount":200,"batchCounts":[10,10,10],"releasedCount":-3,"lossCount":20,"loggedOn":"2026-02-28","transferFlag":"INTERNAL"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fiveRiverMeasures:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"measureCode":"TK-01","periodMonth":"2026-01","unitCode":"RIVER-A","speciesLabel":"Brook Trout","keeperName":"Ada Vance","stockCount":170,"releaseCount":45,"lossBand":"high-loss","gradeLabel":"internal transfer"},{"measureCode":"TK-02","periodMonth":"2026-01","unitCode":"RIVER-A","speciesLabel":"Brook Trout","keeperName":"Ben Sole","stockCount":80,"releaseCount":0,"lossBand":"moderate-loss","gradeLabel":"external stock"},{"measureCode":"TK-03","periodMonth":"2026-02","unitCode":"RIVER-B","speciesLabel":"Grayling","keeperName":"keeper unassigned","stockCount":5,"releaseCount":7,"lossBand":"low-loss","gradeLabel":"external stock"},{"measureCode":"TK-04","periodMonth":"2026-02","unitCode":"RIVER-B","speciesLabel":"Grayling","keeperName":"Cy Rowe","stockCount":0,"releaseCount":0,"lossBand":"loss-unknown","gradeLabel":"external stock"},{"measureCode":"TK-05","periodMonth":"2026-02","unitCode":"RIVER-B","speciesLabel":"Chub","keeperName":"Dee Kwan","stockCount":230,"releaseCount":0,"lossBand":"moderate-loss","gradeLabel":"internal transfer"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    lakeMeasureSuite:
+    {
+      function: |test::cedarhatchery::domain::LakeUnitMeasure.all()->graphFetch(#{test::cedarhatchery::domain::LakeUnitMeasure{measureCode, periodMonth, unitCode, keeperName, stockCount, releaseCount, lossBand, gradeLabel}}#)->serialize(#{test::cedarhatchery::domain::LakeUnitMeasure{measureCode, periodMonth, unitCode, keeperName, stockCount, releaseCount, lossBand, gradeLabel}}#);
+      tests:
+      [
+        pondSourcePropertiesFeedTheSameShape:
+        {
+          doc: 'Proves the second set implementation absorbs a differently named upstream register into the same target shape, with the stand-in warden arm, an absent count family and the two upper loss bands covered.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cedarhatchery::domain::PondFact:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"pondRef":"pd-01","cycleMonth":"2026-01","unitRef":"lake-a","species":"Whitefish","wardenName":"Elsa Ward","fingerlingCount":60,"netCounts":[15,15],"releasedCount":12,"lossCount":120,"loggedOn":"2026-01-31","transferFlag":"INTERNAL"},{"pondRef":"pd-02","cycleMonth":"2026-01","unitRef":"lake-a","species":"Whitefish","standInWarden":"Finn Aro","netCounts":[40],"releasedCount":3,"lossCount":40},{"pondRef":"pd-03","cycleMonth":"2026-02","unitRef":"lake-b","species":"Perch","wardenName":"Gus Lien","fingerlingCount":10,"lossCount":2,"transferFlag":"EXTERNAL"},{"pondRef":"pd-04","cycleMonth":"2026-02","unitRef":"lake-b","species":"Perch"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourLakeMeasures:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"measureCode":"PD-01","periodMonth":"2026-01","unitCode":"LAKE-A","keeperName":"Elsa Ward","stockCount":90,"releaseCount":12,"lossBand":"high-loss","gradeLabel":"internal transfer"},{"measureCode":"PD-02","periodMonth":"2026-01","unitCode":"LAKE-A","keeperName":"Finn Aro","stockCount":40,"releaseCount":3,"lossBand":"moderate-loss","gradeLabel":"external stock"},{"measureCode":"PD-03","periodMonth":"2026-02","unitCode":"LAKE-B","keeperName":"Gus Lien","stockCount":10,"releaseCount":0,"lossBand":"low-loss","gradeLabel":"external stock"},{"measureCode":"PD-04","periodMonth":"2026-02","unitCode":"LAKE-B","keeperName":"keeper unassigned","stockCount":0,"releaseCount":0,"lossBand":"loss-unknown","gradeLabel":"external stock"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

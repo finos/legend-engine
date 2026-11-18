@@ -1,0 +1,180 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarharbor3::mapping::HarbourMapping
+(
+  include mapping test::lunarharbor3::mapping::HarbourBaseMapping
+
+  test::lunarharbor3::domain::Quay_Pontoons: Relational
+  {
+    AssociationMapping
+    (
+      pontoonSide[quaySet, pontoonSet]: [test::lunarharbor3::store::HarbourDB]@Pontoon_Quay,
+      quaySide[pontoonSet, quaySet]: [test::lunarharbor3::store::HarbourDB]@Pontoon_Quay
+    )
+  }
+
+  testSuites:
+  [
+    mooringDerivationSuite:
+    {
+      function: |test::lunarharbor3::domain::MooringLog.all(%2032-06-01)->project(
+  [
+    l|$l.logCode,
+    l|$l.vesselLabel,
+    l|$l.hull,
+    l|$l.lineState,
+    l|$l.lantern,
+    l|$l.berthNote,
+    l|$l.reachName,
+    l|$l.pontoonName,
+    l|$l.quayName,
+    l|$l.stationName
+  ],
+  [
+    'Log',
+    'Label',
+    'Hull',
+    'LineState',
+    'Lantern',
+    'BerthNote',
+    'Reach',
+    'Pontoon',
+    'Quay',
+    'Station'
+  ]
+)->sort(
+  [
+    asc('Log')
+  ]
+);
+      tests:
+      [
+        everyLaneArmAndJoinHop:
+        {
+          doc: 'Reads the visitor pontoon watch at one processing date and covers every arm of the eight-way lane conditional plus its unresolved fallback, the hull code no member of the closed vocabulary claims, the two enumerations decided by expressions rather than by a stored code, the one-, two- and three-hop paths out of the watch entry, the two-hop fallback that substitutes the pontoon name when the quay hop finds nothing, and an entry whose processing window had already closed before the read date.';
+          data:
+          [
+            test::lunarharbor3::store::HarbourDB:
+              Relational
+              #{
+                harbourside.mooring_log:
+                  'log_code,pontoon_code,vessel_name,hull_code,state_code,lantern_code,keel_depth_cm,tide_reading,logged_on,in_z,out_z\n'+
+                  'ML-01,PN-1,Moonlit Skiff,SL,MF,BR,190,220,2032-05-02,2032-01-01,9999-12-31\n'+
+                  'ML-02,PN-1,Tide Runner,MT,MF,BR,150,210,2032-05-03,2032-01-01,9999-12-31\n'+
+                  'ML-03,PN-1,Neap Gull,MT,MF,BR,120,460,2032-05-04,2032-01-01,9999-12-31\n'+
+                  'ML-04,PN-2,Harbour Mule,WB,MF,BR,100,150,2032-05-05,2032-01-01,9999-12-31\n'+
+                  'ML-05,PN-2,Reed Wherry,RW,MF,BR,90,140,2032-05-06,2032-01-01,9999-12-31\n'+
+                  'ML-06,PN-2,Salt Petrel,SL,RL,BR,80,130,2032-05-07,2032-01-01,9999-12-31\n'+
+                  'ML-07,PN-3,Grey Plover,MT,SK,DK,70,120,2032-05-08,2032-01-01,9999-12-31\n'+
+                  'ML-08,PN-3,Winter Kittiwake,MT,SK,BR,60,110,2032-05-09,2032-01-01,9999-12-31\n'+
+                  'ML-09,PN-3,Small Tern,MT,SK,BR,50,100,2032-05-10,2032-01-01,9999-12-31\n'+
+                  'ML-10,PN-4,Lunar Moth,ZZ,SK,BR,40,90,2032-05-11,2032-01-01,9999-12-31\n'+
+                  'ML-11,PN-4,Ebb Skiff,SL,MF,DM,145,80,2032-05-12,2032-01-01,9999-12-31\n'+
+                  'ML-12,PN-5,Winter Watch Boat,MT,MF,BR,160,200,2031-11-13,2031-01-01,2032-03-01\n';
+
+                harbourside.pontoon:
+                  'pontoon_code,pontoon_name,quay_code\n'+
+                  'PN-1,North Pontoon,QY-1\n'+
+                  'PN-2,South Pontoon,QY-1\n'+
+                  'PN-3,East Pontoon,QY-2\n'+
+                  'PN-4,Outer Pontoon,QY-9\n'+
+                  'PN-5,Winter Pontoon,QY-2\n';
+
+                harbourside.quay:
+                  'quay_code,quay_name,station_code\n'+
+                  'QY-1,Long Quay,WS-1\n'+
+                  'QY-2,Short Quay,WS-2\n';
+
+                harbourside.watch_station:
+                  'station_code,station_name\n'+
+                  'WS-1,Harbour North Watch\n'+
+                  'WS-2,Harbour East Watch\n';
+              }#
+          ];
+          asserts:
+          [
+            elevenOpenWatchEntries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log":"ML-01","Label":"MOONLIT SKIFF-ML-01","Hull":"SAIL","LineState":"MADE_FAST","Lantern":"BRIGHT","BerthNote":"DEEP KEEL LANE","Reach":"Long Quay","Pontoon":"North Pontoon","Quay":"Long Quay","Station":"Harbour North Watch"},{"Log":"ML-02","Label":"TIDE RUNNER-ML-02","Hull":"MOTOR","LineState":"MADE_FAST","Lantern":"BRIGHT","BerthNote":"MID KEEL LANE","Reach":"Long Quay","Pontoon":"North Pontoon","Quay":"Long Quay","Station":"Harbour North Watch"},{"Log":"ML-03","Label":"NEAP GULL-ML-03","Hull":"MOTOR","LineState":"SLACK","Lantern":"BRIGHT","BerthNote":"SPRING TIDE LANE","Reach":"Long Quay","Pontoon":"North Pontoon","Quay":"Long Quay","Station":"Harbour North Watch"},{"Log":"ML-04","Label":"HARBOUR MULE-ML-04","Hull":"WORKBOAT","LineState":"SLACK","Lantern":"BRIGHT","BerthNote":"WORKBOAT LANE","Reach":"Long Quay","Pontoon":"South Pontoon","Quay":"Long Quay","Station":"Harbour North Watch"},{"Log":"ML-05","Label":"REED WHERRY-ML-05","Hull":"ROWED","LineState":"SLACK","Lantern":"BRIGHT","BerthNote":"ROWED LANE","Reach":"Long Quay","Pontoon":"South Pontoon","Quay":"Long Quay","Station":"Harbour North Watch"},{"Log":"ML-06","Label":"SALT PETREL-ML-06","Hull":"SAIL","LineState":"RELEASED","Lantern":"BRIGHT","BerthNote":"RELEASED LANE","Reach":"Long Quay","Pontoon":"South Pontoon","Quay":"Long Quay","Station":"Harbour North Watch"},{"Log":"ML-07","Label":"GREY PLOVER-ML-07","Hull":"MOTOR","LineState":"SLACK","Lantern":"DARK","BerthNote":"DARK HEAD LANE","Reach":"Short Quay","Pontoon":"East Pontoon","Quay":"Short Quay","Station":"Harbour East Watch"},{"Log":"ML-08","Label":"WINTER KITTIWAKE-ML-08","Hull":"MOTOR","LineState":"SLACK","Lantern":"BRIGHT","BerthNote":"LONG HULL LANE","Reach":"Short Quay","Pontoon":"East Pontoon","Quay":"Short Quay","Station":"Harbour East Watch"},{"Log":"ML-09","Label":"SMALL TERN-ML-09","Hull":"MOTOR","LineState":"SLACK","Lantern":"BRIGHT","BerthNote":null,"Reach":"Short Quay","Pontoon":"East Pontoon","Quay":"Short Quay","Station":"Harbour East Watch"},{"Log":"ML-10","Label":"LUNAR MOTH-ML-10","Hull":null,"LineState":"SLACK","Lantern":"BRIGHT","BerthNote":null,"Reach":"Outer Pontoon","Pontoon":"Outer Pontoon","Quay":null,"Station":null},{"Log":"ML-11","Label":"EBB SKIFF-ML-11","Hull":"SAIL","LineState":"SLACK","Lantern":"DIM","BerthNote":"MID KEEL LANE","Reach":"Outer Pontoon","Pontoon":"Outer Pontoon","Quay":null,"Station":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    quayPontoonSuite:
+    {
+      function: |test::lunarharbor3::domain::Quay.all()->project(
+  [
+    q|$q.quayName,
+    q|$q.pontoonSide.pontoonName
+  ],
+  [
+    'Quay',
+    'Pontoon'
+  ]
+)->sort(
+  [
+    asc('Quay'),
+    asc('Pontoon')
+  ]
+);
+      tests:
+      [
+        pontoonsPerQuay:
+        {
+          doc: 'Walks the quay-to-pontoon association over the join the pontoon set already uses, so a quay carrying two pontoons surfaces twice and a pontoon warped to a quay the register does not hold surfaces on no quay at all.';
+          data:
+          [
+            test::lunarharbor3::store::HarbourDB:
+              Relational
+              #{
+                harbourside.pontoon:
+                  'pontoon_code,pontoon_name,quay_code\n'+
+                  'PN-1,North Pontoon,QY-1\n'+
+                  'PN-2,South Pontoon,QY-1\n'+
+                  'PN-3,East Pontoon,QY-2\n'+
+                  'PN-4,Outer Pontoon,QY-9\n';
+
+                harbourside.quay:
+                  'quay_code,quay_name,station_code\n'+
+                  'QY-1,Long Quay,WS-1\n'+
+                  'QY-2,Short Quay,WS-2\n';
+              }#
+          ];
+          asserts:
+          [
+            threePontoonRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Quay":"Long Quay","Pontoon":"North Pontoon"},{"Quay":"Long Quay","Pontoon":"South Pontoon"},{"Quay":"Short Quay","Pontoon":"East Pontoon"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

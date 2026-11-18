@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernreef::mapping::SiteDigestMapping
+(
+  *test::westernreef::domain::SiteDigest[siteDigest]: Pure
+  {
+    ~src test::westernreef::source::SiteFeed
+    siteCode: $src.code,
+    regionCode: $src.region.code,
+    basinLabel: $src.region.basin->toUpper()->trim()
+  }
+
+  testSuites:
+  [
+    siteDigestSuite:
+    {
+      function: |test::westernreef::domain::SiteDigest.all()->graphFetch(
+        #{
+          test::westernreef::domain::SiteDigest{
+            siteCode,
+            regionCode,
+            basinLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::westernreef::domain::SiteDigest{
+            siteCode,
+            regionCode,
+            basinLabel
+          }
+        }#
+      );
+      tests:
+      [
+        flattenedSite:
+        {
+          doc: 'Flattens the nested region block of a site record into a digest, normalising the free-text ocean basin.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SiteFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"ST-A","region":{"code":"RG-01","basin":"coral sea"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digestedSite:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"siteCode":"ST-A","regionCode":"RG-01","basinLabel":"CORAL SEA"}';
+                  }#;
+              }#
+          ];
+        },
+        paddedBasin:
+        {
+          doc: 'A padded ocean basin is normalised to a trimmed upper-case label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SiteFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"ST-B","region":{"code":"RG-02","basin":"  banda sea  "}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            trimmedBasin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"siteCode":"ST-B","regionCode":"RG-02","basinLabel":"BANDA SEA"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

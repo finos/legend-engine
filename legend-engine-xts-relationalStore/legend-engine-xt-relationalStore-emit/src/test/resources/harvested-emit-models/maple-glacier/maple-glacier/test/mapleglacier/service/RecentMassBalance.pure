@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::mapleglacier::service::RecentMassBalance
+{
+  pattern: '/glacier/v1/mass-balance/{asOfDate}/{cutoffDays}';
+  title: 'Recent Mass Balance';
+  owners:
+  [
+    'glacier-survey',
+    'cryo-ops'
+  ];
+  documentation: 'Returns the derived net change and severity of every glacier observation whose survey date falls within the requested number of days before the reference date and whose mass balance clears the retention threshold, exercising date arithmetic, a filter and a projection over the in-process H2 runtime.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], cutoffDays: Integer[1]|test::mapleglacier::domain::IceObservation.all()->filter(
+      o|(($o.surveyDate->dateDiff($asOfDate, DurationUnit.DAYS)->abs()) <= $cutoffDays) && ($o.massBalanceMm >= -50)
+    )->project(
+      [
+        o|$o.stationName,
+        o|$o.netChange,
+        o|$o.severity
+      ],
+      [
+        'Station',
+        'NetChange',
+        'Severity'
+      ]
+    )->sort(
+      [
+        asc('Station')
+      ]
+    )};
+    mapping: test::mapleglacier::mapping::GlacierMapping;
+    runtime: test::mapleglacier::runtime::GlacierH2Runtime;
+  }
+  testSuites:
+  [
+    recentMassBalanceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              cryo.ice_observation:
+                'obs_id,station_name,mass_balance_mm,baseline_mm,survey_date\n'+
+                '1,Blue Glacier,-120,0,2024-05-01\n'+
+                '2,Rhone Field,40,10,2024-06-15\n'+
+                '3,Vatna Cap,-30,-10,2024-01-10\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        thirtyDayWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2024-06-20,
+            cutoffDays = 30
+          ]
+          asserts:
+          [
+            onlyRhone:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"Rhone Field","NetChange":30,"Severity":"STABLE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

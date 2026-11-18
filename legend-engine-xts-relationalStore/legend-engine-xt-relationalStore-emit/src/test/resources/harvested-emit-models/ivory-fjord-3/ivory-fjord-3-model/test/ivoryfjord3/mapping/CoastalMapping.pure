@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryfjord3::mapping::CoastalMapping
+(
+  *test::ivoryfjord3::domain::WaterSample[sample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryfjord3::store::CoastalDB]coastal.water_sample.sample_id
+    )
+    ~mainTable [test::ivoryfjord3::store::CoastalDB]coastal.water_sample
+    sampleCode: [test::ivoryfjord3::store::CoastalDB]coastal.water_sample.sample_code,
+    collectorName: [test::ivoryfjord3::store::CoastalDB]coastal.water_sample.collector_name,
+    collectedOn: [test::ivoryfjord3::store::CoastalDB]coastal.water_sample.collected_on,
+    temperatureC: [test::ivoryfjord3::store::CoastalDB]coastal.water_sample.temperature_c,
+    salinity: [test::ivoryfjord3::store::CoastalDB]coastal.water_sample.salinity,
+    depthM: [test::ivoryfjord3::store::CoastalDB]coastal.water_sample.depth_m,
+    probe: [test::ivoryfjord3::store::CoastalDB]@Sample_Probe
+  }
+
+  *test::ivoryfjord3::domain::ProbeUnit: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryfjord3::store::CoastalDB]coastal.probe_unit.probe_id
+    )
+    ~mainTable [test::ivoryfjord3::store::CoastalDB]coastal.probe_unit
+    probeCode: [test::ivoryfjord3::store::CoastalDB]coastal.probe_unit.probe_code,
+    firmwareTag: [test::ivoryfjord3::store::CoastalDB]coastal.probe_unit.firmware_tag,
+    station: [test::ivoryfjord3::store::CoastalDB]@Probe_Station
+  }
+
+  *test::ivoryfjord3::domain::ShoreStation: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryfjord3::store::CoastalDB]coastal.shore_station.station_id
+    )
+    ~mainTable [test::ivoryfjord3::store::CoastalDB]coastal.shore_station
+    stationCode: [test::ivoryfjord3::store::CoastalDB]coastal.shore_station.station_code,
+    stationName: [test::ivoryfjord3::store::CoastalDB]coastal.shore_station.station_name,
+    custodian: [test::ivoryfjord3::store::CoastalDB]coastal.shore_station.custodian,
+    shoreZone: [test::ivoryfjord3::store::CoastalDB]coastal.shore_station.shore_zone
+  }
+
+  testSuites:
+  [
+    stationAsOfSuite:
+    {
+      function: |test::ivoryfjord3::domain::WaterSample.all()->project(
+  [
+    s|$s.sampleCode,
+    s|$s.probe.station(%2026-03-15).stationName
+  ],
+  [
+    'Sample',
+    'Station'
+  ]
+);
+      tests:
+      [
+        stationVersionAtLiteralDate:
+        {
+          doc: 'Navigates two one-to-one hops into a business-temporal class at a literal date, so the later station version is the one that surfaces.';
+          data:
+          [
+            test::ivoryfjord3::store::CoastalDB:
+              Relational
+              #{
+                coastal.water_sample:
+                  'sample_id,sample_code,collector_name,collected_on,temperature_c,salinity,depth_m,probe_id\n'+
+                  '1,SMP-0001,Iris Calder,2026-03-15,8.4,34.1,2.5,100\n';
+
+                coastal.probe_unit:
+                  'probe_id,probe_code,firmware_tag,station_id\n'+
+                  '100,PRB-100,fw-7,10\n';
+
+                coastal.shore_station:
+                  'station_id,station_code,station_name,custodian,shore_zone,from_z,thru_z\n'+
+                  '10,STN-10,Fjord Head Post,Iris Calder,Outer Reach,2024-01-01,2026-01-01\n'+
+                  '10,STN-10,Fjord Head North Post,Nadia Ferrow,Outer Reach,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            laterVersionWins:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"SMP-0001","Station":"Fjord Head North Post"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,408 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealcove2::mapping::CompostMapping
+(
+  *test::borealcove2::domain::Site[site]: Relational
+  {
+    ~filter [test::borealcove2::store::CompostDB]OpenSite
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostDB]compost.site.site_code
+    )
+    ~mainTable [test::borealcove2::store::CompostDB]compost.site
+    siteCode: [test::borealcove2::store::CompostDB]compost.site.site_code,
+    siteName: rtrim([test::borealcove2::store::CompostDB]compost.site.site_name),
+    siteKind: toUpper(trim([test::borealcove2::store::CompostDB]compost.site.site_kind)),
+    statusLabel: case(
+      equal([test::borealcove2::store::CompostDB]compost.site.status_code, 'A'),
+      'ACCEPTING FEEDSTOCK',
+      case(
+        equal([test::borealcove2::store::CompostDB]compost.site.status_code, 'B'),
+        'BULKING ONLY',
+        case(
+          equal([test::borealcove2::store::CompostDB]compost.site.status_code, 'C'),
+          'CURING ONLY',
+          case(
+            equal([test::borealcove2::store::CompostDB]compost.site.status_code, 'D'),
+            'DRY SEASON REST',
+            'UNRECORDED SITE STATE'
+          )
+        )
+      )
+    ),
+    binCount: [test::borealcove2::store::CompostDB]compost.site.bin_count,
+    noteText: case(
+                isNotEmpty([test::borealcove2::store::CompostDB]compost.site.note_text),
+                ltrim(rtrim([test::borealcove2::store::CompostDB]compost.site.note_text)),
+                'NO SITE NOTE'
+              ),
+    siteTag: [test::borealcove2::store::CompostDB]@Site_Tag | [test::borealcove2::store::CompostDB]compost.site_tag_vw.site_tag
+  }
+
+  *test::borealcove2::domain::CollectionBin[bin]: Relational
+  {
+    ~filter [test::borealcove2::store::CompostDB]SealedBin
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostDB]compost.collection_bin.bin_id
+    )
+    ~mainTable [test::borealcove2::store::CompostDB]compost.collection_bin
+    binId: [test::borealcove2::store::CompostDB]compost.collection_bin.bin_id,
+    binCode: [test::borealcove2::store::CompostDB]compost.collection_bin.bin_code,
+    litreSize: [test::borealcove2::store::CompostDB]compost.collection_bin.litre_size,
+    lidLabel: concat('LID-', toUpper(coalesce([test::borealcove2::store::CompostDB]compost.collection_bin.lid_code, 'na'))),
+    sealState: toLower([test::borealcove2::store::CompostDB]compost.collection_bin.seal_state)
+  }
+
+  *test::borealcove2::domain::RoundRoute[route]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostDB]compost.round_route.route_code
+    )
+    ~mainTable [test::borealcove2::store::CompostDB]compost.round_route
+    routeCode: [test::borealcove2::store::CompostDB]compost.round_route.route_code,
+    routeName: rtrim([test::borealcove2::store::CompostDB]compost.round_route.route_name),
+    shiftLabel: case(
+                  equal([test::borealcove2::store::CompostDB]compost.round_route.shift_code, 'AM'),
+                  'MORNING ROUND',
+                  case(
+                    equal([test::borealcove2::store::CompostDB]compost.round_route.shift_code, 'PM'),
+                    'AFTERNOON ROUND',
+                    'NIGHT ROUND'
+                  )
+                )
+  }
+
+  *test::borealcove2::domain::Haul[haul]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostDB]compost.haul.haul_id
+    )
+    ~mainTable [test::borealcove2::store::CompostDB]compost.haul
+    haulId: [test::borealcove2::store::CompostDB]compost.haul.haul_id,
+    haulDate: [test::borealcove2::store::CompostDB]compost.haul.haul_date,
+    grossKg: [test::borealcove2::store::CompostDB]compost.haul.gross_kg,
+    tareKg: [test::borealcove2::store::CompostDB]compost.haul.tare_kg,
+    netKg: minus(
+             [test::borealcove2::store::CompostDB]compost.haul.gross_kg,
+             [test::borealcove2::store::CompostDB]compost.haul.tare_kg
+           ),
+    netTonnes: round(
+                 divide(
+                   minus(
+                     [test::borealcove2::store::CompostDB]compost.haul.gross_kg,
+                     [test::borealcove2::store::CompostDB]compost.haul.tare_kg
+                   ),
+                   1000
+                 ),
+                 3
+               ),
+    loadBand: case(
+                greaterThanEqual(
+                  divide(
+                    minus(
+                      [test::borealcove2::store::CompostDB]compost.haul.gross_kg,
+                      [test::borealcove2::store::CompostDB]compost.haul.tare_kg
+                    ),
+                    100
+                  ),
+                  10
+                ),
+                'full-load',
+                case(
+                  greaterThan(
+                    length(trim([test::borealcove2::store::CompostDB]compost.haul.grade_code)),
+                    4
+                  ),
+                  'tagged-part-load',
+                  'part-load'
+                )
+              ),
+    gradeLabel: concat(
+                  concat(
+                    concat(
+                      toUpper(
+                        substring(
+                          rtrim(ltrim([test::borealcove2::store::CompostDB]compost.haul.grade_code)),
+                          0,
+                          3
+                        )
+                      ),
+                      '/'
+                    ),
+                    toLower([test::borealcove2::store::CompostDB]compost.haul.crew_code)
+                  ),
+                  [test::borealcove2::store::CompostDB]compost.haul.route_code
+                )
+  }
+
+  *test::borealcove2::domain::Crew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostDB]compost.crew.crew_code
+    )
+    ~mainTable [test::borealcove2::store::CompostDB]compost.crew
+    crewCode: [test::borealcove2::store::CompostDB]compost.crew.crew_code,
+    crewName: toUpper(trim([test::borealcove2::store::CompostDB]compost.crew.crew_name))
+  }
+
+  *test::borealcove2::domain::Depot[depot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostDB]compost.depot.depot_code
+    )
+    ~mainTable [test::borealcove2::store::CompostDB]compost.depot
+    depotCode: [test::borealcove2::store::CompostDB]compost.depot.depot_code,
+    depotName: rtrim([test::borealcove2::store::CompostDB]compost.depot.depot_name)
+  }
+
+  *test::borealcove2::domain::Ward[ward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove2::store::CompostDB]compost.ward.ward_code
+    )
+    ~mainTable [test::borealcove2::store::CompostDB]compost.ward
+    wardCode: [test::borealcove2::store::CompostDB]compost.ward.ward_code,
+    wardName: trim([test::borealcove2::store::CompostDB]compost.ward.ward_name),
+    boroughName: toUpper([test::borealcove2::store::CompostDB]compost.ward.borough_name)
+  }
+
+  test::borealcove2::domain::Site_Ward: Relational
+  {
+    AssociationMapping
+    (
+      ward[site, ward]: [test::borealcove2::store::CompostDB]@Site_Ward,
+      sites[ward, site]: [test::borealcove2::store::CompostDB]@Site_Ward
+    )
+  }
+
+  test::borealcove2::domain::Bin_Site: Relational
+  {
+    AssociationMapping
+    (
+      site[bin, site]: [test::borealcove2::store::CompostDB]@Bin_Site,
+      bins[site, bin]: [test::borealcove2::store::CompostDB]@Bin_Site
+    )
+  }
+
+  test::borealcove2::domain::Haul_Bin: Relational
+  {
+    AssociationMapping
+    (
+      bin[haul, bin]: [test::borealcove2::store::CompostDB]@Haul_Bin,
+      binHauls[bin, haul]: [test::borealcove2::store::CompostDB]@Haul_Bin
+    )
+  }
+
+  test::borealcove2::domain::Haul_Route: Relational
+  {
+    AssociationMapping
+    (
+      route[haul, route]: [test::borealcove2::store::CompostDB]@Haul_Route,
+      routeHauls[route, haul]: [test::borealcove2::store::CompostDB]@Haul_Route
+    )
+  }
+
+  test::borealcove2::domain::Haul_Crew: Relational
+  {
+    AssociationMapping
+    (
+      crew[haul, crew]: [test::borealcove2::store::CompostDB]@Haul_Crew,
+      crewHauls[crew, haul]: [test::borealcove2::store::CompostDB]@Haul_Crew
+    )
+  }
+
+  test::borealcove2::domain::Crew_Depot: Relational
+  {
+    AssociationMapping
+    (
+      depot[crew, depot]: [test::borealcove2::store::CompostDB]@Crew_Depot,
+      crews[depot, crew]: [test::borealcove2::store::CompostDB]@Crew_Depot
+    )
+  }
+
+  test::borealcove2::domain::Depot_Ward: Relational
+  {
+    AssociationMapping
+    (
+      depotWard[depot, ward]: [test::borealcove2::store::CompostDB]@Depot_Ward,
+      depots[ward, depot]: [test::borealcove2::store::CompostDB]@Depot_Ward
+    )
+  }
+
+  testSuites:
+  [
+    siteRegisterSuite:
+    {
+      function: |test::borealcove2::domain::Site.all()->project(
+        [
+          s|$s.siteCode,
+          s|$s.siteName,
+          s|$s.siteKind,
+          s|$s.statusLabel,
+          s|$s.binCount,
+          s|$s.noteText,
+          s|$s.siteTag->toOne(),
+          s|$s.ward.wardName->toOne(),
+          s|$s.ward.boroughName->toOne()
+        ],
+        [
+          'Site/Code',
+          'Site/Name',
+          'Site/Kind',
+          'Site/Status',
+          'Site/Bins',
+          'Site/Note',
+          'Site/Tag',
+          'Ward/Name',
+          'Ward/Borough'
+        ]
+      )->sort([asc('Site/Code')]);
+      tests:
+      [
+        registeredSitesResolveTagAndWard:
+        {
+          doc: 'Every kept site reads its tag from the dyna-function view and its ward through the association join; the note default replaces an empty note, an unrecorded status code falls to the catch-all arm, and the closed site is dropped by the store filter.';
+          data:
+          [
+            test::borealcove2::store::CompostDB:
+              Relational
+              #{
+                compost.site:
+                  'site_code,site_name,ward_code,site_kind,status_code,bin_count,note_text\n'+
+                  'ST-01,Alder Yard   ,W-1, windrow bay ,A,12,  turned weekly  \n'+
+                  'ST-02,Bramble Walk,W-1,tumbler drum,B,4,\n'+
+                  'ST-03,Cedar Verge,W-2,static pile,Q,7,seasonal only\n'+
+                  'ST-04,Dock Lane,W-2,windrow bay,X,9,closed for works\n';
+
+                compost.ward:
+                  'ward_code,ward_name,borough_name\n'+
+                  'W-1, Riverbend ,upper vale\n'+
+                  'W-2, Kiln Fields ,lower vale\n';
+              }#
+          ];
+          asserts:
+          [
+            keptSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site/Code":"ST-01","Site/Name":"Alder Yard","Site/Kind":"WINDROW BAY","Site/Status":"ACCEPTING FEEDSTOCK","Site/Bins":12,"Site/Note":"turned weekly","Site/Tag":"SITE-W-1","Ward/Name":"Riverbend","Ward/Borough":"UPPER VALE"},{"Site/Code":"ST-02","Site/Name":"Bramble Walk","Site/Kind":"TUMBLER DRUM","Site/Status":"BULKING ONLY","Site/Bins":4,"Site/Note":"NO SITE NOTE","Site/Tag":"SITE-W-1","Ward/Name":"Riverbend","Ward/Borough":"UPPER VALE"},{"Site/Code":"ST-03","Site/Name":"Cedar Verge","Site/Kind":"STATIC PILE","Site/Status":"UNRECORDED SITE STATE","Site/Bins":7,"Site/Note":"seasonal only","Site/Tag":"SITE-W-2","Ward/Name":"Kiln Fields","Ward/Borough":"LOWER VALE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    haulLogSuite:
+    {
+      function: |test::borealcove2::domain::Haul.all()->project(
+        [
+          h|$h.haulId,
+          h|$h.haulDate,
+          h|$h.netKg,
+          h|$h.netTonnes,
+          h|$h.loadBand,
+          h|$h.gradeLabel,
+          h|$h.bin.binCode->toOne(),
+          h|$h.bin.lidLabel->toOne(),
+          h|$h.bin.site.siteCode->toOne(),
+          h|$h.route.shiftLabel->toOne(),
+          h|$h.crew.crewName->toOne(),
+          h|$h.crew.depot.depotName->toOne()
+        ],
+        [
+          'Haul/Id',
+          'Haul/Date',
+          'Haul/NetKg',
+          'Haul/NetTonnes',
+          'Haul/Band',
+          'Haul/Grade',
+          'Bin/Code',
+          'Bin/Lid',
+          'Site/Code',
+          'Route/Shift',
+          'Crew/Name',
+          'Depot/Name'
+        ]
+      )->sort([asc('Haul/Id')]);
+      tests:
+      [
+        haulsResolveEveryAssociationEnd:
+        {
+          doc: 'One heavy haul and one light haul walk bin, site, route, crew and depot in a single projection, so the arithmetic net weight, the rounded tonnage, both load-band arms, the deep grade label and the missing-lid default are all observed together.';
+          data:
+          [
+            test::borealcove2::store::CompostDB:
+              Relational
+              #{
+                compost.haul:
+                  'haul_id,route_code,bin_id,crew_code,haul_date,gross_kg,tare_kg,grade_code\n'+
+                  '1,RT-01,11,CR-01,2026-04-02,2480.00,180.00, fines-a \n'+
+                  '2,RT-02,12,CR-02,2026-04-03,340.50,90.50,ovs\n';
+
+                compost.collection_bin:
+                  'bin_id,site_code,bin_code,litre_size,lid_code,seal_state\n'+
+                  '11,ST-01,BIN-011,1100,gr,FITTED\n'+
+                  '12,ST-02,BIN-012,240,,FITTED\n';
+
+                compost.site:
+                  'site_code,site_name,ward_code,site_kind,status_code,bin_count,note_text\n'+
+                  'ST-01,Alder Yard,W-1,windrow bay,A,12,turned weekly\n'+
+                  'ST-02,Bramble Walk,W-1,tumbler drum,B,4,turned monthly\n';
+
+                compost.round_route:
+                  'route_code,route_name,shift_code\n'+
+                  'RT-01,Riverbend Morning,AM\n'+
+                  'RT-02,Kiln Fields Late,PM\n';
+
+                compost.crew:
+                  'crew_code,crew_name,depot_code\n'+
+                  'CR-01, ash lindo ,DP-01\n'+
+                  'CR-02, vale ossen ,DP-02\n';
+
+                compost.depot:
+                  'depot_code,depot_name,ward_code\n'+
+                  'DP-01,Riverbend Depot  ,W-1\n'+
+                  'DP-02,Kiln Fields Depot  ,W-2\n';
+              }#
+          ];
+          asserts:
+          [
+            bothHauls:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Haul/Id":1,"Haul/Date":"2026-04-02","Haul/NetKg":2300.00,"Haul/NetTonnes":2.300,"Haul/Band":"full-load","Haul/Grade":"FIN/cr-01RT-01","Bin/Code":"BIN-011","Bin/Lid":"LID-GR","Site/Code":"ST-01","Route/Shift":"MORNING ROUND","Crew/Name":"ASH LINDO","Depot/Name":"Riverbend Depot"},{"Haul/Id":2,"Haul/Date":"2026-04-03","Haul/NetKg":250.00,"Haul/NetTonnes":0.250,"Haul/Band":"part-load","Haul/Grade":"OVS/cr-02RT-02","Bin/Code":"BIN-012","Bin/Lid":"LID-NA","Site/Code":"ST-02","Route/Shift":"AFTERNOON ROUND","Crew/Name":"VALE OSSEN","Depot/Name":"Kiln Fields Depot"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

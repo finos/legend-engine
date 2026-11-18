@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data demo::zephyrridge::data::RidgeSoaringData
+{
+  Relational
+  #{
+    ridge.region:
+      'region_code,region_name,terrain_side\n'+
+      'NORTH,Northern Escarpment,windward\n'+
+      'SOUTH,Southern Downs,leeward\n';
+
+    ridge.launch_site:
+      'site_id,site_code,site_name,region_code,aspect_code,elevation_m,status_code\n'+
+      '1,LS-01,Kestrel Nose,NORTH,nw,940,O\n'+
+      '2,LS-02,Harrier Bowl,SOUTH,se,610,O\n'+
+      '3,LS-03,Merlin Spur,NORTH,ne,1180,O\n'+
+      '4,LS-04,Falcon Ledge,NORTH,nw,760,X\n';
+
+    ridge.glider:
+      'glider_id,glider_code,wing_code,service_state,seat_count\n'+
+      '1,GL-01,S1,active,1\n'+
+      '2,GL-02,S2,active,2\n'+
+      '3,GL-03,VT,retired,1\n';
+
+    ridge.pilot:
+      'pilot_id,pilot_code,pilot_name,rating_code,home_region_code,addr_line,addr_town,addr_post_code\n'+
+      '1,PC-01,Ida Wren,XC,rg-north,12 Chalk Lane,upton,UP1 4RR\n'+
+      '2,PC-02,Owen Pike,SO,rg-south,4 Kite Row,dalby,DB2 7QT\n';
+
+    ridge.soaring_flight:
+      'flight_id,flight_ref,site_id,glider_id,pilot_id,launch_on,land_on,climb_score,duration_min,log_status\n'+
+      '1,FL-01,1,1,1,2026-04-01,2026-04-01,5,124,LOGGED\n'+
+      '2,FL-02,2,2,2,2026-04-02,2026-04-02,6,158,LOGGED\n'+
+      '3,FL-03,3,1,1,2026-04-03,2026-04-03,9,210,LOGGED\n'+
+      '4,FL-04,1,1,1,2026-01-05,2026-01-05,4,90,LOGGED\n'+
+      '5,FL-05,1,1,1,2026-04-05,2026-04-05,3,30,LOGGED\n'+
+      '6,FL-06,1,1,1,2026-04-06,2026-04-06,2,60,DRAFT\n';
+
+    ridge.beacon:
+      'beacon_id,site_id,beacon_code,band_code,active_flag\n'+
+      '1,1,BC-01,vhf,Y\n'+
+      '2,2,BC-02,uhf,\n'+
+      '3,3,BC-03,vhf,N\n';
+
+    ridge.wind_reading:
+      'reading_id,site_id,read_on,gust_kph,veer_deg\n'+
+      '1,1,2026-04-01,11,280\n'+
+      '2,1,2026-04-02,29,290\n'+
+      '3,3,2026-04-03,47,300\n';
+  }#
+}

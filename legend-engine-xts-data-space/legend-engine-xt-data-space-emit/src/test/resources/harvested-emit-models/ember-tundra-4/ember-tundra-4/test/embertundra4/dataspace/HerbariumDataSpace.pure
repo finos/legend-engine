@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::embertundra4::dataspace::HerbariumDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'services';
+      description: 'Herbarium register resolved through the services warehouse connection.';
+      mapping: test::embertundra4::mapping::HerbariumMapping;
+      defaultRuntime: test::embertundra4::runtime::HerbariumServicesRuntime;
+    }
+  ];
+  defaultExecutionContext: 'services';
+  title: 'Ember Tundra Herbarium Register';
+  description: 'A curated entry point over the herbarium register - bitemporal specimen sheets, their business-dated determination notes and storage cabinets, and the processing-dated curator roll - packaging the execution context, its warehouse runtime and the diagram consumers should start from.';
+  diagrams:
+  [
+    {
+      title: 'Specimen Sheets And Their Notes';
+      diagram: test::embertundra4::diagram::HerbariumDiagram;
+    }
+  ];
+  elements:
+  [
+    test::embertundra4::domain
+  ];
+}

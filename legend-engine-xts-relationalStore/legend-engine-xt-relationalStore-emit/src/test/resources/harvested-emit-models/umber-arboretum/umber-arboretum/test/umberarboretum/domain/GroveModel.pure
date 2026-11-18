@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::umberarboretum::domain::*;
+
+Enum test::umberarboretum::domain::HealthGrade
+{
+  VIGOROUS,
+  STABLE,
+  DECLINING
+}
+
+Enum test::umberarboretum::domain::CanopyStatus
+{
+  FULL,
+  THINNING,
+  BARE
+}
+
+Enum test::umberarboretum::domain::VisitOutcome
+{
+  COMPLETED,
+  DEFERRED
+}
+
+Class test::umberarboretum::domain::Grove
+{
+  groveCode: String[1];
+  groveName: String[1];
+  custodianLabel: String[0..1];
+}
+
+Class test::umberarboretum::domain::Specimen
+{
+  label: String[1];
+  pruningNote: String[1];
+  canopyNote: String[0..1];
+  canopyBand: String[0..1];
+  custodianLabel: String[0..1];
+  wardProgramme: String[0..1];
+  taxonName: String[0..1];
+  surveyStamp: DateTime[0..1];
+  healthGrade: HealthGrade[0..1];
+}
+
+Class test::umberarboretum::domain::CareVisit
+{
+  visitCode: String[1];
+  specimenLabel: String[0..1];
+  crewLabel: String[0..1];
+  outcome: VisitOutcome[0..1];
+}
+
+Class test::umberarboretum::domain::Taxon
+{
+  taxonName: String[1];
+  familyName: String[0..1];
+  cladeName: String[0..1];
+}
+
+Class test::umberarboretum::domain::SpecimenTagReading
+{
+  tagCode: String[1];
+  vigourScore: Integer[1];
+  canopyPercent: Integer[1];
+  visitFlag: String[1];
+}
+
+Class test::umberarboretum::domain::SpecimenGrading
+{
+  tagCode: String[1];
+  healthGrade: HealthGrade[1];
+  canopyStatus: CanopyStatus[1];
+  outcome: VisitOutcome[1];
+}

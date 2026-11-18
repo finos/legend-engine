@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantridge::service::HoldingLookupService
+{
+  pattern: '/catalogue/v1/holding/{region}/{branchCode}/{shelfMark}/{seasonLabel}';
+  title: 'Reading Room - Single Shelf Holding';
+  documentation: 'Selects one remote shelf holding by branch, shelf mark and season through the remote catalogue endpoint, then graph-fetches and serialises the descriptive properties. Multi-executed by region so each reading-room network resolves the same query against its own endpoint.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['reading-room-catalogue', 'shelf-audit'] };
+  execution: Multi
+  {
+    query: {branchCode: String[1], shelfMark: String[1], seasonLabel: String[1]|test::verdantridge::domain::HoldingRecord.all()->filter(
+      h|(($h.branchCode->toOne() == $branchCode) && ($h.shelfMark->toOne() == $shelfMark)) && ($h.seasonLabel->toOne() == $seasonLabel)
+    )->toOne()->graphFetch(
+      #{
+        test::verdantridge::domain::HoldingRecord
+        {
+          titleText,
+          mediaFormat,
+          copiesOnShelf,
+          conditionNote
+        }
+      }#
+    )->serialize(
+      #{
+        test::verdantridge::domain::HoldingRecord
+        {
+          titleText,
+          mediaFormat,
+          copiesOnShelf,
+          conditionNote
+        }
+      }#
+    )};
+    key: 'region';
+    executions['ridge']:
+    {
+      mapping: test::verdantridge::mapping::HoldingsMapping;
+      runtime: test::verdantridge::runtime::RidgeCatalogueRuntime;
+    }
+    executions['copse']:
+    {
+      mapping: test::verdantridge::mapping::HoldingsMapping;
+      runtime: test::verdantridge::runtime::CopseCatalogueRuntime;
+    }
+  }
+}

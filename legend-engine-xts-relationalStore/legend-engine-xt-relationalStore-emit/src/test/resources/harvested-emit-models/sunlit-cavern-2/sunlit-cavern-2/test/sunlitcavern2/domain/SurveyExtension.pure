@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::sunlitcavern2::domain::SurveyVisit
+{
+  visitId: Integer[1];
+  roundId: Integer[1];
+  label: String[1];
+  outcome: String[1];
+  district: String[0..1];
+}
+
+###Relational
+Database test::sunlitcavern2::store::SurveySourceDb
+(
+  Schema survey
+  (
+    Table visit
+    (
+      visit_id INTEGER PRIMARY KEY,
+      round_id INTEGER PRIMARY KEY,
+      chamber_id INTEGER,
+      label VARCHAR(40),
+      visibility INTEGER
+    )
+    Table chamber_link (chamber_id INTEGER PRIMARY KEY, passage_id INTEGER)
+    Table passage_link (passage_id INTEGER PRIMARY KEY, sector_id INTEGER)
+    Table sector_link (sector_id INTEGER PRIMARY KEY, district_id INTEGER)
+    Table district_link (district_id INTEGER PRIMARY KEY, label VARCHAR(40))
+  )
+  Join VisitChamber (survey.visit.chamber_id = survey.chamber_link.chamber_id)
+  Join ChamberPassage (survey.chamber_link.passage_id = survey.passage_link.passage_id)
+  Join PassageSector (survey.passage_link.sector_id = survey.sector_link.sector_id)
+  Join SectorDistrict (survey.sector_link.district_id = survey.district_link.district_id)
+)
+Database test::sunlitcavern2::store::SurveyLocalDb
+(
+  include test::sunlitcavern2::store::SurveySourceDb
+)
+
+###Mapping
+Mapping test::sunlitcavern2::mapping::SurveySourceMapping
+(
+  *test::sunlitcavern2::domain::SurveyVisit: Relational
+  {
+    ~primaryKey ([test::sunlitcavern2::store::SurveySourceDb]survey.visit.visit_id, [test::sunlitcavern2::store::SurveySourceDb]survey.visit.round_id)
+    ~mainTable [test::sunlitcavern2::store::SurveySourceDb]survey.visit
+    visitId: [test::sunlitcavern2::store::SurveySourceDb]survey.visit.visit_id,
+    roundId: [test::sunlitcavern2::store::SurveySourceDb]survey.visit.round_id,
+    label: case(isNull([test::sunlitcavern2::store::SurveySourceDb]survey.visit.label), 'UNLABELED', toUpper(trim([test::sunlitcavern2::store::SurveySourceDb]survey.visit.label))),
+    outcome: case([test::sunlitcavern2::store::SurveySourceDb]survey.visit.visibility < 10, 'DARK', case([test::sunlitcavern2::store::SurveySourceDb]survey.visit.visibility < 20, 'DIM', case([test::sunlitcavern2::store::SurveySourceDb]survey.visit.visibility < 30, 'CLEAR', case([test::sunlitcavern2::store::SurveySourceDb]survey.visit.visibility < 40, 'BRIGHT', 'SUNLIT')))),
+    district: [test::sunlitcavern2::store::SurveySourceDb]@VisitChamber > (OUTER) @ChamberPassage > (OUTER) @PassageSector > (OUTER) @SectorDistrict | survey.district_link.label
+  }
+)
+Mapping test::sunlitcavern2::mapping::SurveyLocalMapping
+(
+  include mapping test::sunlitcavern2::mapping::SurveySourceMapping [test::sunlitcavern2::store::SurveySourceDb -> test::sunlitcavern2::store::SurveyLocalDb]
+  testSuites:
+  [
+    surveySuite:
+    {
+      function: |test::sunlitcavern2::domain::SurveyVisit.all()->filter(v|$v.label->length() > 0)->project([v|$v.visitId, v|$v.roundId, v|$v.label, v|$v.outcome, v|if($v.district->isEmpty(), |'UNASSIGNED', |$v.district->toOne()->trim()->toUpper()), v|$v.label->startsWith('S')], ['Visit', 'Round', 'Label', 'Outcome', 'District', 'StartsS'])->sort([asc('Visit'), asc('Round')])->limit(10);
+      tests:
+      [
+        compoundKeysAndDistrictMiss:
+        {
+          data:
+          [test::sunlitcavern2::store::SurveyLocalDb: Relational
+          #{
+            survey.visit:
+              'visit_id,round_id,chamber_id,label,visibility\n'+
+              '1,1,1,shade,5\n'+
+              '1,2,1,glow,15\n'+
+              '2,1,1,light,25\n'+
+              '3,1,1,shine,35\n'+
+              '4,1,2,,45\n';
+            survey.chamber_link: 'chamber_id,passage_id\n1,1\n2,2\n';
+            survey.passage_link: 'passage_id,sector_id\n1,1\n';
+            survey.sector_link: 'sector_id,district_id\n1,1\n';
+            survey.district_link: 'district_id,label\n1,woodland\n';
+          }#];
+          asserts:
+          [rows: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '[{"Visit":1,"Round":1,"Label":"SHADE","Outcome":"DARK","District":"WOODLAND","StartsS":true},{"Visit":1,"Round":2,"Label":"GLOW","Outcome":"DIM","District":"WOODLAND","StartsS":false},{"Visit":2,"Round":1,"Label":"LIGHT","Outcome":"CLEAR","District":"WOODLAND","StartsS":false},{"Visit":3,"Round":1,"Label":"SHINE","Outcome":"BRIGHT","District":"WOODLAND","StartsS":true},{"Visit":4,"Round":1,"Label":"UNLABELED","Outcome":"SUNLIT","District":"UNASSIGNED","StartsS":false}]';}#;}#];
+        }
+      ];
+    }
+  ]
+)
+
+###Connection
+RelationalDatabaseConnection test::sunlitcavern2::connection::SurveyConnection
+{
+  store: test::sunlitcavern2::store::SurveyLocalDb;
+  type: H2;
+  specification: LocalH2 {};
+  auth: DefaultH2;
+}
+###Runtime
+Runtime test::sunlitcavern2::runtime::SurveyRuntime
+{
+  mappings: [test::sunlitcavern2::mapping::SurveyLocalMapping];
+  connections: [test::sunlitcavern2::store::SurveyLocalDb: [survey: test::sunlitcavern2::connection::SurveyConnection]];
+}

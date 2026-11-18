@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::westernmeadow::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A named volunteer walking roster whose coordinator is effective over business time.'} test::westernmeadow::domain::WalkRoster
+{
+  rosterCode: String[1];
+  rosterName: String[1];
+  coordinatorName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'One volunteer enrolled on a roster, whose habitat assignment is effective over business time.'} test::westernmeadow::domain::RosterMember
+{
+  memberRef: String[1];
+  memberName: String[1];
+  habitatProfileAsOf(processingDate: Date[1], businessDate: Date[1])
+  {
+    $this.habitatProfile($processingDate, $businessDate)
+  }: HabitatProfile[*];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A wide habitat reference-data version corrected over processing time and effective over business time.'} test::westernmeadow::domain::HabitatProfile
+{
+  profileCode: String[1];
+  habitatName: String[1];
+  swardHeightBand: String[1];
+  indicatorSpecies: String[1];
+  managementRegime: String[1];
+  mowingWindow: String[1];
+  grazingUnit: Float[1];
+  soilSeries: String[1];
+  drainageClass: String[1];
+  phBand: String[1];
+  effectiveFrom: StrictDate[1];
+  lakeBatchRef: String[1];
+  surveyAuthority: String[1];
+  profileNote: String[0..1];
+}
+
+Association test::westernmeadow::domain::Roster_Member
+{
+  roster: WalkRoster[0..1];
+  members: RosterMember[*];
+}
+
+Association test::westernmeadow::domain::Member_Habitat
+{
+  profileMember: RosterMember[0..1];
+  habitatProfile: HabitatProfile[*];
+}

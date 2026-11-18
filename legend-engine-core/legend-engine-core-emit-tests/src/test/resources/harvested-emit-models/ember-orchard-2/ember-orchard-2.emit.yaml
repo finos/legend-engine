@@ -1,0 +1,34 @@
+name: ember-orchard-2
+title: "Ember Orchard 2 — Bi-temporal grafting register keyed to a closed vigour vocabulary"
+description: |
+  A store-free community-orchard grafting register in which every record carries both a
+  business window and a processing window, so a reader resolves a version by fixing two
+  dates rather than one. Grafted trees, the rootstock lots they were worked onto and the
+  pruning rounds recorded against them are all corrected over processing time and effective
+  over business time. A closed canopy-vigour vocabulary is used as a property type rather
+  than as a stored string, and the derivations that read it — a graft caption, a pruning
+  instruction and a rootstock summary — resolve the vocabulary constant, the class it sits
+  on and the two temporal dimensions together, so no derivation is satisfied by the
+  vocabulary alone. The group declares no store, mapping or query, so it exercises the
+  class, enumeration and bi-temporal milestoning grammar on its own.
+modelSources:
+  model:
+    root: ember-orchard-2
+    files:
+      - test/emberorchard2/domain/OrchardDomain.pure
+      - test/emberorchard2/domain/OrchardVocabulary.pure
+features:
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:qualified-property
+  - milestoning:bi-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bi-temporal
+  - closed-vocabulary
+  - community-orchard
+  - grafting-register
+  - qualified-property

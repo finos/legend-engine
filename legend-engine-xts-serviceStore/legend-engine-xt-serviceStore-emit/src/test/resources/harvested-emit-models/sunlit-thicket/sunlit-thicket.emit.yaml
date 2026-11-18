@@ -1,0 +1,45 @@
+name: sunlit-thicket
+title: "Sunlit Thicket — Remote Coppice Feed (Service Store Lookup, Schema-Bound Document, Three-Node Graph Fetch)"
+description: |
+  A remote document product with no local warehouse. Three classes form a
+  document graph — the round header, the coppice block it describes and the ride
+  cut through that block — and a document-schema binding holds the shape the
+  remote endpoint returns. The service store exposes one parameterised lookup
+  whose path segment is fed from the document root by the mapping, so the
+  predicate on the feed reference is what selects the remote call rather than a
+  filter applied after a full fetch. The service walks the resolved document
+  three nodes deep with a graph-fetch tree, serializes it through the same tree,
+  and its test stubs the endpoint response so the round, the block and the ride
+  are all asserted from one recorded document.
+modelSources:
+  model:
+    root: sunlit-thicket
+    files:
+      - test/sunlitthicket/binding/ThicketBindings.pure
+      - test/sunlitthicket/connection/ThicketConnection.pure
+      - test/sunlitthicket/domain/ThicketDomain.pure
+      - test/sunlitthicket/mapping/ThicketMapping.pure
+      - test/sunlitthicket/runtime/ThicketRuntime.pure
+      - test/sunlitthicket/service/ThicketFeedService.pure
+      - test/sunlitthicket/store/ThicketApi.pure
+
+features:
+  - execution:external-format-binding
+  - execution:graph-fetch
+  - execution:service
+  - execution:service-test
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - service-store
+complexity: intermediate
+tags:
+  - coppice-reserve
+  - external-format-binding
+  - graph-fetch-serialize
+  - service-store
+  - service-test

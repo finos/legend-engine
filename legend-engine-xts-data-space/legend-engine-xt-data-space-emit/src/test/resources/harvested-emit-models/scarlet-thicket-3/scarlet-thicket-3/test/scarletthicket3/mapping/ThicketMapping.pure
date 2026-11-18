@@ -1,0 +1,272 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletthicket3::mapping::ThicketMapping
+(
+  *test::scarletthicket3::domain::SeedLot[seedLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.lot_code
+    )
+    ~mainTable [test::scarletthicket3::store::ThicketDB]nursery.seed_lot
+    lotCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.lot_code,
+    seasonCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.season_code,
+    gradeCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.grade_code,
+    statusCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.status_code,
+    quantityGrams: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.quantity_grams,
+    viabilityPct: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.viability_pct,
+    collectedOn: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.collected_on,
+    origin
+    (
+      siteCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.site_code,
+      siteName: [test::scarletthicket3::store::ThicketDB]@Lot_Site | [test::scarletthicket3::store::ThicketDB]nursery.collection_site.site_name,
+      habitatCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.habitat_code
+    ),
+    handling
+    (
+      treatmentCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.treatment_code,
+      treatmentName: [test::scarletthicket3::store::ThicketDB]@Lot_Treatment | [test::scarletthicket3::store::ThicketDB]nursery.seed_treatment.treatment_name,
+      storageBandCode: [test::scarletthicket3::store::ThicketDB]nursery.seed_lot.storage_band_code
+    )
+  }
+
+  *test::scarletthicket3::domain::NurseryBed[nurseryBed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletthicket3::store::ThicketDB]nursery.nursery_bed.bed_code
+    )
+    ~mainTable [test::scarletthicket3::store::ThicketDB]nursery.nursery_bed
+    bedCode: [test::scarletthicket3::store::ThicketDB]nursery.nursery_bed.bed_code,
+    bedLabel: [test::scarletthicket3::store::ThicketDB]nursery.nursery_bed.bed_label,
+    blockLabel: [test::scarletthicket3::store::ThicketDB]@Bed_Block | [test::scarletthicket3::store::ThicketDB]nursery.bed_block.block_label,
+    capacityUnits: [test::scarletthicket3::store::ThicketDB]nursery.nursery_bed.capacity_units
+  }
+
+  *test::scarletthicket3::domain::Cultivar[cultivar]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletthicket3::store::ThicketDB]nursery.cultivar.cultivar_code
+    )
+    ~mainTable [test::scarletthicket3::store::ThicketDB]nursery.cultivar
+    cultivarCode: [test::scarletthicket3::store::ThicketDB]nursery.cultivar.cultivar_code,
+    cultivarName: [test::scarletthicket3::store::ThicketDB]nursery.cultivar.cultivar_name,
+    familyName: [test::scarletthicket3::store::ThicketDB]@Cultivar_Family | [test::scarletthicket3::store::ThicketDB]nursery.cultivar_family.family_name,
+    habitCode: [test::scarletthicket3::store::ThicketDB]nursery.cultivar.habit_code
+  }
+
+  *test::scarletthicket3::domain::GraftedCultivar[graftedCultivar] extends [cultivar]: Relational
+  {
+    ~filter [test::scarletthicket3::store::ThicketDB]GraftedCultivars
+    rootstockCode: [test::scarletthicket3::store::ThicketDB]nursery.cultivar.rootstock_code
+  }
+
+  *test::scarletthicket3::domain::GrowerTeam[growerTeam]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletthicket3::store::ThicketDB]nursery.grower_team.team_code
+    )
+    ~mainTable [test::scarletthicket3::store::ThicketDB]nursery.grower_team
+    teamCode: [test::scarletthicket3::store::ThicketDB]nursery.grower_team.team_code,
+    teamName: [test::scarletthicket3::store::ThicketDB]nursery.grower_team.team_name,
+    depotName: [test::scarletthicket3::store::ThicketDB]@Team_Depot | [test::scarletthicket3::store::ThicketDB]nursery.team_depot.depot_name
+  }
+
+  test::scarletthicket3::domain::Bed_Team: Relational
+  {
+    AssociationMapping
+    (
+      team[nurseryBed, growerTeam]: [test::scarletthicket3::store::ThicketDB]@Bed_Team,
+      workedBeds[growerTeam, nurseryBed]: [test::scarletthicket3::store::ThicketDB]@Bed_Team
+    )
+  }
+
+  test::scarletthicket3::domain::Cultivar_Team: Relational
+  {
+    AssociationMapping
+    (
+      stewardTeam[cultivar, growerTeam]: [test::scarletthicket3::store::ThicketDB]@Cultivar_Team,
+      stewardedCultivars[growerTeam, cultivar]: [test::scarletthicket3::store::ThicketDB]@Cultivar_Team
+    )
+  }
+
+  test::scarletthicket3::domain::Lot_Bed: Relational
+  {
+    AssociationMapping
+    (
+      bed[seedLot, nurseryBed]: [test::scarletthicket3::store::ThicketDB]@Lot_Bed,
+      heldLots[nurseryBed, seedLot]: [test::scarletthicket3::store::ThicketDB]@Lot_Bed
+    )
+  }
+
+  test::scarletthicket3::domain::Lot_Cultivar: Relational
+  {
+    AssociationMapping
+    (
+      cultivar[seedLot, cultivar]: [test::scarletthicket3::store::ThicketDB]@Lot_Cultivar,
+      cultivarLots[cultivar, seedLot]: [test::scarletthicket3::store::ThicketDB]@Lot_Cultivar
+    )
+  }
+
+  testSuites:
+  [
+    lotDetailSuite:
+    {
+      function: |test::scarletthicket3::domain::SeedLot.all()->project(
+  [
+    col(
+      l|$l.lotCode,
+      'Lot'
+    ),
+    col(
+      l|$l.origin.siteName,
+      'Site'
+    ),
+    col(
+      l|$l.handling.treatmentName,
+      'Treatment'
+    ),
+    col(
+      l|$l.bed.bedLabel,
+      'Bed'
+    ),
+    col(
+      l|$l.cultivar.familyName,
+      'Family'
+    )
+  ]
+)->sort([asc('Lot')]);
+      tests:
+      [
+        inlineDetailsAndAssociationHopsResolveTogether:
+        {
+          doc: 'The two inline detail blocks read their codes from the lot row and their names across their own joins, while the bed and family names arrive over the association hops, so one projection exercises the main-table alias, both embedded blocks and two association ends at once.';
+          data:
+          [
+            test::scarletthicket3::store::ThicketDB:
+              Relational
+              #{
+                nursery.seed_lot:
+                  'lot_code,cultivar_code,bed_code,site_code,treatment_code,season_code,grade_code,status_code,habitat_code,storage_band_code,quantity_grams,viability_pct,collected_on\n'+
+                  'SL-01,CV-1,BD-1,CS-1,TR-1,S-2026A,G-A,ACTIVE,HB-HEATH,SB-COOL,420.5,88,2026-03-04\n'+
+                  'SL-02,CV-2,BD-1,CS-2,TR-2,S-2026A,G-A,ACTIVE,HB-FEN,SB-COOL,310.25,74,2026-03-11\n'+
+                  'SL-03,CV-3,BD-2,CS-1,TR-1,S-2026B,G-B,ACTIVE,HB-HEATH,SB-DRY,150.0,61,2026-04-02\n';
+
+                nursery.collection_site:
+                  'site_code,site_name,region_code\n'+
+                  'CS-1,Heath Ridge Verge,RG-N\n'+
+                  'CS-2,Fen Margin Strip,RG-E\n';
+
+                nursery.seed_treatment:
+                  'treatment_code,treatment_name,treatment_kind\n'+
+                  'TR-1,Cold Stratification,COLD\n'+
+                  'TR-2,Scarification,MECH\n';
+
+                nursery.nursery_bed:
+                  'bed_code,bed_label,block_code,team_code,capacity_units\n'+
+                  'BD-1,Bench One,BL-1,TM-1,240\n'+
+                  'BD-2,Bench Two,BL-1,TM-2,180\n';
+
+                nursery.bed_block:
+                  'block_code,block_label,glasshouse_code\n'+
+                  'BL-1,North Glasshouse Block,GH-1\n';
+
+                nursery.cultivar:
+                  'cultivar_code,cultivar_name,family_code,habit_code,steward_team_code,graft_flag,rootstock_code\n'+
+                  'CV-1,Ember Hazel,FM-1,SHRUB,TM-1,Y,RS-STANDARD\n'+
+                  'CV-2,Willow Sedge,FM-2,GRASS,TM-2,N,\n'+
+                  'CV-3,Copper Broom,FM-1,SHRUB,TM-2,Y,RS-DWARF\n';
+
+                nursery.cultivar_family:
+                  'family_code,family_name\n'+
+                  'FM-1,Legume Thicket\n'+
+                  'FM-2,Sedge Family\n';
+              }#
+          ];
+          asserts:
+          [
+            everyLotCarriesBothDetailNames:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"SL-01","Site":"Heath Ridge Verge","Treatment":"Cold Stratification","Bed":"Bench One","Family":"Legume Thicket"},{"Lot":"SL-02","Site":"Fen Margin Strip","Treatment":"Scarification","Bed":"Bench One","Family":"Sedge Family"},{"Lot":"SL-03","Site":"Heath Ridge Verge","Treatment":"Cold Stratification","Bed":"Bench Two","Family":"Legume Thicket"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    teamDepotSuite:
+    {
+      function: |test::scarletthicket3::domain::GrowerTeam.all()->project(
+  [
+    col(
+      t|$t.teamCode,
+      'Team'
+    ),
+    col(
+      t|$t.teamName,
+      'Name'
+    ),
+    col(
+      t|$t.depotName,
+      'Depot'
+    )
+  ]
+)->sort([asc('Team')]);
+      tests:
+      [
+        depotNameArrivesOverTheJoinAndIsAbsentWithoutADepotRow:
+        {
+          doc: 'The crew name is a main-table column while the depot name is reached over the depot join, so a crew whose depot key has no matching row keeps its name and reports no depot.';
+          data:
+          [
+            test::scarletthicket3::store::ThicketDB:
+              Relational
+              #{
+                nursery.grower_team:
+                  'team_code,team_name,depot_code\n'+
+                  'TM-1,Bench Crew,DP-1\n'+
+                  'TM-2,Frame Crew,DP-9\n';
+
+                nursery.team_depot:
+                  'depot_code,depot_name\n'+
+                  'DP-1,North Depot\n';
+              }#
+          ];
+          asserts:
+          [
+            oneDepotResolvedOneAbsent:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Team":"TM-1","Name":"Bench Crew","Depot":"North Depot"},{"Team":"TM-2","Name":"Frame Crew","Depot":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

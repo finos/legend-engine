@@ -1,0 +1,231 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::embercanyon3::service::AccessionService
+{
+  pattern: '/embercanyon3/v1/accessions';
+  title: 'Ember Canyon Accessions';
+  documentation: 'Lists seed accessions from the primary and archive register.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |demo::embercanyon3::domain::Accession.all()->filter(a|$a.seedCount > 0)->project(
+      [a|$a.accessionCode, a|$a.taxonName, a|$a.seedCount, a|$a.provenance.collector,
+       a|if($a.seedCount > 0, |if($a.viabilityRate > 0.5, |$a.seedCount->toFloat() * $a.viabilityRate, |0.0), |0.0)],
+      ['Accession', 'Taxon', 'Seeds', 'Collector', 'ViabilityScore']
+    );
+    mapping: demo::embercanyon3::mapping::VaultMapping;
+    runtime: demo::embercanyon3::runtime::VaultRuntime;
+  }
+  testSuites:
+  [
+    accessionServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vaultConnection:
+            Reference
+            #{
+              demo::embercanyon3::data::VaultTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        listedAccessions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-01","Taxon":"Silene emberii","Seeds":20,"Collector":"Mira Vale","ViabilityScore":16.0},{"Accession":"AC-02","Taxon":"Salvia cineria","Seeds":30,"Collector":"Oren Pike","ViabilityScore":27.0},{"Accession":"AC-11","Taxon":"Artemisia glow","Seeds":15,"Collector":"Lea Moss","ViabilityScore":10.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::embercanyon3::service::TrialService
+{
+  pattern: '/embercanyon3/v1/trials';
+  title: 'Ember Canyon Germination Trials';
+  documentation: 'Returns trial rows through a model-chain refinement.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |demo::embercanyon3::domain::TrialDigest.all()->project(
+      [t|$t.trialCode, t|$t.accessionCode, t|$t.viabilityPercent, t|$t.sourceLabel],
+      ['Trial', 'Accession', 'Viability', 'Source']
+    );
+    mapping: demo::embercanyon3::mapping::TrialDigestMapping;
+    runtime: demo::embercanyon3::runtime::TrialDigestChainRuntime;
+  }
+  testSuites:
+  [
+    trialServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vaultConnection:
+            Reference
+            #{
+              demo::embercanyon3::data::VaultTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        trialRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            expectedTrials:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trial":"TR-01","Accession":"AC-01","Viability":1600.0,"Source":"CHAIN-ALPHA"},{"Trial":"TR-02","Accession":"AC-02","Viability":2700.0,"Source":"CHAIN-BETA"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::embercanyon3::service::VaultPlanService
+{
+  pattern: '/embercanyon3/v1/plan';
+  title: 'Ember Canyon Vault Plan';
+  documentation: 'Plans the grouped vault accession query.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |demo::embercanyon3::domain::Vault.all()->project(
+      [v|$v.vaultCode, v|$v.accessionTotal, v|$v.seedTotal, v|$v.viewLabel],
+      ['Vault', 'Accessions', 'Seeds', 'Label']
+    )->sort([asc('Vault')]);
+    mapping: demo::embercanyon3::mapping::VaultMapping;
+    runtime: demo::embercanyon3::runtime::VaultRuntime;
+  }
+  testSuites:
+  [
+    vaultPlanServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vaultConnection:
+            Reference
+            #{
+              demo::embercanyon3::data::VaultTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        vaultRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            expectedVaults:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Vault":"V-01","Accessions":2,"Seeds":50,"Label":"ACCESSION-YIELD-VIEW"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::embercanyon3::service::TrialSummaryService
+{
+  pattern: '/embercanyon3/v1/trial-summary';
+  title: 'Ember Canyon Trial Summary';
+  documentation: 'Reports the grouped germination totals from an inline relational view.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |demo::embercanyon3::domain::TrialSummary.all()->project(
+      [s|$s.accessionCode, s|$s.emergedTotal],
+      ['Accession', 'Emerged']
+    )->sort([asc('Accession')]);
+    mapping: demo::embercanyon3::mapping::VaultMapping;
+    runtime: demo::embercanyon3::runtime::VaultRuntime;
+  }
+  testSuites:
+  [
+    trialSummaryServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vaultConnection:
+            Reference
+            #{
+              demo::embercanyon3::data::VaultTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        summaryRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            expectedSummary:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-01","Emerged":16},{"Accession":"AC-02","Emerged":27}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

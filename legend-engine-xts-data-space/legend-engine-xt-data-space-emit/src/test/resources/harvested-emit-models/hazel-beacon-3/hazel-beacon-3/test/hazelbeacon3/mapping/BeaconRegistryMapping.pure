@@ -1,0 +1,322 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelbeacon3::mapping::BeaconRegistryMapping
+(
+  *test::hazelbeacon3::domain::BeaconStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::BeaconRegistryDB]registry.station_record.station_code
+    )
+    ~mainTable [test::hazelbeacon3::store::BeaconRegistryDB]registry.station_record
+    stationCode: [test::hazelbeacon3::store::BeaconRegistryDB]registry.station_record.station_code,
+    stationName: [test::hazelbeacon3::store::BeaconRegistryDB]registry.station_record.station_name,
+    coastSector: [test::hazelbeacon3::store::BeaconRegistryDB]registry.station_record.coast_sector
+  }
+
+  *test::hazelbeacon3::domain::LampUnit[lamp]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::BeaconRegistryDB]registry.lamp_record.lamp_code
+    )
+    ~mainTable [test::hazelbeacon3::store::BeaconRegistryDB]registry.lamp_record
+    lampCode: [test::hazelbeacon3::store::BeaconRegistryDB]registry.lamp_record.lamp_code,
+    lampType: [test::hazelbeacon3::store::BeaconRegistryDB]registry.lamp_record.lamp_type,
+    ratedHours: [test::hazelbeacon3::store::BeaconRegistryDB]registry.lamp_record.rated_hours
+  }
+
+  *test::hazelbeacon3::domain::NavigationBeacon[beacon]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.beacon_code
+    )
+    ~mainTable [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record
+    beaconCode: [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.beacon_code,
+    beaconName: [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.beacon_name,
+    commissionedOn: [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.commissioned_on,
+    focalHeightM: [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.focal_height_m,
+    registerScheme: 'COASTAL-BEACON-REGISTER',
+    gradeBand: case(
+                 equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G1'),
+                 'landfall-major',
+                 case(
+                   equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G2'),
+                   'landfall-minor',
+                   case(
+                     equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G3'),
+                     'headland-major',
+                     case(
+                       equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G4'),
+                       'headland-minor',
+                       case(
+                         equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G5'),
+                         'channel-leading',
+                         case(
+                           equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G6'),
+                           'channel-lateral',
+                           case(
+                             equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G7'),
+                             'harbour-entrance',
+                             case(
+                               equal(toUpper([test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code), 'G8'),
+                               'harbour-quay',
+                               sqlNull()
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    stationName: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Station | [test::hazelbeacon3::store::BeaconRegistryDB]registry.station_record.station_name,
+    coastSector: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Station | [test::hazelbeacon3::store::BeaconRegistryDB]registry.station_record.coast_sector,
+    lampType: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Lamp | [test::hazelbeacon3::store::BeaconRegistryDB]registry.lamp_record.lamp_type,
+    ratedHours: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Lamp | [test::hazelbeacon3::store::BeaconRegistryDB]registry.lamp_record.rated_hours
+  }
+
+  *test::hazelbeacon3::domain::BeaconInspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.inspection_ref
+    )
+    ~mainTable [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record
+    inspectionRef: [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.inspection_ref,
+    inspectedOn: [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.inspected_on,
+    inspectorCode: [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.inspector_code,
+    lensScore: [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.lens_score,
+    batteryPct: [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.battery_pct,
+    batteryLabel: case(
+                    greaterThanEqual([test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.battery_pct, 90),
+                    concat('CHARGED-', toUpper([test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.inspector_code)),
+                    case(
+                      lessThan([test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.battery_pct, 40),
+                      'RECHARGE-DUE',
+                      sqlNull()
+                    )
+                  ),
+    beaconName: [test::hazelbeacon3::store::BeaconRegistryDB]@Inspection_Beacon | [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.beacon_name,
+    beaconGradeCode: [test::hazelbeacon3::store::BeaconRegistryDB]@Inspection_Beacon | [test::hazelbeacon3::store::BeaconRegistryDB]registry.beacon_record.grade_code
+  }
+
+  *test::hazelbeacon3::domain::InspectionDefect[defect]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.defect_ref
+    )
+    ~mainTable [test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record
+    defectRef: [test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.defect_ref,
+    defectCode: [test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.defect_code,
+    severityCode: [test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.severity_code,
+    raisedOn: [test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.raised_on,
+    severityBand: case(
+                    equal([test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.severity_code, 'S1'),
+                    'light-out',
+                    case(
+                      equal([test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.severity_code, 'S2'),
+                      'range-reduced',
+                      case(
+                        equal([test::hazelbeacon3::store::BeaconRegistryDB]survey.defect_record.severity_code, 'S3'),
+                        'structure-watch',
+                        sqlNull()
+                      )
+                    )
+                  ),
+    inspectedOn: [test::hazelbeacon3::store::BeaconRegistryDB]@Defect_Inspection | [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.inspected_on,
+    inspectorCode: [test::hazelbeacon3::store::BeaconRegistryDB]@Defect_Inspection | [test::hazelbeacon3::store::BeaconRegistryDB]survey.inspection_record.inspector_code
+  }
+
+  test::hazelbeacon3::domain::Station_Beacons: Relational
+  {
+    AssociationMapping
+    (
+      beacons[station, beacon]: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Station,
+      station[beacon, station]: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Station
+    )
+  }
+
+  test::hazelbeacon3::domain::Lamp_Beacons: Relational
+  {
+    AssociationMapping
+    (
+      litBeacons[lamp, beacon]: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Lamp,
+      lamp[beacon, lamp]: [test::hazelbeacon3::store::BeaconRegistryDB]@Beacon_Lamp
+    )
+  }
+
+  test::hazelbeacon3::domain::Beacon_Inspections: Relational
+  {
+    AssociationMapping
+    (
+      inspections[beacon, inspection]: [test::hazelbeacon3::store::BeaconRegistryDB]@Inspection_Beacon,
+      beacon[inspection, beacon]: [test::hazelbeacon3::store::BeaconRegistryDB]@Inspection_Beacon
+    )
+  }
+
+  test::hazelbeacon3::domain::Inspection_Defects: Relational
+  {
+    AssociationMapping
+    (
+      defects[inspection, defect]: [test::hazelbeacon3::store::BeaconRegistryDB]@Defect_Inspection,
+      inspection[defect, inspection]: [test::hazelbeacon3::store::BeaconRegistryDB]@Defect_Inspection
+    )
+  }
+
+  testSuites:
+  [
+    beaconGradeBandSuite:
+    {
+      function: |test::hazelbeacon3::domain::NavigationBeacon.all()->project(
+  [
+    b|$b.beaconCode,
+    b|$b.gradeBand,
+    b|$b.registerScheme,
+    b|$b.stationName,
+    b|$b.lampType
+  ],
+  [
+    'BEACON_CODE',
+    'GRADE_BAND',
+    'SCHEME',
+    'STATION',
+    'LAMP_TYPE'
+  ]
+)->sort(
+  [
+    asc('BEACON_CODE')
+  ]
+);
+      tests:
+      [
+        everyGradeArmAndTheUnknownCodeFallback:
+        {
+          doc: 'Drives one beacon through each of the eight grade arms and one beacon through an unlisted grade code so the sentinel fallback surfaces as absent, while the literal register scheme is stamped on every row and the shore-station and lamp hops resolve except where the lamp key is unset.';
+          data:
+          [
+            test::hazelbeacon3::store::BeaconRegistryDB:
+              Relational
+              #{
+                registry.station_record:
+                  'station_code,station_name,coast_sector\n'+
+                  'ST-01,Hazel Point Station,north-shore\n'+
+                  'ST-02,Quay Head Station,harbour-approach\n';
+                registry.lamp_record:
+                  'lamp_code,lamp_type,rated_hours\n'+
+                  'LP-01,rotating-optic,40000\n'+
+                  'LP-02,fixed-lens,25000\n';
+                registry.beacon_record:
+                  'beacon_code,beacon_name,station_code,lamp_code,grade_code,commissioned_on,focal_height_m\n'+
+                  'BC-01,Hazel Point Light,ST-01,LP-01,G1,1998-04-12,32\n'+
+                  'BC-02,Shingle Spit Light,ST-01,LP-01,G2,2001-06-01,18\n'+
+                  'BC-03,Gull Ledge Light,ST-01,LP-02,G3,2004-09-15,24\n'+
+                  'BC-04,Cormorant Rock Light,ST-01,LP-02,G4,2007-02-20,12\n'+
+                  'BC-05,Narrows Leading Light,ST-02,LP-02,G5,2010-05-05,9\n'+
+                  'BC-06,Narrows Lateral Light,ST-02,LP-02,G6,2012-08-08,7\n'+
+                  'BC-07,Quay Entrance Light,ST-02,LP-01,G7,2015-11-11,6\n'+
+                  'BC-08,Quay Berth Light,ST-02,LP-01,G8,2018-03-03,5\n'+
+                  'BC-09,Outer Buoy Light,ST-02,,G9,2020-07-07,3\n';
+              }#
+          ];
+          asserts:
+          [
+            eightBandedRowsAndOneUnbandedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BEACON_CODE":"BC-01","GRADE_BAND":"landfall-major","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Hazel Point Station","LAMP_TYPE":"rotating-optic"},{"BEACON_CODE":"BC-02","GRADE_BAND":"landfall-minor","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Hazel Point Station","LAMP_TYPE":"rotating-optic"},{"BEACON_CODE":"BC-03","GRADE_BAND":"headland-major","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Hazel Point Station","LAMP_TYPE":"fixed-lens"},{"BEACON_CODE":"BC-04","GRADE_BAND":"headland-minor","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Hazel Point Station","LAMP_TYPE":"fixed-lens"},{"BEACON_CODE":"BC-05","GRADE_BAND":"channel-leading","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Quay Head Station","LAMP_TYPE":"fixed-lens"},{"BEACON_CODE":"BC-06","GRADE_BAND":"channel-lateral","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Quay Head Station","LAMP_TYPE":"fixed-lens"},{"BEACON_CODE":"BC-07","GRADE_BAND":"harbour-entrance","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Quay Head Station","LAMP_TYPE":"rotating-optic"},{"BEACON_CODE":"BC-08","GRADE_BAND":"harbour-quay","SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Quay Head Station","LAMP_TYPE":"rotating-optic"},{"BEACON_CODE":"BC-09","GRADE_BAND":null,"SCHEME":"COASTAL-BEACON-REGISTER","STATION":"Quay Head Station","LAMP_TYPE":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inspectionBatterySuite:
+    {
+      function: |test::hazelbeacon3::domain::BeaconInspection.all()->project(
+  [
+    i|$i.inspectionRef,
+    i|$i.batteryLabel,
+    i|$i.beaconName,
+    i|$i.defects.severityBand
+  ],
+  [
+    'INSPECTION_REF',
+    'BATTERY_LABEL',
+    'BEACON',
+    'SEVERITY_BAND'
+  ]
+)->sort(
+  [
+    asc('INSPECTION_REF'),
+    asc('SEVERITY_BAND')
+  ]
+);
+      tests:
+      [
+        batteryArmsAndDefectNavigation:
+        {
+          doc: 'Labels the charged and the recharge-due visits, leaves the mid-charge visit on the sentinel arm, and walks the defect end so a visit with two defects fans out, a visit with none keeps an absent band and a defect keyed to an unknown visit never appears.';
+          data:
+          [
+            test::hazelbeacon3::store::BeaconRegistryDB:
+              Relational
+              #{
+                registry.station_record:
+                  'station_code,station_name,coast_sector\n'+
+                  'ST-01,Hazel Point Station,north-shore\n';
+                registry.beacon_record:
+                  'beacon_code,beacon_name,station_code,lamp_code,grade_code,commissioned_on,focal_height_m\n'+
+                  'BC-01,Hazel Point Light,ST-01,LP-01,G1,1998-04-12,32\n'+
+                  'BC-02,Shingle Spit Light,ST-01,LP-01,G2,2001-06-01,18\n';
+                survey.inspection_record:
+                  'inspection_ref,beacon_code,inspected_on,inspector_code,lens_score,battery_pct\n'+
+                  'IN-01,BC-01,2026-04-02,keeper-a,88,96\n'+
+                  'IN-02,BC-01,2026-04-09,keeper-b,74,35\n'+
+                  'IN-03,BC-02,2026-04-09,keeper-c,62,60\n'+
+                  'IN-04,BC-77,2026-04-16,keeper-d,50,20\n';
+                survey.defect_record:
+                  'defect_ref,inspection_ref,defect_code,severity_code,raised_on\n'+
+                  'DF-01,IN-01,lens-crazed,S2,2026-04-03\n'+
+                  'DF-02,IN-01,gasket-perished,S3,2026-04-03\n'+
+                  'DF-03,IN-02,lamp-failed,S1,2026-04-10\n'+
+                  'DF-04,IN-99,ladder-corroded,S2,2026-04-11\n';
+              }#
+          ];
+          asserts:
+          [
+            labelledVisitsWithTheirDefectBands:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"INSPECTION_REF":"IN-01","BATTERY_LABEL":"CHARGED-KEEPER-A","BEACON":"Hazel Point Light","SEVERITY_BAND":"range-reduced"},{"INSPECTION_REF":"IN-01","BATTERY_LABEL":"CHARGED-KEEPER-A","BEACON":"Hazel Point Light","SEVERITY_BAND":"structure-watch"},{"INSPECTION_REF":"IN-02","BATTERY_LABEL":"RECHARGE-DUE","BEACON":"Hazel Point Light","SEVERITY_BAND":"light-out"},{"INSPECTION_REF":"IN-03","BATTERY_LABEL":null,"BEACON":"Shingle Spit Light","SEVERITY_BAND":null},{"INSPECTION_REF":"IN-04","BATTERY_LABEL":"RECHARGE-DUE","BEACON":null,"SEVERITY_BAND":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

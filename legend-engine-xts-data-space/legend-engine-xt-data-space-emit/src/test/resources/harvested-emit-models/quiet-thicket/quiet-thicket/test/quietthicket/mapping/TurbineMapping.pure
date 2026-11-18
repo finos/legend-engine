@@ -1,0 +1,256 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietthicket::mapping::TurbineMapping
+(
+  *test::quietthicket::domain::SensorReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietthicket::store::TurbineDB]signal.reading.reading_code
+    )
+    ~mainTable [test::quietthicket::store::TurbineDB]signal.reading
+    readingCode: [test::quietthicket::store::TurbineDB]signal.reading.reading_code,
+    capturedAt: [test::quietthicket::store::TurbineDB]signal.reading.captured_at,
+    windSpeedMs: [test::quietthicket::store::TurbineDB]signal.reading.wind_speed_ms,
+    powerOutputKw: [test::quietthicket::store::TurbineDB]signal.reading.power_output_kw,
+    bladePitchDeg: [test::quietthicket::store::TurbineDB]signal.reading.blade_pitch_deg,
+    faultRaised: [test::quietthicket::store::TurbineDB]signal.reading.fault_flag,
+    turbineName: [test::quietthicket::store::TurbineDB]@Reading_Turbine | fleet.turbine.turbine_name,
+    mastLabel: [test::quietthicket::store::TurbineDB]@Reading_Sensor > @Sensor_Mast | fleet.mast.mast_label,
+    siteName: [test::quietthicket::store::TurbineDB]@Reading_Turbine > @Turbine_Site | siteref.site.site_name,
+    regionName: [test::quietthicket::store::TurbineDB]@Reading_Turbine > @Turbine_Site > @Site_Region | siteref.region.region_name
+  }
+
+  *test::quietthicket::domain::Sensor[sensor]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietthicket::store::TurbineDB]signal.sensor.sensor_code
+    )
+    ~mainTable [test::quietthicket::store::TurbineDB]signal.sensor
+    sensorCode: [test::quietthicket::store::TurbineDB]signal.sensor.sensor_code,
+    sensorModel: [test::quietthicket::store::TurbineDB]signal.sensor.sensor_model,
+    installedAt: [test::quietthicket::store::TurbineDB]signal.sensor.installed_at,
+    calibratedOn: [test::quietthicket::store::TurbineDB]signal.sensor.calibrated_on
+  }
+
+  *test::quietthicket::domain::Turbine[turbine]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietthicket::store::TurbineDB]fleet.turbine.turbine_code
+    )
+    ~mainTable [test::quietthicket::store::TurbineDB]fleet.turbine
+    turbineCode: [test::quietthicket::store::TurbineDB]fleet.turbine.turbine_code,
+    turbineNameText: [test::quietthicket::store::TurbineDB]fleet.turbine.turbine_name,
+    ratedKw: [test::quietthicket::store::TurbineDB]fleet.turbine.rated_kw,
+    commissionedOn: [test::quietthicket::store::TurbineDB]fleet.turbine.commissioned_on
+  }
+
+  *test::quietthicket::domain::Mast[mast]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietthicket::store::TurbineDB]fleet.mast.mast_code
+    )
+    ~mainTable [test::quietthicket::store::TurbineDB]fleet.mast
+    mastCode: [test::quietthicket::store::TurbineDB]fleet.mast.mast_code,
+    mastLabelText: [test::quietthicket::store::TurbineDB]fleet.mast.mast_label,
+    heightMetres: [test::quietthicket::store::TurbineDB]fleet.mast.height_metres
+  }
+
+  *test::quietthicket::domain::Site[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietthicket::store::TurbineDB]siteref.site.site_code
+    )
+    ~mainTable [test::quietthicket::store::TurbineDB]siteref.site
+    siteCode: [test::quietthicket::store::TurbineDB]siteref.site.site_code,
+    siteNameText: [test::quietthicket::store::TurbineDB]siteref.site.site_name,
+    gridZone: [test::quietthicket::store::TurbineDB]siteref.site.grid_zone
+  }
+
+  *test::quietthicket::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietthicket::store::TurbineDB]siteref.region.region_code
+    )
+    ~mainTable [test::quietthicket::store::TurbineDB]siteref.region
+    regionCode: [test::quietthicket::store::TurbineDB]siteref.region.region_code,
+    regionNameText: [test::quietthicket::store::TurbineDB]siteref.region.region_name
+  }
+
+  *test::quietthicket::domain::MaintenanceLog[log]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietthicket::store::TurbineDB]fleet.maintenance_log.log_code
+    )
+    ~mainTable [test::quietthicket::store::TurbineDB]fleet.maintenance_log
+    logCode: [test::quietthicket::store::TurbineDB]fleet.maintenance_log.log_code,
+    loggedAt: [test::quietthicket::store::TurbineDB]fleet.maintenance_log.logged_at,
+    crewCode: [test::quietthicket::store::TurbineDB]fleet.maintenance_log.crew_code,
+    hoursSpent: [test::quietthicket::store::TurbineDB]fleet.maintenance_log.hours_spent,
+    notes: [test::quietthicket::store::TurbineDB]fleet.maintenance_log.notes
+  }
+
+  test::quietthicket::domain::Reading_Sensor: Relational
+  {
+    AssociationMapping
+    (
+      readings[sensor, reading]: [test::quietthicket::store::TurbineDB]@Reading_Sensor,
+      sensor[reading, sensor]: [test::quietthicket::store::TurbineDB]@Reading_Sensor
+    )
+  }
+
+  test::quietthicket::domain::Reading_Turbine: Relational
+  {
+    AssociationMapping
+    (
+      turbineReadings[turbine, reading]: [test::quietthicket::store::TurbineDB]@Reading_Turbine,
+      turbine[reading, turbine]: [test::quietthicket::store::TurbineDB]@Reading_Turbine
+    )
+  }
+
+  test::quietthicket::domain::Sensor_Mast: Relational
+  {
+    AssociationMapping
+    (
+      sensors[mast, sensor]: [test::quietthicket::store::TurbineDB]@Sensor_Mast,
+      mast[sensor, mast]: [test::quietthicket::store::TurbineDB]@Sensor_Mast
+    )
+  }
+
+  test::quietthicket::domain::Turbine_Site: Relational
+  {
+    AssociationMapping
+    (
+      turbines[site, turbine]: [test::quietthicket::store::TurbineDB]@Turbine_Site,
+      site[turbine, site]: [test::quietthicket::store::TurbineDB]@Turbine_Site
+    )
+  }
+
+  test::quietthicket::domain::Site_Region: Relational
+  {
+    AssociationMapping
+    (
+      sites[region, site]: [test::quietthicket::store::TurbineDB]@Site_Region,
+      region[site, region]: [test::quietthicket::store::TurbineDB]@Site_Region
+    )
+  }
+
+  test::quietthicket::domain::Log_Turbine: Relational
+  {
+    AssociationMapping
+    (
+      maintenanceLogs[turbine, log]: [test::quietthicket::store::TurbineDB]@Log_Turbine,
+      loggedTurbine[log, turbine]: [test::quietthicket::store::TurbineDB]@Log_Turbine
+    )
+  }
+
+  testSuites:
+  [
+    joinPathSuite:
+    {
+      function: |test::quietthicket::domain::SensorReading.all()->project(
+  [
+    r|$r.readingCode,
+    r|$r.turbineName,
+    r|$r.mastLabel,
+    r|$r.siteName,
+    r|$r.regionName,
+    r|$r.sensor.sensorModel,
+    r|$r.turbine.ratedKw,
+    r|$r.turbine.site.gridZone
+  ],
+  [
+    'ReadingCode',
+    'TurbineName',
+    'MastLabel',
+    'SiteName',
+    'RegionName',
+    'SensorModel',
+    'RatedKw',
+    'GridZone'
+  ]
+)->sort(
+  [
+    asc('ReadingCode')
+  ]
+);
+      tests:
+      [
+        everyHopDepthWithMisses:
+        {
+          doc: 'Covers the one, two and three hop join paths off the driving relation, the association ends navigated in the reading-to-sensor and turbine-to-site directions, a reading whose first hop misses because the sensor is retired by the join predicate, a reading with no turbine counterpart at all and a site whose region reference is absent so the deepest hop nulls only its own column.';
+          data:
+          [
+            test::quietthicket::store::TurbineDB:
+              Relational
+              #{
+                signal.reading:
+                  'reading_code,sensor_code,turbine_code,captured_at,wind_speed_ms,power_output_kw,blade_pitch_deg,fault_flag\n'+
+                  'RD-01,SN-01,TB-01,2026-04-11 06:15:00,8.5,1450.0,4.5,false\n'+
+                  'RD-02,SN-02,TB-02,2026-04-11 18:40:00,11.25,2100.0,2.0,true\n'+
+                  'RD-03,SN-03,TB-01,2026-04-12 07:05:00,6.75,900.0,,false\n'+
+                  'RD-04,SN-01,,2026-04-12 21:30:00,9.0,1600.0,3.25,false\n';
+
+                signal.sensor:
+                  'sensor_code,sensor_model,sensor_state,mast_code,installed_at,calibrated_on\n'+
+                  'SN-01,VaneTrack 200,ACTIVE,MS-01,2025-01-09 09:00:00,2026-02-01\n'+
+                  'SN-02,VaneTrack 400,ACTIVE,MS-02,2025-03-17 11:30:00,2026-01-15\n'+
+                  'SN-03,VaneTrack 200,RETIRED,MS-01,2024-06-02 08:45:00,\n';
+
+                fleet.turbine:
+                  'turbine_code,turbine_name,site_code,rated_kw,commissioned_on\n'+
+                  'TB-01,Ridge Head 1,ST-01,1800,2024-05-06\n'+
+                  'TB-02,Ridge Head 2,ST-02,2400,2024-09-30\n';
+
+                fleet.mast:
+                  'mast_code,mast_label,height_metres\n'+
+                  'MS-01,North Mast,90\n'+
+                  'MS-02,South Mast,120\n';
+
+                siteref.site:
+                  'site_code,site_name,region_code,grid_zone\n'+
+                  'ST-01,Heather Ridge,RG-01,ZONE-A\n'+
+                  'ST-02,Bracken Ridge,,ZONE-B\n';
+
+                siteref.region:
+                  'region_code,region_name\n'+
+                  'RG-01,Upland North\n';
+              }#
+          ];
+          asserts:
+          [
+            hopMissesNullOnlyTheirOwnColumns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"RD-01","TurbineName":"Ridge Head 1","MastLabel":"North Mast","SiteName":"Heather Ridge","RegionName":"Upland North","SensorModel":"VaneTrack 200","RatedKw":1800,"GridZone":"ZONE-A"},{"ReadingCode":"RD-02","TurbineName":"Ridge Head 2","MastLabel":"South Mast","SiteName":"Bracken Ridge","RegionName":null,"SensorModel":"VaneTrack 400","RatedKw":2400,"GridZone":"ZONE-B"},{"ReadingCode":"RD-03","TurbineName":"Ridge Head 1","MastLabel":null,"SiteName":"Heather Ridge","RegionName":"Upland North","SensorModel":null,"RatedKw":1800,"GridZone":"ZONE-A"},{"ReadingCode":"RD-04","TurbineName":null,"MastLabel":"North Mast","SiteName":null,"RegionName":null,"SensorModel":"VaneTrack 200","RatedKw":null,"GridZone":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

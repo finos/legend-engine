@@ -1,0 +1,195 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealridge4::mapping::LookoutPostingMapping
+(
+  include mapping test::borealridge4::mapping::LookoutTowerMapping
+
+  *test::borealridge4::domain::WatchPosting[posting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealridge4::store::LookoutNetworkDb]crew.crew_posting.tower_code,
+      [test::borealridge4::store::LookoutNetworkDb]crew.crew_posting.shift_no
+    )
+    ~mainTable [test::borealridge4::store::LookoutNetworkDb]crew.crew_posting
+    towerCode: [test::borealridge4::store::LookoutNetworkDb]crew.crew_posting.tower_code,
+    shiftNo: [test::borealridge4::store::LookoutNetworkDb]crew.crew_posting.shift_no,
+    crewName: [test::borealridge4::store::LookoutNetworkDb]@PostingCrew | [test::borealridge4::store::LookoutNetworkDb]crew.watch_crew.crew_name,
+    postingLabel: case(
+                    equal([test::borealridge4::store::LookoutNetworkDb]crew.crew_posting.posting_kind, 'DAWN'),
+                    'DAWN WATCH',
+                    case(equal([test::borealridge4::store::LookoutNetworkDb]crew.crew_posting.posting_kind, 'DUSK'), 'DUSK WATCH', 'DAY WATCH')
+                  ),
+    districtName: [test::borealridge4::store::LookoutNetworkDb]@PostingTower > (INNER) @TowerRegion > (INNER) @RegionDistrict | [test::borealridge4::store::LookoutNetworkDb]region.fire_district.district_name,
+    agencyName: [test::borealridge4::store::LookoutNetworkDb]@PostingTower > (INNER) @TowerRegion > (INNER) @RegionDistrict > (INNER) @DistrictAgency | [test::borealridge4::store::LookoutNetworkDb]region.land_agency.agency_name
+  }
+
+  test::borealridge4::domain::TowerWatchPostings: Relational
+  {
+    AssociationMapping
+    (
+      postedTower[posting, tower]: [test::borealridge4::store::LookoutNetworkDb]@PostingCard,
+      watchPostings[tower, posting]: [test::borealridge4::store::LookoutNetworkDb]@PostingCard
+    )
+  }
+
+  testSuites:
+  [
+    towerCardSuite:
+    {
+      function: |test::borealridge4::domain::LookoutTower.all()->project(
+        ~[
+           tower: t|$t.towerCode,
+           name: t|$t.towerName,
+           region: t|$t.regionName,
+           band: t|$t.elevationBand,
+           staffed: t|$t.staffedLabel,
+           parent: t|$t.parentTowerName,
+           aspect: t|$t.siting.aspectCode,
+           elevation: t|$t.siting.elevationText,
+           beacon: t|$t.beacon.beaconColor,
+           rangeKm: t|$t.beacon.beaconRangeKm
+         ]
+      )->sort(~tower->ascending());
+      tests:
+      [
+        everyElevationBandAndParentTower:
+        {
+          doc: 'Places one tower in each of the eight elevation bands plus one above the top band whose band falls back to null, resolves region names through the view join including an open, a status-less, a closed and a missing region, follows the parent self join to present and absent parents, and reads the embedded siting and the inline beacon with an unlit fallback.';
+          data:
+          [
+            test::borealridge4::store::LookoutNetworkDb:
+              Relational
+              #{
+                tower.lookout_tower:
+                  'tower_code,tower_name,region_code,staffed_flag,elevation_m,aspect_code,parent_tower_code,beacon_color,beacon_range_km\n'+
+                  'T-01,north lookout,R-01,Y,550,N,,amber,12\n'+
+                  'T-02,pine knoll,R-01,N,700,E,T-01,,\n'+
+                  'T-03,spruce crest,R-02,Y,900,S,T-99,white,18\n'+
+                  'T-04,larch spur,R-03,N,1100,W,,crimson,20\n'+
+                  'T-05,aspen saddle,R-09,Y,1300,N,T-01,amber,15\n'+
+                  'T-06,fir shoulder,R-01,Y,1500,E,,white,22\n'+
+                  'T-07,cedar notch,R-01,N,1700,S,T-06,crimson,25\n'+
+                  'T-08,hemlock tor,R-02,Y,1900,W,,amber,30\n'+
+                  'T-09,tamarack dome,R-01,Y,2100,N,T-08,white,35\n';
+
+                region.fire_region:
+                  'region_code,region_name,district_code,region_status\n'+
+                  'R-01,Birch Range,D-01,OPEN\n'+
+                  'R-02,Willow Basin,D-02,\n'+
+                  'R-03,Alder Flats,D-01,CLOSED\n';
+              }#
+          ];
+          asserts:
+          [
+            nineTowerCards:
+              Relation
+              #{
+                tower,name,region,band,staffed,parent,aspect,elevation,beacon,rangeKm
+                T-01,NORTH LOOKOUT,Birch Range,BAND-1,STAFFED,,N,550 m,AMBER,12
+                T-02,PINE KNOLL,Birch Range,BAND-2,UNSTAFFED,NORTH LOOKOUT,E,700 m,UNLIT,
+                T-03,SPRUCE CREST,Willow Basin,BAND-3,STAFFED,,S,900 m,WHITE,18
+                T-04,LARCH SPUR,,BAND-4,UNSTAFFED,,W,1100 m,CRIMSON,20
+                T-05,ASPEN SADDLE,,BAND-5,STAFFED,NORTH LOOKOUT,N,1300 m,AMBER,15
+                T-06,FIR SHOULDER,Birch Range,BAND-6,STAFFED,,E,1500 m,WHITE,22
+                T-07,CEDAR NOTCH,Birch Range,BAND-7,UNSTAFFED,FIR SHOULDER,S,1700 m,CRIMSON,25
+                T-08,HEMLOCK TOR,Willow Basin,BAND-8,STAFFED,,W,1900 m,AMBER,30
+                T-09,TAMARACK DOME,Birch Range,,STAFFED,HEMLOCK TOR,N,2100 m,WHITE,35;
+              }#
+          ];
+        }
+      ];
+    },
+    watchPostingSuite:
+    {
+      function: |test::borealridge4::domain::WatchPosting.all()->project(
+        ~[
+           tower: p|$p.towerCode,
+           shift: p|$p.shiftNo,
+           crew: p|$p.crewName,
+           label: p|$p.postingLabel,
+           district: p|$p.districtName,
+           agency: p|$p.agencyName,
+           towerName: p|$p.postedTower.towerName
+         ]
+      )->sort([~tower->ascending(), ~shift->ascending()]);
+      tests:
+      [
+        fourHopAgencyChainAndCrewFlags:
+        {
+          doc: 'Reaches the land agency four inner hops away for a fully linked posting, stops at the district when the agency is missing, loses both when the region join is refused by its status or the region is absent, keeps postings whose tower is unknown, drops crews whose active flag is not set and covers the dawn, dusk and default watch labels.';
+          data:
+          [
+            test::borealridge4::store::LookoutNetworkDb:
+              Relational
+              #{
+                crew.crew_posting:
+                  'tower_code,shift_no,crew_code,posting_kind\n'+
+                  'T-01,1,C-01,DAWN\n'+
+                  'T-01,2,C-02,DUSK\n'+
+                  'T-03,1,C-01,NOON\n'+
+                  'T-04,1,C-03,DAWN\n'+
+                  'T-05,1,C-01,DUSK\n'+
+                  'T-77,1,C-01,DAWN\n';
+
+                crew.watch_crew:
+                  'crew_code,crew_name,base_code,active_flag\n'+
+                  'C-01,Granite Crew,B-1,Y\n'+
+                  'C-02,Shale Crew,B-1,N\n'+
+                  'C-03,Basalt Crew,B-2,Y\n';
+
+                tower.lookout_tower:
+                  'tower_code,tower_name,region_code,staffed_flag,elevation_m,aspect_code,parent_tower_code,beacon_color,beacon_range_km\n'+
+                  'T-01,north lookout,R-01,Y,550,N,,amber,12\n'+
+                  'T-03,spruce crest,R-02,Y,900,S,,white,18\n'+
+                  'T-04,larch spur,R-03,N,1100,W,,crimson,20\n'+
+                  'T-05,aspen saddle,R-09,Y,1300,N,,amber,15\n';
+
+                region.fire_region:
+                  'region_code,region_name,district_code,region_status\n'+
+                  'R-01,Birch Range,D-01,OPEN\n'+
+                  'R-02,Willow Basin,D-02,\n'+
+                  'R-03,Alder Flats,D-01,CLOSED\n';
+
+                region.fire_district:
+                  'district_code,district_name,agency_code\n'+
+                  'D-01,Upper Ridge District,A-01\n'+
+                  'D-02,Lower Ridge District,A-99\n';
+
+                region.land_agency:
+                  'agency_code,agency_name\n'+
+                  'A-01,Boreal Forest Service\n';
+              }#
+          ];
+          asserts:
+          [
+            sixWatchPostings:
+              Relation
+              #{
+                tower,shift,crew,label,district,agency,towerName
+                T-01,1,Granite Crew,DAWN WATCH,Upper Ridge District,Boreal Forest Service,NORTH LOOKOUT
+                T-01,2,,DUSK WATCH,Upper Ridge District,Boreal Forest Service,NORTH LOOKOUT
+                T-03,1,Granite Crew,DAY WATCH,Lower Ridge District,,SPRUCE CREST
+                T-04,1,Basalt Crew,DAWN WATCH,,,LARCH SPUR
+                T-05,1,Granite Crew,DUSK WATCH,,,ASPEN SADDLE
+                T-77,1,Granite Crew,DAWN WATCH,,,;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

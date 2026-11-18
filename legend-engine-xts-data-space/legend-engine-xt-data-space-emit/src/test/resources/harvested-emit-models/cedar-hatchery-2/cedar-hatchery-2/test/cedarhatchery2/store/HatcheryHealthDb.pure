@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cedarhatchery2::store::HatcheryHealthDb
+(
+  Schema health
+  (
+    Table health_check
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      check_id VARCHAR(16) PRIMARY KEY,
+      lot_code VARCHAR(24) NOT NULL,
+      vet_code VARCHAR(8),
+      grade_code VARCHAR(8),
+      water_temp_c DOUBLE,
+      sampled_count INTEGER,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table vet_roster
+    (
+      vet_code VARCHAR(8) PRIMARY KEY,
+      vet_alias VARCHAR(60) NOT NULL,
+      clinic_name VARCHAR(60)
+    )
+    Table grade_scale
+    (
+      grade_code VARCHAR(8) PRIMARY KEY,
+      grade_label VARCHAR(24) NOT NULL,
+      severity_rank INTEGER
+    )
+  )
+
+  Join HealthCheck_Vet(health.health_check.vet_code = health.vet_roster.vet_code)
+
+  Join HealthCheck_Grade(health.health_check.grade_code = health.grade_scale.grade_code)
+)

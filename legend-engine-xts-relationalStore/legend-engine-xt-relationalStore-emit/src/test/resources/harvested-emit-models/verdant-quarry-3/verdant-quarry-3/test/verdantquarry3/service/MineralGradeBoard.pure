@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantquarry3::service::MineralGradeBoard
+{
+  pattern: '/quarry/v1/mineral-grade-board/{mineralCode}';
+  title: 'Verdant Quarry - Mineral Grade Board';
+  owners:
+  [
+    'quarry-survey-desk',
+    'quarry-geology'
+  ];
+  documentation: 'Narrows core samples to one mineral code and publishes a four-column grade board that resolves the owning face across the sample-to-face join, so the plan pushes a single equality predicate and one inner hop.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {mineralCode: String[1]|test::verdantquarry3::domain::CoreSample.all()->filter(
+      s|$s.mineralCode == $mineralCode
+    )->project(
+      [
+        s|$s.sampleCode,
+        s|$s.face.faceCode,
+        s|$s.purityPercent,
+        s|$s.depthMetres
+      ],
+      [
+        'Sample Code',
+        'Face Code',
+        'Purity Percent',
+        'Depth Metres'
+      ]
+    )->sort([asc('Sample Code')])};
+    mapping: test::verdantquarry3::mapping::QuarryMapping;
+    runtime: test::verdantquarry3::runtime::QuarryH2Runtime;
+  }
+  testSuites:
+  [
+    mineralGradeBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          quarryConnection:
+            Relational
+            #{
+              geology.quarry_site:
+                'quarry_code,quarry_name,region_code\n'+
+                'QS-01,Verdant Ridge Quarry,RG-NORTH\n'+
+                'QS-02,Slate Hollow Quarry,RG-SOUTH\n';
+
+              geology.quarry_face:
+                'face_code,face_name,quarry_code,bench_height,surveyed_on\n'+
+                'QF-01,North Bench,QS-01,14,2026-03-04\n'+
+                'QF-02,East Bench,QS-01,9,2026-05-20\n'+
+                'QF-03,South Bench,QS-02,6,2026-03-11\n';
+
+              geology.core_sample:
+                'sample_code,face_code,mineral_code,purity_percent,depth_metres,collected_on\n'+
+                'CS-01,QF-01,QTZ,94,12,2026-03-06\n'+
+                'CS-02,QF-01,QTZ,71,18,2026-03-07\n'+
+                'CS-03,QF-02,FSP,63,9,2026-05-22\n'+
+                'CS-04,QF-03,QTZ,88,25,2026-03-12\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        quartzSamplesAcrossTwoFaces:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mineralCode = 'QTZ'
+          ]
+          asserts:
+          [
+            onlyQuartzRowsWithResolvedFaces:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample Code":"CS-01","Face Code":"QF-01","Purity Percent":94,"Depth Metres":12},{"Sample Code":"CS-02","Face Code":"QF-01","Purity Percent":71,"Depth Metres":18},{"Sample Code":"CS-04","Face Code":"QF-03","Purity Percent":88,"Depth Metres":25}]';
+                  }#;
+              }#
+          ]
+        },
+        feldsparNarrowsToOneSample:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mineralCode = 'FSP'
+          ]
+          asserts:
+          [
+            singleFeldsparRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample Code":"CS-03","Face Code":"QF-02","Purity Percent":63,"Depth Metres":9}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

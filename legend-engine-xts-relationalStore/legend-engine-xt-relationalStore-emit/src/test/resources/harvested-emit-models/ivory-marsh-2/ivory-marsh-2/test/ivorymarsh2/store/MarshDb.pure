@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ivorymarsh2::store::MarshDb
+(
+  Schema wetland
+  (
+    Table reserve
+    (
+      reserve_id INTEGER PRIMARY KEY,
+      reserve_code VARCHAR(20) NOT NULL,
+      wetland_name VARCHAR(60) NOT NULL,
+      access_code VARCHAR(20) NOT NULL
+    )
+    Table boardwalk_section
+    (
+      section_id INTEGER PRIMARY KEY,
+      section_code VARCHAR(20) NOT NULL,
+      reserve_id INTEGER NOT NULL,
+      surface_code VARCHAR(20) NOT NULL,
+      plank_count INTEGER NOT NULL,
+      hazard_tier INTEGER NOT NULL
+    )
+    Table section_warden
+    (
+      warden_id INTEGER PRIMARY KEY,
+      section_id INTEGER NOT NULL,
+      warden_name VARCHAR(60) NOT NULL,
+      contact_rota VARCHAR(20) NOT NULL
+    )
+    Table section_inspection
+    (
+      inspection_id INTEGER PRIMARY KEY,
+      inspection_code VARCHAR(20) NOT NULL,
+      section_code VARCHAR(20) NOT NULL,
+      inspected_on DATE NOT NULL,
+      defect_count INTEGER NOT NULL,
+      grade_code VARCHAR(20) NOT NULL
+    )
+  )
+
+  Join Section_Reserve
+  (
+    wetland.boardwalk_section.reserve_id = wetland.reserve.reserve_id
+  )
+
+  Join Section_Warden
+  (
+    wetland.boardwalk_section.section_id = wetland.section_warden.section_id
+  )
+)

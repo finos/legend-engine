@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ExternalFormat
+Binding test::wistfulharbor::external::BerthJsonBinding
+{
+  schemaSet: test::wistfulharbor::external::BerthJsonSchemas;
+  schemaId: berth;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::wistfulharbor::domain::Berth
+  ];
+}
+
+SchemaSet test::wistfulharbor::external::BerthJsonSchemas
+{
+  format: JSON;
+  schemas: [
+    {
+      id: berth;
+      location: 'Berth.json';
+      content: '{\n  "title": "test::wistfulharbor::domain::Berth",\n  "type": "object",\n  "required": ["berthId", "label", "slots"],\n  "properties": {\n    "berthId": { "type": "integer" },\n    "label":   { "type": "string" },\n    "slots":   { "type": "integer", "minimum": 0 }\n  }\n}';
+    }
+  ];
+}

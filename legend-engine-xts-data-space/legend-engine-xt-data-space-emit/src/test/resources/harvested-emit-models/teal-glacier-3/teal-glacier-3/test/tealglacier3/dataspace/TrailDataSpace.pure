@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::tealglacier3::dataspace::TrailRegisterDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'register';
+      description: 'Register context - the footbridge and district extents resolved through the trail mapping against the register runtime the keyed service selects.';
+      mapping: demo::tealglacier3::mapping::TrailMapping;
+      defaultRuntime: demo::tealglacier3::runtime::TrailRegisterRuntime;
+    }
+  ];
+  defaultExecutionContext: 'register';
+  title: 'Alpine Trail Bridge Register';
+  description: 'One catalogued entry point over the alpine footbridge register: the bridge extent whose district name is reached across the declared join, the district extent read from the same relation in its own right, and the roster the districts staff walk-outs from, published together with the layout that draws them and the two endpoints a consumer runs without naming the mapping or runtime individually.';
+  diagrams:
+  [
+    {
+      title: 'Trail Register Layout';
+      diagram: demo::tealglacier3::diagram::TrailRegisterDiagram;
+    }
+  ];
+  elements:
+  [
+    demo::tealglacier3::domain::InspectionParty,
+    demo::tealglacier3::domain::TrailBridge,
+    demo::tealglacier3::domain::TrailDistrict
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Bridge register keyed by environment';
+      description: 'Featured endpoint publishing the bridge register under the environment key the caller selects.';
+      executable: demo::tealglacier3::service::BridgeRegisterService;
+    },
+    {
+      id: 2;
+      title: 'District register';
+      description: 'Featured endpoint publishing the district references and the names the register carries for them.';
+      executable: demo::tealglacier3::service::DistrictRegisterService;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'trail-bridge-register@alpinetrails.invalid';
+  };
+}

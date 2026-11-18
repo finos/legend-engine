@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::olivedelta::service::BleachWatchService
+{
+  pattern: '/olivedelta/v1/bleaching/watch';
+  title: 'Bleach Watch';
+  owners:
+  [
+    'reef-monitoring'
+  ];
+  documentation: 'Returns the bleaching observations in force at the requested processing date whose severity reaches the requested threshold, joined to the surveyed site name.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minPercent: Integer[1]|test::olivedelta::domain::BleachCheck.all($asOf)->filter(
+      c|$c.bleachPercent >= $minPercent
+    )->project(
+      [
+        c|$c.checkCode,
+        c|$c.bleachPercent,
+        c|$c.siteName
+      ],
+      [
+        'CheckCode',
+        'BleachPercent',
+        'SiteName'
+      ]
+    )->sort(
+      [
+        asc('CheckCode')
+      ]
+    )};
+    mapping: test::olivedelta::mapping::ReefMapping;
+    runtime: test::olivedelta::runtime::ReefRuntime;
+  }
+  testSuites:
+  [
+    watchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reef.survey_site:
+                'site_code,site_name,lagoon_zone,team_code\n'+
+                'SS-01,Outer Spur,NORTH,DT-01\n'+
+                'SS-02,Inner Flat,SOUTH,DT-02\n';
+
+              monitor.bleach_check:
+                'check_code,site_code,bleach_percent,in_z,out_z\n'+
+                'BC-01,SS-01,12,2026-01-01,9999-12-31\n'+
+                'BC-02,SS-02,45,2026-01-01,2026-03-01\n'+
+                'BC-03,SS-02,61,2026-03-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentSevereChecks:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            minPercent = 20
+          ]
+          asserts:
+          [
+            oneSevereOpenCheck:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"BC-03","BleachPercent":61,"SiteName":"Inner Flat"}]';
+                  }#;
+              }#
+          ]
+        },
+        supersededDateWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-02-01,
+            minPercent = 20
+          ]
+          asserts:
+          [
+            theSupersededCheckIsStillInRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"BC-02","BleachPercent":45,"SiteName":"Inner Flat"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

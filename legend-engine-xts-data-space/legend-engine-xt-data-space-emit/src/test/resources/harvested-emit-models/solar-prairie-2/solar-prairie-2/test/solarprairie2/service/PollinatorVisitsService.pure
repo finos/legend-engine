@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarprairie2::service::PollinatorVisitsService
+{
+  pattern: '/prairie/v1/pollinator-visits';
+  title: 'Pollinator Visits';
+  owners:
+  [
+    'prairie-field-station-team'
+  ];
+  documentation: 'Publishes the timed pollinator walks of the surveyed sites whose visit rate clears the reporting floor, projecting each walk with the site name and district resolved across the site join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::solarprairie2::domain::PollinatorCount.all()->filter(
+      p|$p.siteName->in(['North Ridge Prairie', 'South Draw Prairie']) && ($p.visitsPerHour > 4.0)
+    )->project(
+      [
+        p|$p.pollinatorCode,
+        p|$p.pollinatorLabel->toUpper(),
+        p|$p.visitsPerHour,
+        p|$p.speciesSeen,
+        p|$p.siteName,
+        p|$p.districtCode
+      ],
+      [
+        'Count',
+        'Label',
+        'Visits',
+        'Species',
+        'Site',
+        'District'
+      ]
+    )->sort(
+      [
+        asc('Count')
+      ]
+    )};
+    mapping: test::solarprairie2::mapping::PrairieMapping;
+    runtime: test::solarprairie2::runtime::PrairieFieldRuntime;
+  }
+  testSuites:
+  [
+    pollinatorWalkSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              prairie.prairie_site:
+                'site_code,site_name,district_code,hectares,established_year\n'+
+                'PS-01,North Ridge Prairie,DIS-NORTH,42.5,2015\n'+
+                'PS-02,South Draw Prairie,DIS-SOUTH,18.25,2019\n';
+              prairie.pollinator_count:
+                'pollinator_code,site_code,pollinator_label,recorded_on,visits_per_hour,species_seen\n'+
+                'PC-01,PS-01,Ridge Walk One,2026-06-11,7.5,9\n'+
+                'PC-02,PS-02,Draw Walk One,2026-06-12,3.5,4\n'+
+                'PC-03,PS-01,Ridge Walk Two,2026-07-02,5.25,6\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        walksAboveTheVisitFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            theQuietWalkIsSuppressed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":"PC-01","Label":"RIDGE WALK ONE","Visits":7.5,"Species":9,"Site":"North Ridge Prairie","District":"DIS-NORTH"},{"Count":"PC-03","Label":"RIDGE WALK TWO","Visits":5.25,"Species":6,"Site":"North Ridge Prairie","District":"DIS-NORTH"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlycanyon::store::CanyonVisitDB
+(
+  Schema visit
+  (
+    Table visit_station
+    (
+      station_code VARCHAR(16) PRIMARY KEY,
+      station_name VARCHAR(80) NOT NULL,
+      guide_code VARCHAR(16)
+    )
+    Table visit_tally
+    (
+      tally_id VARCHAR(16) PRIMARY KEY,
+      station_code VARCHAR(16),
+      counted_on DATE NOT NULL,
+      slot_label VARCHAR(12) NOT NULL,
+      head_count INTEGER NOT NULL
+    )
+  )
+
+  Schema roster
+  (
+    Table guide_view
+    (
+      guide_code VARCHAR(16) PRIMARY KEY,
+      guide_name VARCHAR(80) NOT NULL
+    )
+  )
+
+  Join Tally_Station(visit.visit_tally.station_code = visit.visit_station.station_code)
+
+  Join Station_Guide(visit.visit_station.guide_code = roster.guide_view.guide_code)
+)

@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::gildedvineyard6::domain::*;
+
+Class <<test::gildedvineyard6::profile::TrailProfile.surveyed>> {test::gildedvineyard6::profile::TrailProfile.steward = 'ridge-survey'} test::gildedvineyard6::domain::Region
+{
+  code: String[1];
+  name: String[1];
+}
+
+Class <<test::gildedvineyard6::profile::TrailProfile.surveyed>> {test::gildedvineyard6::profile::TrailProfile.inspectionCadence = 'annual'} test::gildedvineyard6::domain::Trailhead
+{
+  id: Integer[1];
+  code: String[1];
+  name: String[1];
+  elevationMetres: Integer[1];
+}
+
+Class <<test::gildedvineyard6::profile::TrailProfile.seasonal>> {test::gildedvineyard6::profile::TrailProfile.steward = 'ridge-survey'} test::gildedvineyard6::domain::TrailSegment
+{
+  id: Integer[1];
+  code: String[1];
+  lengthKm: Float[1];
+  difficultyCode: String[0..1];
+  trailheadName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A walk-in shelter maintained beside a numbered trail segment.'} test::gildedvineyard6::domain::Shelter
+{
+  id: Integer[1];
+  code: String[1];
+  name: String[1];
+  bunkCount: Integer[1];
+  segmentCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A ranger patrol visit recorded against a shelter.'} test::gildedvineyard6::domain::PatrolVisit
+{
+  id: Integer[1];
+  code: String[1];
+  visitedOn: StrictDate[1];
+  conditionCode: String[0..1];
+  shelterName: String[0..1];
+  visitLabel() {$this.code + ' @ ' + $this.visitedOn->toString()}: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a trailhead to the segments that leave it.'} test::gildedvineyard6::domain::Trailhead_Segments
+{
+  startsAt: Trailhead[1];
+  segments: TrailSegment[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a trail segment to the shelters along it.'} test::gildedvineyard6::domain::Segment_Shelters
+{
+  onSegment: TrailSegment[1];
+  shelters: Shelter[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a shelter to the patrol visits recorded there.'} test::gildedvineyard6::domain::Shelter_Visits
+{
+  atShelter: Shelter[1];
+  visits: PatrolVisit[*];
+}

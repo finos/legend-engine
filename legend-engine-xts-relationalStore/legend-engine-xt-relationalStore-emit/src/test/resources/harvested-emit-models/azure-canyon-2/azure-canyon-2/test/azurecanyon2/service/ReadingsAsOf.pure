@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azurecanyon2::service::ReadingsAsOf
+{
+  pattern: '/sky/v1/readings/{processingDate}/{maxMagnitude}';
+  title: 'Sky - Instrument Readings As Of';
+  owners:
+  [
+    'sky-survey-ops',
+    'instrument-calibration'
+  ];
+  documentation: 'Returns instrument captures visible at the requested processing date whose magnitude is at or below a threshold, annotated with a derived quality label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], maxMagnitude: Float[1]|test::azurecanyon2::domain::InstrumentReading.all($processingDate)->filter(
+      r|($r.magnitude <= $maxMagnitude) && ($r.band->length() > 1)
+    )->project(
+      [
+        x|$x.band,
+        x|$x.qualityLabel(),
+        x|$x.magnitude
+      ],
+      [
+        'Band',
+        'Quality',
+        'Magnitude'
+      ]
+    )->sort(
+      [
+        asc('Band')
+      ]
+    )};
+    mapping: test::azurecanyon2::mapping::SkyMapping;
+    runtime: test::azurecanyon2::runtime::SkyRuntime;
+  }
+  testSuites:
+  [
+    readingsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyConnection:
+            Relational
+            #{
+              sky.reading:
+                'reading_id,station_id,band,magnitude,captured_on,in_z,out_z\n'+
+                '1,1,IR,4.5,2024-05-02,2024-01-01,9999-12-31\n'+
+                '2,1,UV,11.0,2024-05-03,2024-01-01,9999-12-31\n'+
+                '3,2,VIS,3.2,2023-05-04,2023-01-01,2023-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2024-06-01,
+            maxMagnitude = 12.0
+          ]
+          asserts:
+          [
+            twoLiveReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Band":"IR","Quality":"BRIGHT (IR)","Magnitude":4.5},{"Band":"UV","Quality":"FAINT (UV)","Magnitude":11.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

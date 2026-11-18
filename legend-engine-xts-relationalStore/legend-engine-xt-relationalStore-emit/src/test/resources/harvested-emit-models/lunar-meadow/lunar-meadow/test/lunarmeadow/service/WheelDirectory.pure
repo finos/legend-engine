@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarmeadow::service::WheelDirectory
+{
+  pattern: '/lunarmeadow/v1/wheel-directory';
+  title: 'Lunar Meadow - Wheel Directory';
+  owners:
+  [
+    'cave-cellar-registry',
+    'creamery-eng'
+  ];
+  documentation: 'Unfiltered directory listing every wheel in the cave with its milk type and chamber, projected and code-sorted over the primary runtime as the trivial counterpart to the deeply-filtered ripening query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::lunarmeadow::domain::CheeseWheel.all()->project(
+      [
+        w|$w.wheelCode,
+        w|$w.milkType,
+        w|$w.chamberName
+      ],
+      [
+        'WheelCode',
+        'MilkType',
+        'Chamber'
+      ]
+    )->sort([asc('WheelCode')])};
+    mapping: test::lunarmeadow::mapping::CellarMapping;
+    runtime: test::lunarmeadow::runtime::CellarPrimaryRuntime;
+  }
+  testSuites:
+  [
+    directorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cellarConnection:
+            Relational
+            #{
+              dairy.wheel:
+                'wheel_id,wheel_code,milk_type,rack_code,formed_on,weight_grams\n'+
+                '1,W-001,GOAT,R1,2024-01-10,4200\n'+
+                '2,W-002,SHEEP,R2,2024-02-15,5100\n'+
+                '3,W-003,COW,R1,2024-03-20,9800\n'+
+                '4,W-004,GOAT,R3,2025-06-01,3000\n'+
+                '5,W-005,BUFFALO,R4,2024-04-05,2500\n'+
+                '6,W-006,GOAT,R1,2099-01-01,6000\n';
+
+              dairy.rack:
+                'rack_code,chamber_code,maker_code,rack_tier\n'+
+                'R1,C-NORTH,M1,1\n'+
+                'R2,C-SOUTH,M2,3\n'+
+                'R3,C-NORTH,M1,2\n'+
+                'R4,C-WEST,M3,4\n';
+
+              cellar.chamber:
+                'chamber_code,chamber_name,humidity_pct,temp_celsius\n'+
+                'C-NORTH,NORTHVAULT,88,11\n'+
+                'C-SOUTH,SOUTHVAULT,84,13\n'+
+                'C-WEST,WESTVAULT,80,12\n';
+
+              roster.cheesemaker:
+                'maker_code,maker_name,certified_on\n'+
+                'M1,Rowan Pike,2019-05-01\n'+
+                'M2,Ines Fell,2021-08-12\n'+
+                'M3,Tomas Kerr,2020-02-02\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        fullDirectory:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+          ]
+          asserts:
+          [
+            allSixWheels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WheelCode":"W-001","MilkType":"GOAT","Chamber":"NORTHVAULT"},{"WheelCode":"W-002","MilkType":"SHEEP","Chamber":"SOUTHVAULT"},{"WheelCode":"W-003","MilkType":"COW","Chamber":"NORTHVAULT"},{"WheelCode":"W-004","MilkType":"GOAT","Chamber":"NORTHVAULT"},{"WheelCode":"W-005","MilkType":"BUFFALO","Chamber":"WESTVAULT"},{"WheelCode":"W-006","MilkType":"GOAT","Chamber":"NORTHVAULT"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

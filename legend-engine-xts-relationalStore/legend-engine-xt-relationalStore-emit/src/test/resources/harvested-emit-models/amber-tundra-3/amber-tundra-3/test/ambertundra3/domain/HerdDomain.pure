@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::ambertundra3::domain::Caribou
+{
+  animalCode: String[1];
+  herdName: String[1];
+  collarStatus: String[0..1];
+  firstSeen: StrictDate[1];
+  lastSeen: StrictDate[1];
+  collarAgeMonths: Integer[1];
+  statusLabel: String[0..1];
+  travelLabel: String[0..1];
+}
+
+Class test::ambertundra3::domain::HerdRange
+{
+  rangeCode: String[1];
+  rangeName: String[1];
+  seasonName: String[1];
+  latitudeBand: Integer[1];
+}
+
+Association test::ambertundra3::domain::CaribouRange
+{
+  ranges: test::ambertundra3::domain::HerdRange[*];
+  caribou: test::ambertundra3::domain::Caribou[1];
+}

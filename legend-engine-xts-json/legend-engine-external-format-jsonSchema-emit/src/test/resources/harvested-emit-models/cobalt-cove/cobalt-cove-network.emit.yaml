@@ -1,0 +1,46 @@
+name: cobalt-cove-network
+title: "Cobalt Cove - business-temporal and bitemporal cycle-dock network model"
+description: |
+  The model half of a municipal cycle-dock corpus: a business-temporal dock
+  station, a bitemporal dock inspection and a plain planning district, mapped
+  onto a three-table milestoned store with a joined district code, an
+  enumeration-mapped condition column and a milestoned association in both
+  directions. It owns the store, mapping, connection and runtime that the
+  service artefacts consume but do not define.
+modelSources:
+  model:
+    root: cobalt-cove-network
+    files:
+      - test/cobaltcove/connection/CoveH2Connection.pure
+      - test/cobaltcove/domain/CoveDomain.pure
+      - test/cobaltcove/mapping/CoveMapping.pure
+      - test/cobaltcove/runtime/CoveRuntime.pure
+      - test/cobaltcove/store/CoveDB.pure
+features:
+  - grammar:association
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - business-temporal
+  - cycle-docks
+  - enumeration-mapping
+  - milestoned-association
+  - relational
+  - urban-planning

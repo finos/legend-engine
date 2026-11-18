@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldestuary2::mapping::EstuaryBaseMapping
+(
+  *test::emeraldestuary2::domain::ReedPlot[plot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.plot_code,
+      [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.plot_seq
+    )
+    ~mainTable [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot
+    plotCode: [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.plot_code,
+    plotSeq: [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.plot_seq,
+    habitatName: [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.habitat_name,
+    reedCoverPct: [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct,
+    statusLabel: case(
+                   greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 90),
+                   'PRIME REED',
+                   case(
+                     greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 75),
+                     'STRONG REED',
+                     case(
+                       greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 60),
+                       'GOOD REED',
+                       case(
+                         greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 45),
+                         'MIXED REED',
+                         case(
+                           greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 30),
+                           'SPARSE REED',
+                           case(
+                             greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 15),
+                             'THIN REED',
+                             case(
+                               greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 1),
+                               'TRACE REED',
+                               'NO REED'
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    coverBand: case(
+                 greaterThanEqual([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.reed_cover_pct, 45),
+                 concat('WET-', toUpper(trim([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.habitat_name))),
+                 sqlNull()
+               ),
+    plotTag: concat(concat(toUpper([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.habitat_name), '/'), [test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.plot_code),
+    nameLength: length(trim([test::emeraldestuary2::store::EstuaryStore]estuary.reed_plot.habitat_name)),
+    acceptedName: [test::emeraldestuary2::store::EstuaryStore]@Plot_Synonym | [test::emeraldestuary2::store::EstuaryStore]synref.species_synonym.accepted_name
+  }
+)

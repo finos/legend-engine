@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::ivorybeacon::domain::*;
+
+Class <<test::ivorybeacon::profile::TopicMetadata.publishedFeed>> {test::ivorybeacon::profile::TopicMetadata.streamTopic = 'glacier.station.snapshot', test::ivorybeacon::profile::TopicMetadata.streamTopic = 'glacier.station.snapshot.replay', test::ivorybeacon::profile::TopicMetadata.retentionWindow = 'P30D', test::ivorybeacon::profile::TopicMetadata.retentionWindow = 'P7D', test::ivorybeacon::profile::TopicMetadata.uniqueIndexPath = 'stationId', test::ivorybeacon::profile::TopicMetadata.uniqueIndexPath = 'stationId,windowStartDay', test::ivorybeacon::profile::TopicMetadata.defaultingRule = 'absent day surrogates default to zero', test::ivorybeacon::profile::TopicMetadata.defaultingRule = 'absent melt rates default to minus one'} test::ivorybeacon::domain::StationSnapshot
+{
+  stationId: String[1];
+  windowStartDay: Integer[1];
+  windowEndDay: Integer[1];
+  meltRateIndex: Float[1];
+  readingTally: Integer[1];
+  siteLabel: String[1];
+  terminusAltitude: Integer[1];
+  grade: String[1];
+  note: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened descriptor of the site a station report was attached to.'} test::ivorybeacon::domain::SiteDescriptor
+{
+  descriptorId: String[1];
+  label: String[1];
+  kind: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Quality flag raised for a single instrument reading.'} test::ivorybeacon::domain::ReadingFlag
+{
+  flagCode: String[1];
+  severity: String[1];
+  depthValue: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Nested dossier for one survey window, owning its readings.'} test::ivorybeacon::domain::SurveyDossier
+{
+  dossierId: String[1];
+  windowLabel: String[1];
+  readings: DossierReading[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One reading inside a survey dossier, with its text measurements normalised or defaulted.'} test::ivorybeacon::domain::DossierReading
+{
+  readingCode: String[1];
+  depthLabel: String[1];
+  meltRateLabel: String[1];
+}

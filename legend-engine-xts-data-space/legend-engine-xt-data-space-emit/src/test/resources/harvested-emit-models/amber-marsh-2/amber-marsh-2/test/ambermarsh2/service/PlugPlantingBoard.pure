@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ambermarsh2::service::PlugPlantingBoard
+{
+  pattern: '/ambermarsh2/v1/plugplanting/{minPlugTally}';
+  ownership: UserList { users: ['moorland-planting-desk'] };
+  documentation: 'Reads the moss plug batch register, keeps the batches that reach a caller-supplied plug tally, and returns a normalised batch label beside the tally expressed in whole trays so that the planting crew reads delivery units rather than plug counts.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minPlugTally: Integer[1], mixToken: String[0..1]|test::ambermarsh2::domain::SphagnumPlugBatch.all()->filter(
+      b|($b.plugTally >= $minPlugTally) &&
+        ($mixToken->isEmpty() || ($b.speciesMix == $mixToken->toOne()))
+    )->project(
+      [
+        b|$b.batchCode->toUpper(),
+        b|$b.speciesMix->trim()->toUpper() + ' [' + $b.batchCode->trim() + ']',
+        b|$b.plugTally,
+        b|($b.plugTally + 143) / 144,
+        b|$b.plantedOn
+      ],
+      [
+        'Batch',
+        'MixLabel',
+        'PlugTally',
+        'TrayTally',
+        'PlantedOn'
+      ]
+    )->sort(
+      [
+        desc('PlugTally'),
+        asc('Batch')
+      ]
+    )};
+    mapping: test::ambermarsh2::mapping::MoorlandMapping;
+    runtime: test::ambermarsh2::runtime::MoorlandCoreRuntime;
+  }
+}

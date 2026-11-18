@@ -1,0 +1,46 @@
+name: noble-hatchery-3
+title: "Noble Hatchery 3 - store-less curated propagation feed behind a multi-execution as-of service"
+description: |
+  A plant hatchery propagation model that is entirely store-less: one model-to-model mapping projects
+  an inbound wing feed onto a curated record whose eleven descriptive properties are defaulted to
+  literals in the mapping body rather than read from the source, while the batch reference, wing,
+  stage and the propagation window come from the feed. A multi-execution service binds one query body
+  to two executions selected by the wing key, each execution pairing the same mapping with its own
+  wing runtime and document connection. The query orders the curated extent by batch reference and
+  caps it, keeps only records whose propagation window is open at the supplied instant, whose stage is
+  in the requested collection, whose reference is not voided and which carry a bench note, and projects
+  the survivors onto a property subset that is serialised as the result. Both the mapping suite and the
+  service suite seed a record whose window has already closed alongside an open one, so the
+  point-in-time predicate is what separates them.
+modelSources:
+  model:
+    root: noble-hatchery-3
+    files:
+      - test/noblehatchery3/connection/PropagationConnections.pure
+      - test/noblehatchery3/domain/PropagationRecord.pure
+      - test/noblehatchery3/mapping/PropagationCuration.pure
+      - test/noblehatchery3/runtime/PropagationRuntimes.pure
+      - test/noblehatchery3/service/PropagationAsOf.pure
+      - test/noblehatchery3/source/IncomingPropagationFeed.pure
+features:
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - mapping:m2m-transform
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - as-of
+  - literal-defaulted-transform
+  - m2m
+  - multi-execution
+  - plant-hatchery
+  - project
+  - sort-limit
+  - store-less

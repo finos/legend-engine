@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::zephyrthicket::service::ParcelRosterService
+{
+  pattern: '/thicket/v1/parcels';
+  title: 'Zephyr Thicket - Parkland parcel roster';
+  owners:
+  [
+    'parkland-registry',
+    'canopy-survey'
+  ];
+  documentation: 'Publishes the parkland parcel roster as a tabular projection, walking each implemented association from the parcel hub out to its ward, canopy class, steward and the district reached through the two-link chain.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::zephyrthicket::domain::ParkParcel.all()->project(
+      [
+        x|$x.parcelCode,
+        x|$x.parcelName,
+        x|$x.parcelSlug,
+        x|$x.areaSqm,
+        x|$x.ward.wardName,
+        x|$x.canopy.canopyLabel,
+        x|$x.steward.stewardName,
+        x|$x.district.districtName
+      ],
+      [
+        'ParcelCode',
+        'ParcelName',
+        'ParcelSlug',
+        'AreaSqm',
+        'Ward',
+        'Canopy',
+        'Steward',
+        'District'
+      ]
+    )->sort(
+      [
+        asc('ParcelCode')
+      ]
+    );
+    mapping: test::zephyrthicket::mapping::ThicketMapping;
+    runtime: test::zephyrthicket::runtime::ThicketRegistryRuntime;
+  }
+  testSuites:
+  [
+    parcelRosterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketRegistryConnection: Reference
+            #{
+              test::zephyrthicket::data::ThicketTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        fullRoster:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rosterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ParcelCode":"PARCEL-1","ParcelName":"RIVERSIDE GREEN","ParcelSlug":"river","AreaSqm":1200.5,"Ward":"WILLOW WARD","Canopy":"Broadleaf canopy","Steward":"WILLOW STEWARD","District":"Riverside District"},{"ParcelCode":"PARCEL-2","ParcelName":"WILLOW COMMONS","ParcelSlug":"willo","AreaSqm":802.25,"Ward":"WILLOW WARD","Canopy":"Conifer canopy","Steward":"WILLOW STEWARD","District":"Riverside District"},{"ParcelCode":"PARCEL-3","ParcelName":"ASPEN MEADOW","ParcelSlug":"aspen","AreaSqm":1500.25,"Ward":"ASPEN WARD","Canopy":"Broadleaf canopy","Steward":"ASPEN STEWARD","District":"Riverside District"},{"ParcelCode":"PARCEL-4","ParcelName":"CEDAR HOLLOW","ParcelSlug":"cedar","AreaSqm":640.75,"Ward":"CEDAR WARD","Canopy":"Conifer canopy","Steward":"CEDAR STEWARD","District":"Hilltop District"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

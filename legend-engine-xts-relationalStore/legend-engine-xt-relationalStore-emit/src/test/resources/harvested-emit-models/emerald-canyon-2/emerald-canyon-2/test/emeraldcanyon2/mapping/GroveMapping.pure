@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldcanyon2::mapping::GroveMapping
+(
+  *test::emeraldcanyon2::domain::Cooperative[coopSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldcanyon2::store::GroveHarvestDb]grove.cooperative.coop_code
+    )
+    ~mainTable [test::emeraldcanyon2::store::GroveHarvestDb]grove.cooperative
+    coopCode: [test::emeraldcanyon2::store::GroveHarvestDb]grove.cooperative.coop_code,
+    coopName: [test::emeraldcanyon2::store::GroveHarvestDb]grove.cooperative.coop_name,
+    districtName: [test::emeraldcanyon2::store::GroveHarvestDb]grove.cooperative.district_name,
+    climateZone: [test::emeraldcanyon2::store::GroveHarvestDb]grove.cooperative.climate_zone
+  }
+
+  *test::emeraldcanyon2::domain::Orchard[orchardSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldcanyon2::store::GroveHarvestDb]grove.orchard.orchard_code
+    )
+    ~mainTable [test::emeraldcanyon2::store::GroveHarvestDb]grove.orchard
+    orchardCode: [test::emeraldcanyon2::store::GroveHarvestDb]grove.orchard.orchard_code,
+    orchardName: [test::emeraldcanyon2::store::GroveHarvestDb]grove.orchard.orchard_name,
+    elevationM: [test::emeraldcanyon2::store::GroveHarvestDb]grove.orchard.elevation_m,
+    cooperative[coopSet]: [test::emeraldcanyon2::store::GroveHarvestDb]@Orchard_Cooperative,
+    blocks[blockSet]: [test::emeraldcanyon2::store::GroveHarvestDb]@Orchard_Block
+  }
+
+  *test::emeraldcanyon2::domain::PickingBlock[blockSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldcanyon2::store::GroveHarvestDb]harvest.picking_block.block_code
+    )
+    ~mainTable [test::emeraldcanyon2::store::GroveHarvestDb]harvest.picking_block
+    blockCode: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.picking_block.block_code,
+    blockName: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.picking_block.block_name,
+    treeCount: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.picking_block.tree_count,
+    consignments[consignmentSet]: [test::emeraldcanyon2::store::GroveHarvestDb]@Block_Consignment
+  }
+
+  *test::emeraldcanyon2::domain::Consignment[consignmentSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldcanyon2::store::GroveHarvestDb]harvest.consignment.consignment_code
+    )
+    ~mainTable [test::emeraldcanyon2::store::GroveHarvestDb]harvest.consignment
+    consignmentCode: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.consignment.consignment_code,
+    gradeLabel: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.consignment.grade_label,
+    crateCount: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.consignment.crate_count,
+    pickedOn: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.consignment.picked_on
+  }
+
+  *test::emeraldcanyon2::domain::PackhouseCheck[checkSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldcanyon2::store::GroveHarvestDb]harvest.packhouse_check.check_code
+    )
+    ~mainTable [test::emeraldcanyon2::store::GroveHarvestDb]harvest.packhouse_check
+    checkCode: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.packhouse_check.check_code,
+    consignmentCode: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.packhouse_check.consignment_code,
+    inspectorTeam: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.packhouse_check.inspector_team,
+    defectPercent: [test::emeraldcanyon2::store::GroveHarvestDb]harvest.packhouse_check.defect_percent
+  }
+)

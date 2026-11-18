@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::verdantwharf5::dataspace::WharfDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'wharfOperations';
+      description: 'Operations tier - the cross-schema wharf store bound through the curated mapping and its warehouse runtime.';
+      mapping: test::verdantwharf5::mapping::WharfMapping;
+      defaultRuntime: test::verdantwharf5::runtime::WharfRuntime;
+    }
+  ];
+  defaultExecutionContext: 'wharfOperations';
+  title: 'Wharf Berths And Vessel Calls';
+  description: 'A governed entry point over wharf berths, the vessel call legs alongside them, the pallets landed on each leg and the wardens checks recorded against those pallets, wiring the curated mapping and runtime to the featured lane, digest and escalation endpoints consumers should start from.';
+  elements:
+  [
+    test::verdantwharf5::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Lane lookup';
+      description: 'Featured endpoint returning the handling lane of the call legs berthed at one quay.';
+      executable: test::verdantwharf5::service::WharfLaneLookup;
+    },
+    {
+      id: 2;
+      title: 'Lane digest';
+      description: 'Featured endpoint returning pallet totals and leg counts grouped by cargo class and berth.';
+      executable: test::verdantwharf5::service::WharfLaneDigest;
+    }
+  ];
+  supportInfo: Email {
+    address: 'harbour-operations@example.invalid';
+  };
+}

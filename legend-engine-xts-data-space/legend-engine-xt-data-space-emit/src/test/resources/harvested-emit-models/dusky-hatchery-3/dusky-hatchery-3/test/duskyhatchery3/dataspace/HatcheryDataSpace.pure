@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::duskyhatchery3::dataspace::HatcheryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'rearing';
+      description: 'Binds the cross-schema rearing store to the hatchery mapping and the local rearing runtime.';
+      mapping: test::duskyhatchery3::mapping::HatcheryMapping;
+      defaultRuntime: test::duskyhatchery3::runtime::HatcheryH2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'rearing';
+  title: 'Dusky Hatchery Rearing Register';
+  description: 'A curated entry point over hatchery rearing: brood batches, the tanks holding them and the facility sites those tanks belong to, published as tree-shaped and paginated endpoints.';
+  elements:
+  [
+    test::duskyhatchery3::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Brood batch tree';
+      description: 'The featured endpoint fetching one batch with its tank and site.';
+      executable: test::duskyhatchery3::service::BatchTreeService;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'rearing-support@hatchery-register.invalid';
+    documentationUrl: 'https://hatchery-register.invalid/docs/rearing-register';
+  };
+}

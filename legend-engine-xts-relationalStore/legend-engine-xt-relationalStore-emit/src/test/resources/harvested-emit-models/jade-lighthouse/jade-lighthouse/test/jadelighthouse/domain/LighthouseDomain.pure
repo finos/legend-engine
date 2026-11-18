@@ -1,0 +1,149 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadelighthouse::domain::*;
+
+Enum test::jadelighthouse::domain::OpticClass
+{
+  Fresnel,
+  Catadioptric,
+  Reflector,
+  Unclassed
+}
+
+Enum test::jadelighthouse::domain::PowerSource
+{
+  Mains,
+  Solar,
+  Wind,
+  Battery,
+  Unknown
+}
+
+Enum test::jadelighthouse::domain::ConditionGrade
+{
+  Sound,
+  Serviceable,
+  Degraded,
+  Failed
+}
+
+Enum test::jadelighthouse::domain::HazardBand
+{
+  Calm,
+  Moderate,
+  Exposed,
+  Severe
+}
+
+Class test::jadelighthouse::domain::NavigationAid
+{
+  aidCode: String[1];
+  aidName: String[1];
+  regionCode: String[1];
+}
+
+Class test::jadelighthouse::domain::Station extends NavigationAid
+{
+  stationType: String[1];
+  statusLabel: String[1];
+  keeperNote: String[1];
+  towerHeightM: Integer[1];
+  rosterLabel: String[0..1];
+}
+
+Class test::jadelighthouse::domain::AidRecord extends NavigationAid
+{
+  recordKind: String[1];
+}
+
+Class test::jadelighthouse::domain::Lamp
+{
+  lampCode: String[1];
+  opticClass: OpticClass[1];
+  powerSource: PowerSource[1];
+  powerLabel: String[0..1];
+}
+
+Class test::jadelighthouse::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+  coastSide: String[1];
+  summary: RegionSummary[0..1];
+}
+
+Class test::jadelighthouse::domain::RegionSummary
+{
+  regionCode: String[1];
+  stationCount: Integer[1];
+  maxTowerHeightM: Integer[1];
+}
+
+Class <<temporal.bitemporal>> test::jadelighthouse::domain::Inspection
+{
+  inspectionId: Integer[1];
+  inspectorName: String[1];
+  conditionGrade: ConditionGrade[1];
+  hazardBand: HazardBand[1];
+  regionStationCount: Integer[0..1];
+}
+
+Class <<temporal.processingtemporal>> test::jadelighthouse::domain::KeeperLog
+{
+  logId: Integer[1];
+  entryText: String[1];
+}
+
+Class test::jadelighthouse::domain::RawAidNote
+{
+  noteCode: String[1];
+  stationCode: String[1];
+  opticText: String[1];
+  powerText: String[1];
+}
+
+Class test::jadelighthouse::domain::AidNote
+{
+  noteCode: String[1];
+  stationCode: String[1];
+  noteLabel: String[1];
+  opticClass: OpticClass[1];
+  powerSource: PowerSource[1];
+}
+
+Association test::jadelighthouse::domain::Station_Lamp
+{
+  lampStation: Station[*];
+  lamp: Lamp[0..1];
+}
+
+Association test::jadelighthouse::domain::Station_Region
+{
+  regionStations: Station[*];
+  region: Region[0..1];
+}
+
+Association test::jadelighthouse::domain::Inspection_Station
+{
+  inspections: Inspection[*];
+  station: Station[0..1];
+}
+
+Association test::jadelighthouse::domain::Station_Logs
+{
+  loggedStation: Station[0..1];
+  logs: KeeperLog[*];
+}

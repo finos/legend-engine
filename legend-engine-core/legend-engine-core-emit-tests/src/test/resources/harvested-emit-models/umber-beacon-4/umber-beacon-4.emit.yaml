@@ -1,0 +1,41 @@
+name: umber-beacon-4
+title: "Coastal Survey Network — Mixed-Temporality Association Graph over a Two-Level Inheritance Tree"
+description: |
+  A store-less coastal-monitoring domain whose interest is an association graph
+  that carries all navigation while the classes themselves declare almost no
+  to-many properties. Six associations connect business-temporal and unversioned
+  classes in every combination, so some are fully milestoned, some resolve only
+  one end temporally, and one is entirely unversioned. Ends are typed both to an
+  abstract organism supertype and to one of its subtypes, and a level-two station
+  subtype inherits from two ancestors at once. Six enumerations type mandatory
+  and optional properties, and a local profile annotates the abstract supertype
+  so its stereotype and tags are visible through the hierarchy.
+
+modelSources:
+  model:
+    root: umber-beacon-4
+    files:
+      - test/umberbeacon4/domain/Associations.pure
+      - test/umberbeacon4/domain/Governance.pure
+      - test/umberbeacon4/domain/SurveyElements.pure
+      - test/umberbeacon4/domain/Vocabularies.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association-graph
+  - business-temporal
+  - coastal-survey
+  - enumeration
+  - inheritance
+  - milestoned-association
+  - stereotype
+  - store-less

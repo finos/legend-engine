@@ -1,0 +1,37 @@
+name: ivory-prairie-m2m
+title: "Ivory Prairie — Model-to-Model Artifact Cataloguing (Mapping, JSON Connection, Runtime, Service)"
+description: |
+  A non-financial museum-curation model exercising a model-to-model
+  transform end-to-end. An inbound partner-feed `IncomingArtifact` source
+  class is projected onto the current-model `Artifact` class by a `Pure`
+  (M2M) `Mapping`, wired to a `JsonModelConnection` over `ModelStore` by a
+  `Runtime`, and exposed by a `Service`. Both the mapping and the service
+  carry `testSuites` with `ModelStore`/`ExternalFormat` JSON fixtures and
+  `EqualToJson` assertions, driving EMIT test execution and execution-plan
+  generation.
+
+modelSources:
+  model:
+    root: ivory-prairie-m2m
+    files:
+      - test/ivoryprairie/connection/IncomingArtifactJsonConnection.pure
+      - test/ivoryprairie/domain/Artifact.pure
+      - test/ivoryprairie/mapping/IncomingToArtifactM2M.pure
+      - test/ivoryprairie/runtime/ArtifactM2MRuntime.pure
+      - test/ivoryprairie/service/CatalogueArtifact.pure
+      - test/ivoryprairie/source/IncomingArtifact.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - museum
+  - service-test
+  - shared-domain

@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantquokka4::mapping::ReefCrewMapping
+(
+  *test::verdantquokka4::domain::DiverPermit[diverPermit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefCrewDb]crew.diver_permit.diver_code,
+      [test::verdantquokka4::store::ReefCrewDb]crew.diver_permit.permit_no
+    )
+    ~mainTable [test::verdantquokka4::store::ReefCrewDb]crew.diver_permit
+    diverCode: [test::verdantquokka4::store::ReefCrewDb]crew.diver_permit.diver_code,
+    permitNo: [test::verdantquokka4::store::ReefCrewDb]crew.diver_permit.permit_no,
+    diverName: [test::verdantquokka4::store::ReefCrewDb]crew.diver_permit.diver_name,
+    depthLimitMetres: [test::verdantquokka4::store::ReefCrewDb]crew.diver_permit.depth_limit_m
+  }
+
+  testSuites:
+  [
+    diverPermitSuite:
+    {
+      function: |test::verdantquokka4::domain::DiverPermit.all(%2026-06-01)->project(~[
+        Diver: p|$p.diverCode,
+        Permit: p|$p.permitNo,
+        Name: p|$p.diverName,
+        DepthLimit: p|$p.depthLimitMetres
+      ])->sort([~Diver->ascending(), ~Permit->ascending()]);
+      tests:
+      [
+        activePermitsOnly:
+        {
+          doc: 'Returns the permits valid on the June survey date; the lapsed first permit of one diver and the permit that only starts next season are excluded.';
+          data:
+          [
+            test::verdantquokka4::store::ReefCrewDb:
+              Relational
+              #{
+                crew.diver_permit:
+                  'diver_code,permit_no,diver_name,depth_limit_m,valid_from,valid_thru\n'+
+                  'DV-01,1,Ines Moreau,18.0,2024-03-01,2026-02-28\n'+
+                  'DV-01,2,Ines Moreau,30.0,2026-03-01,9999-12-31\n'+
+                  'DV-02,1,Tomas Aaltonen,12.0,2025-05-01,9999-12-31\n'+
+                  'DV-03,1,Keala Mahoe,18.0,2026-09-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            activePermits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Diver":"DV-01","Permit":2,"Name":"Ines Moreau","DepthLimit":30.0},{"Diver":"DV-02","Permit":1,"Name":"Tomas Aaltonen","DepthLimit":12.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

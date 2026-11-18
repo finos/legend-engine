@@ -1,0 +1,52 @@
+name: silver-marsh-4
+title: "Silver Marsh 4 — Three Single-Execution Services Over One Reed-Cutting Register, Two Rolled Up And One Projected"
+description: |
+  A wetland reserve records every reed-cutting session its volunteer crews complete:
+  which sector was cut, which crew cut it, the habitat the sector is classified as,
+  the day of the cut, the metres cut and the volunteer hours spent.
+
+  Three single-execution services publish that register, all bound to the same
+  mapping and runtime. The deepest one takes a season start, a habitat and two
+  exclusion lists, keeps the sessions whose sector and crew are in neither list and
+  which fall on or after the season start in the requested habitat, rolls the metres,
+  the hours and the session count up behind the sector-and-crew pair, deduplicates
+  the rollup and sorts it. The second service rolls the same window up behind the
+  habitat alone. The third projects the individual sessions of the window instead of
+  aggregating them, so the group covers the filtered-rollup and the filtered-
+  projection plan shapes side by side.
+
+  All three service test suites share one referenced test-data element and drive the
+  services with parameters that exercise both exclusion lists, a session before the
+  season start, a session in another habitat, a session with no cutting note and an
+  exclusion combination that leaves a single group behind.
+modelSources:
+  model:
+    root: silver-marsh-4
+    files:
+      - test/silvermarsh4/connection/ReserveH2Connection.pure
+      - test/silvermarsh4/data/ReedCutSeasonData.pure
+      - test/silvermarsh4/domain/ReserveDomain.pure
+      - test/silvermarsh4/mapping/ReserveMapping.pure
+      - test/silvermarsh4/runtime/ReserveRuntime.pure
+      - test/silvermarsh4/service/HabitatEffortService.pure
+      - test/silvermarsh4/service/ReedCutSessionService.pure
+      - test/silvermarsh4/service/SectorCutRollupService.pure
+      - test/silvermarsh4/store/ReserveDatabase.pure
+features:
+  - execution:service
+  - query:filter
+  - query:group-by
+  - query:project
+stores:
+  - relational
+complexity: basic
+tags:
+  - aggregation
+  - deduplication
+  - group-by
+  - h2
+  - reed-cutting
+  - relational
+  - service-test
+  - set-membership-exclusion
+  - tabular-data-set

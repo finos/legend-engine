@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of orchard fruit kinds.'} test::russetorchard::domain::FruitKind
+{
+  APPLE,
+  PEAR,
+  CHERRY
+}
+
+Class {meta::pure::profiles::doc.doc = 'A cultivated orchard.'} test::russetorchard::domain::Orchard
+{
+  name: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A catalogued tree with a display label.'} test::russetorchard::domain::Tree
+{
+  label: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fruit-bearing tree, specialising a tree with kind and annual yield.'} test::russetorchard::domain::FruitTree extends test::russetorchard::domain::Tree
+{
+  kind: test::russetorchard::domain::FruitKind[1];
+  yieldKg: Float[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Associates an orchard with the fruit trees planted in it.'} test::russetorchard::domain::Orchard_Tree
+{
+  orchard: test::russetorchard::domain::Orchard[1];
+  trees: test::russetorchard::domain::FruitTree[*];
+}

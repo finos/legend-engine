@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::scarletprairie4::domain::Habitat
+{
+  TALLGRASS,
+  MIXEDGRASS,
+  SHORTGRASS,
+  UNRECORDED
+}
+
+Enum test::scarletprairie4::domain::SoilClass
+{
+  LOAM,
+  CLAY,
+  SAND,
+  NONE
+}
+
+Enum test::scarletprairie4::domain::SizeClass
+{
+  LARGE,
+  MEDIUM,
+  SMALL
+}
+
+Enum test::scarletprairie4::domain::HabitatGroup
+{
+  HUMID_SIDE,
+  DRY_SIDE,
+  UNSORTED
+}
+
+Class test::scarletprairie4::domain::PrairiePlot
+{
+  plotCode: String[1];
+  plotLabel: String[0..1];
+  areaM2: Float[0..1];
+  soilBand: String[0..1];
+  grazingTier: String[0..1];
+  stemDensity: Float[0..1];
+  sourceTag: String[1];
+  parentName: String[0..1];
+  speciesNames: String[*];
+  habitat: test::scarletprairie4::domain::Habitat[0..1];
+}
+
+Class test::scarletprairie4::domain::TransectSighting
+{
+  transectTag: String[1];
+  speciesCode: String[0..1];
+  commonLabel: String[0..1];
+}
+
+Class test::scarletprairie4::domain::PlotDigest
+{
+  plotCode: String[1];
+  soilClass: test::scarletprairie4::domain::SoilClass[0..1];
+  sizeClass: test::scarletprairie4::domain::SizeClass[0..1];
+  habitatGroup: test::scarletprairie4::domain::HabitatGroup[0..1];
+  headline: String[1];
+}

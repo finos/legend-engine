@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfulgecko::service::SightingBoards
+{
+  pattern: '/gecko/v1/sighting-boards/{estate}';
+  title: 'Wistful Gecko - Sighting Boards Keyed By Estate';
+  owners:
+  [
+    'nocturnal-survey-office',
+    'habitat-registry-eng'
+  ];
+  documentation: 'Estate-keyed multi-execution board over the business-temporal sighting register. The shared query pins an effective date, narrows the register by species membership, join-reached habitat and observer presence and a positive count, then projects the joined habitat, terrain and observer columns; the estate key chooses the local or warehouse runtime binding.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {businessDate: StrictDate[1], species: String[*]|test::wistfulgecko::domain::GeckoSighting.all($businessDate)->filter(s|($s.speciesCode->in($species)) && ((!$s.habitatName->isEmpty()) && ((!$s.observerName->isEmpty()) && ($s.geckoCount > 0))))->project([s|$s.sightingCode, s|$s.habitatName, s|$s.observerName, s|$s.terrainCode, s|$s.geckoCount], ['Sighting', 'Habitat', 'Observer', 'Terrain', 'Geckos'])->sort([asc('Sighting')])};
+    key: 'estate';
+    executions['local']:
+    {
+      mapping: test::wistfulgecko::mapping::GeckoMapping;
+      runtime: test::wistfulgecko::runtime::GeckoH2Runtime;
+    }
+    executions['warehouse']:
+    {
+      mapping: test::wistfulgecko::mapping::GeckoMapping;
+      runtime: test::wistfulgecko::runtime::GeckoWarehouseRuntime;
+    }
+  }
+}
+
+Service test::wistfulgecko::service::SightingBoardsLocal
+{
+  pattern: '/gecko/v1/sighting-boards-local/{businessDate}';
+  title: 'Wistful Gecko - Sighting Boards (Local Estate)';
+  owners:
+  [
+    'nocturnal-survey-office',
+    'habitat-registry-eng'
+  ];
+  documentation: 'Local-estate pinned form of the estate-keyed board, carrying the executable suite that proves a sighting whose business window closed before the effective date and a sighting whose observer key has no registry row are both absent from the projection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], species: String[*]|test::wistfulgecko::domain::GeckoSighting.all($businessDate)->filter(s|($s.speciesCode->in($species)) && ((!$s.habitatName->isEmpty()) && ((!$s.observerName->isEmpty()) && ($s.geckoCount > 0))))->project([s|$s.sightingCode, s|$s.habitatName, s|$s.observerName, s|$s.terrainCode, s|$s.geckoCount], ['Sighting', 'Habitat', 'Observer', 'Terrain', 'Geckos'])->sort([asc('Sighting')])};
+    mapping: test::wistfulgecko::mapping::GeckoMapping;
+    runtime: test::wistfulgecko::runtime::GeckoH2Runtime;
+  }
+  testSuites:
+  [
+    sightingBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          geckoH2Connection:
+            Relational
+            #{
+              registry.observer:
+                'observer_code,observer_name,team_name\n'+
+                'OB-1,Ada Fern,night-team\n'+
+                'OB-2,Bo Larch,dawn-team\n';
+              field.habitat:
+                'habitat_code,habitat_name,terrain_code\n'+
+                'HB-1,Reed Gully,RIPARIAN\n'+
+                'HB-2,Granite Slope,ROCKY\n'+
+                'HB-3,Sand Flat,DUNE\n';
+              field.gecko_sighting:
+                'sighting_code,habitat_code,observer_code,species_code,gecko_count,night_temp_c,valid_from,valid_thru\n'+
+                'GS-01,HB-1,OB-1,SP-LEAFTAIL,4,18.5,2026-01-01,9999-12-31\n'+
+                'GS-02,HB-1,OB-2,SP-DTELLA,2,17.0,2026-01-01,9999-12-31\n'+
+                'GS-03,HB-2,OB-1,SP-LEAFTAIL,6,19.5,2026-01-01,9999-12-31\n'+
+                'GS-04,HB-3,OB-9,SP-LEAFTAIL,3,16.0,2026-01-01,9999-12-31\n'+
+                'GS-05,HB-2,OB-1,SP-LEAFTAIL,9,20.0,2024-01-01,2024-06-30\n'+
+                'GS-06,HB-1,OB-1,SP-GECKONIA,5,15.0,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        supersededAndUnmatchedSightingsAreAbsent:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-01,
+            species = ['SP-LEAFTAIL', 'SP-DTELLA']
+          ]
+          asserts:
+          [
+            threeJoinedSightingsSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sighting":"GS-01","Habitat":"Reed Gully","Observer":"Ada Fern","Terrain":"RIPARIAN","Geckos":4},{"Sighting":"GS-02","Habitat":"Reed Gully","Observer":"Bo Larch","Terrain":"RIPARIAN","Geckos":2},{"Sighting":"GS-03","Habitat":"Granite Slope","Observer":"Ada Fern","Terrain":"ROCKY","Geckos":6}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

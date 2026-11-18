@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfullantern3::service::BenchRegisterAsOf
+{
+  pattern: '/wistfullantern3/benchRegisterAsOf/{asOf}';
+  ownership: UserList { users: ['estate-amenity-desk'] };
+  documentation: 'Publishes the bench generations on record at a processing date, keeping the seating with at least two places and dropping the temporary moulded seating, so the second milestoned table of the store is read through the same estate binding.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfullantern3::domain::ParkBench.all($asOf)->filter(
+      b|($b.seatCount >= 2) && ($b.timberKind != 'PLASTIC')
+    )->project(
+      [
+        b|$b.benchRef,
+        b|$b.parkName,
+        b|$b.timberKind,
+        b|$b.seatCount,
+        b|$b.plaqueText
+      ],
+      [
+        'Bench',
+        'Park',
+        'Timber',
+        'Seats',
+        'Plaque'
+      ]
+    )->sort(
+      [
+        asc('Bench')
+      ]
+    )};
+    mapping: test::wistfullantern3::mapping::EstateMapping;
+    runtime: test::wistfullantern3::runtime::EstateFieldRuntime;
+  }
+  testSuites:
+  [
+    benchRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateConnection: Reference
+            #{
+              test::wistfullantern3::data::EstateTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        benchesOnRecordAtTheProcessingDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            theCorrectedSeatCountIsPublishedAndTheMouldedSeatingIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bench":"BN-1","Park":"Northgate Green","Timber":"OAK","Seats":3,"Plaque":"In memory of the orchard wardens"},{"Bench":"BN-2","Park":"Riverside Walk","Timber":"IROKO","Seats":4,"Plaque":"Riverside walkers club"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

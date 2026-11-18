@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::cobaltcove2::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A monitored stretch of coastal trail, versioned on a business timeline.'} test::cobaltcove2::domain::TrailSegment
+{
+  segmentCode: String[1];
+  reserveName: String[1];
+  surfaceGrade: Integer[1];
+  sightings: test::cobaltcove2::domain::Sighting[*];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A trail camera whose recorded state is versioned on a processing timeline.'} test::cobaltcove2::domain::CameraStation
+{
+  stationCode: String[1];
+  segmentCode: String[1];
+  batteryPercent: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wildlife sighting logged against a trail segment.'} test::cobaltcove2::domain::Sighting
+{
+  sightingCode: String[1];
+  speciesName: String[1];
+  countSeen: Integer[1];
+}

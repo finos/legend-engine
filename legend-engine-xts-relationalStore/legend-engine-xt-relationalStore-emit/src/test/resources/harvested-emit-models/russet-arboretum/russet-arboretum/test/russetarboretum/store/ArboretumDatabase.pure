@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::russetarboretum::store::ArboretumDatabase
+(
+  Schema arb
+  (
+    Table collection_site
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      site_id INTEGER PRIMARY KEY,
+      site_name VARCHAR(200) NOT NULL,
+      region_code VARCHAR(20) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table planting_bed
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      bed_id INTEGER PRIMARY KEY,
+      bed_code VARCHAR(40) NOT NULL,
+      habitat VARCHAR(20) NOT NULL,
+      site_id INTEGER NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table specimen
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      specimen_id INTEGER PRIMARY KEY,
+      accession_code VARCHAR(40) NOT NULL,
+      species_name VARCHAR(120) NOT NULL,
+      lifecycle_stage VARCHAR(20) NOT NULL,
+      planting_year INTEGER NOT NULL,
+      bed_id INTEGER,
+      parent_specimen_id INTEGER,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table care_event
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      event_id INTEGER PRIMARY KEY,
+      specimen_id INTEGER NOT NULL,
+      event_kind VARCHAR(20) NOT NULL,
+      event_code VARCHAR(40) NOT NULL,
+      performed_on DATE NOT NULL,
+      crown_reduction_pct INTEGER,
+      height_cm INTEGER,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+  )
+
+  Filter PruningEventFilter(arb.care_event.event_kind = 'pruning')
+  Filter SurveyEventFilter(arb.care_event.event_kind = 'survey')
+
+  Join Bed_Site(arb.planting_bed.site_id = arb.collection_site.site_id)
+  Join Specimen_Bed(arb.specimen.bed_id = arb.planting_bed.bed_id)
+  Join Specimen_Parent(arb.specimen.parent_specimen_id = {target}.specimen_id)
+  Join Specimen_CareEvent(arb.specimen.specimen_id = arb.care_event.specimen_id)
+)

@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::boreallagoon2::store::LagoonHireDb
+(
+  Schema hire
+  (
+    Table trip_log
+    (
+      trip_ref VARCHAR(24) PRIMARY KEY,
+      hire_code VARCHAR(12),
+      craft_kind VARCHAR(24),
+      launch_zone VARCHAR(24),
+      guide_code VARCHAR(24),
+      paddler_count INTEGER,
+      trip_minutes INTEGER,
+      safety_state VARCHAR(24)
+    )
+
+    Table trip_tag
+    (
+      tag_ref VARCHAR(24) PRIMARY KEY,
+      trip_ref VARCHAR(24),
+      hazard_tag VARCHAR(24)
+    )
+  )
+
+  Join TripHazardTags(hire.trip_log.trip_ref = hire.trip_tag.trip_ref)
+)

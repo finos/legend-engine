@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernquarry::service::BaleLotRegister
+{
+  pattern: '/westernquarry/v1/balelots';
+  title: 'Western Recycling - Baled Lot Register';
+  documentation: 'The whole baled-lot register at lot grain: every lot with its depot code, the depot name reached over the association join, the material and press it came off, its purity and mass, the mapping-supplied feed stream and the derived purity grade.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'western-recycling-authority',
+    'bale-sorting-ops'
+  ];
+  execution: Single
+  {
+    query: |test::westernquarry::domain::BaleLot.all()->project(
+      [
+        l|$l.lotCode,
+        l|$l.depotCode,
+        l|$l.depotName,
+        l|$l.materialCode,
+        l|$l.pressCode,
+        l|$l.purityPct,
+        l|$l.feedStream,
+        l|$l.purityGrade
+      ],
+      [
+        'Lot/Code',
+        'Lot/DepotCode',
+        'Lot/DepotName',
+        'Lot/Material',
+        'Lot/Press',
+        'Lot/PurityPct',
+        'Lot/FeedStream',
+        'Lot/PurityGrade'
+      ]
+    )->sort(
+      [
+        asc('Lot/Code')
+      ]
+    );
+    mapping: test::westernquarry::mapping::DepotBaleMapping;
+    runtime: test::westernquarry::runtime::DepotRuntime;
+  }
+  testSuites:
+  [
+    baleLotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          depotConnection:
+            Relational
+            #{
+              recycling.sort_depot:
+                'depot_code,depot_name,district_name\n'+
+                'DP-1,Riverside Sorting Depot,Riverside\n'+
+                'DP-2,Hillcrest Sorting Depot,Hillcrest\n';
+
+              recycling.bale_lot:
+                'lot_code,depot_code,material_code,press_code,purity_pct,mass_kg,bale_count,pressed_on\n'+
+                'BL-01,DP-1,PET,PR-1,99.5,500.0,2,2026-03-01\n'+
+                'BL-04,DP-2,HDPE,PR-2,91.0,360.0,4,2026-03-04\n'+
+                'BL-09,DP-9,MIXED,PR-5,40.0,90.0,1,2026-03-09\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        topArmMiddleArmAndTheUngradedJoinMiss:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            gradedRowsAndTheUngradedOrphan:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot/Code":"BL-01","Lot/DepotCode":"DP-1","Lot/DepotName":"Riverside Sorting Depot","Lot/Material":"PET","Lot/Press":"PR-1","Lot/PurityPct":99.5,"Lot/FeedStream":"MUNICIPAL-KERBSIDE","Lot/PurityGrade":"ARM-8-MILL-READY"},{"Lot/Code":"BL-04","Lot/DepotCode":"DP-2","Lot/DepotName":"Hillcrest Sorting Depot","Lot/Material":"HDPE","Lot/Press":"PR-2","Lot/PurityPct":91.0,"Lot/FeedStream":"MUNICIPAL-KERBSIDE","Lot/PurityGrade":"ARM-5-STANDARD"},{"Lot/Code":"BL-09","Lot/DepotCode":"DP-9","Lot/DepotName":null,"Lot/Material":"MIXED","Lot/Press":"PR-5","Lot/PurityPct":40.0,"Lot/FeedStream":"MUNICIPAL-KERBSIDE","Lot/PurityGrade":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

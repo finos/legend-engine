@@ -1,0 +1,394 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternprairie2::service::RunEffortByMonth
+{
+  pattern: '/prairie/v1/run-effort/{start}/{end}';
+  title: 'Prairie Survey - Run effort by month and area';
+  documentation: 'Keeps effort entries logged on or after the start day and before the end day, from non-relay observers, without a review note and with a run code, groups them by year, month number and the four-letter area prefix of the run code with a distinct run count and a summed field-plus-travel minute total, then derives hours rounded to two decimals.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['prairie-survey-desk', 'prairie-survey-steward'] };
+  execution: Single
+  {
+    query: {start: StrictDate[1], end: StrictDate[1]|test::easternprairie2::domain::RunEvent.all()->filter(
+      e|$e.loggedAt->isOnOrAfterDay($start) && $e.loggedAt->isBeforeDay($end) && !$e.observer->contains('relay') && $e.reviewNote->isEmpty() && $e.runCode->isNotEmpty()
+    )->groupBy(
+      [
+        e|$e.loggedAt->year(),
+        e|$e.loggedAt->monthNumber(),
+        e|$e.runCode->substring(0, 4)
+      ],
+      [
+        agg(e|$e.runCode, y|$y->distinct()->count()),
+        agg(e|$e.minutesSpent->toOne() + $e.travelMinutes->toOne(), y|$y->sum())
+      ],
+      [
+        'Year',
+        'Month',
+        'Area',
+        'Runs',
+        'Minutes'
+      ]
+    )->extend(
+      col(
+        r: TDSRow[1]|(($r.getInteger('Minutes') * 1.0) / 60.0)->round(2),
+        'Hours'
+      )
+    )->restrict(
+      [
+        'Year',
+        'Month',
+        'Area',
+        'Runs',
+        'Hours'
+      ]
+    )->sort([asc('Year'), asc('Month'), asc('Area')])};
+    mapping: test::easternprairie2::mapping::RunTimelineMapping;
+    runtime: test::easternprairie2::runtime::PrairieSurveyRuntime;
+  }
+  testSuites:
+  [
+    runEffortSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              survey.run_timeline:
+                'event_id,run_code,observer,logged_at,minutes_spent,travel_minutes,review_note\n'+
+                '1,NWPR-101,ana,2026-03-01 00:00:00,50,10,\n'+
+                '2,NWPR-101,ben,2026-03-15 09:30:00,40,5,\n'+
+                '3,NWPR-102,ana,2026-03-20 14:00:00,30,0,\n'+
+                '4,SEPR-201,cal,2026-03-02 08:00:00,25,20,\n'+
+                '5,SEPR-201,cal,2026-04-30 23:59:00,70,15,\n'+
+                '6,NWPR-103,ben,2026-05-01 00:00:00,99,1,\n'+
+                '7,NWPR-104,ana,2026-02-28 23:59:00,12,3,\n'+
+                '8,NWPR-105,relay-unit,2026-03-10 06:00:00,44,4,\n'+
+                '9,SEPR-202,dee,2026-04-11 10:00:00,35,5,recheck\n'+
+                '10,SEPR-203,dee,2026-04-12 10:00:00,15,7,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        halfOpenSpringWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            start = %2026-03-01,
+            end = %2026-05-01
+          ]
+          asserts:
+          [
+            effortPerMonthAndArea:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Year":2026,"Month":3,"Area":"NWPR","Runs":2,"Hours":2.25},{"Year":2026,"Month":3,"Area":"SEPR","Runs":1,"Hours":0.75},{"Year":2026,"Month":4,"Area":"SEPR","Runs":2,"Hours":1.78}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easternprairie2::service::PlotStemsByMonth
+{
+  pattern: '/prairie/v1/plot-stems/{start}/{end}';
+  title: 'Prairie Survey - Plot stems by month';
+  documentation: 'Keeps stem counts logged in the half-open day range, groups them by year and month number with a distinct plot count and summed stems and seedlings, then derives both totals in hundreds rounded to two decimals.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['prairie-survey-desk', 'prairie-survey-steward'] };
+  execution: Single
+  {
+    query: {start: StrictDate[1], end: StrictDate[1]|test::easternprairie2::domain::PlotEvent.all()->filter(
+      e|$e.loggedAt->isOnOrAfterDay($start) && $e.loggedAt->isBeforeDay($end)
+    )->groupBy(
+      [
+        e|$e.loggedAt->year(),
+        e|$e.loggedAt->monthNumber()
+      ],
+      [
+        agg(e|$e.plotCode, y|$y->distinct()->count()),
+        agg(e|$e.stemsCounted->toOne(), y|$y->sum()),
+        agg(e|$e.seedlings->toOne(), y|$y->sum())
+      ],
+      [
+        'Year',
+        'Month',
+        'Plots',
+        'Stems',
+        'Seedlings'
+      ]
+    )->extend(
+      col(
+        r: TDSRow[1]|(($r.getInteger('Stems') * 1.0) / 100.0)->round(2),
+        'StemHundreds'
+      )
+    )->extend(
+      col(
+        r: TDSRow[1]|(($r.getInteger('Seedlings') * 1.0) / 100.0)->round(2),
+        'SeedlingHundreds'
+      )
+    )->restrict(
+      [
+        'Year',
+        'Month',
+        'Plots',
+        'StemHundreds',
+        'SeedlingHundreds'
+      ]
+    )->sort([asc('Year'), asc('Month')])};
+    mapping: test::easternprairie2::mapping::PlotTimelineMapping;
+    runtime: test::easternprairie2::runtime::PrairieSurveyRuntime;
+  }
+  testSuites:
+  [
+    plotStemsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              survey.plot_timeline:
+                'event_id,plot_code,observer,logged_at,stems_counted,seedlings\n'+
+                '1,PL-01,ana,2026-04-01 00:00:00,120,33\n'+
+                '2,PL-01,ben,2026-04-15 08:15:00,80,7\n'+
+                '3,PL-02,ben,2026-04-20 11:00:00,45,12\n'+
+                '4,PL-03,cal,2026-05-31 23:00:00,210,51\n'+
+                '5,PL-04,cal,2026-06-01 00:00:00,300,90\n'+
+                '6,PL-05,dee,2026-03-31 23:59:00,60,6\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        aprilAndMayWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            start = %2026-04-01,
+            end = %2026-06-01
+          ]
+          asserts:
+          [
+            stemsPerMonth:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Year":2026,"Month":4,"Plots":2,"StemHundreds":2.45,"SeedlingHundreds":0.52},{"Year":2026,"Month":5,"Plots":1,"StemHundreds":2.1,"SeedlingHundreds":0.51}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easternprairie2::service::CompletedRunsByKind
+{
+  pattern: '/prairie/v1/completed-runs/{start}/{end}';
+  title: 'Prairie Survey - Completed runs by kind';
+  documentation: 'Keeps completed runs started in the half-open day range, groups them by run kind and start year with a distinct lead-observer count and a run count, then derives runs per observer rounded to two decimals.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['prairie-survey-desk', 'prairie-survey-steward'] };
+  execution: Single
+  {
+    query: {start: StrictDate[1], end: StrictDate[1]|test::easternprairie2::domain::SurveyRun.all()->filter(
+      r|$r.startedAt->isOnOrAfterDay($start) && $r.startedAt->isBeforeDay($end) && $r.isComplete
+    )->groupBy(
+      [
+        r|$r.runKind,
+        r|$r.startedAt->year()
+      ],
+      [
+        agg(r|$r.leadObserver, y|$y->distinct()->count()),
+        agg(r|$r.runCode, y|$y->count())
+      ],
+      [
+        'Kind',
+        'Year',
+        'Observers',
+        'Runs'
+      ]
+    )->extend(
+      col(
+        r: TDSRow[1]|(($r.getInteger('Runs') * 1.0) / $r.getInteger('Observers'))->round(2),
+        'RunsPerObserver'
+      )
+    )->restrict(
+      [
+        'Kind',
+        'Year',
+        'Observers',
+        'RunsPerObserver'
+      ]
+    )->sort([asc('Kind')])};
+    mapping: test::easternprairie2::mapping::FieldRunMapping;
+    runtime: test::easternprairie2::runtime::PrairieSurveyRuntime;
+  }
+  testSuites:
+  [
+    completedRunsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              survey.survey_run:
+                'run_code,lead_observer,started_at,run_kind,is_complete,cover_ratio\n'+
+                'NWPR-101,ana,2026-03-01 08:00:00,TRANSECT,true,0.42\n'+
+                'NWPR-102,ana,2026-03-20 07:00:00,TRANSECT,true,0.38\n'+
+                'NWPR-103,ben,2026-03-22 07:00:00,TRANSECT,true,\n'+
+                'SEPR-201,cal,2026-03-02 09:00:00,QUADRAT,true,0.71\n'+
+                'SEPR-202,dee,2026-04-11 09:00:00,QUADRAT,false,0.55\n'+
+                'SEPR-203,dee,2026-05-01 00:00:00,QUADRAT,true,0.6\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        completedSpringRuns:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            start = %2026-03-01,
+            end = %2026-05-01
+          ]
+          asserts:
+          [
+            runsPerKind:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Kind":"QUADRAT","Year":2026,"Observers":1,"RunsPerObserver":1.0},{"Kind":"TRANSECT","Year":2026,"Observers":2,"RunsPerObserver":1.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easternprairie2::service::SheetsByRecorder
+{
+  pattern: '/prairie/v1/sheets-by-recorder/{recorder}/{start}';
+  title: 'Prairie Survey - Tally sheets by recorder';
+  documentation: 'Starts from the tally sheets, follows the association to the run, keeps runs started on or after the start day whose lead observer and sheet recorder both contain the requested name, and projects distinct run, lead and recorder rows.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['prairie-survey-desk', 'prairie-survey-steward'] };
+  execution: Single
+  {
+    query: {recorder: String[1], start: StrictDate[1]|test::easternprairie2::domain::TallySheet.all()->filter(
+      s|$s.run.startedAt->isOnOrAfterDay($start) && ($s.recordedBy->contains($recorder) && $s.run.leadObserver->contains($recorder))
+    )->project(
+      [
+        s|$s.run.runCode,
+        s|$s.run.leadObserver,
+        s|$s.recordedBy
+      ],
+      [
+        'Run',
+        'Lead',
+        'Recorder'
+      ]
+    )->distinct()->sort([asc('Run')])};
+    mapping: test::easternprairie2::mapping::FieldRunMapping;
+    runtime: test::easternprairie2::runtime::PrairieSurveyRuntime;
+  }
+  testSuites:
+  [
+    sheetsByRecorderSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              survey.survey_run:
+                'run_code,lead_observer,started_at,run_kind,is_complete,cover_ratio\n'+
+                'NWPR-101,ana,2026-03-01 08:00:00,TRANSECT,true,0.42\n'+
+                'NWPR-102,ana,2026-03-20 07:00:00,TRANSECT,true,0.38\n'+
+                'NWPR-103,ben,2026-03-22 07:00:00,TRANSECT,true,\n'+
+                'NWPR-100,ana,2026-02-27 07:00:00,TRANSECT,true,0.2\n'+
+                'SEPR-201,cal,2026-03-02 09:00:00,QUADRAT,true,0.71\n'+
+                'SEPR-202,dee,2026-04-11 09:00:00,QUADRAT,false,0.55\n';
+
+              survey.tally_sheet:
+                'sheet_id,run_code,sheet_ref,recorded_by\n'+
+                '1,NWPR-101,TS-0001,ana\n'+
+                '2,NWPR-101,TS-0002,ana\n'+
+                '3,NWPR-102,TS-0003,anabel\n'+
+                '4,NWPR-103,TS-0004,ana\n'+
+                '5,SEPR-201,TS-0005,cal\n'+
+                '6,NWPR-100,TS-0006,ana\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        recorderMatchesOnBothSides:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            recorder = 'ana',
+            start = %2026-03-01
+          ]
+          asserts:
+          [
+            distinctRunsForRecorder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"NWPR-101","Lead":"ana","Recorder":"ana"},{"Run":"NWPR-102","Lead":"ana","Recorder":"anabel"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

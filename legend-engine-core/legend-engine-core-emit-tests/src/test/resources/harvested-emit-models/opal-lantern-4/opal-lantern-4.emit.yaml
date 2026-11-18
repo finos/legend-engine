@@ -1,0 +1,40 @@
+name: opal-lantern-4
+title: "Opal Lantern 4 — Carillon Configuration Descriptors Declared as Constant Derived Properties"
+description: |
+  A store-less carillon configuration model in which three descriptor classes
+  each declare exactly one stored string property and four zero-argument derived
+  properties returning constant strings, so the configuration contract is
+  expressed as behaviour rather than as tagged values or enumerations. The
+  derived properties declare the hierarchy level, the authorisation domain, the
+  governing role and the permitted value vocabulary; two of the vocabularies are
+  single delimited strings, one comma-space separated and one bare-comma
+  separated, so a consumer that splits on the wrong separator produces values
+  with a leading space, and a third narrows to a single value. The practice
+  descriptor shadows its own stored `permittedValues` property with a derived
+  property of the same name, making name resolution between a stored and a
+  derived member of one class the interesting case. A profile supplies the
+  scoping stereotypes and the documentation, hierarchy, vocabulary and policy
+  tags, and the tuning descriptor restates its contract in prose so the
+  documented vocabulary can drift from the derived one without a compile error.
+modelSources:
+  model:
+    root: opal-lantern-4
+    files:
+      - test/opallantern4/config/CarillonSettings.pure
+      - test/opallantern4/profile/CarillonMeta.pure
+features:
+  - grammar:derived-property
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - carillon
+  - configuration-descriptor
+  - constant-derivation
+  - delimited-vocabulary
+  - derived-property
+  - documentation-tags
+  - profile
+  - property-shadowing
+  - store-less

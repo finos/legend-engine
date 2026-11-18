@@ -1,0 +1,64 @@
+name: opal-otter-2
+title: "Opal Otter Reach Trials — Two Near-Copy Relational Bindings, a Seeded Embedded Connection and a Deliberately Unresolvable Executable"
+description: |
+  An otter reach survey scenario registry bound twice. Two near-copy relational
+  stores carry the same wide scenario table and a narrow lookup - one keyed on a
+  text identifier, one on a whole number - and two mappings bind the same
+  scenario class through them, each resolving its lookup label across an inner
+  join and each declaring a relational association implementation. The embedded
+  database connection carries its own fixture rows inline in the datasource
+  specification, so the seeded runtime both provisions and populates the text
+  store, and it is the only store the runtime binds. Both services declare
+  ownership with an empty identifier: the first pairs the text mapping with that
+  runtime and executes, while the second names the whole-number mapping whose
+  store the runtime never connects, so it compiles but cannot execute. A
+  collection lookup class shadows an association endpoint with an identically
+  named and typed to-many property, and a standalone document-format data
+  element sits alongside the group unreferenced.
+modelSources:
+  model:
+    root: opal-otter-2
+    files:
+      - test/opalotter2/connection/TrialSeedConnection.pure
+      - test/opalotter2/data/TrialStubData.pure
+      - test/opalotter2/dataspace/TrialDataSpace.pure
+      - test/opalotter2/domain/TrialDomain.pure
+      - test/opalotter2/mapping/TrialNumericMapping.pure
+      - test/opalotter2/mapping/TrialTextMapping.pure
+      - test/opalotter2/runtime/TrialRuntime.pure
+      - test/opalotter2/service/TrialNumericExtract.pure
+      - test/opalotter2/service/TrialTextExtract.pure
+      - test/opalotter2/store/TrialNumericDB.pure
+      - test/opalotter2/store/TrialTextDB.pure
+features:
+  - connection:embedded-seed-data
+  - execution:data-element
+  - execution:data-space
+  - execution:empty-ownership-identifier
+  - execution:service
+  - execution:unresolvable-mapping-runtime-pairing
+  - grammar:association
+  - grammar:association-shadowing-property
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-shadowing
+  - embedded-seed-data
+  - empty-ownership-identifier
+  - h2
+  - inner-join
+  - near-copy-stores
+  - otter-survey
+  - unresolvable-runtime-pairing

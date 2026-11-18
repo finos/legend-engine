@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::coralwarren9::data::SeedLibraryFixture
+{
+  Relational
+  #{
+    catalog.plant_family:
+      'family_code,family_label,habit_code\n'+
+      'FM-AL,Alliums,BULB\n'+
+      'FM-BR,Brassicas,LEAF\n'+
+      'FM-LG,Legumes,VINE\n'+
+      'FM-SL,Nightshades,FRUIT\n';
+
+    catalog.seed_variety:
+      'variety_code,variety_label,family_code,sow_season,days_to_harvest\n'+
+      'VR-01,Red Baron Onion,FM-AL,SPRING,150\n'+
+      'VR-02,Cavolo Nero,FM-BR,SUMMER,90\n'+
+      'VR-03,Painted Lady Bean,FM-LG,SPRING,75\n'+
+      'VR-04,Gardeners Delight Tomato,FM-SL,SPRING,80\n'+
+      'VR-05,Purple Sprouting Broccoli,FM-BR,AUTUMN,220\n';
+
+    lending.library_branch:
+      'branch_code,branch_label,town_label\n'+
+      'BR-1,Millbrook Branch,Millbrook\n'+
+      'BR-2,Hollins Branch,Hollins\n'+
+      'BR-3,Quayside Branch,Quayside\n';
+
+    lending.seed_packet:
+      'packet_code,variety_code,branch_code,donor_code,harvest_year,gram_weight\n'+
+      'PK-01,VR-01,BR-1,GD-1,2025,12\n'+
+      'PK-02,VR-02,BR-1,GD-3,2025,8\n'+
+      'PK-03,VR-03,BR-2,GD-2,2025,20\n'+
+      'PK-04,VR-04,BR-3,GD-3,2024,5\n'+
+      'PK-05,VR-05,BR-3,GD-4,2025,10\n'+
+      'PK-06,VR-03,BR-1,GD-1,2024,18\n';
+
+    members.gardener:
+      'gardener_code,gardener_name,plot_code\n'+
+      'GD-1,Ruth Okafor,PL-A\n'+
+      'GD-2,Ivan Petrov,PL-B\n'+
+      'GD-3,Mei Tanaka,PL-C\n'+
+      'GD-4,Sam Hollis,PL-E\n';
+  }#
+}

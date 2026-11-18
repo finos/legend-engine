@@ -1,0 +1,67 @@
+name: dusky-lighthouse-2
+title: "Dusky Lighthouse — a point-in-time night-watch tally published both as an endpoint and as an agent-callable tool"
+description: |
+  A dark-sky observing register whose region, site and nightly-log relations all carry a
+  business-time dimension, so a read has to name the instant it wants. One single-execution
+  endpoint owns the read: its body opens with a local binding for the supplied instant and then
+  threads that one value through the extent and through every qualified hop it walks, so the
+  region reached from a site and the site reached from a log are resolved at the same instant as
+  the log itself. The predicate is a three-deep conjunction over four conditions — a patrol level
+  against an integer literal, a closed-vocabulary seeing grade, a normalised catalogue label and a
+  season year — plus a sector equality against a caller-supplied argument, so one fixture row fails
+  exactly one conjunct while another sits on the instant boundary. The aggregation groups the
+  surviving rows by eight keys whose emitted names are slash-delimited paths and sums a single
+  measure. The endpoint also declares a tool server, so the same execution is reachable as an
+  agent-callable tool whose schema is exactly that parameter list and those projected column names;
+  the declaration changes no plan and no result, so the two suite cases assert the tool-shaped
+  column names byte for byte, one instant before a late log version opens and one after, and the
+  ownership list names two accountable users so a second endpoint declaring the same tool server
+  would have to match them.
+modelSources:
+  model:
+    root: dusky-lighthouse-2
+    files:
+      - test/duskylighthouse2/connection/SkyWatchConnections.pure
+      - test/duskylighthouse2/domain/SkyWatchDomain.pure
+      - test/duskylighthouse2/mapping/SkyWatchEnumMappings.pure
+      - test/duskylighthouse2/mapping/SkyWatchLogMapping.pure
+      - test/duskylighthouse2/mapping/SkyWatchReferenceMapping.pure
+      - test/duskylighthouse2/runtime/SkyWatchRuntimes.pure
+      - test/duskylighthouse2/service/NightWatchTallyAsOf.pure
+      - test/duskylighthouse2/store/SkyWatchDB.pure
+features:
+  - execution:service
+  - execution:service-mcp-server
+  - execution:service-test
+  - execution:service-user-ownership
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:tagged-value
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:group-by
+  - query:let-binding
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - group-by
+  - h2
+  - let-binding
+  - mcp-server
+  - point-in-time
+  - service-test
+  - user-ownership

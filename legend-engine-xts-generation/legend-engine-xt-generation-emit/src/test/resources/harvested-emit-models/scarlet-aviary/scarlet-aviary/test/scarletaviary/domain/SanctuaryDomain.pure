@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletaviary::domain::*;
+
+Class <<test::scarletaviary::profile::AviaryMeta.endangered>> {test::scarletaviary::profile::AviaryMeta.conservationStatus = 'Vulnerable'} test::scarletaviary::domain::Species
+{
+  name: String[1];
+  scientificName: String[1];
+  conservationCode: String[0..1];
+}
+
+Class <<test::scarletaviary::profile::AviaryMeta.migratory>> test::scarletaviary::domain::Bird
+{
+  bandCode: String[1];
+  species: Species[1];
+  hatchedYear: Integer[0..1];
+  enclosure: Enclosure[1];
+}
+
+Class test::scarletaviary::domain::Aviary
+{
+  name: String[1];
+  enclosures: Enclosure[*];
+  caretakers: Caretaker[*];
+  censuses: PopulationCensus[*];
+}
+
+Class test::scarletaviary::domain::Enclosure
+{
+  code: String[1];
+  habitat: Habitat[1];
+  birds: Bird[*];
+  schedule: FeedingSchedule[0..1];
+}
+
+Class {test::scarletaviary::profile::AviaryMeta.habitatNotes = 'Managed wetland and canopy mix'} test::scarletaviary::domain::Habitat
+{
+  kind: String[1];
+  areaSqm: Float[1];
+}
+
+Class test::scarletaviary::domain::Caretaker
+{
+  staffId: String[1];
+  fullName: String[1];
+}
+
+Class test::scarletaviary::domain::FeedingSchedule
+{
+  label: String[1];
+  items: DietItem[*];
+}
+
+Class test::scarletaviary::domain::DietItem
+{
+  food: String[1];
+  grams: Integer[1];
+}
+
+Class test::scarletaviary::domain::Observation
+{
+  observedAt: DateTime[1];
+  bird: Bird[1];
+  note: String[0..1];
+}
+
+Class test::scarletaviary::domain::BandingRecord
+{
+  bandCode: String[1];
+  bird: Bird[1];
+  bandedOn: StrictDate[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> test::scarletaviary::domain::PopulationCensus
+{
+  headcount: Integer[1];
+  aviary: Aviary[1];
+}

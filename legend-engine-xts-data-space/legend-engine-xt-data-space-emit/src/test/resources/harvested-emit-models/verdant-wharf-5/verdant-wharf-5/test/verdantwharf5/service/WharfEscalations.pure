@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantwharf5::service::WharfEscalations
+{
+  pattern: '/verdantwharf5/escalations/{minWeight}/{team}';
+  title: 'Wharf Escalations';
+  owners:
+  [
+    'harbour-operations'
+  ];
+  documentation: 'Keeps the call legs that landed at least one heavy pallet and were also checked by the requested wardens team, walking the pallet collection and the nested check collection before coercing the single berth name into the projection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minWeight: Integer[1], team: String[1]|test::verdantwharf5::domain::VesselCall.all()->filter(
+      x|$x.pallets->exists(
+        p|$p.palletWeightKg->toOne() > $minWeight
+      ) && $x.pallets->exists(
+        p|$p.checks->exists(
+          c|$c.inspectorTeam->toOne() == $team
+        )
+      )
+    )->project(
+      [
+        x|$x.callCode,
+        x|$x.callLeg,
+        x|$x.vesselName,
+        x|$x.cargoClass,
+        x|$x.handlingLane,
+        x|$x.berth.berthName->toOne()
+      ],
+      [
+        'CallCode',
+        'CallLeg',
+        'Vessel',
+        'CargoClass',
+        'Lane',
+        'BerthName'
+      ]
+    )->sort(
+      [
+        asc('CallCode'),
+        asc('CallLeg')
+      ]
+    )};
+    mapping: test::verdantwharf5::mapping::WharfMapping;
+    runtime: test::verdantwharf5::runtime::WharfRuntime;
+  }
+  testSuites:
+  [
+    escalationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfConnection: Reference
+            #{
+              test::verdantwharf5::data::WharfTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        selectingParameters:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minWeight = 1000,
+            team = 'dock wardens'
+          ]
+          asserts:
+          [
+            oneEscalatedLeg:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CallCode":"C-01","CallLeg":1,"Vessel":"NORTHERN GULL","CargoClass":"CONTAINER","Lane":"EXPRESS LANE","BerthName":"North Quay"}]';
+                  }#;
+              }#
+          ]
+        },
+        nonSelectingParameters:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minWeight = 9000,
+            team = 'dock wardens'
+          ]
+          asserts:
+          [
+            noEscalatedLegs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::duskydelta::dataspace::ApiaryFieldDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'field';
+      description: 'Resolves the hive register held in the field store against the stand, forage and keeper reference units.';
+      mapping: test::duskydelta::mapping::ApiaryMapping;
+      defaultRuntime: test::duskydelta::runtime::ApiaryFieldRuntime;
+    },
+    {
+      name: 'registry';
+      description: 'Resolves the versioned colony register against the inspector reference unit at a chosen instant.';
+      mapping: test::duskydelta::mapping::ColonyRegistryMapping;
+      defaultRuntime: test::duskydelta::runtime::ColonyRegistryRuntime;
+    }
+  ];
+  defaultExecutionContext: 'field';
+  title: 'Apiary Field And Colony Register Catalogue';
+  description: 'Catalogues the hive stand register and the versioned colony register published by the field office, so both the graded band transform and the validity-resolved register are reachable from one catalogued entry.';
+  elements:
+  [
+    test::duskydelta::domain::Hive,
+    test::duskydelta::domain::ApiarySite,
+    test::duskydelta::domain::ForageZone,
+    test::duskydelta::domain::Keeper,
+    test::duskydelta::domain::ColonyRecord,
+    test::duskydelta::domain::Inspector
+  ];
+  supportInfo: Email
+  {
+    address: 'apiary-field-office@duskydelta.invalid';
+  };
+}

@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::mapledelta::service::ChannelsByBasinMulti
+{
+  pattern: '/delta/v1/basins-multi/{basin}';
+  title: 'Delta - Channel roll-up by basin (multi-environment)';
+  owners:
+  [
+    'delta-hydrology-platform',
+    'watershed-eng'
+  ];
+  documentation: 'Multi-execution channel roll-up selecting an environment-keyed mapping/runtime binding at execution time. It filters open, flowing channels in the requested basin and aggregates their sediment and flow readings with a grouped projection.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {basin: String[1]|test::mapledelta::domain::Channel.all()->filter(
+      c|(($c.basinCode == $basin) && ($c.flowRate > 0)) && (($c.channelState->in(['OPEN', 'ACTIVE'])) && (!($c.channelName->isEmpty())))
+    )->groupBy(
+      [
+        c|$c.basinCode
+      ],
+      [
+        agg(c|$c.sedimentLoad, vals|$vals->sum()),
+        agg(c|$c.flowRate, vals|$vals->max()),
+        agg(c|$c.flowRate, vals|$vals->min()),
+        agg(c|$c.channelId, vals|$vals->count())
+      ],
+      [
+        'Basin',
+        'TotalSediment',
+        'PeakFlow',
+        'MinFlow',
+        'ChannelCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Basin')
+      ]
+    )->limit(100)};
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::mapledelta::mapping::DeltaMapping;
+      runtime: test::mapledelta::runtime::DeltaRuntime;
+    }
+    executions['secondary']:
+    {
+      mapping: test::mapledelta::mapping::DeltaMapping;
+      runtime: test::mapledelta::runtime::DeltaRuntime;
+    }
+  }
+}
+
+Service test::mapledelta::service::ChannelsByBasin
+{
+  pattern: '/delta/v1/basins/{basin}';
+  title: 'Delta - Channel roll-up by basin';
+  owners:
+  [
+    'delta-hydrology-platform',
+    'watershed-eng'
+  ];
+  documentation: 'Single-execution counterpart carrying the tested service suite. It filters open, flowing channels in the requested basin and returns a grouped projection of the total sediment load, peak and minimum flow, and channel count for that basin.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {basin: String[1]|test::mapledelta::domain::Channel.all()->filter(
+      c|(($c.basinCode == $basin) && ($c.flowRate > 0)) && (($c.channelState->in(['OPEN', 'ACTIVE'])) && (!($c.channelName->isEmpty())))
+    )->groupBy(
+      [
+        c|$c.basinCode
+      ],
+      [
+        agg(c|$c.sedimentLoad, vals|$vals->sum()),
+        agg(c|$c.flowRate, vals|$vals->max()),
+        agg(c|$c.flowRate, vals|$vals->min()),
+        agg(c|$c.channelId, vals|$vals->count())
+      ],
+      [
+        'Basin',
+        'TotalSediment',
+        'PeakFlow',
+        'MinFlow',
+        'ChannelCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Basin')
+      ]
+    )->limit(100)};
+    mapping: test::mapledelta::mapping::DeltaMapping;
+    runtime: test::mapledelta::runtime::DeltaRuntime;
+  }
+  testSuites:
+  [
+    channelsByBasinSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              delta.channel:
+                'channel_id,channel_name,basin_code,channel_state,flow_rate,sediment_load\n'+
+                '1,Main Stem,NorthReach,OPEN,120,40\n'+
+                '2,Side Cut,NorthReach,ACTIVE,80,60\n'+
+                '3,Dry Wash,NorthReach,CLOSED,0,10\n'+
+                '4,Far Bend,SouthReach,OPEN,200,90\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northReachRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            basin = 'NorthReach'
+          ]
+          asserts:
+          [
+            oneGroupedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Basin":"NorthReach","TotalSediment":100,"PeakFlow":120,"MinFlow":80,"ChannelCount":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

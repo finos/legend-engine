@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigothicket::store::ThicketDB
+(
+  Schema thicket
+  (
+    Table ringing_site
+    (
+      site_code VARCHAR(20) PRIMARY KEY,
+      site_name VARCHAR(80) NOT NULL,
+      habitat_code VARCHAR(20) NOT NULL
+    )
+    Table ringing_record
+    (
+      record_code VARCHAR(20) PRIMARY KEY,
+      site_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      wing_mm INTEGER NOT NULL,
+      mass_g INTEGER NOT NULL,
+      ringed_at TIMESTAMP NOT NULL,
+      checked_at TIMESTAMP NOT NULL,
+      retrap BIT NOT NULL,
+      adult BIT NOT NULL
+    )
+    Table record_sighting
+    (
+      sighting_code VARCHAR(20) PRIMARY KEY,
+      record_code VARCHAR(20) NOT NULL,
+      observer_role VARCHAR(40) NOT NULL,
+      sighting_note VARCHAR(200)
+    )
+  )
+
+  Join Record_Site(thicket.ringing_record.site_code = thicket.ringing_site.site_code)
+  Join Record_Sighting(thicket.ringing_record.record_code = thicket.record_sighting.record_code)
+)

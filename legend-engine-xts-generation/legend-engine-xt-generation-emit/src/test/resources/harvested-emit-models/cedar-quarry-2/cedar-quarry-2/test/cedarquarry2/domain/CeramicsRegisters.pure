@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::cedarquarry2::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'One kiln firing as the studio register held it in business time, so a re-fired schedule supersedes the schedule the register first held.'} test::cedarquarry2::domain::KilnFiringRecord
+[
+  peakTemperatureWithinTheKilnRange: ($this.peakTemperatureC >= 700) && ($this.peakTemperatureC <= 1400)
+]
+{
+  firingCode: String[1];
+  kilnCode: String[1];
+  atmosphere: FiringAtmosphere[1];
+  peakTemperatureC: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A catalogue revision held in processing time, so the note the register held when it was read back can be reproduced.'} test::cedarquarry2::domain::CatalogueRevision
+{
+  revisionCode: String[1];
+  accessionCode: String[1];
+  revisionNote: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'An outward display placement held in both business and processing time so a corrected crate tally supersedes the tally first published without losing it.'} test::cedarquarry2::domain::DisplayPlacement
+[
+  crateCountFitsOneVanLoad: ($this.crateCount > 0) && ($this.crateCount <= 20)
+]
+{
+  placementCode: String[1];
+  accessionCode: String[1];
+  venueName: String[1];
+  crateCount: Integer[1];
+}

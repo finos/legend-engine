@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::westernorchard::dataspace::OrchardDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'estateWarehouse';
+      description: 'The curated orchard estate model bound to the warehouse-class execution target.';
+      mapping: demo::westernorchard::mapping::OrchardMapping;
+      defaultRuntime: demo::westernorchard::runtime::OrchardRuntime;
+    }
+  ];
+  defaultExecutionContext: 'estateWarehouse';
+  title: 'Western Orchard Estate';
+  description: 'A governed entry point over the orchard estate: planted blocks, their grafted varieties, the lots picked from them and the rostered picking crews, with the layout element and the two featured projection endpoints a consumer should see.';
+  diagrams:
+  [
+    {
+      title: 'Orchard estate layout';
+      description: 'Positions the four domain classes and the three relationship views that connect them.';
+      diagram: demo::westernorchard::diagram::OrchardDiagram;
+    }
+  ];
+  elements:
+  [
+    demo::westernorchard::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Harvest lots by block';
+      description: 'Featured endpoint returning the lots picked from one block with their variety and crew labels.';
+      executable: demo::westernorchard::service::LotLookup;
+    },
+    {
+      id: 2;
+      title: 'Planted block roster';
+      description: 'Featured endpoint returning the planted blocks above a requested area.';
+      executable: demo::westernorchard::service::BlockRoster;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'orchard-estate-support@example.invalid';
+    documentationUrl: 'https://example.invalid/docs/orchard-estate';
+  };
+}

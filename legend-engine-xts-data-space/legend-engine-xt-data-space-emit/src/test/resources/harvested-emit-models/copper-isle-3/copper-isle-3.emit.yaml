@@ -1,0 +1,59 @@
+name: copper-isle-3
+title: "Copper Isle Seabird Census — Data Space, Stored Diagram and Multi-Table Census Mapping"
+description: |
+  A seabird colony census over a three-relation store: colony counts, the isle
+  sector register and the observer shift roster, each bound by its own set
+  implementation with a declared primary key and an explicit main-table alias
+  and no joins between them. A stored diagram fixes the curated class view, a
+  data space publishes the census mapping and its survey runtime as one governed
+  execution context, and a parameterised service filters one species by a
+  nest-count floor, an accepted survey method and an observed visibility class
+  before projecting the derived fledging surplus.
+
+modelSources:
+  model:
+    root: copper-isle-3
+    files:
+      - test/copperisle3/connection/IsleSurveyConnection.pure
+      - test/copperisle3/data/IsleSurveyData.pure
+      - test/copperisle3/dataspace/IsleSurveyDataSpace.pure
+      - test/copperisle3/diagram/IsleSurveyDiagram.pure
+      - test/copperisle3/domain/IsleColony.pure
+      - test/copperisle3/mapping/IsleSurveyMapping.pure
+      - test/copperisle3/runtime/IsleSurveyRuntime.pure
+      - test/copperisle3/service/ColonyCensusService.pure
+      - test/copperisle3/store/IsleSurveyDb.pure
+
+features:
+  - connection:oauth-authentication
+  - connection:snowflake
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:arithmetic
+  - query:project
+  - query:sort-limit
+  - query:string-function
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - colony-census
+  - data-space
+  - diagram
+  - h2
+  - multi-table
+  - seabird-survey
+  - snowflake

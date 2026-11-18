@@ -1,0 +1,76 @@
+name: silver-cove
+title: "Silver Cove — A Filtered Model-To-Model Mooring Register Published As A Checked Envelope"
+description: |
+  A non-financial harbour mooring register that never touches a database: a
+  submitted document is transformed straight onto the published graph, so the
+  whole group is a source class, a target graph, one model-to-model mapping, one
+  service and the profile that records the published field shapes.
+  The source is a flat submission class whose every field is optional on the wire.
+  The published graph is a wrapper class carrying at most one register entry plus
+  two auxiliary classes — a batch window with its open and close dates, batch
+  identifier, logged note lines and worked-by crew — so the graph mixes
+  required-to-one, optional and to-many multiplicities. A user-defined profile
+  declares the field-length and numeric precision and scale tags that decorate the
+  published properties, and the platform equality-key stereotype marks the
+  identifying properties alongside them.
+  One model-to-model mapping joins the two graphs with two class mappings over the
+  same source class: the root wrapper mapping delegates its single optional entry
+  property to the entry mapping, and the entry mapping declares a source filter
+  whose two operands test the same submitted property — first that it was supplied
+  at all, then that it equals the admitted register code — so a declined
+  submission produces an envelope with no entry inside rather than no envelope at
+  all. Seven of its eleven transforms narrow an optional submitted property onto a
+  required published property and four pass an optional property through
+  unchanged, mixing coerced and pass-through derivations over string, date,
+  date-time and integer types. The mapping suite drives all four outcomes: an
+  admitted submission with everything populated, an admitted submission carrying
+  only the insisted-upon fields so the pass-through properties serialise as
+  explicit nulls, a submission bearing another register code that the equality
+  operand rejects, and a submission with no register code at all that the
+  emptiness operand rejects first.
+  Above the mapping sits a single-execution service that retrieves the wrapper
+  class, applies a checked graph-fetch tree descending into the optional entry and
+  enumerating each of its scalar properties, and serialises the same tree, so
+  parse and transform defects ride alongside the produced values. It pins the
+  mapping explicitly and declares its runtime inline, binding the model store to a
+  document connection over the submission class, and its test supplies one
+  embedded submission document that deliberately omits the optional fields and
+  asserts the checked result document, provenance and nulls included.
+
+modelSources:
+  model:
+    root: silver-cove
+    files:
+      - test/silvercove/domain/MooringDomain.pure
+      - test/silvercove/mapping/BerthNoticeM2M.pure
+      - test/silvercove/mapping/CoveRegisterM2M.pure
+      - test/silvercove/notice/BerthNoticeModel.pure
+      - test/silvercove/profile/FieldShapeProfile.pure
+      - test/silvercove/service/CoveRegisterDocument.pure
+      - test/silvercove/source/MooringSubmission.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:profile
+  - mapping:m2m-source-filter
+  - mapping:m2m-string-function-transform
+  - mapping:m2m-transform
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - checked-graph-fetch
+  - equality-key
+  - inline-runtime
+  - m2m
+  - m2m-source-filter
+  - m2m-string-transform
+  - mapping-test
+  - profile
+  - service-test
+  - tagged-values

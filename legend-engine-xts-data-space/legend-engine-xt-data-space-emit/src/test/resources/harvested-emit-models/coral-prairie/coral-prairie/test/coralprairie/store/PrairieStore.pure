@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralprairie::store::PrairieStore
+(
+  Schema restoration
+  (
+    Table restoration_plot
+    (
+      plot_id INTEGER PRIMARY KEY,
+      plot_name VARCHAR(80) NOT NULL,
+      hectares FLOAT NOT NULL,
+      zone_code VARCHAR(8) NOT NULL,
+      mix_code VARCHAR(8) NOT NULL,
+      soil_code VARCHAR(8) NOT NULL,
+      technician_code VARCHAR(8) NOT NULL
+    )
+
+    Table management_zone
+    (
+      zone_code VARCHAR(8) PRIMARY KEY,
+      zone_name VARCHAR(60) NOT NULL,
+      burn_code VARCHAR(8) NOT NULL
+    )
+
+    Table burn_unit
+    (
+      burn_code VARCHAR(8) PRIMARY KEY,
+      burn_name VARCHAR(60) NOT NULL,
+      rotation_years INTEGER NOT NULL
+    )
+
+    Table seed_mix
+    (
+      mix_code VARCHAR(8) PRIMARY KEY,
+      mix_label VARCHAR(60) NOT NULL,
+      species_count INTEGER NOT NULL
+    )
+
+    Table soil_series
+    (
+      soil_code VARCHAR(8) PRIMARY KEY,
+      soil_label VARCHAR(60) NOT NULL
+    )
+
+    Table field_technician
+    (
+      technician_code VARCHAR(8) PRIMARY KEY,
+      technician_name VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join Plot_Zone_Join(restoration.restoration_plot.zone_code = restoration.management_zone.zone_code)
+  Join Plot_Mix_Join(restoration.restoration_plot.mix_code = restoration.seed_mix.mix_code)
+  Join Plot_Soil_Join(restoration.restoration_plot.soil_code = restoration.soil_series.soil_code)
+  Join Plot_Technician_Join(restoration.restoration_plot.technician_code = restoration.field_technician.technician_code)
+  Join Zone_Burn_Join(restoration.management_zone.burn_code = restoration.burn_unit.burn_code)
+)

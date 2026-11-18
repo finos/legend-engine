@@ -1,0 +1,41 @@
+name: wharf-berths
+title: "Sable Wharf - business-temporal berth model with subtype set implementations"
+description: |
+  The model half of the wharf stowage corpus: two business-temporal relational
+  classes (berth assignment and stowage plan) plus non-temporal specification,
+  stowage line and cargo unit classes whose concrete subtypes are mapped as
+  extending set implementations over the same tables.
+  It owns the store, mapping, connection and runtime that the query artefact
+  consumes but does not define.
+modelSources:
+  model:
+    root: wharf-berths
+    files:
+      - test/sablewharf/connection/WharfH2Connection.pure
+      - test/sablewharf/domain/WharfDomain.pure
+      - test/sablewharf/mapping/WharfMapping.pure
+      - test/sablewharf/runtime/WharfRuntime.pure
+      - test/sablewharf/store/WharfDatabase.pure
+features:
+  - grammar:class-inheritance
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-subtype-mapping
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - cargo-stowage
+  - enumeration-mapping
+  - harbour
+  - relational
+  - subtype-mapping

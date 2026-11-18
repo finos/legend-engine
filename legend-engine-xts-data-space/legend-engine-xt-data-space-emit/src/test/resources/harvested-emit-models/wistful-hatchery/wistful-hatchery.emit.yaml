@@ -1,0 +1,78 @@
+name: wistful-hatchery
+title: "Wistful Hatchery Conservatory - Processing-Corrected Rearing, Emergence, Habitat And Visit Tiers"
+description: |
+  A butterfly conservatory model spread over four relational stores whose rearing,
+  emergence, habitat and visit layers are each corrected over processing time.
+  Cohorts, emergence records, humidity readings and guided visits are all
+  processing-temporal, so every board is asked for what was believed at a supplied
+  instant and rows whose window has closed drop out. Five curated mappings - one of
+  them assembled by including another - resolve twelve classes over the four stores
+  through eight named inner joins, including a chained cohort-to-room-to-facility
+  path, and derive banded columns from chained relational conditionals that fall
+  through to a null sentinel when a score is absent or unrecognised. Three
+  Snowflake connections authenticated with a published key pair are bound by three
+  engine runtimes, and six services expose the plannable query bodies: point-in-time
+  boards, filtered digests, grouped stock and release rollups, and day-count spans
+  measured against the reference date. Two data spaces package those runtimes as
+  consumable products with featured endpoints and an email support contact.
+modelSources:
+  model:
+    root: wistful-hatchery
+    files:
+      - test/wistfulhatchery/connection/HatcheryConnections.pure
+      - test/wistfulhatchery/dataspace/HatcheryDataSpaces.pure
+      - test/wistfulhatchery/domain/HatcheryDomain.pure
+      - test/wistfulhatchery/mapping/BroodBaseMapping.pure
+      - test/wistfulhatchery/mapping/BroodMapping.pure
+      - test/wistfulhatchery/mapping/EmergenceMapping.pure
+      - test/wistfulhatchery/mapping/HabitatMapping.pure
+      - test/wistfulhatchery/mapping/VisitMapping.pure
+      - test/wistfulhatchery/runtime/HatcheryRuntimes.pure
+      - test/wistfulhatchery/service/BroodServices.pure
+      - test/wistfulhatchery/service/FlightServices.pure
+      - test/wistfulhatchery/store/BroodDb.pure
+      - test/wistfulhatchery/store/EmergenceDb.pure
+      - test/wistfulhatchery/store/HabitatDb.pure
+      - test/wistfulhatchery/store/VisitDb.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - conservatory-rearing
+  - data-space
+  - duckdb
+  - group-by
+  - mapping-include
+  - nested-join
+  - null-sentinel
+  - point-in-time
+  - processing-temporal
+  - relation-query
+  - relational
+  - service-test
+  - snowflake

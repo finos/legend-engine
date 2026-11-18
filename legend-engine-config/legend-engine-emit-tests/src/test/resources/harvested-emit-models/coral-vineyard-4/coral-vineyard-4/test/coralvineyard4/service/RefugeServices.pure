@@ -1,0 +1,176 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralvineyard4::service::RefugeDirectory
+{
+  pattern: '/coralvineyard4/v1/refuge-directory';
+  title: 'Coral Vineyard 4 - Refuge Directory';
+  documentation: 'Publishes every refuge on the high route with its dormitories and the bunks inside them, including the supertype site attributes each refuge inherits.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::coralvineyard4::domain::Refuge.all()->graphFetch(
+      #{
+        test::coralvineyard4::domain::Refuge{
+          refugeCode,
+          siteName,
+          massif,
+          altitudeMetres,
+          capacity,
+          dormitories{
+            roomName,
+            heated,
+            bunks{
+              bunkNumber,
+              tier,
+              blanketCount,
+              reservedFor,
+              sizeLabel
+            }
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::coralvineyard4::domain::Refuge{
+          refugeCode,
+          siteName,
+          massif,
+          altitudeMetres,
+          capacity,
+          dormitories{
+            roomName,
+            heated,
+            bunks{
+              bunkNumber,
+              tier,
+              blanketCount,
+              reservedFor,
+              sizeLabel
+            }
+          }
+        }
+      }#
+    );
+    mapping: test::coralvineyard4::mapping::RefugeMapping;
+    runtime: test::coralvineyard4::runtime::RefugeDirectoryRuntime;
+  }
+  testSuites:
+  [
+    refugeDirectorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          refugeFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"code":"rf-01","name":"Col Blanc Hut","massif":"north ridge","altitude":2710.0,"channels":["CH-7"],"beds":40,"rooms":[{"label":"Lantern Room","stove":true,"bunks":[{"number":1,"upper":false,"blankets":2,"guide":"Group A","lengthCm":205},{"number":2,"upper":true,"blankets":1,"lengthCm":185}]},{"label":"Annex","stove":false,"bunks":[]}]},{"code":"rf-02","name":"Scree Shelter","massif":"south ridge","altitude":2390.5,"phone":"+00 300 400","beds":8,"rooms":[]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nestedDirectory:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            directoryGraph:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"refugeCode":"RF-01","siteName":"Col Blanc Hut","massif":"NORTH RIDGE","altitudeMetres":2710.0,"capacity":40,"dormitories":[{"roomName":"Lantern Room","heated":true,"bunks":[{"bunkNumber":1,"tier":"LOWER","blanketCount":2,"reservedFor":"Group A","sizeLabel":"LONG"},{"bunkNumber":2,"tier":"UPPER","blanketCount":1,"reservedFor":null,"sizeLabel":"STANDARD"}]},{"roomName":"Annex","heated":false,"bunks":[]}]},{"refugeCode":"RF-02","siteName":"Scree Shelter","massif":"SOUTH RIDGE","altitudeMetres":2390.5,"capacity":8,"dormitories":[]}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::coralvineyard4::service::StageBoard
+{
+  pattern: '/coralvineyard4/v1/stage-board';
+  title: 'Coral Vineyard 4 - Stage Board';
+  documentation: 'Lists archived trail stages with their effort grade, read through the archive runtime that binds only the stage mapping.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::coralvineyard4::domain::TrailStage.all()->graphFetch(
+      #{
+        test::coralvineyard4::domain::TrailStage{
+          stageCode,
+          gradeLabel
+        }
+      }#
+    )->serialize(
+      #{
+        test::coralvineyard4::domain::TrailStage{
+          stageCode,
+          gradeLabel
+        }
+      }#
+    );
+    mapping: test::coralvineyard4::mapping::StageMapping;
+    runtime: test::coralvineyard4::runtime::StageArchiveRuntime;
+  }
+  testSuites:
+  [
+    stageBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          stageArchiveConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"code":"st-7","climb":1200,"descent":400},{"code":"st-8","climb":300,"descent":200}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        gradedBoard:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            boardGraph:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stageCode":"ST-7","gradeLabel":"STRENUOUS"},{"stageCode":"ST-8","gradeLabel":"MODERATE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

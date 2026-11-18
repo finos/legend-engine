@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::kindlywharf::domain::BerthCall
+{
+  callRef: String[1];
+  berthCode: String[1];
+  callDate: StrictDate[1];
+  cutCode: String[1];
+  laneCode: String[1];
+  validFrom: StrictDate[1];
+  validThru: StrictDate[1];
+  vesselName: String[1];
+  moorKind: String[1];
+  tonnageT: Decimal[1];
+  teuCount: Integer[1];
+  pilotName: String[0..1];
+  groupCode: String[0..1];
+  callLabel: String[1];
+}
+
+Class test::kindlywharf::domain::CraneShift
+{
+  shiftRef: String[1];
+  craneCode: String[1];
+  shiftDate: StrictDate[1];
+  cutCode: String[1];
+  validFrom: StrictDate[1];
+  validThru: StrictDate[1];
+  operatorName: String[1];
+  liftCount: Integer[1];
+  movedT: Decimal[1];
+  idleMin: Integer[1];
+  activeMin: Integer[1];
+  groupCode: String[0..1];
+  shiftLabel: String[1];
+}
+
+Class test::kindlywharf::domain::GateMove
+{
+  moveRef: String[1];
+  gateCode: String[1];
+  moveDate: StrictDate[0..1];
+  haulierName: String[0..1];
+  boxRef: String[0..1];
+  boxKind: String[0..1];
+  sealRef: String[0..1];
+  laneCode: String[0..1];
+  inboundFlag: String[0..1];
+  grossT: Decimal[0..1];
+  tareT: Decimal[0..1];
+  dwellHours: Integer[0..1];
+  reeferSetpointC: Decimal[0..1];
+  inspectCode: String[0..1];
+  releaseCode: String[0..1];
+  depotCode: String[0..1];
+  driverNote: String[0..1];
+  queuePosition: Integer[0..1];
+  arriveAt: DateTime[0..1];
+  departAt: DateTime[0..1];
+  moveLabel: String[1];
+}
+
+Class test::kindlywharf::domain::LotTally
+{
+  lotRef: String[1];
+  lotKind: String[1];
+  tallyDate: StrictDate[1];
+  boxCount: Integer[1];
+  grossT: Decimal[1];
+  depotCode: String[0..1];
+  lotBand: String[1];
+  kindPrefix: String[1];
+  noteLength: Integer[0..1];
+}

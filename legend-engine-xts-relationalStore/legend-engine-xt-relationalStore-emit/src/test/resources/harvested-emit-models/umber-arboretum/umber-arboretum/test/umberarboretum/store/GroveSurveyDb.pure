@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberarboretum::store::GroveSurveyDb
+(
+  include test::umberarboretum::store::GroveTaxonomyDb
+
+  Schema svy
+  (
+    Table custodian_team
+    (
+      team_id INTEGER PRIMARY KEY,
+      team_code VARCHAR(20),
+      ward_id INTEGER
+    )
+
+    Table ward
+    (
+      ward_id INTEGER PRIMARY KEY,
+      ward_name VARCHAR(40),
+      region_id INTEGER
+    )
+
+    Table region
+    (
+      region_id INTEGER PRIMARY KEY,
+      region_name VARCHAR(40),
+      programme_id INTEGER
+    )
+
+    Table stewardship_programme
+    (
+      programme_id INTEGER PRIMARY KEY,
+      programme_name VARCHAR(60)
+    )
+  )
+
+  Join Grove_Team(arb.grove.team_id = svy.custodian_team.team_id)
+  Join Team_Ward(svy.custodian_team.ward_id = svy.ward.ward_id)
+  Join Ward_Region(svy.ward.region_id = svy.region.region_id)
+  Join Region_Programme(svy.region.programme_id = svy.stewardship_programme.programme_id)
+)

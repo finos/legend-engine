@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ivorytundra2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'How a tundra herd observation was collected.'} test::ivorytundra2::domain::SurveyMethod
+{
+  AERIAL_TRANSECT,
+  GROUND_TRANSECT,
+  COLLAR_TELEMETRY,
+  CAMERA_TRAP
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field station that custodies a tundra range zone.'} test::ivorytundra2::domain::FieldStation
+{
+  stationName: String[1];
+  regionCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named tundra range zone watched over by one field station.'} test::ivorytundra2::domain::RangeZone
+{
+  zoneName: String[1];
+  terrainClass: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A herd season record, corrected over processing time and effective over business time, so resolving it needs both a processing and a business instant.'} test::ivorytundra2::domain::HerdSeason
+{
+  seasonLabel: String[1];
+  forageIndex: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One collar-tracked herd observation logged by a tundra field programme. It is not milestoned itself; its season context is resolved bitemporally.'} test::ivorytundra2::domain::ObservationRecord
+{
+  recordCode: String[1];
+  herdCode: String[1];
+  collarCode: String[1];
+  observerCode: String[1];
+  observedOn: StrictDate[1];
+  surveyMethod: SurveyMethod[1];
+  verified: Boolean[1];
+  sightingCount: Integer[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates an observation to the herd season it was logged against; the season end is bitemporal so the property takes a processing and a business instant.'} test::ivorytundra2::domain::Observation_HerdSeason
+{
+  observation: test::ivorytundra2::domain::ObservationRecord[*];
+  herdSeason: test::ivorytundra2::domain::HerdSeason[0..1];
+}
+
+Association test::ivorytundra2::domain::HerdSeason_RangeZone
+{
+  herdSeason: test::ivorytundra2::domain::HerdSeason[*];
+  rangeZone: test::ivorytundra2::domain::RangeZone[1];
+}
+
+Association test::ivorytundra2::domain::RangeZone_FieldStation
+{
+  rangeZone: test::ivorytundra2::domain::RangeZone[*];
+  station: test::ivorytundra2::domain::FieldStation[1];
+}

@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::easternquokka4::store::RouteDb
+(
+  Schema district
+  (
+    Table route_assignment
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_date, PROCESSING_OUT = out_date)
+      )
+      assignment_code VARCHAR(20) PRIMARY KEY,
+      route_code VARCHAR(20) NOT NULL,
+      school_code VARCHAR(20) NOT NULL,
+      driver_code VARCHAR(20) NOT NULL,
+      rider_count INTEGER NOT NULL,
+      service_band VARCHAR(20) NOT NULL,
+      in_date DATE NOT NULL,
+      out_date DATE
+    )
+  )
+)

@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::wistfulaviary::mapping::AviaryMapping
+(
+  *demo::wistfulaviary::domain::Site[site]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfulaviary::store::AviaryStore]aviary.aviary_site.site_id
+    )
+    ~mainTable [demo::wistfulaviary::store::AviaryStore]aviary.aviary_site
+    name: [demo::wistfulaviary::store::AviaryStore]aviary.aviary_site.site_name,
+    regionCode: toUpper(rtrim([demo::wistfulaviary::store::AviaryStore]aviary.aviary_site.region_code)),
+    habitat: case(
+               isNotNull([demo::wistfulaviary::store::AviaryStore]aviary.aviary_site.habitat_code),
+               toUpper([demo::wistfulaviary::store::AviaryStore]aviary.aviary_site.habitat_code),
+               'UNRECORDED'
+             ),
+    birds[ringedBird]: [demo::wistfulaviary::store::AviaryStore]@Bird_Site
+  }
+
+  *demo::wistfulaviary::domain::RingedBird[ringedBird]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfulaviary::store::AviaryStore]aviary.ringed_bird.bird_id
+    )
+    ~mainTable [demo::wistfulaviary::store::AviaryStore]aviary.ringed_bird
+    ringCode: rtrim([demo::wistfulaviary::store::AviaryStore]aviary.ringed_bird.ring_code),
+    speciesCode: toUpper(rtrim([demo::wistfulaviary::store::AviaryStore]aviary.ringed_bird.species_code)),
+    wingMillimetres: [demo::wistfulaviary::store::AviaryStore]aviary.ringed_bird.wing_mm,
+    site[site]: [demo::wistfulaviary::store::AviaryStore]@Bird_Site,
+    observations[observation]: [demo::wistfulaviary::store::AviaryStore]@Observation_Bird
+  }
+
+  *demo::wistfulaviary::domain::Observation[observation]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfulaviary::store::AviaryStore]aviary.observation.obs_id
+    )
+    ~mainTable [demo::wistfulaviary::store::AviaryStore]aviary.observation
+    observer: [demo::wistfulaviary::store::AviaryStore]aviary.observation.observer,
+    countSeen: [demo::wistfulaviary::store::AviaryStore]aviary.observation.count_seen,
+    conditionCode: toUpper(rtrim([demo::wistfulaviary::store::AviaryStore]aviary.observation.condition_code)),
+    observedOn: [demo::wistfulaviary::store::AviaryStore]aviary.observation.observed_on,
+    bird[ringedBird]: [demo::wistfulaviary::store::AviaryStore]@Observation_Bird
+  }
+
+  testSuites:
+  [
+    birdRosterAsOfSuite:
+    {
+      function: |demo::wistfulaviary::domain::RingedBird.all(%2024-07-01)->project(
+  [
+    x|$x.ringCode,
+    x|$x.speciesLabel(),
+    x|$x.sizeClass(),
+    x|$x.site.name,
+    x|$x.site.regionTier()
+  ],
+  [
+    'Ring',
+    'Species',
+    'Size',
+    'Site',
+    'Tier'
+  ]
+)->sort([asc('Ring')]);
+      tests:
+      [
+        rosterAsOfMidSeason:
+        {
+          doc: 'Point-in-time bird roster as of a mid-season business date, excluding a ring whose business interval closed before that date and covering every size class and region tier.';
+          data:
+          [
+            demo::wistfulaviary::store::AviaryStore:
+              Relational
+              #{
+                aviary.aviary_site:
+                  'site_id,site_name,region_code,habitat_code\n'+
+                  '1,Alder Carr,north,scrub\n'+
+                  '2,Shingle Spit,coast,\n'+
+                  '3,Fen Hide,inland,reedbed\n';
+                aviary.ringed_bird:
+                  'bird_id,ring_code,species_code,site_id,wing_mm,from_z,thru_z\n'+
+                  '1,RB-0001,wren,1,52,2024-01-01,9999-12-31\n'+
+                  '2,RB-0002,finch,2,84,2024-01-01,2024-05-01\n'+
+                  '2,RB-0002,thrush,2,112,2024-05-01,9999-12-31\n'+
+                  '3,RB-0003,pipit,3,,2024-01-01,9999-12-31\n'+
+                  '4,RB-0004,siskin,1,74,2024-01-01,2024-04-01\n';
+              }#
+          ];
+          asserts:
+          [
+            threeRingsInRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring":"RB-0001","Species":"Eurasian Wren","Size":"SMALL","Site":"Alder Carr","Tier":"PRIORITY"},{"Ring":"RB-0002","Species":"Song Thrush","Size":"LARGE","Site":"Shingle Spit","Tier":"SEASONAL"},{"Ring":"RB-0003","Species":"Meadow Pipit","Size":"UNMEASURED","Site":"Fen Hide","Tier":"STANDARD"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

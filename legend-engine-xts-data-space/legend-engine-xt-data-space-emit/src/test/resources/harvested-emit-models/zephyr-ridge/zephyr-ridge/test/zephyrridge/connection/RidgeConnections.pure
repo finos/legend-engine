@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::zephyrridge::connection::RidgeCurrentConnection
+{
+  store: demo::zephyrridge::store::RidgeSoaringDB;
+  type: Snowflake;
+  timezone: +0000;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'ZEPHYR_RIDGE_SOARING';
+    account: 'zephyr_ridge_current_account';
+    warehouse: 'ZEPHYR_RIDGE_CURRENT_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'ridge_soaring_org';
+    role: 'ZEPHYR_RIDGE_CURRENT_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'zephyr_ridge_current_oauth_key';
+    scopeName: 'SESSION:ROLE:ZEPHYR_RIDGE_CURRENT_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'ridge'; to: 'ridge_current';},
+        table {from: 'soaring_flight'; to: 'soaring_flight_current'; schemaFrom: 'ridge'; schemaTo: 'ridge_current';}
+      ];
+    }
+  ];
+}
+
+###Connection
+RelationalDatabaseConnection demo::zephyrridge::connection::RidgeSeasonConnection
+{
+  store: demo::zephyrridge::store::RidgeSoaringDB;
+  type: Snowflake;
+  timezone: +0000;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'ZEPHYR_RIDGE_SEASON_ARCHIVE';
+    account: 'zephyr_ridge_season_account';
+    warehouse: 'ZEPHYR_RIDGE_SEASON_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'ridge_soaring_org';
+    role: 'ZEPHYR_RIDGE_SEASON_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'zephyr_ridge_season_oauth_key';
+    scopeName: 'SESSION:ROLE:ZEPHYR_RIDGE_SEASON_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'ridge'; to: 'ridge_season';},
+        table {from: 'wind_reading'; to: 'wind_reading_season'; schemaFrom: 'ridge'; schemaTo: 'ridge_season';}
+      ];
+    }
+  ];
+}

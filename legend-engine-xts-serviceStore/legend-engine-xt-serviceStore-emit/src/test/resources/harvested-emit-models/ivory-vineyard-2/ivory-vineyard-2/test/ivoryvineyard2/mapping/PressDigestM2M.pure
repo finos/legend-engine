@@ -1,0 +1,243 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryvineyard2::mapping::PressDigestM2M
+(
+  *test::ivoryvineyard2::domain::PressDigest[digest_set]: Pure
+  {
+    ~src test::ivoryvineyard2::external::PressDoc
+    runRef: 'RUN-' + $src.runRef->trim()->toUpper(),
+    kindLabel: if($src.kind->trim()->toUpper() == 'BASKET', | 'BASKET PRESS', | 'BLADDER PRESS'),
+    batchCount: $src.batches->size(),
+    totalLitres: if($src.batches->isEmpty(), | 0.0, | $src.batches->map(b | $b.litres)->sum()),
+    brixBand: if($src.batches->filter(b | $b.sugarBrix->isNotEmpty())->isEmpty(), | 'UNMEASURED', | if(($src.batches->filter(b | $b.sugarBrix->isNotEmpty())->map(b | $b.sugarBrix->toOne())->sum() / $src.batches->filter(b | $b.sugarBrix->isNotEmpty())->size()) >= 22, | 'RIPE', | 'LEAN')),
+    batchSummary: if($src.batches->isEmpty(), | 'NO BATCHES', | $src.batches->map(b | $b.batchCode->trim()->toUpper())->removeDuplicates()->sort()->joinStrings(' | '))
+  }
+
+  *test::ivoryvineyard2::domain::PanelDigest[panel_digest_set]: Pure
+  {
+    ~src test::ivoryvineyard2::external::PanelDoc
+    panelRef: 'PANEL-' + $src.panelRef->trim()->toUpper(),
+    wardenLabel: if($src.wardenName->isEmpty(), | 'WARDEN UNASSIGNED', | $src.wardenName->toOne()->trim()->toUpper())
+  }
+
+  testSuites:
+  [
+    pressDigestSuite:
+    {
+      function: |test::ivoryvineyard2::domain::PressDigest.all()->graphFetch(
+        #{
+          test::ivoryvineyard2::domain::PressDigest
+          {
+            runRef,
+            kindLabel,
+            batchCount,
+            totalLitres,
+            brixBand,
+            batchSummary
+          }
+        }#
+      )->serialize(
+        #{
+          test::ivoryvineyard2::domain::PressDigest
+          {
+            runRef,
+            kindLabel,
+            batchCount,
+            totalLitres,
+            brixBand,
+            batchSummary
+          }
+        }#
+      );
+      tests:
+      [
+        ripeRunTotalsEveryBatch:
+        {
+          doc: 'A padded basket-press document with two measured batches folds its reference, totals the pressed litres, orders its deduplicated batch codes and averages only the measured batches onto the ripe arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryvineyard2::external::PressDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":" pr-01 ","kind":" basket ","batches":[{"batchCode":" bt-a ","litres":120.5,"sugarBrix":24},{"batchCode":"bt-b","litres":80.25,"sugarBrix":22}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            ripeRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-PR-01","kindLabel":"BASKET PRESS","batchCount":2,"totalLitres":200.75,"brixBand":"RIPE","batchSummary":"BT-A | BT-B"}';
+                  }#;
+              }#
+          ];
+        },
+        batchlessRunTakesEveryFallback:
+        {
+          doc: 'A bladder-press document with no batches at all takes the empty-summary arm, the unmeasured band and still resolves both counters.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryvineyard2::external::PressDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"pr-02","kind":"bladder"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            batchlessRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-PR-02","kindLabel":"BLADDER PRESS","batchCount":0,"totalLitres":0.0,"brixBand":"UNMEASURED","batchSummary":"NO BATCHES"}';
+                  }#;
+              }#
+          ];
+        },
+        partlyMeasuredRunCollapsesDuplicateCodes:
+        {
+          doc: 'A run whose two batches share one code after folding keeps a single summary entry, averages only the measured batch and lands on the lean arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryvineyard2::external::PressDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"pr-03","kind":"basket","batches":[{"batchCode":"bt-c","litres":40.5},{"batchCode":"BT-C","litres":10.25,"sugarBrix":18}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            partlyMeasuredRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-PR-03","kindLabel":"BASKET PRESS","batchCount":2,"totalLitres":50.75,"brixBand":"LEAN","batchSummary":"BT-C"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    panelDigestSuite:
+    {
+      function: |test::ivoryvineyard2::domain::PanelDigest.all()->graphFetch(
+        #{
+          test::ivoryvineyard2::domain::PanelDigest
+          {
+            panelRef,
+            wardenLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::ivoryvineyard2::domain::PanelDigest
+          {
+            panelRef,
+            wardenLabel
+          }
+        }#
+      );
+      tests:
+      [
+        panelWithWardenKeepsItsFoldedLabel:
+        {
+          doc: 'A panel document carrying a warden name folds that name to upper case behind a stamped reference.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryvineyard2::external::PanelDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"panelRef":" pn-a ","wardenName":" ada vinehand "}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            wardenPanel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"panelRef":"PANEL-PN-A","wardenLabel":"ADA VINEHAND"}';
+                  }#;
+              }#
+          ];
+        },
+        wardenlessPanelTakesTheFallbackLabel:
+        {
+          doc: 'A panel document with no warden name resolves the unassigned fallback label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryvineyard2::external::PanelDoc:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"panelRef":"pn-b"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            wardenlessPanel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"panelRef":"PANEL-PN-B","wardenLabel":"WARDEN UNASSIGNED"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

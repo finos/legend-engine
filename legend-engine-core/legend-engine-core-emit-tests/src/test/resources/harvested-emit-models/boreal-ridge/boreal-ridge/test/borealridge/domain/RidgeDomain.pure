@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::borealridge::domain::*;
+import test::borealridge::profile::*;
+
+Class <<RidgeVocabulary.publishedSurface, RidgeStewardship.wardenReviewed>> {RidgeStewardship.reviewCycle = 'seasonal'} test::borealridge::domain::RouteSection
+{
+  {RidgeVocabulary.displayName = 'Section Code', RidgeVocabulary.targetName = 'section_code'} sectionCode: String[1];
+  {RidgeVocabulary.displayName = 'Ridge Name', RidgeVocabulary.targetName = 'ridge_name'} sectionName: String[1];
+  {RidgeVocabulary.description = 'The dominant walking surface of the section.'} surface: SurfaceType[1];
+  grade: RouteGrade[1];
+  walkedOn: StrictDate[1];
+  plannedOn: StrictDate[0..1];
+  stewardRole: String[0..1];
+  markers: RouteMarker[*];
+  sectionLabel() {$this.sectionCode->toUpper() + '/' + $this.sectionName->trim()}: String[1];
+  effectiveSurveyOn() {if($this.plannedOn->isNotEmpty(), | $this.plannedOn->toOne(), | $this.walkedOn)}: StrictDate[1];
+  stewardRoleOnRecord() {if($this.stewardRole->isEmpty(), | 'UNASSIGNED', | $this.stewardRole->toOne())}: String[1];
+  missingMarkerCount() {$this.markers->filter(m | $m.state == MarkerState.MISSING)->size()}: Integer[1];
+  markerCodesOnRecord() {$this.markers->filter(m | $m.state != MarkerState.STANDING)->map(m | $m.markerCode)->sort()}: String[*];
+}
+
+Class <<RidgeVocabulary.publishedSurface>> test::borealridge::domain::ScrambleSection extends RouteSection
+{
+  exposedMetres: Float[1];
+  handholdCount: Integer[0..1];
+  handholdsPerHundredMetres() {if($this.exposedMetres > 0.0, | ($this.handholdCount->toOne()->toFloat() / $this.exposedMetres) * 100.0, | 0.0)}: Float[1];
+}
+
+Class <<RidgeVocabulary.publishedSurface>> test::borealridge::domain::SnowfieldSection extends RouteSection
+{
+  snowDepthCm: Float[0..1];
+  crossingMinutes: Integer[0..1];
+  depthPerCrossingMinute() {if($this.crossingMinutes->toOne() > 0, | $this.snowDepthCm->toOne() / $this.crossingMinutes->toOne()->toFloat(), | 0.0)}: Float[1];
+}
+
+Class <<RidgeVocabulary.internalSurface>> test::borealridge::domain::RouteMarker
+{
+  markerCode: String[1];
+  state: MarkerState[1];
+  lastPaintedOn: StrictDate[0..1];
+  repaintDueOn() {if($this.lastPaintedOn->isNotEmpty(), | $this.lastPaintedOn->toOne(), | %2026-01-01)}: StrictDate[1];
+}
+
+Class <<RidgeVocabulary.internalSurface>> test::borealridge::domain::RidgeSteward
+{
+  stewardCode: String[1];
+  stewardName: String[1];
+}

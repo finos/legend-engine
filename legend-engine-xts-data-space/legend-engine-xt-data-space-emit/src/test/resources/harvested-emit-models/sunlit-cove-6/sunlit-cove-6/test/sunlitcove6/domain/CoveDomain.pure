@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::sunlitcove6::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A mapped kelp patch inside the cove, widened with the station and holdfast detail reached through the named joins and with the two labels the survey scheme asks the mapping to decide.'} demo::sunlitcove6::domain::KelpPatch
+{
+  {doc.doc = 'Register identifier of the patch.'} patchId: String[1];
+  {doc.doc = 'Label the patch is dived under.'} patchLabel: String[1];
+  {doc.doc = 'Code of the holdfast form the patch is dominated by.'} holdfastCode: String[1];
+  {doc.doc = 'Water movement regime the patch sits in.'} flowRegime: String[1];
+  {doc.doc = 'Fronds tallied on the last dive.'} frondTally: Integer[1];
+  {doc.doc = 'Percent cover class scored on the last dive.'} coverIndex: Integer[1];
+  {doc.doc = 'Date the patch outline was mapped.'} mappedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the patch was last dived.'} lastDivedAt: DateTime[1];
+  {doc.doc = 'Working remark kept against the patch.'} patchNote: String[0..1];
+  {doc.doc = 'Survey scheme the patch is recorded under; defaulted in the mapping rather than stored.'} surveyScheme: String[1];
+  {doc.doc = 'Cover band the cover class resolves to through the eight-armed mapping cascade, absent once the class leaves the scored range.'} coverBand: String[0..1];
+  {doc.doc = 'Label built in the mapping from the trimmed holdfast code and the patch label.'} patchTag: String[1];
+  {doc.doc = 'Name of the survey station the patch is worked from.'} stationName: String[1];
+  {doc.doc = 'Reach the station sits on.'} reachCode: String[1];
+  {doc.doc = 'Tract the station sits in.'} tractCode: String[1];
+  {doc.doc = 'Charted extent of the station in hectares.'} stationHectares: Float[1];
+  {doc.doc = 'Published name of the holdfast form, reached through the reference join.'} holdfastName: String[1];
+  {doc.doc = 'Growth form the holdfast is classed under.'} growthForm: String[1];
+  {doc.doc = 'Dives written against the patch.'} dives: DiveLog[*];
+}
+
+Class {doc.doc = 'One dive written against a kelp patch on a single descent.'} demo::sunlitcove6::domain::DiveLog
+{
+  {doc.doc = 'Register identifier of the dive.'} diveId: String[1];
+  {doc.doc = 'Identifier of the patch the dive was written against.'} patchId: String[1];
+  {doc.doc = 'Instant the dive was carried out.'} divedAt: DateTime[1];
+  {doc.doc = 'Code of the pair that carried out the dive.'} diverCode: String[1];
+  {doc.doc = 'Water clarity score the pair recorded.'} clarityScore: Integer[1];
+  {doc.doc = 'Hazard the pair keyed the dive out to, absent when nothing was raised.'} hazardCode: String[0..1];
+  {doc.doc = 'Clarity tier the score resolves to in the mapping, absent for scores too low to be tiered.'} clarityTier: String[0..1];
+  {doc.doc = 'Name of the station the pair is posted to, reached through the join that matches the upper-cased pair code against the prefixed tract code.'} postingStationName: String[0..1];
+  {doc.doc = 'Name of the tract behind that posting, reached by following the posting join into the tract register.'} postingTractName: String[0..1];
+}
+
+Class {doc.doc = 'A survey station the cove patches are dived from.'} demo::sunlitcove6::domain::CoveStation
+{
+  {doc.doc = 'Register identifier of the station.'} stationId: String[1];
+  {doc.doc = 'Published name of the station.'} stationName: String[1];
+  {doc.doc = 'Reach the station sits on.'} reachCode: String[1];
+  {doc.doc = 'Tract the station sits in.'} tractCode: String[1];
+  {doc.doc = 'Charted extent of the station in hectares.'} hectares: Float[1];
+}
+
+Class {doc.doc = 'A stretch of shore the survey stations are grouped into.'} demo::sunlitcove6::domain::ShoreTract
+{
+  {doc.doc = 'Register code of the tract.'} tractCode: String[1];
+  {doc.doc = 'Published name of the tract.'} tractName: String[1];
+  {doc.doc = 'Code of the warden rota the tract is walked under.'} wardenCode: String[1];
+}
+
+Class {doc.doc = 'A holdfast form the cove patches are dominated by, and the growth form it is registered under.'} demo::sunlitcove6::domain::HoldfastReference
+{
+  {doc.doc = 'Register code of the holdfast form.'} holdfastCode: String[1];
+  {doc.doc = 'Published name of the holdfast form.'} holdfastName: String[1];
+  {doc.doc = 'Growth form the holdfast is classed under.'} growthForm: String[1];
+}

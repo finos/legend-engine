@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::frostedquarry2::diagram::ExtractionDiagram
+{
+  classView quarry
+  {
+    class: test::frostedquarry2::domain::IceQuarry;
+    position: (40.0, 40.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView panel
+  {
+    class: test::frostedquarry2::domain::ExtractionPanel;
+    position: (400.0, 40.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView cycle
+  {
+    class: test::frostedquarry2::domain::HarvestCycle;
+    position: (400.0, 260.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView block
+  {
+    class: test::frostedquarry2::domain::IceBlock;
+    position: (40.0, 260.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView grade
+  {
+    class: test::frostedquarry2::domain::ClarityGrade;
+    position: (40.0, 480.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView audit
+  {
+    class: test::frostedquarry2::domain::MeltAudit;
+    position: (400.0, 480.0);
+    rectangle: (240.0, 120.0);
+  }
+  propertyView
+  {
+    property: test::frostedquarry2::domain::Quarry_Panel.panels;
+    source: quarry;
+    target: panel;
+    points: [(160.0, 100.0), (520.0, 100.0)];
+  }
+  propertyView
+  {
+    property: test::frostedquarry2::domain::Panel_Cycle.cycles;
+    source: panel;
+    target: cycle;
+    points: [(520.0, 100.0), (520.0, 330.0)];
+  }
+  propertyView
+  {
+    property: test::frostedquarry2::domain::Cycle_Block.blocks;
+    source: cycle;
+    target: block;
+    points: [(520.0, 330.0), (160.0, 330.0)];
+  }
+  propertyView
+  {
+    property: test::frostedquarry2::domain::Block_Grade.grades;
+    source: block;
+    target: grade;
+    points: [(160.0, 330.0), (160.0, 540.0)];
+  }
+  propertyView
+  {
+    property: test::frostedquarry2::domain::Block_Audit.audits;
+    source: block;
+    target: audit;
+    points: [(160.0, 330.0), (520.0, 540.0)];
+  }
+}
+
+Diagram test::frostedquarry2::diagram::LogisticsDiagram
+{
+  classView sled
+  {
+    class: test::frostedquarry2::domain::HaulSled;
+    position: (40.0, 40.0);
+    rectangle: (220.0, 120.0);
+  }
+  classView run
+  {
+    class: test::frostedquarry2::domain::TransferRun;
+    position: (360.0, 40.0);
+    rectangle: (220.0, 120.0);
+  }
+  classView store
+  {
+    class: test::frostedquarry2::domain::ColdStore;
+    position: (360.0, 260.0);
+    rectangle: (240.0, 140.0);
+  }
+  propertyView
+  {
+    property: test::frostedquarry2::domain::Sled_Run.runs;
+    source: sled;
+    target: run;
+    points: [(150.0, 100.0), (470.0, 100.0)];
+  }
+  propertyView
+  {
+    property: test::frostedquarry2::domain::Run_Store.coldStore;
+    source: run;
+    target: store;
+    points: [(470.0, 100.0), (470.0, 330.0)];
+  }
+}

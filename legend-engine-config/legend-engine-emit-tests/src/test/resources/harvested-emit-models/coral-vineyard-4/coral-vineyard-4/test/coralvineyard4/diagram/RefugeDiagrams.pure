@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::coralvineyard4::diagram::RefugeOverview
+{
+  classView siteView
+  {
+    class: test::coralvineyard4::domain::MountainSite;
+    position: (100.0,40.0);
+    rectangle: (220.0,110.0);
+  }
+  classView refugeView
+  {
+    class: test::coralvineyard4::domain::Refuge;
+    position: (100.0,220.0);
+    rectangle: (220.0,100.0);
+  }
+  classView dormitoryView
+  {
+    class: test::coralvineyard4::domain::Dormitory;
+    position: (420.0,220.0);
+    rectangle: (200.0,80.0);
+  }
+  classView bunkView
+  {
+    class: test::coralvineyard4::domain::Bunk;
+    position: (720.0,220.0);
+    rectangle: (200.0,110.0);
+  }
+  propertyView
+  {
+    property: test::coralvineyard4::domain::Refuge.dormitories;
+    source: refugeView;
+    target: dormitoryView;
+    points: [(210.0,270.0),(520.0,260.0)];
+  }
+  propertyView
+  {
+    property: test::coralvineyard4::domain::Dormitory.bunks;
+    source: dormitoryView;
+    target: bunkView;
+    points: [(520.0,260.0),(820.0,275.0)];
+  }
+  generalizationView
+  {
+    source: refugeView;
+    target: siteView;
+    points: [(210.0,270.0),(210.0,95.0)];
+  }
+}
+
+Diagram test::coralvineyard4::diagram::FeedOverview
+{
+  classView refugeFeedView
+  {
+    class: test::coralvineyard4::feed::RefugeFeed;
+    position: (100.0,40.0);
+    rectangle: (200.0,160.0);
+  }
+  classView dormFeedView
+  {
+    class: test::coralvineyard4::feed::DormFeed;
+    position: (400.0,40.0);
+    rectangle: (180.0,80.0);
+  }
+  classView bunkFeedView
+  {
+    class: test::coralvineyard4::feed::BunkFeed;
+    position: (680.0,40.0);
+    rectangle: (180.0,110.0);
+  }
+  classView keeperFeedView
+  {
+    class: test::coralvineyard4::feed::KeeperFeed;
+    position: (100.0,280.0);
+    rectangle: (180.0,90.0);
+  }
+  classView stageFeedView
+  {
+    class: test::coralvineyard4::feed::StageFeed;
+    position: (400.0,280.0);
+    rectangle: (180.0,100.0);
+  }
+  propertyView
+  {
+    property: test::coralvineyard4::feed::RefugeFeed.rooms;
+    source: refugeFeedView;
+    target: dormFeedView;
+    points: [(200.0,120.0),(490.0,80.0)];
+  }
+  propertyView
+  {
+    property: test::coralvineyard4::feed::DormFeed.bunks;
+    source: dormFeedView;
+    target: bunkFeedView;
+    points: [(490.0,80.0),(770.0,95.0)];
+  }
+}

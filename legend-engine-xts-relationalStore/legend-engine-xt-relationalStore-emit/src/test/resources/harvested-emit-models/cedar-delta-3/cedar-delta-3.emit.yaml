@@ -1,0 +1,47 @@
+name: cedar-delta-3
+title: "Municipal Street Tree Inventory Registers"
+description: |
+  Five single-execution services over one relational street tree inventory. Each
+  service pairs a class-level narrowing with a tabular projection and then filters
+  the projected columns again on substring, prefix, negated-substring and set
+  membership predicates before de-duplicating, so the published registers differ
+  only in the collection predicate that survives the projection.
+modelSources:
+  model:
+    root: cedar-delta-3
+    files:
+      - test/cedardelta3/connection/TreeInventoryConnection.pure
+      - test/cedardelta3/domain/StreetTreeDomain.pure
+      - test/cedardelta3/mapping/TreeInventoryMapping.pure
+      - test/cedardelta3/runtime/TreeInventoryRuntime.pure
+      - test/cedardelta3/service/TreeInventoryServices.pure
+      - test/cedardelta3/store/TreeInventoryDatabase.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - arboriculture
+  - collection-op
+  - de-duplication
+  - h2
+  - inventory
+  - post-projection-filter
+  - prefix-predicate
+  - relational
+  - service-test
+  - set-membership
+  - street-tree
+  - substring-predicate
+  - tabular-data-set

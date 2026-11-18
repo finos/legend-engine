@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetquokka::service::ColonyCountsAsOf
+{
+  pattern: '/reserve/v1/colony-counts/{recordedOn}/{surveyedOn}';
+  title: 'Colony Counts As Of';
+  owners:
+  [
+    'reserve-stewardship',
+    'transect-survey'
+  ];
+  documentation: 'Projects five flat columns for every burrow headcount version that is live at both the supplied recording instant and the supplied observation instant. The two instants scope the bitemporal extent rather than filtering rows, and three of the projected columns are reached through one- and three-hop to-one association chains.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {recordedOn: StrictDate[1], surveyedOn: StrictDate[1]|test::russetquokka::domain::ColonyCount.all($recordedOn, $surveyedOn)->project(
+      [
+        x|$x.individualsCounted,
+        x|$x.burrow.burrowCode,
+        x|$x.burrow.substrate,
+        x|$x.burrow.transect.zone.zoneName,
+        x|$x.burrow.transect.zone.stewardTeam
+      ],
+      [
+        'Individuals',
+        'BurrowCode',
+        'Substrate',
+        'Zone',
+        'StewardTeam'
+      ]
+    )->sort(
+      [
+        asc('Individuals')
+      ]
+    )};
+    mapping: test::russetquokka::mapping::ReserveMapping;
+    runtime: test::russetquokka::runtime::ReserveRuntime;
+  }
+  testSuites:
+  [
+    colonyCountsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              reserve.steward_zone:
+                'zone_id,zone_name,steward_team\n'+
+                '1,Dune Ridge Zone,North Warden Crew\n';
+              reserve.transect:
+                'transect_id,transect_code,zone_id\n'+
+                '1,TR-ALPHA,1\n';
+              reserve.burrow:
+                'burrow_id,burrow_code,substrate,transect_id\n'+
+                '1,bw-001,SAND,1\n'+
+                '2,bw-002,LIMESTONE,99\n';
+              reserve.colony_count:
+                'count_id,tag_code,individuals_counted,burrow_id,in_z,out_z,from_z,thru_z\n'+
+                '1,QK-1001,14,1,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                '2,QK-1002,9,2,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                '3,QK-1003,5,1,2023-01-01,2023-12-31,2023-01-01,2023-12-31\n'+
+                '4,QK-1004,7,1,2024-01-01,2024-12-31,2024-01-01,2024-12-31\n'+
+                '5,QK-1004,11,1,2025-01-01,9999-12-31,2025-01-01,9999-12-31\n'+
+                '6,QK-1005,3,1,2024-01-01,9999-12-31,2023-01-01,2023-12-31\n'+
+                '7,QK-1006,4,1,2023-01-01,2023-06-30,2024-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        midSeason:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            recordedOn = %2024-06-01,
+            surveyedOn = %2024-06-01
+          ]
+          asserts:
+          [
+            liveVersionsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Individuals":7,"BurrowCode":"bw-001","Substrate":"SAND","Zone":"Dune Ridge Zone","StewardTeam":"North Warden Crew"},{"Individuals":9,"BurrowCode":"bw-002","Substrate":"LIMESTONE","Zone":null,"StewardTeam":null},{"Individuals":14,"BurrowCode":"bw-001","Substrate":"SAND","Zone":"Dune Ridge Zone","StewardTeam":"North Warden Crew"}]';
+                  }#;
+              }#
+          ]
+        },
+        laterSeason:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            recordedOn = %2025-06-01,
+            surveyedOn = %2025-06-01
+          ]
+          asserts:
+          [
+            supersedingVersion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Individuals":9,"BurrowCode":"bw-002","Substrate":"LIMESTONE","Zone":null,"StewardTeam":null},{"Individuals":11,"BurrowCode":"bw-001","Substrate":"SAND","Zone":"Dune Ridge Zone","StewardTeam":"North Warden Crew"},{"Individuals":14,"BurrowCode":"bw-001","Substrate":"SAND","Zone":"Dune Ridge Zone","StewardTeam":"North Warden Crew"}]';
+                  }#;
+              }#
+          ]
+        },
+        beforeAnyVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            recordedOn = %2022-06-01,
+            surveyedOn = %2022-06-01
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

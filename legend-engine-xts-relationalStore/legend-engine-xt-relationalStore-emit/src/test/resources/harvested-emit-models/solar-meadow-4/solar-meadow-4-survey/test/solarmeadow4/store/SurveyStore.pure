@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarmeadow4::store::SurveyStore
+(
+  Schema meadow
+  (
+    Table transect
+    (
+      transect_code VARCHAR(16) PRIMARY KEY,
+      transect_name VARCHAR(80) NOT NULL,
+      site_code VARCHAR(16),
+      open_flag INTEGER NOT NULL,
+      walked_on DATE NOT NULL,
+      recorded_thru TIMESTAMP NOT NULL,
+      quadrat_count INTEGER NOT NULL,
+      bloom_cover DOUBLE,
+      soil_texture VARCHAR(24),
+      slope_aspect VARCHAR(8),
+      altitude_m INTEGER,
+      grazing_note VARCHAR(120)
+    )
+    Table meadow_site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(80) NOT NULL,
+      parish_name VARCHAR(80),
+      hectares DOUBLE
+    )
+    Table recorder_shift
+    (
+      shift_code VARCHAR(16) PRIMARY KEY,
+      transect_code VARCHAR(16) NOT NULL,
+      recorder_name VARCHAR(80) NOT NULL,
+      started_on DATE NOT NULL,
+      ended_on DATE NOT NULL
+    )
+    Table cutting_pass
+    (
+      pass_code VARCHAR(16) PRIMARY KEY,
+      transect_code VARCHAR(16) NOT NULL,
+      pass_label VARCHAR(40) NOT NULL,
+      cut_from DATE NOT NULL,
+      cut_until DATE NOT NULL
+    )
+    Table indicator_name
+    (
+      transect_code VARCHAR(16) PRIMARY KEY,
+      scheme_code VARCHAR(4) PRIMARY KEY,
+      name_text VARCHAR(80) NOT NULL
+    )
+  )
+
+  Join Transect_Site(meadow.transect.site_code = meadow.meadow_site.site_code)
+  Join Transect_Shift(meadow.transect.transect_code = meadow.recorder_shift.transect_code)
+  Join Transect_Pass(meadow.transect.transect_code = meadow.cutting_pass.transect_code)
+  Join Transect_Indicator(meadow.transect.transect_code = meadow.indicator_name.transect_code)
+)

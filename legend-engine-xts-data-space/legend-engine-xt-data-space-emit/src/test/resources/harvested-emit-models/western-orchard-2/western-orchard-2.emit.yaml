@@ -1,0 +1,60 @@
+name: western-orchard-2
+title: "Western Orchard Planted Registers — Three Alias-Qualified Class Mappings Over One Multi-Table Store, Published As Three Widening Projections Behind A Data Space And A Class Diagram"
+description: |
+  A pome-fruit orchard register held in one relational store of three tables in a
+  single schema: planted blocks, the rows inside them and the picking passes taken
+  over those rows. Each table carries its own mix of string, floating-point, date
+  and timestamp columns with explicit nullability, and each of the three class
+  mappings names its main table explicitly, declares a column-derived primary key
+  over that table and binds one direct column per mapped property, so identity is
+  never implicit and every column reference is alias-qualified. Three
+  single-execution services publish three widening projections — nine block
+  columns, ten row columns and eleven pass columns — one select expression per
+  mapped property, and each is independently tested with rows where the optional
+  stock, geometry, measure and stamp columns are absent. The mapping itself carries
+  two suites of its own, one narrowing the block register to the reportable planted
+  area and one reading the picking passes off their own main table. A data space
+  groups the mapping and its Snowflake-backed engine runtime into one named
+  execution context with a featured model element and a support address, and a
+  class diagram lays the three registers out as geometry-bearing views over the
+  same classes the mappings project.
+modelSources:
+  model:
+    root: western-orchard-2
+    files:
+      - test/westernorchard2/connection/OrchardConnection.pure
+      - test/westernorchard2/dataspace/OrchardDataSpace.pure
+      - test/westernorchard2/diagram/OrchardDiagram.pure
+      - test/westernorchard2/domain/OrchardDomain.pure
+      - test/westernorchard2/mapping/OrchardMapping.pure
+      - test/westernorchard2/runtime/OrchardRuntime.pure
+      - test/westernorchard2/service/BlockRegisterService.pure
+      - test/westernorchard2/service/HarvestPassService.pure
+      - test/westernorchard2/service/RowRegisterService.pure
+      - test/westernorchard2/store/OrchardDatabase.pure
+
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - class-diagram
+  - data-space
+  - h2
+  - orchard
+  - planted-register
+  - primary-key
+  - projection
+  - snowflake

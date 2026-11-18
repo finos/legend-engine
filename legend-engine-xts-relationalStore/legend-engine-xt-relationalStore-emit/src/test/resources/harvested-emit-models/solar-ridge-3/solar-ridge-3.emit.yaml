@@ -1,0 +1,46 @@
+name: solar-ridge-3
+title: "Solar Ridge 3 - A Single Service Whose Whole Contract Is A Presence Filter Behind A Deduplicated Rollup"
+description: |
+  A trail-upkeep model in which one single-execution service is the entire contract. Its body
+  reaches six levels deep: it fetches the segment extent, keeps only the rows whose optional
+  clearance note is actually present - a negated emptiness test over an optional value, so a row
+  drops out for want of a related note rather than for anything about its own measures - narrows
+  that population to the surface types handed in as the only parameter, rolls two summed measures
+  and a count up behind the district and surface pair, and finally deduplicates the aggregated
+  result. Because the deduplication runs after the aggregate, two districts that clear identical
+  metres with identical crews still publish separately only by virtue of their grouping key
+  remaining in the row. Updates activate automatically, so the query body is the deployed
+  artefact with no gating step. The fixture carries a multi-row group, two single-row groups whose
+  summaries are identical, a noteless row that the presence filter removes, and a surface outside
+  the selection; the suite additionally drives the parameter empty so no surface qualifies and the
+  service publishes nothing at all.
+modelSources:
+  model:
+    root: solar-ridge-3
+    files:
+      - test/solarridge3/connection/UpkeepH2Connection.pure
+      - test/solarridge3/data/UpkeepSeasonData.pure
+      - test/solarridge3/domain/UpkeepDomain.pure
+      - test/solarridge3/mapping/UpkeepMapping.pure
+      - test/solarridge3/runtime/UpkeepRuntime.pure
+      - test/solarridge3/service/DistrictClearanceService.pure
+      - test/solarridge3/store/UpkeepDatabase.pure
+features:
+  - execution:service
+  - query:collection-op
+  - query:filter
+  - query:group-by
+stores:
+  - relational
+complexity: basic
+tags:
+  - aggregation
+  - deduplication
+  - empty-collection-parameter
+  - group-by
+  - h2
+  - optional-value-presence
+  - relational
+  - service-test
+  - tabular-data-set
+  - trail-upkeep

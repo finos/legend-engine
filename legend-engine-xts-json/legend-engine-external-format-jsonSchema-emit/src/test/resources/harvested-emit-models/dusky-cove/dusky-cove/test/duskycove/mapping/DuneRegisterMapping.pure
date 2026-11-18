@@ -1,0 +1,236 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskycove::mapping::DuneRegisterMapping
+(
+  include mapping test::duskycove::mapping::DuneBaseMapping
+
+  *test::duskycove::domain::PlotSurvey[survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskycove::store::DunePlantingDatabase]dune.plot_survey.survey_id
+    )
+    ~mainTable [test::duskycove::store::DunePlantingDatabase]dune.plot_survey
+    registerCode: [test::duskycove::store::DunePlantingDatabase]dune.plot_survey.surveyor_name,
+    stewardNote: case(
+                   isNotEmpty([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.surveyor_name),
+                   concat('LED BY ', rtrim([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.surveyor_name)),
+                   sqlNull()
+                 ),
+    surveyId: [test::duskycove::store::DunePlantingDatabase]dune.plot_survey.survey_id,
+    surveyorName: toUpper([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.surveyor_name),
+    surveyedOn: [test::duskycove::store::DunePlantingDatabase]dune.plot_survey.surveyed_on,
+    stabilityIndex: [test::duskycove::store::DunePlantingDatabase]dune.plot_survey.stability_index,
+    methodUsed: EnumerationMapping MethodMapping: case(
+                  equal([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.method_code, 'WK'),
+                  'WK',
+                  case(
+                    equal([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.method_code, 'QD'),
+                    'QD',
+                    case(
+                      equal([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.method_code, 'DR'),
+                      'DR',
+                      'UN'
+                    )
+                  )
+                ),
+    marramAssessed: EnumerationMapping MarramMapping: case(
+                      equal([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.marram_code, 'D'),
+                      'D',
+                      case(
+                        equal([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.marram_code, 'P'),
+                        'P',
+                        case(
+                          equal([test::duskycove::store::DunePlantingDatabase]dune.plot_survey.marram_code, 'A'),
+                          'A',
+                          'X'
+                        )
+                      )
+                    ),
+    reserveSectorCount: [test::duskycove::store::DunePlantingDatabase]@Survey_Plot > @Plot_Transect > @Transect_Sector > @Sector_Reserve > @Reserve_Tally | [test::duskycove::store::DunePlantingDatabase]reserve.reserve_sector_tally_vw.sector_count
+  }
+
+  *test::duskycove::domain::RetiredPlot[retiredPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.plot_id
+    )
+    ~mainTable [test::duskycove::store::DunePlantingDatabase]dune.plot_retirement
+    registerCode: [test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.register_code,
+    stewardNote: case(
+                   isNotEmpty([test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.steward_note),
+                   rtrim([test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.steward_note),
+                   sqlNull()
+                 ),
+    plotCode: [test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.plot_code,
+    plotName: rtrim([test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.plot_name),
+    retirementLabel: case(
+                       equal([test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.retirement_code, 'ER'),
+                       'ERODED',
+                       case(
+                         equal([test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.retirement_code, 'FL'),
+                         'FLOODED',
+                         case(
+                           equal([test::duskycove::store::DunePlantingDatabase]dune.plot_retirement.retirement_code, 'RE'),
+                           'REPLANTED',
+                           'UNRECORDED RETIREMENT'
+                         )
+                       )
+                     )
+  }
+
+  test::duskycove::domain::Survey_Plot: Relational
+  {
+    AssociationMapping
+    (
+      surveyedPlot[survey, plot]: [test::duskycove::store::DunePlantingDatabase]@Survey_Plot,
+      surveys[plot, survey]: [test::duskycove::store::DunePlantingDatabase]@Survey_Plot
+    )
+  }
+
+  testSuites:
+  [
+    surveyRegisterSuite:
+    {
+      function: |test::duskycove::domain::PlotSurvey.all(%2026-06-01)->project(
+        [
+          s|$s.surveyId,
+          s|$s.surveyorName,
+          s|$s.methodUsed,
+          s|$s.marramAssessed,
+          s|$s.stewardLabel(),
+          s|$s.headline(%2026-06-01),
+          s|$s.reserveSectorCount->toOne(),
+          s|$s.surveyedPlot.plotCode
+        ],
+        [
+          'Survey',
+          'Surveyor',
+          'Method',
+          'Marram',
+          'Steward',
+          'Headline',
+          'ReserveSectors',
+          'Plot'
+        ]
+      )->sort([asc('Survey')]);
+      tests:
+      [
+        pointInTimeRegister:
+        {
+          doc: 'Resolves the processing-milestoned survey extent at a fixed instant, translates both vocabularies from computed source expressions including the pair of source values that match no vocabulary entry, folds the banded stability, the day-count survey age and the truncated steward note into one headline, and reads the reserve sector tally five join hops out; the survey whose processing window closed years earlier is excluded (scenario milestoning-out-of-range-row).';
+          data:
+          [
+            test::duskycove::store::DunePlantingDatabase:
+              Relational
+              #{
+                dune.plot_survey:
+                  'survey_id,plot_id,surveyor_name,method_code,marram_code,surveyed_on,stability_index,in_z,out_z\n'+
+                  '1,1,rowan pike,WK,D,2026-05-01,96,2026-01-01,9999-12-31\n'+
+                  '2,2,juniper wells,QD,P,2026-04-15,67,2026-01-01,9999-12-31\n'+
+                  '3,3,alder finch with a very long note,ZZ,ZZ,2026-03-01,38,2026-01-01,9999-12-31\n'+
+                  '4,1,briar kestrel,DR,A,2020-02-01,11,2020-01-01,2021-01-01\n';
+
+                dune.planting_plot:
+                  'plot_id,plot_code,plot_name,transect_code,sand_code,exposure_code,stability_index,vigour_code,approach_note,register_code,steward_note\n'+
+                  '1,DC-101,Marram Verge Plot,TR-1,M,H,96,V1,Verge Path,DC-101,spring visit\n'+
+                  '2,DC-102,Sea Holly Plot,TR-1,S,D,82,V2,Holly Spur,DC-102,spring visit\n'+
+                  '3,DC-103,Lyme Grass Plot,TR-2,F,B,67,V3,Lyme Walk,DC-103,recheck cover\n';
+
+                dune.planting_transect:
+                  'transect_code,transect_name,sector_code,transect_length_m,register_code,steward_note\n'+
+                  'TR-1,Marram Verge Transect,SC-1,5200,DC-TR1,surveyed\n'+
+                  'TR-2,Lower Slack Transect,SC-1,3100,DC-TR2,surveyed\n';
+
+                reserve.dune_sector:
+                  'sector_code,sector_name,reserve_code\n'+
+                  'SC-1,North Dune Sector,RS-1\n'+
+                  'SC-2,South Dune Sector,RS-1\n';
+
+                reserve.coastal_reserve:
+                  'reserve_code,reserve_name\n'+
+                  'RS-1,Dusky Cove Coastal Reserve\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":1,"Surveyor":"ROWAN PIKE","Method":"Walkover","Marram":"Dense","Steward":"LED BY ROWAN PIKE","Headline":"ANCHORED @ 31d / LED BY ROWAN PIK","ReserveSectors":2,"Plot":"DC-101"},{"Survey":2,"Surveyor":"JUNIPER WELLS","Method":"Quadrat","Marram":"Patchy","Steward":"LED BY JUNIPER WELLS","Headline":"KNITTING @ 47d / LED BY JUNIPER W","ReserveSectors":2,"Plot":"DC-102"},{"Survey":3,"Surveyor":"ALDER FINCH WITH A VERY LONG NOTE","Method":"Unrecorded","Marram":"Unknown","Steward":"LED BY ALDER FINCH WITH A VERY LONG NOTE","Headline":"SHIFTING @ 92d / LED BY ALDER FIN","ReserveSectors":2,"Plot":"DC-103"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    retirementRegisterSuite:
+    {
+      function: |test::duskycove::domain::RetiredPlot.all()->project(
+        [
+          r|$r.plotCode,
+          r|$r.plotName,
+          r|$r.retirementLabel,
+          r|$r.stewardLabel()
+        ],
+        [
+          'Plot',
+          'Name',
+          'Retirement',
+          'Steward'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        retirementRegister:
+        {
+          doc: 'Projects the retired plot extent of the same store through the three retirement arms and the unrecorded retirement fallback, with the null steward note folded onto the unvisited label by the inherited derived property.';
+          data:
+          [
+            test::duskycove::store::DunePlantingDatabase:
+              Relational
+              #{
+                dune.plot_retirement:
+                  'plot_id,plot_code,plot_name,retirement_code,register_code,steward_note\n'+
+                  '21,DC-201,Old Ridge Plot,ER,DC-201,frontage lost\n'+
+                  '22,DC-202,Salt Pan Plot,FL,DC-202,\n'+
+                  '23,DC-203,Wind Gap Plot,RE,DC-203,replanted spring\n'+
+                  '24,DC-204,Spare Rim Plot,QQ,DC-204,under review\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"DC-201","Name":"Old Ridge Plot","Retirement":"ERODED","Steward":"FRONTAGE LOST"},{"Plot":"DC-202","Name":"Salt Pan Plot","Retirement":"FLOODED","Steward":"UNVISITED"},{"Plot":"DC-203","Name":"Wind Gap Plot","Retirement":"REPLANTED","Steward":"REPLANTED SPRING"},{"Plot":"DC-204","Name":"Spare Rim Plot","Retirement":"UNRECORDED RETIREMENT","Steward":"UNDER REVIEW"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

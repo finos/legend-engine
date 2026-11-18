@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One boat hauled out of the water onto a yard cradle by a harbour boatyard, keyed on the haul reference the yard books it under and carrying the label and the lift score the yard derives for it.'} test::oliveharbor4::domain::HaulOut
+{
+  haulRef: String[1];
+  craftName: String[1];
+  craftKind: String[1];
+  haulState: String[1];
+  keelMetres: Float[1];
+  tonnage: Float[0..1];
+  dockDays: Integer[1];
+  haulLabel: String[1];
+  haulScore: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One lift cradle a hauled boat stands on while it is ashore, itself standing on one of the yard slipways.'} test::oliveharbor4::domain::LiftCradle
+{
+  cradleCode: String[1];
+  cradleName: String[1];
+  cradleTonnesT: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One slipway of the boatyard, rated for the heaviest boat its winch may draw up.'} test::oliveharbor4::domain::Slipway
+{
+  slipCode: String[1];
+  slipName: String[1];
+  winchRatingT: Float[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a haul-out to the lift cradle the boat stands on while ashore, navigable from either end.'} test::oliveharbor4::domain::HaulCradle
+{
+  hauls: test::oliveharbor4::domain::HaulOut[*];
+  cradle: test::oliveharbor4::domain::LiftCradle[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a lift cradle to the slipway it stands on, navigable from either end.'} test::oliveharbor4::domain::CradleSlip
+{
+  cradles: test::oliveharbor4::domain::LiftCradle[*];
+  slip: test::oliveharbor4::domain::Slipway[0..1];
+}

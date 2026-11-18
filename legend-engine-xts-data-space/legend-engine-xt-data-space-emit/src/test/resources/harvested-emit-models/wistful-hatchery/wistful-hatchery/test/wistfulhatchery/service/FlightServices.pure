@@ -1,0 +1,260 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfulhatchery::service::EmergenceReleaseReport
+{
+  pattern: '/wistfulhatchery/v1/emergenceReleases/{asOf}';
+  title: 'Wistful Hatchery - Emergence Release Report';
+  documentation: 'Pairs the emergence counts in force at a supplied processing date with the release event each cohort was let out under, so the joined release code travels with every emergence row.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'conservatory-flight-team'
+  ];
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfulhatchery::domain::EmergenceRecord.all($asOf)->filter(
+      c|$c.emergedCount > 0
+    )->project(
+      ~[
+        cohort: c|$c.cohortCode,
+        emerged: c|$c.emergedCount,
+        release: c|$c.releaseCode
+      ]
+    )->sort([~cohort->ascending()])};
+    mapping: test::wistfulhatchery::mapping::EmergenceMapping;
+    runtime: test::wistfulhatchery::runtime::EmergenceRuntime;
+  }
+  testSuites:
+  [
+    emergenceReleaseSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          emergenceConnection:
+            Relational
+            #{
+              emergence.observer:
+                'observer_id,observer_name,team_name\n'+
+                '1,Wren Alder,Dawn Team\n';
+              emergence.release_event:
+                'event_id,event_code,cohort_code,released_count,released_on,observer_id\n'+
+                '1,RE-01,C-01,118,2026-05-10,1\n'+
+                '2,RE-02,C-02,60,2026-05-11,1\n';
+              emergence.emergence_record:
+                'record_id,cohort_code,emerged_count,recorded_on,in_z,out_z\n'+
+                '1,C-01,118,2026-05-09,2026-01-01,9999-12-31\n'+
+                '2,C-02,60,2026-05-10,2026-01-01,9999-12-31\n'+
+                '3,C-09,90,2026-05-11,2020-01-01,2021-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        inForceEmergenceRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            emergenceRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "cohort" : "C-01",\n  "emerged" : 118,\n  "release" : "RE-01"\n}, {\n  "cohort" : "C-02",\n  "emerged" : 60,\n  "release" : "RE-02"\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::wistfulhatchery::service::ObserverReleaseRollup
+{
+  pattern: '/wistfulhatchery/v1/observerReleases/{team}';
+  title: 'Wistful Hatchery - Observer Release Rollup';
+  documentation: 'Aggregates release tallies per observer for one recording team, reaching the observer and team through the release-to-observer join before grouping.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'conservatory-flight-team'
+  ];
+  execution: Single
+  {
+    query: {team: String[1]|test::wistfulhatchery::domain::ReleaseEvent.all()->filter(
+      r|($r.teamName == $team) && ($r.eventCode->startsWith('RE-'))
+    )->project(
+      ~[
+        observer: r|$r.observerName,
+        released: r|$r.releasedCount
+      ]
+    )->groupBy(
+      ~[observer],
+      ~[
+        releases: x|$x.released: y|$y->count(),
+        released: x|$x.released: y|$y->sum()
+      ]
+    )->sort([~observer->ascending()])};
+    mapping: test::wistfulhatchery::mapping::EmergenceMapping;
+    runtime: test::wistfulhatchery::runtime::EmergenceRuntime;
+  }
+  testSuites:
+  [
+    observerRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          emergenceConnection:
+            Relational
+            #{
+              emergence.observer:
+                'observer_id,observer_name,team_name\n'+
+                '1,Wren Alder,Dawn Team\n'+
+                '2,Rowan Sedge,Dawn Team\n'+
+                '3,Linnet Fern,Dusk Team\n';
+              emergence.release_event:
+                'event_id,event_code,cohort_code,released_count,released_on,observer_id\n'+
+                '1,RE-01,C-01,118,2026-05-10,1\n'+
+                '2,RE-02,C-02,60,2026-05-11,1\n'+
+                '3,RE-03,C-03,45,2026-05-12,2\n'+
+                '4,RE-04,C-04,30,2026-05-13,3\n';
+              emergence.emergence_record:
+                'record_id,cohort_code,emerged_count,recorded_on,in_z,out_z\n'+
+                '1,C-01,118,2026-05-09,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        dawnTeamRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            team = 'Dawn Team'
+          ]
+          asserts:
+          [
+            observerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "observer" : "Rowan Sedge",\n  "releases" : 1,\n  "released" : 45\n}, {\n  "observer" : "Wren Alder",\n  "releases" : 2,\n  "released" : 178\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::wistfulhatchery::service::HumidityWatch
+{
+  pattern: '/wistfulhatchery/v1/humidityWatch/{asOf}/{floorPct}';
+  title: 'Wistful Hatchery - Humidity Watch';
+  documentation: 'Lists the humidity readings in force at a supplied processing date that clear a humidity floor, reporting the banded comfort level of each reading and how many days before the reference date it was taken.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'conservatory-flight-team',
+    'conservatory-platform-eng'
+  ];
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], floorPct: Float[1]|test::wistfulhatchery::domain::ClimateReading.all($asOf)->filter(
+      r|($r.humidityPct >= $floorPct) && ($r.canopyType->in(['Open Canopy', 'Closed Canopy']))
+    )->project(
+      ~[
+        enclosure: r|$r.enclosureCode,
+        band: r|$r.comfortBand,
+        ageDays: r|$r.takenOn->dateDiff($asOf, meta::pure::functions::date::DurationUnit.DAYS)
+      ]
+    )->sort([~enclosure->ascending(), ~ageDays->ascending()])};
+    mapping: test::wistfulhatchery::mapping::HabitatMapping;
+    runtime: test::wistfulhatchery::runtime::HabitatRuntime;
+  }
+  testSuites:
+  [
+    humidityWatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          habitatConnection:
+            Relational
+            #{
+              habitat.enclosure:
+                'enclosure_id,enclosure_code,canopy_type\n'+
+                '1,EN-01,Open Canopy\n'+
+                '2,EN-02,Closed Canopy\n';
+              habitat.climate_reading:
+                'reading_id,enclosure_id,humidity_pct,taken_on,in_z,out_z\n'+
+                '1,1,85.0,2026-05-01,2026-01-01,9999-12-31\n'+
+                '2,1,65.0,2026-05-02,2026-01-01,9999-12-31\n'+
+                '3,2,45.0,2026-05-03,2026-01-01,9999-12-31\n'+
+                '4,2,95.0,2026-05-04,2020-01-01,2021-12-31\n';
+              habitat.nectar_station:
+                'station_id,station_code,enclosure_id,flower_mix\n'+
+                '1,NS-01,1,Ridge Mix\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        readingsAboveFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            floorPct = 60.0
+          ]
+          asserts:
+          [
+            humidityRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "enclosure" : "EN-01",\n  "band" : "balanced",\n  "ageDays" : 30\n}, {\n  "enclosure" : "EN-01",\n  "band" : "humid",\n  "ageDays" : 31\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

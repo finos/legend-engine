@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sableridge2::mapping::StayDigestM2M
+(
+  test::sableridge2::domain::HutClass: EnumerationMapping FeedClassMapping
+  {
+    SHELTER: ['SHL'],
+    LODGE: ['LDG'],
+    BIVOUAC: ['BIV'],
+    DORMITORY: ['DRM']
+  }
+
+  *test::sableridge2::domain::StayDigest[digest]: Pure
+  {
+    ~src test::sableridge2::domain::StayFeedRow
+    digestKey: $src.rowRef->trim()->toUpper() + '/' + $src.rawHut->trim()->toUpper(),
+    hutCode: $src.rawHut->trim()->toUpper(),
+    guestTally: if($src.rawGuests->trim()->matches('[0-9]+'),
+                   | $src.rawGuests->trim()->parseInteger(),
+                   | 0),
+    bunkTally: if($src.rawBunks->trim()->matches('[0-9]+'),
+                  | $src.rawBunks->trim()->parseInteger(),
+                  | 1),
+    loadBand: if(!$src.rawGuests->trim()->matches('[0-9]+') || !$src.rawBunks->trim()->matches('[0-9]+'),
+                 | 'unreadable-load',
+                 | if($src.rawGuests->trim()->parseInteger() == 0,
+                      | 'empty-hut',
+                      | if(($src.rawGuests->trim()->parseInteger() * 100) >= ($src.rawBunks->trim()->parseInteger() * 90),
+                           | 'full-hut',
+                           | if(($src.rawGuests->trim()->parseInteger() * 100) >= ($src.rawBunks->trim()->parseInteger() * 60),
+                                | 'busy-hut',
+                                | 'quiet-hut')))),
+    feedClass: EnumerationMapping FeedClassMapping: [if($src.rawClass->isEmpty(),
+                                                        | 'SHL',
+                                                        | $src.rawClass->toOne()->trim()->toUpper())]->toOne(),
+    noteDigest: if($src.rawNote->isEmpty() || ($src.rawNote->toOne()->trim()->length() == 0),
+                   | 'NO NOTE',
+                   | if($src.rawNote->toOne()->trim()->length() > 18,
+                        | $src.rawNote->toOne()->trim()->substring(0, 18)->toUpper(),
+                        | $src.rawNote->toOne()->trim()->toUpper()))
+  }
+
+  testSuites:
+  [
+    digestDerivationSuite:
+    {
+      function: |test::sableridge2::domain::StayDigest.all()->graphFetch(
+        #{
+          test::sableridge2::domain::StayDigest
+          {
+            digestKey,
+            hutCode,
+            guestTally,
+            bunkTally,
+            loadBand,
+            feedClass,
+            noteDigest
+          }
+        }#
+      )->serialize(
+        #{
+          test::sableridge2::domain::StayDigest
+          {
+            digestKey,
+            hutCode,
+            guestTally,
+            bunkTally,
+            loadBand,
+            feedClass,
+            noteDigest
+          }
+        }#
+      );
+      tests:
+      [
+        digestTransformArms:
+        {
+          doc: 'Drives every arm of the in-memory transform: the readable and unreadable tallies, all four load bands, the defaulted feed class for an absent class column and the truncated, short and absent note digests.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::sableridge2::domain::StayFeedRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"rowRef":"fd-01","rawHut":" ht-1 ","rawGuests":"20","rawBunks":"20","rawClass":"ldg","rawNote":"summer traverse party over the col"},{"rowRef":"fd-02","rawHut":"ht-2","rawGuests":"11","rawBunks":"16","rawClass":"shl","rawNote":" school walk "},{"rowRef":"fd-03","rawHut":"ht-3","rawGuests":"3","rawBunks":"12","rawClass":"biv","rawNote":"   "},{"rowRef":"fd-04","rawHut":"ht-4","rawGuests":"0","rawBunks":"10"},{"rowRef":"fd-05","rawHut":"ht-5","rawGuests":"many","rawBunks":"8","rawClass":"drm","rawNote":"illegible tally"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fiveDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestKey":"FD-01/HT-1","hutCode":"HT-1","guestTally":20,"bunkTally":20,"loadBand":"full-hut","feedClass":"LODGE","noteDigest":"SUMMER TRAVERSE PA"},{"digestKey":"FD-02/HT-2","hutCode":"HT-2","guestTally":11,"bunkTally":16,"loadBand":"busy-hut","feedClass":"SHELTER","noteDigest":"SCHOOL WALK"},{"digestKey":"FD-03/HT-3","hutCode":"HT-3","guestTally":3,"bunkTally":12,"loadBand":"quiet-hut","feedClass":"BIVOUAC","noteDigest":"NO NOTE"},{"digestKey":"FD-04/HT-4","hutCode":"HT-4","guestTally":0,"bunkTally":10,"loadBand":"empty-hut","feedClass":"SHELTER","noteDigest":"NO NOTE"},{"digestKey":"FD-05/HT-5","hutCode":"HT-5","guestTally":0,"bunkTally":8,"loadBand":"unreadable-load","feedClass":"DORMITORY","noteDigest":"ILLEGIBLE TALLY"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

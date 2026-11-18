@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::borealridge4::store::LookoutNetworkDb
+(
+  include test::borealridge4::store::CrewRosterDb
+
+  Schema tower
+  (
+    Table lookout_tower
+    (
+      tower_code VARCHAR(12) PRIMARY KEY,
+      tower_name VARCHAR(60),
+      region_code VARCHAR(12),
+      staffed_flag VARCHAR(1),
+      elevation_m INTEGER,
+      aspect_code VARCHAR(4),
+      parent_tower_code VARCHAR(12),
+      beacon_color VARCHAR(12),
+      beacon_range_km INTEGER
+    )
+    View tower_card_vw
+    (
+      tower_code: tower.lookout_tower.tower_code PRIMARY KEY,
+      tower_name: toUpper(trim(tower.lookout_tower.tower_name)),
+      region_name: @TowerRegion | region.fire_region.region_name,
+      staffed_flag: tower.lookout_tower.staffed_flag,
+      elevation_m: tower.lookout_tower.elevation_m,
+      elevation_text: concat(toString(tower.lookout_tower.elevation_m), ' m'),
+      aspect_code: tower.lookout_tower.aspect_code,
+      parent_tower_code: tower.lookout_tower.parent_tower_code,
+      beacon_color: tower.lookout_tower.beacon_color,
+      beacon_range_km: tower.lookout_tower.beacon_range_km
+    )
+  )
+
+  Schema region
+  (
+    Table fire_region
+    (
+      region_code VARCHAR(12) PRIMARY KEY,
+      region_name VARCHAR(60),
+      district_code VARCHAR(12),
+      region_status VARCHAR(8)
+    )
+    Table fire_district
+    (
+      district_code VARCHAR(12) PRIMARY KEY,
+      district_name VARCHAR(60),
+      agency_code VARCHAR(12)
+    )
+    Table land_agency
+    (
+      agency_code VARCHAR(12) PRIMARY KEY,
+      agency_name VARCHAR(60)
+    )
+  )
+
+  Join PostingTower(crew.crew_posting.tower_code = tower.lookout_tower.tower_code)
+  Join PostingCard(crew.crew_posting.tower_code = tower.tower_card_vw.tower_code)
+  Join TowerRegion(tower.lookout_tower.region_code = region.fire_region.region_code and (region.fire_region.region_status = 'OPEN' or region.fire_region.region_status is null))
+  Join RegionDistrict(region.fire_region.district_code = region.fire_district.district_code)
+  Join DistrictAgency(region.fire_district.agency_code = region.land_agency.agency_code)
+  Join CardParent(tower.tower_card_vw.parent_tower_code = {target}.tower_code)
+)

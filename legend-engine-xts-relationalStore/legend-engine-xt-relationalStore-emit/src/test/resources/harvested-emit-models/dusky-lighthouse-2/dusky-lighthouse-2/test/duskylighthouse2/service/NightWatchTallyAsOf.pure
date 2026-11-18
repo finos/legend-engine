@@ -1,0 +1,162 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskylighthouse2::service::NightWatchTallyAsOf
+{
+  pattern: '/duskylighthouse2/nightWatchTally';
+  ownership: UserList { users: ['night-watch-desk', 'sky-log-stewards'] };
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], sector: String[1]|
+              let horizon = $asOfDate;
+              test::duskylighthouse2::domain::NightWatchLog.all($horizon)->filter(
+                l|and(
+                    $l.patrolLevel == 2,
+                    and(
+                      $l.seeingGrade == test::duskylighthouse2::domain::SeeingGrade.STEADY,
+                      and(
+                        $l.site($horizon).sectorName == $sector,
+                        and(
+                          $l.catalogVersion == 'CAT-V3',
+                          $l.seasonYear == '2026'
+                        )
+                      )
+                    )
+                  )
+              )->groupBy(
+                [
+                  l|$l.site($horizon).region($horizon).regionCode,
+                  l|$l.site($horizon).region($horizon).regionName,
+                  l|$l.site($horizon).siteCode,
+                  l|$l.site($horizon).siteName,
+                  l|$l.site($horizon).sectorName,
+                  l|$l.seeingGrade,
+                  l|$l.catalogVersion,
+                  l|$l.lampTag
+                ],
+                [
+                  agg(l|$l.exposureMinutes, v|$v->sum())
+                ],
+                [
+                  'watch/region/code',
+                  'watch/region/name',
+                  'watch/site/code',
+                  'watch/site/name',
+                  'watch/site/sector',
+                  'watch/log/seeing/grade',
+                  'watch/log/catalog/version',
+                  'watch/log/lamp/tag',
+                  'watch/log/exposure/minutes/total'
+                ]
+              )->sort(
+                [
+                  asc('watch/region/code'),
+                  asc('watch/site/code'),
+                  asc('watch/log/lamp/tag')
+                ]
+              );
+           };
+    mapping: test::duskylighthouse2::mapping::SkyWatchLogMapping;
+    runtime: test::duskylighthouse2::runtime::SkyWatchRuntime;
+  }
+  testSuites:
+  [
+    nightWatchTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              skywatch.observing_region:
+                'region_code,region_name,from_z,thru_z\n'+
+                'REG-1,Northern Rim,2026-01-01,9999-12-31\n'+
+                'REG-2,Coastal Shelf,2026-01-01,9999-12-31\n';
+
+              skywatch.observing_site:
+                'site_code,site_name,sector_name,region_code,from_z,thru_z\n'+
+                'SIT-1,Beacon Knoll,Ridge,REG-1,2026-01-01,9999-12-31\n'+
+                'SIT-2,Shell Point,Ridge,REG-2,2026-01-01,9999-12-31\n'+
+                'SIT-3,Fog Bench,Valley,REG-1,2026-01-01,9999-12-31\n';
+
+              skywatch.night_watch_log:
+                'log_code,logged_on,patrol_level,seeing_code,catalog_version,season_year,exposure_minutes,lamp_note,site_code,from_z,thru_z\n'+
+                'LOG-001,2026-02-10,2,st,cat-v3,2026,45,north lamp,SIT-1,2026-01-01,9999-12-31\n'+
+                'LOG-002,2026-02-12,2,st,cat-v3,2026,30,north lamp,SIT-1,2026-01-01,9999-12-31\n'+
+                'LOG-003,2026-02-14,2,st,cat-v3,2026,20,,SIT-2,2026-01-01,9999-12-31\n'+
+                'LOG-004,2026-02-15,1,st,cat-v3,2026,60,north lamp,SIT-1,2026-01-01,9999-12-31\n'+
+                'LOG-005,2026-02-16,2,tb,cat-v3,2026,15,north lamp,SIT-1,2026-01-01,9999-12-31\n'+
+                'LOG-006,2026-02-17,2,st,cat-v2,2026,25,north lamp,SIT-1,2026-01-01,9999-12-31\n'+
+                'LOG-007,2026-02-18,2,st,cat-v3,2025,35,north lamp,SIT-1,2026-01-01,9999-12-31\n'+
+                'LOG-008,2026-02-19,2,st,cat-v3,2026,50,north lamp,SIT-3,2026-01-01,9999-12-31\n'+
+                'LOG-009,2026-06-20,2,st,cat-v3,2026,40,dune lamp,SIT-2,2026-07-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        tallyWhileLateLogIsOutOfRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-03-01,
+            sector = 'ridge'
+          ]
+          asserts:
+          [
+            conjunctionKeepsOnlyFullyMatchingLogsAndOutOfRangeVersionIsAbsent:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"watch/region/code":"REG-1","watch/region/name":"Northern Rim","watch/site/code":"SIT-1","watch/site/name":"Beacon Knoll","watch/site/sector":"ridge","watch/log/seeing/grade":"STEADY","watch/log/catalog/version":"CAT-V3","watch/log/lamp/tag":"NORTH LAMP","watch/log/exposure/minutes/total":75},{"watch/region/code":"REG-2","watch/region/name":"Coastal Shelf","watch/site/code":"SIT-2","watch/site/name":"Shell Point","watch/site/sector":"ridge","watch/log/seeing/grade":"STEADY","watch/log/catalog/version":"CAT-V3","watch/log/lamp/tag":"NO-TAG","watch/log/exposure/minutes/total":20}]';
+                  }#;
+              }#
+          ]
+        },
+        tallyOnceLateLogHasOpened:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-08-01,
+            sector = 'ridge'
+          ]
+          asserts:
+          [
+            newlyOpenedVersionJoinsTheTallyUnderItsOwnLampTag:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"watch/region/code":"REG-1","watch/region/name":"Northern Rim","watch/site/code":"SIT-1","watch/site/name":"Beacon Knoll","watch/site/sector":"ridge","watch/log/seeing/grade":"STEADY","watch/log/catalog/version":"CAT-V3","watch/log/lamp/tag":"NORTH LAMP","watch/log/exposure/minutes/total":75},{"watch/region/code":"REG-2","watch/region/name":"Coastal Shelf","watch/site/code":"SIT-2","watch/site/name":"Shell Point","watch/site/sector":"ridge","watch/log/seeing/grade":"STEADY","watch/log/catalog/version":"CAT-V3","watch/log/lamp/tag":"DUNE LAMP","watch/log/exposure/minutes/total":40},{"watch/region/code":"REG-2","watch/region/name":"Coastal Shelf","watch/site/code":"SIT-2","watch/site/name":"Shell Point","watch/site/sector":"ridge","watch/log/seeing/grade":"STEADY","watch/log/catalog/version":"CAT-V3","watch/log/lamp/tag":"NO-TAG","watch/log/exposure/minutes/total":20}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+  mcpServer: sky_watch_tools;
+}

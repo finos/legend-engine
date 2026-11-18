@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigocove::service::InstrumentApertures
+{
+  pattern: '/indigocove/v1/apertures/{env}/{observatoryCode}';
+  title: 'Indigo Cove - Optical Instrument Apertures (keyed environments)';
+  owners:
+  [
+    'observatory-registry',
+    'skywatch-eng'
+  ];
+  documentation: 'Keyed execution over the observatory instrument register: one shared projection narrows the register to its optical subtype and reports aperture readings for a given observatory, bound to a primary and a standby environment each supplying its own runtime over the shared instrument database.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {observatoryCode: String[1]|test::indigocove::domain::Instrument.all()->filter(
+      x|((($x.siteCode == $observatoryCode) && ($x.statusCode == 'ACTIVE')) || (($x.siteCode == $observatoryCode) && ($x.statusCode == 'STANDBY'))) || (($x.statusCode == 'ACTIVE') && $x.siteCode->in(['ZENITH', 'MERIDIAN', 'APEX']))
+    )->project(
+      [
+        x|$x.instrumentId,
+        x|$x.siteCode->toUpper(),
+        x|$x->subType(@test::indigocove::domain::OpticalInstrument).apertureMm,
+        x|$x.instrumentId->length()
+      ],
+      [
+        'Instrument',
+        'Site',
+        'ApertureMm',
+        'TagLength'
+      ]
+    )->distinct()->sort([asc('Instrument')])->take(50)};
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::indigocove::mapping::InstrumentMapping;
+      runtime: test::indigocove::runtime::InstrumentPrimaryRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::indigocove::mapping::InstrumentMapping;
+      runtime: test::indigocove::runtime::InstrumentStandbyRuntime;
+    }
+  }
+}

@@ -1,0 +1,157 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverwarren::service::TrailheadRegister
+{
+  pattern: '/silverwarren/v1/trailhead-register/{env}';
+  title: 'Silver Warren - Trailhead Register Keyed By Environment';
+  documentation: 'Projects ten aliased trailhead columns, two of which assemble a compact date key out of the year, month and day parts of a timestamp with a zero-padding arm for single-digit parts, so the emitted key is text rather than a date. The environment key on the path selects a mapping and a runtime together.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Multi
+  {
+    query: {|test::silverwarren::domain::TrailheadReference.all()->filter(
+      t|$t.expiryKey == 99991231
+    )->project(
+      [
+        t|$t.trailheadCode,
+        t|$t.expiryKey,
+        t|$t.trailheadName,
+        t|$t.corridorCode,
+        t|$t.parkingKind,
+        t|$t.bayCount,
+        t|$t.openedOn->year()->toString() + '-' + if($t.openedOn->monthNumber() < 10, |'0' + $t.openedOn->monthNumber()->toString(), |$t.openedOn->monthNumber()->toString()) + '-' + if($t.openedOn->dayOfMonth() < 10, |'0' + $t.openedOn->dayOfMonth()->toString(), |$t.openedOn->dayOfMonth()->toString()),
+        t|$t.createdOn->year()->toString() + '-' + if($t.createdOn->monthNumber() < 10, |'0' + $t.createdOn->monthNumber()->toString(), |$t.createdOn->monthNumber()->toString()) + '-' + if($t.createdOn->dayOfMonth() < 10, |'0' + $t.createdOn->dayOfMonth()->toString(), |$t.createdOn->dayOfMonth()->toString()),
+        t|$t.openedOn->year(),
+        t|$t.openedOn->monthNumber()
+      ],
+      [
+        'Trailhead',
+        'ExpiryKey',
+        'Name',
+        'CorridorCode',
+        'Parking',
+        'Bays',
+        'OpenedKey',
+        'CreatedKey',
+        'OpenedYear',
+        'OpenedMonth'
+      ]
+    )->sort(
+      [
+        asc('Trailhead')
+      ]
+    )};
+    key: 'env';
+    executions['field']:
+    {
+      mapping: test::silverwarren::mapping::FieldTrailheadMapping;
+      runtime: test::silverwarren::runtime::FieldTrailheadRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::silverwarren::mapping::ArchiveTrailheadMapping;
+      runtime: test::silverwarren::runtime::ArchiveTrailheadRuntime;
+    }
+  }
+}
+
+###Service
+Service test::silverwarren::service::TrailheadRegisterField
+{
+  pattern: '/silverwarren/v1/trailhead-register-field';
+  title: 'Silver Warren - Trailhead Register (Field)';
+  documentation: 'Field-pinned counterpart of the environment-keyed trailhead register, asserting the padded date keys, the derived year and month parts and the sentinel selection against one execution stack.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::silverwarren::domain::TrailheadReference.all()->filter(
+      t|$t.expiryKey == 99991231
+    )->project(
+      [
+        t|$t.trailheadCode,
+        t|$t.expiryKey,
+        t|$t.trailheadName,
+        t|$t.corridorCode,
+        t|$t.parkingKind,
+        t|$t.bayCount,
+        t|$t.openedOn->year()->toString() + '-' + if($t.openedOn->monthNumber() < 10, |'0' + $t.openedOn->monthNumber()->toString(), |$t.openedOn->monthNumber()->toString()) + '-' + if($t.openedOn->dayOfMonth() < 10, |'0' + $t.openedOn->dayOfMonth()->toString(), |$t.openedOn->dayOfMonth()->toString()),
+        t|$t.createdOn->year()->toString() + '-' + if($t.createdOn->monthNumber() < 10, |'0' + $t.createdOn->monthNumber()->toString(), |$t.createdOn->monthNumber()->toString()) + '-' + if($t.createdOn->dayOfMonth() < 10, |'0' + $t.createdOn->dayOfMonth()->toString(), |$t.createdOn->dayOfMonth()->toString()),
+        t|$t.openedOn->year(),
+        t|$t.openedOn->monthNumber()
+      ],
+      [
+        'Trailhead',
+        'ExpiryKey',
+        'Name',
+        'CorridorCode',
+        'Parking',
+        'Bays',
+        'OpenedKey',
+        'CreatedKey',
+        'OpenedYear',
+        'OpenedMonth'
+      ]
+    )->sort(
+      [
+        asc('Trailhead')
+      ]
+    )};
+    mapping: test::silverwarren::mapping::FieldTrailheadMapping;
+    runtime: test::silverwarren::runtime::FieldTrailheadRuntime;
+  }
+  testSuites:
+  [
+    trailheadRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailRegistryFieldConnection:
+            Relational
+            #{
+              FIELDREF.TRAILHEAD:
+      'trailhead_code,expiry_key,trailhead_name,corridor_code,parking_kind,bay_count,opened_on,created_on,updated_on\n'+
+      'TH-1,99991231,Willow Bend Trailhead,COR-1,SEALED,24,2026-03-07 05:30:00,2026-01-04 06:10:00,2026-02-09 07:45:00\n'+
+      'TH-2,99991231,Cedar Draw Trailhead,COR-2,GRAVEL,12,2026-11-12 05:30:00,2026-01-04 06:10:00,2026-02-09 07:45:00\n'+
+      'TH-3,20250101,Alder Gate Trailhead,COR-3,VERGE,,2019-04-18 05:30:00,2019-01-04 06:10:00,2019-02-09 07:45:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        paddedDateKeyProjection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedContract:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trailhead":"TH-1","ExpiryKey":99991231,"Name":"Willow Bend Trailhead","CorridorCode":"COR-1","Parking":"SEALED","Bays":24,"OpenedKey":"2026-03-07","CreatedKey":"2026-01-04","OpenedYear":2026,"OpenedMonth":3},{"Trailhead":"TH-2","ExpiryKey":99991231,"Name":"Cedar Draw Trailhead","CorridorCode":"COR-2","Parking":"GRAVEL","Bays":12,"OpenedKey":"2026-11-12","CreatedKey":"2026-01-04","OpenedYear":2026,"OpenedMonth":11}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

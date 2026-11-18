@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivoryridge2::service::SlotRoster
+{
+  pattern: '/ivoryridge/v1/slots/roster';
+  title: 'Slot Roster';
+  owners:
+  [
+    'airtime-scheduling'
+  ];
+  documentation: 'Filters the aired slots down to one requested genre and projects the slot keys, the two-hop station label reached through the programme, the rostered presenter and the derived label, listener-minute and audience-band values.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {genre: String[1]|test::ivoryridge2::domain::BroadcastSlot.all()->filter(
+      s|$s.programme.genreCode == $genre
+    )->project(
+      [
+        s|$s.slotCode,
+        s|$s.airedOn,
+        s|$s.slotLabel(),
+        s|$s.programme.station.stationName,
+        s|$s.presenter.presenterName,
+        s|$s.listeners,
+        s|$s.listenerMinutes(),
+        s|$s.audienceBand(1000)
+      ],
+      [
+        'Slot',
+        'AiredOn',
+        'Label',
+        'Station',
+        'Presenter',
+        'Listeners',
+        'ListenerMinutes',
+        'Band'
+      ]
+    )->sort(
+      [
+        asc('Slot')
+      ]
+    )};
+    mapping: test::ivoryridge2::mapping::BroadcastMapping;
+    runtime: test::ivoryridge2::runtime::BroadcastH2Runtime;
+  }
+  testSuites:
+  [
+    rosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              airtime.radio_station:
+                'station_code,station_name,transmitter_kw\n'+
+                'S-1,Ridgeway Community Radio,2.5\n'+
+                'S-2,Harbour Voice FM,0.8\n'+
+                'S-3,Fell Top Relay,1.2\n';
+              airtime.presenter:
+                'presenter_code,presenter_name,studio_city\n'+
+                'P-1,Marta Lindqvist,Ridgeway\n'+
+                'P-2,Owen Baptiste,Harbour\n'+
+                'P-3,Nadia Okonjo,\n'+
+                'P-4,Tomas Ferreira,Fell Top\n';
+              airtime.programme:
+                'programme_code,station_code,programme_name,genre_code\n'+
+                'PG-1,S-1,Morning Ridge,TALK\n'+
+                'PG-2,S-1,Ridge Folk Hour,MUSIC\n'+
+                'PG-3,S-2,Harbour Notes,MUSIC\n'+
+                'PG-4,,Late Static,MUSIC\n';
+              airtime.broadcast_slot:
+                'slot_code,aired_on,slot_seq,programme_code,presenter_code,listeners,duration_minutes,live_flag\n'+
+                'BS-1,2026-04-01,1,PG-1,P-1,1200,60,true\n'+
+                'BS-2,2026-04-02,1,PG-2,P-2,1200,45,false\n'+
+                'BS-3,2026-04-03,2,PG-1,P-1,900,60,true\n'+
+                'BS-4,2026-04-01,1,PG-3,P-3,400,30,true\n'+
+                'BS-5,2026-04-05,1,PG-4,,150,15,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        musicSlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            genre = 'MUSIC'
+          ]
+          asserts:
+          [
+            threeMusicSlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot":"BS-2","AiredOn":"2026-04-02","Label":"RIDGE FOLK HOUR / BS-2","Station":"Ridgeway Community Radio","Presenter":"Owen Baptiste","Listeners":1200,"ListenerMinutes":54000,"Band":"WIDE"},{"Slot":"BS-4","AiredOn":"2026-04-01","Label":"HARBOUR NOTES / BS-4","Station":"Harbour Voice FM","Presenter":"Nadia Okonjo","Listeners":400,"ListenerMinutes":12000,"Band":"LOCAL"},{"Slot":"BS-5","AiredOn":"2026-04-05","Label":"LATE STATIC / BS-5","Station":null,"Presenter":null,"Listeners":150,"ListenerMinutes":2250,"Band":"LOCAL"}]';
+                  }#;
+              }#
+          ]
+        },
+        talkSlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            genre = 'TALK'
+          ]
+          asserts:
+          [
+            twoTalkSlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot":"BS-1","AiredOn":"2026-04-01","Label":"MORNING RIDGE / BS-1","Station":"Ridgeway Community Radio","Presenter":"Marta Lindqvist","Listeners":1200,"ListenerMinutes":72000,"Band":"WIDE"},{"Slot":"BS-3","AiredOn":"2026-04-03","Label":"MORNING RIDGE / BS-3","Station":"Ridgeway Community Radio","Presenter":"Marta Lindqvist","Listeners":900,"ListenerMinutes":54000,"Band":"LOCAL"}]';
+                  }#;
+              }#
+          ]
+        },
+        unusedGenre:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            genre = 'SPORT'
+          ]
+          asserts:
+          [
+            noSlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

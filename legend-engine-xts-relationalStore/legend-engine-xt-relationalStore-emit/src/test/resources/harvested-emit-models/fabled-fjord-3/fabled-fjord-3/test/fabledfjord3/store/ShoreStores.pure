@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::fabledfjord3::store::ShoreSurveyStore
+(
+  Schema coast
+  (
+    Table shore_site
+    (
+      site_code VARCHAR(32) PRIMARY KEY,
+      site_name VARCHAR(120) NOT NULL,
+      zone_code VARCHAR(32) NOT NULL
+    )
+    Table kelp_sample
+    (
+      sample_code VARCHAR(32) PRIMARY KEY,
+      site_code VARCHAR(32) NOT NULL,
+      source_code VARCHAR(32) NOT NULL,
+      density FLOAT NOT NULL,
+      band_code VARCHAR(8) NOT NULL
+    )
+    Table survey_visit
+    (
+      visit_code VARCHAR(32) PRIMARY KEY,
+      site_code VARCHAR(32) NOT NULL,
+      visited_on VARCHAR(32) NOT NULL
+    )
+    View sample_summary
+    (
+      sample_code: coast.kelp_sample.sample_code PRIMARY KEY,
+      site_code: coast.kelp_sample.site_code,
+      density: coast.kelp_sample.density,
+      band_code: coast.kelp_sample.band_code
+    )
+  )
+  Filter SiteFilter(coast.shore_site.site_code <> '')
+  Filter SiteNameFilter(coast.sample_summary.site_code <> '')
+  Filter SampleFilter(coast.kelp_sample.sample_code <> '')
+  Filter SampleDensityFilter(coast.kelp_sample.density >= 0.5)
+  Filter SampleBandFilter(coast.sample_summary.band_code <> '')
+  Filter VisitFilter(coast.survey_visit.visit_code <> '')
+  Filter VisitDateFilter(coast.survey_visit.visited_on >= '2026-01-01')
+)
+
+Database test::fabledfjord3::store::TideReferenceStore
+(
+  Schema reference
+  (
+    Table tidal_zone
+    (
+      zone_code VARCHAR(32) PRIMARY KEY,
+      zone_name VARCHAR(120) NOT NULL
+    )
+  )
+  Filter SiteZoneFilter(reference.tidal_zone.zone_code <> '')
+)

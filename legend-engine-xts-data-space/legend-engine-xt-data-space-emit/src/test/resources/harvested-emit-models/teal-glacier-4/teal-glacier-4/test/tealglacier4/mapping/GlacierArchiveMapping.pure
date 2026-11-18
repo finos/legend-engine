@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealglacier4::mapping::GlacierArchiveMapping
+(
+  *test::tealglacier4::domain::archive::ArchivedGlacier[archivedGlacier]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Glacier Code",
+      [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Range Code"
+    )
+    ~mainTable [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier
+    glacierCode: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Glacier Code",
+    rangeCode: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Range Code",
+    glacierName: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Glacier Name",
+    basinName: toUpper([test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Basin Name"),
+    registeredOn: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Registered On"
+  }
+  *test::tealglacier4::domain::archive::ArchivedStakeReading[archivedStake]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Stake Code"
+    )
+    ~mainTable [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake
+    stakeCode: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Stake Code",
+    glacierCode: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Glacier Code",
+    rangeCode: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Range Code",
+    readOn: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Read On",
+    snowDepth: case(
+                 equal([test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Snow Depth Raw", '-999'),
+                 sqlNull(),
+                 [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Snow Depth Raw"
+               ),
+    observerCode: [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_stake."Observer Code",
+    glacierName: [test::tealglacier4::store::GlacierArchiveDB]@Archive_Glacier_Stake | [test::tealglacier4::store::GlacierArchiveDB]icearchive.archived_glacier."Glacier Name"
+  }
+
+  testSuites:
+  [
+    archivedStakeSuite:
+    {
+      function: |test::tealglacier4::domain::archive::ArchivedStakeReading.all()->project(~[stake: s|$s.stakeCode, snow: s|$s.snowDepth, glacier: s|$s.glacierName])->sort(~stake->ascending());
+      tests:
+      [
+        sentinelAndPartialKey:
+        {
+          doc: 'An archived reading with a recorded depth, one with the missing-depth sentinel, and one whose glacier matches on code but not range.';
+          data:
+          [
+            test::tealglacier4::store::GlacierArchiveDB:
+              Relational
+              #{
+                icearchive.archived_glacier:
+                  'Glacier Code,Range Code,Glacier Name,Basin Name,Registered On\n'+
+                  'GL-OST,RG-C,Ostbreen,Fjell Basin,2012-08-01\n'+
+                  'GL-VEST,RG-C,Vestbreen,Strand Basin,2013-09-12\n';
+                icearchive.archived_stake:
+                  'Stake Code,Glacier Code,Range Code,Read On,Snow Depth Raw,Observer Code\n'+
+                  'AS-01,GL-OST,RG-C,2015-05-04,95,OB-7\n'+
+                  'AS-02,GL-VEST,RG-C,2015-06-09,-999,OB-8\n'+
+                  'AS-03,GL-OST,RG-D,2016-04-30,60,OB-7\n';
+              }#
+          ];
+          asserts:
+          [
+            threeArchivedReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stake":"AS-01","snow":"95","glacier":"Ostbreen"},{"stake":"AS-02","snow":null,"glacier":"Vestbreen"},{"stake":"AS-03","snow":"60","glacier":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

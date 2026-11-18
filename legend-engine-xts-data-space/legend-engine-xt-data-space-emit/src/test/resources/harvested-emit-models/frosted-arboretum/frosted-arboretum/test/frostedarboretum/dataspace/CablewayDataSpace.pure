@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::frostedarboretum::dataspace::CablewayDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'winter';
+      description: 'Winter environment - the seasonal allotment binding served through the winter warehouse.';
+      mapping: test::frostedarboretum::mapping::CablewayMapping;
+      defaultRuntime: test::frostedarboretum::runtime::CablewayWinterRuntime;
+    },
+    {
+      name: 'shoulder';
+      description: 'Shoulder environment - the same binding served through the shoulder-season warehouse.';
+      mapping: test::frostedarboretum::mapping::CablewayMapping;
+      defaultRuntime: test::frostedarboretum::runtime::CablewayShoulderRuntime;
+    }
+  ];
+  defaultExecutionContext: 'winter';
+  title: 'Cableway Cabin Allotments';
+  description: 'Discovery surface over the cableway cabin allotments: the business-temporal allotment extent, the station reference behind it and the keyed rollout published over both seasonal environments.';
+  elements:
+  [
+    test::frostedarboretum::domain::CabinAllotment,
+    test::frostedarboretum::domain::Station
+  ];
+  supportInfo: Email
+  {
+    address: 'cableway-operations-desk@cablewayops.invalid';
+  };
+}

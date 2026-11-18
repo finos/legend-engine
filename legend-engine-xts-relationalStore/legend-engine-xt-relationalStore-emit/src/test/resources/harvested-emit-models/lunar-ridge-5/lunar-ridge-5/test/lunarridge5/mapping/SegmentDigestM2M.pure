@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarridge5::mapping::SegmentDigestM2M
+(
+  include mapping test::lunarridge5::mapping::TrailEnumMappings
+
+  *test::lunarridge5::domain::SegmentDigest[digest]: Pure
+  {
+    ~src test::lunarridge5::domain::SegmentNote
+    digestKey: 'DIGEST-' + $src.noteRef->toUpper()->trim(),
+    digestBand: if($src.ascentText->isEmpty(),
+                   | 'BAND-NONE',
+                   | if($src.ascentText->toOne()->trim()->parseFloat() < 50.0,
+                        | 'BAND-FLAT',
+                        | if($src.ascentText->toOne()->trim()->parseFloat() < 200.0,
+                             | 'BAND-ROLLING',
+                             | 'BAND-STEEP'))),
+    surface: EnumerationMapping SurfaceTypeMapping: [if($src.surfaceText->isEmpty(),
+                                                        | 'GR',
+                                                        | $src.surfaceText->toOne()->toUpper()->trim())]->toOne(),
+    tier: EnumerationMapping SegmentTierMapping: [if($src.ascentText->isEmpty(),
+                                                     | 'UN',
+                                                     | if($src.ascentText->toOne()->trim()->parseFloat() > 300.0,
+                                                          | 'PR',
+                                                          | if($src.ascentText->toOne()->trim()->parseFloat() > 100.0,
+                                                               | 'RO',
+                                                               | 'DF')))]->toOne(),
+    effortIndex: if($src.lengthText->isEmpty(),
+                    | 0.0,
+                    | ($src.ascentText->toOne()->trim()->parseFloat() * 100.0) / $src.lengthText->toOne()->trim()->parseFloat())
+  }
+
+  testSuites:
+  [
+    digestTransformSuite:
+    {
+      function: |test::lunarridge5::domain::SegmentDigest.all()->graphFetch(
+        #{
+          test::lunarridge5::domain::SegmentDigest
+          {
+            digestKey,
+            digestBand,
+            surface,
+            tier,
+            effortIndex
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarridge5::domain::SegmentDigest
+          {
+            digestKey,
+            digestBand,
+            surface,
+            tier,
+            effortIndex
+          }
+        }#
+      );
+      tests:
+      [
+        derivedSourcePropertiesAndConditionalArms:
+        {
+          doc: 'Every digest property is derived from an expression over the typed note text rather than copied: the ascent text drives the band cascade and the tier enumeration, an absent surface code falls back to the gravel member, and the effort index is arithmetic over two parsed texts with a zero fall-back when the length text is absent.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::lunarridge5::domain::SegmentNote:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteRef":"sn-01","surfaceText":"sc","ascentText":" 450 ","lengthText":"1000"},{"noteRef":"sn-02","surfaceText":"bw","ascentText":"120","lengthText":"800"},{"noteRef":"sn-03","surfaceText":"tf","ascentText":"20","lengthText":"400"},{"noteRef":"sn-04","ascentText":"350","lengthText":"700"},{"noteRef":"sn-05"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestKey":"DIGEST-SN-01","digestBand":"BAND-STEEP","surface":"SCREE","tier":"PRIORITY","effortIndex":45.0},{"digestKey":"DIGEST-SN-02","digestBand":"BAND-ROLLING","surface":"BOARDWALK","tier":"ROUTINE","effortIndex":15.0},{"digestKey":"DIGEST-SN-03","digestBand":"BAND-FLAT","surface":"TURF","tier":"DEFERRED","effortIndex":5.0},{"digestKey":"DIGEST-SN-04","digestBand":"BAND-STEEP","surface":"GRAVEL","tier":"PRIORITY","effortIndex":50.0},{"digestKey":"DIGEST-SN-05","digestBand":"BAND-NONE","surface":"GRAVEL","tier":"UNRATED","effortIndex":0.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

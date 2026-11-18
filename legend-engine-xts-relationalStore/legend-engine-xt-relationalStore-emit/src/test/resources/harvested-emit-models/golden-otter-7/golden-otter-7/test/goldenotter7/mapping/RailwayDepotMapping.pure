@@ -1,0 +1,233 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenotter7::mapping::RailwayDepotMapping
+(
+  include mapping test::goldenotter7::mapping::RailwayFleetMapping
+
+  *test::goldenotter7::domain::Carriage[carriage]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]fleet.carriage.carriage_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]fleet.carriage
+    vehicleCode: [test::goldenotter7::store::RailwayFleetDB]fleet.carriage.carriage_code,
+    vehicleName: [test::goldenotter7::store::RailwayFleetDB]fleet.carriage.carriage_name,
+    axleCount: [test::goldenotter7::store::RailwayFleetDB]fleet.carriage.axle_count,
+    depotTitle: [test::goldenotter7::store::RailwayFleetDB]@Carriage_Depot | works.depot.depot_name,
+    regionTitle: [test::goldenotter7::store::RailwayFleetDB]@Carriage_Depot > @Depot_Region | reference.region_profile.region_name,
+    seatCount: [test::goldenotter7::store::RailwayFleetDB]fleet.carriage.seat_count,
+    layout: EnumerationMapping CarriageLayoutMapping: [test::goldenotter7::store::RailwayFleetDB]fleet.carriage.layout_code
+  }
+
+  *test::goldenotter7::domain::Wagon[wagon]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]fleet.wagon.wagon_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]fleet.wagon
+    vehicleCode: [test::goldenotter7::store::RailwayFleetDB]fleet.wagon.wagon_code,
+    vehicleName: [test::goldenotter7::store::RailwayFleetDB]fleet.wagon.wagon_name,
+    axleCount: [test::goldenotter7::store::RailwayFleetDB]fleet.wagon.axle_count,
+    depotTitle: [test::goldenotter7::store::RailwayFleetDB]@Wagon_Depot | works.depot.depot_name,
+    regionTitle: [test::goldenotter7::store::RailwayFleetDB]@Wagon_Depot > @Depot_Region | reference.region_profile.region_name,
+    payloadTonnes: [test::goldenotter7::store::RailwayFleetDB]fleet.wagon.payload_tonnes,
+    bodyStyle: [test::goldenotter7::store::RailwayFleetDB]fleet.wagon.body_style
+  }
+
+  *test::goldenotter7::domain::Depot[depot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]works.depot.depot_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]works.depot
+    depotCode: [test::goldenotter7::store::RailwayFleetDB]works.depot.depot_code,
+    depotName: [test::goldenotter7::store::RailwayFleetDB]works.depot.depot_name,
+    parentDepotName: [test::goldenotter7::store::RailwayFleetDB]@Depot_Parent | works.depot.depot_name
+  }
+
+  *test::goldenotter7::domain::RegionProfile[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenotter7::store::RailwayFleetDB]reference.region_profile.region_code
+    )
+    ~mainTable [test::goldenotter7::store::RailwayFleetDB]reference.region_profile
+    regionCode: [test::goldenotter7::store::RailwayFleetDB]reference.region_profile.region_code,
+    regionName: [test::goldenotter7::store::RailwayFleetDB]reference.region_profile.region_name,
+    networkName: [test::goldenotter7::store::RailwayFleetDB]reference.region_profile.network_name
+  }
+
+  test::goldenotter7::domain::Carriage_Depot: Relational
+  {
+    AssociationMapping
+    (
+      depot[carriage, depot]: [test::goldenotter7::store::RailwayFleetDB]@Carriage_Depot,
+      allocatedCarriages[depot, carriage]: [test::goldenotter7::store::RailwayFleetDB]@Carriage_Depot
+    )
+  }
+
+  test::goldenotter7::domain::Depot_Region: Relational
+  {
+    AssociationMapping
+    (
+      region[depot, region]: [test::goldenotter7::store::RailwayFleetDB]@Depot_Region,
+      depots[region, depot]: [test::goldenotter7::store::RailwayFleetDB]@Depot_Region
+    )
+  }
+
+  testSuites:
+  [
+    carriageAllocationSuite:
+    {
+      function: |test::goldenotter7::domain::Carriage.all()->project(
+  [
+    c|$c.vehicleCode,
+    c|$c.vehicleName,
+    c|$c.axleCount,
+    c|$c.seatCount,
+    c|$c.layout,
+    c|$c.depotTitle,
+    c|$c.regionTitle,
+    c|$c.depot.parentDepotName,
+    c|$c.depot.region.networkName
+  ],
+  [
+    'VehicleCode',
+    'VehicleName',
+    'AxleCount',
+    'SeatCount',
+    'Layout',
+    'DepotTitle',
+    'RegionTitle',
+    'ParentDepot',
+    'Network'
+  ]
+)->sort(
+  [
+    asc('VehicleCode')
+  ]
+);
+      tests:
+      [
+        twoHopRegionHitAndMiss:
+        {
+          doc: 'Carriages resolve their depot over one hop and their operating region over a two-hop path through that depot, the sub-shed also resolves its parent depot over the self-referencing depot join, the depot that reports to nobody leaves the parent empty, and the spare carriage held with no allocation misses the first hop so every joined column falls away.';
+          data:
+          [
+            test::goldenotter7::store::RailwayFleetDB:
+              Relational
+              #{
+                fleet.carriage:
+                  'carriage_code,carriage_name,axle_count,seat_count,layout_code,depot_code\n'+
+                  'CAR-01,Bracken Saloon,4,32,SA,DEP-1\n'+
+                  'CAR-02,Heather Compartment,4,24,CO,DEP-2\n'+
+                  'CAR-03,Spare Observation,4,18,OB,\n';
+                works.depot:
+                  'depot_code,depot_name,region_code,parent_depot_code\n'+
+                  'DEP-1,Upper Shed,RG-1,DEP-2\n'+
+                  'DEP-2,Valley Works,RG-2,\n';
+                reference.region_profile:
+                  'region_code,region_name,network_name\n'+
+                  'RG-1,Fell Region,Northern Network\n'+
+                  'RG-2,Valley Region,Northern Network\n';
+              }#
+          ];
+          asserts:
+          [
+            threeCarriagesResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VehicleCode":"CAR-01","VehicleName":"Bracken Saloon","AxleCount":4,"SeatCount":32,"Layout":"SALOON","DepotTitle":"Upper Shed","RegionTitle":"Fell Region","ParentDepot":"Valley Works","Network":"Northern Network"},{"VehicleCode":"CAR-02","VehicleName":"Heather Compartment","AxleCount":4,"SeatCount":24,"Layout":"COMPARTMENT","DepotTitle":"Valley Works","RegionTitle":"Valley Region","ParentDepot":null,"Network":"Northern Network"},{"VehicleCode":"CAR-03","VehicleName":"Spare Observation","AxleCount":4,"SeatCount":18,"Layout":"OBSERVATION","DepotTitle":null,"RegionTitle":null,"ParentDepot":null,"Network":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    wagonAllocationSuite:
+    {
+      function: |test::goldenotter7::domain::Wagon.all()->project(
+  [
+    w|$w.vehicleCode,
+    w|$w.vehicleName,
+    w|$w.payloadTonnes,
+    w|$w.bodyStyle,
+    w|$w.depotTitle,
+    w|$w.regionTitle
+  ],
+  [
+    'VehicleCode',
+    'VehicleName',
+    'PayloadTonnes',
+    'BodyStyle',
+    'DepotTitle',
+    'RegionTitle'
+  ]
+)->sort(
+  [
+    asc('VehicleCode')
+  ]
+);
+      tests:
+      [
+        wagonTwoHopRegion:
+        {
+          doc: 'Goods wagons walk their own allocation join to the depot and the same second hop onto the region, so the sibling subclass of the hauled-vehicle hierarchy is read over its own table while sharing the region contract, and the unallocated wagon again loses both joined columns.';
+          data:
+          [
+            test::goldenotter7::store::RailwayFleetDB:
+              Relational
+              #{
+                fleet.wagon:
+                  'wagon_code,wagon_name,axle_count,payload_tonnes,body_style,depot_code\n'+
+                  'WAG-01,Slate Hopper,2,8.5,HOPPER,DEP-1\n'+
+                  'WAG-02,Timber Flat,4,12.25,FLAT,DEP-2\n'+
+                  'WAG-03,Stored Van,2,6.75,VAN,\n';
+                works.depot:
+                  'depot_code,depot_name,region_code,parent_depot_code\n'+
+                  'DEP-1,Upper Shed,RG-1,DEP-2\n'+
+                  'DEP-2,Valley Works,RG-2,\n';
+                reference.region_profile:
+                  'region_code,region_name,network_name\n'+
+                  'RG-1,Fell Region,Northern Network\n'+
+                  'RG-2,Valley Region,Northern Network\n';
+              }#
+          ];
+          asserts:
+          [
+            threeWagonsResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VehicleCode":"WAG-01","VehicleName":"Slate Hopper","PayloadTonnes":8.5,"BodyStyle":"HOPPER","DepotTitle":"Upper Shed","RegionTitle":"Fell Region"},{"VehicleCode":"WAG-02","VehicleName":"Timber Flat","PayloadTonnes":12.25,"BodyStyle":"FLAT","DepotTitle":"Valley Works","RegionTitle":"Valley Region"},{"VehicleCode":"WAG-03","VehicleName":"Stored Van","PayloadTonnes":6.75,"BodyStyle":"VAN","DepotTitle":null,"RegionTitle":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

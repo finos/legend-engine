@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::frostedlighthouse3::domain::*;
+
+Profile test::frostedlighthouse3::domain::SchemaMeta
+{
+  stereotypes: [contractPayload];
+  tags: [scalarType, hasExample, fieldNote, indexHint];
+}
+
+Class <<SchemaMeta.contractPayload>> {meta::pure::profiles::doc.doc = 'Parameter record accepted by the herbarium specimen lookup contract; every field is optional so a caller may omit any narrowing criterion.'} test::frostedlighthouse3::domain::SpecimenLookupRequest
+{
+  {SchemaMeta.scalarType = 'string', SchemaMeta.hasExample = 'true'} siteCode: String[0..1];
+  {SchemaMeta.scalarType = 'string'} collectorInitials: String[0..1];
+  {SchemaMeta.scalarType = 'string', SchemaMeta.fieldNote = 'Season label as printed on the sheet label.'} seasonLabel: String[0..1];
+  {SchemaMeta.scalarType = 'integer', SchemaMeta.indexHint = 'none'} maxSheets: Integer[0..1];
+  {SchemaMeta.scalarType = 'string', SchemaMeta.indexHint = 'secondary', SchemaMeta.indexHint = 'covering'} preservationCodeFilters: String[*];
+}
+
+Class <<SchemaMeta.contractPayload>> {meta::pure::profiles::doc.doc = 'One herbarium sheet as published by the lookup contract, carrying an optional enumerated preservation code.'} test::frostedlighthouse3::domain::SpecimenSummary
+[
+  preservationCodeEnumerated: if($this.preservationCode->isNotEmpty(), | $this.preservationCode->toOne()->toUpper()->in(['PRESSED', 'SPIRIT', 'CARPOLOGICAL', 'SILICA', 'FROZEN']), | true)
+]
+{
+  {SchemaMeta.scalarType = 'string', SchemaMeta.hasExample = 'true'} sheetCode: String[0..1];
+  {SchemaMeta.scalarType = 'string', SchemaMeta.fieldNote = 'Accepted binomial recorded on the determination slip.'} taxonName: String[0..1];
+  {SchemaMeta.scalarType = 'string', SchemaMeta.indexHint = 'secondary'} preservationCode: String[0..1];
+  {SchemaMeta.scalarType = 'string'} siteCode: String[0..1];
+  {SchemaMeta.scalarType = 'number'} sheetMassG: Float[0..1];
+  {SchemaMeta.scalarType = 'integer'} duplicateCount: Integer[0..1];
+  {SchemaMeta.scalarType = 'string', SchemaMeta.indexHint = 'none', SchemaMeta.indexHint = 'archive'} annotationNotes: String[*];
+}
+
+Class <<SchemaMeta.contractPayload>> {meta::pure::profiles::doc.doc = 'One collecting site as published by the lookup contract, carrying an optional enumerated habitat code.'} test::frostedlighthouse3::domain::CollectionSiteSummary
+[
+  habitatCodeEnumerated: if($this.habitatCode->isNotEmpty(), | $this.habitatCode->toOne()->toUpper()->in(['MEADOW', 'WOODLAND', 'DUNE']), | true)
+]
+{
+  {SchemaMeta.scalarType = 'string', SchemaMeta.hasExample = 'true'} siteCode: String[0..1];
+  {SchemaMeta.scalarType = 'string'} siteName: String[0..1];
+  {SchemaMeta.scalarType = 'string', SchemaMeta.indexHint = 'secondary'} habitatCode: String[0..1];
+  {SchemaMeta.scalarType = 'number'} elevationM: Float[0..1];
+  {SchemaMeta.scalarType = 'string', SchemaMeta.fieldNote = 'Free-text locality description transcribed from the label.'} localityText: String[0..1];
+}
+
+Class <<SchemaMeta.contractPayload>> {meta::pure::profiles::doc.doc = 'Numeric roll-up returned beside the sheet and site records so a caller can size the result before paging.'} test::frostedlighthouse3::domain::SpecimenTallySummary
+{
+  {SchemaMeta.scalarType = 'integer'} sheetCount: Integer[0..1];
+  {SchemaMeta.scalarType = 'integer'} siteCount: Integer[0..1];
+  {SchemaMeta.scalarType = 'number'} meanSheetMassG: Float[0..1];
+  {SchemaMeta.scalarType = 'number', SchemaMeta.fieldNote = 'Share of sheets whose preservation code was populated.'} codedSheetShare: Float[0..1];
+}

@@ -1,0 +1,103 @@
+name: wistful-orchard-2
+title: "Wistful Orchard Graft Register — processing-milestoned graft runs, an eight-arm conditional scion band, a five-hop warden path and two inline views"
+description: |
+  An orchard graft register over two relational stores. A reference store owns
+  the scion grade, grove plot, orchard house, warden and warden post relations
+  plus the four joins that chain them; the register store includes it and adds
+  the processing-milestoned graft run relation, the graft journal and tray load
+  relations, an aggregating inline view over the tray loads and a second inline
+  view that derives a journal tag, a season flag and a tended flag from nested
+  conditional and string dyna functions, spread across three schemas. The
+  register mapping derives a scion band from an eight-arm conditional chain of
+  relational dyna functions ending in a null sentinel, nests conditional load
+  and note labels three levels deep over the tray view and the note text,
+  divides canopy span across the grafted scions, composes a ten-way band
+  membership test, binds tray mass and tray tally to the aggregating view and
+  the journal tag and season flag to the derived view, walks a two-hop plot
+  path and a five-hop warden post path, and maps two enumerations whose source
+  values leave one row deliberately unmapped. A second root mapped through a
+  store filter keeps only the grafting journals. Three derived properties fold
+  the conditional labels back into tended, grafted and compact predicates. Five
+  services expose the register: a point-in-time roster taking a processing date
+  and a canopy span floor, a plot span ranking over an unpartitioned window, a
+  widest-run-per-plot ranking over a partitioned window, a relative day window
+  over the journals and a deeply nested tended run audit. A data space packages
+  the mapping against the register runtime.
+
+modelSources:
+  model:
+    root: wistful-orchard-2
+    files:
+      - test/wistfulorchard2/connection/GraftConnections.pure
+      - test/wistfulorchard2/data/GraftTestData.pure
+      - test/wistfulorchard2/dataspace/GraftDataSpace.pure
+      - test/wistfulorchard2/domain/GraftDomain.pure
+      - test/wistfulorchard2/mapping/GraftMapping.pure
+      - test/wistfulorchard2/runtime/GraftRuntimes.pure
+      - test/wistfulorchard2/service/GraftServices.pure
+      - test/wistfulorchard2/store/GraftRegisterStore.pure
+      - test/wistfulorchard2/store/GroveReferenceStore.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data-branch-coverage
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aggregating-view
+  - conditional-transform
+  - data-space
+  - derived-property
+  - dyna-function
+  - enumeration-mapping
+  - h2
+  - horticulture
+  - inline-view
+  - inner-join
+  - mapping-test
+  - multi-hop-join
+  - null-sentinel
+  - point-in-time-query
+  - processing-temporal
+  - relational
+  - service-test
+  - snowflake
+  - store-filter
+  - view-backed-property
+  - window-function

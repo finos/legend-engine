@@ -1,0 +1,60 @@
+name: verdant-meadow-5
+title: "Hay Meadow Fieldwork And Parcel Registry — Aliased Relational Surfaces Behind Two Single-Context Data Spaces"
+description: |
+  The fieldwork and registry records of a hay-meadow holding, held in one warehouse database as five
+  unrelated surfaces: the cuts lifted off each parcel, the pollinator transects walked across them,
+  the sward samples splitting cover between herbs and grasses, the full-history parcel register and
+  the latest-snapshot parcel surface that keeps one tagged row per parcel. Every class is mapped onto
+  its own driving table alias under its own primary key with no join between them. Six single-execution
+  services carry the projections: four project a whole register in code order without any narrowing
+  predicate, and two narrow first — a cut-yield search over one season, an enumerated set of parcels
+  and a bale floor, and a sward-sample search over the parcels of interest and a herb-cover floor,
+  including a floor that excludes every row. Two Snowflake warehouse connections authenticated with a
+  public-key strategy stand behind the model, one wired into the single engine runtime, and two data
+  spaces each declare exactly one execution context over that shared mapping and runtime — one entered
+  from the fieldwork side, one from the registry side — each curating its own elements, publishing its
+  own titled executables and naming an email support contact.
+modelSources:
+  model:
+    root: verdant-meadow-5
+    files:
+      - test/verdantmeadow5/connection/MeadowConnections.pure
+      - test/verdantmeadow5/dataspace/MeadowDataSpaces.pure
+      - test/verdantmeadow5/domain/MeadowDomain.pure
+      - test/verdantmeadow5/mapping/MeadowMapping.pure
+      - test/verdantmeadow5/runtime/MeadowRuntime.pure
+      - test/verdantmeadow5/service/HayCutRegister.pure
+      - test/verdantmeadow5/service/HayCutYieldSearch.pure
+      - test/verdantmeadow5/service/MeadowParcelLatestRegister.pure
+      - test/verdantmeadow5/service/MeadowParcelRegister.pure
+      - test/verdantmeadow5/service/PollinatorTransectRegister.pure
+      - test/verdantmeadow5/service/SwardSampleCoverSearch.pure
+      - test/verdantmeadow5/store/MeadowDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - h2
+  - hay-meadow
+  - latest-snapshot
+  - main-table-alias
+  - multi-table
+  - pollinator-transect
+  - primary-key
+  - relational
+  - service-test
+  - snowflake

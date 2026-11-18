@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlycove2::mapping::BaseCoveMapping
+(
+  *test::kindlycove2::domain::SurveyPlot[plot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlycove2::store::CoveDatabase]cove.survey_plot.plot_id
+    )
+    ~mainTable [test::kindlycove2::store::CoveDatabase]cove.survey_plot
+    plotId: [test::kindlycove2::store::CoveDatabase]cove.survey_plot.plot_id,
+    plotCode: [test::kindlycove2::store::CoveDatabase]cove.survey_plot.plot_code,
+    coveName: [test::kindlycove2::store::CoveDatabase]cove.survey_plot.cove_name,
+    rangerId: [test::kindlycove2::store::CoveDatabase]cove.survey_plot.ranger_id,
+    zoneCode: [test::kindlycove2::store::CoveDatabase]cove.survey_plot.zone_code,
+    openedOn: [test::kindlycove2::store::CoveDatabase]cove.survey_plot.opened_on,
+    visitorCapacity: [test::kindlycove2::store::CoveDatabase]cove.survey_plot.visitor_capacity,
+    plotLabel: concat([test::kindlycove2::store::CoveDatabase]cove.survey_plot.plot_code, concat(' - ', [test::kindlycove2::store::CoveDatabase]cove.survey_plot.cove_name)),
+    displayCode: concat(toString([test::kindlycove2::store::CoveDatabase]cove.survey_plot.plot_id), [test::kindlycove2::store::CoveDatabase]cove.survey_plot.zone_code)
+  }
+
+  testSuites:
+  [
+    plotMappingSuite:
+    {
+      function: |test::kindlycove2::domain::SurveyPlot.all(%2026-06-01)->project(
+        [
+          p|$p.plotCode,
+          p|$p.plotLabel,
+          p|$p.coveName,
+          p|$p.zoneCode,
+          p|$p.displayCode
+        ],
+        [
+          'Plot',
+          'Label',
+          'Cove',
+          'Zone',
+          'Display'
+        ]
+      );
+      tests:
+      [
+        plotsIncludeDerivedLabels:
+        {
+          data:
+          [
+            test::kindlycove2::store::CoveDatabase:
+              Relational
+              #{
+                cove.survey_plot:
+                  'plot_id,plot_code,cove_name,ranger_id,zone_code,opened_on,visitor_capacity,from_z,thru_z\n'+
+                  '1,TP-ALPHA,Quiet Cove,7,NORTH,2024-03-01,40,2026-01-01,2026-12-31\n'+
+                  '2,TP-BRAVO,Quiet Cove,8,SOUTH,2024-04-02,25,2025-01-01,2025-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            inRangePlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"TP-ALPHA","Label":"TP-ALPHA - Quiet Cove","Cove":"Quiet Cove","Zone":"NORTH","Display":"1NORTH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

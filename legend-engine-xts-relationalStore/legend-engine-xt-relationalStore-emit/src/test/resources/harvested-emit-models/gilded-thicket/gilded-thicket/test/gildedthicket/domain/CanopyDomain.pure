@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::gildedthicket::domain::*;
+
+Enum test::gildedthicket::domain::ConditionGrade
+{
+  THRIVING,
+  STABLE,
+  STRESSED,
+  DECLINING
+}
+
+Enum test::gildedthicket::domain::CrownForm
+{
+  BROAD,
+  COLUMNAR,
+  WEEPING
+}
+
+Enum test::gildedthicket::domain::SurfaceType
+{
+  PAVED,
+  GRASS,
+  MULCH
+}
+
+Enum test::gildedthicket::domain::CareTier
+{
+  PRIORITY,
+  ROUTINE,
+  WATCH
+}
+
+Class {meta::pure::profiles::doc.doc = 'Where a surveyed street tree stands, folded into the survey record itself.'} test::gildedthicket::domain::SurveyLocation
+{
+  blockCode: String[1];
+  streetLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One canopy inspection of a street tree on a municipal greenway.'} test::gildedthicket::domain::CanopySurvey
+{
+  surveyCode: String[1];
+  spreadMetres: Float[1];
+  conditionBand: String[0..1];
+  noteLabel: String[0..1];
+  conditionGrade: ConditionGrade[0..1];
+  crownForm: CrownForm[0..1];
+  surfaceType: SurfaceType[0..1];
+  careTier: CareTier[0..1];
+  boroughName: String[0..1];
+  blockWardName: String[0..1];
+  location: SurveyLocation[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey entry surfaced from either the live register or the retired archive.'} test::gildedthicket::domain::SurveyEntry
+{
+  entryCode: String[1];
+  sourceTag: String[1];
+  spreadMetres: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An administrative ward of the greenway network.'} test::gildedthicket::domain::Ward
+{
+  wardCode: String[1];
+  wardName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A planning district grouping greenway wards.'} test::gildedthicket::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+}

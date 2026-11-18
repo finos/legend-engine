@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedlighthouse4::service::LotSowWindowFeed
+{
+  pattern: '/frostedlighthouse/v1/lotSowWindow/{asOf}';
+  title: 'Frosted Lighthouse - Lot Sow Window';
+  owners:
+  [
+    'nursery-propagation-desk'
+  ];
+  documentation: 'Derives the four-week sowing window from the supplied date by date arithmetic instead of a second caller bound, and projects both the elapsed day count and the first day of the sowing month as computed columns.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::frostedlighthouse4::domain::SeedLot.all()->filter(x|($x.sownOn >= $asOf->adjust(-28, meta::pure::functions::date::DurationUnit.DAYS)) && (($x.sownOn <= $asOf) && ($x.statusCode->in(['GRADED', 'SOWN']))))->project([x|$x.lotId, x|$x.sownOn, x|$x.sownOn->dateDiff($asOf, meta::pure::functions::date::DurationUnit.DAYS), x|$x.sownOn->firstDayOfMonth()], ['LotId', 'SownOn', 'DaysSown', 'SowMonthStart'])->sort([asc('LotId')])};
+    mapping: test::frostedlighthouse4::mapping::NurseryLotMapping;
+    runtime: test::frostedlighthouse4::runtime::NurseryLotRuntime;
+  }
+  testSuites:
+  [
+    lotSowWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryLotConnection:
+            Relational
+            #{
+              nursery.seed_lot:
+                'lot_id,lot_code,species_code,house_code,status_code,tray_count,germination_pct,sown_on,graded_at,batch_note\n'+
+                '1,LT-0001,SP-ACER,GH-01,GRADED,48,92.5,2026-01-05,2026-02-01 09:15:00,first flush strong\n'+
+                '2,LT-0002,SP-BETU,GH-01,GRADED,36,78.25,2026-01-12,2026-02-02 09:30:00,\n'+
+                '3,LT-0003,SP-CORY,GH-02,SOWN,24,,2026-01-19,,awaiting first count\n'+
+                '4,LT-0004,SP-ACER,GH-02,GRADED,60,64.0,2026-01-26,2026-02-05 10:00:00,thinned tray\n'+
+                '5,LT-0005,SP-QUER,GH-03,DISCARDED,12,4.5,2026-02-02,2026-02-09 11:45:00,damping off\n'+
+                '6,LT-0006,SP-TILI,GH-03,GRADED,30,88.75,2026-02-09,2026-02-16 08:20:00,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        plannedAndExecuted:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-02-09
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotId":2,"SownOn":"2026-01-12","DaysSown":28,"SowMonthStart":"2026-01-01"},{"LotId":3,"SownOn":"2026-01-19","DaysSown":21,"SowMonthStart":"2026-01-01"},{"LotId":4,"SownOn":"2026-01-26","DaysSown":14,"SowMonthStart":"2026-01-01"},{"LotId":6,"SownOn":"2026-02-09","DaysSown":0,"SowMonthStart":"2026-02-01"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

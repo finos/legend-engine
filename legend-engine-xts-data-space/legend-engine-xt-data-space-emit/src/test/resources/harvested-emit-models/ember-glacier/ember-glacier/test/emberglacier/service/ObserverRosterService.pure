@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberglacier::service::ObserverRosterService
+{
+  pattern: '/emberglacier/v1/observer-roster';
+  title: 'Ember Glacier - Observer Roster';
+  ownership: UserList { users: ['skywatch-rota-desk'] };
+  documentation: 'Observers enrolled in a cohort, admitted by a presence test on the optional cohort so an unenrolled observer never reaches the roster.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::emberglacier::domain::Observer.all()->filter(
+      o|$o.cohortCode->isNotEmpty()
+    )->project(
+      [
+        o|$o.observerCode,
+        o|$o.observerName,
+        o|$o.cohortCode->toOne()
+      ],
+      [
+        'Observer',
+        'Name',
+        'Cohort'
+      ]
+    )->sort([asc('Observer')]);
+    mapping: test::emberglacier::mapping::SkywatchMapping;
+    runtime: test::emberglacier::runtime::SkywatchRuntime;
+  }
+  testSuites:
+  [
+    observerRosterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skywatchConnection:
+            Relational
+            #{
+              skywatch.observer:
+                'observer_id,observer_code,observer_name,cohort_code\n'+
+                '1,OV-01,Aster Vale,COHORT-N1\n'+
+                '2,OV-02,Bramble Quint,COHORT-N2\n'+
+                '3,OV-03,Cinder Rowe,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyEnrolledObservers:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoEnrolledObservers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observer":"OV-01","Name":"Aster Vale","Cohort":"COHORT-N1"},{"Observer":"OV-02","Name":"Bramble Quint","Cohort":"COHORT-N2"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantisle3::service::NurseryDigestFeed
+{
+  pattern: '/verdantisle3/nurseryDigestFeed';
+  title: 'Verdant Isle - Nursery Digest Feed';
+  owners:
+  [
+    'orchard-propagation-guild'
+  ];
+  documentation: 'Publishes whole refined nursery-bed records through a single execution over the nursery digest transformation, including the bed-slot summary folded out of the nested bed collection. The runtime is declared inline and binds the inbound nursery row through a model store JSON connection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::verdantisle3::domain::NurseryDigest.all()->graphFetch(
+      #{
+        test::verdantisle3::domain::NurseryDigest{
+          bedKey,
+          rowLabel,
+          payloadVersionLabel,
+          slotSummary,
+          litresPerWeek,
+          tray{
+            trayCode
+          },
+          probe{
+            phLabel
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::verdantisle3::domain::NurseryDigest{
+          bedKey,
+          rowLabel,
+          payloadVersionLabel,
+          slotSummary,
+          litresPerWeek,
+          tray{
+            trayCode
+          },
+          probe{
+            phLabel
+          }
+        }
+      }#
+    );
+    mapping: test::verdantisle3::mapping::NurseryDigestM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::verdantisle3::mapping::NurseryDigestM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          inboundNurseryRows:
+          #{
+            JsonModelConnection
+            {
+              class: test::verdantisle3::domain::NurseryRow;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    acidBedRowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundNurseryRows:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"bedRef":" nb-7 ","rawTray":" t-19 ","rawLitres":" 15 ","rawPh":" 6.2 ","beds":[{"bedCode":"nb-7a","slotCount":24},{"bedCode":"nb-7b","slotCount":6}],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v3","takeCount":11,"failCount":4}}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        wholeBedDigestIsPublished:
+        {
+          asserts:
+          [
+            oneBedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"bedKey":"NB-7","rowLabel":"community orchard nursery register","payloadVersionLabel":"PAYLOAD V3","slotSummary":"NB-7A=24, NB-7B=6","litresPerWeek":15,"tray":{"trayCode":"TRAY-T-19"},"probe":{"phLabel":"ACID 6.2"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    bareBedRowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inboundNurseryRows:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"bedRef":"nb-8","beds":[]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyNurseryDefaultApplies:
+        {
+          asserts:
+          [
+            defaultedBedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"bedKey":"NB-8","rowLabel":"community orchard nursery register","payloadVersionLabel":"NO PAYLOAD","slotSummary":null,"litresPerWeek":null,"tray":{"trayCode":"UNTRAYED"},"probe":{"phLabel":"UNPROBED"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

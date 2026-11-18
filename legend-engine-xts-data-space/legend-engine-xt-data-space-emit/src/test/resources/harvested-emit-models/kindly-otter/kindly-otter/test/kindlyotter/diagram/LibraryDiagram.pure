@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::kindlyotter::diagram::BranchRecordDiagram
+{
+  classView branchMonthSeries
+  {
+    class: test::kindlyotter::domain::BranchMonthSeries;
+    position: (40.0, 40.0);
+    rectangle: (260.0, 220.0);
+  }
+  classView branchProfile
+  {
+    class: test::kindlyotter::domain::BranchProfile;
+    position: (360.0, 40.0);
+    rectangle: (240.0, 140.0);
+  }
+}
+
+###Diagram
+Diagram test::kindlyotter::diagram::BranchActivityDiagram
+{
+  classView titleStock
+  {
+    class: test::kindlyotter::domain::TitleStock;
+    position: (40.0, 40.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView volunteerHours
+  {
+    class: test::kindlyotter::domain::VolunteerHours;
+    position: (340.0, 40.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView outreachEvent
+  {
+    class: test::kindlyotter::domain::OutreachEvent;
+    position: (640.0, 40.0);
+    rectangle: (240.0, 140.0);
+  }
+}

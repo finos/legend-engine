@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::azuremeadow3::domain::*;
+import meta::pure::profiles::*;
+
+Profile test::azuremeadow3::domain::MeadowProfile
+{
+  stereotypes: [surveyed, provisional];
+  tags: [steward, tier];
+}
+
+Enum {doc.doc = 'What the sward of a hay parcel was carrying when it was mown.'} test::azuremeadow3::domain::SwardKind
+{
+  {doc.doc = 'Sward carrying mown grasses alone.'} MEADOW_GRASS,
+  {doc.doc = 'Sward carrying herbs through the grasses.'} HERB_RICH,
+  {doc.doc = 'Sward carrying sedge over a wet flush.'} SEDGE_FLUSH
+}
+
+Enum {doc.doc = 'How far the cut hay had dried when it was carried off the parcel.'} test::azuremeadow3::domain::DryStage
+{
+  {doc.doc = 'Hay dried on the parcel before it was carried.'} FIELD_DRY,
+  {doc.doc = 'Hay carried green and finished under the barn fan.'} BARN_DRY,
+  {doc.doc = 'Hay wrapped wet rather than dried at all.'} WRAPPED_WET
+}
+
+Enum {doc.doc = 'How the parcel was reached by the crew who mow it.'} test::azuremeadow3::domain::AccessKind
+{
+  {doc.doc = 'Parcel reached by the terrace track.'} TRACK_REACHED,
+  {doc.doc = 'Parcel reached on foot over the terrace wall.'} FOOT_REACHED,
+  {doc.doc = 'Parcel reached only by the winch cable.'} WINCH_REACHED
+}
+
+Class {doc.doc = 'A terrace of the meadow the hay parcels are cut into.'} test::azuremeadow3::domain::TerraceRef
+{
+  {doc.doc = 'Code the terrace is quoted by on the meadow plan.'} terraceCode: String[1];
+  {doc.doc = 'Name the terrace is called by.'} terraceName: String[0..1];
+}
+
+Class {doc.doc = 'Someone carried on the keeper roster of the meadow.'} test::azuremeadow3::domain::KeeperRef
+{
+  {doc.doc = 'Code the keeper is quoted by on the roster.'} keeperCode: String[1];
+  {doc.doc = 'Name the keeper signs the roster with.'} keeperName: String[0..1];
+}
+
+Class <<MeadowProfile.surveyed>> {doc.doc = 'A mown parcel of the meadow, whose terrace is reached one hop out of the parcel book.'} test::azuremeadow3::domain::MeadowParcel
+{
+  {doc.doc = 'Code the parcel is staked and quoted by.'} parcelCode: String[1];
+  {doc.doc = 'Name the parcel is called by on the meadow plan.'} parcelName: String[0..1];
+  {doc.doc = 'Terrace the parcel is cut into, one hop away.'} terraceName: String[0..1];
+  {doc.doc = 'How the crew reach the parcel to mow it.'} access: AccessKind[0..1];
+}
+
+Class {doc.doc = 'A hay parcel cut into an alpine terrace, whose slope and aspect are carried on a detail table joined to the parcel book rather than on the parcel book itself.'} test::azuremeadow3::domain::AlpineParcel extends MeadowParcel
+{
+  {doc.doc = 'Fall of the parcel measured across the terrace.'} slopePct: Float[0..1];
+  {doc.doc = 'Way the face of the parcel is turned.'} aspectKind: String[0..1];
+  {doc.doc = 'Aspect of the parcel stamped with the code it is staked by, standing in a fixed label when the detail table carries no aspect.'} aspectLabel() {if($this.aspectKind->isEmpty(), | 'ASPECT UNSET/' + $this.parcelCode, | $this.aspectKind->toOne()->toUpper() + '/' + $this.parcelCode)}: String[1];
+}
+
+Class {doc.doc = 'How many parcels a terrace carries and how many plots were staked over them, folded together by the terrace over the parcel book by the mapping rather than by the query.'} test::azuremeadow3::domain::TerraceLoad
+{
+  {doc.doc = 'Terrace the fold is grouped under.'} terraceCode: String[1];
+  {doc.doc = 'How many parcels the terrace carries.'} parcelTally: Integer[1];
+  {doc.doc = 'How many plots were staked over those parcels.'} plotTotal: Integer[1];
+}
+
+Class {doc.doc = 'The same terrace fold read back off a store-side view rather than folded by the mapping, so the aggregation is declared once in the store and mapped straight through.'} test::azuremeadow3::domain::TerraceSummary
+{
+  {doc.doc = 'Terrace the view row stands for.'} terraceCode: String[1];
+  {doc.doc = 'How many parcels the view counted for the terrace.'} parcelCount: Integer[1];
+  {doc.doc = 'How many plots the view totalled over those parcels.'} plotTotal: Integer[1];
+}
+
+Class <<temporal.businesstemporal, MeadowProfile.surveyed>> {MeadowProfile.tier = 'core', MeadowProfile.steward = 'alpine-meadow-desk', doc.doc = 'One hay cut taken off a parcel of the meadow, effective over the business window the meadow desk signs off, resolving the parcel it was mown from, the terrace that parcel is cut into and the keeper who walks that terrace.'} test::azuremeadow3::domain::HayCut
+{
+  {doc.doc = 'Code the cut is quoted by in the meadow book.'} cutCode: String[1];
+  {doc.doc = 'What the sward was carrying when it was mown.'} sward: SwardKind[0..1];
+  {doc.doc = 'How far the hay had dried when it was carried off.'} dry: DryStage[0..1];
+  {doc.doc = 'How many bales were tied off the cut.'} baleTally: Integer[1];
+  {doc.doc = 'Moisture the hay was carried at.'} moisturePct: Float[1];
+  {doc.doc = 'Length the stems stood at when they were mown.'} stemLenCm: Float[1];
+  {doc.doc = 'Date the parcel was mown.'} cutOn: StrictDate[1];
+  {doc.doc = 'Tier the bale tally falls in, walked as eight arms and left unresolved when none of them is met.'} baleTier: String[0..1];
+  {doc.doc = 'Note the meadow desk wrote against the cut, stamped and folded with the length of the note itself.'} noteLabel: String[0..1];
+  {doc.doc = 'Parcel the cut was mown from, one hop away.'} parcelName: String[0..1];
+  {doc.doc = 'Terrace the parcel of the cut is cut into, two hops away.'} terraceName: String[0..1];
+  {doc.doc = 'Keeper who walks the terrace of the parcel, three hops away.'} keeperName: String[0..1];
+  {doc.doc = 'Sum of the moisture and the stem length, scaled and shifted, walked deep enough that the plan has to fold the arithmetic before it reads the columns.'} cutIndex() {(((($this.moisturePct + $this.stemLenCm) * 2.0) - 1.5) * 0.5) + 0.25}: Float[1];
+  {doc.doc = 'Band the bale tally and the moisture fall in, walked as four arms and defaulted when none of them is met.'} yieldBand() {if($this.baleTally >= 70,
+                                  | 'BAND ONE HEAVY',
+                                  | if(($this.baleTally >= 40) && ($this.moisturePct >= 18.0),
+                                       | 'BAND TWO FULL',
+                                       | if($this.baleTally >= 20,
+                                            | 'BAND THREE FAIR',
+                                            | if($this.moisturePct >= 13.0,
+                                                 | 'BAND FOUR DAMP',
+                                                 | 'BAND FLOOR'))))}: String[1];
+  {doc.doc = 'Whether the cut tied at least as many bales as the caller names.'} tiesAtLeast(minBales: Integer[1]) {$this.baleTally >= $minBales}: Boolean[1];
+}

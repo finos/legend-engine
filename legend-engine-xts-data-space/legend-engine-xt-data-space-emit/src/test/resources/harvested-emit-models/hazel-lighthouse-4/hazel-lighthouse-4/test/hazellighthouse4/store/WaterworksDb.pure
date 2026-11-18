@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::hazellighthouse4::store::WaterworksDb
+(
+  Schema waterworks
+  (
+    Table reservoir
+    (
+      reservoir_code VARCHAR(24) PRIMARY KEY,
+      reservoir_name VARCHAR(120) NOT NULL,
+      district_name VARCHAR(80) NOT NULL,
+      commissioned_on DATE
+    )
+
+    Table pump_station
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      reservoir_code VARCHAR(24) NOT NULL,
+      model_name VARCHAR(40) NOT NULL,
+      rated_flow_lps DOUBLE NOT NULL,
+      head_metres DOUBLE NOT NULL,
+      active_flag BIT NOT NULL
+    )
+
+    Table service_call
+    (
+      call_code VARCHAR(24) PRIMARY KEY,
+      station_code VARCHAR(24) NOT NULL,
+      crew_code VARCHAR(24),
+      called_on DATE NOT NULL,
+      downtime_hours DOUBLE NOT NULL,
+      completed BIT NOT NULL
+    )
+
+    Table maintenance_crew
+    (
+      crew_code VARCHAR(24) PRIMARY KEY,
+      crew_name VARCHAR(80) NOT NULL,
+      depot_name VARCHAR(80) NOT NULL
+    )
+  )
+
+  Join Reservoir_Station
+  (
+    [test::hazellighthouse4::store::WaterworksDb]waterworks.reservoir.reservoir_code =
+      [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.reservoir_code
+  )
+
+  Join Station_Call
+  (
+    [test::hazellighthouse4::store::WaterworksDb]waterworks.pump_station.station_code =
+      [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call.station_code
+  )
+
+  Join Call_Crew
+  (
+    [test::hazellighthouse4::store::WaterworksDb]waterworks.service_call.crew_code =
+      [test::hazellighthouse4::store::WaterworksDb]waterworks.maintenance_crew.crew_code
+  )
+)

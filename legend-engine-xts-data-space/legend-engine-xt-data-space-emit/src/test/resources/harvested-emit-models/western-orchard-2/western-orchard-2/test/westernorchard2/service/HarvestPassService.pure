@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernorchard2::service::HarvestPassService
+{
+  pattern: '/western-orchard/v1/harvest-passes';
+  title: 'Western Orchard - Harvest Pass Register';
+  owners:
+  [
+    'orchard-register-desk',
+    'grove-packhouse-ops'
+  ];
+  documentation: 'Publishes the widest register of the three: every picking pass with its crew, packed grade, the three fruit measures taken and the three stamps bounding the pass and its weighing.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::westernorchard2::domain::HarvestPass.all()->project(
+      [
+        p|$p.passCode,
+        p|$p.rowCode,
+        p|$p.crewLead,
+        p|$p.gradeLabel,
+        p|$p.packHouse,
+        p|$p.binsFilled,
+        p|$p.brixDegrees,
+        p|$p.firmnessKg,
+        p|$p.startedAt,
+        p|$p.finishedAt,
+        p|$p.weighedAt
+      ],
+      [
+        'Pass',
+        'Row',
+        'CrewLead',
+        'Grade',
+        'PackHouse',
+        'Bins',
+        'Brix',
+        'FirmnessKg',
+        'StartedAt',
+        'FinishedAt',
+        'WeighedAt'
+      ]
+    )->sort(
+      [
+        asc('Pass')
+      ]
+    );
+    mapping: test::westernorchard2::mapping::OrchardMapping;
+    runtime: test::westernorchard2::runtime::OrchardRuntime;
+  }
+  testSuites:
+  [
+    harvestPassSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardConnection:
+            Relational
+            #{
+              grove.harvest_pass:
+                'pass_code,row_code,crew_lead,grade_label,pack_house,bins_filled,brix_degrees,firmness_kg,started_at,finished_at,weighed_at\n'+
+                'HP-01,WR-01,Ada Quince,EXTRA,North Shed,12.5,13.4,7.25,2026-09-12 06:00:00,2026-09-12 11:30:00,2026-09-12 12:00:00\n'+
+                'HP-02,WR-02,,STANDARD,North Shed,8.0,,6.5,2026-09-13 06:30:00,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        passRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            everyMappedPassColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pass":"HP-01","Row":"WR-01","CrewLead":"Ada Quince","Grade":"EXTRA","PackHouse":"North Shed","Bins":12.5,"Brix":13.4,"FirmnessKg":7.25,"StartedAt":"2026-09-12T06:00:00.000000000+0000","FinishedAt":"2026-09-12T11:30:00.000000000+0000","WeighedAt":"2026-09-12T12:00:00.000000000+0000"},{"Pass":"HP-02","Row":"WR-02","CrewLead":null,"Grade":"STANDARD","PackHouse":"North Shed","Bins":8.0,"Brix":null,"FirmnessKg":6.5,"StartedAt":"2026-09-13T06:30:00.000000000+0000","FinishedAt":null,"WeighedAt":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

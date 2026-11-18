@@ -1,0 +1,131 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletcavern3::mapping::WalkDigestM2M
+(
+  test::scarletcavern3::domain::LanternGrade: EnumerationMapping GradeCodeMapping
+  {
+    EASY: ['ESY'],
+    MODERATE: ['MOD'],
+    STRENUOUS: ['STR']
+  }
+
+  test::scarletcavern3::domain::WalkState: EnumerationMapping StateCodeMapping
+  {
+    COMPLETED: ['COMPLETED'],
+    TURNED_BACK: ['TURNED_BACK'],
+    CANCELLED: ['CANCELLED']
+  }
+
+  *test::scarletcavern3::domain::WalkDigest[walkDigestSet]: Pure
+  {
+    ~src test::scarletcavern3::domain::WalkPayload
+    walkRef: $src.walkRef->toOne(),
+    guideLabel: test::scarletcavern3::function::lanternLabel($src.record.guideCode->toOne(), $src.revision->toOne()),
+    partyBand: test::scarletcavern3::function::partySizeBand($src.record.partySize),
+    chamberHint: if($src.record.route.chamber.chamberCode->isEmpty(),
+                    | 'UNROUTED',
+                    | 'CHAMBER/' + $src.record.route.chamber.chamberCode->toOne()->toUpper()->trim() + '/' + if($src.record.route.chamber.tierName->isEmpty(),
+                                                                                                                | 'TIER-UNKNOWN',
+                                                                                                                | $src.record.route.chamber.tierName->toOne()->toUpper()->trim())),
+    grade: EnumerationMapping GradeCodeMapping: [test::scarletcavern3::function::gradeSentinel($src.record.gradeCode)]->toOne(),
+    state: EnumerationMapping StateCodeMapping: [if($src.record.stateCode->isEmpty(),
+                                                     | 'CANCELLED',
+                                                     | $src.record.stateCode->toOne()->toUpper()->trim())]->toOne(),
+    routeView[routeDigestSet]: $src
+  }
+
+  *test::scarletcavern3::domain::RouteDigest[routeDigestSet]: Pure
+  {
+    ~src test::scarletcavern3::domain::WalkPayload
+    routeName: if($src.record.route.routeName->isEmpty(), | 'UNNAMED ROUTE', | $src.record.route.routeName->toOne()->trim()),
+    tierName: $src.record.route.chamber.tierName
+  }
+
+  testSuites:
+  [
+    walkDigestSuite:
+    {
+      function: |test::scarletcavern3::domain::WalkDigest.all()->graphFetch(
+        #{
+          test::scarletcavern3::domain::WalkDigest
+          {
+            walkRef,
+            guideLabel,
+            partyBand,
+            chamberHint,
+            grade,
+            state,
+            routeView
+            {
+              routeName,
+              tierName
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::scarletcavern3::domain::WalkDigest
+          {
+            walkRef,
+            guideLabel,
+            partyBand,
+            chamberHint,
+            grade,
+            state,
+            routeView
+            {
+              routeName,
+              tierName
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyPartyArmAndBothSentinels:
+        {
+          doc: 'Every arm of the party-size cascade is hit in order, the absent size falls through to the no-party band, the absent grade code resolves through the substituted sentinel, the absent walk state resolves to the cancelled member, and the unrouted payload lands on both the unrouted chamber hint and the unnamed route name.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::scarletcavern3::domain::WalkPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"walkRef":"lw-01","revision":2,"record":{"guideCode":"gd-1","partySize":44,"gradeCode":"str","stateCode":"completed","route":{"routeName":"Lantern Hall Loop","chamber":{"chamberCode":"ch-01","tierName":"upper tier"}}}},{"walkRef":"lw-02","revision":3,"record":{"guideCode":"gd-2","partySize":33,"gradeCode":"mod","stateCode":"completed","route":{"routeName":"Straw Gallery Traverse","chamber":{"chamberCode":"ch-02","tierName":"middle tier"}}}},{"walkRef":"lw-03","revision":4,"record":{"guideCode":"gd-3","partySize":24,"gradeCode":"esy","stateCode":"turned_back","route":{"routeName":"Cascade Rift Circuit","chamber":{"chamberCode":"ch-03"}}}},{"walkRef":"lw-04","revision":5,"record":{"guideCode":"gd-4","partySize":15,"gradeCode":"str","stateCode":"completed","route":{"routeName":"Boulder Choke Spur","chamber":{"chamberCode":"ch-04","tierName":"lower tier"}}}},{"walkRef":"lw-05","revision":6,"record":{"guideCode":"gd-5","partySize":7,"gradeCode":"mod","stateCode":"cancelled","route":{"routeName":"Sump Passage Peek","chamber":{"chamberCode":"ch-05","tierName":"sump tier"}}}},{"walkRef":"lw-06","revision":7,"record":{"guideCode":"gd-6","partySize":3,"gradeCode":"esy","stateCode":"completed","route":{"routeName":"Entrance Chamber Stroll","chamber":{"chamberCode":"ch-06","tierName":"entrance tier"}}}},{"walkRef":"lw-07","revision":8,"record":{"guideCode":"gd-7","stateCode":"completed","route":{"chamber":{}}}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            sevenDigestedWalks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"walkRef":"lw-01","guideLabel":"LT2-GD-1","partyBand":"PARTY-6","chamberHint":"CHAMBER/CH-01/UPPER TIER","grade":"STRENUOUS","state":"COMPLETED","routeView":{"routeName":"Lantern Hall Loop","tierName":"upper tier"}},{"walkRef":"lw-02","guideLabel":"LT3-GD-2","partyBand":"PARTY-5","chamberHint":"CHAMBER/CH-02/MIDDLE TIER","grade":"MODERATE","state":"COMPLETED","routeView":{"routeName":"Straw Gallery Traverse","tierName":"middle tier"}},{"walkRef":"lw-03","guideLabel":"LT4-GD-3","partyBand":"PARTY-4","chamberHint":"CHAMBER/CH-03/TIER-UNKNOWN","grade":"EASY","state":"TURNED_BACK","routeView":{"routeName":"Cascade Rift Circuit","tierName":null}},{"walkRef":"lw-04","guideLabel":"LT5-GD-4","partyBand":"PARTY-3","chamberHint":"CHAMBER/CH-04/LOWER TIER","grade":"STRENUOUS","state":"COMPLETED","routeView":{"routeName":"Boulder Choke Spur","tierName":"lower tier"}},{"walkRef":"lw-05","guideLabel":"LT6-GD-5","partyBand":"PARTY-2","chamberHint":"CHAMBER/CH-05/SUMP TIER","grade":"MODERATE","state":"CANCELLED","routeView":{"routeName":"Sump Passage Peek","tierName":"sump tier"}},{"walkRef":"lw-06","guideLabel":"LT7-GD-6","partyBand":"PARTY-1","chamberHint":"CHAMBER/CH-06/ENTRANCE TIER","grade":"EASY","state":"COMPLETED","routeView":{"routeName":"Entrance Chamber Stroll","tierName":"entrance tier"}},{"walkRef":"lw-07","guideLabel":"LT8-GD-7","partyBand":"PARTY-NONE","chamberHint":"UNROUTED","grade":"MODERATE","state":"COMPLETED","routeView":{"routeName":"UNNAMED ROUTE","tierName":null}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

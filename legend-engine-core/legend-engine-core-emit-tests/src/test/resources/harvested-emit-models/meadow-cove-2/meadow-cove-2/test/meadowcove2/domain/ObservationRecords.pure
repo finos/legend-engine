@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'Generic registration base carrying the audit and validity attributes shared by every collected observation.'} demo::meadowcove2::hierarchy::ObservationRegistration
+{
+  registeredBy: String[1];
+  registrationSource: String[1];
+  revision: Integer[1];
+  reviewStatus: String[1];
+  validFrom: DateTime[1];
+  validThru: DateTime[0..1];
+  surveyDate: StrictDate[1];
+  depthCode: String[0..1];
+  waterTemperature: Float[1];
+  canopyGrade: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Kelp observation payload adding the two measured domain attributes to the shared registration base.'} demo::meadowcove2::hierarchy::KelpObservation extends demo::meadowcove2::hierarchy::ObservationRegistration
+{
+  canopyCoverPercent: Float[0..1];
+  frondCount: Integer[0..1];
+}

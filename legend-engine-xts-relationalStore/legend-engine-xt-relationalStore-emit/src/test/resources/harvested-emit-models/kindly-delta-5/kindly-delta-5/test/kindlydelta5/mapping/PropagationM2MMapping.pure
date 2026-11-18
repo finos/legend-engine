@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlydelta5::mapping::PropagationM2MMapping
+(
+  test::kindlydelta5::domain::VigourBand: EnumerationMapping VigourBandMapping
+  {
+    SPROUT: ['SPROUT'],
+    READY: ['READY'],
+    LUSH: ['LUSH']
+  }
+
+  test::kindlydelta5::domain::TrayFormat: EnumerationMapping TrayFormatMapping
+  {
+    CELL: ['CELL'],
+    FLAT: ['FLAT'],
+    OPEN: ['OPEN']
+  }
+
+  test::kindlydelta5::domain::StorageZone: EnumerationMapping StorageZoneMapping
+  {
+    COOL: ['COOL'],
+    MILD: ['MILD'],
+    WARM: ['WARM']
+  }
+
+  *test::kindlydelta5::domain::PropagationDigest[digest]: Pure
+  {
+    ~src test::kindlydelta5::domain::PropagationBatchRecord
+    batchCode: $src.batchCode,
+    digestLabel: if(
+      $src.labelText->isEmpty(),
+      | 'UNNAMED',
+      | $src.labelText->toOne()->toUpper()->trim()
+    ),
+    labelLength: if(
+      $src.labelText->isEmpty(),
+      | 0,
+      | $src.labelText->toOne()->length()
+    ),
+    vigour: EnumerationMapping VigourBandMapping: [if(
+      $src.stageText->isEmpty(),
+      | 'SPROUT',
+      | if(
+        $src.stageText->toOne()->toUpper()->trim() == 'MATURE',
+        | 'LUSH',
+        | 'READY'
+      )
+    )]->toOne(),
+    trayFormat: EnumerationMapping TrayFormatMapping: [if(
+      $src.trayFormatText->isEmpty(),
+      | 'OPEN',
+      | $src.trayFormatText->toOne()->toUpper()->trim()
+    )]->toOne(),
+    storageZone: EnumerationMapping StorageZoneMapping: [if(
+      $src.zoneText->isEmpty(),
+      | 'WARM',
+      | $src.zoneText->toOne()->toUpper()->trim()
+    )]->toOne()
+  }
+)

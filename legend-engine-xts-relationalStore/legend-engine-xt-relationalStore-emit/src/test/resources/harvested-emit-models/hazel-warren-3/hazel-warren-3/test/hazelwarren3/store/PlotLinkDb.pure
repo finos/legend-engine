@@ -1,0 +1,26 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::hazelwarren3::store::PlotLinkDb
+(
+  include test::hazelwarren3::store::PlotCoreDb
+  include test::hazelwarren3::store::SiteReferenceDb
+
+  Join Plot_Site_J(allotment.plot.site_code = allotmentref.site.site_code)
+
+  Join Plot_Crop_J(allotment.plot.crop_code = allotmentref.crop.crop_code)
+
+  Join Plot_Tending_J(allotment.plot.plot_code = allotment.tending.plot_code)
+)

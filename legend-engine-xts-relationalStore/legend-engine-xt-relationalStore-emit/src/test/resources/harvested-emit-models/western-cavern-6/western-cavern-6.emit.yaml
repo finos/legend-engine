@@ -1,0 +1,80 @@
+name: western-cavern-6
+title: "Western Cavern 6 - Karst cavern register over an included store chain with folded enumerations, four-hop locality joins and a business-temporal chamber survey"
+description: |
+  A western karst register maps caverns, passages, chambers, field notes and trip
+  summaries from three relational stores, two of which include a shared base
+  store spanning a karst and a registry schema. Four mappings form an include
+  chain from the enumeration mappings to the aggregate mapping that holds every
+  test suite. Cavern status, passage flow and chamber floor are enumeration
+  mappings over trimmed and upper-cased or defaulted codes, while chamber kind
+  maps integer codes; each test carries a code no enumeration value maps to.
+  Caverns are restricted by a named store filter, label themselves through
+  string functions, band their entrance altitude with nested case expressions,
+  carry a literal registry source and a survey year, and embed a steward block
+  from their own columns plus a locality block whose properties navigate one,
+  two and three join hops. Passages are filtered to surveyed rows, grade
+  themselves through a three-level case chain, reach their next passage over a
+  self join and their licensing authority over a four-hop path, and link to
+  their cavern through an association whose composite join only matches after
+  a dynamic function on the reference. Chambers are read as of a survey date
+  over a business-milestoned table with a two-column key. A grouped view counts
+  trips and sums hours per cavern, a distinct view collapses repeated team
+  visits, and a union operation mapping folds rescue and bat-count notes held
+  in two schemas of a third store. A model-to-model mapping lifts free-worded
+  survey sheets onto the same enumerations through computed source values.
+modelSources:
+  model:
+    root: western-cavern-6
+    files:
+      - test/westerncavern6/domain/CavernDomain.pure
+      - test/westerncavern6/mapping/WesternBaseMapping.pure
+      - test/westerncavern6/mapping/WesternEnumMappings.pure
+      - test/westerncavern6/mapping/WesternMapping.pure
+      - test/westerncavern6/mapping/WesternSurveyMapping.pure
+      - test/westerncavern6/store/CavernStores.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - scaffolding:relational-mapping
+  - store:relational-filter
+  - mapping:relational-conditional-transform
+  - mapping:relational-date-function-transform
+  - mapping:relational-embedded
+  - mapping:relational-join-path
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-property-expression
+  - mapping:relational-string-function-transform
+  - milestoning:milestoning
+  - scaffolding:relational-store
+  - store:relational-composite-join
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-join
+  - store:relational-multi-column-primary-key
+  - store:relational-cross-schema
+  - store:relational-multi-table
+  - store:relational-nested-join
+  - store:relational-self-join
+  - store:relational-store-include
+  - store:relational-view
+  - store:relational-view-distinct
+  - store:relational-view-group-by
+stores:
+  - relational
+
+complexity: intermediate
+
+tags:
+  - association
+  - conditional-transform
+  - enumeration-mapping
+  - h2
+  - join-path
+  - milestoning
+  - operation-mapping
+  - relational

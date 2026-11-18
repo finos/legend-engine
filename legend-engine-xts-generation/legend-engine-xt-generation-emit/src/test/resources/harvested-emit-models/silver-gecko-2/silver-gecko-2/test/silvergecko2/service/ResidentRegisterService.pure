@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silvergecko2::service::ResidentRegisterService
+{
+  pattern: '/silvergecko2/v1/resident-register';
+  title: 'Silver Gecko 2 - Resident Register';
+  ownership: UserList { users: ['vivarium-keeper-desk'] };
+  documentation: 'Residents housed in the enclosure a caller names, published with the concatenated display label, the model-fixed register label, the joined enclosure and the joined species name.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {enclosureName: String[1]|test::silvergecko2::domain::Resident.all()->filter(
+      r|$r.enclosureName == $enclosureName
+    )->project(
+      [
+        r|$r.residentCode,
+        r|$r.displayLabel,
+        r|$r.registerKind,
+        r|$r.speciesName,
+        r|$r.lengthMillimetres
+      ],
+      [
+        'ResidentCode',
+        'DisplayLabel',
+        'RegisterKind',
+        'SpeciesName',
+        'LengthMillimetres'
+      ]
+    )->sort([asc('ResidentCode')])};
+    mapping: test::silvergecko2::mapping::VivariumMapping;
+    runtime: test::silvergecko2::runtime::VivariumStationRuntime;
+  }
+  testSuites:
+  [
+    residentRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vivariumStation:
+            Reference
+            #{
+              test::silvergecko2::data::VivariumTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        theAridEnclosureHousesTwoResidents:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            enclosureName = 'Sand Terrace'
+          ]
+          asserts:
+          [
+            bothAridResidentsAreRegistered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ResidentCode":"RS-1","DisplayLabel":"RS-1 / Pebble","RegisterKind":"RESIDENT REGISTER","SpeciesName":"Banded Gecko","LengthMillimetres":120},{"ResidentCode":"RS-2","DisplayLabel":"RS-2 / Ochre","RegisterKind":"RESIDENT REGISTER","SpeciesName":"Rock Agama","LengthMillimetres":210}]';
+                  }#;
+              }#
+          ]
+        },
+        theHumidEnclosureHousesOneResident:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            enclosureName = 'Fern Terrace'
+          ]
+          asserts:
+          [
+            theSingleHumidResidentIsRegistered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ResidentCode":"RS-3","DisplayLabel":"RS-3 / Willow","RegisterKind":"RESIDENT REGISTER","SpeciesName":"Leaf Skink","LengthMillimetres":95}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

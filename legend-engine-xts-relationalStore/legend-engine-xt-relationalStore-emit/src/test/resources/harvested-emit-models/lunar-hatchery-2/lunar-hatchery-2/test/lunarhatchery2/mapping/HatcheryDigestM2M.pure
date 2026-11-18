@@ -1,0 +1,224 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarhatchery2::mapping::HatcheryDigestM2M
+(
+  include mapping test::lunarhatchery2::mapping::HatcheryRosterMapping
+
+  *test::lunarhatchery2::domain::TankDigest[tankDigestSet]: Pure
+  {
+    ~src test::lunarhatchery2::domain::TankRecord
+    tankTag: 'TK-' + $src.tankLabel,
+    labelTag: $src.tankLabel,
+    widthTag: $src.tankLabel->length()->toString(),
+    broods[broodDigestSet]: $src,
+    keepers[keeperDigestSet]: $src
+  }
+
+  *test::lunarhatchery2::domain::BroodDigest[broodDigestSet]: Pure
+  {
+    ~src test::lunarhatchery2::domain::TankRecord
+    broodTag: 'BR-' + $src.tankLabel,
+    aerationTag: if($src.aerated->isEmpty(), | 'UNKNOWN', | $src.aerated->toOne()->toString()),
+    tankOfBrood[tankDigestSet]: $src
+  }
+
+  *test::lunarhatchery2::domain::KeeperDigest[keeperDigestSet]: Pure
+  {
+    ~src test::lunarhatchery2::domain::TankRecord
+    keeperTag: 'KP-' + $src.tankLabel,
+    shiftTag: $src.tankLabel->toUpper()
+  }
+
+  *test::lunarhatchery2::domain::HatcheryDigest[hatcheryDigestSet]: Pure
+  {
+    ~src test::lunarhatchery2::domain::TankRecord
+    unitTag: 'HU-' + $src.tankLabel,
+    siteTag: 'SITE-' + $src.tankLabel->length()->toString(),
+    tanks[tankDigestSet]: $src
+  }
+
+  testSuites:
+  [
+    tankDigestSuite:
+    {
+      function: |test::lunarhatchery2::domain::TankDigest.all()->graphFetch(
+        #{
+          test::lunarhatchery2::domain::TankDigest
+          {
+            tankTag,
+            labelTag,
+            widthTag,
+            broods
+            {
+              broodTag,
+              aerationTag
+            },
+            keepers
+            {
+              keeperTag,
+              shiftTag
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarhatchery2::domain::TankDigest
+          {
+            tankTag,
+            labelTag,
+            widthTag,
+            broods
+            {
+              broodTag,
+              aerationTag
+            },
+            keepers
+            {
+              keeperTag,
+              shiftTag
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        aeratedTankDigest:
+        {
+          doc: 'Refines a rostered tank whose aeration flag is set, taking the known-aeration arm of the brood transform and walking both association ends off the refined tank.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::lunarhatchery2::domain::TankRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"tankLabel":"tank-a","aerated":true}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            aeratedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"tankTag":"TK-tank-a","labelTag":"tank-a","widthTag":"6","broods":[{"broodTag":"BR-tank-a","aerationTag":"true"}],"keepers":[{"keeperTag":"KP-tank-a","shiftTag":"TANK-A"}]}';
+                  }#;
+              }#
+          ];
+        },
+        unflaggedTankDigest:
+        {
+          doc: 'Refines a rostered tank whose optional aeration flag is absent, taking the unknown fallback arm of the brood transform.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::lunarhatchery2::domain::TankRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"tankLabel":"tank-bb"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            unflaggedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"tankTag":"TK-tank-bb","labelTag":"tank-bb","widthTag":"7","broods":[{"broodTag":"BR-tank-bb","aerationTag":"UNKNOWN"}],"keepers":[{"keeperTag":"KP-tank-bb","shiftTag":"TANK-BB"}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    hatcheryDigestSuite:
+    {
+      function: |test::lunarhatchery2::domain::HatcheryDigest.all()->graphFetch(
+        #{
+          test::lunarhatchery2::domain::HatcheryDigest
+          {
+            unitTag,
+            siteTag,
+            tanks
+            {
+              tankTag,
+              widthTag
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarhatchery2::domain::HatcheryDigest
+          {
+            unitTag,
+            siteTag,
+            tanks
+            {
+              tankTag,
+              widthTag
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        unitOverTank:
+        {
+          doc: 'Refines the hatchery unit that the rostered tank hangs from, folding the label width into the site tag and resolving the unit-to-tank association end.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::lunarhatchery2::domain::TankRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"tankLabel":"tank-c","aerated":false}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            unitDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"unitTag":"HU-tank-c","siteTag":"SITE-6","tanks":[{"tankTag":"TK-tank-c","widthTag":"6"}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

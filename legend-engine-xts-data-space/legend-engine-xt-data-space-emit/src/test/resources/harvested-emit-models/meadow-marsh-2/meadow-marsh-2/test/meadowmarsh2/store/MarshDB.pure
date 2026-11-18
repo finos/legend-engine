@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::meadowmarsh2::store::MarshDB
+(
+  Schema geo
+  (
+    Table station
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(80) NOT NULL,
+      ward_name VARCHAR(60) NOT NULL,
+      dock_capacity INTEGER
+    )
+  )
+
+  Schema fleet
+  (
+    Table dock
+    (
+      dock_code VARCHAR(24) PRIMARY KEY,
+      station_code VARCHAR(24) NOT NULL,
+      dock_status VARCHAR(16) NOT NULL,
+      installed_on DATE
+    )
+    Table bicycle
+    (
+      bicycle_tag VARCHAR(24) PRIMARY KEY,
+      dock_code VARCHAR(24) NOT NULL,
+      model_name VARCHAR(60) NOT NULL,
+      gear_count INTEGER,
+      wheel_size_mm INTEGER
+    )
+    Table rider
+    (
+      rider_code VARCHAR(24) PRIMARY KEY,
+      rider_name VARCHAR(80) NOT NULL,
+      membership_tier VARCHAR(16) NOT NULL,
+      joined_on DATE
+    )
+    Table ride
+    (
+      ride_code VARCHAR(24) PRIMARY KEY,
+      bicycle_tag VARCHAR(24) NOT NULL,
+      rider_code VARCHAR(24) NOT NULL,
+      started_at TIMESTAMP,
+      distance_km DOUBLE,
+      route_label VARCHAR(80)
+    )
+    Table ticket
+    (
+      ticket_code VARCHAR(24) PRIMARY KEY,
+      bicycle_tag VARCHAR(24) NOT NULL,
+      raised_on DATE,
+      severity_label VARCHAR(16) NOT NULL,
+      note_text VARCHAR(120)
+    )
+  )
+
+  Join BicycleRide(fleet.bicycle.bicycle_tag = fleet.ride.bicycle_tag)
+
+  Join BicycleTicket(fleet.bicycle.bicycle_tag = fleet.ticket.bicycle_tag)
+
+  Join DockBicycle(fleet.dock.dock_code = fleet.bicycle.dock_code)
+
+  Join RiderRide(fleet.rider.rider_code = fleet.ride.rider_code)
+
+  Join StationDock(geo.station.station_code = fleet.dock.station_code)
+)

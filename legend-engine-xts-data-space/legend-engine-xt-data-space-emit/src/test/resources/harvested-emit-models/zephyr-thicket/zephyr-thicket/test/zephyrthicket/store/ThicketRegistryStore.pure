@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::zephyrthicket::store::ThicketRegistryStore
+(
+  Schema registry
+  (
+    Table park_parcel
+    (
+      parcel_id INTEGER PRIMARY KEY,
+      parcel_name VARCHAR(80) NOT NULL,
+      area_sqm FLOAT NOT NULL,
+      ward_code VARCHAR(8) NOT NULL,
+      canopy_code VARCHAR(8) NOT NULL,
+      steward_code VARCHAR(8) NOT NULL
+    )
+
+    Table civic_ward
+    (
+      ward_code VARCHAR(8) PRIMARY KEY,
+      ward_name VARCHAR(60) NOT NULL,
+      district_code VARCHAR(8) NOT NULL
+    )
+
+    Table civic_district
+    (
+      district_code VARCHAR(8) PRIMARY KEY,
+      district_name VARCHAR(60) NOT NULL
+    )
+
+    Table canopy_class
+    (
+      canopy_code VARCHAR(8) PRIMARY KEY,
+      canopy_label VARCHAR(60) NOT NULL
+    )
+
+    Table parcel_steward
+    (
+      steward_code VARCHAR(8) PRIMARY KEY,
+      steward_name VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join Parcel_Ward_Join(registry.park_parcel.ward_code = registry.civic_ward.ward_code)
+  Join Parcel_Canopy_Join(registry.park_parcel.canopy_code = registry.canopy_class.canopy_code)
+  Join Parcel_Steward_Join(registry.park_parcel.steward_code = registry.parcel_steward.steward_code)
+  Join Ward_District_Join(registry.civic_ward.district_code = registry.civic_district.district_code)
+)

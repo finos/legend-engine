@@ -1,0 +1,230 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenisle4::mapping::IsleMapping
+(
+  include mapping test::goldenisle4::mapping::IsleEnumMappings
+
+  *test::goldenisle4::domain::NestRecord[nest]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenisle4::store::IsleDb]colony.nest_record.nest_id
+    )
+    ~mainTable [test::goldenisle4::store::IsleDb]colony.nest_record
+    nestRef: [test::goldenisle4::store::IsleDb]colony.nest_record.nest_ref,
+    plotRef: [test::goldenisle4::store::IsleDb]colony.nest_record.plot_ref,
+    speciesGroup: EnumerationMapping SpeciesMapping: case(
+      equal([test::goldenisle4::store::IsleDb]colony.nest_record.species_code, 'AK'),
+      'AK',
+      case(
+        equal([test::goldenisle4::store::IsleDb]colony.nest_record.species_code, 'GU'),
+        'GU',
+        case(
+          equal([test::goldenisle4::store::IsleDb]colony.nest_record.species_code, 'PE'),
+          'PE',
+          'ZZ'
+        )
+      )
+    ),
+    broodClass: EnumerationMapping BroodMapping: case(
+      greaterThanEqual([test::goldenisle4::store::IsleDb]colony.nest_record.chick_count, 3),
+      'F',
+      case(
+        greaterThan([test::goldenisle4::store::IsleDb]colony.nest_record.chick_count, 0),
+        'B',
+        case(
+          greaterThan([test::goldenisle4::store::IsleDb]colony.nest_record.egg_count, 0),
+          'B',
+          'E'
+        )
+      )
+    ),
+    ringScheme: EnumerationMapping RingMapping: case(
+      equal([test::goldenisle4::store::IsleDb]colony.nest_record.ring_code, 'M'),
+      'M',
+      case(
+        equal([test::goldenisle4::store::IsleDb]colony.nest_record.ring_code, 'C'),
+        'C',
+        case(
+          equal([test::goldenisle4::store::IsleDb]colony.nest_record.ring_code, 'X'),
+          'M',
+          'N'
+        )
+      )
+    ),
+    broodBand: case(
+      greaterThanEqual([test::goldenisle4::store::IsleDb]colony.nest_record.chick_count, 5),
+      'LARGE BROOD',
+      case(
+        greaterThanEqual([test::goldenisle4::store::IsleDb]colony.nest_record.chick_count, 3),
+        'MID BROOD',
+        case(
+          greaterThan([test::goldenisle4::store::IsleDb]colony.nest_record.chick_count, 0),
+          'SMALL BROOD',
+          case(
+            greaterThan([test::goldenisle4::store::IsleDb]colony.nest_record.egg_count, 0),
+            'EGGS ONLY',
+            'EMPTY NEST'
+          )
+        )
+      )
+    ),
+    handlingNote: case(
+      equal([test::goldenisle4::store::IsleDb]colony.nest_record.ring_code, 'X'),
+      concat('RERING-', [test::goldenisle4::store::IsleDb]colony.nest_record.species_code),
+      case(
+        isNotEmpty([test::goldenisle4::store::IsleDb]colony.nest_record.note_text),
+        rtrim([test::goldenisle4::store::IsleDb]colony.nest_record.note_text),
+        sqlNull()
+      )
+    ),
+    plotName: [test::goldenisle4::store::IsleDb]@Nest_Plot | colony.survey_plot.plot_name,
+    colonyName: [test::goldenisle4::store::IsleDb]@Nest_Plot > @Plot_Colony | colony.colony_site.colony_name,
+    isleName: [test::goldenisle4::store::IsleDb]@Nest_Plot > @Plot_Colony > @Colony_Isle | colony.isle_area.isle_name,
+    isleColonyCount: [test::goldenisle4::store::IsleDb]@Nest_Plot > @Plot_Colony > @Colony_Isle > @Isle_Tally | colony.isle_colony_view.colony_count,
+    plotNestCount: [test::goldenisle4::store::IsleDb]@Nest_Tally | colony.plot_tally_view.nest_count,
+    plotChickTotal: [test::goldenisle4::store::IsleDb]@Nest_Tally | colony.plot_tally_view.chick_total
+  }
+
+  testSuites:
+  [
+    registerSuite:
+    {
+      function: test::goldenisle4::domain::NestRecord.all()->project(~[
+                  nest: n|$n.nestRef,
+                  species: n|if($n.speciesGroup == test::goldenisle4::domain::SpeciesGroup.AUK, |'AUK', |if($n.speciesGroup == test::goldenisle4::domain::SpeciesGroup.GULL, |'GULL', |if($n.speciesGroup == test::goldenisle4::domain::SpeciesGroup.PETREL, |'PETREL', |'UNMAPPED'))),
+                  brood: n|if($n.broodClass == test::goldenisle4::domain::BroodClass.FLEDGED, |'FLEDGED', |if($n.broodClass == test::goldenisle4::domain::BroodClass.BROODING, |'BROODING', |'EMPTY')),
+                  ring: n|if($n.ringScheme == test::goldenisle4::domain::RingScheme.METAL, |'METAL', |if($n.ringScheme == test::goldenisle4::domain::RingScheme.COLOUR, |'COLOUR', |'NONE')),
+                  band: n|$n.broodBand,
+                  note: n|$n.handlingNote,
+                  token: n|if($n.handlingNote->isEmpty(), |($n.nestRef + '/NONE')->toUpper(), |($n.nestRef + '/' + $n.handlingNote->toOne()->trim()->toUpper())->toUpper())
+                ])->sort(~nest->ascending());
+      tests:
+      [
+        tenNestRows:
+        {
+          doc: 'Pins every arm of the brood-band and handling-note conditionals, the three computed enumeration sources, the null handling-note fallback and one species code that no enumeration mapping claims.';
+          data:
+          [
+            test::goldenisle4::store::IsleDb:
+              Relational
+              #{
+                colony.nest_record:
+                  'nest_id,nest_ref,plot_ref,species_code,chick_count,egg_count,ring_code,note_text\n'+
+                  '1,NR-01,PL-1,GU,6,2,M,clean ledge\n'+
+                  '2,NR-02,PL-1,AK,4,1,C,\n'+
+                  '3,NR-03,PL-2,PE,2,3,M,burrow damp\n'+
+                  '4,NR-04,PL-2,GU,0,4,X,\n'+
+                  '5,NR-05,PL-3,AK,0,0,N,abandoned\n'+
+                  '6,NR-06,PL-9,PE,3,0,M,\n'+
+                  '7,NR-07,PL-4,ZZ,1,0,N,unknown bird\n'+
+                  '8,NR-08,PL-4,GU,5,0,X,ring worn\n'+
+                  '9,NR-09,PL-1,AK,2,0,C,spare nest\n'+
+                  '10,NR-10,PL-2,PE,0,2,N,\n';
+              }#
+          ];
+          asserts:
+          [
+            tenNestRowsShape:
+              Relation
+              #{
+                nest,species,brood,ring,band,note,token
+                NR-01,GULL,FLEDGED,METAL,LARGE BROOD,clean ledge,NR-01/CLEAN LEDGE
+                NR-02,AUK,FLEDGED,COLOUR,MID BROOD,,NR-02/NONE
+                NR-03,PETREL,BROODING,METAL,SMALL BROOD,burrow damp,NR-03/BURROW DAMP
+                NR-04,GULL,BROODING,METAL,EGGS ONLY,RERING-GU,NR-04/RERING-GU
+                NR-05,AUK,EMPTY,NONE,EMPTY NEST,abandoned,NR-05/ABANDONED
+                NR-06,PETREL,FLEDGED,METAL,MID BROOD,,NR-06/NONE
+                NR-07,UNMAPPED,BROODING,NONE,SMALL BROOD,unknown bird,NR-07/UNKNOWN BIRD
+                NR-08,GULL,FLEDGED,METAL,LARGE BROOD,RERING-GU,NR-08/RERING-GU
+                NR-09,AUK,BROODING,COLOUR,SMALL BROOD,spare nest,NR-09/SPARE NEST
+                NR-10,PETREL,BROODING,NONE,EGGS ONLY,,NR-10/NONE;
+              }#
+          ];
+        }
+      ];
+    },
+    chainSuite:
+    {
+      function: test::goldenisle4::domain::NestRecord.all()->project(~[
+                  nest: n|$n.nestRef,
+                  plot: n|$n.plotName,
+                  colonyName: n|$n.colonyName,
+                  isle: n|$n.isleName,
+                  isleColonies: n|$n.isleColonyCount,
+                  plotNests: n|$n.plotNestCount,
+                  plotChicks: n|$n.plotChickTotal
+                ])->sort(~nest->ascending());
+      tests:
+      [
+        fourHopChainRows:
+        {
+          doc: 'Walks the four-hop plot/colony/isle/tally chain and the view-backed plot rollup, with one nest whose plot is absent, one plot whose colony is absent and one colony whose isle is absent so each join can be seen resolving and missing.';
+          data:
+          [
+            test::goldenisle4::store::IsleDb:
+              Relational
+              #{
+                colony.nest_record:
+                  'nest_id,nest_ref,plot_ref,species_code,chick_count,egg_count,ring_code,note_text\n'+
+                  '1,NR-01,PL-1,GU,6,2,M,clean ledge\n'+
+                  '2,NR-02,PL-1,AK,4,1,C,\n'+
+                  '3,NR-03,PL-2,PE,2,3,M,burrow damp\n'+
+                  '4,NR-04,PL-2,GU,0,4,X,\n'+
+                  '5,NR-05,PL-3,AK,0,0,N,abandoned\n'+
+                  '6,NR-06,PL-9,PE,3,0,M,\n'+
+                  '7,NR-07,PL-4,ZZ,1,0,N,unknown bird\n'+
+                  '8,NR-08,PL-4,GU,5,0,X,ring worn\n'+
+                  '9,NR-09,PL-1,AK,2,0,C,spare nest\n'+
+                  '10,NR-10,PL-2,PE,0,2,N,\n';
+                colony.survey_plot:
+                  'plot_ref,plot_name,colony_ref\n'+
+                  'PL-1,North Ledge,CO-1\n'+
+                  'PL-2,South Ledge,CO-1\n'+
+                  'PL-3,West Stack,CO-9\n'+
+                  'PL-4,East Stack,CO-2\n';
+                colony.colony_site:
+                  'colony_ref,colony_name,isle_ref\n'+
+                  'CO-1,Gannet Colony,IS-1\n'+
+                  'CO-2,Shag Colony,IS-9\n';
+                colony.isle_area:
+                  'isle_ref,isle_name,region_name\n'+
+                  'IS-1,Outer Skerry,Western Approaches\n';
+              }#
+          ];
+          asserts:
+          [
+            fourHopChainShape:
+              Relation
+              #{
+                nest,plot,colonyName,isle,isleColonies,plotNests,plotChicks
+                NR-01,North Ledge,Gannet Colony,Outer Skerry,1,3,12
+                NR-02,North Ledge,Gannet Colony,Outer Skerry,1,3,12
+                NR-03,South Ledge,Gannet Colony,Outer Skerry,1,3,2
+                NR-04,South Ledge,Gannet Colony,Outer Skerry,1,3,2
+                NR-05,West Stack,,,,1,0
+                NR-06,,,,,1,3
+                NR-07,East Stack,Shag Colony,,,2,6
+                NR-08,East Stack,Shag Colony,,,2,6
+                NR-09,North Ledge,Gannet Colony,Outer Skerry,1,3,12
+                NR-10,South Ledge,Gannet Colony,Outer Skerry,1,3,2;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

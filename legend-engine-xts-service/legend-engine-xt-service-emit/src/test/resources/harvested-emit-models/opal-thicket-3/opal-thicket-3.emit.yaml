@@ -1,0 +1,38 @@
+name: opal-thicket-3
+title: "Opal Thicket Woodland Survey — Wide Nested Intake Envelope Flattened onto an Inherited Plot Class"
+description: |
+  A store-less woodland-survey model in which a single nested intake envelope — a batch label,
+  a wide plot record and a repeating band-tag collection — is flattened by one model-to-model
+  mapping onto a thicket plot class that specialises a base habitat-survey class for its
+  identity, date and batch properties. The transform binds the full width of the inbound
+  record directly, upper-cases the plot label, derives a grid reference by concatenating the
+  block and cell segments, defaults an absent disturbance note to a fixed phrase while
+  trimming it when present, and pins the understorey classification to a literal. A JSON model
+  connection and a runtime bind the mapping for execution, and a single-execution service
+  publishes the graph-fetched plot. Assertion-backed coverage: a Mapping test and a Service
+  test over the same envelope.
+modelSources:
+  model:
+    root: opal-thicket-3
+    files:
+      - test/opalthicket3/connection/PlotIntakeConnection.pure
+      - test/opalthicket3/domain/ThicketPlots.pure
+      - test/opalthicket3/mapping/ThicketPlotMapping.pure
+      - test/opalthicket3/runtime/ThicketRuntime.pure
+      - test/opalthicket3/service/PublishThicketPlot.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - class-inheritance
+  - model-to-model
+  - nested-envelope
+  - service-test
+  - woodland-survey

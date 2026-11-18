@@ -1,0 +1,177 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenmeadow::service::PatchStewardshipAsOf
+{
+  pattern: '/goldenmeadow/v1/patch-stewardship/{surveyDate}';
+  title: 'Golden Meadow - Patch Stewardship As Of';
+  owners:
+  [
+    'meadow-survey',
+    'pollinator-monitoring'
+  ];
+  documentation: 'Returns the meadow patches whose published business window contains the requested survey date, gated on membership of a supplied patch-code list, on a recorded bloom and on a flora code the survey recognises. Every row carries the bloom band cascade and the crew name and depot resolved across the milestoned stewardship association at the same instant.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {surveyDate: StrictDate[1], patchCodes: String[*]|test::goldenmeadow::domain::PollinatorPatch.all($surveyDate)->filter(
+      p|($p.patchCode->in($patchCodes) && ($p.bloomIndex >= 1)) && $p.floraRecognised()
+    )->project(
+      [
+        p|$p.patchCode,
+        p|$p.displayLabel(),
+        p|$p.bloomBand(),
+        p|$p.bloomIndex,
+        p|$p.stewardName($surveyDate),
+        p|$p.stewardDepot($surveyDate)
+      ],
+      [
+        'Patch',
+        'Label',
+        'BloomBand',
+        'BloomIndex',
+        'Steward',
+        'Depot'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Patch')
+      ]
+    )};
+    mapping: test::goldenmeadow::mapping::MeadowMapping;
+    runtime: test::goldenmeadow::runtime::MeadowSurveyRuntime;
+  }
+  testSuites:
+  [
+    patchStewardshipSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowSurvey:
+            Relational
+            #{
+              meadow.pollinator_patch:
+                'patch_code,patch_name,flora_code,bloom_index,steward_code,bus_from_z,bus_thru_z\n'+
+                'PT-01,Clover Bend,clover,95,SC-1,2030-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PT-02,Vetch Verge,vetch,55,SC-2,2030-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PT-03,Knapweed Rise,knapweed,5,SC-1,2030-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PT-04,Scabious Hollow,scabious,0,SC-3,2030-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PT-05,Fescue Ledge,clover,40,SC-2,2020-01-01 00:00:00,2030-01-01 00:00:00\n'+
+                'PT-06,Sainfoin Spur,vetch,80,SC-1,2040-01-01 00:00:00,9999-12-31 00:00:00\n';
+              meadow.steward_crew:
+                'steward_code,crew_name,depot_code,bus_from_z,bus_thru_z\n'+
+                'SC-1,North Meadow Crew,north-depot,2030-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SC-2,South Verge Crew,south-depot,2030-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'SC-3,Relief Crew,relief-depot,2030-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        containingWindowRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyDate = %2035-06-01,
+            patchCodes = ['PT-01', 'PT-02', 'PT-03', 'PT-04', 'PT-05', 'PT-06']
+          ]
+          asserts:
+          [
+            bandsAndStewardsResolve:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch":"PT-01","Label":"Clover Bend [CLOVER]","BloomBand":"PEAK","BloomIndex":95,"Steward":"North Meadow Crew","Depot":"NORTH-DEPOT"},{"Patch":"PT-02","Label":"Vetch Verge [VETCH]","BloomBand":"STEADY","BloomIndex":55,"Steward":"South Verge Crew","Depot":"SOUTH-DEPOT"},{"Patch":"PT-03","Label":"Knapweed Rise [KNAPWEED]","BloomBand":"TRACE","BloomIndex":5,"Steward":"North Meadow Crew","Depot":"NORTH-DEPOT"}]';
+                  }#;
+              }#
+          ]
+        },
+        outOfRangeVersionDrops:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyDate = %2035-06-01,
+            patchCodes = ['PT-05', 'PT-06']
+          ]
+          asserts:
+          [
+            closedAndFutureWindowsBothDrop:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::goldenmeadow::service::PatchStewardshipByEnvironment
+{
+  pattern: '/goldenmeadow/v1/{environment}/patch-stewardship/{surveyDate}';
+  title: 'Golden Meadow - Patch Stewardship By Environment';
+  owners:
+  [
+    'meadow-survey',
+    'pollinator-monitoring'
+  ];
+  documentation: 'Environment-keyed counterpart of the patch stewardship query: the key selects a whole execution stack so the same point-in-time resolution and the same milestoned stewardship traversal run against either the survey or the archive warehouse.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {surveyDate: StrictDate[1], patchCodes: String[*]|test::goldenmeadow::domain::PollinatorPatch.all($surveyDate)->filter(
+      p|($p.patchCode->in($patchCodes) && ($p.bloomIndex >= 1)) && $p.floraRecognised()
+    )->project(
+      [
+        p|$p.patchCode,
+        p|$p.bloomBand(),
+        p|$p.stewardName($surveyDate)
+      ],
+      [
+        'Patch',
+        'BloomBand',
+        'Steward'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Patch')
+      ]
+    )};
+    key: 'environment';
+    executions['survey']:
+    {
+      mapping: test::goldenmeadow::mapping::MeadowMapping;
+      runtime: test::goldenmeadow::runtime::MeadowSurveyRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::goldenmeadow::mapping::MeadowMapping;
+      runtime: test::goldenmeadow::runtime::MeadowArchiveRuntime;
+    }
+  }
+}

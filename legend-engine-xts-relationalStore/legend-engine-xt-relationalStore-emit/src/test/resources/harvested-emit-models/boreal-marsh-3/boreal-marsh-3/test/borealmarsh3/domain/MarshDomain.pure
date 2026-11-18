@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::borealmarsh3::domain::*;
+import meta::pure::profiles::*;
+
+Profile test::borealmarsh3::domain::MarshProfile
+{
+  stereotypes: [surveyed, provisional];
+  tags: [steward, tier];
+}
+
+Enum {doc.doc = 'How wet the peat of a plot was when the probe was read.'} test::borealmarsh3::domain::MoistureBand
+{
+  {doc.doc = 'Peat standing in water at the probe.'} SATURATED,
+  {doc.doc = 'Peat wet to the touch but not standing in water.'} DAMP,
+  {doc.doc = 'Peat dry down to the probe collar.'} DRY
+}
+
+Class {doc.doc = 'A drainage basin the monitored plots of the marsh are grouped under.'} test::borealmarsh3::domain::BasinRef
+{
+  {doc.doc = 'Code the basin is quoted by on the marsh plan.'} basinCode: String[1];
+  {doc.doc = 'Name the basin is called by.'} basinName: String[0..1];
+}
+
+Class <<MarshProfile.surveyed>> {doc.doc = 'A staked point of the marsh the survey crew reads a probe at.'} test::borealmarsh3::domain::MonitorPoint
+{
+  {doc.doc = 'Code the point is staked and quoted by.'} pointCode: String[1];
+  {doc.doc = 'Name the point is called by on the marsh plan.'} pointName: String[0..1];
+  {doc.doc = 'Basin the point is grouped under, one hop away.'} basinName: String[0..1];
+}
+
+Class {doc.doc = 'A staked point cut into peat, whose probe collar and peat depth are carried on a detail table joined to the point book rather than on the point book itself.'} test::borealmarsh3::domain::PeatPoint extends MonitorPoint
+{
+  {doc.doc = 'Depth of peat measured at the collar of the point.'} peatDepthCm: Float[0..1];
+  {doc.doc = 'Kind of probe the collar of the point is cut for.'} probeKind: String[0..1];
+  {doc.doc = 'Collar of the point stamped with the probe it is cut for.'} collarLabel() {$this.probeKind->toOne()->toUpper() + '/' + $this.pointCode}: String[1];
+}
+
+Class {doc.doc = 'Someone carried on the surveyor roster of the marsh.'} test::borealmarsh3::domain::SurveyorRef
+{
+  {doc.doc = 'Code the surveyor is quoted by on the roster.'} surveyorCode: String[1];
+  {doc.doc = 'Name the surveyor signs the roster with.'} surveyorName: String[0..1];
+}
+
+Class {doc.doc = 'How many points a basin carries and how many stakes were driven over them, folded together by the basin over the point book.'} test::borealmarsh3::domain::BasinLoad
+{
+  {doc.doc = 'Basin the fold is grouped under.'} basinId: Integer[1];
+  {doc.doc = 'How many points the basin carries.'} pointTally: Integer[1];
+  {doc.doc = 'How many stakes were driven over those points.'} stakeTotal: Integer[1];
+}
+
+Class <<temporal.businesstemporal, MarshProfile.surveyed>> {MarshProfile.tier = 'core', doc.doc = 'One probe reading of a marsh plot, effective over the business window the survey desk signs off, resolving the point it was read at, the basin that point is grouped under and the surveyor who read it.'} test::borealmarsh3::domain::PlotReading
+{
+  {doc.doc = 'Code the reading is quoted by in the survey book.'} readingCode: String[1];
+  {doc.doc = 'How wet the peat was at the probe.'} moistureBand: MoistureBand[1];
+  {doc.doc = 'Depth of the water table read off the probe.'} waterTableCm: Float[1];
+  {doc.doc = 'Temperature of the peat at the probe collar.'} peatTempC: Float[1];
+  {doc.doc = 'How many probes were sunk for the reading.'} probeCount: Integer[1];
+  {doc.doc = 'Date the plot was walked and the probe read.'} readingOn: StrictDate[1];
+  {doc.doc = 'Point the reading was taken at, one hop away.'} pointName: String[0..1];
+  {doc.doc = 'Basin the point of the reading is grouped under, two hops away.'} basinName: String[0..1];
+  {doc.doc = 'Surveyor who read the probe, one hop away.'} surveyorName: String[0..1];
+  {doc.doc = 'Sum of the water table and the peat temperature, scaled and rounded off against the probe count, walked deep enough that the plan has to fold the arithmetic before it reads the columns.'} probeIndex() {(((($this.waterTableCm + $this.peatTempC) * 2.0) - 1.5) / (($this.probeCount + 1) * 1.0)) + 0.5}: Float[1];
+  {doc.doc = 'Band the water table and the peat temperature fall in, walked as four arms and defaulted when none of them is met.'} wetnessBand() {if($this.waterTableCm >= 40.0,
+                                  | 'BAND ONE WET',
+                                  | if(($this.waterTableCm >= 25.0) && ($this.peatTempC >= 8.0),
+                                       | 'BAND TWO DAMP',
+                                       | if($this.waterTableCm >= 10.0,
+                                            | 'BAND THREE DRAWN',
+                                            | if($this.peatTempC >= 12.0,
+                                                 | 'BAND FOUR WARM',
+                                                 | 'BAND FLOOR'))))}: String[1];
+  {doc.doc = 'Whether the water table of the reading stood above a depth the caller names.'} standsAbove(depthCm: Float[1]) {$this.waterTableCm >= $depthCm}: Boolean[1];
+}
+
+Association {doc.doc = 'Ties each probe reading to the staked point it was read at.'} test::borealmarsh3::domain::Point_Reading
+{
+  {doc.doc = 'Point the reading was read at.'} point: MonitorPoint[0..1];
+  {doc.doc = 'Readings taken at the point.'} readings: PlotReading[*];
+}

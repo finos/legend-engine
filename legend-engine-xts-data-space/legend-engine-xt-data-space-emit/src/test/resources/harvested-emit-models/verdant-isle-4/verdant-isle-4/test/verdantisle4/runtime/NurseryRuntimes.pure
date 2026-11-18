@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::verdantisle4::runtime::NurseryProductionRuntime
+{
+  mappings:
+  [
+    test::verdantisle4::mapping::NurseryPublishedMapping
+  ];
+  connections:
+  [
+    test::verdantisle4::store::NurseryComposedDB:
+    [
+      nurseryPublished: test::verdantisle4::connection::NurseryPublishedConnection
+    ]
+  ];
+}
+
+Runtime test::verdantisle4::runtime::NurseryComposedRuntime
+{
+  mappings:
+  [
+    test::verdantisle4::mapping::NurseryComposedMapping
+  ];
+  connections:
+  [
+    test::verdantisle4::store::NurseryComposedDB:
+    [
+      nurseryComposed: test::verdantisle4::connection::NurseryPublishedConnection
+    ]
+  ];
+}
+
+Runtime test::verdantisle4::runtime::NurseryVerificationRuntime
+{
+  mappings:
+  [
+    test::verdantisle4::mapping::NurseryPublishedMapping
+  ];
+  connections:
+  [
+    test::verdantisle4::store::NurseryComposedDB:
+    [
+      nurseryVerificationH2: test::verdantisle4::connection::NurseryVerificationConnection
+    ]
+  ];
+}
+
+Runtime test::verdantisle4::runtime::NurseryReviewRuntime
+{
+  mappings:
+  [
+    test::verdantisle4::mapping::NurseryComposedMapping
+  ];
+  connections:
+  [
+    test::verdantisle4::store::NurseryComposedDB:
+    [
+      nurseryReviewH2: test::verdantisle4::connection::NurseryVerificationConnection
+    ]
+  ];
+}

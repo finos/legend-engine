@@ -1,0 +1,249 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigoglacier2::mapping::IceSurveyMapping
+(
+  include mapping test::indigoglacier2::mapping::IceRegistryMapping[test::indigoglacier2::store::IceRegistryDb->test::indigoglacier2::store::IceSurveyDb]
+
+  *test::indigoglacier2::domain::StakeReading: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceSurveyDb]AcceptedReadingFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceSurveyDb]field.stake_reading.reading_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceSurveyDb]field.stake_reading
+    readingCode: [test::indigoglacier2::store::IceSurveyDb]field.stake_reading.reading_code,
+    stakeCode: [test::indigoglacier2::store::IceSurveyDb]field.stake_reading.stake_code,
+    readAt: [test::indigoglacier2::store::IceSurveyDb]field.stake_reading.read_at,
+    exposedCm: [test::indigoglacier2::store::IceSurveyDb]field.stake_reading.exposed_cm,
+    snowDensity: [test::indigoglacier2::store::IceSurveyDb]field.stake_reading.snow_density
+  }
+
+  *test::indigoglacier2::domain::SnowPit: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceSurveyDb]DeepPitFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceSurveyDb]field.snow_pit.pit_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceSurveyDb]field.snow_pit
+    pitCode: [test::indigoglacier2::store::IceSurveyDb]field.snow_pit.pit_code,
+    siteCode: [test::indigoglacier2::store::IceSurveyDb]field.snow_pit.site_code,
+    dugOn: [test::indigoglacier2::store::IceSurveyDb]field.snow_pit.dug_on,
+    depthCm: [test::indigoglacier2::store::IceSurveyDb]field.snow_pit.depth_cm,
+    layerCount: [test::indigoglacier2::store::IceSurveyDb]field.snow_pit.layer_count
+  }
+
+  *test::indigoglacier2::domain::MeltPond: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceSurveyDb]WidePondFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceSurveyDb]field.melt_pond.pond_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceSurveyDb]field.melt_pond
+    pondCode: [test::indigoglacier2::store::IceSurveyDb]field.melt_pond.pond_code,
+    siteCode: [test::indigoglacier2::store::IceSurveyDb]field.melt_pond.site_code,
+    seenOn: [test::indigoglacier2::store::IceSurveyDb]field.melt_pond.seen_on,
+    areaSqM: [test::indigoglacier2::store::IceSurveyDb]field.melt_pond.area_sq_m
+  }
+
+  *test::indigoglacier2::domain::IceCore: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceSurveyDb]IntactCoreFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceSurveyDb]lab.ice_core.core_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceSurveyDb]lab.ice_core
+    coreCode: [test::indigoglacier2::store::IceSurveyDb]lab.ice_core.core_code,
+    siteCode: [test::indigoglacier2::store::IceSurveyDb]lab.ice_core.site_code,
+    drilledOn: [test::indigoglacier2::store::IceSurveyDb]lab.ice_core.drilled_on,
+    coreLengthM: [test::indigoglacier2::store::IceSurveyDb]lab.ice_core.core_length_m,
+    bubbleRatio: [test::indigoglacier2::store::IceSurveyDb]lab.ice_core.bubble_ratio
+  }
+
+  *test::indigoglacier2::domain::IsotopeSample: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceSurveyDb]DepletedSampleFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceSurveyDb]lab.isotope_sample.sample_code,
+      [test::indigoglacier2::store::IceSurveyDb]lab.isotope_sample.core_code
+    )
+    ~mainTable [test::indigoglacier2::store::IceSurveyDb]lab.isotope_sample
+    sampleCode: [test::indigoglacier2::store::IceSurveyDb]lab.isotope_sample.sample_code,
+    coreCode: [test::indigoglacier2::store::IceSurveyDb]lab.isotope_sample.core_code,
+    depthM: [test::indigoglacier2::store::IceSurveyDb]lab.isotope_sample.depth_m,
+    deltaValue: [test::indigoglacier2::store::IceSurveyDb]lab.isotope_sample.delta_value
+  }
+
+  testSuites:
+  [
+    acceptedReadingSuite:
+    {
+      function: |test::indigoglacier2::domain::StakeReading.all()->project(
+        [
+          r|$r.readingCode,
+          r|$r.stakeCode,
+          r|$r.readAt,
+          r|$r.exposedCm,
+          r|$r.snowDensity
+        ],
+        [
+          'ReadingCode',
+          'StakeCode',
+          'ReadAt',
+          'ExposedCm',
+          'SnowDensity'
+        ]
+      )->sort([asc('ReadingCode')]);
+      tests:
+      [
+        rejectedAndNegativeReadingsDropped:
+        {
+          doc: 'Readings survive only when flagged OK with a non-negative exposure; a flagged-bad reading and a negative probe value are both removed.';
+          data:
+          [
+            test::indigoglacier2::store::IceSurveyDb:
+              Relational
+              #{
+                field.stake_reading:
+                  'reading_code,stake_code,read_at,exposed_cm,snow_density,reading_state\n'+
+                  'RD-1,SK-1,2026-01-14 08:00:00,42,0.35,OK\n'+
+                  'RD-2,SK-1,2026-01-21 08:05:00,-3,0.4,OK\n'+
+                  'RD-3,SK-2,2026-01-21 09:30:00,57,0.38,BAD\n'+
+                  'RD-4,SK-3,2026-02-02 07:45:00,0,0.42,OK\n';
+              }#
+          ];
+          asserts:
+          [
+            twoAcceptedReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"RD-1","StakeCode":"SK-1","ReadAt":"2026-01-14T08:00:00.000000000+0000","ExposedCm":42,"SnowDensity":0.35},{"ReadingCode":"RD-4","StakeCode":"SK-3","ReadAt":"2026-02-02T07:45:00.000000000+0000","ExposedCm":0,"SnowDensity":0.42}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    deepPitSuite:
+    {
+      function: |test::indigoglacier2::domain::SnowPit.all()->project(
+        [
+          p|$p.pitCode,
+          p|$p.dugOn,
+          p|$p.depthCm,
+          p|$p.layerCount
+        ],
+        [
+          'PitCode',
+          'DugOn',
+          'DepthCm',
+          'LayerCount'
+        ]
+      )->sort([asc('PitCode')]);
+      tests:
+      [
+        depthOrLayeringQualifies:
+        {
+          doc: 'A logged pit qualifies when it is either deep or richly layered; a shallow sparse pit and an unlogged deep pit are excluded.';
+          data:
+          [
+            test::indigoglacier2::store::IceSurveyDb:
+              Relational
+              #{
+                field.snow_pit:
+                  'pit_code,site_code,dug_on,depth_cm,layer_count,pit_state\n'+
+                  'SP-1,GS-1,2026-02-10,140,3,LOGGED\n'+
+                  'SP-2,GS-1,2026-02-11,60,7,LOGGED\n'+
+                  'SP-3,GS-4,2026-02-12,55,2,LOGGED\n'+
+                  'SP-4,GS-4,2026-02-13,180,9,DRAFT\n';
+              }#
+          ];
+          asserts:
+          [
+            twoQualifyingPits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PitCode":"SP-1","DugOn":"2026-02-10","DepthCm":140,"LayerCount":3},{"PitCode":"SP-2","DugOn":"2026-02-11","DepthCm":60,"LayerCount":7}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    depletedSampleSuite:
+    {
+      function: |test::indigoglacier2::domain::IsotopeSample.all()->project(
+        [
+          i|$i.sampleCode,
+          i|$i.coreCode,
+          i|$i.depthM,
+          i|$i.deltaValue
+        ],
+        [
+          'SampleCode',
+          'CoreCode',
+          'DepthM',
+          'DeltaValue'
+        ]
+      )->sort([asc('SampleCode'), asc('CoreCode')]);
+      tests:
+      [
+        negativeRunSamplesOnly:
+        {
+          doc: 'Only samples with a negative isotope delta and a recorded run time survive; an unrun sample and a positive delta are excluded.';
+          data:
+          [
+            test::indigoglacier2::store::IceSurveyDb:
+              Relational
+              #{
+                lab.isotope_sample:
+                  'sample_code,core_code,depth_m,delta_value,run_at\n'+
+                  'IS-1,IC-1,1.5,-12.5,2026-03-01 10:00:00\n'+
+                  'IS-1,IC-2,2.5,-8.25,2026-03-01 10:20:00\n'+
+                  'IS-2,IC-1,3.5,-9.75,\n'+
+                  'IS-3,IC-2,4.5,1.5,2026-03-02 14:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            twoDepletedSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SampleCode":"IS-1","CoreCode":"IC-1","DepthM":1.5,"DeltaValue":-12.5},{"SampleCode":"IS-1","CoreCode":"IC-2","DepthM":2.5,"DeltaValue":-8.25}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

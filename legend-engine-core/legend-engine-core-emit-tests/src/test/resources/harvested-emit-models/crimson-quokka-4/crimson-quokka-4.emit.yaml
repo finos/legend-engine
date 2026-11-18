@@ -1,0 +1,46 @@
+name: crimson-quokka-4
+title: "Crimson Quokka 4 — Hilltop Observatory Night-Plan Type System"
+description: |
+  A hilltop observatory's night-planning catalogue expressed purely in the model
+  layer: four shallow hierarchies (observing block, pointing specification,
+  calibration routine and archive layout) each headed by an abstract supertype
+  marked with a type-modifier stereotype and pinned by a membership constraint
+  over its discriminator property, plus five plain aggregates carrying the
+  proposal, the override set, the night, the run summary and the handover
+  attempt. Six enumerations — from a three-value moon window to a ten-value
+  archive compression — are consumed as mandatory property types, two of them
+  only by sibling subtypes so the relevant enumeration depends on the runtime
+  subtype. Three profiles supply documentation tagged values on classes,
+  properties and an enumeration, read-only and wide-integer schema hints, and a
+  discriminator stereotype paired with a discriminator-name tagged value on each
+  concrete leaf. Twelve constraints carry the observatory's own rules: exactly
+  one pointing form per proposal, exactly one sky-limit form per night, exactly
+  one timing override per override set, and a fourteen-property emptiness chain
+  that lets a night be overridden only where a reason and an author accompany it.
+  The group carries no store, mapping, runtime or service, so it exercises the
+  class, inheritance, enumeration, constraint and profile grammar alone.
+modelSources:
+  model:
+    root: crimson-quokka-4
+    files:
+      - test/crimson-quokka-4/domain/NightPlanning.pure
+      - test/crimson-quokka-4/domain/ObservingBlocks.pure
+      - test/crimson-quokka-4/domain/ObservingEnumerations.pure
+      - test/crimson-quokka-4/profile/ObservatoryProfiles.pure
+features:
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - constraint
+  - discriminator
+  - enumeration
+  - night-planning
+  - observatory
+  - profile
+  - type-system

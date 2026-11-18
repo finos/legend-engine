@@ -1,0 +1,151 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::wistfulisle2::mapping::IsleMapping
+(
+  demo::wistfulisle2::domain::ReserveIsle[reserveIsle]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfulisle2::store::IsleDB]reserve.isle.isle_code
+    )
+    ~mainTable [demo::wistfulisle2::store::IsleDB]reserve.isle
+    isleCode: [demo::wistfulisle2::store::IsleDB]reserve.isle.isle_code,
+    isleName: [demo::wistfulisle2::store::IsleDB]reserve.isle.isle_name,
+    tideRangeCm: [demo::wistfulisle2::store::IsleDB]reserve.isle.tide_range_cm
+  }
+
+  demo::wistfulisle2::domain::LedgeSection[ledgeSection]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfulisle2::store::IsleDB]reserve.ledge.ledge_id
+    )
+    ~mainTable [demo::wistfulisle2::store::IsleDB]reserve.ledge
+    ledgeId: [demo::wistfulisle2::store::IsleDB]reserve.ledge.ledge_id,
+    ledgeLabel: [demo::wistfulisle2::store::IsleDB]reserve.ledge.ledge_label,
+    heightMetres: [demo::wistfulisle2::store::IsleDB]reserve.ledge.height_m
+  }
+
+  demo::wistfulisle2::domain::NestSite[nestSite]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfulisle2::store::IsleDB]reserve.nest_site.nest_id
+    )
+    ~mainTable [demo::wistfulisle2::store::IsleDB]reserve.nest_site
+    nestId: [demo::wistfulisle2::store::IsleDB]reserve.nest_site.nest_id,
+    nestTag: [demo::wistfulisle2::store::IsleDB]reserve.nest_site.nest_tag,
+    eggCount: [demo::wistfulisle2::store::IsleDB]reserve.nest_site.egg_count,
+    lastCheckedAt: [demo::wistfulisle2::store::IsleDB]reserve.nest_site.last_checked_at,
+    occupied: [demo::wistfulisle2::store::IsleDB]reserve.nest_site.occupied,
+    ledgeLabel: [demo::wistfulisle2::store::IsleDB]@Nest_Ledge | [demo::wistfulisle2::store::IsleDB]reserve.ledge.ledge_label,
+    isleName: [demo::wistfulisle2::store::IsleDB]@Nest_Ledge > (INNER) [demo::wistfulisle2::store::IsleDB]@Ledge_Isle | [demo::wistfulisle2::store::IsleDB]reserve.isle.isle_name,
+    accessNote: concat(
+                  concat(
+                    toUpper([demo::wistfulisle2::store::IsleDB]@Nest_Ledge | [demo::wistfulisle2::store::IsleDB]reserve.ledge.ledge_label),
+                    ' / '
+                  ),
+                  substring([demo::wistfulisle2::store::IsleDB]@Nest_Ledge > (INNER) [demo::wistfulisle2::store::IsleDB]@Ledge_Isle | [demo::wistfulisle2::store::IsleDB]reserve.isle.isle_name, 1, 4)
+                )
+  }
+
+  demo::wistfulisle2::domain::LedgeNests: Relational
+  {
+    AssociationMapping
+    (
+      ledge[nestSite, ledgeSection]: [demo::wistfulisle2::store::IsleDB]@Nest_Ledge,
+      ledgeNests[ledgeSection, nestSite]: [demo::wistfulisle2::store::IsleDB]@Nest_Ledge
+    )
+  }
+
+  demo::wistfulisle2::domain::IsleLedges: Relational
+  {
+    AssociationMapping
+    (
+      isle[ledgeSection, reserveIsle]: [demo::wistfulisle2::store::IsleDB]@Ledge_Isle,
+      isleLedges[reserveIsle, ledgeSection]: [demo::wistfulisle2::store::IsleDB]@Ledge_Isle
+    )
+  }
+
+  testSuites:
+  [
+    nestLedgeSuite:
+    {
+      function: |demo::wistfulisle2::domain::NestSite.all()->project(
+        [
+          n|$n.nestTag,
+          n|$n.eggCount,
+          n|$n.occupied,
+          n|$n.ledge.ledgeLabel,
+          n|$n.isleName,
+          n|$n.accessNote
+        ],
+        [
+          'Nest',
+          'Eggs',
+          'Occupied',
+          'Ledge',
+          'Isle',
+          'AccessNote'
+        ]
+      )->sort(
+        [
+          asc('Nest')
+        ]
+      );
+      tests:
+      [
+        nestsAcrossLedgeAndIsle:
+        {
+          doc: 'Projects every nest site with its ledge reached through the mapped association, its isle name reached through the forced two-hop inner join path, and the string-function access note built over both hops.';
+          data:
+          [
+            demo::wistfulisle2::store::IsleDB:
+              Relational
+              #{
+                reserve.isle:
+                  'isle_code,isle_name,tide_range_cm\n'+
+                  'IS-1,Larkspur Isle,210\n'+
+                  'IS-2,Bramble Isle,145\n';
+                reserve.ledge:
+                  'ledge_id,ledge_label,isle_code,height_m\n'+
+                  '1,North Ledge,IS-1,12\n'+
+                  '2,South Ledge,IS-2,7\n';
+                reserve.nest_site:
+                  'nest_id,nest_tag,ledge_id,egg_count,last_checked_at,occupied\n'+
+                  '1,NS-1,1,3,2026-04-01 06:15:00,true\n'+
+                  '2,NS-2,1,0,2026-04-02 07:20:00,false\n'+
+                  '3,NS-3,2,2,2026-04-03 08:25:00,true\n';
+              }#
+          ];
+          asserts:
+          [
+            nestLedgeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Nest":"NS-1","Eggs":3,"Occupied":true,"Ledge":"North Ledge","Isle":"Larkspur Isle","AccessNote":"NORTH LEDGE / Lark"},{"Nest":"NS-2","Eggs":0,"Occupied":false,"Ledge":"North Ledge","Isle":"Larkspur Isle","AccessNote":"NORTH LEDGE / Lark"},{"Nest":"NS-3","Eggs":2,"Occupied":true,"Ledge":"South Ledge","Isle":"Bramble Isle","AccessNote":"SOUTH LEDGE / Bram"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easterntundra2::service::CollarDigestService
+{
+  pattern: '/easterntundra2/v1/collars/{herdCode}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Returns normalized movement and battery readings for the requested caribou herd.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {herdCode: String[1]|test::easterntundra2::domain::CaribouFix.all()->filter(f|$f.herdCode == $herdCode)->project(~[collarCode: x|$x.collarCode, movementBand: x|$x.movementBand(), deploymentYear: x|$x.deploymentYearLabel()])->sort(~collarCode->ascending())};
+    mapping: test::easterntundra2::mapping::TelemetryMapping;
+    runtime: test::easterntundra2::runtime::TelemetryRuntime;
+  }
+  testSuites:
+  [
+    collarDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          telemetryConnection:
+            Relational
+            #{
+              telemetry.collar_fix:
+                'collar_code,animal_code,herd_code,fix_date,latitude,longitude,altitude_metres,collar_status,signal_code,habitat_code,movement_code,distance_km,temperature_c,snow_depth_cm,vegetation_code,observer_note,deployment_year_text,capture_year_text,survey_year_text,age_years_text,distance_band_text,battery_text,tracking_code,gps_quality,satellite_count,transmission_seq,route_code,sex_code,age_class,body_mass_kg,antler_stage\n'+
+                'COL-01,AN-01,HERD-A,2026-01-10,65.1,-145.2,310.0,ACTIVE,GOOD,LICHEN,REST,1.0,-18.0,42.0,MOSS,quiet,2019,2018,2026,7,1,98.4,TRK-01,HIGH,8,1,R-01,F,ADULT,110.0,FULL\n'+
+                'COL-02,AN-02,HERD-A,2026-01-11,65.2,-145.3,315.0,ACTIVE,GOOD,LICHEN,GRAZE,2.0,-17.0,41.0,MOSS,browse,2019,2018,2026,7,2,97.0,TRK-02,HIGH,8,2,R-01,F,ADULT,112.0,FULL\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        herdADigest:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            herdCode = 'HERD-A'
+          ]
+          asserts:
+          [
+            digestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"collarCode":"COL-01","movementBand":"RESTING","deploymentYear":"2019"},{"collarCode":"COL-02","movementBand":"GRAZING","deploymentYear":"2019"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easterntundra2::service::HerdDistanceService
+{
+  pattern: '/easterntundra2/v1/herds/{herdCode}/distance';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Groups collar distances by herd and joins the grouped totals back to the telemetry register for a stable herd label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {herdCode: String[1]|test::easterntundra2::domain::CaribouFix.all()->filter(f|$f.herdCode == $herdCode)->groupBy([g|$g.herdCode], [agg(g|$g.distanceKm, v|$v->sum())], ['HerdCode', 'TotalDistance'])->join(test::easterntundra2::domain::CaribouFix.all()->project([x|$x.herdCode, x|$x.herdCode->toUpper()], ['JoinHerd', 'HerdLabel']), meta::relational::metamodel::join::JoinType.INNER, ['HerdCode'], ['JoinHerd'])->restrict(['HerdCode', 'TotalDistance'])->distinct()};
+    mapping: test::easterntundra2::mapping::TelemetryMapping;
+    runtime: test::easterntundra2::runtime::TelemetryRuntime;
+  }
+  testSuites:
+  [
+    herdDistanceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          telemetryConnection:
+            Relational
+            #{
+              telemetry.collar_fix:
+                'collar_code,animal_code,herd_code,fix_date,latitude,longitude,altitude_metres,collar_status,signal_code,habitat_code,movement_code,distance_km,temperature_c,snow_depth_cm,vegetation_code,observer_note,deployment_year_text,capture_year_text,survey_year_text,age_years_text,distance_band_text,battery_text,tracking_code,gps_quality,satellite_count,transmission_seq,route_code,sex_code,age_class,body_mass_kg,antler_stage\n'+
+                'COL-01,AN-01,HERD-A,2026-01-10,65.1,-145.2,310.0,ACTIVE,GOOD,LICHEN,REST,1.0,-18.0,42.0,MOSS,quiet,2019,2018,2026,7,1,98.4,TRK-01,HIGH,8,1,R-01,F,ADULT,110.0,FULL\n'+
+                'COL-02,AN-02,HERD-A,2026-01-11,65.2,-145.3,315.0,ACTIVE,GOOD,LICHEN,GRAZE,2.0,-17.0,41.0,MOSS,browse,2019,2018,2026,7,2,97.0,TRK-02,HIGH,8,2,R-01,F,ADULT,112.0,FULL\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        herdADistance:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            herdCode = 'HERD-A'
+          ]
+          asserts:
+          [
+            distanceRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HerdCode":"HERD-A","TotalDistance":3.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

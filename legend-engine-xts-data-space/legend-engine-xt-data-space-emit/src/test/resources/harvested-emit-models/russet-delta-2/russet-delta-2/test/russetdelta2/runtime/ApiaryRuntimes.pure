@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::russetdelta2::runtime::ApiaryH2Runtime
+{
+  mappings:
+  [
+    test::russetdelta2::mapping::ApiaryMapping
+  ];
+  connections:
+  [
+    test::russetdelta2::store::ApiaryDb:
+    [
+      apiaryConnection: test::russetdelta2::connection::ApiaryH2Connection
+    ]
+  ];
+}
+
+Runtime test::russetdelta2::runtime::HarvestH2Runtime
+{
+  mappings:
+  [
+    test::russetdelta2::mapping::HarvestMapping
+  ];
+  connections:
+  [
+    test::russetdelta2::store::HarvestDb:
+    [
+      harvestConnection: test::russetdelta2::connection::HarvestH2Connection
+    ]
+  ];
+}
+
+Runtime test::russetdelta2::runtime::ApiaryWarehouseRuntime
+{
+  mappings:
+  [
+    test::russetdelta2::mapping::ApiaryMapping
+  ];
+  connections:
+  [
+    test::russetdelta2::store::ApiaryDb:
+    [
+      apiaryWarehouseConnection: test::russetdelta2::connection::ApiaryWarehouseConnection
+    ]
+  ];
+}
+
+Runtime test::russetdelta2::runtime::HarvestWarehouseRuntime
+{
+  mappings:
+  [
+    test::russetdelta2::mapping::HarvestMapping
+  ];
+  connections:
+  [
+    test::russetdelta2::store::HarvestDb:
+    [
+      harvestWarehouseConnection: test::russetdelta2::connection::HarvestWarehouseConnection
+    ]
+  ];
+}

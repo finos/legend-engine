@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::sunlitcove6::dataspace::CoveSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier - the survey binding served through the cove survey warehouse.';
+      mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+      defaultRuntime: demo::sunlitcove6::runtime::CoveWarehouseRuntime;
+    },
+    {
+      name: 'retained';
+      description: 'Retained tier - the same logical model resolved against the retained dive archive.';
+      mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+      defaultRuntime: demo::sunlitcove6::runtime::CoveRetainedRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Sunlit Cove Kelp Patch Survey';
+  description: 'Entry point over the kelp patch survey: mapped patches with the cover band the mapping cascade resolves, the station and holdfast detail reached through the named joins, and the endpoints consumers should start from.';
+  elements:
+  [
+    demo::sunlitcove6::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Patch survey register';
+      description: 'Featured endpoint returning the surge-swept patches dived inside an injected window.';
+      executable: demo::sunlitcove6::service::PatchSurveyRegister;
+    }
+  ];
+}
+
+###DataSpace
+DataSpace demo::sunlitcove6::dataspace::CoveShoreDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'shore';
+      description: 'Shore tier - the station, tract and holdfast registers on the same binding, served through the survey warehouse.';
+      mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+      defaultRuntime: demo::sunlitcove6::runtime::CoveWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'shore';
+  title: 'Sunlit Cove Shore Registers';
+  description: 'Discovery surface over the supporting shore registers: the stations the patches are dived from, the tracts those stations are grouped into and the holdfast forms the patches are dominated by.';
+  elements:
+  [
+    demo::sunlitcove6::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Patch holdfast lookup';
+      description: 'Featured endpoint returning the patches dominated by a requested holdfast set.';
+      executable: demo::sunlitcove6::service::PatchHoldfastLookup;
+    }
+  ];
+}
+
+###DataSpace
+DataSpace demo::sunlitcove6::dataspace::CoveTallyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'retained';
+      description: 'Retained tier - the reach tallies resolved against the retained dive archive.';
+      mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+      defaultRuntime: demo::sunlitcove6::runtime::CoveRetainedRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier - the same tallies resolved against the cove survey warehouse.';
+      mapping: demo::sunlitcove6::mapping::CoveSurveyMapping;
+      defaultRuntime: demo::sunlitcove6::runtime::CoveWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'retained';
+  title: 'Sunlit Cove Reach Tallies';
+  description: 'Aggregation surface over the patch register: the reach patch counts and frond totals grouped on the station column the survey patches reach through the named join.';
+  elements:
+  [
+    demo::sunlitcove6::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Patch reach tally';
+      description: 'Featured endpoint returning the reach patch counts and frond totals.';
+      executable: demo::sunlitcove6::service::PatchReachTally;
+    }
+  ];
+}

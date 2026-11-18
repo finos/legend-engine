@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::jadeisle2::service::PatrolWindow
+{
+  pattern: '/jadeisle/v1/patrol-window';
+  title: 'Isle Warden Patrol Window';
+  owners:
+  [
+    'example-jade-isle-warden-desk'
+  ];
+  documentation: 'Named warden patrols resolved at a caller-supplied processing date, so superseded corrections drop out of the window.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], patrolCodes: String[*]|test::jadeisle2::domain::TrailPatrol.all($asOfDate)->filter(
+      p|$p.patrolCode->in($patrolCodes)
+    )->project(
+      [
+        p|$p.patrolCode,
+        p|$p.segmentCode,
+        p|$p.wardenName,
+        p|$p.patrolGrade->toUpper()
+      ],
+      [
+        'Patrol',
+        'Segment',
+        'Warden',
+        'Grade'
+      ]
+    )->sort([asc('Patrol')])};
+    mapping: test::jadeisle2::mapping::IsleVisitMapping;
+    runtime: test::jadeisle2::runtime::IsleVisitRuntime;
+  }
+  testSuites:
+  [
+    patrolWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              trail.trail_segment:
+                'segment_code,habitat_code,segment_name,length_m\n'+
+                'SEG-1,HAB-1,Kelp Shore Path,1200\n'+
+                'SEG-2,HAB-2,Fern Hollow Loop,900\n';
+            }#,
+          connection_2:
+            Relational
+            #{
+              patrol.trail_patrol:
+                'patrol_code,segment_code,warden_name,patrol_grade,in_z,out_z\n'+
+                'PAT-1,SEG-1,Iris Wren,routine,2026-01-01,9999-12-31\n'+
+                'PAT-2,SEG-2,Odell Marsh,priority,2026-01-01,9999-12-31\n'+
+                'PAT-3,SEG-3,Corrected Entry,routine,2024-01-01,2025-01-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        namedPatrolsAsOf:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            patrolCodes = ['PAT-1', 'PAT-2', 'PAT-3']
+          ]
+          asserts:
+          [
+            inRangePatrolRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patrol":"PAT-1","Segment":"SEG-1","Warden":"Iris Wren","Grade":"ROUTINE"},{"Patrol":"PAT-2","Segment":"SEG-2","Warden":"Odell Marsh","Grade":"PRIORITY"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

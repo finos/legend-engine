@@ -1,0 +1,226 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::hazelwillow2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Atmosphere a firing segment is held under inside the chamber.'} test::hazelwillow2::domain::FiringAtmosphere
+{
+  OXIDATION,
+  REDUCTION,
+  NEUTRAL,
+  SALT_VAPOUR
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Pyrometric cone the segment is soaked to.'} test::hazelwillow2::domain::ConeRating
+{
+  CONE_SIX,
+  CONE_EIGHT,
+  CONE_TEN,
+  CONE_TWELVE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Role a member of the studio holds on a firing rota.'} test::hazelwillow2::domain::StudioRole
+{
+  THROWER,
+  GLAZER,
+  KILN_TENDER,
+  APPRENTICE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Category a surface defect on a fired tile is filed under.'} test::hazelwillow2::domain::DefectKind
+{
+  CRAZING,
+  PINHOLING,
+  CRAWLING,
+  BLOATING
+}
+
+Class {meta::pure::profiles::doc.doc = 'A studio building housing one or more kilns.'} test::hazelwillow2::domain::KilnSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  district: String[1];
+  openedYear: Integer[0..1];
+  chambersWithAtLeastShelves(minimumShelves: Integer[1])
+  {
+    $this.chambers->filter(c|$c.shelves->size() >= $minimumShelves)
+  }: KilnChamber[*];
+  chamberLabelsRunningAtmosphere(atmosphere: FiringAtmosphere[1])
+  {
+    $this.chambers->filter(c|$c.runs->exists(r|$r.segments->exists(s|$s.atmosphere == $atmosphere)))->map(c|$c.chamberLabel)
+  }: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One firing chamber of a kiln, loaded shelf by shelf.'} test::hazelwillow2::domain::KilnChamber
+{
+  chamberLabel: String[1];
+  capacityLitres: Integer[1];
+  fuelKind: String[1];
+  runsReachingCone(cone: ConeRating[1])
+  {
+    $this.runs->filter(r|$r.segments->exists(s|$s.soakCone == $cone))
+  }: FiringRun[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single shelf slot inside a chamber, addressed by tier and column.'} test::hazelwillow2::domain::ShelfPosition
+{
+  tier: Integer[1];
+  columnLabel: String[1];
+  clearanceMillimetres: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One complete firing of a chamber, made up of ordered segments.'} test::hazelwillow2::domain::FiringRun
+{
+  runCode: String[1];
+  firedOn: StrictDate[1];
+  loadedShelfCount: Integer[1];
+  segmentsWithAtmosphere(atmosphere: FiringAtmosphere[1])
+  {
+    $this.segments->filter(s|$s.atmosphere == $atmosphere)
+  }: FiringSegment[*];
+  tilesFlaggedWith(kind: DefectKind[1])
+  {
+    $this.tiles->filter(t|$t.defects->exists(d|$d.kind == $kind))
+  }: TestTile[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A held stage of a firing run with its own atmosphere and soak cone.'} test::hazelwillow2::domain::FiringSegment
+{
+  segmentOrder: Integer[1];
+  atmosphere: FiringAtmosphere[1];
+  soakCone: ConeRating[1];
+  soakMinutes: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A clay body the studio mixes and throws.'} test::hazelwillow2::domain::ClayBody
+{
+  bodyCode: String[1];
+  bodyName: String[1];
+  shrinkagePercent: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A glaze recipe kept in the studio notebook.'} test::hazelwillow2::domain::GlazeRecipe
+{
+  recipeCode: String[1];
+  recipeName: String[1];
+  baseMineral: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One applied coat of a glaze recipe on a test tile.'} test::hazelwillow2::domain::GlazeLayer
+{
+  layerOrder: Integer[1];
+  applicationMethod: String[1];
+  thicknessMicrons: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A small tile fired to record how a clay and glaze pairing behaves.'} test::hazelwillow2::domain::TestTile
+{
+  tileCode: String[1];
+  surfaceNote: String[0..1];
+  layersOfRecipe(recipeName: String[1])
+  {
+    $this.layers->filter(l|$l.recipe.recipeName == $recipeName)
+  }: GlazeLayer[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surface defect observed on a fired tile.'} test::hazelwillow2::domain::DefectNote
+{
+  kind: DefectKind[1];
+  severity: Integer[1];
+  remark: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A member of the studio taking part in firings.'} test::hazelwillow2::domain::Potter
+{
+  potterCode: String[1];
+  potterName: String[1];
+  role: StudioRole[1];
+  sessionsInYear(year: Integer[1])
+  {
+    $this.sessions->filter(s|$s.sessionYear == $year)
+  }: StudioSession[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A booked studio slot during which firings are attended.'} test::hazelwillow2::domain::StudioSession
+{
+  sessionCode: String[1];
+  sessionYear: Integer[1];
+  attendedHours: Integer[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A site holds its chambers.'} test::hazelwillow2::domain::Site_Chamber
+{
+  site: KilnSite[1];
+  chambers: KilnChamber[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A chamber is loaded through its shelf positions.'} test::hazelwillow2::domain::Chamber_Shelf
+{
+  chamber: KilnChamber[1];
+  shelves: ShelfPosition[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A chamber accumulates firing runs, reached from the site only through the chamber.'} test::hazelwillow2::domain::Chamber_Run
+{
+  firedChamber: KilnChamber[1];
+  runs: FiringRun[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A run is composed of ordered segments, reached from the chamber only through the run.'} test::hazelwillow2::domain::Run_Segment
+{
+  run: FiringRun[1];
+  segments: FiringSegment[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A run carries the test tiles it fired.'} test::hazelwillow2::domain::Run_Tile
+{
+  firingRun: FiringRun[1];
+  tiles: TestTile[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A tile is thrown from one clay body.'} test::hazelwillow2::domain::Tile_Clay
+{
+  tile: TestTile[1];
+  clayBody: ClayBody[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A tile carries its ordered glaze layers.'} test::hazelwillow2::domain::Tile_Layer
+{
+  layeredTile: TestTile[1];
+  layers: GlazeLayer[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A layer names the recipe it was mixed from, reached from the tile only through the layer.'} test::hazelwillow2::domain::Layer_Recipe
+{
+  layer: GlazeLayer[1];
+  recipe: GlazeRecipe[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A tile carries the defects noted on it.'} test::hazelwillow2::domain::Tile_Defect
+{
+  inspectedTile: TestTile[1];
+  defects: DefectNote[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A potter books studio sessions.'} test::hazelwillow2::domain::Potter_Session
+{
+  potter: Potter[1];
+  sessions: StudioSession[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A session attends firing runs, so a potter reaches a segment only through session and run.'} test::hazelwillow2::domain::Session_Run
+{
+  session: StudioSession[1];
+  attendedRuns: FiringRun[*];
+}

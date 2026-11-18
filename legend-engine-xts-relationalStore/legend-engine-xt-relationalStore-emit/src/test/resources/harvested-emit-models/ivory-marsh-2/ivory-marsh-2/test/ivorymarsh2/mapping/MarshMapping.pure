@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivorymarsh2::mapping::MarshMapping
+(
+  test::ivorymarsh2::domain::BoardwalkSection[boardwalk_section_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorymarsh2::store::MarshDb]wetland.boardwalk_section.section_id
+    )
+    ~mainTable [test::ivorymarsh2::store::MarshDb]wetland.boardwalk_section
+    sectionCode: [test::ivorymarsh2::store::MarshDb]wetland.boardwalk_section.section_code,
+    surfaceCode: [test::ivorymarsh2::store::MarshDb]wetland.boardwalk_section.surface_code,
+    plankCount: [test::ivorymarsh2::store::MarshDb]wetland.boardwalk_section.plank_count,
+    hazardTier: [test::ivorymarsh2::store::MarshDb]wetland.boardwalk_section.hazard_tier,
+    reserveCode: [test::ivorymarsh2::store::MarshDb]@Section_Reserve | [test::ivorymarsh2::store::MarshDb]wetland.reserve.reserve_code,
+    wetlandName: [test::ivorymarsh2::store::MarshDb]@Section_Reserve | [test::ivorymarsh2::store::MarshDb]wetland.reserve.wetland_name,
+    accessCode: [test::ivorymarsh2::store::MarshDb]@Section_Reserve | [test::ivorymarsh2::store::MarshDb]wetland.reserve.access_code,
+    wardenName: [test::ivorymarsh2::store::MarshDb]@Section_Warden | [test::ivorymarsh2::store::MarshDb]wetland.section_warden.warden_name,
+    contactRota: [test::ivorymarsh2::store::MarshDb]@Section_Warden | [test::ivorymarsh2::store::MarshDb]wetland.section_warden.contact_rota
+  }
+
+  test::ivorymarsh2::domain::SectionInspection[section_inspection_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivorymarsh2::store::MarshDb]wetland.section_inspection.inspection_id
+    )
+    ~mainTable [test::ivorymarsh2::store::MarshDb]wetland.section_inspection
+    inspectionCode: [test::ivorymarsh2::store::MarshDb]wetland.section_inspection.inspection_code,
+    sectionCode: [test::ivorymarsh2::store::MarshDb]wetland.section_inspection.section_code,
+    inspectedOn: [test::ivorymarsh2::store::MarshDb]wetland.section_inspection.inspected_on,
+    defectCount: [test::ivorymarsh2::store::MarshDb]wetland.section_inspection.defect_count,
+    gradeCode: [test::ivorymarsh2::store::MarshDb]wetland.section_inspection.grade_code
+  }
+)

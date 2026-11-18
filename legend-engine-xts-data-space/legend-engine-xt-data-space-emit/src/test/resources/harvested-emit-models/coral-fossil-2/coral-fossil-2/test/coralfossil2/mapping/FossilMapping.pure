@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralfossil2::mapping::FossilMapping
+(
+  test::coralfossil2::domain::DigSite[digSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralfossil2::store::FossilDb]fossil.dig_site.site_code,
+      [test::coralfossil2::store::FossilDb]fossil.dig_site.survey_date
+    )
+    ~mainTable [test::coralfossil2::store::FossilDb]fossil.dig_site
+    siteCode: [test::coralfossil2::store::FossilDb]fossil.dig_site.site_code,
+    surveyDate: [test::coralfossil2::store::FossilDb]fossil.dig_site.survey_date,
+    siteName: [test::coralfossil2::store::FossilDb]fossil.dig_site.site_name,
+    stratumLabel: [test::coralfossil2::store::FossilDb]fossil.dig_site.stratum_label,
+    depthM: [test::coralfossil2::store::FossilDb]fossil.dig_site.depth_m,
+    recordedAt: [test::coralfossil2::store::FossilDb]fossil.dig_site.recorded_at
+  }
+
+  test::coralfossil2::domain::Specimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralfossil2::store::FossilDb]fossil.specimen.specimen_ref,
+      [test::coralfossil2::store::FossilDb]fossil.specimen.survey_date
+    )
+    ~mainTable [test::coralfossil2::store::FossilDb]fossil.specimen
+    specimenRef: [test::coralfossil2::store::FossilDb]fossil.specimen.specimen_ref,
+    surveyDate: [test::coralfossil2::store::FossilDb]fossil.specimen.survey_date,
+    siteCode: [test::coralfossil2::store::FossilDb]fossil.specimen.site_code,
+    taxonName: [test::coralfossil2::store::FossilDb]fossil.specimen.taxon_name,
+    lengthMm: [test::coralfossil2::store::FossilDb]fossil.specimen.length_mm,
+    collectorName: [test::coralfossil2::store::FossilDb]fossil.specimen.collector_name,
+    catalogedAt: [test::coralfossil2::store::FossilDb]fossil.specimen.cataloged_at
+  }
+
+  test::coralfossil2::domain::CoralColony[coralColony]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralfossil2::store::FossilDb]fossil.coral_colony.colony_ref,
+      [test::coralfossil2::store::FossilDb]fossil.coral_colony.survey_date,
+      [test::coralfossil2::store::FossilDb]fossil.coral_colony.recorded_at
+    )
+    ~mainTable [test::coralfossil2::store::FossilDb]fossil.coral_colony
+    colonyRef: [test::coralfossil2::store::FossilDb]fossil.coral_colony.colony_ref,
+    surveyDate: [test::coralfossil2::store::FossilDb]fossil.coral_colony.survey_date,
+    recordedAt: [test::coralfossil2::store::FossilDb]fossil.coral_colony.recorded_at,
+    growthForm: [test::coralfossil2::store::FossilDb]fossil.coral_colony.growth_form,
+    diameterMm: [test::coralfossil2::store::FossilDb]fossil.coral_colony.diameter_mm
+  }
+
+  test::coralfossil2::domain::FieldCollector[fieldCollector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralfossil2::store::FossilDb]fossil.field_collector.collector_code,
+      [test::coralfossil2::store::FossilDb]fossil.field_collector.survey_date
+    )
+    ~mainTable [test::coralfossil2::store::FossilDb]fossil.field_collector
+    collectorCode: [test::coralfossil2::store::FossilDb]fossil.field_collector.collector_code,
+    surveyDate: [test::coralfossil2::store::FossilDb]fossil.field_collector.survey_date,
+    collectorName: [test::coralfossil2::store::FossilDb]fossil.field_collector.collector_name,
+    affiliation: [test::coralfossil2::store::FossilDb]fossil.field_collector.affiliation
+  }
+
+  test::coralfossil2::domain::SpecimenDigSite: Relational
+  {
+    AssociationMapping
+    (
+      site[specimen, digSite]: [test::coralfossil2::store::FossilDb]@SpecimenDigSite,
+      specimens[digSite, specimen]: [test::coralfossil2::store::FossilDb]@SpecimenDigSite
+    )
+  }
+
+  testSuites:
+  [
+    specimenSiteSuite:
+    {
+      function: |test::coralfossil2::domain::Specimen.all()->project(
+        [
+          s|$s.specimenRef,
+          s|$s.surveyDate,
+          s|$s.taxonName,
+          s|$s.site.siteName,
+          s|$s.site.stratumLabel
+        ],
+        [
+          'Specimen',
+          'Survey Date',
+          'Taxon',
+          'Site',
+          'Stratum'
+        ]
+      )->sort(
+        [
+          asc('Specimen')
+        ]
+      );
+      tests:
+      [
+        compositeJoinMatchesOnBothColumns:
+        {
+          doc: 'A specimen reaches its dig site only when both the site code and the survey date match; a specimen matching on the site code alone and one with no surveyed site keep their own columns but lose the joined site.';
+          data:
+          [
+            test::coralfossil2::store::FossilDb:
+              Relational
+              #{
+                fossil.dig_site:
+                  'site_code,survey_date,site_name,stratum_label,depth_m,recorded_at\n'+
+                  'DS-01,2026-04-14,Terrace North,Upper Reef Flat,2.5,2026-04-14 08:15:00\n'+
+                  'DS-01,2026-04-21,Terrace North,Lower Reef Flat,3.25,2026-04-21 08:40:00\n'+
+                  'DS-02,2026-04-14,Lagoon Cut,Back Reef,1.75,2026-04-14 10:05:00\n';
+                fossil.specimen:
+                  'specimen_ref,survey_date,site_code,taxon_name,length_mm,collector_name,cataloged_at\n'+
+                  'SP-01,2026-04-14,DS-01,Favites fossilis,42.5,Ines Varga,2026-04-14 12:00:00\n'+
+                  'SP-02,2026-04-21,DS-01,Porites antiqua,18.25,Ines Varga,2026-04-21 12:30:00\n'+
+                  'SP-03,2026-04-14,DS-02,Acropora vetusta,63.5,Tomas Reid,2026-04-14 13:10:00\n'+
+                  'SP-04,2026-04-28,DS-02,Montipora prisca,27.75,,2026-04-28 09:45:00\n'+
+                  'SP-05,2026-04-14,DS-09,Goniopora lapidea,11.5,Tomas Reid,2026-04-14 14:20:00\n';
+              }#
+          ];
+          asserts:
+          [
+            specimensWithSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen":"SP-01","Survey Date":"2026-04-14","Taxon":"Favites fossilis","Site":"Terrace North","Stratum":"Upper Reef Flat"},{"Specimen":"SP-02","Survey Date":"2026-04-21","Taxon":"Porites antiqua","Site":"Terrace North","Stratum":"Lower Reef Flat"},{"Specimen":"SP-03","Survey Date":"2026-04-14","Taxon":"Acropora vetusta","Site":"Lagoon Cut","Stratum":"Back Reef"},{"Specimen":"SP-04","Survey Date":"2026-04-28","Taxon":"Montipora prisca","Site":null,"Stratum":null},{"Specimen":"SP-05","Survey Date":"2026-04-14","Taxon":"Goniopora lapidea","Site":null,"Stratum":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'The closed vocabulary of reasons a trail task was paired with an exception.'} demo::ivoryridge::domain::ExceptionKind
+{
+  ACCESS_BLOCKED,
+  MATERIAL_SHORT,
+  WEATHER_HOLD,
+  SURVEY_GAP
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The closed vocabulary of resolution states a paired exception can be in.'} demo::ivoryridge::domain::ResolutionStatus
+{
+  OPEN,
+  CLEARED,
+  DEFERRED
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wide ridge trail maintenance task whose properties are optional apart from its reference, record, crew, survey day and processing instant.'} demo::ivoryridge::domain::TrailTask
+{
+  taskRef: String[1];
+  recordCode: String[1];
+  crewCode: String[1];
+  surveyDate: StrictDate[1];
+  processedAt: DateTime[1];
+  segmentCode: String[0..1];
+  habitatCode: String[0..1];
+  unitCode: String[0..1];
+  priorityCode: String[0..1];
+  directionCode: String[0..1];
+  toolCode: String[0..1];
+  weatherCode: String[0..1];
+  gateCode: String[0..1];
+  permitCode: String[0..1];
+  markerCode: String[0..1];
+  upstreamRefOne: String[0..1];
+  upstreamRefTwo: String[0..1];
+  upstreamRefThree: String[0..1];
+  quantity: Integer[0..1];
+  lengthMetres: Integer[0..1];
+  versionNo: Integer[0..1];
+  plannedDate: StrictDate[0..1];
+  closedDate: StrictDate[0..1];
+  accessNote: String[0..1];
+  taskLabel: String[0..1];
+  pairingKindCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The hub pairing that links a trail task to its classification, trailer and resolution detail.'} demo::ivoryridge::domain::TaskPairing
+{
+  pairingId: String[1];
+  taskRef: String[1];
+  exceptionKind: demo::ivoryridge::domain::ExceptionKind[1];
+  raisedBy: String[0..1];
+  validTo: StrictDate[1];
+  detailNoteText: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A classification row for a trail task whose identity pairs the task reference with the interval-closing column.'} demo::ivoryridge::domain::TaskClassification
+{
+  taskRef: String[1];
+  classCode: String[1];
+  className: String[0..1];
+  validTo: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A trailing free-text row for a trail task whose identity pairs the task reference with the interval-closing column.'} demo::ivoryridge::domain::TaskTrailer
+{
+  taskRef: String[1];
+  trailerText: String[0..1];
+  trailerSeq: Integer[0..1];
+  validTo: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The downstream detail of one pairing, carrying its enumerated resolution status.'} demo::ivoryridge::domain::PairingDetail
+{
+  pairingId: String[1];
+  status: demo::ivoryridge::domain::ResolutionStatus[1];
+  noteText: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Connects a trail task to the pairings raised against it.'} demo::ivoryridge::domain::TrailTask_TaskPairing
+{
+  pairings: demo::ivoryridge::domain::TaskPairing[*];
+  task: demo::ivoryridge::domain::TrailTask[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Connects a classification row to the pairings sharing its task reference.'} demo::ivoryridge::domain::TaskClassification_TaskPairing
+{
+  classifiedPairings: demo::ivoryridge::domain::TaskPairing[*];
+  classifications: demo::ivoryridge::domain::TaskClassification[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Connects a trailer row to the pairings sharing its task reference.'} demo::ivoryridge::domain::TaskTrailer_TaskPairing
+{
+  trailedPairings: demo::ivoryridge::domain::TaskPairing[*];
+  trailers: demo::ivoryridge::domain::TaskTrailer[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Connects a pairing to its downstream resolution detail.'} demo::ivoryridge::domain::TaskPairing_PairingDetail
+{
+  detail: demo::ivoryridge::domain::PairingDetail[0..1];
+  pairing: demo::ivoryridge::domain::TaskPairing[0..1];
+}

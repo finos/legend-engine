@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::umberbeacon::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Fabric a beacon tower was built from.'} test::umberbeacon::domain::TowerMaterial
+{
+  GRANITE,
+  BRICK,
+  CAST_IRON,
+  TIMBER
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where a beacon sits in the heritage register lifecycle.'} test::umberbeacon::domain::RegisterStatus
+{
+  ACTIVE,
+  DECOMMISSIONED,
+  UNDER_RESTORATION,
+  RUINED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Named watch a keeper stood during a night of duty.'} test::umberbeacon::domain::WatchPeriod
+{
+  DUSK,
+  MIDDLE,
+  DAWN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Coarse visibility band recorded in a keeper watch log.'} test::umberbeacon::domain::VisibilityBand
+{
+  CLEAR,
+  HAZE,
+  FOG,
+  STORM
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Fresnel lens order, ordered from the widest first-order optic downwards.'} test::umberbeacon::domain::LensOrder
+{
+  FIRST,
+  SECOND,
+  THIRD,
+  FOURTH,
+  SIXTH
+}
+
+Class {meta::pure::profiles::doc.doc = 'A catalogued beacon tower in the coastal heritage register.'} test::umberbeacon::domain::BeaconStructure
+{
+  beaconCode: String[1];
+  beaconName: String[1];
+  material: TowerMaterial[1];
+  status: RegisterStatus[1];
+  focalHeightM: Integer[1];
+  firstLitOn: StrictDate[1];
+  registerNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A beacon standing at a harbour entrance, adding the channel it marks to the registered tower record.'} test::umberbeacon::domain::HarbourBeacon extends test::umberbeacon::domain::BeaconStructure
+{
+  channelName: String[1];
+  chartedDepthM: Integer[1];
+  fogSignalFitted: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One keeper watch recorded against a beacon during a night of duty.'} test::umberbeacon::domain::KeeperWatchLog
+{
+  logRef: String[1];
+  beaconCode: String[1];
+  watchedOn: StrictDate[1];
+  watch: WatchPeriod[1];
+  visibility: VisibilityBand[1];
+  keeperName: String[1];
+  remark: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A Fresnel lens assembly fitted to a beacon, described by its optical order.'} test::umberbeacon::domain::LensAssembly
+{
+  assemblySerial: String[1];
+  beaconCode: String[1];
+  lensOrder: LensOrder[1];
+  focalLengthMm: Integer[1];
+  panelCount: Integer[1];
+  restoredOn: StrictDate[0..1];
+}

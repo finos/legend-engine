@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::crimsonridge::data::CityFixture
+{
+  Relational
+  #{
+    city.district:
+      'district_id,district_code,district_name,planner_count\n'+
+      '1,D-N,Northgate,4\n'+
+      '2,D-S,Southbank,3\n';
+    city.neighborhood:
+      'neighborhood_id,neighborhood_code,neighborhood_name,resident_count,district_id\n'+
+      '1,N-01,Cedar Heights,8200,1\n'+
+      '2,N-02,Willow Flats,5400,1\n'+
+      '3,N-03,Kiln Quarter,6100,2\n';
+    city.park:
+      'park_id,park_code,park_name,category_code,area_hectares,opened_on,fenced_flag,neighborhood_id\n'+
+      '1,P-01,Cedar Ridge Commons,REG,12.5,2019-04-18,false,1\n'+
+      '2,P-02,Willow Pocket,POC,0.4,2021-06-02,true,2\n'+
+      '3,P-03,Kiln Quarter Green,COM,3.2,2020-09-30,false,3\n';
+    city.transit_stop:
+      'stop_id,stop_code,stop_name,shelter_seats,neighborhood_id\n'+
+      '1,S-01,Cedar Heights North,6,1\n'+
+      '2,S-02,Willow Flats Depot,4,2\n'+
+      '3,S-03,Kiln Quarter Loop,2,3\n';
+    city.amenity:
+      'amenity_id,amenity_code,amenity_kind,installed_on,park_id\n'+
+      '1,A-01,splash pad,2020-05-11,1\n'+
+      '2,A-02,bandstand,2022-03-08,1\n'+
+      '3,A-03,climbing frame,2021-07-19,3\n';
+    city.crew:
+      'crew_id,crew_code,crew_name,headcount,district_id\n'+
+      '1,C-01,Northgate Grounds,9,1\n'+
+      '2,C-02,Southbank Grounds,6,2\n';
+  }#
+}

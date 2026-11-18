@@ -1,0 +1,218 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadelighthouse2::mapping::HarbourStationMapping
+(
+  include test::jadelighthouse2::mapping::HarbourBaseMapping
+
+  *test::jadelighthouse2::domain::LightStation[lightStation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadelighthouse2::store::StationSurveyStore]survey.light_station.station_id
+    )
+    ~mainTable [test::jadelighthouse2::store::StationSurveyStore]survey.light_station
+    recordCode: concat('STATION-', toString([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.station_id)),
+    stationName: toUpper([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.station_name),
+    lampCount: [test::jadelighthouse2::store::StationSurveyStore]survey.light_station.lamp_count,
+    focalHeightM: [test::jadelighthouse2::store::StationSurveyStore]survey.light_station.focal_height_m,
+    heightPerLamp: divide(
+                     [test::jadelighthouse2::store::StationSurveyStore]survey.light_station.focal_height_m,
+                     [test::jadelighthouse2::store::StationSurveyStore]survey.light_station.lamp_count
+                   ),
+    band: case(
+            equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'A'),
+            'alpha',
+            case(
+              equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'B'),
+              'bravo',
+              case(
+                equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'C'),
+                'charlie',
+                case(
+                  equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'D'),
+                  'delta',
+                  case(
+                    equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'E'),
+                    'echo',
+                    case(
+                      equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'F'),
+                      'foxtrot',
+                      case(
+                        equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'G'),
+                        'golf',
+                        case(
+                          equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'H'),
+                          'hotel',
+                          sqlNull()
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+    noteLabel: coalesce([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.note_text, 'unlogged'),
+    state: EnumerationMapping LampStateMapping: concat(
+                                                 case(
+                                                   equal([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.state_code, 'GUTTERED'),
+                                                   'DIMMED',
+                                                   [test::jadelighthouse2::store::StationSurveyStore]survey.light_station.state_code
+                                                 ),
+                                                 concat('/', toUpper([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.glazing_code))
+                                               ),
+    glazing: EnumerationMapping GlazingKindMapping: toUpper([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.glazing_code),
+    keeperPost: [test::jadelighthouse2::store::StationSurveyStore]@Station_Grade > @Grade_Sector > @Sector_District > @District_Keeper > @Keeper_Post | [test::jadelighthouse2::store::StationSurveyStore]reference.keeper_post.post_name,
+    optic
+    (
+      opticLabel: concat([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.station_name, '-optic'),
+      sectorName: [test::jadelighthouse2::store::StationSurveyStore]@Station_Grade > @Grade_Sector | [test::jadelighthouse2::store::StationSurveyStore]reference.coast_sector.sector_name
+    ),
+    tally() Inline[stationTally],
+    watch[duskWatch]: [test::jadelighthouse2::store::StationSurveyStore]@Station_Watch
+  }
+
+  test::jadelighthouse2::domain::StationTally[stationTally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadelighthouse2::store::StationSurveyStore]survey.light_station.station_id
+    )
+    ~mainTable [test::jadelighthouse2::store::StationSurveyStore]survey.light_station
+    focalBand: coalesce([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.band_code, 'none'),
+    tallyNote: concat('lamps:', toString([test::jadelighthouse2::store::StationSurveyStore]survey.light_station.lamp_count))
+  }
+
+  test::jadelighthouse2::domain::WatchLog[duskWatch]: Relational
+  {
+    ~filter [test::jadelighthouse2::store::StationSurveyStore]DuskWatchFilter
+    ~primaryKey
+    (
+      [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_id
+    )
+    ~mainTable [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log
+    recordCode: 'DUSK-WATCH',
+    watchCode: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_code,
+    watchHours: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_hours,
+    watchDate: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_date,
+    watchState: EnumerationMapping LampStateMapping: concat(substring([test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_code, 0, 3), '/SHELTERED')
+  }
+
+  test::jadelighthouse2::domain::WatchLog[reliefWatchMember]: Relational
+  {
+    ~filter [test::jadelighthouse2::store::StationSurveyStore]ReliefWatchFilter
+    ~primaryKey
+    (
+      [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_id
+    )
+    ~mainTable [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log
+    recordCode: 'RELIEF-WATCH',
+    watchCode: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_code,
+    watchHours: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_hours,
+    watchDate: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_date
+  }
+
+  *test::jadelighthouse2::domain::WatchLog: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(duskWatch, reliefWatchMember)
+  }
+
+  *test::jadelighthouse2::domain::ReliefWatch[reliefWatchSubtype]: Relational
+  {
+    ~filter [test::jadelighthouse2::store::StationSurveyStore]ReliefWatchFilter
+    ~primaryKey
+    (
+      [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_id
+    )
+    ~mainTable [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log
+    recordCode: 'RELIEF-SUBTYPE',
+    watchCode: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_code,
+    watchHours: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_hours,
+    watchDate: [test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_date,
+    watchState: EnumerationMapping LampStateMapping: concat(toUpper(substring([test::jadelighthouse2::store::StationSurveyStore]watch.watch_log.watch_kind, 0, 3)), '/WEATHERED')
+  }
+
+  test::jadelighthouse2::domain::LampState: EnumerationMapping LampStateMapping
+  {
+    LIT: ['LIT/SHELTERED', 'LIT/WEATHERED'],
+    DIMMED: ['DIMMED/SHELTERED', 'DIMMED/WEATHERED', 'DUS/SHELTERED'],
+    SHUTTERED: ['SHUTTERED/SHELTERED', 'SHUTTERED/WEATHERED'],
+    DECOMMISSIONED: ['DECOMMISSIONED/SHELTERED', 'DECOMMISSIONED/WEATHERED', 'REL/WEATHERED']
+  }
+
+  test::jadelighthouse2::domain::GlazingKind: EnumerationMapping GlazingKindMapping
+  {
+    SHELTERED: ['SHELTERED'],
+    WEATHERED: ['WEATHERED']
+  }
+
+  testSuites:
+  [
+    stationProjectionSuite:
+    {
+      function: |test::jadelighthouse2::domain::LightStation.all()->project(
+  [
+    x|$x.recordCode,
+    x|$x.stationName,
+    x|$x.band,
+    x|$x.noteLabel,
+    x|$x.state,
+    x|$x.keeperPost,
+    x|$x.optic.sectorName,
+    x|$x.tally.tallyNote,
+    x|$x.heightPerLamp
+  ],
+  [
+    'RecordCode',
+    'StationName',
+    'Band',
+    'NoteLabel',
+    'State',
+    'KeeperPost',
+    'SectorName',
+    'TallyNote',
+    'HeightPerLamp'
+  ]
+);
+      tests:
+      [
+        allBandArms:
+        {
+          data:
+          [
+            test::jadelighthouse2::store::StationSurveyStore: Reference
+              #{
+                test::jadelighthouse2::data::HarbourTestData
+              }#
+          ];
+          asserts:
+          [
+            elevenRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"STATION-1","StationName":"HARBOUR BLUFF","Band":"alpha","NoteLabel":"bluff survey","State":"LIT","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:4","HeightPerLamp":22.5},{"RecordCode":"STATION-2","StationName":"OUTER MOLE","Band":"bravo","NoteLabel":"mole survey","State":"DIMMED","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:2","HeightPerLamp":22.5},{"RecordCode":"STATION-3","StationName":"TIDAL SKERRY","Band":"charlie","NoteLabel":"unlogged","State":"DIMMED","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:4","HeightPerLamp":12.5},{"RecordCode":"STATION-4","StationName":"ANCHOR QUAY","Band":"delta","NoteLabel":"quay survey","State":"DECOMMISSIONED","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:4","HeightPerLamp":17.5},{"RecordCode":"STATION-5","StationName":"SHINGLE SPIT","Band":"echo","NoteLabel":"spit survey","State":"LIT","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:2","HeightPerLamp":27.5},{"RecordCode":"STATION-6","StationName":"KELP SHOAL","Band":"foxtrot","NoteLabel":"unlogged","State":"DECOMMISSIONED","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:4","HeightPerLamp":7.5},{"RecordCode":"STATION-7","StationName":"GRANITE HEAD","Band":"golf","NoteLabel":"head survey","State":"SHUTTERED","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:4","HeightPerLamp":27.5},{"RecordCode":"STATION-8","StationName":"SURGE COVE","Band":"hotel","NoteLabel":"cove survey","State":"DIMMED","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:4","HeightPerLamp":6.5},{"RecordCode":"STATION-9","StationName":"QUIET LAGOON","Band":null,"NoteLabel":"unlogged","State":"DIMMED","KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:2","HeightPerLamp":17.5},{"RecordCode":"STATION-10","StationName":"BASALT CAPE","Band":"alpha","NoteLabel":"cape survey","State":"LIT","KeeperPost":"Southern shore post","SectorName":"Cape Sector","TallyNote":"lamps:4","HeightPerLamp":32.5},{"RecordCode":"STATION-11","StationName":"UNCHARTED REEF","Band":"bravo","NoteLabel":"unlogged","State":null,"KeeperPost":"Northern shore post","SectorName":"Bluff Sector","TallyNote":"lamps:2","HeightPerLamp":7.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,47 @@
+name: kindly-cove-2
+title: "Sheltered cove ranger observations"
+description: |
+  An invented ranger-station model for tide-pool survey plots, patrol visits and daily
+  visitor tallies. A reusable plot mapping is included by a wider mapping.
+modelSources:
+  model:
+    root: kindly-cove-2
+    files:
+      - test/kindlycove2/connection/CoveConnections.pure
+      - test/kindlycove2/domain/CoveDomain.pure
+      - test/kindlycove2/mapping/BaseCoveMapping.pure
+      - test/kindlycove2/mapping/CoveMapping.pure
+      - test/kindlycove2/runtime/CoveRuntimes.pure
+      - test/kindlycove2/service/CoveServices.pure
+      - test/kindlycove2/store/CoveDatabase.pure
+features:
+  - execution:plan-generation
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - execution:test-suite
+  - milestoning:business-temporal
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - cove-ranger
+  - h2
+  - relational
+  - survey-plots

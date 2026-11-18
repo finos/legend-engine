@@ -1,0 +1,37 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class test::indigoprairie4::source::RawPlotTallyRecord
+{
+  tallyRef: String[1];
+  plotNumber: Integer[1];
+  sproutRate: Float[1];
+  surveyedOn: StrictDate[1];
+  markerIds: Integer[*];
+  observerNotes: String[*];
+  altPlotIds: Integer[*];
+  collection: test::indigoprairie4::source::RawCollectionRecord[1];
+}
+
+Class test::indigoprairie4::domain::PlotTallyLabel
+{
+  tallyCode: String[1];
+  plotLabel: String[1];
+  sproutLabel: String[1];
+  surveyLabel: String[1];
+  markerLabel: String[1];
+  noteLabel: String[1];
+  plotFallbackLabel: String[1];
+  provenance: test::indigoprairie4::domain::CollectionProvenance[1];
+}

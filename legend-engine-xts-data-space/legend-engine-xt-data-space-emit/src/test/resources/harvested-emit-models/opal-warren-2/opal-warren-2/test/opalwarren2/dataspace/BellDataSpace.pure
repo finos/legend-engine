@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::opalwarren2::dataspace::BellDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'towerRegister';
+      description: 'Primary tier - the graded ring of bells and the belfry frames they hang in, over the in-process store.';
+      mapping: test::opalwarren2::mapping::BellRegisterMapping;
+      defaultRuntime: test::opalwarren2::runtime::BellRegisterRuntime;
+    }
+  ];
+  defaultExecutionContext: 'towerRegister';
+  title: 'Opal Warren 2 Tower Ring Register';
+  description: 'A governed entry point over the hung bells of a tower ring, their resolved tone labels and ringing tiers, and the belfry frames they are housed in, wiring the register mapping to an in-process tier.';
+}

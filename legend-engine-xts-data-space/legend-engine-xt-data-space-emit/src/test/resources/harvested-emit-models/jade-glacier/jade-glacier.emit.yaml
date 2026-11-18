@@ -1,0 +1,46 @@
+name: jade-glacier
+title: "Jade Glacier Glasshouse Accessions — View-Backed Census over a Snowflake-Bound Register"
+description: |
+  A botanical conservatory accession register whose single relational store carries an
+  aggregating inline view of glasshouse occupancy. One relational mapping aliases its main
+  table, declares the primary-key alignment and reaches the census view through a join so a
+  view-backed property resolves per accession, while a tabular digest service and a mapping
+  suite project the graded taxon, the note arms and the census maxima over a Snowflake-bound
+  engine runtime published by a data space.
+modelSources:
+  model:
+    root: jade-glacier
+    files:
+      - test/jadeglacier/connection/ConservatoryLakeConnection.pure
+      - test/jadeglacier/dataspace/ConservatoryDataSpace.pure
+      - test/jadeglacier/domain/ConservatoryDomain.pure
+      - test/jadeglacier/mapping/ConservatoryMapping.pure
+      - test/jadeglacier/runtime/ConservatoryRuntime.pure
+      - test/jadeglacier/service/AccessionDigestService.pure
+      - test/jadeglacier/store/ConservatoryDatabase.pure
+features:
+  - execution:data-space
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inline-view
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - accession-register
+  - conservatory
+  - data-space
+  - h2
+  - inline-view
+  - relational
+  - snowflake
+  - tabular-data-set
+  - view-backed-property

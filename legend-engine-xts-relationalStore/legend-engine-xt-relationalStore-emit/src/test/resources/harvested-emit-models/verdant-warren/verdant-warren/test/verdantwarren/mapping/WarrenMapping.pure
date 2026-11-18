@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantwarren::mapping::WarrenMapping
+(
+  *test::verdantwarren::domain::BurrowSurvey[burrow_survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantwarren::store::WarrenDb]warren.burrow_survey.survey_key
+    )
+    ~mainTable [test::verdantwarren::store::WarrenDb]warren.burrow_survey
+    surveyCode: [test::verdantwarren::store::WarrenDb]warren.burrow_survey.survey_code,
+    hedgerowName: [test::verdantwarren::store::WarrenDb]warren.burrow_survey.hedgerow_name,
+    meadowBand: [test::verdantwarren::store::WarrenDb]warren.burrow_survey.meadow_band,
+    surveyorName: [test::verdantwarren::store::WarrenDb]warren.burrow_survey.surveyor_name,
+    entranceCount: [test::verdantwarren::store::WarrenDb]warren.burrow_survey.entrance_count,
+    kitsCounted: [test::verdantwarren::store::WarrenDb]warren.burrow_survey.kits_counted,
+    soilNote: [test::verdantwarren::store::WarrenDb]warren.burrow_survey.soil_note
+  }
+)

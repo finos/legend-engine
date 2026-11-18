@@ -1,0 +1,75 @@
+name: meadow-reef
+title: "Meadow Reef - A Cross-Store Snorkel-Trail Register With Endpoint-Backed Documents And A Unioned Listing"
+description: |
+  A snorkel-trail sighting register whose stored species side is a multi-table relational store read
+  through equality joins, folding the recorded standing of each alternate name out of a join-reached
+  reference row and carrying the register label over the same hop. Submitted sighting documents are
+  unpacked in memory by a model-to-model layer that splits packed tags, folds an absent observer into
+  a placeholder label and holds the unpacked zone as a mapping-local property, and a cross-store
+  association binds those unpacked sightings to the stored species. A second, endpoint-backed pair of
+  stores serves species and register documents over typed query parameters and document contracts,
+  with the live and archived listings unioned behind one operation-mapped root so the graph-fetch
+  services can isolate the stored, cross-store and endpoint-backed reads separately.
+modelSources:
+  model:
+    root: meadow-reef
+    files:
+      - test/meadowreef/binding/ReefBindings.pure
+      - test/meadowreef/connection/ReefConnections.pure
+      - test/meadowreef/domain/ReefDomain.pure
+      - test/meadowreef/mapping/ReefCrossMapping.pure
+      - test/meadowreef/mapping/SightingM2M.pure
+      - test/meadowreef/mapping/SpeciesDocMapping.pure
+      - test/meadowreef/mapping/SpeciesMapping.pure
+      - test/meadowreef/runtime/ReefRuntimes.pure
+      - test/meadowreef/service/SightingCrossFeed.pure
+      - test/meadowreef/service/SpeciesDocFeed.pure
+      - test/meadowreef/service/SynonymRegister.pure
+      - test/meadowreef/store/ReefDatabase.pure
+      - test/meadowreef/store/SpeciesApi.pure
+features:
+  - scaffolding:model-connection
+  - scaffolding:service-store-connection
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:cross-store
+  - mapping:enumeration-mapping
+  - mapping:m2m-local-property
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:service-store-mapping
+  - query:filter
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:service-store
+stores:
+  - relational
+  - service-store
+complexity: advanced
+tags:
+  - cross-store
+  - duckdb
+  - enumeration-mapping
+  - external-format
+  - graph-fetch
+  - h2
+  - model-to-model
+  - operation-mapping
+  - service-store

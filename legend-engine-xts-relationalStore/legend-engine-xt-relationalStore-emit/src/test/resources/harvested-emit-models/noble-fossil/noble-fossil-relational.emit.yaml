@@ -1,0 +1,35 @@
+name: noble-fossil-relational
+title: "Noble Fossil Seed Vault — Business-Temporal Accession Mapping"
+description: |
+  A conservation seed vault whose stored accessions are tracked along a business
+  validity window. A profiled, business-temporal class is mapped to a milestoned
+  relational table through a primary key and a main-table alias, and its mapping
+  test projects the lots active as of a requested business date so the retired
+  out-of-range lot is milestoned away.
+modelSources:
+  model:
+    root: noble-fossil-relational
+    files:
+      - test/noblefossil/domain/SeedDomain.pure
+      - test/noblefossil/mapping/SeedVaultMapping.pure
+      - test/noblefossil/profile/SeedRegistryProfile.pure
+      - test/noblefossil/store/SeedVaultDB.pure
+features:
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - conservation
+  - h2
+  - milestoning
+  - primary-key
+  - profile
+  - seed-vault

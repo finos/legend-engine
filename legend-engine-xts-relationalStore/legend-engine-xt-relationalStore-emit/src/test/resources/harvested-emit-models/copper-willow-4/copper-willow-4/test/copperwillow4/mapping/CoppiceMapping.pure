@@ -1,0 +1,142 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::copperwillow4::mapping::CoppiceMapping
+(
+  *test::copperwillow4::domain::CoppiceStool[stool]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.stool_id
+    )
+    ~mainTable [test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool
+    stoolCode: substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.stool_code)), 0, 6),
+    conditionCode: trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code),
+    gradeBand: case(
+      substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'A',
+      'Apex',
+      case(
+        substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'B',
+        'Burl',
+        case(
+          substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'C',
+          'Crown',
+          case(
+            substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'D',
+            'Declining',
+            case(
+              substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'E',
+              'Established',
+              case(
+                substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'F',
+                'Flourishing',
+                case(
+                  substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'G',
+                  'Greenheart',
+                  case(
+                    substring(toUpper(trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.condition_code)), 0, 1) = 'H',
+                    'Harvestable',
+                    'Unclassified'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    fieldNote: case(
+      isNull([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.field_note),
+      sqlNull(),
+      trim([test::copperwillow4::store::CoppiceDatabase]woodland.coppice_stool.field_note)
+    )
+  }
+
+  *test::copperwillow4::domain::CutCycle[cycle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperwillow4::store::CoppiceDatabase]woodland.cut_cycle.cycle_id
+    )
+    ~mainTable [test::copperwillow4::store::CoppiceDatabase]woodland.cut_cycle
+    cycleCode: [test::copperwillow4::store::CoppiceDatabase]woodland.cut_cycle.cycle_code,
+    stoolCode: [test::copperwillow4::store::CoppiceDatabase]woodland.cut_cycle.stool_code,
+    cutOn: [test::copperwillow4::store::CoppiceDatabase]woodland.cut_cycle.cut_on,
+    crewLabel: [test::copperwillow4::store::CoppiceDatabase]woodland.cut_cycle.crew_label
+  }
+
+  testSuites:
+  [
+    stoolGradeSuite:
+    {
+      function: |test::copperwillow4::domain::CoppiceStool.all()->graphFetch(
+        #{
+          test::copperwillow4::domain::CoppiceStool{
+            stoolCode,
+            conditionCode,
+            gradeBand,
+            fieldNote
+          }
+        }#
+      )->serialize(
+        #{
+          test::copperwillow4::domain::CoppiceStool{
+            stoolCode,
+            conditionCode,
+            gradeBand,
+            fieldNote
+          }
+        }#
+      );
+      tests:
+      [
+        allGradeArms:
+        {
+          data:
+          [
+            test::copperwillow4::store::CoppiceDatabase:
+              Relational
+              #{
+                woodland.coppice_stool:
+                  'stool_id,stool_code,condition_code,field_note\n'+
+                  '1,ST-01,A,Clear crown\n'+
+                  '2,ST-02,B,Low burl\n'+
+                  '3,ST-03,C,Wide crown\n'+
+                  '4,ST-04,D,Thin stem\n'+
+                  '5,ST-05,E,Established stool\n'+
+                  '6,ST-06,F,Fresh shoots\n'+
+                  '7,ST-07,G,Green heartwood\n'+
+                  '8,ST-08,H,Ready for cut\n'+
+                  '9,ST-09,X,\n';
+              }#
+          ];
+          asserts:
+          [
+            nineGradeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stoolCode":"ST-01","conditionCode":"A","gradeBand":"Apex","fieldNote":"Clear crown"},{"stoolCode":"ST-02","conditionCode":"B","gradeBand":"Burl","fieldNote":"Low burl"},{"stoolCode":"ST-03","conditionCode":"C","gradeBand":"Crown","fieldNote":"Wide crown"},{"stoolCode":"ST-04","conditionCode":"D","gradeBand":"Declining","fieldNote":"Thin stem"},{"stoolCode":"ST-05","conditionCode":"E","gradeBand":"Established","fieldNote":"Established stool"},{"stoolCode":"ST-06","conditionCode":"F","gradeBand":"Flourishing","fieldNote":"Fresh shoots"},{"stoolCode":"ST-07","conditionCode":"G","gradeBand":"Greenheart","fieldNote":"Green heartwood"},{"stoolCode":"ST-08","conditionCode":"H","gradeBand":"Harvestable","fieldNote":"Ready for cut"},{"stoolCode":"ST-09","conditionCode":"X","gradeBand":"Unclassified"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

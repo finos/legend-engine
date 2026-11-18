@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealprairie4::mapping::LaneSlotMapping
+(
+  *test::tealprairie4::domain::LaneSlot[slot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie4::store::AquaticsDb]aquatics.lane_slot.slot_id
+    )
+    ~mainTable [test::tealprairie4::store::AquaticsDb]aquatics.lane_slot
+    slotCode: [test::tealprairie4::store::AquaticsDb]aquatics.lane_slot.slot_code,
+    areaCode: [test::tealprairie4::store::AquaticsDb]aquatics.lane_slot.area_code,
+    laneNumber: [test::tealprairie4::store::AquaticsDb]aquatics.lane_slot.lane_number,
+    slotState: [test::tealprairie4::store::AquaticsDb]aquatics.lane_slot.slot_state,
+    venueKind: 'INDOOR',
+    startsOn: [test::tealprairie4::store::AquaticsDb]aquatics.lane_slot.starts_on
+  }
+
+  testSuites:
+  [
+    laneSlotRegisterSuite:
+    {
+      function: |test::tealprairie4::domain::LaneSlot.all()->project(
+      [
+        s|$s.slotCode,
+        s|$s.areaCode,
+        s|$s.laneNumber,
+        s|$s.slotState,
+        s|$s.venueKind
+      ],
+      [
+        'Slot',
+        'Area',
+        'Lane',
+        'State',
+        'Venue'
+      ]
+    )->sort([asc('Slot')]);
+      tests:
+      [
+        everySlotCarriesTheMappedVenueConstant:
+        {
+          doc: 'The slot register reads the whole extent through the main-table alias: the venue column is a mapped constant and has to arrive on every slot regardless of its state.';
+          data:
+          [
+            test::tealprairie4::store::AquaticsDb:
+              Relational
+              #{
+                aquatics.lane_slot:
+                    'slot_id,slot_code,area_code,lane_number,slot_state,starts_on\n'+
+                    '1,LS-001,pa-1,1,OPEN,2026-05-01\n'+
+                    '2,LS-002,pa-1,2,HELD,2026-05-01\n'+
+                    '3,LS-003,pa-2,1,OPEN,2026-05-02\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSlotsInSlotOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot":"LS-001","Area":"pa-1","Lane":1,"State":"OPEN","Venue":"INDOOR"},{"Slot":"LS-002","Area":"pa-1","Lane":2,"State":"HELD","Venue":"INDOOR"},{"Slot":"LS-003","Area":"pa-2","Lane":1,"State":"OPEN","Venue":"INDOOR"}]';
+                  }#;
+              }#
+          ];
+        },
+        anEmptySlotRelationYieldsNoRows:
+        {
+          doc: 'With no slots at all the register is empty rather than producing a constant-only row.';
+          data:
+          [
+            test::tealprairie4::store::AquaticsDb:
+              Relational
+              #{
+                aquatics.lane_slot:
+                    'slot_id,slot_code,area_code,lane_number,slot_state,starts_on\n';
+              }#
+          ];
+          asserts:
+          [
+            noSlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data demo::sunlitcove6::data::CoveSurveyData
+{
+  Relational
+  #{
+    survey.kelp_patch:
+      'patch_id,station_id,patch_label,holdfast_code,flow_regime,frond_tally,cover_index,mapped_on,last_dived_at,patch_note\n'+
+      'P-01,ST-01,PATCH-01,bull,SURGE,240,1,2024-03-01,2026-05-01 08:00:00.000,Outer shoal head\n'+
+      'P-02,ST-01,PATCH-02,bull,SURGE,232,2,2024-03-02,2026-05-02 08:00:00.000,\n'+
+      'P-03,ST-01,PATCH-03,ribbon,SURGE,228,3,2024-03-03,2026-05-03 08:00:00.000,Regrowth plot\n'+
+      'P-04,ST-01,PATCH-04,bull,SHELTERED,224,4,2024-03-04,2026-05-03 08:00:00.000,Sheltered lee\n'+
+      'P-05,ST-02,PATCH-05,feather,SURGE,216,5,2024-03-05,2026-05-03 08:00:00.000,Southern shoal\n'+
+      'P-06,ST-01,PATCH-06,bull,SURGE,0,6,2024-03-06,2026-05-03 08:00:00.000,Storm stripped\n'+
+      'P-07,ST-01,PATCH-07,bull,SURGE,212,7,2024-03-07,2025-01-01 08:00:00.000,Dived before the window\n'+
+      'P-08,ST-01,PATCH-08,bull,SURGE,208,8,2024-03-08,2026-12-01 08:00:00.000,Dived after the window\n'+
+      'P-09,ST-01,PATCH-09,feather,SURGE,204,9,2024-03-09,2026-05-04 08:00:00.000,Off the scored range\n';
+
+    survey.dive_log:
+      'dive_id,patch_id,dived_at,diver_code,clarity_score,hazard_code\n'+
+      'D-01,P-01,2026-04-01 09:00:00.000,pair-a,91,\n'+
+      'D-02,P-01,2026-04-02 09:00:00.000,pair-b,64,SWELL\n'+
+      'D-03,P-02,2026-04-03 09:00:00.000,pair-c,22,VISIBILITY\n'+
+      'D-04,P-09,2026-04-04 09:00:00.000,pair-a,55,\n';
+
+    survey.cove_station:
+      'station_id,station_name,reach_code,tract_code,hectares\n'+
+      'ST-01,North Shoal,RC-NORTH,TR-01,12.5\n'+
+      'ST-02,South Shoal,RC-SOUTH,TR-02,8.25\n';
+
+    survey.shore_tract:
+      'tract_code,tract_name,warden_code\n'+
+      'TR-01,Lantern Tract,WD-01\n'+
+      'TR-02,Beacon Tract,WD-02\n';
+
+    survey.holdfast_reference:
+      'holdfast_code,holdfast_name,growth_form\n'+
+      'bull,Bull kelp,CANOPY\n'+
+      'feather,Feather boa kelp,UNDERSTORY\n'+
+      'ribbon,Ribbon kelp,MIDWATER\n';
+  }#
+}

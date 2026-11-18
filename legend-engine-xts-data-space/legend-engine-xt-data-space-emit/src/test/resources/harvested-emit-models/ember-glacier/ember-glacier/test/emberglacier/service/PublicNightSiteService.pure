@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberglacier::service::PublicNightSiteService
+{
+  pattern: '/emberglacier/v1/public-night-site';
+  title: 'Ember Glacier - Public Night Site';
+  ownership: UserList { users: ['skywatch-visits-desk'] };
+  documentation: 'One named site, published only where it opens to the public on observing nights, so the boolean flag is compared against a literal in the generated where clause rather than filtered afterwards.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {observatoryCode: String[1]|test::emberglacier::domain::Observatory.all()->filter(
+      o|($o.observatoryCode == $observatoryCode) && ($o.publicNights == true)
+    )->project(
+      [
+        o|$o.observatoryCode,
+        o|$o.observatoryName,
+        o|$o.elevationM,
+        o|$o.openedOn
+      ],
+      [
+        'Observatory',
+        'Name',
+        'Elevation',
+        'OpenedOn'
+      ]
+    )};
+    mapping: test::emberglacier::mapping::SkywatchMapping;
+    runtime: test::emberglacier::runtime::SkywatchRuntime;
+  }
+  testSuites:
+  [
+    publicNightSiteServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skywatchConnection:
+            Relational
+            #{
+              skywatch.observatory:
+                'observatory_id,observatory_code,observatory_name,elevation_m,opened_on,public_nights\n'+
+                '1,OB-01,Ridge Crest Observatory,1820,2001-04-12,true\n'+
+                '2,OB-02,Lake Bluff Observatory,640,1994-09-30,false\n'+
+                '3,OB-03,Pine Flat Observatory,310,2015-06-01,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        aSiteOpenOnPublicNights:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observatoryCode = 'OB-01'
+          ]
+          asserts:
+          [
+            theOpenSite:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observatory":"OB-01","Name":"Ridge Crest Observatory","Elevation":1820,"OpenedOn":"2001-04-12"}]';
+                  }#;
+              }#
+          ]
+        },
+        aSiteClosedToThePublic:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observatoryCode = 'OB-02'
+          ]
+          asserts:
+          [
+            nothingPublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

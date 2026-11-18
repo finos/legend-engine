@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternprairie2::mapping::FieldRunMapping
+(
+  *test::easternprairie2::domain::SurveyRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run.run_code
+    )
+    ~mainTable [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run
+    runCode: [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run.run_code,
+    leadObserver: [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run.lead_observer,
+    startedAt: [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run.started_at,
+    runKind: [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run.run_kind,
+    isComplete: [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run.is_complete,
+    coverRatio: [test::easternprairie2::store::PrairieSurveyDb]survey.survey_run.cover_ratio
+  }
+
+  *test::easternprairie2::domain::TallySheet[sheet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternprairie2::store::PrairieSurveyDb]survey.tally_sheet.sheet_id
+    )
+    ~mainTable [test::easternprairie2::store::PrairieSurveyDb]survey.tally_sheet
+    sheetId: [test::easternprairie2::store::PrairieSurveyDb]survey.tally_sheet.sheet_id,
+    sheetRef: [test::easternprairie2::store::PrairieSurveyDb]survey.tally_sheet.sheet_ref,
+    recordedBy: [test::easternprairie2::store::PrairieSurveyDb]survey.tally_sheet.recorded_by
+  }
+
+  test::easternprairie2::domain::RunSheets: Relational
+  {
+    AssociationMapping
+    (
+      run[sheet, run]: [test::easternprairie2::store::PrairieSurveyDb]@Run_Sheet,
+      sheets[run, sheet]: [test::easternprairie2::store::PrairieSurveyDb]@Run_Sheet
+    )
+  }
+
+  testSuites:
+  [
+    tallySheetSuite:
+    {
+      function: |test::easternprairie2::domain::TallySheet.all()->project(
+        [
+          s|$s.sheetRef,
+          s|$s.recordedBy,
+          s|$s.run.runKind
+        ],
+        [
+          'Sheet',
+          'Recorder',
+          'Kind'
+        ]
+      )->sort([asc('Sheet')]);
+      tests:
+      [
+        sheetsReachTheirRun:
+        {
+          doc: 'Each tally sheet reaches the kind of its run through the single join; a run without sheets contributes no row.';
+          data:
+          [
+            test::easternprairie2::store::PrairieSurveyDb:
+              Relational
+              #{
+                survey.survey_run:
+                  'run_code,lead_observer,started_at,run_kind,is_complete,cover_ratio\n'+
+                  'NWPR-101,ana,2026-03-01 08:00:00,TRANSECT,true,0.42\n'+
+                  'SEPR-201,cal,2026-03-02 09:00:00,QUADRAT,true,0.71\n'+
+                  'SEPR-202,dee,2026-04-11 09:00:00,QUADRAT,false,0.55\n';
+
+                survey.tally_sheet:
+                  'sheet_id,run_code,sheet_ref,recorded_by\n'+
+                  '1,NWPR-101,TS-0001,ana\n'+
+                  '5,SEPR-201,TS-0005,cal\n';
+              }#
+          ];
+          asserts:
+          [
+            sheetRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sheet":"TS-0001","Recorder":"ana","Kind":"TRANSECT"},{"Sheet":"TS-0005","Recorder":"cal","Kind":"QUADRAT"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

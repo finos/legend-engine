@@ -1,0 +1,314 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::umberthistle3::service::KilnSlotFeed
+{
+  pattern: '/umberthistle3/v1/kiln-slots';
+  title: 'Confirmed Four-Piece Kiln Slots';
+  owners: ['studio-operations'];
+  documentation: 'Returns the first confirmed kiln slots that carry four pieces.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: { |test::umberthistle3::domain::KilnBooking.all()->filter(
+      b|($b.statusRef == 'CONFIRMED') && ($b.pieceCount == 4)
+    )->project(
+      [
+        b|$b.bookingRef,
+        b|$b.kilnRef,
+        b|$b.slotRef,
+        b|$b.pieceCount
+      ],
+      [
+        'Booking',
+        'Kiln',
+        'Slot',
+        'Pieces'
+      ]
+    )->sort([asc('Booking')])->take(3)};
+    mapping: test::umberthistle3::mapping::StudioMapping;
+    runtime: test::umberthistle3::runtime::StudioTestRuntime;
+  }
+  testSuites:
+  [
+    slotSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          studioH2Connection:
+            Relational
+            #{
+              studio.kiln_booking:
+                'booking_ref,member_ref,kiln_ref,slot_ref,glaze_ref,booked_on,firing_hours,piece_count,status_ref,note_text\n'+
+                'KB-01,MB-01,KL-01,SLOT-01,GLZ-01,2026-04-02,4,4,CONFIRMED,evening load\n'+
+                'KB-02,MB-01,KL-02,SLOT-02,GLZ-02,2026-04-09,3,2,HELD,weekend load\n'+
+                'KB-03,MB-02,KL-03,SLOT-03,GLZ-01,2026-04-16,5,4,CONFIRMED,shared studio\n'+
+                'KB-04,MB-02,KL-01,SLOT-04,GLZ-03,2026-04-23,2,3,CONFIRMED,small load\n'+
+                'KB-05,MB-01,KL-02,SLOT-05,GLZ-02,2026-05-01,6,4,CONFIRMED,late load\n'+
+                'KB-06,MB-02,KL-03,SLOT-06,GLZ-01,2026-05-08,1,1,CANCELLED,cleared\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        confirmedSlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"KB-01","Kiln":"KL-01","Slot":"SLOT-01","Pieces":4},{"Booking":"KB-03","Kiln":"KL-03","Slot":"SLOT-03","Pieces":4},{"Booking":"KB-05","Kiln":"KL-02","Slot":"SLOT-05","Pieces":4}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::umberthistle3::service::GlazeSlotFeed
+{
+  pattern: '/umberthistle3/v1/glaze-slots';
+  title: 'Confirmed Glaze Slots';
+  owners: ['studio-operations'];
+  documentation: 'Returns glaze references for confirmed four-piece kiln slots.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: { |test::umberthistle3::domain::KilnBooking.all()->filter(
+      b|($b.statusRef == 'CONFIRMED') &&
+        ($b.bookedOn >= %2026-04-01) &&
+        ($b.bookedOn < %2026-05-01)
+    )->project(
+      [
+        b|$b.glazeRef,
+        b|$b.bookedOn
+      ],
+      [
+        'Glaze',
+        'BookedOn'
+      ]
+    )->distinct()->sort([asc('Glaze')])->take(3)};
+    mapping: test::umberthistle3::mapping::StudioMapping;
+    runtime: test::umberthistle3::runtime::StudioTestRuntime;
+  }
+  testSuites:
+  [
+    glazeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          studioH2Connection:
+            Relational
+            #{
+              studio.kiln_booking:
+                'booking_ref,member_ref,kiln_ref,slot_ref,glaze_ref,booked_on,firing_hours,piece_count,status_ref,note_text\n'+
+                'KB-01,MB-01,KL-01,SLOT-01,GLZ-01,2026-04-02,4,4,CONFIRMED,evening load\n'+
+                'KB-02,MB-01,KL-02,SLOT-02,GLZ-02,2026-04-09,3,2,HELD,weekend load\n'+
+                'KB-03,MB-02,KL-03,SLOT-03,GLZ-01,2026-04-16,5,4,CONFIRMED,shared studio\n'+
+                'KB-04,MB-02,KL-01,SLOT-04,GLZ-03,2026-04-23,2,3,CONFIRMED,small load\n'+
+                'KB-05,MB-01,KL-02,SLOT-05,GLZ-02,2026-05-01,6,4,CONFIRMED,late load\n'+
+                'KB-06,MB-02,KL-03,SLOT-06,GLZ-01,2026-05-08,1,1,CANCELLED,cleared\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        confirmedGlazes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Glaze":"GLZ-01","BookedOn":"2026-04-02"},{"Glaze":"GLZ-01","BookedOn":"2026-04-16"},{"Glaze":"GLZ-03","BookedOn":"2026-04-23"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::umberthistle3::service::StudioBookingRoster
+{
+  pattern: '/umberthistle3/v1/roster';
+  title: 'Studio Booking Roster';
+  owners: ['studio-operations'];
+  documentation: 'Returns a deterministic bounded roster of all studio bookings.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: { |test::umberthistle3::domain::KilnBooking.all()->project(
+      [
+        b|$b.bookingRef,
+        b|$b.memberRef,
+        b|$b.kilnRef,
+        b|$b.bookedOn,
+        b|$b.statusRef
+      ],
+      [
+        'Booking',
+        'Member',
+        'Kiln',
+        'BookedOn',
+        'Status'
+      ]
+    )->sort([asc('Booking')])->take(5)};
+    mapping: test::umberthistle3::mapping::StudioMapping;
+    runtime: test::umberthistle3::runtime::StudioTestRuntime;
+  }
+  testSuites:
+  [
+    rosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          studioH2Connection:
+            Relational
+            #{
+              studio.kiln_booking:
+                'booking_ref,member_ref,kiln_ref,slot_ref,glaze_ref,booked_on,firing_hours,piece_count,status_ref,note_text\n'+
+                'KB-01,MB-01,KL-01,SLOT-01,GLZ-01,2026-04-02,4,4,CONFIRMED,evening load\n'+
+                'KB-02,MB-01,KL-02,SLOT-02,GLZ-02,2026-04-09,3,2,HELD,weekend load\n'+
+                'KB-03,MB-02,KL-03,SLOT-03,GLZ-01,2026-04-16,5,4,CONFIRMED,shared studio\n'+
+                'KB-04,MB-02,KL-01,SLOT-04,GLZ-03,2026-04-23,2,3,CONFIRMED,small load\n'+
+                'KB-05,MB-01,KL-02,SLOT-05,GLZ-02,2026-05-01,6,4,CONFIRMED,late load\n'+
+                'KB-06,MB-02,KL-03,SLOT-06,GLZ-01,2026-05-08,1,1,CANCELLED,cleared\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        firstFiveBookings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"KB-01","Member":"MB-01","Kiln":"KL-01","BookedOn":"2026-04-02","Status":"CONFIRMED"},{"Booking":"KB-02","Member":"MB-01","Kiln":"KL-02","BookedOn":"2026-04-09","Status":"HELD"},{"Booking":"KB-03","Member":"MB-02","Kiln":"KL-03","BookedOn":"2026-04-16","Status":"CONFIRMED"},{"Booking":"KB-04","Member":"MB-02","Kiln":"KL-01","BookedOn":"2026-04-23","Status":"CONFIRMED"},{"Booking":"KB-05","Member":"MB-01","Kiln":"KL-02","BookedOn":"2026-05-01","Status":"CONFIRMED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::umberthistle3::service::BookingWindowFeed
+{
+  pattern: '/umberthistle3/v1/booking-window';
+  title: 'Dated Booking Window';
+  owners: ['studio-operations'];
+  documentation: 'Returns bookings in a bounded date window after narrowing the status and date values through explicit casts.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {statusFilter: String[1], asOf: StrictDate[1]|test::umberthistle3::domain::KilnBooking.all()->filter(
+      b|(($b.statusRef == $statusFilter->cast(@String)) && ($b.bookedOn < $asOf->cast(@StrictDate))) && ($b.bookedOn >= %2026-03-01->cast(@StrictDate))
+    )->project(
+      [
+        b|$b.bookingRef,
+        b|$b.bookedOn,
+        b|$b.statusRef
+      ],
+      [
+        'Booking',
+        'BookedOn',
+        'Status'
+      ]
+    )->sort([asc('Booking')])->take(5)};
+    mapping: test::umberthistle3::mapping::StudioMapping;
+    runtime: test::umberthistle3::runtime::StudioTestRuntime;
+  }
+  testSuites:
+  [
+    windowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          studioH2Connection:
+            Relational
+            #{
+              studio.kiln_booking:
+                'booking_ref,member_ref,kiln_ref,slot_ref,glaze_ref,booked_on,firing_hours,piece_count,status_ref,note_text\n'+
+                'KB-01,MB-01,KL-01,SLOT-01,GLZ-01,2026-04-02,4,4,CONFIRMED,evening load\n'+
+                'KB-02,MB-01,KL-02,SLOT-02,GLZ-02,2026-04-09,3,2,HELD,weekend load\n'+
+                'KB-03,MB-02,KL-03,SLOT-03,GLZ-01,2026-04-16,5,4,CONFIRMED,shared studio\n'+
+                'KB-04,MB-02,KL-01,SLOT-04,GLZ-03,2026-04-23,2,3,CONFIRMED,small load\n'+
+                'KB-05,MB-01,KL-02,SLOT-05,GLZ-02,2026-05-01,6,4,CONFIRMED,late load\n'+
+                'KB-06,MB-02,KL-03,SLOT-06,GLZ-01,2026-05-08,1,1,CANCELLED,cleared\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        confirmedWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            statusFilter = 'CONFIRMED',
+            asOf = %2026-05-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"KB-01","BookedOn":"2026-04-02","Status":"CONFIRMED"},{"Booking":"KB-03","BookedOn":"2026-04-16","Status":"CONFIRMED"},{"Booking":"KB-04","BookedOn":"2026-04-23","Status":"CONFIRMED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

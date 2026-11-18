@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::teallagoon2::service::PatchWardenRosterService
+{
+  pattern: '/teallagoon2/v1/patch-warden-roster/{surveyStart}/{surveyEnd}';
+  title: 'Teal Lagoon - Seagrass patch warden roster';
+  documentation: 'Restricts the survey visits of one reporting window with a seven-part predicate over the visit date range, the recorded tide state, the shoot tally, the survey round, the two accepted visibility codes and the presence of an accountable warden, then projects the visit beside the patch, meadow and warden reached along the four-hop join path and de-duplicates and trims the roster.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'lagoon-seagrass-register',
+    'lagoon-warden-roster'
+  ];
+  execution: Single
+  {
+    query: {surveyStart: StrictDate[1], surveyEnd: StrictDate[1]|test::teallagoon2::domain::SurveyVisit.all()->filter(
+      v|($v.visitedOn >= $surveyStart) && ($v.visitedOn <= $surveyEnd) && ($v.tideState == 'EBB') && ($v.shootTally > 40) && ($v.surveyRound == 2) && (($v.visibilityCode == 'CLEAR') || ($v.visibilityCode == 'HAZY')) && ($v.wardenName->isNotEmpty())
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.patchName->toOne(),
+        v|$v.meadowName->toOne(),
+        v|$v.wardenName->toOne(),
+        v|$v.shootTally
+      ],
+      [
+        'Visit',
+        'Patch',
+        'Meadow',
+        'Warden',
+        'Tally'
+      ]
+    )->distinct()->sort([asc('Visit')])->limit(10)};
+    mapping: test::teallagoon2::mapping::LagoonSurveyMapping;
+    runtime: test::teallagoon2::runtime::LagoonH2Runtime;
+  }
+  testSuites:
+  [
+    patchWardenRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lagoonH2Connection:
+            Relational
+            #{
+              lagoon.survey_visit:
+                'visit_id,patch_code,visited_on,shoot_tally,water_temp_c,visibility_code,tide_state,survey_round\n'+
+                '1,SP-01,2026-05-12,62,15.5,clear,EBB,2\n'+
+                '2,SP-02,2026-05-19,48,14.0,hazy,EBB,2\n'+
+                '3,SP-01,2026-06-02,90,16.0,clear,FLOOD,2\n'+
+                '4,SP-02,2026-06-09,30,15.0,clear,EBB,2\n'+
+                '5,SP-01,2026-06-16,70,15.0,murky,EBB,2\n'+
+                '6,SP-01,2026-06-23,70,15.0,clear,EBB,1\n'+
+                '7,SP-03,2026-06-30,55,15.0,clear,EBB,2\n'+
+                '8,SP-01,2026-04-01,80,15.0,clear,EBB,2\n'+
+                '9,SP-99,2026-05-26,66,15.0,clear,EBB,2\n';
+
+              lagoon.seagrass_patch:
+                'patch_code,patch_name,meadow_code,planted_year,shoot_density,mapped_on,patrol_note\n'+
+                'SP-01,Eelgrass Shoal North,MZ-01,2019,412.5,2020-04-11,marker buoy\n'+
+                'SP-02,Widgeon Flat West,MZ-02,2021,255.0,2022-05-02,drone survey\n'+
+                'SP-03,Bar Fringe East,MZ-03,2022,180.0,2023-03-14,\n';
+
+              lagoon.meadow_zone:
+                'meadow_code,meadow_name,sector_code\n'+
+                'MZ-01,Eelgrass Shoal,SC-01\n'+
+                'MZ-02,Widgeon Flat,SC-02\n'+
+                'MZ-03,Bar Fringe,SC-03\n';
+
+              lagoon.lagoon_sector:
+                'sector_code,sector_name,warden_code\n'+
+                'SC-01,North Spit,W-01\n'+
+                'SC-02,South Flats,W-02\n'+
+                'SC-03,Outer Bar,W-09\n';
+
+              lagoon.sector_warden:
+                'warden_code,warden_name,radio_call\n'+
+                'W-01,Ines Marsh,lag-1\n'+
+                'W-02,Otto Reed,lag-2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowedRosterKeepsOnlyWardenedEbbVisits:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyStart = %2026-05-01,
+            surveyEnd = %2026-06-30
+          ]
+          asserts:
+          [
+            rosterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"SV-1","Patch":"Eelgrass Shoal North","Meadow":"Eelgrass Shoal","Warden":"Ines Marsh","Tally":62},{"Visit":"SV-2","Patch":"Widgeon Flat West","Meadow":"Widgeon Flat","Warden":"Otto Reed","Tally":48}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

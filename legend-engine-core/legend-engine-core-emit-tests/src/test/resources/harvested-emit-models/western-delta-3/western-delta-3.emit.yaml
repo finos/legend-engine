@@ -1,0 +1,33 @@
+name: western-delta-3
+title: "Seed-Lot Despatch Register - Constraints, Closed Vocabularies and a Documented Association Graph"
+description: |
+  A store-less nursery despatch domain whose hub dispatch record is guarded by
+  four extended class constraints - three at error level and one at warn level -
+  each excusing an absent optional property before requiring a specific pairing
+  between an optional flag or state enumeration and the despatch status. A
+  hand-rolled parameterised window property tests an as-of instant against a
+  pair of optional timestamps, and a dozen documented associations link the hub
+  to nurseries, packed lots, handling steps, inspections, storage and courier
+  runs.
+modelSources:
+  model:
+    root: western-delta-3
+    files:
+      - test/westerndelta3/domain/SeedDispatchDomain.pure
+features:
+  - grammar:association
+  - grammar:constraint
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:qualified-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association-graph
+  - constraint
+  - enumeration
+  - qualified-property
+  - seed-despatch
+  - store-less
+  - tagged-values

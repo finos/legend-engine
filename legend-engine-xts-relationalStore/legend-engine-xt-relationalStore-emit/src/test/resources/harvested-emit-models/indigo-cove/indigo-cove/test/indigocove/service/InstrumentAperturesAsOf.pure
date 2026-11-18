@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigocove::service::InstrumentAperturesAsOf
+{
+  pattern: '/indigocove/v1/apertures-as-of/{observatoryCode}';
+  title: 'Indigo Cove - Optical Instrument Apertures As Of';
+  owners:
+  [
+    'observatory-registry',
+    'skywatch-eng'
+  ];
+  documentation: 'Single-execution counterpart of the keyed aperture service, pinned to the primary environment and carrying the tested suite for the optical subtype narrowing, the observatory predicate and the aperture projection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {observatoryCode: String[1]|test::indigocove::domain::Instrument.all()->filter(
+      x|((($x.siteCode == $observatoryCode) && ($x.statusCode == 'ACTIVE')) || (($x.siteCode == $observatoryCode) && ($x.statusCode == 'STANDBY'))) || (($x.statusCode == 'ACTIVE') && $x.siteCode->in(['ZENITH', 'MERIDIAN', 'APEX']))
+    )->project(
+      [
+        x|$x.instrumentId,
+        x|$x.siteCode->toUpper(),
+        x|$x->subType(@test::indigocove::domain::OpticalInstrument).apertureMm,
+        x|$x.instrumentId->length()
+      ],
+      [
+        'Instrument',
+        'Site',
+        'ApertureMm',
+        'TagLength'
+      ]
+    )->distinct()->sort([asc('Instrument')])->take(50)};
+    mapping: test::indigocove::mapping::InstrumentMapping;
+    runtime: test::indigocove::runtime::InstrumentPrimaryRuntime;
+  }
+  testSuites:
+  [
+    apertureSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          instrumentConnection:
+            Relational
+            #{
+              registry.instrument:
+                'instrument_id,site_code,status_code,kind_code,aperture_mm,dish_metres\n'+
+                'IN-1,ZENITH,ACTIVE,OPTICAL,820,\n'+
+                'IN-2,ZENITH,STANDBY,OPTICAL,610,\n'+
+                'IN-3,MERIDIAN,ACTIVE,OPTICAL,540,\n'+
+                'IN-4,APEX,ACTIVE,RADIO,,64\n'+
+                'IN-5,ORBIT,ACTIVE,OPTICAL,700,\n'+
+                'IN-6,ZENITH,RETIRED,OPTICAL,480,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        zenithOpticalApertures:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observatoryCode = 'ZENITH'
+          ]
+          asserts:
+          [
+            narrowedAndFiltered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Instrument":"IN-1","Site":"ZENITH","ApertureMm":820,"TagLength":4},{"Instrument":"IN-2","Site":"ZENITH","ApertureMm":610,"TagLength":4},{"Instrument":"IN-3","Site":"MERIDIAN","ApertureMm":540,"TagLength":4},{"Instrument":"IN-4","Site":"APEX","ApertureMm":null,"TagLength":4}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

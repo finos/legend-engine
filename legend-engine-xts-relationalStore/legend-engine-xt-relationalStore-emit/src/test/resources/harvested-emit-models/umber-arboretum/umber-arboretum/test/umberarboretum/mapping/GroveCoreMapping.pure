@@ -1,0 +1,282 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberarboretum::mapping::GroveCoreMapping
+(
+  test::umberarboretum::domain::VisitOutcome: EnumerationMapping VisitOutcomeMapping
+  {
+    COMPLETED: ['C', 'CLOSED'],
+    DEFERRED: ['D', 'HELD']
+  }
+
+  *test::umberarboretum::domain::Grove[grove]: Relational
+  {
+    ~distinct
+    ~primaryKey
+    (
+      [test::umberarboretum::store::GroveCoreDb]arb.grove.grove_code
+    )
+    ~mainTable [test::umberarboretum::store::GroveCoreDb]arb.grove
+    groveCode: [test::umberarboretum::store::GroveCoreDb]arb.grove.grove_code,
+    groveName: [test::umberarboretum::store::GroveCoreDb]arb.grove.grove_name
+  }
+
+  *test::umberarboretum::domain::CareVisit[careVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberarboretum::store::GroveCoreDb]arb.care_visit.visit_id
+    )
+    ~mainTable [test::umberarboretum::store::GroveCoreDb]arb.care_visit
+    visitCode: [test::umberarboretum::store::GroveCoreDb]arb.care_visit.visit_code,
+    specimenLabel: [test::umberarboretum::store::GroveCoreDb]@Visit_Specimen | [test::umberarboretum::store::GroveCoreDb]arb.specimen.label,
+    crewLabel: if(
+                 equal([test::umberarboretum::store::GroveCoreDb]arb.care_visit.crew_code, 'NONE'),
+                 sqlNull(),
+                 concat('crew-', toLower([test::umberarboretum::store::GroveCoreDb]arb.care_visit.crew_code))
+               ),
+    outcome: EnumerationMapping VisitOutcomeMapping: case(
+                                                       equal([test::umberarboretum::store::GroveCoreDb]arb.care_visit.outcome_code, 'VOID'),
+                                                       sqlNull(),
+                                                       [test::umberarboretum::store::GroveCoreDb]arb.care_visit.outcome_code
+                                                     )
+  }
+
+  testSuites:
+  [
+    careVisitSuite:
+    {
+      function: |test::umberarboretum::domain::CareVisit.all()->filter(
+  v|$v.visitCode == 'VISIT-01'
+)->project(
+  ~[
+    visit_code: v|$v.visitCode,
+    specimen_label: v|if($v.specimenLabel->isEmpty(), |'no-specimen', |$v.specimenLabel->toOne()),
+    crew_label: v|if($v.crewLabel->isEmpty(), |'no-crew', |$v.crewLabel->toOne()),
+    outcome_source: v|if($v.outcome->isEmpty(), |'unmapped', |$v.outcome->toOne()->toString())
+  ]
+);
+      tests:
+      [
+        completedOutcomeArm:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveCoreDb:
+              Relational
+              #{
+                arb.care_visit:
+                  'visit_id,specimen_id,visit_code,outcome_code,crew_code\n'+
+                  '1,1,VISIT-01,C,GREEN\n'+
+                  '2,1,VISIT-09,D,AMBER\n';
+                arb.specimen:
+                  'specimen_id,label,grove_id,taxon_id,health_code,canopy_pct,status_code,surveyed_at\n'+
+                  '1,SPEC-A,1,50,V,80,PRUNE,2024-05-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            completedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"visit_code":"VISIT-01","specimen_label":"SPEC-A","crew_label":"crew-green","outcome_source":"C"}]';
+                  }#;
+              }#
+          ];
+        },
+        deferredOutcomeWithMissingCrewArm:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveCoreDb:
+              Relational
+              #{
+                arb.care_visit:
+                  'visit_id,specimen_id,visit_code,outcome_code,crew_code\n'+
+                  '3,2,VISIT-01,HELD,NONE\n'+
+                  '4,2,VISIT-08,C,AMBER\n';
+                arb.specimen:
+                  'specimen_id,label,grove_id,taxon_id,health_code,canopy_pct,status_code,surveyed_at\n'+
+                  '2,SPEC-B,1,50,S,45,WATCH,2024-06-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            deferredRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"visit_code":"VISIT-01","specimen_label":"SPEC-B","crew_label":"no-crew","outcome_source":"HELD"}]';
+                  }#;
+              }#
+          ];
+        },
+        unmappedOutcomeArm:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveCoreDb:
+              Relational
+              #{
+                arb.care_visit:
+                  'visit_id,specimen_id,visit_code,outcome_code,crew_code\n'+
+                  '5,3,VISIT-01,VOID,BLUE\n';
+                arb.specimen:
+                  'specimen_id,label,grove_id,taxon_id,health_code,canopy_pct,status_code,surveyed_at\n'+
+                  '3,SPEC-C,1,50,D,15,ARCHIVE,2024-07-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            unmappedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"visit_code":"VISIT-01","specimen_label":"SPEC-C","crew_label":"crew-blue","outcome_source":"unmapped"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    careVisitEnumSuite:
+    {
+      function: |test::umberarboretum::domain::CareVisit.all()->graphFetch(
+  #{
+    test::umberarboretum::domain::CareVisit
+    {
+      visitCode,
+      outcome
+    }
+  }#
+)->serialize(
+  #{
+    test::umberarboretum::domain::CareVisit
+    {
+      visitCode,
+      outcome
+    }
+  }#
+);
+      tests:
+      [
+        completedEnumResolution:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveCoreDb:
+              Relational
+              #{
+                arb.care_visit:
+                  'visit_id,specimen_id,visit_code,outcome_code,crew_code\n'+
+                  '6,1,VISIT-20,CLOSED,GREEN\n';
+              }#
+          ];
+          asserts:
+          [
+            completedEnumRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"visitCode":"VISIT-20","outcome":"COMPLETED"}';
+                  }#;
+              }#
+          ];
+        },
+        deferredEnumResolution:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveCoreDb:
+              Relational
+              #{
+                arb.care_visit:
+                  'visit_id,specimen_id,visit_code,outcome_code,crew_code\n'+
+                  '7,1,VISIT-21,HELD,AMBER\n';
+              }#
+          ];
+          asserts:
+          [
+            deferredEnumRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"visitCode":"VISIT-21","outcome":"DEFERRED"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    groveDistinctSuite:
+    {
+      function: |test::umberarboretum::domain::Grove.all()->filter(
+  g|$g.groveCode == 'GROVE-A'
+)->project(
+  ~[
+    grove_code: g|$g.groveCode,
+    grove_name: g|$g.groveName
+  ]
+);
+      tests:
+      [
+        duplicateSourceRowsCollapse:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveCoreDb:
+              Relational
+              #{
+                arb.grove:
+                  'grove_id,grove_code,grove_name,team_id\n'+
+                  '1,GROVE-A,Upper Terrace,10\n'+
+                  '2,GROVE-A,Upper Terrace,10\n'+
+                  '3,GROVE-B,Lower Terrace,11\n';
+              }#
+          ];
+          asserts:
+          [
+            singleGroveRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"grove_code":"GROVE-A","grove_name":"Upper Terrace"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

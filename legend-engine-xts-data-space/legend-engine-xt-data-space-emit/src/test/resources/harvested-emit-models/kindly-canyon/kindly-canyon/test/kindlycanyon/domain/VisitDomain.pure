@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::kindlycanyon::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A staffed visitor station at one end of the canyon trail, published from the second store rather than from the patrol store.'} test::kindlycanyon::domain::VisitStation
+{
+  {doc.doc = 'Register code of the station.'} stationCode: String[1];
+  {doc.doc = 'Published name of the station.'} stationName: String[1];
+  {doc.doc = 'Name of the guide rostered to the station, reached across the roster schema of the visitor store.'} guideName: String[0..1];
+}
+
+Class {doc.doc = 'One counted visitor tally taken at a station in one slot of the day.'} test::kindlycanyon::domain::VisitTally
+{
+  {doc.doc = 'Register code of the tally.'} tallyId: String[1];
+  {doc.doc = 'Day the tally was counted.'} countedOn: StrictDate[1];
+  {doc.doc = 'Slot of the day the tally covers.'} slotLabel: String[1];
+  {doc.doc = 'Heads counted in the slot.'} headCount: Integer[1];
+}
+
+Association {doc.doc = 'Binds each counted tally to the station that counted it, so the station extent reaches its tallies as a collection and a tally naming no known station keeps the hop absent.'} test::kindlycanyon::domain::Tally_Station
+{
+  tallies: VisitTally[*];
+  station: VisitStation[0..1];
+}

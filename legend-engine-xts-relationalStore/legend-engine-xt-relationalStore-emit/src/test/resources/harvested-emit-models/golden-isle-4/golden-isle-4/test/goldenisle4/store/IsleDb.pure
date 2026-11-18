@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenisle4::store::IsleDb
+(
+  Schema colony
+  (
+    Table nest_record
+    (
+      nest_id INTEGER PRIMARY KEY,
+      nest_ref VARCHAR(24) NOT NULL,
+      plot_ref VARCHAR(24) NOT NULL,
+      species_code VARCHAR(8) NOT NULL,
+      chick_count INTEGER NOT NULL,
+      egg_count INTEGER NOT NULL,
+      ring_code VARCHAR(4) NOT NULL,
+      note_text VARCHAR(200)
+    )
+    Table survey_plot
+    (
+      plot_ref VARCHAR(24) PRIMARY KEY,
+      plot_name VARCHAR(120) NOT NULL,
+      colony_ref VARCHAR(24) NOT NULL
+    )
+    Table colony_site
+    (
+      colony_ref VARCHAR(24) PRIMARY KEY,
+      colony_name VARCHAR(120) NOT NULL,
+      isle_ref VARCHAR(24) NOT NULL
+    )
+    Table isle_area
+    (
+      isle_ref VARCHAR(24) PRIMARY KEY,
+      isle_name VARCHAR(120) NOT NULL,
+      region_name VARCHAR(120) NOT NULL
+    )
+
+    View plot_tally_view
+    (
+      ~groupBy
+      (
+        colony.nest_record.plot_ref
+      )
+      plot_ref: colony.nest_record.plot_ref PRIMARY KEY,
+      nest_count: count(colony.nest_record.nest_id),
+      chick_total: sum(colony.nest_record.chick_count)
+    )
+
+    View isle_colony_view
+    (
+      ~groupBy
+      (
+        colony.colony_site.isle_ref
+      )
+      isle_ref: colony.colony_site.isle_ref PRIMARY KEY,
+      colony_count: count(colony.colony_site.colony_ref)
+    )
+  )
+
+  Join Nest_Plot(colony.nest_record.plot_ref = colony.survey_plot.plot_ref)
+  Join Plot_Colony(colony.survey_plot.colony_ref = colony.colony_site.colony_ref)
+  Join Colony_Isle(colony.colony_site.isle_ref = colony.isle_area.isle_ref)
+  Join Isle_Tally(colony.isle_area.isle_ref = colony.isle_colony_view.isle_ref)
+  Join Nest_Tally(colony.nest_record.plot_ref = colony.plot_tally_view.plot_ref)
+)

@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::silvercove::service::CoveRegisterDocument
+{
+  pattern: '/silvercove/v1/mooring-register';
+  title: 'Silver Cove - Checked Mooring Register Document';
+  owners:
+  [
+    'cove-harbour-register'
+  ];
+  documentation: 'Accepts one inbound mooring submission and returns the published register envelope in checked form, so parse and transform defects ride alongside the produced values instead of failing the whole call. The mapping is pinned explicitly and the runtime is declared inline, binding the model store to a document connection over the submission class.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::silvercove::domain::MooringEnvelope.all()->graphFetchChecked(
+      #{
+        demo::silvercove::domain::MooringEnvelope
+        {
+          detail
+          {
+            mooringRef,
+            berthCode,
+            registerCode,
+            harbourCode,
+            vesselName,
+            lengthMetres,
+            arrivedOn,
+            mooringKind,
+            bollardCount,
+            departedOn,
+            recordedAt
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        demo::silvercove::domain::MooringEnvelope
+        {
+          detail
+          {
+            mooringRef,
+            berthCode,
+            registerCode,
+            harbourCode,
+            vesselName,
+            lengthMetres,
+            arrivedOn,
+            mooringKind,
+            bollardCount,
+            departedOn,
+            recordedAt
+          }
+        }
+      }#
+    );
+    mapping: demo::silvercove::mapping::CoveRegisterM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        demo::silvercove::mapping::CoveRegisterM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          mooringSubmissionConnection:
+          #{
+            JsonModelConnection
+            {
+              class: demo::silvercove::source::MooringSubmission;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    coveRegisterDocumentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          mooringSubmissionConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"mooringRef":"MR-0101","berthCode":"BC-11","registerCode":"COVE-REGISTER","harbourCode":"HB-COVE","vesselName":"Cove Kestrel","lengthMetres":16,"arrivedOn":"2026-05-01"}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        checkedRegisterGraph:
+        {
+          asserts:
+          [
+            checkedRegisterGraphRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"mooringRef\\":\\"MR-0101\\",\\"berthCode\\":\\"BC-11\\",\\"registerCode\\":\\"COVE-REGISTER\\",\\"harbourCode\\":\\"HB-COVE\\",\\"vesselName\\":\\"Cove Kestrel\\",\\"lengthMetres\\":16,\\"arrivedOn\\":\\"2026-05-01\\"}"},"value":{"arrivedOn":"2026-05-01","berthCode":"BC-11","harbourCode":"HB-COVE","lengthMetres":16,"mooringRef":"MR-0101","registerCode":"COVE-REGISTER","vesselName":"Cove Kestrel"}},"value":{"detail":{"mooringRef":"MR-0101","berthCode":"BC-11","registerCode":"COVE-REGISTER","harbourCode":"HB-COVE","vesselName":"Cove Kestrel","lengthMetres":16,"arrivedOn":"2026-05-01","mooringKind":null,"bollardCount":null,"departedOn":null,"recordedAt":null}}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

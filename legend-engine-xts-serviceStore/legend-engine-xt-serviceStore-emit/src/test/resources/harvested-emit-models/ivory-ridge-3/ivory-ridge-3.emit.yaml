@@ -1,0 +1,76 @@
+name: ivory-ridge-3
+title: "Delimited buoy-telemetry sheets bound by a flat-data schema set and republished as engine-shaped drift profiles"
+description: |
+  A moored-buoy telemetry model whose only source is a remote service store. Its drift
+  sheet endpoint returns a delimited document typed by a standalone flat-data schema
+  set that a binding pins by schema id, so the wire rows are deserialised out of a
+  headed CSV body rather than a JSON tree. A fetch mapping supplies the dataset and
+  window request constants itself and holds the wire rows, and a model-to-model layer
+  chained onto it republishes them as drift profiles: the station prefix folded out of
+  the upper-cased station code, the keeper label upper-cased, the metres adrift rated
+  per hour at the published precision, and the swell measured through a five-arm band.
+  Five single-execution services sit over that model — the primary and standby arrays
+  over the same fetch tree, a narrow band index and a rate board, and a station roll
+  that leaves the remote side entirely to project the tended moorings of a shore-side
+  registry database as a tabular result. The primary feed carries a test suite whose
+  stub endpoint answers with a delimited body, so the flat-data path is executed rather
+  than merely compiled. The transform layer additionally carries its own mapping test
+  over seeded wire rows covering the calm, slight and rough band arms.
+modelSources:
+  model:
+    root: ivory-ridge-3
+    files:
+      - test/ivoryridge3/api/DriftWireModel.pure
+      - test/ivoryridge3/connection/TelemetryConnections.pure
+      - test/ivoryridge3/domain/DriftPublishedModel.pure
+      - test/ivoryridge3/domain/StationRegistryModel.pure
+      - test/ivoryridge3/external/DriftBindings.pure
+      - test/ivoryridge3/external/DriftSchemas.pure
+      - test/ivoryridge3/mapping/DriftProfileMapping.pure
+      - test/ivoryridge3/mapping/StationMooringMapping.pure
+      - test/ivoryridge3/mapping/TelemetryApiMapping.pure
+      - test/ivoryridge3/runtime/TelemetryRuntimes.pure
+      - test/ivoryridge3/service/DriftFeeds.pure
+      - test/ivoryridge3/store/BuoyTelemetryApi.pure
+      - test/ivoryridge3/store/StationRegistryDB.pure
+features:
+  - execution:external-format-binding
+  - execution:external-format-schema-set
+  - execution:mapping-test
+  - scaffolding:model-chain-connection
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:service-store-mapping
+  - query:filter
+  - execution:graph-fetch
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - scaffolding:service-store-connection
+  - store:service-store
+stores:
+  - relational
+  - service-store
+complexity: intermediate
+tags:
+  - buoy-telemetry
+  - conditional-transform
+  - external-format-binding
+  - flat-data-schema
+  - graph-fetch
+  - h2
+  - mapping-test
+  - model-chain
+  - model-to-model
+  - project
+  - schema-set
+  - service-store
+  - service-test

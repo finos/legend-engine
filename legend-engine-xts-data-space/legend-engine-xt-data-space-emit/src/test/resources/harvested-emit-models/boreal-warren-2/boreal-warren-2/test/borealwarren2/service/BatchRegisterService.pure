@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::borealwarren2::service::BatchRegisterService
+{
+  pattern: '/borealwarren/v1/caves/{cave}/batches';
+  title: 'Boreal Warren - Batch Ripening Register';
+  ownership: UserList { users: ['cave-floor-desk'] };
+  documentation: 'Lists every wheel batch ripening in one cave whose milk kind belongs to the requested collection, reaching the owning cave through the association, the brushed-turn totals through the summary view and the awarded grade through an optional relation so ungraded batches and batches whose only turn was filtered out still appear.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cave: String[1], anchorOn: StrictDate[1]|demo::borealwarren2::domain::WheelBatch.all()->filter(
+      b|($b.cave.caveCode == $cave) && ($b.milkKind->in(['cow', 'goat', 'sheep']))
+    )->project(
+      [
+        b|$b.batchCode,
+        b|$b.rindBand,
+        b|$b.bandLabel($b.rindBand, 'unbanded'),
+        b|$b.batchNote,
+        b|$b.rindIndex,
+        b|$b.brushTotal,
+        b|$b.gradeLabel,
+        b|$b.turnedOn->dateDiff($anchorOn, DurationUnit.DAYS)
+      ],
+      [
+        'BatchCode',
+        'RindBand',
+        'BandLabel',
+        'BatchNote',
+        'RindIndex',
+        'BrushTotal',
+        'GradeLabel',
+        'DaysRipening'
+      ]
+    )->sort([asc('BatchCode')])->limit(12)};
+    mapping: demo::borealwarren2::mapping::BatchMapping;
+    runtime: demo::borealwarren2::runtime::CaveRuntime;
+  }
+  testSuites:
+  [
+    batchRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          caveConnection:
+            Reference
+            #{
+              demo::borealwarren2::data::CaveTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyBandOfTheLowerCellar:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cave = 'C1',
+            anchorOn = %2026-02-01
+          ]
+          asserts:
+          [
+            bandsTotalsGradesAndRipeningDays:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BatchCode":"WB-01","RindBand":"washed","BandLabel":"WASHED","BatchNote":"washed rind","RindIndex":18.0,"BrushTotal":5,"GradeLabel":"gold","DaysRipening":27},{"BatchCode":"WB-02","RindBand":"brushed","BandLabel":"BRUSHED","BatchNote":"brushed rind","RindIndex":10.0,"BrushTotal":4,"GradeLabel":null,"DaysRipening":26},{"BatchCode":"WB-03","RindBand":"natural","BandLabel":"NATURAL","BatchNote":"natural rind","RindIndex":10.0,"BrushTotal":1,"GradeLabel":"silver","DaysRipening":25},{"BatchCode":"WB-04","RindBand":"bloomy","BandLabel":"BLOOMY","BatchNote":"bloomy rind","RindIndex":12.0,"BrushTotal":null,"GradeLabel":null,"DaysRipening":24},{"BatchCode":"WB-05","RindBand":"smoked","BandLabel":"SMOKED","BatchNote":"smoked rind","RindIndex":3.0,"BrushTotal":5,"GradeLabel":null,"DaysRipening":23},{"BatchCode":"WB-06","RindBand":"clothed","BandLabel":"CLOTHED","BatchNote":"cloth rind","RindIndex":10.0,"BrushTotal":null,"GradeLabel":null,"DaysRipening":22},{"BatchCode":"WB-07","RindBand":"waxed","BandLabel":"WAXED","BatchNote":"waxed rind","RindIndex":9.0,"BrushTotal":null,"GradeLabel":null,"DaysRipening":21},{"BatchCode":"WB-08","RindBand":"ashed","BandLabel":"ASHED","BatchNote":"ashed rind","RindIndex":7.0,"BrushTotal":null,"GradeLabel":null,"DaysRipening":20},{"BatchCode":"WB-09","RindBand":null,"BandLabel":"UNBANDED","BatchNote":"unlabelled","RindIndex":6.5,"BrushTotal":null,"GradeLabel":null,"DaysRipening":19},{"BatchCode":"WB-10","RindBand":null,"BandLabel":"UNBANDED","BatchNote":"dry rind","RindIndex":3.5,"BrushTotal":null,"GradeLabel":null,"DaysRipening":18}]';
+                  }#;
+              }#
+          ]
+        },
+        upperCellarSheepOnlyIsEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cave = 'C2',
+            anchorOn = %2026-02-01
+          ]
+          asserts:
+          [
+            onlyTheTwoUpperBatches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BatchCode":"WB-12","RindBand":"brushed","BandLabel":"BRUSHED","BatchNote":"upper rind","RindIndex":10.5,"BrushTotal":2,"GradeLabel":"bronze","DaysRipening":16},{"BatchCode":"WB-13","RindBand":"natural","BandLabel":"NATURAL","BatchNote":"back rind","RindIndex":9.0,"BrushTotal":null,"GradeLabel":null,"DaysRipening":15}]';
+                  }#;
+              }#
+          ]
+        },
+        unknownCaveYieldsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cave = 'C9',
+            anchorOn = %2026-02-01
+          ]
+          asserts:
+          [
+            noBatches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

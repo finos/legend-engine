@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealhatchery2::mapping::PondRegisterMapping
+(
+  *test::tealhatchery2::domain::RearingPond[pond]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealhatchery2::store::PondRegisterDb]pond.rearing_pond.pond_code
+    )
+    ~mainTable [test::tealhatchery2::store::PondRegisterDb]pond.rearing_pond
+    pondCode: [test::tealhatchery2::store::PondRegisterDb]pond.rearing_pond.pond_code,
+    pondName: [test::tealhatchery2::store::PondRegisterDb]pond.rearing_pond.pond_name,
+    volumeLitres: [test::tealhatchery2::store::PondRegisterDb]pond.rearing_pond.volume_litres,
+    siteName: [test::tealhatchery2::store::PondRegisterDb]pond.rearing_pond.site_name
+  }
+
+  test::tealhatchery2::domain::LarvaBatch[batchStanding]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch.batch_code
+    )
+    ~mainTable [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch
+    batchCode: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch.batch_code,
+    pondCode: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch.pond_code,
+    speciesName: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch.species_name,
+    countStocked: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch.count_stocked,
+    mortalityCount: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch.mortality_count,
+    stockedOn: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch.stocked_on
+  }
+
+  test::tealhatchery2::domain::LarvaBatch[batchArchive]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive.batch_code
+    )
+    ~mainTable [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive
+    batchCode: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive.batch_code,
+    pondCode: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive.pond_code,
+    speciesName: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive.species_name,
+    countStocked: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive.count_stocked,
+    mortalityCount: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive.mortality_count,
+    stockedOn: [test::tealhatchery2::store::PondRegisterDb]pond.larva_batch_archive.stocked_on
+  }
+
+  *test::tealhatchery2::domain::LarvaBatch: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(batchStanding, batchArchive)
+  }
+
+  *test::tealhatchery2::domain::FeedLog[feedLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealhatchery2::store::PondRegisterDb]pond.feed_log.log_code
+    )
+    ~mainTable [test::tealhatchery2::store::PondRegisterDb]pond.feed_log
+    logCode: [test::tealhatchery2::store::PondRegisterDb]pond.feed_log.log_code,
+    batchCode: [test::tealhatchery2::store::PondRegisterDb]pond.feed_log.batch_code,
+    feedKilos: [test::tealhatchery2::store::PondRegisterDb]pond.feed_log.feed_kilos,
+    wastagePct: [test::tealhatchery2::store::PondRegisterDb]pond.feed_log.wastage_pct,
+    fedOn: [test::tealhatchery2::store::PondRegisterDb]pond.feed_log.fed_on
+  }
+
+  *test::tealhatchery2::domain::WaterReading[waterReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealhatchery2::store::PondRegisterDb]pond.water_reading.reading_code
+    )
+    ~mainTable [test::tealhatchery2::store::PondRegisterDb]pond.water_reading
+    readingCode: [test::tealhatchery2::store::PondRegisterDb]pond.water_reading.reading_code,
+    pondCode: [test::tealhatchery2::store::PondRegisterDb]pond.water_reading.pond_code,
+    temperatureC: [test::tealhatchery2::store::PondRegisterDb]pond.water_reading.temperature_c,
+    oxygenMgL: [test::tealhatchery2::store::PondRegisterDb]pond.water_reading.oxygen_mg_l,
+    readOn: [test::tealhatchery2::store::PondRegisterDb]pond.water_reading.read_on
+  }
+
+  *test::tealhatchery2::domain::PondYield[pondYield]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealhatchery2::store::PondRegisterDb]pond.pond_yield.pond_code
+    )
+    ~mainTable [test::tealhatchery2::store::PondRegisterDb]pond.pond_yield
+    pondCode: [test::tealhatchery2::store::PondRegisterDb]pond.pond_yield.pond_code,
+    releasedCount: [test::tealhatchery2::store::PondRegisterDb]pond.pond_yield.released_count,
+    meanTemperatureC: [test::tealhatchery2::store::PondRegisterDb]pond.pond_yield.mean_temperature_c
+  }
+
+  test::tealhatchery2::domain::Pond_Reading: Relational
+  {
+    AssociationMapping
+    (
+      readings[pond, waterReading]: [test::tealhatchery2::store::PondRegisterDb]@Pond_Reading,
+      pond[waterReading, pond]: [test::tealhatchery2::store::PondRegisterDb]@Pond_Reading
+    )
+  }
+
+  testSuites:
+  [
+    pondYieldSuite:
+    {
+      function: |test::tealhatchery2::domain::PondYield.all()->project(
+  [
+    y|$y.pondCode,
+    y|$y.releasedCount,
+    y|$y.meanTemperatureC
+  ],
+  [
+    'PondCode',
+    'ReleasedCount',
+    'MeanTemperatureC'
+  ]
+)->sort(
+  [
+    asc('PondCode')
+  ]
+);
+      tests:
+      [
+        aggregatedPondYield:
+        {
+          doc: 'Reads the already aggregated season yield of each rearing pond off its own aliased main table.';
+          data:
+          [
+            test::tealhatchery2::store::PondRegisterDb:
+              Relational
+              #{
+                pond.pond_yield:
+                  'pond_code,released_count,mean_temperature_c\n'+
+                  'PD-1,420,14.5\n'+
+                  'PD-2,180,12.0\n';
+              }#
+          ];
+          asserts:
+          [
+            pondYieldRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PondCode":"PD-1","ReleasedCount":420,"MeanTemperatureC":14.5},{"PondCode":"PD-2","ReleasedCount":180,"MeanTemperatureC":12.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

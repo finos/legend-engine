@@ -1,0 +1,71 @@
+name: opal-beacon
+title: "Opal Beacon — Bi-Temporal Star Catalogue with Four-Hop Coverage Associations, Keyed Multi-Executions and a Conditional Projection Column"
+description: |
+  A non-financial sky-survey catalogue whose beacon star records are bi-temporal,
+  so every read pins both a business and a processing instant. Two associations
+  reach the same observing-station extent from two different roots across a
+  four-hop coverage chain whose link tables are gated by current-time join
+  predicates, and an include-only mapping contributes nothing but those two
+  association implementations. Two environment-keyed multi-execution services
+  share one query body each: a shallow point-in-time roster and a deep pipeline
+  whose projected coverage column branches into two traversals of different join
+  depth before the tabular result is filtered again and de-duplicated.
+
+modelSources:
+  model:
+    root: opal-beacon
+    files:
+      - test/opalbeacon/connection/SkyConnections.pure
+      - test/opalbeacon/domain/SkyDomain.pure
+      - test/opalbeacon/mapping/SkyBaseMapping.pure
+      - test/opalbeacon/mapping/SkyMapping.pure
+      - test/opalbeacon/runtime/SkyRuntimes.pure
+      - test/opalbeacon/service/BandCoverageDigest.pure
+      - test/opalbeacon/service/CoverageRoster.pure
+      - test/opalbeacon/store/SkyDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-literal
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - query:conditional-projection
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - bi-temporal
+  - conditional-projection
+  - coverage-chain
+  - four-hop-join
+  - h2
+  - mapping-include
+  - multi-execution
+  - observatory
+  - point-in-time
+  - relational
+  - service-test
+  - sky-survey

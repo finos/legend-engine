@@ -1,0 +1,51 @@
+name: boreal-lagoon-2
+title: "Boreal Lagoon — Paddling-Trip Register Rolled, Tag-Tested And Digested By Three Parameterised Tabular Services"
+description: |
+  A lagoon paddling-hire desk publishes its trip log as a tabular result. One relational store
+  carries the trip register beside the hazard tags filed against a trip, and one relational
+  mapping binds the trip class over an explicit primary key and main table while reaching the
+  tags it is filed with over a declared join. Three parameterised single-execution services read
+  that register as a tabular result — one rolls the
+  briefed kayak trips of the requested launch zones onto the zone-and-craft grain, sums the
+  paddlers and the paddled minutes and drops a rolled zone below a caller-supplied floor; one
+  tests the hazard-tag collection reached from a trip for membership of the requested tags before
+  projecting and narrowing by hull; and one digests the trips of a single guide, including the
+  unassigned guide a trip is registered under when no guide led it. Each service asserts both a
+  populated and an empty result so the membership, post-roll and negated arms are separately
+  observable.
+modelSources:
+  model:
+    root: boreal-lagoon-2
+    files:
+      - test/boreallagoon2/connection/LagoonConnections.pure
+      - test/boreallagoon2/domain/LagoonDomain.pure
+      - test/boreallagoon2/mapping/LagoonTripMapping.pure
+      - test/boreallagoon2/runtime/LagoonRuntimes.pure
+      - test/boreallagoon2/service/LagoonServices.pure
+      - test/boreallagoon2/store/LagoonHireDb.pure
+features:
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - collection-operator
+  - group-by
+  - h2
+  - paddling-hire
+  - parameterised-service
+  - service
+  - tds

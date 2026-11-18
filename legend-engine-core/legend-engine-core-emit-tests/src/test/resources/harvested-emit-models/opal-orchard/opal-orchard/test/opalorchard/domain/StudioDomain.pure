@@ -1,0 +1,131 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opalorchard::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A building the community pottery studio occupies, holding the kilns and the wheels the members share.'} test::opalorchard::domain::StudioLocation
+{
+  {doc.doc = 'Code the studio roster refers to the building by.'} locationCode: String[1];
+  {doc.doc = 'Street name the building is signposted under.'} streetName: String[1];
+  {doc.doc = 'Number of wheels standing in the throwing room.'} wheelCount: Integer[1];
+  {doc.doc = 'Note kept by the caretaker about access to the building.'} accessNote: String[0..1];
+}
+
+Class {doc.doc = 'A kiln standing in one of the studio buildings.'} test::opalorchard::domain::Kiln
+{
+  {doc.doc = 'Plate number stamped on the kiln.'} kilnCode: String[1];
+  {doc.doc = 'Heat source the kiln fires with.'} kilnType: KilnType[1];
+  {doc.doc = 'Highest cone the kiln has been signed off to reach.'} maximumCone: Integer[1];
+  {doc.doc = 'Building the kiln stands in.'} standsIn: StudioLocation[1];
+  {doc.doc = 'Measurement of the chamber recorded when the kiln was installed.'} chamberNote: String[0..1];
+
+  {doc.doc = 'The chamber measurement to print on the firing sheet, defaulted to a fixed wording when the kiln was never measured.'}
+  chamberLabel()
+  {
+    $this.chamberNote->orElse('chamber unmeasured')
+  }: String[1];
+}
+
+Class {doc.doc = 'One firing of a kiln, from the moment it is closed to the moment it is unpacked.'} test::opalorchard::domain::FiringRun
+{
+  {doc.doc = 'Sequence number the firing is logged under.'} runCode: String[1];
+  {doc.doc = 'Kiln the firing was run in.'} firedIn: Kiln[1];
+  {doc.doc = 'Atmosphere the firing was run under.'} atmosphere: FiringAtmosphere[1];
+  {doc.doc = 'Cone the firing was held at.'} heldAtCone: Integer[1];
+  {doc.doc = 'Hours the firing ran for including the cooling.'} totalHours: Integer[1];
+  {doc.doc = 'Note the kiln keeper left about the firing.'} keeperNote: String[0..1];
+
+  {doc.doc = 'The atmosphere of the firing rendered as the wording the unpacking sheet carries.'}
+  atmosphereLabel()
+  {
+    $this.atmosphere->toString()
+  }: String[1];
+}
+
+Class {doc.doc = 'One shelf of a firing, the unit the studio packs and unpacks pieces by.'} test::opalorchard::domain::ShelfLoad
+{
+  {doc.doc = 'Position of the shelf counted from the kiln floor.'} shelfPosition: Integer[1];
+  {doc.doc = 'Firing the shelf was packed into.'} packedInto: FiringRun[1];
+  {doc.doc = 'Height in centimetres left above the shelf.'} headroomCm: Integer[1];
+}
+
+Class {doc.doc = 'A clay body the studio stocks for its members to throw and build with.'} test::opalorchard::domain::ClayBody
+{
+  {doc.doc = 'Name the supplier sells the body under.'} bodyName: String[1];
+  {doc.doc = 'Cone the body is vitrified at.'} vitrifyingCone: Integer[1];
+  {doc.doc = 'Percentage the body shrinks between wet and fired.'} shrinkagePercent: Float[1];
+  {doc.doc = 'Whether the body carries grog for hand building.'} grogged: Boolean[1];
+}
+
+Class {doc.doc = 'A glaze the studio mixes in its own buckets.'} test::opalorchard::domain::Glaze
+{
+  {doc.doc = 'Name written on the glaze bucket.'} glazeName: String[1];
+  {doc.doc = 'Surface the glaze leaves once cooled.'} finish: GlazeFinish[1];
+  {doc.doc = 'Atmosphere the glaze was developed for.'} developedFor: FiringAtmosphere[1];
+  {doc.doc = 'Note about how the glaze behaved the last time it was tested.'} testTileNote: String[0..1];
+
+  {doc.doc = 'The wording the glaze board carries about the last test tile, defaulted to a fixed wording when no tile was ever pulled.'}
+  testTileLabel()
+  {
+    $this.testTileNote->orElse('no test tile pulled')
+  }: String[1];
+}
+
+Class {doc.doc = 'One coat of one glaze laid onto one piece.'} test::opalorchard::domain::GlazeApplication
+{
+  {doc.doc = 'Glaze the coat was laid from.'} appliedGlaze: Glaze[1];
+  {doc.doc = 'Order the coat was laid in, counting from the clay.'} coatOrder: Integer[1];
+  {doc.doc = 'How the coat was laid on: dipped, poured or brushed.'} method: String[1];
+}
+
+Class {doc.doc = 'A piece made by a member, tracked from throwing through to the glaze firing.'} test::opalorchard::domain::PotteryPiece
+{
+  {doc.doc = 'Tag number scratched into the foot of the piece.'} pieceTag: String[1];
+  {doc.doc = 'Stage the piece has reached.'} stage: PieceStage[1];
+  {doc.doc = 'Clay body the piece was made from.'} madeFrom: ClayBody[1];
+  {doc.doc = 'Coats of glaze laid onto the piece.'} coats: GlazeApplication[*];
+  {doc.doc = 'Shelf the piece last sat on.'} lastShelf: ShelfLoad[0..1];
+  {doc.doc = 'Height of the piece in centimetres.'} heightCm: Integer[1];
+
+  {doc.doc = 'The stage of the piece rendered as the wording the studio shelf label carries.'}
+  stageLabel()
+  {
+    $this.stage->toString()
+  }: String[1];
+}
+
+Class {doc.doc = 'Somebody who holds studio time, whether they throw, build or only glaze.'} test::opalorchard::domain::StudioMember
+{
+  {doc.doc = 'Number the studio roster holds the member under.'} memberCode: String[1];
+  {doc.doc = 'Name the member is entered on the roster as.'} rosterName: String[1];
+  {doc.doc = 'Name the member asks to be called by.'} preferredName: String[0..1];
+  {doc.doc = 'Building the member holds their shelf in.'} shelfAt: StudioLocation[1];
+  {doc.doc = 'Pieces the member has in the studio.'} pieces: PotteryPiece[*];
+
+  {doc.doc = 'The name to print on the shelf label, defaulted to a fixed wording when the member asked for none and the roster name is withheld.'}
+  shelfLabelName()
+  {
+    $this.preferredName->orElse('studio member')
+  }: String[1];
+}
+
+Class {doc.doc = 'A stretch of studio time a member has paid for.'} test::opalorchard::domain::MembershipTerm
+{
+  {doc.doc = 'Member the term was sold to.'} heldBy: StudioMember[1];
+  {doc.doc = 'Season the term covers.'} seasonLabel: String[1];
+  {doc.doc = 'Hours of kiln time included in the term.'} includedKilnHours: Integer[1];
+  {doc.doc = 'Whether the term includes a locker.'} lockerIncluded: Boolean[1];
+}

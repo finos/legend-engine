@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::quietwillow::connection::StationConnection
+{
+  store: test::quietwillow::store::StationDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists network;',
+      'create schema network;',
+      'drop schema if exists telemetry;',
+      'create schema telemetry;',
+      'create table network.weather_station (station_code varchar(24) primary key, station_name varchar(120) not null, elevation_m integer not null, commissioned_on date);',
+      'create table network.sensor_unit (sensor_code varchar(24) primary key, station_code varchar(24) not null, sensor_kind varchar(48) not null, calibration_factor double);',
+      'create table telemetry.sensor_reading (reading_code varchar(24) primary key, sensor_code varchar(24) not null, recorded_on date, value_celsius double);'
+      ];
+  };
+  auth: DefaultH2;
+}

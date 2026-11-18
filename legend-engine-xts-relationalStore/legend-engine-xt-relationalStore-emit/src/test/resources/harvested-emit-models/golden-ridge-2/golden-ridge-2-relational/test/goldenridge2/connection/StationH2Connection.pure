@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::goldenridge2::connection::StationH2Connection
+{
+  store: demo::goldenridge2::store::FieldStationDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists station;',
+      'create schema station;',
+      'create table station.field_log (log_code varchar(24) primary key, voucher_code varchar(24) not null, station_code varchar(12) not null, observer_name varchar(60) not null, tally integer not null);',
+      'create table station.station_ref (station_code varchar(12) primary key, station_name varchar(60) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

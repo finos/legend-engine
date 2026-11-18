@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::lunarhatchery2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A rearing tank held in the hatchery register, read from the physical roster table.'} test::lunarhatchery2::domain::TankRecord
+{
+  {meta::pure::profiles::doc.doc = 'Bounded label the tank is rostered under.'} tankLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Whether the tank is aerated, absent when the roster leaves the flag unset.'} aerated: Boolean[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened tank view refined from a rostered tank by the in-memory transform layer.'} test::lunarhatchery2::domain::TankDigest
+{
+  {meta::pure::profiles::doc.doc = 'Prefixed tag identifying the refined tank.'} tankTag: String[1];
+  {meta::pure::profiles::doc.doc = 'Label carried straight through from the roster.'} labelTag: String[1];
+  {meta::pure::profiles::doc.doc = 'Stringified label width, computed outside the physical read.'} widthTag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened brood view refined alongside the tank it was reared in.'} test::lunarhatchery2::domain::BroodDigest
+{
+  {meta::pure::profiles::doc.doc = 'Tag identifying the refined brood.'} broodTag: String[1];
+  {meta::pure::profiles::doc.doc = 'Stringified aeration state, falling back when the roster flag is absent.'} aerationTag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened keeper view refined for the tank a keeper is rostered against.'} test::lunarhatchery2::domain::KeeperDigest
+{
+  {meta::pure::profiles::doc.doc = 'Tag identifying the refined keeper.'} keeperTag: String[1];
+  {meta::pure::profiles::doc.doc = 'Upper-cased shift label the keeper works the tank on.'} shiftTag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened hatchery-unit view the refined tanks hang from.'} test::lunarhatchery2::domain::HatcheryDigest
+{
+  {meta::pure::profiles::doc.doc = 'Tag identifying the refined hatchery unit.'} unitTag: String[1];
+  {meta::pure::profiles::doc.doc = 'Site tag folded from the label width of the rostered tank.'} siteTag: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a refined tank to the broods reared in it.'} test::lunarhatchery2::domain::Tank_Brood
+{
+  tankOfBrood: TankDigest[0..1];
+  broods: BroodDigest[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a refined tank to the keepers rostered against it.'} test::lunarhatchery2::domain::Tank_Keeper
+{
+  tankOfKeeper: TankDigest[0..1];
+  keepers: KeeperDigest[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a refined hatchery unit to the tanks it holds.'} test::lunarhatchery2::domain::Hatchery_Tank
+{
+  unitOfTank: HatcheryDigest[0..1];
+  tanks: TankDigest[*];
+}

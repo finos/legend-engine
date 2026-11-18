@@ -1,0 +1,553 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::zephyrridge::mapping::RidgeSoaringMapping
+(
+  demo::zephyrridge::domain::WingClass: EnumerationMapping WingCodeMapping
+  {
+    SINGLE_SEAT: ['S1'],
+    TWO_SEAT: ['S2'],
+    MOTOR_ASSISTED: ['MA'],
+    VINTAGE: ['VT'],
+    UNCLASSED: ['ZZ']
+  }
+
+  demo::zephyrridge::domain::PilotRating: EnumerationMapping RatingCodeMapping
+  {
+    STUDENT: ['ST'],
+    SOLO: ['SO'],
+    CROSS_COUNTRY: ['XC'],
+    INSTRUCTOR: ['IN'],
+    UNRATED: ['ZZ']
+  }
+
+  *demo::zephyrridge::domain::Region[region]: Relational
+  {
+    ~filter [demo::zephyrridge::store::RidgeSoaringDB]NamedRegion
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.region.region_code
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.region
+    regionCode: [demo::zephyrridge::store::RidgeSoaringDB]ridge.region.region_code,
+    regionName: rtrim([demo::zephyrridge::store::RidgeSoaringDB]ridge.region.region_name),
+    terrainSide: toUpper([demo::zephyrridge::store::RidgeSoaringDB]ridge.region.terrain_side),
+    summary[regionSummary]: [demo::zephyrridge::store::RidgeSoaringDB]@Region_Summary
+  }
+
+  *demo::zephyrridge::domain::RegionSummary[regionSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.region_summary_vw.region_code
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.region_summary_vw
+    regionCode: [demo::zephyrridge::store::RidgeSoaringDB]ridge.region_summary_vw.region_code,
+    siteCount: [demo::zephyrridge::store::RidgeSoaringDB]ridge.region_summary_vw.site_count,
+    maxElevationM: [demo::zephyrridge::store::RidgeSoaringDB]ridge.region_summary_vw.max_elevation_m
+  }
+
+  *demo::zephyrridge::domain::LaunchSite[launchSite]: Relational
+  {
+    ~filter [demo::zephyrridge::store::RidgeSoaringDB]OpenSite
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.launch_site.site_id
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.launch_site
+    siteCode: [demo::zephyrridge::store::RidgeSoaringDB]ridge.launch_site.site_code,
+    siteName: rtrim([demo::zephyrridge::store::RidgeSoaringDB]ridge.launch_site.site_name),
+    aspectCode: toUpper([demo::zephyrridge::store::RidgeSoaringDB]ridge.launch_site.aspect_code),
+    elevationM: [demo::zephyrridge::store::RidgeSoaringDB]ridge.launch_site.elevation_m,
+    region[region]: [demo::zephyrridge::store::RidgeSoaringDB]@Site_Region,
+    rosterLabel: [demo::zephyrridge::store::RidgeSoaringDB]@Site_Roster | [demo::zephyrridge::store::RidgeSoaringDB]ridge.site_roster_vw.roster_label
+  }
+
+  *demo::zephyrridge::domain::Glider[glider]: Relational
+  {
+    ~filter [demo::zephyrridge::store::RidgeSoaringDB]ServiceableGlider
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.glider_id
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.glider
+    gliderCode: [demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.glider_code,
+    wingClass: EnumerationMapping WingCodeMapping: case(
+                 equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.wing_code, 'S1'),
+                 'S1',
+                 case(
+                   equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.wing_code, 'S2'),
+                   'S2',
+                   case(
+                     equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.wing_code, 'MA'),
+                     'MA',
+                     case(
+                       equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.wing_code, 'VT'),
+                       'VT',
+                       'ZZ'
+                     )
+                   )
+                 )
+               ),
+    serviceState: toUpper([demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.service_state),
+    seatCount: [demo::zephyrridge::store::RidgeSoaringDB]ridge.glider.seat_count
+  }
+
+  *demo::zephyrridge::domain::Pilot[pilot]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.pilot_id
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot
+    pilotCode: [demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.pilot_code,
+    pilotName: rtrim([demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.pilot_name),
+    rating: EnumerationMapping RatingCodeMapping: case(
+              equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.rating_code, 'ST'),
+              'ST',
+              case(
+                equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.rating_code, 'SO'),
+                'SO',
+                case(
+                  equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.rating_code, 'XC'),
+                  'XC',
+                  case(
+                    equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.rating_code, 'IN'),
+                    'IN',
+                    'ZZ'
+                  )
+                )
+              )
+            ),
+    address
+    (
+      addressLine: rtrim([demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.addr_line),
+      town: toUpper([demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.addr_town),
+      postCode: [demo::zephyrridge::store::RidgeSoaringDB]ridge.pilot.addr_post_code
+    ),
+    homeRegionName: [demo::zephyrridge::store::RidgeSoaringDB]@Pilot_Home_Region | [demo::zephyrridge::store::RidgeSoaringDB]ridge.region.region_name
+  }
+
+  *demo::zephyrridge::domain::SoaringFlight[soaringFlight]: Relational
+  {
+    ~filter [demo::zephyrridge::store::RidgeSoaringDB]LoggedFlight
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.flight_id
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight
+    flightRef: [demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.flight_ref,
+    launchOn: [demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.launch_on,
+    landOn: [demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.land_on,
+    climbScore: [demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score,
+    durationMin: [demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.duration_min,
+    thermalBand: case(
+                   equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 1),
+                   'SINK',
+                   case(
+                     equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 2),
+                     'SCRATCHING',
+                     case(
+                       equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 3),
+                       'RIDGE HOLD',
+                       case(
+                         equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 4),
+                         'WEAK LIFT',
+                         case(
+                           equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 5),
+                           'STEADY LIFT',
+                           case(
+                             equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 6),
+                             'STRONG LIFT',
+                             case(
+                               equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 7),
+                               'BOOMING',
+                               case(
+                                 equal([demo::zephyrridge::store::RidgeSoaringDB]ridge.soaring_flight.climb_score, 8),
+                                 'WAVE',
+                                 sqlNull()
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    siteRegionName: [demo::zephyrridge::store::RidgeSoaringDB]@Flight_Site > @Site_Region | [demo::zephyrridge::store::RidgeSoaringDB]ridge.region.region_name,
+    siteRosterLabel: [demo::zephyrridge::store::RidgeSoaringDB]@Flight_Site > @Site_Roster | [demo::zephyrridge::store::RidgeSoaringDB]ridge.site_roster_vw.roster_label,
+    glider[glider]: [demo::zephyrridge::store::RidgeSoaringDB]@Flight_Glider
+  }
+
+  *demo::zephyrridge::domain::Beacon[beacon]: Relational
+  {
+    ~filter [demo::zephyrridge::store::RidgeSoaringDB]ActiveBeacon
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.beacon.beacon_id
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.beacon
+    beaconCode: [demo::zephyrridge::store::RidgeSoaringDB]ridge.beacon.beacon_code,
+    bandCode: toUpper([demo::zephyrridge::store::RidgeSoaringDB]ridge.beacon.band_code),
+    activeFlag: coalesce([demo::zephyrridge::store::RidgeSoaringDB]ridge.beacon.active_flag, 'Y')
+  }
+
+  *demo::zephyrridge::domain::WindReading[windReading]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading.reading_id
+    )
+    ~mainTable [demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading
+    readOn: [demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading.read_on,
+    gustKph: [demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading.gust_kph,
+    veerDeg: [demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading.veer_deg,
+    gustBand: case(
+                lessThanEqual([demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading.gust_kph, 18),
+                'LIGHT',
+                case(
+                  lessThanEqual([demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading.gust_kph, 34),
+                  'SOARABLE',
+                  case(
+                    lessThanEqual([demo::zephyrridge::store::RidgeSoaringDB]ridge.wind_reading.gust_kph, 52),
+                    'BRISK',
+                    'GROUNDED'
+                  )
+                )
+              ),
+    readingSiteName: [demo::zephyrridge::store::RidgeSoaringDB]@Reading_Site | [demo::zephyrridge::store::RidgeSoaringDB]ridge.launch_site.site_name
+  }
+
+  demo::zephyrridge::domain::Site_Flights: Relational
+  {
+    AssociationMapping
+    (
+      flights[launchSite, soaringFlight]: [demo::zephyrridge::store::RidgeSoaringDB]@Flight_Site,
+      site[soaringFlight, launchSite]: [demo::zephyrridge::store::RidgeSoaringDB]@Flight_Site
+    )
+  }
+
+  demo::zephyrridge::domain::Pilot_Flights: Relational
+  {
+    AssociationMapping
+    (
+      pilotFlights[pilot, soaringFlight]: [demo::zephyrridge::store::RidgeSoaringDB]@Flight_Pilot,
+      pilot[soaringFlight, pilot]: [demo::zephyrridge::store::RidgeSoaringDB]@Flight_Pilot
+    )
+  }
+
+  demo::zephyrridge::domain::Site_Beacons: Relational
+  {
+    AssociationMapping
+    (
+      beacons[launchSite, beacon]: [demo::zephyrridge::store::RidgeSoaringDB]@Beacon_Site,
+      beaconSite[beacon, launchSite]: [demo::zephyrridge::store::RidgeSoaringDB]@Beacon_Site
+    )
+  }
+
+  testSuites:
+  [
+    thermalBandCascadeSuite:
+    {
+      function: |demo::zephyrridge::domain::SoaringFlight.all()->project(
+        [
+          f|$f.flightRef,
+          f|$f.climbScore,
+          f|$f.thermalBand->toOne()
+        ],
+        [
+          'Flight',
+          'Climb',
+          'Band'
+        ]
+      )->sort([asc('Flight')]);
+      tests:
+      [
+        cascadeArmsAndFallback:
+        {
+          doc: 'Walks the climb score through each scored arm of the thermal band cascade, one row per arm, and adds a row whose score leaves the scored range so the cascade falls through to a relational null; the unlogged flight is dropped by the store filter.';
+          data:
+          [
+            demo::zephyrridge::store::RidgeSoaringDB:
+              Relational
+              #{
+                ridge.soaring_flight:
+                  'flight_id,flight_ref,site_id,glider_id,pilot_id,launch_on,land_on,climb_score,duration_min,log_status\n'+
+                  '1,FL-01,1,1,1,2026-04-01,2026-04-01,1,35,LOGGED\n'+
+                  '2,FL-02,1,1,1,2026-04-02,2026-04-02,2,48,LOGGED\n'+
+                  '3,FL-03,1,1,1,2026-04-03,2026-04-03,3,66,LOGGED\n'+
+                  '4,FL-04,1,1,1,2026-04-04,2026-04-04,4,91,LOGGED\n'+
+                  '5,FL-05,1,1,1,2026-04-05,2026-04-05,5,124,LOGGED\n'+
+                  '6,FL-06,1,1,1,2026-04-06,2026-04-06,6,158,LOGGED\n'+
+                  '7,FL-07,1,1,1,2026-04-07,2026-04-07,7,203,LOGGED\n'+
+                  '8,FL-08,1,1,1,2026-04-08,2026-04-08,8,247,LOGGED\n'+
+                  '9,FL-09,1,1,1,2026-04-09,2026-04-09,9,281,LOGGED\n'+
+                  '10,FL-10,1,1,1,2026-04-10,2026-04-10,4,74,DRAFT\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Flight":"FL-01","Climb":1,"Band":"SINK"},{"Flight":"FL-02","Climb":2,"Band":"SCRATCHING"},{"Flight":"FL-03","Climb":3,"Band":"RIDGE HOLD"},{"Flight":"FL-04","Climb":4,"Band":"WEAK LIFT"},{"Flight":"FL-05","Climb":5,"Band":"STEADY LIFT"},{"Flight":"FL-06","Climb":6,"Band":"STRONG LIFT"},{"Flight":"FL-07","Climb":7,"Band":"BOOMING"},{"Flight":"FL-08","Climb":8,"Band":"WAVE"},{"Flight":"FL-09","Climb":9,"Band":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinWideningSuite:
+    {
+      function: |demo::zephyrridge::domain::SoaringFlight.all()->project(
+        [
+          f|$f.flightRef,
+          f|$f.siteRegionName->toOne(),
+          f|$f.siteRosterLabel->toOne(),
+          f|$f.glider->toOne().gliderCode,
+          f|$f.glider->toOne().wingClass,
+          f|$f.pilot->toOne().badgeLabel()
+        ],
+        [
+          'Flight',
+          'Region',
+          'Roster',
+          'Glider',
+          'Wing',
+          'Badge'
+        ]
+      )->sort([asc('Flight')]);
+      tests:
+      [
+        twoHopAndAssociationWidening:
+        {
+          doc: 'Widens each flight along the two-hop posting path into the region register, along the second hop into the roster view, and across both association mappings onto the glider and the pilot whose badge label is derived; the flight parked at a closed site loses its widened detail while the retired glider drops out of the serviceable set.';
+          data:
+          [
+            demo::zephyrridge::store::RidgeSoaringDB:
+              Relational
+              #{
+                ridge.region:
+                  'region_code,region_name,terrain_side\n'+
+                  'NORTH,Northern Escarpment,WINDWARD\n'+
+                  'SOUTH,Southern Downs,LEEWARD\n';
+                ridge.launch_site:
+                  'site_id,site_code,site_name,region_code,aspect_code,elevation_m,status_code\n'+
+                  '1,LS-01,Kestrel Nose,NORTH,nw,940,O\n'+
+                  '2,LS-02,Harrier Bowl,SOUTH,se,610,O\n';
+                ridge.glider:
+                  'glider_id,glider_code,wing_code,service_state,seat_count\n'+
+                  '1,GL-01,S1,active,1\n'+
+                  '2,GL-02,S2,active,2\n';
+                ridge.pilot:
+                  'pilot_id,pilot_code,pilot_name,rating_code,home_region_code,addr_line,addr_town,addr_post_code\n'+
+                  '1,PC-01,Ida Wren,XC,RG-NORTH,12 Chalk Lane,upton,UP1 4RR\n'+
+                  '2,PC-02,Owen Pike,SO,RG-SOUTH,4 Kite Row,dalby,DB2 7QT\n';
+                ridge.soaring_flight:
+                  'flight_id,flight_ref,site_id,glider_id,pilot_id,launch_on,land_on,climb_score,duration_min,log_status\n'+
+                  '1,FL-01,1,1,1,2026-04-01,2026-04-01,5,124,LOGGED\n'+
+                  '2,FL-02,2,2,2,2026-04-02,2026-04-02,6,158,LOGGED\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Flight":"FL-01","Region":"Northern Escarpment","Roster":"ROSTER-NORTH","Glider":"GL-01","Wing":"SINGLE_SEAT","Badge":"PC-01/IDA WREN"},{"Flight":"FL-02","Region":"Southern Downs","Roster":"ROSTER-SOUTH","Glider":"GL-02","Wing":"TWO_SEAT","Badge":"PC-02/OWEN PIKE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    vocabularyAndEmbeddedSuite:
+    {
+      function: |demo::zephyrridge::domain::Pilot.all()->project(
+        [
+          p|$p.pilotCode,
+          p|$p.rating,
+          p|$p.address->toOne().town,
+          p|$p.address->toOne().postCode,
+          p|$p.homeRegionName->toOne()
+        ],
+        [
+          'Pilot',
+          'Rating',
+          'Town',
+          'PostCode',
+          'HomeRegion'
+        ]
+      )->sort([asc('Pilot')]);
+      tests:
+      [
+        ratingVocabularyAndAddress:
+        {
+          doc: 'Folds the stored rating vocabulary onto the shared enumeration through a computed expression, including a stored code outside the mapped vocabulary that lands on the catch-all value, and reads the embedded address columns off the same row while the home region is reached through the dyna-function join.';
+          data:
+          [
+            demo::zephyrridge::store::RidgeSoaringDB:
+              Relational
+              #{
+                ridge.region:
+                  'region_code,region_name,terrain_side\n'+
+                  'NORTH,Northern Escarpment,WINDWARD\n'+
+                  'SOUTH,Southern Downs,LEEWARD\n';
+                ridge.pilot:
+                  'pilot_id,pilot_code,pilot_name,rating_code,home_region_code,addr_line,addr_town,addr_post_code\n'+
+                  '1,PC-01,Ida Wren,XC,rg-north,12 Chalk Lane,upton,UP1 4RR\n'+
+                  '2,PC-02,Owen Pike,IN,rg-south,4 Kite Row,dalby,DB2 7QT\n'+
+                  '3,PC-03,Sasha Lark,QQ,rg-north,9 Gorse Way,upton,UP1 8LM\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pilot":"PC-01","Rating":"CROSS_COUNTRY","Town":"UPTON","PostCode":"UP1 4RR","HomeRegion":"Northern Escarpment"},{"Pilot":"PC-02","Rating":"INSTRUCTOR","Town":"DALBY","PostCode":"DB2 7QT","HomeRegion":"Southern Downs"},{"Pilot":"PC-03","Rating":"UNRATED","Town":"UPTON","PostCode":"UP1 8LM","HomeRegion":"Northern Escarpment"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    gustBandAndSummarySuite:
+    {
+      function: |demo::zephyrridge::domain::LaunchSite.all()->project(
+        [
+          s|$s.siteCode,
+          s|$s.displayName(),
+          s|$s.highRidge(),
+          s|$s.rosterLabel->toOne(),
+          s|$s.region->toOne().summary->toOne().siteCount,
+          s|$s.region->toOne().summary->toOne().maxElevationM
+        ],
+        [
+          'Site',
+          'Name',
+          'HighRidge',
+          'Roster',
+          'SiteCount',
+          'MaxElevation'
+        ]
+      )->sort([asc('Site')]);
+      tests:
+      [
+        rosterViewAndGroupedView:
+        {
+          doc: 'Reads the roster label straight off the inline view, then follows the region property into the grouped view so the per-region site count and highest launch elevation come back aggregated; the closed site is dropped by the store filter and therefore never appears, although it still counts inside the grouped view it was recorded in.';
+          data:
+          [
+            demo::zephyrridge::store::RidgeSoaringDB:
+              Relational
+              #{
+                ridge.region:
+                  'region_code,region_name,terrain_side\n'+
+                  'NORTH,Northern Escarpment,WINDWARD\n'+
+                  'SOUTH,Southern Downs,LEEWARD\n';
+                ridge.launch_site:
+                  'site_id,site_code,site_name,region_code,aspect_code,elevation_m,status_code\n'+
+                  '1,LS-01,Kestrel Nose,NORTH,nw,940,O\n'+
+                  '2,LS-02,Harrier Bowl,SOUTH,se,610,O\n'+
+                  '3,LS-03,Merlin Spur,NORTH,ne,1180,O\n'+
+                  '4,LS-04,Falcon Ledge,NORTH,nw,760,X\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"LS-01","Name":"KESTREL NOSE","HighRidge":true,"Roster":"ROSTER-NORTH","SiteCount":3,"MaxElevation":1180},{"Site":"LS-02","Name":"HARRIER BOWL","HighRidge":false,"Roster":"ROSTER-SOUTH","SiteCount":1,"MaxElevation":610},{"Site":"LS-03","Name":"MERLIN SPUR","HighRidge":true,"Roster":"ROSTER-NORTH","SiteCount":3,"MaxElevation":1180}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    windGustBandSuite:
+    {
+      function: |demo::zephyrridge::domain::WindReading.all()->project(
+        [
+          r|$r.gustKph,
+          r|$r.veerDeg,
+          r|$r.gustBand->toOne(),
+          r|$r.readingSiteName->toOne()
+        ],
+        [
+          'Gust',
+          'Veer',
+          'Band',
+          'Site'
+        ]
+      )->sort([asc('Gust')]);
+      tests:
+      [
+        gustBandArms:
+        {
+          doc: 'Drives the gust band cascade through each of its four arms with one reading per arm, including the boundary reading that sits exactly on an arm threshold and therefore stays inside the lower band.';
+          data:
+          [
+            demo::zephyrridge::store::RidgeSoaringDB:
+              Relational
+              #{
+                ridge.wind_reading:
+                  'reading_id,site_id,read_on,gust_kph,veer_deg\n'+
+                  '1,1,2026-04-01,11,280\n'+
+                  '2,1,2026-04-02,18,290\n'+
+                  '3,1,2026-04-03,29,300\n'+
+                  '4,1,2026-04-04,47,310\n'+
+                  '5,1,2026-04-05,63,320\n';
+
+                ridge.launch_site:
+                  'site_id,site_code,site_name,region_code,aspect_code,elevation_m,status_code\n'+
+                  '1,LS-01,Kestrel Nose,NORTH,nw,940,O\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Gust":11,"Veer":280,"Band":"LIGHT","Site":"Kestrel Nose"},{"Gust":18,"Veer":290,"Band":"LIGHT","Site":"Kestrel Nose"},{"Gust":29,"Veer":300,"Band":"SOARABLE","Site":"Kestrel Nose"},{"Gust":47,"Veer":310,"Band":"BRISK","Site":"Kestrel Nose"},{"Gust":63,"Veer":320,"Band":"GROUNDED","Site":"Kestrel Nose"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

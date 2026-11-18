@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarcavern2::mapping::CavernMapping
+(
+  *test::solarcavern2::domain::ChamberReading[readingSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarcavern2::store::CavernDb]speleo.chamber_reading.reading_id
+    )
+    ~mainTable [test::solarcavern2::store::CavernDb]speleo.chamber_reading
+    readingId: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.reading_id,
+    chamberCode: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.chamber_code,
+    passageName: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.passage_name,
+    surveyorTeam: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.surveyor_team,
+    depthM: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.depth_m,
+    humidityPct: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.humidity_pct,
+    loggedAt: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.logged_at,
+    calibratedOn: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.calibrated_on,
+    lampActive: [test::solarcavern2::store::CavernDb]speleo.chamber_reading.lamp_active,
+    mappedOn: parseDate(
+                if(
+                  equal([test::solarcavern2::store::CavernDb]speleo.chamber_reading.mapped_on_num, 0),
+                  '19000101',
+                  toString([test::solarcavern2::store::CavernDb]speleo.chamber_reading.mapped_on_num)
+                ),
+                'yyyyMMdd'
+              ),
+    sealedOn: parseDate(
+                if(
+                  equal([test::solarcavern2::store::CavernDb]speleo.chamber_reading.sealed_on_num, 0),
+                  '19000101',
+                  toString([test::solarcavern2::store::CavernDb]speleo.chamber_reading.sealed_on_num)
+                ),
+                'yyyyMMdd'
+              ),
+    sampledOn: parseDate(
+                 if(
+                   equal([test::solarcavern2::store::CavernDb]speleo.chamber_reading.sampled_on_num, 0),
+                   '19000101',
+                   toString([test::solarcavern2::store::CavernDb]speleo.chamber_reading.sampled_on_num)
+                 ),
+                 'yyyyMMdd'
+               ),
+    registryTier: 'CAVERN-MONITORING-REGISTER'
+  }
+
+  testSuites:
+  [
+    encodedDateSuite:
+    {
+      function: |test::solarcavern2::domain::ChamberReading.all()->project(
+        [
+          r|$r.readingId,
+          r|$r.mappedOn->year(),
+          r|$r.mappedOn->monthNumber(),
+          r|$r.mappedOn->dayOfMonth(),
+          r|$r.sealedOn->year(),
+          r|$r.sampledOn->year(),
+          r|$r.registryTier
+        ],
+        [
+          'ReadingId',
+          'MappedYear',
+          'MappedMonth',
+          'MappedDay',
+          'SealedYear',
+          'SampledYear',
+          'RegistryTier'
+        ]
+      )->sort(
+        [
+          asc('ReadingId')
+        ]
+      );
+      tests:
+      [
+        sentinelAndEncodedRounds:
+        {
+          data:
+          [
+            test::solarcavern2::store::CavernDb:
+              Relational
+              #{
+                speleo.chamber_reading:
+                  'reading_id,chamber_code,passage_name,surveyor_team,depth_m,humidity_pct,logged_at,calibrated_on,lamp_active,mapped_on_num,sealed_on_num,sampled_on_num\n'+
+                  '1,CH-01,Lantern Gallery,North Round,12.50,88.25,2026-03-01 08:15:00,2026-02-10,true,20260301,20260305,20260302\n'+
+                  '2,CH-02,Dripstone Walk,North Round,30.10,91.50,2026-04-05 09:00:00,2026-03-11,true,0,20260410,20260405\n'+
+                  '3,CH-03,Flowstone Bend,East Round,8.75,79.00,2026-01-15 07:45:00,2026-01-02,false,20260101,0,20260115\n'+
+                  '4,,,,,,,,,20260630,20260701,0\n'+
+                  '5,CH-05,Cathedral Rift,East Round,44.20,95.75,2026-12-31 22:05:00,2026-11-30,true,20261231,20261231,20261231\n'+
+                  '6,CH-06,Bat Roost Crawl,West Round,19.05,84.50,2026-05-20 11:30:00,2026-05-01,false,0,0,0\n'+
+                  '7,CH-07,Straw Chamber,West Round,26.60,89.10,2026-02-28 16:20:00,2026-02-14,true,20260228,20260305,20260301\n'+
+                  '8,CH-08,Column Hall,North Round,15.35,86.40,2026-09-01 06:10:00,2026-08-20,false,20260901,20260902,20260903\n'+
+                  '9,CH-09,Moonmilk Alcove,East Round,33.90,93.20,2026-11-01 13:55:00,2026-10-18,true,20261101,0,20261115\n';
+              }#
+          ];
+          asserts:
+          [
+            everyArmResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingId":1,"MappedYear":2026,"MappedMonth":3,"MappedDay":1,"SealedYear":2026,"SampledYear":2026,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":2,"MappedYear":1900,"MappedMonth":1,"MappedDay":1,"SealedYear":2026,"SampledYear":2026,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":3,"MappedYear":2026,"MappedMonth":1,"MappedDay":1,"SealedYear":1900,"SampledYear":2026,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":4,"MappedYear":2026,"MappedMonth":6,"MappedDay":30,"SealedYear":2026,"SampledYear":1900,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":5,"MappedYear":2026,"MappedMonth":12,"MappedDay":31,"SealedYear":2026,"SampledYear":2026,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":6,"MappedYear":1900,"MappedMonth":1,"MappedDay":1,"SealedYear":1900,"SampledYear":1900,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":7,"MappedYear":2026,"MappedMonth":2,"MappedDay":28,"SealedYear":2026,"SampledYear":2026,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":8,"MappedYear":2026,"MappedMonth":9,"MappedDay":1,"SealedYear":2026,"SampledYear":2026,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":9,"MappedYear":2026,"MappedMonth":11,"MappedDay":1,"SealedYear":1900,"SampledYear":2026,"RegistryTier":"CAVERN-MONITORING-REGISTER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

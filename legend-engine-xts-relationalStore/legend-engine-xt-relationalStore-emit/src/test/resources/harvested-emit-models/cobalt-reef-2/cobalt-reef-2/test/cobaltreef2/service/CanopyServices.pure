@@ -1,0 +1,199 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltreef2::service::CanopyDigest
+{
+  pattern: '/cobaltreef2/v1/canopy/{prefix}/{region}';
+  title: 'Canopy Survey Digest';
+  owners:
+  [
+    'municipal-canopy-team'
+  ];
+  documentation: 'Filters in-range canopy plots by a normalized plot prefix, a populated survey note, and a depot region, then projects a deterministic tabular digest.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {prefix: String[1], region: String[1]|test::cobaltreef2::domain::CanopyPlot.all(%2026-06-01)->filter(
+      p|($p.plotCode->toUpper()->startsWith($prefix)) && ($p.surveyNote->isNotEmpty()) && ($p.regionName == $region)
+    )->project(
+      [
+        col(p|$p.plotCode, 'Plot'),
+        col(p|$p.avenueName, 'Avenue'),
+        col(p|$p.regionName, 'Region')
+      ]
+    )->distinct()->sort([asc('Plot')])->limit(5)};
+    mapping: test::cobaltreef2::mapping::CanopyMapping;
+    runtime: test::cobaltreef2::runtime::CanopyRuntime;
+  }
+  testSuites:
+  [
+    canopyDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          canopyConnection:
+            Relational
+            #{
+              survey.canopy_plot:
+                'plot_id,plot_code,avenue_name,survey_note,inspection_id,in_z,out_z\n'+
+                '1,CP-01,Elm Avenue,north canopy,101,2026-01-01,9999-12-31\n'+
+                '2,CP-02,Oak Avenue,,102,2026-01-01,9999-12-31\n'+
+                '3,CP-03,Pine Avenue,median shade,103,2026-01-01,9999-12-31\n'+
+                '6,CP-06,Maple Avenue,old note,106,2024-01-01,2025-01-01\n';
+              survey.plot_inspection:
+                'inspection_id,inspection_code,plot_id,crew_id,inspection_note,in_z,out_z\n'+
+                '101,IN-01,1,201,leaf check,2026-01-01,9999-12-31\n'+
+                '102,IN-02,2,202,root check,2026-01-01,9999-12-31\n'+
+                '103,IN-03,3,201,branch check,2026-01-01,9999-12-31\n';
+              survey.inspection_crew:
+                'crew_id,crew_code,crew_name,depot_id\n'+
+                '201,CR-01,Green Team,301\n'+
+                '202,CR-02,Canopy Team,302\n'+
+                '203,CR-03,Root Team,303\n';
+              survey.maintenance_depot:
+                'depot_id,depot_code,region_code\n'+
+                '301,DP-01,NORTH\n'+
+                '302,DP-02,CENTRAL\n'+
+                '303,DP-03,SOUTH\n';
+              survey.depot_region:
+                'region_code,region_name\n'+
+                'NORTH,North Shore\n'+
+                'CENTRAL,Central Green\n'+
+                'SOUTH,South Grove\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northDigest:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            prefix = 'CP-',
+            region = 'North Shore'
+          ]
+          asserts:
+          [
+            oneNorthPlot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"CP-01","Avenue":"ELM AVENUE","Region":"North Shore"},{"Plot":"CP-03","Avenue":"PINE AVENUE","Region":"North Shore"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::cobaltreef2::service::CanopyByRegion
+{
+  pattern: '/cobaltreef2/v1/region/{region}';
+  title: 'Canopy Plots By Region';
+  owners:
+  [
+    'municipal-canopy-team'
+  ];
+  documentation: 'Keeps in-range canopy plots whose joined depot region equals the requested region and returns a small ordered projection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {region: String[1]|test::cobaltreef2::domain::CanopyPlot.all(%2026-06-01)->filter(
+      p|$p.regionName == $region
+    )->project(
+      [
+        col(p|$p.plotCode, 'Plot'),
+        col(p|$p.regionName, 'Region')
+      ]
+    )->distinct()->sort([asc('Plot')])->limit(5)};
+    mapping: test::cobaltreef2::mapping::CanopyMapping;
+    runtime: test::cobaltreef2::runtime::CanopyRuntime;
+  }
+  testSuites:
+  [
+    canopyByRegionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          canopyConnection:
+            Relational
+            #{
+              survey.canopy_plot:
+                'plot_id,plot_code,avenue_name,survey_note,inspection_id,in_z,out_z\n'+
+                '1,CP-01,Elm Avenue,north canopy,101,2026-01-01,9999-12-31\n'+
+                '2,CP-02,Oak Avenue,,102,2026-01-01,9999-12-31\n'+
+                '3,CP-03,Pine Avenue,median shade,103,2026-01-01,9999-12-31\n'+
+                '6,CP-06,Maple Avenue,old note,106,2024-01-01,2025-01-01\n';
+              survey.plot_inspection:
+                'inspection_id,inspection_code,plot_id,crew_id,inspection_note,in_z,out_z\n'+
+                '101,IN-01,1,201,leaf check,2026-01-01,9999-12-31\n'+
+                '102,IN-02,2,202,root check,2026-01-01,9999-12-31\n'+
+                '103,IN-03,3,201,branch check,2026-01-01,9999-12-31\n';
+              survey.inspection_crew:
+                'crew_id,crew_code,crew_name,depot_id\n'+
+                '201,CR-01,Green Team,301\n'+
+                '202,CR-02,Canopy Team,302\n'+
+                '203,CR-03,Root Team,303\n';
+              survey.maintenance_depot:
+                'depot_id,depot_code,region_code\n'+
+                '301,DP-01,NORTH\n'+
+                '302,DP-02,CENTRAL\n'+
+                '303,DP-03,SOUTH\n';
+              survey.depot_region:
+                'region_code,region_name\n'+
+                'NORTH,North Shore\n'+
+                'CENTRAL,Central Green\n'+
+                'SOUTH,South Grove\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            region = 'North Shore'
+          ]
+          asserts:
+          [
+            oneNorthPlot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"CP-01","Region":"North Shore"},{"Plot":"CP-03","Region":"North Shore"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

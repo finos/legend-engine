@@ -1,0 +1,37 @@
+name: opal-ridge-5
+title: "Trail Facility Register — Milestoned Association over a Mixed-Temporality Hierarchy"
+description: |
+  A store-less trail facility register whose interest is the interaction between
+  business-time versioning, an inheritance hierarchy and association traversal.
+  An abstract register entry holds the shared identity shape, and two
+  unversioned subtypes extend it so an inherited property still resolves
+  polymorphically. Two of the five classes are business-temporal and the first
+  association connects exactly those two, which makes that association
+  milestoned: a business date has to be agreed across both ends before either
+  end resolves, and a counterpart valid only outside the queried instant drops
+  out on its own. A plain property from the versioned signpost to the
+  unversioned trailhead zone lets one traversal cross out of the milestoned
+  grain, while the second association joins two unversioned classes with an
+  optional end so one side can legitimately be empty.
+
+modelSources:
+  model:
+    root: opal-ridge-5
+    files:
+      - test/opalridge5/domain/Associations.pure
+      - test/opalridge5/domain/TrailFacilities.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - business-temporal
+  - inheritance
+  - milestoned-association
+  - store-less
+  - trail-facilities

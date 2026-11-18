@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::lunarvineyard::service::VineyardCycleTally
+{
+  pattern: '/lunarvineyard/cycles/{businessDate}/{fromDate}/{thruDate}';
+  ownership: UserList { users: ['vineyard-irrigation-desk'] };
+  documentation: 'Takes the irrigation timeline as of a business date, narrows it with an inclusive two-sided application window plus a schedule membership test and an excluded-valve test, then groups the surviving versions by schedule, valve and the sector reached through the block reference, summing the applied litres and taking the highest recorded soil moisture.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], fromDate: StrictDate[1], thruDate: StrictDate[1]|demo::lunarvineyard::domain::IrrigationCycle.all($businessDate)->filter(
+      c|($c.appliedOn <= $thruDate) && (($c.appliedOn >= $fromDate) && (($c.scheduleCode->toUpper()->in(['DAWN', 'DUSK', 'NIGHT'])) && (!$c.valveCode->in(['V-OUT', 'V-CAPPED']))))
+    )->groupBy(
+      [
+        c|$c.scheduleCode,
+        c|$c.valveCode,
+        c|$c.block.sectorCode
+      ],
+      [
+        agg(c|$c.litresApplied, y|$y->sum()),
+        agg(c|$c.soilMoisturePct, y|$y->max())
+      ],
+      [
+        'Schedule',
+        'Valve',
+        'Sector',
+        'TotalLitres',
+        'PeakMoisture'
+      ]
+    )->sort(
+      [
+        asc('Valve')
+      ]
+    )};
+    mapping: demo::lunarvineyard::mapping::VineyardMapping;
+    runtime: demo::lunarvineyard::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    tallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              vineyard.vine_block:
+                'block_code,sector_code\n'+
+                'BLK-1,NORTH-SLOPE\n'+
+                'BLK-2,NORTH-SLOPE\n'+
+                'BLK-3,RIVER-TERRACE\n'+
+                'BLK-4,RIVER-TERRACE\n';
+
+              vineyard.irrigation_cycle:
+                'cycle_id,applied_on,valve_code,schedule_code,litres_applied,soil_moisture_pct,block_code,from_z,thru_z\n'+
+                'IC-01,2026-02-03,V-11,DAWN,900,31,BLK-1,2026-01-01,9999-12-31\n'+
+                'IC-02,2026-02-04,V-11,DAWN,600,28,BLK-1,2026-01-01,9999-12-31\n'+
+                'IC-03,2026-02-05,V-12,DUSK,750,35,BLK-2,2026-01-01,9999-12-31\n'+
+                'IC-04,2026-02-06,V-13,NIGHT,400,22,BLK-3,2026-01-01,9999-12-31\n'+
+                'IC-05,2026-02-07,V-OUT,DAWN,5000,99,BLK-3,2026-01-01,9999-12-31\n'+
+                'IC-06,2026-02-08,V-14,FLUSH,4000,88,BLK-4,2026-01-01,9999-12-31\n'+
+                'IC-07,2026-01-14,V-15,DAWN,3000,77,BLK-4,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowedScheduleGroups:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-03-01,
+            fromDate = %2026-02-01,
+            thruDate = %2026-02-28
+          ]
+          asserts:
+          [
+            threeGroupedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Schedule":"DAWN","Valve":"V-11","Sector":"NORTH-SLOPE","TotalLitres":1500,"PeakMoisture":31},{"Schedule":"DUSK","Valve":"V-12","Sector":"NORTH-SLOPE","TotalLitres":750,"PeakMoisture":35},{"Schedule":"NIGHT","Valve":"V-13","Sector":"RIVER-TERRACE","TotalLitres":400,"PeakMoisture":22}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

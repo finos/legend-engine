@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantridge::mapping::ShelfSummaryMapping
+(
+  *test::verdantridge::domain::ShelfSummary[summary_set]: Pure
+  {
+    ~src test::verdantridge::domain::HoldingRecord
+    shelfMark: $src.shelfMark->toOne(),
+    titleLabel: $src.titleText->toOne()->toUpper(),
+    availabilityBand: if($src.copiesOnShelf->toOne() > 4, | 'PLENTIFUL', | if($src.copiesOnShelf->toOne() > 0, | 'LIMITED', | 'AWAITING-SHELVING')),
+    noteLabel: if($src.conditionNote->isEmpty(), | 'NO-NOTE', | $src.conditionNote->toOne()->toUpper())
+  }
+
+  testSuites:
+  [
+    shelfSummarySuite:
+    {
+      function: |test::verdantridge::domain::ShelfSummary.all()->graphFetch(
+  #{
+    test::verdantridge::domain::ShelfSummary{
+      shelfMark,
+      titleLabel,
+      availabilityBand,
+      noteLabel
+    }
+  }#
+)->serialize(
+  #{
+    test::verdantridge::domain::ShelfSummary{
+      shelfMark,
+      titleLabel,
+      availabilityBand,
+      noteLabel
+    }
+  }#
+);
+      tests:
+      [
+        plentifulShelfWithNote:
+        {
+          doc: 'A holding with more copies on the shelf than the plentiful threshold and a recorded condition note takes the first band arm and the recorded note arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantridge::domain::HoldingRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"holdingId":"HD-3001","branchCode":"BR-RIDGE","shelfMark":"RM-412-A","seasonLabel":"2026-SPRING","titleText":"Field Atlas of Upland Grasses","mediaFormat":"reference","copiesOnShelf":9,"conditionNote":"spine repaired"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            plentifulDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"shelfMark":"RM-412-A","titleLabel":"FIELD ATLAS OF UPLAND GRASSES","availabilityBand":"PLENTIFUL","noteLabel":"SPINE REPAIRED"}';
+                  }#;
+              }#
+          ];
+        },
+        emptyShelfWithoutNote:
+        {
+          doc: 'A holding with no copies on the shelf and no condition note falls through both nested band arms to the awaiting-shelving arm and takes the absent-note sentinel.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantridge::domain::HoldingRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"holdingId":"HD-3002","branchCode":"BR-RIDGE","shelfMark":"RM-118-C","seasonLabel":"2026-SPRING","titleText":"Reading Room Rules","mediaFormat":"pamphlet","copiesOnShelf":0}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            awaitingDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"shelfMark":"RM-118-C","titleLabel":"READING ROOM RULES","availabilityBand":"AWAITING-SHELVING","noteLabel":"NO-NOTE"}';
+                  }#;
+              }#
+          ];
+        },
+        limitedShelfWithNote:
+        {
+          doc: 'A holding with copies on the shelf below the plentiful threshold takes the middle band arm, proving the two nested arms are distinguishable.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantridge::domain::HoldingRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"holdingId":"HD-3003","branchCode":"BR-COPSE","shelfMark":"RM-207-B","seasonLabel":"2026-SPRING","titleText":"Hedgerow Survey Notes","mediaFormat":"journal","copiesOnShelf":2,"conditionNote":"cover faded"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            limitedDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"shelfMark":"RM-207-B","titleLabel":"HEDGEROW SURVEY NOTES","availabilityBand":"LIMITED","noteLabel":"COVER FADED"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

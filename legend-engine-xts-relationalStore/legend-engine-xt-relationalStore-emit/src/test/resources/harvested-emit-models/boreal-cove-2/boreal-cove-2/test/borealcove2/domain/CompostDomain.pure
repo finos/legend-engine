@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::borealcove2::domain::*;
+
+Class test::borealcove2::domain::Site
+{
+  siteCode: String[1];
+  siteName: String[1];
+  siteKind: String[1];
+  statusLabel: String[1];
+  binCount: Integer[1];
+  noteText: String[1];
+  siteTag: String[0..1];
+}
+
+Class test::borealcove2::domain::CollectionBin
+{
+  binId: Integer[1];
+  binCode: String[1];
+  litreSize: Integer[1];
+  lidLabel: String[1];
+  sealState: String[1];
+}
+
+Class test::borealcove2::domain::RoundRoute
+{
+  routeCode: String[1];
+  routeName: String[1];
+  shiftLabel: String[1];
+}
+
+Class test::borealcove2::domain::Haul
+{
+  haulId: Integer[1];
+  haulDate: StrictDate[1];
+  grossKg: Decimal[1];
+  tareKg: Decimal[1];
+  netKg: Decimal[1];
+  netTonnes: Decimal[1];
+  loadBand: String[1];
+  gradeLabel: String[1];
+}
+
+Class test::borealcove2::domain::Crew
+{
+  crewCode: String[1];
+  crewName: String[1];
+}
+
+Class test::borealcove2::domain::Depot
+{
+  depotCode: String[1];
+  depotName: String[1];
+}
+
+Class test::borealcove2::domain::Ward
+{
+  wardCode: String[1];
+  wardName: String[1];
+  boroughName: String[1];
+}
+
+Association test::borealcove2::domain::Site_Ward
+{
+  ward: Ward[0..1];
+  sites: Site[*];
+}
+
+Association test::borealcove2::domain::Bin_Site
+{
+  site: Site[0..1];
+  bins: CollectionBin[*];
+}
+
+Association test::borealcove2::domain::Haul_Bin
+{
+  bin: CollectionBin[0..1];
+  binHauls: Haul[*];
+}
+
+Association test::borealcove2::domain::Haul_Route
+{
+  route: RoundRoute[0..1];
+  routeHauls: Haul[*];
+}
+
+Association test::borealcove2::domain::Haul_Crew
+{
+  crew: Crew[0..1];
+  crewHauls: Haul[*];
+}
+
+Association test::borealcove2::domain::Crew_Depot
+{
+  depot: Depot[0..1];
+  crews: Crew[*];
+}
+
+Association test::borealcove2::domain::Depot_Ward
+{
+  depotWard: Ward[0..1];
+  depots: Depot[*];
+}

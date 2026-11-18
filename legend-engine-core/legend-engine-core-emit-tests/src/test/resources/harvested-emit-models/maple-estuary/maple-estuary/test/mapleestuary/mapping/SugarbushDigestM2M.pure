@@ -1,0 +1,207 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::mapleestuary::mapping::SugarbushDigestM2M
+(
+  test::mapleestuary::domain::SapGrade: EnumerationMapping GradeCodeMapping
+  {
+    GOLDEN: ['GOLDEN', 'GLD'],
+    AMBER: ['AMBER', 'AMB'],
+    DARK: ['DARK', 'DRK'],
+    UNGRADED: ['UNGRADED']
+  }
+
+  test::mapleestuary::domain::TapCondition: EnumerationMapping ConditionCodeMapping
+  {
+    OPEN: ['OPEN'],
+    PARTIAL: ['PARTIAL'],
+    BLOCKED: ['BLOCKED']
+  }
+
+  test::mapleestuary::domain::LineKind: EnumerationMapping LineKindCodeMapping
+  {
+    GRAVITY: ['GRAVITY'],
+    VACUUM: ['VACUUM'],
+    BUCKET: ['BUCKET']
+  }
+
+  *test::mapleestuary::domain::RunSummary[runSummary]: Pure
+  {
+    ~src test::mapleestuary::source::SugarbushSubmission
+    runRef: $src.runRef->toOne(),
+    tapperLabel: 'T' + $src.revision->toOne()->toString() + '-' + $src.crewCode->toOne()->toUpper()->trim(),
+    yieldBand: if($src.runVolumeL->isEmpty(),
+                  | 'BAND-NONE',
+                  | if($src.runVolumeL->toOne() >= 90.0,
+                       | 'BAND-8',
+                       | if($src.runVolumeL->toOne() >= 75.0,
+                            | 'BAND-7',
+                            | if($src.runVolumeL->toOne() >= 60.0,
+                                 | 'BAND-6',
+                                 | if($src.runVolumeL->toOne() >= 45.0,
+                                      | 'BAND-5',
+                                      | if($src.runVolumeL->toOne() >= 30.0,
+                                           | 'BAND-4',
+                                           | if($src.runVolumeL->toOne() >= 20.0,
+                                                | 'BAND-3',
+                                                | if($src.runVolumeL->toOne() >= 10.0,
+                                                     | 'BAND-2',
+                                                     | 'BAND-1')))))))),
+    standHint: if($src.stand.code->isEmpty(), | 'UNSTANDED', | 'STAND/' + $src.stand.code->toOne()->toUpper()->trim()),
+    dayOfMonth: if($src.spanCode->isEmpty(), | 1, | $src.spanCode->toOne()->substring(2, 4)->parseInteger()),
+    grade: EnumerationMapping GradeCodeMapping: [if($src.gradeCode->isEmpty() || (!($src.gradeCode->toOne()->toUpper()->trim()->in(['GOLDEN', 'GLD', 'AMBER', 'AMB', 'DARK', 'DRK']))),
+                                                    | 'UNGRADED',
+                                                    | $src.gradeCode->toOne()->toUpper()->trim())]->toOne(),
+    condition: EnumerationMapping ConditionCodeMapping: [if($src.conditionPct->isEmpty(),
+                                                            | 'BLOCKED',
+                                                            | if($src.conditionPct->toOne() >= 0.75,
+                                                                 | 'OPEN',
+                                                                 | if($src.conditionPct->toOne() >= 0.4,
+                                                                      | 'PARTIAL',
+                                                                      | 'BLOCKED')))]->toOne(),
+    dominantLine: EnumerationMapping LineKindCodeMapping: [if($src.vacuumVolumeL->isNotEmpty() && ($src.vacuumVolumeL->toOne() > 0.0),
+                                                              | 'VACUUM',
+                                                              | if($src.gravityVolumeL->isNotEmpty() && ($src.gravityVolumeL->toOne() > 0.0),
+                                                                   | 'GRAVITY',
+                                                                   | 'BUCKET'))]->toOne(),
+    stand[standView]: $src.stand,
+    lines[lineDraw]: $src
+  }
+
+  test::mapleestuary::domain::StandView[standView]: Pure
+  {
+    ~src test::mapleestuary::source::StandBlock
+    standCode: $src.code->toOne()->toUpper()->trim(),
+    districtLabel: if($src.district->isNotEmpty(), | $src.district->toOne()->toUpper()->trim(), | [])
+  }
+
+  *test::mapleestuary::domain::LineDraw[lineDraw]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(gravityLine, vacuumLine, bucketLine)
+  }
+
+  test::mapleestuary::domain::LineDraw[gravityLine]: Pure
+  {
+    ~src test::mapleestuary::source::SugarbushSubmission
+    ~filter $src.gravityVolumeL->isNotEmpty()
+    lineKind: test::mapleestuary::domain::LineKind.GRAVITY,
+    volumeL: $src.gravityVolumeL->toOne()
+  }
+
+  test::mapleestuary::domain::LineDraw[vacuumLine]: Pure
+  {
+    ~src test::mapleestuary::source::SugarbushSubmission
+    ~filter $src.vacuumVolumeL->isNotEmpty()
+    lineKind: test::mapleestuary::domain::LineKind.VACUUM,
+    volumeL: $src.vacuumVolumeL->toOne()
+  }
+
+  test::mapleestuary::domain::LineDraw[bucketLine]: Pure
+  {
+    ~src test::mapleestuary::source::SugarbushSubmission
+    ~filter $src.manualVolume->isNotEmpty()
+    lineKind: test::mapleestuary::domain::LineKind.BUCKET,
+    volumeL: $src.manualVolume->toOne()->trim()->parseFloat()
+  }
+
+  testSuites:
+  [
+    sugarbushDigestSuite:
+    {
+      function: |test::mapleestuary::domain::RunSummary.all()->graphFetch(
+        #{
+          test::mapleestuary::domain::RunSummary
+          {
+            runRef,
+            tapperLabel,
+            yieldBand,
+            standHint,
+            dayOfMonth,
+            grade,
+            condition,
+            dominantLine,
+            stand
+            {
+              standCode,
+              districtLabel
+            },
+            lines
+            {
+              lineKind,
+              volumeL
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::mapleestuary::domain::RunSummary
+          {
+            runRef,
+            tapperLabel,
+            yieldBand,
+            standHint,
+            dayOfMonth,
+            grade,
+            condition,
+            dominantLine,
+            stand
+            {
+              standCode,
+              districtLabel
+            },
+            lines
+            {
+              lineKind,
+              volumeL
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyBandArmAndEveryUnionBranch:
+        {
+          doc: 'Hits all eight yield-band arms, the absent-volume fallback band, the optional district fallback that yields nothing, a grade code outside the enumeration mapping source set that resolves through the substituted sentinel, and rows exclusive to each of the three unioned draw branches as well as rows exclusive to none of them.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::mapleestuary::source::SugarbushSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"runRef":"RN-01","revision":2,"crewCode":"cw-1","gradeCode":"GLD","conditionPct":0.95,"runVolumeL":95.0,"spanCode":"0412","gravityVolumeL":12.5,"stand":{"code":"st-a","district":"north ridge"}},{"runRef":"RN-02","revision":3,"crewCode":"cw-2","gradeCode":"AMB","conditionPct":0.8,"runVolumeL":80.0,"spanCode":"0307","vacuumVolumeL":20.0,"stand":{"code":"st-a","district":"north ridge"}},{"runRef":"RN-03","revision":4,"crewCode":"cw-3","gradeCode":"DRK","conditionPct":0.6,"runVolumeL":65.0,"spanCode":"0521","manualVolume":" 8.25 ","stand":{"code":"st-b","district":"south bench"}},{"runRef":"RN-04","revision":5,"crewCode":"cw-4","gradeCode":"zz","conditionPct":0.5,"runVolumeL":50.0,"spanCode":"0630","gravityVolumeL":5.0,"vacuumVolumeL":6.0,"stand":{"code":"st-b"}},{"runRef":"RN-05","revision":6,"crewCode":"cw-5","gradeCode":"GOLDEN","conditionPct":0.35,"runVolumeL":35.0,"spanCode":"0714","stand":{"code":"st-c","district":"east flat"}},{"runRef":"RN-06","revision":7,"crewCode":"cw-6","runVolumeL":22.0,"gravityVolumeL":1.0,"vacuumVolumeL":2.0,"manualVolume":"3.5"},{"runRef":"RN-07","revision":8,"crewCode":"cw-7","gradeCode":"AMBER","conditionPct":0.42,"runVolumeL":15.0,"spanCode":"0801","stand":{"code":"st-d"}},{"runRef":"RN-08","revision":9,"crewCode":"cw-8","gradeCode":"DARK","conditionPct":0.9,"runVolumeL":5.0,"spanCode":"0909","gravityVolumeL":0.0,"vacuumVolumeL":4.0},{"runRef":"RN-09","revision":10,"crewCode":"cw-9","gradeCode":"GLD","conditionPct":0.76,"spanCode":"1005","manualVolume":"2.0","stand":{"code":"st-e","district":"west shelf"}},{"runRef":"RN-10","revision":11,"crewCode":"cw-10","gradeCode":"amb","conditionPct":0.4,"runVolumeL":40.0,"spanCode":"1119","gravityVolumeL":7.25,"stand":{"code":"st-e","district":"west shelf"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            tenRefinedRuns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"runRef":"RN-01","tapperLabel":"T2-CW-1","yieldBand":"BAND-8","standHint":"STAND/ST-A","dayOfMonth":12,"grade":"GOLDEN","condition":"OPEN","dominantLine":"GRAVITY","stand":{"standCode":"ST-A","districtLabel":"NORTH RIDGE"},"lines":[{"lineKind":"GRAVITY","volumeL":12.5}]},{"runRef":"RN-02","tapperLabel":"T3-CW-2","yieldBand":"BAND-7","standHint":"STAND/ST-A","dayOfMonth":7,"grade":"AMBER","condition":"OPEN","dominantLine":"VACUUM","stand":{"standCode":"ST-A","districtLabel":"NORTH RIDGE"},"lines":[{"lineKind":"VACUUM","volumeL":20.0}]},{"runRef":"RN-03","tapperLabel":"T4-CW-3","yieldBand":"BAND-6","standHint":"STAND/ST-B","dayOfMonth":21,"grade":"DARK","condition":"PARTIAL","dominantLine":"BUCKET","stand":{"standCode":"ST-B","districtLabel":"SOUTH BENCH"},"lines":[{"lineKind":"BUCKET","volumeL":8.25}]},{"runRef":"RN-04","tapperLabel":"T5-CW-4","yieldBand":"BAND-5","standHint":"STAND/ST-B","dayOfMonth":30,"grade":"UNGRADED","condition":"PARTIAL","dominantLine":"VACUUM","stand":{"standCode":"ST-B","districtLabel":null},"lines":[{"lineKind":"GRAVITY","volumeL":5.0},{"lineKind":"VACUUM","volumeL":6.0}]},{"runRef":"RN-05","tapperLabel":"T6-CW-5","yieldBand":"BAND-4","standHint":"STAND/ST-C","dayOfMonth":14,"grade":"GOLDEN","condition":"BLOCKED","dominantLine":"BUCKET","stand":{"standCode":"ST-C","districtLabel":"EAST FLAT"},"lines":[]},{"runRef":"RN-06","tapperLabel":"T7-CW-6","yieldBand":"BAND-3","standHint":"UNSTANDED","dayOfMonth":1,"grade":"UNGRADED","condition":"BLOCKED","dominantLine":"VACUUM","stand":null,"lines":[{"lineKind":"GRAVITY","volumeL":1.0},{"lineKind":"VACUUM","volumeL":2.0},{"lineKind":"BUCKET","volumeL":3.5}]},{"runRef":"RN-07","tapperLabel":"T8-CW-7","yieldBand":"BAND-2","standHint":"STAND/ST-D","dayOfMonth":1,"grade":"AMBER","condition":"PARTIAL","dominantLine":"BUCKET","stand":{"standCode":"ST-D","districtLabel":null},"lines":[]},{"runRef":"RN-08","tapperLabel":"T9-CW-8","yieldBand":"BAND-1","standHint":"UNSTANDED","dayOfMonth":9,"grade":"DARK","condition":"OPEN","dominantLine":"VACUUM","stand":null,"lines":[{"lineKind":"GRAVITY","volumeL":0.0},{"lineKind":"VACUUM","volumeL":4.0}]},{"runRef":"RN-09","tapperLabel":"T10-CW-9","yieldBand":"BAND-NONE","standHint":"STAND/ST-E","dayOfMonth":5,"grade":"GOLDEN","condition":"OPEN","dominantLine":"BUCKET","stand":{"standCode":"ST-E","districtLabel":"WEST SHELF"},"lines":[{"lineKind":"BUCKET","volumeL":2.0}]},{"runRef":"RN-10","tapperLabel":"T11-CW-10","yieldBand":"BAND-4","standHint":"STAND/ST-E","dayOfMonth":19,"grade":"AMBER","condition":"PARTIAL","dominantLine":"GRAVITY","stand":{"standCode":"ST-E","districtLabel":"WEST SHELF"},"lines":[{"lineKind":"GRAVITY","volumeL":7.25}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,181 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverwarren::service::TrailSegmentRegister
+{
+  pattern: '/silverwarren/v1/trail-segment-register/{env}';
+  title: 'Silver Warren - Trail Segment Register Keyed By Environment';
+  documentation: 'Projects the fifteen aliased reference columns of the trail segment table plus the year the row was recorded, keeping only rows carrying the expiry sentinel. The environment key on the path selects a mapping and a runtime together, so the field and archive stacks answer the same request from independently declared tables.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Multi
+  {
+    query: {|test::silverwarren::domain::TrailSegmentReference.all()->filter(
+      s|$s.expiryKey == 99991231
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.expiryKey,
+        s|$s.segmentName,
+        s|$s.corridorCode,
+        s|$s.corridorName,
+        s|$s.surfaceKind,
+        s|$s.surfaceGrade,
+        s|$s.districtCode,
+        s|$s.districtName,
+        s|$s.lengthMetres,
+        s|$s.ascentMetres,
+        s|$s.widthCentimetres,
+        s|$s.accessNote,
+        s|$s.stewardTeam,
+        s|$s.inspectionCycle,
+        s|$s.createdOn->year()
+      ],
+      [
+        'Segment',
+        'ExpiryKey',
+        'Name',
+        'CorridorCode',
+        'CorridorName',
+        'Surface',
+        'Grade',
+        'DistrictCode',
+        'District',
+        'LengthMetres',
+        'AscentMetres',
+        'WidthCentimetres',
+        'AccessNote',
+        'StewardTeam',
+        'InspectionCycle',
+        'CreatedYear'
+      ]
+    )->sort(
+      [
+        asc('Segment')
+      ]
+    )};
+    key: 'env';
+    executions['field']:
+    {
+      mapping: test::silverwarren::mapping::FieldSegmentMapping;
+      runtime: test::silverwarren::runtime::FieldSegmentRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::silverwarren::mapping::ArchiveSegmentMapping;
+      runtime: test::silverwarren::runtime::ArchiveSegmentRuntime;
+    }
+  }
+}
+
+###Service
+Service test::silverwarren::service::TrailSegmentRegisterField
+{
+  pattern: '/silverwarren/v1/trail-segment-register-field';
+  title: 'Silver Warren - Trail Segment Register (Field)';
+  documentation: 'Field-pinned counterpart of the environment-keyed segment register, asserting the aliased column contract, the sentinel selection and the absent length measure against one execution stack.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::silverwarren::domain::TrailSegmentReference.all()->filter(
+      s|$s.expiryKey == 99991231
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.expiryKey,
+        s|$s.segmentName,
+        s|$s.corridorCode,
+        s|$s.corridorName,
+        s|$s.surfaceKind,
+        s|$s.surfaceGrade,
+        s|$s.districtCode,
+        s|$s.districtName,
+        s|$s.lengthMetres,
+        s|$s.ascentMetres,
+        s|$s.widthCentimetres,
+        s|$s.accessNote,
+        s|$s.stewardTeam,
+        s|$s.inspectionCycle,
+        s|$s.createdOn->year()
+      ],
+      [
+        'Segment',
+        'ExpiryKey',
+        'Name',
+        'CorridorCode',
+        'CorridorName',
+        'Surface',
+        'Grade',
+        'DistrictCode',
+        'District',
+        'LengthMetres',
+        'AscentMetres',
+        'WidthCentimetres',
+        'AccessNote',
+        'StewardTeam',
+        'InspectionCycle',
+        'CreatedYear'
+      ]
+    )->sort(
+      [
+        asc('Segment')
+      ]
+    )};
+    mapping: test::silverwarren::mapping::FieldSegmentMapping;
+    runtime: test::silverwarren::runtime::FieldSegmentRuntime;
+  }
+  testSuites:
+  [
+    segmentRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailRegistryFieldConnection:
+            Relational
+            #{
+              FIELDREF.TRAIL_SEGMENT:
+      'segment_code,expiry_key,segment_name,corridor_code,corridor_name,surface_kind,surface_grade,district_code,district_name,length_metres,ascent_metres,width_centimetres,access_note,steward_team,inspection_cycle,created_on,updated_on\n'+
+      'SEG-1,99991231,Willow Bend Path,COR-1,Willow Corridor,GRAVEL,FIRM,DIS-1,Northern Meadows,1840,22,240,Boardwalk closed after heavy rain,Meadow Stewards,QUARTERLY,2026-01-04 06:10:00,2026-02-09 07:45:00\n'+
+      'SEG-2,20250101,Willow Bend Path,COR-1,Willow Corridor,GRAVEL,WORN,DIS-1,Northern Meadows,1780,22,240,Superseded alignment,Meadow Stewards,ANNUAL,2024-01-04 06:10:00,2025-01-01 07:45:00\n'+
+      'SEG-3,99991231,Cedar Draw Link,COR-2,Cedar Corridor,BOARDWALK,SLICK,DIS-2,Eastern Fens,,14,180,Seasonal closure,Fen Stewards,ANNUAL,2026-02-01 06:10:00,2026-02-02 06:10:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentSegmentProjection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedContract:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"SEG-1","ExpiryKey":99991231,"Name":"Willow Bend Path","CorridorCode":"COR-1","CorridorName":"Willow Corridor","Surface":"GRAVEL","Grade":"FIRM","DistrictCode":"DIS-1","District":"Northern Meadows","LengthMetres":1840,"AscentMetres":22,"WidthCentimetres":240,"AccessNote":"Boardwalk closed after heavy rain","StewardTeam":"Meadow Stewards","InspectionCycle":"QUARTERLY","CreatedYear":2026},{"Segment":"SEG-3","ExpiryKey":99991231,"Name":"Cedar Draw Link","CorridorCode":"COR-2","CorridorName":"Cedar Corridor","Surface":"BOARDWALK","Grade":"SLICK","DistrictCode":"DIS-2","District":"Eastern Fens","LengthMetres":null,"AscentMetres":14,"WidthCentimetres":180,"AccessNote":"Seasonal closure","StewardTeam":"Fen Stewards","InspectionCycle":"ANNUAL","CreatedYear":2026}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

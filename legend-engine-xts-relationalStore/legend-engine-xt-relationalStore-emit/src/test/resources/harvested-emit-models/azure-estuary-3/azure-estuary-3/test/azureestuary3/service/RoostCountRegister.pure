@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azureestuary3::service::RoostCountRegister
+{
+  pattern: '/azureestuary3/v1/roost-count-register';
+  title: 'Estuary Roost Census - Roost Count Register';
+  ownership: UserList { users: ['estuary-census-desk'] };
+  documentation: 'Lists the roost counts standing at one business and processing instant for a requested set of sectors, keeping only counts above a tally floor that carry a real note and were not taken on a neap tide.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], sectors: String[*], floor: Integer[1]|test::azureestuary3::domain::RoostCount.all($asOf, $asOf)->filter(
+      c|(($c.birdTally >= $floor) && (!($c.tide == test::azureestuary3::domain::TideStage.Neap))) && ((!($c.noteText == 'NO ROOST NOTE')) && ($c.countedSector.featureCode->toOne()->in($sectors)))
+    )->project(
+      [
+        c|$c.countId,
+        c|$c.countedSector.featureCode,
+        c|$c.regionName,
+        c|$c.conditionBand,
+        c|$c.effortScore,
+        c|$c.waderTally
+      ],
+      [
+        'Count',
+        'Sector',
+        'Region',
+        'Band',
+        'Effort',
+        'Waders'
+      ]
+    )->restrict(['Count', 'Sector', 'Region', 'Band', 'Effort'])->distinct()->sort([asc('Count')])->limit(5)};
+    mapping: test::azureestuary3::mapping::EstuaryMapping;
+    runtime: test::azureestuary3::runtime::EstuaryMemoryRuntime;
+  }
+  testSuites:
+  [
+    roostCountRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estuaryMemory: Reference
+            #{
+              test::azureestuary3::data::EstuaryData
+            }#
+        ]
+      ]
+      tests:
+      [
+        innerZoneSectorsAtOneInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            sectors = ['AE-01', 'AE-02'],
+            floor = 100
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":1,"Sector":"AE-01","Region":"North Sands Coast","Band":"roost-full","Effort":1212},{"Count":3,"Sector":"AE-02","Region":"North Sands Coast","Band":"roost-shifted","Effort":414},{"Count":4,"Sector":"AE-02","Region":"North Sands Coast","Band":"roost-flushed","Effort":153},{"Count":7,"Sector":"AE-01","Region":"North Sands Coast","Band":"roost-part-count","Effort":729}]';
+                  }#;
+              }#
+          ]
+        },
+        outerSectorKeepsUnrecognisedBand:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            sectors = ['AE-03'],
+            floor = 100
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":9,"Sector":"AE-03","Region":"East Flats Coast","Band":null,"Effort":332}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

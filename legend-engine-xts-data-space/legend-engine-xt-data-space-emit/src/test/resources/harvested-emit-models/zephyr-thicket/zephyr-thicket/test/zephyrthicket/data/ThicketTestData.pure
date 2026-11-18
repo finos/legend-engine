@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::zephyrthicket::data::ThicketTestData
+{
+  Relational
+  #{
+    registry.civic_district:
+      'district_code,district_name\n'+
+      'D1,Riverside District\n'+
+      'D2,Hilltop District\n';
+
+    registry.civic_ward:
+      'ward_code,ward_name,district_code\n'+
+      'W1,willow ward,D1\n'+
+      'W2,aspen ward,D1\n'+
+      'W3,cedar ward,D2\n';
+
+    registry.canopy_class:
+      'canopy_code,canopy_label\n'+
+      'C1,Broadleaf canopy\n'+
+      'C2,Conifer canopy\n';
+
+    registry.parcel_steward:
+      'steward_code,steward_name\n'+
+      'S1,willow steward\n'+
+      'S2,aspen steward\n'+
+      'S3,cedar steward\n';
+
+    registry.park_parcel:
+      'parcel_id,parcel_name,area_sqm,ward_code,canopy_code,steward_code\n'+
+      '1,riverside green,1200.5,W1,C1,S1\n'+
+      '2,willow commons,802.25,W1,C2,S1\n'+
+      '3,aspen meadow,1500.25,W2,C1,S2\n'+
+      '4,cedar hollow,640.75,W3,C2,S3\n';
+  }#
+}

@@ -1,0 +1,45 @@
+name: verdant-prairie-3
+title: "Verdant Prairie 3 — a profile-annotated sowing register published as a mapping test and a service"
+description: |
+  A prairie-restoration sowing model over one relational store with a single primary-keyed
+  table. A locally declared profile carries the review stereotypes and the steward and
+  seed-source tags that annotate the sowing class, and one relational mapping binds every
+  named property straight onto its own main-table column, including the two timestamp columns
+  that are mapped but deliberately not published. A mapping test suite projects the seven
+  published columns and asserts both fixture rows, and a parameterless single-execution
+  service publishes the same projection sorted by plot code with its own service test over a
+  single drilled plot.
+modelSources:
+  model:
+    root: verdant-prairie-3
+    files:
+      - test/verdantprairie3/connection/PrairieSowingConnections.pure
+      - test/verdantprairie3/domain/PrairieSowingDomain.pure
+      - test/verdantprairie3/mapping/PrairieSowingMapping.pure
+      - test/verdantprairie3/runtime/PrairieSowingRuntimes.pure
+      - test/verdantprairie3/service/SowingPlotRegister.pure
+      - test/verdantprairie3/store/PrairieSowingDb.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - prairie-sowing
+  - profile-annotation
+  - service-test
+  - tabular-data-set

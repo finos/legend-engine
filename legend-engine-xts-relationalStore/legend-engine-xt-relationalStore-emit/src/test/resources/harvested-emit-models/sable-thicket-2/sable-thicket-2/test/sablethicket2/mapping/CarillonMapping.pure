@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablethicket2::mapping::CarillonMapping
+(
+  *test::sablethicket2::domain::BellCasting[casting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablethicket2::store::CarillonDB]foundry.bell_casting.casting_id,
+      [test::sablethicket2::store::CarillonDB]foundry.bell_casting.casting_code
+    )
+    ~mainTable [test::sablethicket2::store::CarillonDB]foundry.bell_casting
+    castingCode: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.casting_code,
+    profileFamily: toUpper(trim([test::sablethicket2::store::CarillonDB]foundry.bell_casting.profile_path)),
+    profileWeightBand: concat(
+                         toUpper(trim([test::sablethicket2::store::CarillonDB]foundry.bell_casting.profile_path)),
+                         concat('~', toUpper(trim([test::sablethicket2::store::CarillonDB]foundry.bell_casting.workshop_code)))
+                       ),
+    toneLabel: concat(
+                 toUpper(trim([test::sablethicket2::store::CarillonDB]foundry.bell_casting.profile_path)),
+                 concat(
+                   '/',
+                   concat(
+                     toUpper(trim([test::sablethicket2::store::CarillonDB]@Casting_Workshop | foundry.workshop.workshop_name)),
+                     '/CARILLON'
+                   )
+                 )
+               ),
+    workshopName: [test::sablethicket2::store::CarillonDB]@Casting_Workshop | foundry.workshop.workshop_name,
+    founderName: [test::sablethicket2::store::CarillonDB]@Casting_Workshop | foundry.workshop.founder_name,
+    districtName: [test::sablethicket2::store::CarillonDB]@Casting_Workshop > @Workshop_District | foundry.founder_district.district_name,
+    districtClimate: coalesce(
+                       [test::sablethicket2::store::CarillonDB]@Casting_Workshop > @Workshop_District | foundry.founder_district.district_climate,
+                       'UNRECORDED'
+                     ),
+    tunerName: [test::sablethicket2::store::CarillonDB]@Casting_Pass | foundry.tuning_pass.tuner_name,
+    registerSource: 'CARILLON REGISTER',
+    archiveShelf: 'SHELF-B',
+    nominalHz: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.nominal_hz,
+    crownMassKg: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.crown_mass_kg,
+    rimDiameterCm: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.rim_diameter_cm,
+    strikeCount: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.strike_count,
+    temper: EnumerationMapping TemperMapping: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.temper_code,
+    crownState: EnumerationMapping CrownStateMapping: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.crown_state_code,
+    storageTier: EnumerationMapping StorageTierMapping: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.storage_code,
+    inscriptionScript: EnumerationMapping InscriptionScriptMapping: [test::sablethicket2::store::CarillonDB]foundry.bell_casting.script_code
+  }
+
+  test::sablethicket2::domain::ToneTemper: EnumerationMapping TemperMapping
+  {
+    MAJOR_THIRD: ['MJ', 'M3', 'MAJOR'],
+    MINOR_THIRD: ['MN', 'M2'],
+    UNTEMPERED: ['UT']
+  }
+
+  test::sablethicket2::domain::CrownState: EnumerationMapping CrownStateMapping
+  {
+    SOUND: ['SD'],
+    HAIRLINE: ['HL', 'HAIR'],
+    RECAST_PENDING: ['RP']
+  }
+
+  test::sablethicket2::reference::StorageTier: EnumerationMapping StorageTierMapping
+  {
+    AMBIENT_LOFT: ['AL', 'LOFT'],
+    CHILLED_VAULT: ['CV'],
+    OPEN_YARD: ['OY']
+  }
+
+  test::sablethicket2::reference::InscriptionScript: EnumerationMapping InscriptionScriptMapping
+  {
+    ROMAN_CAPITALS: ['RC', 'ROMAN'],
+    UNCIAL: ['UN'],
+    BLACKLETTER: ['BL']
+  }
+
+  testSuites:
+  [
+    carillonRegisterSuite:
+    {
+      function: test::sablethicket2::domain::BellCasting.all()->project(~[castingCode: c|$c.castingCode, profileFamily: c|$c.profileFamily, profileWeightBand: c|$c.profileWeightBand, toneLabel: c|$c.toneLabel, workshopName: c|$c.workshopName, districtName: c|$c.districtName, districtClimate: c|$c.districtClimate, tunerName: c|$c.tunerName, registerSource: c|$c.registerSource, archiveShelf: c|$c.archiveShelf, strikeCount: c|$c.strikeCount, temper: c|$c.temper, crownState: c|$c.crownState, storageTier: c|$c.storageTier, inscriptionScript: c|$c.inscriptionScript]);
+      tests:
+      [
+        registerRowsResolveEveryHop:
+        {
+          doc: 'Drives the aliased casting table and reaches the workshop over a trimming join and the district over a second upper-casing hop, so the two-hop labels, the nested string composition, the two constants and all four enumeration lookups are proven together; the casting whose workshop code has no counterpart and the casting with no tuning pass keep their driver columns and report the unmatched hops as nulls, and the nested composition collapses to an empty segment for the broken path.';
+          data:
+          [
+            test::sablethicket2::store::CarillonDB:
+              Relational
+              #{
+                foundry.bell_casting:
+                  'casting_id,casting_code,profile_path,workshop_code,nominal_hz,crown_mass_kg,rim_diameter_cm,strike_count,temper_code,crown_state_code,storage_code,script_code,poured_on,is_listed\n'+
+                  '1,BC-1,bourdon/heavy,WS-1 ,110.5,1840.25,168.40,12,MJ,SD,LOFT,ROMAN,2026-01-14 09:00:00,true\n'+
+                  '2,BC-2, tenor/medium ,ws-2,220.0,940.75,121.60,7,M2,HAIR,CV,UN,2026-02-03 09:00:00,true\n'+
+                  '3,BC-3,treble/light,WS-9,440.0,310.50,84.20,3,UT,RP,OY,BL,2026-02-11 09:00:00,false\n'+
+                  '4,BC-4,quint/light,WS-1,330.0,505.00,96.80,5,MAJOR,SD,AL,RC,2026-03-02 09:00:00,true\n';
+
+                foundry.workshop:
+                  'workshop_id,workshop_code,workshop_name,founder_name,district_code\n'+
+                  '1,WS-1,Old Belfry Works,Ilse Vandermeer,DS-1\n'+
+                  '2,ws-2,Riverside Bell House,Tomas Brekke,ds-2\n';
+
+                foundry.founder_district:
+                  'district_id,district_code,district_name,district_climate\n'+
+                  '1,DS-1,Upper Weaving Quarter,Temperate Inland\n'+
+                  '2,DS-2,Lower Wharf Quarter,Maritime Mild\n';
+
+                foundry.tuning_pass:
+                  'pass_id,casting_code,tuner_name,pass_label\n'+
+                  '1,BC-1,Marta Lindqvist,first pass\n'+
+                  '2, BC-2,Ewan Rhodes,second pass\n'+
+                  '3,BC-3,Nils Aakre,first pass\n';
+              }#
+          ];
+          asserts:
+          [
+            resolvedAndBrokenPaths:
+              Relation
+              #{
+                castingCode,profileFamily,profileWeightBand,toneLabel,workshopName,districtName,districtClimate,tunerName,registerSource,archiveShelf,strikeCount,temper,crownState,storageTier,inscriptionScript
+                BC-1,BOURDON/HEAVY,BOURDON/HEAVY~WS-1,BOURDON/HEAVY/OLD BELFRY WORKS/CARILLON,Old Belfry Works,Upper Weaving Quarter,Temperate Inland,Marta Lindqvist,CARILLON REGISTER,SHELF-B,12,MAJOR_THIRD,SOUND,AMBIENT_LOFT,ROMAN_CAPITALS
+                BC-2,TENOR/MEDIUM,TENOR/MEDIUM~WS-2,TENOR/MEDIUM/RIVERSIDE BELL HOUSE/CARILLON,Riverside Bell House,Lower Wharf Quarter,Maritime Mild,Ewan Rhodes,CARILLON REGISTER,SHELF-B,7,MINOR_THIRD,HAIRLINE,CHILLED_VAULT,UNCIAL
+                BC-3,TREBLE/LIGHT,TREBLE/LIGHT~WS-9,TREBLE/LIGHT//CARILLON,null,null,UNRECORDED,Nils Aakre,CARILLON REGISTER,SHELF-B,3,UNTEMPERED,RECAST_PENDING,OPEN_YARD,BLACKLETTER
+                BC-4,QUINT/LIGHT,QUINT/LIGHT~WS-1,QUINT/LIGHT/OLD BELFRY WORKS/CARILLON,Old Belfry Works,Upper Weaving Quarter,Temperate Inland,null,CARILLON REGISTER,SHELF-B,5,MAJOR_THIRD,SOUND,AMBIENT_LOFT,ROMAN_CAPITALS;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

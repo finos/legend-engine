@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelorchard5::service::VisitLedgerService
+{
+  pattern: '/orchard-pollination/v1/visit-ledger';
+  title: 'Orchard Pollination - Hive Visit Ledger';
+  documentation: 'Publishes a twenty-five column tabular ledger of the hive-visit measures held in the ledger database, so the published surface is a wide relational projection beside the api-fed digest.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['orchard-monitoring', 'pollination-audit'] };
+  execution: Single
+  {
+    query: |test::hazelorchard5::domain::PollinationVisit.all()->project(
+      [
+        x|$x.visitId,
+        x|$x.orchardCode,
+        x|$x.seasonLabel,
+        x|$x.hiveCode,
+        x|$x.blockCode,
+        x|$x.rowCode,
+        x|$x.colonyCode,
+        x|$x.inspectorCode,
+        x|$x.observedOnDate,
+        x|$x.startedAtTime,
+        x|$x.endedAtTime,
+        x|$x.weatherLabel,
+        x|$x.cloudCoverLabel,
+        x|$x.windLabel,
+        x|$x.temperatureCelsius,
+        x|$x.humidityPercent,
+        x|$x.visitDurationMinutes,
+        x|$x.frameCount,
+        x|$x.broodFrameCount,
+        x|$x.foragerCountPerMinute,
+        x|$x.blossomOpenPercent,
+        x|$x.blossomStageLabel,
+        x|$x.nectarFlowLabel,
+        x|$x.pollenTrapGrams,
+        x|$x.hiveWeightKilograms
+      ],
+      [
+        'visitId',
+        'orchardCode',
+        'seasonLabel',
+        'hiveCode',
+        'blockCode',
+        'rowCode',
+        'colonyCode',
+        'inspectorCode',
+        'observedOnDate',
+        'startedAtTime',
+        'endedAtTime',
+        'weatherLabel',
+        'cloudCoverLabel',
+        'windLabel',
+        'temperatureCelsius',
+        'humidityPercent',
+        'visitDurationMinutes',
+        'frameCount',
+        'broodFrameCount',
+        'foragerCountPerMinute',
+        'blossomOpenPercent',
+        'blossomStageLabel',
+        'nectarFlowLabel',
+        'pollenTrapGrams',
+        'hiveWeightKilograms'
+      ]
+    )->sort([asc('visitId')]);
+    mapping: test::hazelorchard5::mapping::PollinationLedgerMapping;
+    runtime: test::hazelorchard5::runtime::HiveVisitLedgerRuntime;
+  }
+  testSuites:
+  [
+    visitLedgerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hiveVisitLedgerConnection:
+            Relational
+            #{
+              orchard.hive_visit:
+                'visit_id,orchard_code,season_label,hive_code,block_code,row_code,colony_code,inspector_code,observed_on_date,started_at_time,ended_at_time,weather_label,cloud_cover_label,wind_label,temperature_celsius,humidity_percent,visit_duration_minutes,frame_count,brood_frame_count,forager_count_per_minute,blossom_open_percent,blossom_stage_label,nectar_flow_label,pollen_trap_grams,hive_weight_kilograms,queen_seen_flag,varroa_count_per_hundred,disease_sign_label,feed_given_litres,equipment_label\n'+
+                'HV-1001,OR-NORTH,2026-BLOSSOM,hv-a12,BLK-3,R-07,CL-441,INS-22,2026-04-18,08:15,08:47,sunny,scattered,light,17.5,62.0,32,10,6,48,71.5,full-bloom,strong,24.5,38.25,true,1.5,none,0.5,super-added\n'+
+                'HV-1002,OR-NORTH,2026-BLOSSOM,hv-b04,BLK-4,R-11,CL-502,INS-31,2026-04-19,09:05,09:29,overcast,broken,fresh,13.0,78.0,24,8,3,12,44.0,early-bloom,weak,6.0,29.5,false,4.0,chalkbrood,2.0,feeder-added\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        ledgerRowsCarryEveryDirectMeasure:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twentyFiveColumnLedger:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"visitId":"HV-1001","orchardCode":"OR-NORTH","seasonLabel":"2026-BLOSSOM","hiveCode":"hv-a12","blockCode":"BLK-3","rowCode":"R-07","colonyCode":"CL-441","inspectorCode":"INS-22","observedOnDate":"2026-04-18","startedAtTime":"08:15","endedAtTime":"08:47","weatherLabel":"sunny","cloudCoverLabel":"scattered","windLabel":"light","temperatureCelsius":17.5,"humidityPercent":62.0,"visitDurationMinutes":32,"frameCount":10,"broodFrameCount":6,"foragerCountPerMinute":48,"blossomOpenPercent":71.5,"blossomStageLabel":"full-bloom","nectarFlowLabel":"strong","pollenTrapGrams":24.5,"hiveWeightKilograms":38.25},{"visitId":"HV-1002","orchardCode":"OR-NORTH","seasonLabel":"2026-BLOSSOM","hiveCode":"hv-b04","blockCode":"BLK-4","rowCode":"R-11","colonyCode":"CL-502","inspectorCode":"INS-31","observedOnDate":"2026-04-19","startedAtTime":"09:05","endedAtTime":"09:29","weatherLabel":"overcast","cloudCoverLabel":"broken","windLabel":"fresh","temperatureCelsius":13.0,"humidityPercent":78.0,"visitDurationMinutes":24,"frameCount":8,"broodFrameCount":3,"foragerCountPerMinute":12,"blossomOpenPercent":44.0,"blossomStageLabel":"early-bloom","nectarFlowLabel":"weak","pollenTrapGrams":6.0,"hiveWeightKilograms":29.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

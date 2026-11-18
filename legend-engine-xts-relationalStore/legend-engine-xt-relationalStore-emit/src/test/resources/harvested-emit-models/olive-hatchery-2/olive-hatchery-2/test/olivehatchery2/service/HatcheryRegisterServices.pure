@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::olivehatchery2::service::GradingRetentionDigest
+{
+  pattern: '/olivehatchery/v1/grading-retention-digest';
+  title: 'Olive Hatchery - Grading Retention Digest';
+  owners:
+  [
+    'shellfish-hatchery-rearing'
+  ];
+  documentation: 'Lists every grading pass with a nested branch evaluated in the projection lambda: the outer arm selects the mesh band and the inner arm the retained-count band, so the grade label is resolved from two columns at once. The day count back to the reference day is computed alongside it.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::olivehatchery2::domain::GradingEvent.all()->filter(
+      g|$g.gradedBatch.gradings->exists(x|$x.meshMicron >= 100)
+    )->project(
+      [
+        col(
+          g|$g.gradedBatch.batchCode,
+          'Batch'
+        ),
+        col(
+          g|if($g.meshMicron >= 250,
+               | if($g.retainedCount >= 50000, | 'COARSE HEAVY', | 'COARSE LIGHT'),
+               | if($g.retainedCount >= 50000, | 'FINE HEAVY', | 'FINE LIGHT')),
+          'Grade'
+        ),
+        col(
+          g|meta::pure::functions::date::dateDiff($g.gradedOn, %2026-03-01, meta::pure::functions::date::DurationUnit.DAYS),
+          'DaysBefore'
+        )
+      ]
+    )->sort([asc('Batch')]);
+    mapping: test::olivehatchery2::mapping::HatcheryRegisterMapping;
+    runtime: test::olivehatchery2::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    gradingRetentionDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.grading_event:
+                'event_id,batch_id,graded_on,retained_count,mesh_micron\n'+
+                '1,1,2026-02-20,62000,300\n'+
+                '2,3,2026-02-24,41000,180\n';
+
+              hatchery.larval_batch:
+                'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                '3,1,LB-103,TK-3,95000,2026-02-05,V3,OH-103,split from tank one\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        retentionGrades:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"LB-101","Grade":"COARSE HEAVY","DaysBefore":9},{"Batch":"LB-103","Grade":"FINE LIGHT","DaysBefore":5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::olivehatchery2::service::BatchRegisterFeed
+{
+  pattern: '/olivehatchery/v1/batch-register-feed';
+  title: 'Olive Hatchery - Batch Register Feed';
+  owners:
+  [
+    'shellfish-hatchery-rearing'
+  ];
+  documentation: 'Keeps the batches stocked above the reporting floor and serves the newest three as a register feed, carrying the derived batch label and the note folded onto its sentinel by the mapping.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::olivehatchery2::domain::LarvalBatch.all()->filter(
+      b|$b.stockedCount > 50000
+    )->project(
+      [
+        col(
+          b|$b.batchCode,
+          'Batch'
+        ),
+        col(
+          b|$b.batchLabel(),
+          'Label'
+        ),
+        col(
+          b|$b.batchNote,
+          'Note'
+        ),
+        col(
+          b|$b.stockingMark(),
+          'Mark'
+        )
+      ]
+    )->sort([desc('Batch')])->limit(3);
+    mapping: test::olivehatchery2::mapping::HatcheryRegisterMapping;
+    runtime: test::olivehatchery2::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    batchRegisterFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.larval_batch:
+                'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                '5,2,LB-105,TK-2,76000,2026-02-18,V5,OH-105,slow start\n'+
+                '7,2,LB-107,TK-3,52000,2026-02-20,V7,OH-107,thin walls\n'+
+                '8,2,LB-108,TK-3,41000,2026-02-21,V8,OH-108,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerFeed:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"LB-107","Label":"LB-107 / FALTERING SWIMMERS","Note":"thin walls","Mark":"M"},{"Batch":"LB-105","Label":"LB-105 / SLOW SWIMMERS","Note":"slow start","Mark":"M"},{"Batch":"LB-101","Label":"LB-101 / VIGOROUS SWIMMERS","Note":"seeded from first run","Mark":"H"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

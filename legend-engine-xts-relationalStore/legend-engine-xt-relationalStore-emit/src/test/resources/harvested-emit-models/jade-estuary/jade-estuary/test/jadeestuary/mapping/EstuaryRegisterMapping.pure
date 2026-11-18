@@ -1,0 +1,529 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadeestuary::mapping::EstuaryRegisterMapping
+(
+  include mapping test::jadeestuary::mapping::EstuaryEnumMapping
+  include mapping test::jadeestuary::mapping::EstuaryBaseMapping
+
+  *test::jadeestuary::domain::RingRecord[ringRecord]: Relational
+  {
+    ~filter [test::jadeestuary::store::EstuaryRegisterDb]@Record_Lane | [test::jadeestuary::store::EstuaryRegisterDb]OpenLaneFilter
+    ~primaryKey
+    (
+      [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.record_code
+    )
+    ~mainTable [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record
+    recordCode: [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.record_code,
+    recordName: toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.record_name),
+    wingMm: [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.wing_mm,
+    massG: [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.mass_g,
+    noteText: [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.note_text,
+    surveySource: 'estuary-ringing-panel',
+    massPerWing: divide(
+                   [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.mass_g,
+                   [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.wing_mm
+                 ),
+    wingIndex: times(
+                 coalesce([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.wing_mm, 0),
+                 2
+               ),
+    tagLength: length([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.tag_code),
+    tagKey: case(
+              startsWith(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.tag_code), 'TG'),
+              toLower([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.tag_code),
+              toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.tag_code)
+            ),
+    ringedFlag: if(
+                  isNull([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.ringer_code),
+                  'unringed',
+                  'ringed'
+                ),
+    plumageLabel: case(
+                    equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'A'),
+                    'downy-juvenile',
+                    case(
+                      equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'B'),
+                      'fresh-immature',
+                      case(
+                        equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'C'),
+                        'worn-immature',
+                        case(
+                          equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'D'),
+                          'breeding-adult',
+                          case(
+                            equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'E'),
+                            'eclipse-adult',
+                            case(
+                              equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'F'),
+                              'post-moult-adult',
+                              case(
+                                equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'G'),
+                                'pre-basic-adult',
+                                case(
+                                  equal(trim(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_code)), 'H'),
+                                  'arrested-moult',
+                                  sqlNull()
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    plumage: EnumerationMapping PlumageKindMapping: [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.plumage_stage,
+    effort: EnumerationMapping EffortBandMapping: concat(
+              case(
+                greaterThanEqual([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.wing_mm, 220),
+                'HEAVY',
+                case(
+                  greaterThanEqual([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.wing_mm, 180),
+                  'STEADY',
+                  'LIGHT'
+                )
+              ),
+              concat(
+                '/',
+                case(
+                  equal(toUpper([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.session_code), 'DUSK'),
+                  'DUSK',
+                  'DAY'
+                )
+              )
+            ),
+    moult: EnumerationMapping MoultStageMapping: concat(
+             case(
+               equal(toUpper(trim([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.moult_code)), 'P'),
+               'P',
+               case(
+                 equal(toUpper(trim([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.moult_code)), 'S'),
+                 'S',
+                 case(
+                   equal(toUpper(trim([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.moult_code)), 'B'),
+                   'B',
+                   'N'
+                 )
+               )
+             ),
+             concat(
+               '/',
+               case(
+                 equal(toUpper(trim([test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_record.moult_code)), 'N'),
+                 'NONE',
+                 'ACTIVE'
+               )
+             )
+           ),
+    laneGrade: EnumerationMapping LaneGradeMapping: concat(
+                 toUpper(trim([test::jadeestuary::store::EstuaryRegisterDb]@Record_Lane | [test::jadeestuary::store::EstuaryRegisterDb]ringing.net_lane.open_flag)),
+                 concat(
+                   '/',
+                   case(
+                     equal(toUpper([test::jadeestuary::store::EstuaryRegisterDb]@Record_Lane | [test::jadeestuary::store::EstuaryRegisterDb]ringing.net_lane.span_code), 'PART'),
+                     'PART',
+                     'FULL'
+                   )
+                 )
+               ),
+    stationName: [test::jadeestuary::store::EstuaryRegisterDb]@Record_Station | [test::jadeestuary::store::EstuaryRegisterDb]ringing.ring_station.station_name,
+    zoneName: [test::jadeestuary::store::EstuaryRegisterDb]@Record_Station > (OUTER) @Station_Zone | [test::jadeestuary::store::EstuaryRegisterDb]census.census_zone.zone_name,
+    wardenTeam: [test::jadeestuary::store::EstuaryRegisterDb]@Record_Station > (OUTER) @Station_Zone > (OUTER) @Zone_Warden | [test::jadeestuary::store::EstuaryRegisterDb]census.zone_warden.warden_team,
+    baseName: [test::jadeestuary::store::EstuaryRegisterDb]@Record_Station > (OUTER) @Station_Zone > (OUTER) @Zone_Warden > (OUTER) @Warden_Base | [test::jadeestuary::store::EstuaryRegisterDb]census.warden_base.base_name,
+    laneLogCount: [test::jadeestuary::store::EstuaryRegisterDb]@Record_LaneTally | [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_tally_vw.log_count,
+    laneCatchTotal: [test::jadeestuary::store::EstuaryRegisterDb]@Record_LaneTally | [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_tally_vw.total_catch,
+    holder[ringHolder]: [test::jadeestuary::store::EstuaryRegisterDb]@Record_Holder
+  }
+
+  test::jadeestuary::domain::LaneTally[laneTally]: AggregationAware
+  {
+    Views: [
+      (
+        ~modelOperation: {
+          ~canAggregate true,
+          ~groupByFunctions (
+            $this.laneCode,
+            $this.tallyDay
+          ),
+          ~aggregateValues (
+            ( ~mapFn: $this.catchCount , ~aggregateFn: $mapped->sum() )
+          )
+        },
+        ~aggregateMapping: Relational
+        {
+          ~primaryKey
+          (
+            [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_day_tally.tally_code
+          )
+          ~mainTable [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_day_tally
+          tallyCode: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_day_tally.tally_code,
+          laneCode: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_day_tally.lane_code,
+          tallyDay: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_day_tally.tally_day,
+          catchCount: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_day_tally.catch_total
+        }
+      )
+    ],
+    ~mainMapping: Relational
+    {
+      ~primaryKey
+      (
+        [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_log.log_code
+      )
+      ~mainTable [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_log
+      tallyCode: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_log.log_code,
+      laneCode: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_log.lane_code,
+      tallyDay: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_log.logged_on,
+      catchCount: [test::jadeestuary::store::EstuaryRegisterDb]tally.lane_log.catch_count
+    }
+  }
+
+  testSuites:
+  [
+    recordBandSuite:
+    {
+      function: |test::jadeestuary::domain::RingRecord.all(%2026-04-01)->project(
+        ~[
+          recordCode: x|$x.recordCode,
+          plumageLabel: x|$x.plumageLabel,
+          plumage: x|$x.plumage,
+          effort: x|$x.effort,
+          moult: x|$x.moult,
+          laneGrade: x|$x.laneGrade,
+          noteText: x|$x.noteText,
+          surveySource: x|$x.surveySource
+        ]
+      )->sort(~recordCode->ascending());
+      tests:
+      [
+        everyPlumageArmAndEveryComposedEnumeration:
+        {
+          doc: 'Reads the ringing record versions open on the queried date, so all eight plumage arms and the null fallback are asserted next to the literal survey source, the plain plumage decode whose unlisted source value translates to no member, and the three enumerations whose source values are composed from nested conditional and string dyna functions over the wing measurement, the session slot, the moult letter and the lane reached across the dyna-function join; the retired version whose window closed earlier is out of range, and the record rigged on a lower-case lane still matches through the join.';
+          data:
+          [
+            test::jadeestuary::store::EstuaryRegisterDb:
+              Relational
+              #{
+                ringing.net_lane:
+                  'lane_code,lane_name,open_flag,span_code,mesh_code,mesh_label\n'+
+                  'LN-1,Saltmarsh Lane,Y,FULL,MS-1,fine mesh\n'+
+                  'LN-2,Reedbed Lane,Y,PART,MS-2,wide mesh\n'+
+                  'LN-9,Mudflat Lane,Y,FULL,MS-3,coarse mesh\n';
+                ringing.ring_station:
+                  'station_code,station_name,zone_code\n'+
+                  'ST-1,Tide Gauge Point,ZN-1\n'+
+                  'ST-9,Orphan Point,ZN-MISSING\n'+
+                  'ST-10,Reed Point,ZN-2\n'+
+                  'ST-11,Creek Point,ZN-3\n';
+                ringing.ring_record:
+                  'record_code,record_name,wing_mm,mass_g,plumage_code,plumage_stage,moult_code,session_code,station_code,lane_code,ringer_code,note_text,tag_code,from_z,thru_z\n'+
+                  'RR-01,dunlin one,230,95.0,A,JUVENILE,P,DAY,ST-1,LN-1,RH-1,ringed at dawn,TG-01,2026-01-01,9999-12-31\n'+
+                  'RR-02,dunlin two,225,92.0,B,IMMATURE,S,DUSK,ST-1,LN-1,RH-1,second net round,TG-02,2026-01-01,9999-12-31\n'+
+                  'RR-03,knot one,215,88.0,C,IMMATURE,B,DAY,ST-1,LN-1,RH-1,tide rising,TG-03,2026-01-01,9999-12-31\n'+
+                  'RR-04,knot two,205,80.0,D,ADULT,N,DAY,ST-1,LN-1,RH-1,full plumage,TG-04,2026-01-01,9999-12-31\n'+
+                  'RR-05,godwit one,195,75.0,E,ADULT,P,DUSK,ST-1,LN-2,RH-1,eclipse noted,TG-05,2026-01-01,9999-12-31\n'+
+                  'RR-06,godwit two,185,70.0,F,ADULT,S,DAY,ST-1,LN-2,RH-1,post moult,TG-06,2026-01-01,9999-12-31\n'+
+                  'RR-07,plover one,175,60.0,G,WORN,B,DAY,ST-1,LN-1,RH-1,pre basic,TG-07,2026-01-01,9999-12-31\n'+
+                  'RR-08,plover two,165,55.0,H,WORN,N,DUSK,ST-1,LN-1,RH-1,arrested moult,TG-08,2026-01-01,9999-12-31\n'+
+                  'RR-09,stint one,160,50.0,Z,UNRECORDED,N,DAY,ST-1,LN-1,RH-1,,TG-09,2026-01-01,9999-12-31\n'+
+                  'RR-10,curlew one,240,110.0,A,ADULT,P,DAY,ST-9,LN-1,RH-1,zone missing,TG-10,2026-01-01,9999-12-31\n'+
+                  'RR-11,curlew two,235,105.0,B,ADULT,S,DAY,ST-10,LN-1,RH-1,warden missing,TG-11,2026-01-01,9999-12-31\n'+
+                  'RR-12,whimbrel one,232,100.0,C,ADULT,B,DAY,ST-11,LN-1,RH-1,base missing,TG-12,2026-01-01,9999-12-31\n'+
+                  'RR-13,turnstone one,228,98.0,D,ADULT,N,DAY,ST-1,LN-9,RH-1,no lane logs,TG-13,2026-01-01,9999-12-31\n'+
+                  'RR-14,sanderling one,222,96.0,E,ADULT,P,DUSK,ST-1,LN-1,RH-1,full chain,TG-14,2026-01-01,9999-12-31\n'+
+                  'RR-15,redshank one,218,94.0,F,ADULT,S,DAY,ST-1,LN-1,,no ringer,TG-15,2026-01-01,9999-12-31\n'+
+                  'RR-16,greenshank one,212,90.0,G,ADULT,B,DAY,ST-1,ln-1,RH-2,lower case lane,TG-16,2026-01-01,9999-12-31\n'+
+                  'RR-17,retired bird,200,85.0,A,ADULT,P,DAY,ST-1,LN-1,RH-1,out of range,TG-17,2020-01-01,2021-01-01\n';
+              }#
+          ];
+          asserts:
+          [
+            sixteenVersionsOpenOnTheQueriedDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordCode":"RR-01","plumageLabel":"downy-juvenile","plumage":"JUVENILE","effort":"HEAVY","moult":"PRIMARY_MOULT","laneGrade":"LANE_OPEN","noteText":"ringed at dawn","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-02","plumageLabel":"fresh-immature","plumage":"IMMATURE","effort":"HEAVY","moult":"SECONDARY_MOULT","laneGrade":"LANE_OPEN","noteText":"second net round","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-03","plumageLabel":"worn-immature","plumage":"IMMATURE","effort":"STEADY","moult":"BODY_MOULT","laneGrade":"LANE_OPEN","noteText":"tide rising","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-04","plumageLabel":"breeding-adult","plumage":"ADULT","effort":"STEADY","moult":"NO_MOULT","laneGrade":"LANE_OPEN","noteText":"full plumage","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-05","plumageLabel":"eclipse-adult","plumage":"ADULT","effort":"STEADY","moult":"PRIMARY_MOULT","laneGrade":"LANE_PARTIAL","noteText":"eclipse noted","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-06","plumageLabel":"post-moult-adult","plumage":"ADULT","effort":"STEADY","moult":"SECONDARY_MOULT","laneGrade":"LANE_PARTIAL","noteText":"post moult","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-07","plumageLabel":"pre-basic-adult","plumage":"WORN","effort":"LIGHT","moult":"BODY_MOULT","laneGrade":"LANE_OPEN","noteText":"pre basic","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-08","plumageLabel":"arrested-moult","plumage":"WORN","effort":"LIGHT","moult":"NO_MOULT","laneGrade":"LANE_OPEN","noteText":"arrested moult","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-09","plumageLabel":null,"plumage":null,"effort":"LIGHT","moult":"NO_MOULT","laneGrade":"LANE_OPEN","noteText":null,"surveySource":"estuary-ringing-panel"},{"recordCode":"RR-10","plumageLabel":"downy-juvenile","plumage":"ADULT","effort":"HEAVY","moult":"PRIMARY_MOULT","laneGrade":"LANE_OPEN","noteText":"zone missing","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-11","plumageLabel":"fresh-immature","plumage":"ADULT","effort":"HEAVY","moult":"SECONDARY_MOULT","laneGrade":"LANE_OPEN","noteText":"warden missing","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-12","plumageLabel":"worn-immature","plumage":"ADULT","effort":"HEAVY","moult":"BODY_MOULT","laneGrade":"LANE_OPEN","noteText":"base missing","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-13","plumageLabel":"breeding-adult","plumage":"ADULT","effort":"HEAVY","moult":"NO_MOULT","laneGrade":"LANE_OPEN","noteText":"no lane logs","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-14","plumageLabel":"eclipse-adult","plumage":"ADULT","effort":"HEAVY","moult":"PRIMARY_MOULT","laneGrade":"LANE_OPEN","noteText":"full chain","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-15","plumageLabel":"post-moult-adult","plumage":"ADULT","effort":"STEADY","moult":"SECONDARY_MOULT","laneGrade":"LANE_OPEN","noteText":"no ringer","surveySource":"estuary-ringing-panel"},{"recordCode":"RR-16","plumageLabel":"pre-basic-adult","plumage":"ADULT","effort":"STEADY","moult":"BODY_MOULT","laneGrade":"LANE_OPEN","noteText":"lower case lane","surveySource":"estuary-ringing-panel"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    recordReachSuite:
+    {
+      function: |test::jadeestuary::domain::RingRecord.all(%2026-04-01)->project(
+        ~[
+          recordCode: x|$x.recordCode,
+          stationName: x|$x.stationName,
+          zoneName: x|$x.zoneName,
+          wardenTeam: x|$x.wardenTeam,
+          baseName: x|$x.baseName,
+          laneLogCount: x|$x.laneLogCount,
+          laneCatchTotal: x|$x.laneCatchTotal,
+          holderName: x|$x.holder.holderName
+        ]
+      )->sort(~recordCode->ascending());
+      tests:
+      [
+        everyOuterJoinMissAlongTheFourHopWardenPath:
+        {
+          doc: 'The one-hop station name, the two-hop zone name, the three-hop warden team and the four-hop base name are each bound through the same chain with the later hops declared outer, so the record whose station points at no zone, the record whose zone names no rostered warden and the record whose warden belongs to an unlisted team each lose exactly the names their chain can no longer reach; the record on the lane with no counted rounds loses both aggregating view columns, and the record with no ringer loses the associated holder name.';
+          data:
+          [
+            test::jadeestuary::store::EstuaryRegisterDb:
+              Relational
+              #{
+                ringing.net_lane:
+                  'lane_code,lane_name,open_flag,span_code,mesh_code,mesh_label\n'+
+                  'LN-1,Saltmarsh Lane,Y,FULL,MS-1,fine mesh\n'+
+                  'LN-9,Mudflat Lane,Y,FULL,MS-3,coarse mesh\n';
+                ringing.ring_station:
+                  'station_code,station_name,zone_code\n'+
+                  'ST-1,Tide Gauge Point,ZN-1\n'+
+                  'ST-9,Orphan Point,ZN-MISSING\n'+
+                  'ST-10,Reed Point,ZN-2\n'+
+                  'ST-11,Creek Point,ZN-3\n';
+                census.census_zone:
+                  'zone_code,zone_name,warden_name\n'+
+                  'ZN-1,North Flats,Wren Halliwell\n'+
+                  'ZN-2,Mid Flats,Unrostered Warden\n'+
+                  'ZN-3,South Flats,Teal Ashgrove\n';
+                census.zone_warden:
+                  'warden_name,warden_team\n'+
+                  'Wren Halliwell,North Team\n'+
+                  'Teal Ashgrove,Unlisted Team\n';
+                census.warden_base:
+                  'warden_team,base_name\n'+
+                  'North Team,Estuary North Base\n';
+                ringing.ring_holder:
+                  'holder_code,holder_name\n'+
+                  'RH-1,Marsh Ringer\n';
+                tally.lane_log:
+                  'log_code,lane_code,logged_on,catch_count\n'+
+                  'LG-1,LN-1,2026-03-01,4\n'+
+                  'LG-2,LN-1,2026-03-02,6\n';
+                ringing.ring_record:
+                  'record_code,record_name,wing_mm,mass_g,plumage_code,plumage_stage,moult_code,session_code,station_code,lane_code,ringer_code,note_text,tag_code,from_z,thru_z\n'+
+                  'RR-20,teal one,200,80.0,A,ADULT,P,DAY,ST-1,LN-1,RH-1,full chain,TG-20,2026-01-01,9999-12-31\n'+
+                  'RR-21,teal two,200,80.0,A,ADULT,P,DAY,ST-9,LN-1,RH-1,zone missing,TG-21,2026-01-01,9999-12-31\n'+
+                  'RR-22,teal three,200,80.0,A,ADULT,P,DAY,ST-10,LN-1,RH-1,warden missing,TG-22,2026-01-01,9999-12-31\n'+
+                  'RR-23,teal four,200,80.0,A,ADULT,P,DAY,ST-11,LN-1,RH-1,base missing,TG-23,2026-01-01,9999-12-31\n'+
+                  'RR-24,teal five,200,80.0,A,ADULT,P,DAY,ST-1,LN-9,RH-1,no lane logs,TG-24,2026-01-01,9999-12-31\n'+
+                  'RR-25,teal six,200,80.0,A,ADULT,P,DAY,ST-1,LN-1,,no ringer,TG-25,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            reachRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordCode":"RR-20","stationName":"Tide Gauge Point","zoneName":"North Flats","wardenTeam":"North Team","baseName":"Estuary North Base","laneLogCount":2,"laneCatchTotal":10,"holderName":"Marsh Ringer"},{"recordCode":"RR-21","stationName":"Orphan Point","zoneName":null,"wardenTeam":null,"baseName":null,"laneLogCount":2,"laneCatchTotal":10,"holderName":"Marsh Ringer"},{"recordCode":"RR-22","stationName":"Reed Point","zoneName":"Mid Flats","wardenTeam":null,"baseName":null,"laneLogCount":2,"laneCatchTotal":10,"holderName":"Marsh Ringer"},{"recordCode":"RR-23","stationName":"Creek Point","zoneName":"South Flats","wardenTeam":"Unlisted Team","baseName":null,"laneLogCount":2,"laneCatchTotal":10,"holderName":"Marsh Ringer"},{"recordCode":"RR-24","stationName":"Tide Gauge Point","zoneName":"North Flats","wardenTeam":"North Team","baseName":"Estuary North Base","laneLogCount":null,"laneCatchTotal":null,"holderName":"Marsh Ringer"},{"recordCode":"RR-25","stationName":"Tide Gauge Point","zoneName":"North Flats","wardenTeam":"North Team","baseName":"Estuary North Base","laneLogCount":2,"laneCatchTotal":10,"holderName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    recordMeasureSuite:
+    {
+      function: |test::jadeestuary::domain::RingRecord.all(%2026-04-01)->project(
+        ~[
+          recordCode: x|$x.recordCode,
+          recordName: x|$x.recordName,
+          wingMm: x|$x.wingMm,
+          massG: x|$x.massG,
+          massPerWing: x|$x.massPerWing,
+          wingIndex: x|$x.wingIndex,
+          tagLength: x|$x.tagLength,
+          tagKey: x|$x.tagKey,
+          ringedFlag: x|$x.ringedFlag
+        ]
+      )->sort(~recordCode->ascending());
+      tests:
+      [
+        arithmeticAndStringDynaFunctions:
+        {
+          doc: 'The upper-cased record name, the mass divided across the wing measurement, the doubled coalesced wing index, the tag code length and the tag key whose casing is chosen by a prefix test are asserted together with the ringed flag, so the arithmetic, string and conditional dyna functions are each read on a record whose tag carries the expected prefix and on a record whose tag does not and which was handled by no ringer.';
+          data:
+          [
+            test::jadeestuary::store::EstuaryRegisterDb:
+              Relational
+              #{
+                ringing.net_lane:
+                  'lane_code,lane_name,open_flag,span_code,mesh_code,mesh_label\n'+
+                  'LN-1,Saltmarsh Lane,Y,FULL,MS-1,fine mesh\n';
+                ringing.ring_record:
+                  'record_code,record_name,wing_mm,mass_g,plumage_code,plumage_stage,moult_code,session_code,station_code,lane_code,ringer_code,note_text,tag_code,from_z,thru_z\n'+
+                  'RR-30,sandpiper one,200,90.0,A,ADULT,P,DAY,ST-1,LN-1,RH-1,prefixed tag,TG-30,2026-01-01,9999-12-31\n'+
+                  'RR-31,sandpiper two,150,60.0,B,ADULT,S,DAY,ST-1,LN-1,,unprefixed tag,XX-31,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            measureRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordCode":"RR-30","recordName":"SANDPIPER ONE","wingMm":200,"massG":90.0,"massPerWing":0.45,"wingIndex":400,"tagLength":5,"tagKey":"tg-30","ringedFlag":"ringed"},{"recordCode":"RR-31","recordName":"SANDPIPER TWO","wingMm":150,"massG":60.0,"massPerWing":0.4,"wingIndex":300,"tagLength":5,"tagKey":"XX-31","ringedFlag":"unringed"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    holderPermitSuite:
+    {
+      function: |test::jadeestuary::domain::CertifiedHolder.all()->project(
+        ~[
+          holderCode: x|$x.holderCode,
+          holderName: x|$x.holderName,
+          permitGrade: x|$x.permitGrade,
+          issuedOn: x|$x.issuedOn
+        ]
+      )->sort(~holderCode->ascending());
+      tests:
+      [
+        permitColumnsAssembledFromTheSecondRelation:
+        {
+          doc: 'The certified holder specialisation extends the holder set implementation, so the inherited code and name are read from the holder relation while the permit grade and issue date are assembled across the permit join; the holder with no permit row keeps its inherited columns and loses both permit columns.';
+          data:
+          [
+            test::jadeestuary::store::EstuaryRegisterDb:
+              Relational
+              #{
+                ringing.ring_holder:
+                  'holder_code,holder_name\n'+
+                  'RH-1,Marsh Ringer\n'+
+                  'RH-3,Creek Ringer\n';
+                ringing.holder_permit:
+                  'holder_code,permit_grade,issued_on\n'+
+                  'RH-1,SENIOR,2024-03-01\n';
+              }#
+          ];
+          asserts:
+          [
+            holderRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"holderCode":"RH-1","holderName":"Marsh Ringer","permitGrade":"SENIOR","issuedOn":"2024-03-01"},{"holderCode":"RH-3","holderName":"Creek Ringer","permitGrade":null,"issuedOn":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    laneMeshSuite:
+    {
+      function: |test::jadeestuary::domain::NetLane.all()->project(
+        ~[
+          laneCode: x|$x.laneCode,
+          laneName: x|$x.laneName,
+          meshCode: x|$x.mesh.meshCode,
+          meshLabel: x|$x.mesh.meshLabel
+        ]
+      )->sort(~laneCode->ascending());
+      tests:
+      [
+        inlineMeshOnTheOpenLanesOnly:
+        {
+          doc: 'The mesh is carried inline on the lane relation itself rather than across a join, so each open lane reads back its own mesh columns and the lane whose open flag is not set is removed by the named lane filter before anything is read; the open lane with no mesh label keeps its mesh code and loses the label.';
+          data:
+          [
+            test::jadeestuary::store::EstuaryRegisterDb:
+              Relational
+              #{
+                ringing.net_lane:
+                  'lane_code,lane_name,open_flag,span_code,mesh_code,mesh_label\n'+
+                  'LN-1,Saltmarsh Lane,Y,FULL,MS-1,fine mesh\n'+
+                  'LN-2,Reedbed Lane,Y,PART,MS-2,\n'+
+                  'LN-3,Furled Lane,N,FULL,MS-4,spare mesh\n';
+              }#
+          ];
+          asserts:
+          [
+            laneRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"laneCode":"LN-1","laneName":"Saltmarsh Lane","meshCode":"MS-1","meshLabel":"fine mesh"},{"laneCode":"LN-2","laneName":"Reedbed Lane","meshCode":"MS-2","meshLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    laneTallySuite:
+    {
+      function: |test::jadeestuary::domain::LaneTally.all()->project(
+        ~[
+          laneCode: x|$x.laneCode,
+          catchCount: x|$x.catchCount
+        ]
+      )->groupBy(~[laneCode], ~[catchTotal: x|$x.catchCount: y|$y->sum()])->sort(~laneCode->ascending());
+      tests:
+      [
+        laneCatchTotals:
+        {
+          doc: 'The counted catch is grouped by lane against a class that declares a day-rollup aggregate set implementation alongside its per-round detail set; the rollup carries a deliberately stale total for the first lane, so the returned totals show which relation answered the grouped query.';
+          data:
+          [
+            test::jadeestuary::store::EstuaryRegisterDb:
+              Relational
+              #{
+                tally.lane_log:
+                  'log_code,lane_code,logged_on,catch_count\n'+
+                  'LG-11,LN-1,2026-07-01,4\n'+
+                  'LG-12,LN-1,2026-07-01,7\n'+
+                  'LG-13,LN-2,2026-07-02,5\n';
+                tally.lane_day_tally:
+                  'tally_code,lane_code,tally_day,catch_total\n'+
+                  'LT-01,LN-1,2026-07-01,10\n'+
+                  'LT-02,LN-2,2026-07-02,5\n';
+              }#
+          ];
+          asserts:
+          [
+            tallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"laneCode":"LN-1","catchTotal":11},{"laneCode":"LN-2","catchTotal":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

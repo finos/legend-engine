@@ -1,0 +1,248 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::cedarfossil::mapping::CatalogueMapping
+(
+  include mapping demo::cedarfossil::mapping::RegistryMapping
+
+  demo::cedarfossil::domain::TaxonGroup: EnumerationMapping TaxonGroupMapping
+  {
+    INVERTEBRATE: ['INV'],
+    VERTEBRATE: ['VER'],
+    FLORA: ['FLO'],
+    UNDETERMINED: ['UND']
+  }
+
+  demo::cedarfossil::domain::ConditionGrade: EnumerationMapping ConditionGradeMapping
+  {
+    PRISTINE: ['PR'],
+    FRAGMENTED: ['FR'],
+    UNGRADED: ['UG']
+  }
+
+  *demo::cedarfossil::domain::Specimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::cedarfossil::store::FossilCatalogueDB]catalogue.specimen_record.specimen_code
+    )
+    ~mainTable [demo::cedarfossil::store::FossilCatalogueDB]catalogue.specimen_record
+    specimenCode: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.specimen_record.specimen_code,
+    taxon: EnumerationMapping TaxonGroupMapping: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.specimen_record.taxon_group,
+    condition: EnumerationMapping ConditionGradeMapping: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.specimen_record.condition_code,
+    massG: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.specimen_record.mass_g,
+    siteName: [demo::cedarfossil::store::FossilCatalogueDB]@Specimen_Site | registry.dig_site.site_name,
+    periodName: [demo::cedarfossil::store::FossilCatalogueDB]@Specimen_Site > @Site_Stratum | registry.stratum.period_name,
+    preparedHours: [demo::cedarfossil::store::FossilCatalogueDB]@Specimen_Effort | catalogue.specimen_effort_vw.total_prep_hours
+  }
+
+  *demo::cedarfossil::domain::PreparationEntry[preparationEntry]: Relational
+  {
+    ~filter [demo::cedarfossil::store::FossilCatalogueDB]FinishedPreparations
+    ~primaryKey
+    (
+      [demo::cedarfossil::store::FossilCatalogueDB]catalogue.preparation_log.prep_code
+    )
+    ~mainTable [demo::cedarfossil::store::FossilCatalogueDB]catalogue.preparation_log
+    prepCode: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.preparation_log.prep_code,
+    specimenCode: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.preparation_log.specimen_code,
+    prepStage: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.preparation_log.prep_stage,
+    prepHours: [demo::cedarfossil::store::FossilCatalogueDB]catalogue.preparation_log.prep_hours
+  }
+
+  demo::cedarfossil::domain::Site_Bed: Relational
+  {
+    AssociationMapping
+    (
+      bed[digSite, stratum]: [demo::cedarfossil::store::FossilCatalogueDB]@Site_Stratum,
+      sites[stratum, digSite]: [demo::cedarfossil::store::FossilCatalogueDB]@Site_Stratum
+    )
+  }
+
+  testSuites:
+  [
+    specimenPathSuite:
+    {
+      function: |demo::cedarfossil::domain::Specimen.all(%2026-05-01)->project(~[Specimen: s|$s.specimenCode, Taxon: s|$s.taxon, Condition: s|$s.condition, Mass: s|$s.massG, Site: s|$s.siteName, Period: s|$s.periodName, Effort: s|$s.preparedHours])->sort([~Period->ascending(), ~Specimen->ascending()]);
+      tests:
+      [
+        multiHopAndViewReached:
+        {
+          doc: 'Reads the catalogue at a processing instant where every recorded version is open, so both enumeration mappings resolve, the one-hop site lookup and the two-hop path on to the bed period both land, and the effort column is served by the grouped inline view reached over the included registry store.';
+          data:
+          [
+            demo::cedarfossil::store::FossilCatalogueDB:
+              Relational
+              #{
+                registry.stratum:
+                  'stratum_code,stratum_name,period_name\n'+
+                  'ST-1,Cedar Marl Bed,Late Cretaceous\n'+
+                  'ST-2,Iron Shale Bed,Early Jurassic\n';
+
+                registry.dig_site:
+                  'site_code,site_name,stratum_code\n'+
+                  'SITE-1,Cedar Bluff Quarry,ST-1\n'+
+                  'SITE-2,Iron Creek Cutting,ST-2\n';
+
+                catalogue.specimen_record:
+                  'specimen_code,taxon_group,condition_code,mass_g,site_code,in_z,out_z\n'+
+                  'SPC-0001,INV,PR,120.0,SITE-1,2026-01-01,9999-12-31\n'+
+                  'SPC-0002,VER,FR,340.0,SITE-2,2026-01-01,9999-12-31\n'+
+                  'SPC-0003,FLO,UG,60.0,SITE-1,2026-03-01,9999-12-31\n';
+
+                catalogue.preparation_log:
+                  'prep_code,specimen_code,prep_stage,prep_hours\n'+
+                  'PRP-1,SPC-0001,FINISHED,4.0\n'+
+                  'PRP-2,SPC-0001,PENDING,1.5\n'+
+                  'PRP-3,SPC-0002,FINISHED,2.0\n'+
+                  'PRP-4,SPC-0003,FINISHED,3.0\n';
+              }#
+          ];
+          asserts:
+          [
+            everyOpenVersionReachesItsBed:
+              Relation
+              #{
+                Specimen,Taxon,Condition,Mass,Site,Period,Effort
+                SPC-0002,VERTEBRATE,FRAGMENTED,340.0,Iron Creek Cutting,Early Jurassic,2.0
+                SPC-0001,INVERTEBRATE,PRISTINE,120.0,Cedar Bluff Quarry,Late Cretaceous,5.5
+                SPC-0003,FLORA,UNGRADED,60.0,Cedar Bluff Quarry,Late Cretaceous,3.0;
+              }#
+          ];
+        }
+      ];
+    },
+    specimenEarlierInstantSuite:
+    {
+      function: |demo::cedarfossil::domain::Specimen.all(%2026-01-15)->project(~[Specimen: s|$s.specimenCode, Taxon: s|$s.taxon, Condition: s|$s.condition, Mass: s|$s.massG, Site: s|$s.siteName, Period: s|$s.periodName, Effort: s|$s.preparedHours])->sort([~Period->ascending(), ~Specimen->ascending()]);
+      tests:
+      [
+        recordNotYetProcessedIsOutOfRange:
+        {
+          doc: 'Reads the same catalogue at an earlier processing instant so the version whose processing window opens later is out of range and absent, leaving only the two versions already in effect.';
+          data:
+          [
+            demo::cedarfossil::store::FossilCatalogueDB:
+              Relational
+              #{
+                registry.stratum:
+                  'stratum_code,stratum_name,period_name\n'+
+                  'ST-1,Cedar Marl Bed,Late Cretaceous\n'+
+                  'ST-2,Iron Shale Bed,Early Jurassic\n';
+
+                registry.dig_site:
+                  'site_code,site_name,stratum_code\n'+
+                  'SITE-1,Cedar Bluff Quarry,ST-1\n'+
+                  'SITE-2,Iron Creek Cutting,ST-2\n';
+
+                catalogue.specimen_record:
+                  'specimen_code,taxon_group,condition_code,mass_g,site_code,in_z,out_z\n'+
+                  'SPC-0001,INV,PR,120.0,SITE-1,2026-01-01,9999-12-31\n'+
+                  'SPC-0002,VER,FR,340.0,SITE-2,2026-01-01,9999-12-31\n'+
+                  'SPC-0003,FLO,UG,60.0,SITE-1,2026-03-01,9999-12-31\n';
+
+                catalogue.preparation_log:
+                  'prep_code,specimen_code,prep_stage,prep_hours\n'+
+                  'PRP-1,SPC-0001,FINISHED,4.0\n'+
+                  'PRP-2,SPC-0001,PENDING,1.5\n'+
+                  'PRP-3,SPC-0002,FINISHED,2.0\n'+
+                  'PRP-4,SPC-0003,FINISHED,3.0\n';
+              }#
+          ];
+          asserts:
+          [
+            laterProcessingWindowAbsent:
+              Relation
+              #{
+                Specimen,Taxon,Condition,Mass,Site,Period,Effort
+                SPC-0002,VERTEBRATE,FRAGMENTED,340.0,Iron Creek Cutting,Early Jurassic,2.0
+                SPC-0001,INVERTEBRATE,PRISTINE,120.0,Cedar Bluff Quarry,Late Cretaceous,5.5;
+              }#
+          ];
+        }
+      ];
+    },
+    bedAssociationSuite:
+    {
+      function: |demo::cedarfossil::domain::DigSite.all()->project(~[Site: d|$d.siteName, Bed: d|$d.bed.stratumName, Period: d|$d.bed.periodName])->sort([~Period->ascending(), ~Site->ascending()]);
+      tests:
+      [
+        associationReachesBed:
+        {
+          doc: 'Walks the association implementation from each dig site to the bed it was cut into, proving the join-backed association resolves both the bed name and its period without a declared property on the site class.';
+          data:
+          [
+            demo::cedarfossil::store::FossilCatalogueDB:
+              Relational
+              #{
+                registry.stratum:
+                  'stratum_code,stratum_name,period_name\n'+
+                  'ST-1,Cedar Marl Bed,Late Cretaceous\n'+
+                  'ST-2,Iron Shale Bed,Early Jurassic\n';
+
+                registry.dig_site:
+                  'site_code,site_name,stratum_code\n'+
+                  'SITE-1,Cedar Bluff Quarry,ST-1\n'+
+                  'SITE-2,Iron Creek Cutting,ST-2\n';
+              }#
+          ];
+          asserts:
+          [
+            eachSiteReportsItsBed:
+              Relation
+              #{
+                Site,Bed,Period
+                Iron Creek Cutting,Iron Shale Bed,Early Jurassic
+                Cedar Bluff Quarry,Cedar Marl Bed,Late Cretaceous;
+              }#
+          ];
+        }
+      ];
+    },
+    finishedPreparationSuite:
+    {
+      function: |demo::cedarfossil::domain::PreparationEntry.all()->project(~[Prep: p|$p.prepCode, Specimen: p|$p.specimenCode, Stage: p|$p.prepStage, Hours: p|$p.prepHours])->sort([~Specimen->ascending(), ~Prep->ascending()]);
+      tests:
+      [
+        storeFilterDropsPendingEntries:
+        {
+          doc: 'Reads the preparation log through the set implementation carrying the store filter, so only the finished entries survive and the pending entry on the first specimen is dropped before projection.';
+          data:
+          [
+            demo::cedarfossil::store::FossilCatalogueDB:
+              Relational
+              #{
+                catalogue.preparation_log:
+                  'prep_code,specimen_code,prep_stage,prep_hours\n'+
+                  'PRP-1,SPC-0001,FINISHED,4.0\n'+
+                  'PRP-2,SPC-0001,PENDING,1.5\n'+
+                  'PRP-3,SPC-0002,FINISHED,2.0\n';
+              }#
+          ];
+          asserts:
+          [
+            pendingEntryFilteredOut:
+              Relation
+              #{
+                Prep,Specimen,Stage,Hours
+                PRP-1,SPC-0001,FINISHED,4.0
+                PRP-3,SPC-0002,FINISHED,2.0;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

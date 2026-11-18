@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldendelta::mapping::VolunteerRefineMapping
+(
+  *test::goldendelta::domain::Volunteer[volunteerSet]: Pure
+  {
+    ~src test::goldendelta::source::VolunteerRecord
+    givenName: $src.combinedName->substring(0, $src.combinedName->indexOf(' ')),
+    familyName: $src.combinedName->substring($src.combinedName->indexOf(' ') + 1, $src.combinedName->length())
+  }
+
+  testSuites:
+  [
+    refineSuite:
+    {
+      function: |test::goldendelta::domain::Volunteer.all()->graphFetch(
+        #{
+          test::goldendelta::domain::Volunteer
+          {
+            givenName,
+            familyName
+          }
+        }#
+      )->serialize(
+        #{
+          test::goldendelta::domain::Volunteer
+          {
+            givenName,
+            familyName
+          }
+        }#
+      );
+      tests:
+      [
+        splitsAtTheFirstSeparator:
+        {
+          doc: 'Both name segments are cut from the same search result, so the two transforms move together: the leading segment runs from the start of the enrolment name up to the first separator and the trailing segment from one past it to the end, so a second and third separator stay inside the trailing segment, a separator in first position leaves the leading segment empty and a separator in last position leaves the trailing segment empty. Read here from a payload the cut is exclusive of the separator; chained onto the table through the chaining connection the same expression is pushed down and the leading segment keeps the separator, which the service suite pins.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::goldendelta::source::VolunteerRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordRef":"GD-201","combinedName":"Ferny Wraysbury","depotCode":"DP-N","trailheadName":"Alder Steps","accessNote":"Gate is left unlatched in summer"},{"recordRef":"GD-202","combinedName":"Marsh Kite Alderway","depotCode":"DP-N","trailheadName":"Bramble Gate","accessNote":"Second gate on the lower path"},{"recordRef":"GD-204","combinedName":" Bracken Hollow","depotCode":"DP-S","trailheadName":"Cinder Rise","accessNote":"Park on the verge below the rise"},{"recordRef":"GD-205","combinedName":"Cobweb ","depotCode":"DP-S","trailheadName":"Dyke Crossing","accessNote":"Ford is impassable after rain"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourSplitNames:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"givenName":"Ferny","familyName":"Wraysbury"},{"givenName":"Marsh","familyName":"Kite Alderway"},{"givenName":"","familyName":"Bracken Hollow"},{"givenName":"Cobweb","familyName":""}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

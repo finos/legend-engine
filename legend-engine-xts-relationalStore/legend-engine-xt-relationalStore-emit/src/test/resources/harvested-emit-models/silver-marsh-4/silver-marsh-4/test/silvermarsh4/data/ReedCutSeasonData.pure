@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::silvermarsh4::data::ReedCutSeasonData
+{
+  Relational
+  #{
+    reserve.reed_cut:
+      'cut_id,session_code,sector_name,crew_name,habitat_type,cut_on,metres_cut,volunteer_hours,cut_note\n'+
+      '1,RC-0001,NORTH FEN,MARSH TEAM,REEDBED,2026-03-01,120.5,8.0,Cut back to the sluice line\n'+
+      '2,RC-0002,NORTH FEN,MARSH TEAM,REEDBED,2026-03-08,80.25,6.0,Second pass along the dyke\n'+
+      '3,RC-0003,SOUTH CARR,WILLOW TEAM,REEDBED,2026-03-09,45.75,4.5,Brash stacked clear of the ditch\n'+
+      '4,RC-0004,SOUTH CARR,WILLOW TEAM,FEN,2026-03-10,30.0,3.0,Sedge left uncut for the warblers\n'+
+      '5,RC-0005,EAST SCRAPE,OTTER TEAM,REEDBED,2026-02-01,200.0,12.0,Winter cut before the season window\n'+
+      '6,RC-0006,EAST SCRAPE,OTTER TEAM,REEDBED,2026-03-11,10.0,1.5,\n';
+  }#
+}

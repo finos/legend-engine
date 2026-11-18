@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::kindlycanyon::data::VisitFixture
+{
+  Relational
+  #{
+    roster.guide_view:
+      'guide_code,guide_name\n'+
+      'G-01,Perrin Vale\n'+
+      'G-02,Alix Fenner\n';
+    visit.visit_station:
+      'station_code,station_name,guide_code\n'+
+      'VS-01,Rim Gate Kiosk,G-01\n'+
+      'VS-02,Cottonwood Hut,G-02\n'+
+      'VS-03,Narrows Shelter,\n'+
+      'VS-04,Winter Store,G-01\n';
+    visit.visit_tally:
+      'tally_id,station_code,counted_on,slot_label,head_count\n'+
+      'VT-01,VS-01,2026-04-01,DAWN,18\n'+
+      'VT-02,VS-01,2026-04-01,MIDDAY,64\n'+
+      'VT-03,VS-01,2026-04-02,DUSK,27\n'+
+      'VT-04,VS-02,2026-04-01,MIDDAY,41\n'+
+      'VT-05,VS-03,2026-04-01,DAWN,6\n'+
+      'VT-06,VZ-88,2026-04-02,MIDDAY,12\n';
+  }#
+}

@@ -1,0 +1,53 @@
+name: golden-delta
+title: "Golden Delta - Trail Warden Roster Chained From a Relational Read Into a Graph Transformation"
+description: |
+  A trail-warden roster whose enrolment name arrives as one combined text value and is
+  split into two required segments by a graph transformation that sits downstream of a
+  relational read. The store is deliberately plain - one schema, one table, no joins,
+  views or filters - because the point of the project is the connection: a chaining
+  connection names the relational mapping as its datasource, so the model-to-model
+  mapping takes its source instances from that mapping rather than from a payload and a
+  single request spans both. The relational set declares an explicit single-column
+  identifier key and one main-table alias, so the read stays a plain projection over one
+  alias; the destination graph adds a trailhead, its access detail and a home depot
+  alongside the split name. A parameterless single-execution service projects the two
+  transformed segments over a runtime declared inline in the service itself, binding the
+  in-process physical connection and the chaining connection together, so the projection
+  is the observation point for the whole chain: names with one, several, a leading and a
+  trailing separator all resolve there.
+modelSources:
+  model:
+    root: golden-delta
+    files:
+      - test/goldendelta/connection/RosterConnections.pure
+      - test/goldendelta/domain/RosterDomain.pure
+      - test/goldendelta/mapping/RosterRelationalMapping.pure
+      - test/goldendelta/mapping/VolunteerRefineMapping.pure
+      - test/goldendelta/service/VolunteerRosterService.pure
+      - test/goldendelta/source/RosterSource.pure
+      - test/goldendelta/store/RosterDatabase.pure
+features:
+  - scaffolding:model-chain-connection
+  - execution:service
+  - mapping:m2m-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - chained-execution
+  - h2
+  - inline-runtime
+  - model-chain-connection
+  - model-to-model
+  - relational
+  - string-split
+  - tabular-data-set
+  - trail-warden-roster

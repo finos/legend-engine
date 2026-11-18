@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::emberorchard::connection::OrchardArchiveConnection
+{
+  store: test::emberorchard::store::OrchardDB;
+  type: Snowflake;
+  timezone: +0100;
+  quoteIdentifiers: true;
+  specification: Snowflake
+  {
+    name: 'ORCHARD_ARCHIVE_DB';
+    account: 'orchard_archive_account';
+    warehouse: 'ORCHARD_ARCHIVE_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'orchard_nursery_org';
+    role: 'ORCHARD_ARCHIVE_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'orchard_register_oauth_key';
+    scopeName: 'SESSION:ROLE:ORCHARD_REGISTER_READER';
+  };
+}

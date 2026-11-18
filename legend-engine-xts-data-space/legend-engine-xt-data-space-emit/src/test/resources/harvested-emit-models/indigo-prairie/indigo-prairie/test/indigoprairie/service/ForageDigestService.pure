@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::indigoprairie::service::ForageDigestService
+{
+  pattern: '/indigoprairie/v1/forage/digest';
+  title: 'Forage Digest';
+  owners:
+  [
+    'range-stewardship'
+  ];
+  documentation: 'Filters clipped forage samples to a caller supplied set of grass associations above a dry-matter floor while excluding one sample code, then projects the joined association and the composed sample tag.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {associations: String[*], minDryMatter: Float[1], excludedCode: String[1]|demo::indigoprairie::domain::ForageSample.all()->filter(
+      s|(($s.grassAssociation->in($associations)) && ($s.dryMatterPct >= $minDryMatter)) && !($s.sampleCode == $excludedCode)
+    )->project(
+      [
+        s|$s.sampleCode,
+        s|$s.dryMatterPct,
+        s|$s.grassAssociation,
+        s|$s.sampleTag()
+      ],
+      [
+        'SampleCode',
+        'DryMatter',
+        'GrassAssociation',
+        'SampleTag'
+      ]
+    )->sort(
+      [
+        asc('SampleCode')
+      ]
+    )};
+    mapping: demo::indigoprairie::mapping::PaddockMapping;
+    runtime: demo::indigoprairie::runtime::PaddockH2Runtime;
+  }
+  testSuites:
+  [
+    forageDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              paddock.grazing_paddock:
+                'paddock_id,paddock_name,grass_association,acreage\n'+
+                'PD-01,North Swale,Big Bluestem,64.5\n'+
+                'PD-02,Cedar Draw,Little Bluestem,41.25\n'+
+                'PD-03,Sand Ridge,Indiangrass,52.0\n';
+
+              paddock.forage_sample:
+                'sample_id,sample_code,dry_matter_pct,paddock_id\n'+
+                'FS-01,fs-north-a,32.5,PD-01\n'+
+                'FS-02,fs-cedar-a,27.75,PD-02\n'+
+                'FS-03,fs-north-b,18.5,PD-01\n'+
+                'FS-04,fs-sand-a,40.0,PD-03\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        selectedAssociationsAboveFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            associations = ['Big Bluestem', 'Little Bluestem'],
+            minDryMatter = 25.0,
+            excludedCode = 'fs-north-a'
+          ]
+          asserts:
+          [
+            onlyTheQualifyingSample:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SampleCode":"fs-cedar-a","DryMatter":27.75,"GrassAssociation":"Little Bluestem","SampleTag":"FS-CEDAR-A-27.75"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

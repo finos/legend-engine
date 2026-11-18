@@ -1,0 +1,88 @@
+name: cobalt-tundra-2
+title: "Cobalt Tundra 2 — A Public Reading-Room Catalogue Resolved Over Three-Hop Inner Join Paths And Published Through Environment-Keyed Multi-Execution Services"
+description: |
+  A public reading-room catalogue whose physical layer is one relational store of districts,
+  branches, shelf sections, catalogue items and reading sessions, closed by five declared joins.
+  Every relational class mapping pins its own main table alias and declares its own key set, so
+  key identity, column reads and join origins all resolve against one named table shape.
+
+  Column resolution deliberately crosses join boundaries at three different path lengths: a shelf
+  section reaches its branch in one hop and its district over a forced inner second hop, while a
+  catalogue item reaches its section in one hop, its branch over a forced inner second hop and its
+  district over a forced inner third hop. The same store also carries platform database functions
+  inside its mapped column expressions — case folding, substring extraction, concatenation, string
+  length, subtraction and a nested case cascade closed by a null sentinel — so the pushed-down
+  query contains function calls rather than bare column references, and an unrecognised condition
+  code is observably absent rather than defaulted.
+
+  Two associations are mapped relationally rather than modelled as plain properties: the reading
+  session to its catalogue item, and the branch to its district, each implemented over the join the
+  store already declares and each traversed in both directions, so the association implementation
+  is exercised alongside the class mappings it joins.
+
+  The consumer surface is two multi-execution services over the same mapping. Each declares an
+  environment key and binds two execution stacks, so one endpoint body compiles into several plans
+  and the key resolution decides which mapping-and-runtime pair a call resolves to. The item
+  register narrows the catalogue to a half-open page-count window given by two parameters before
+  projecting thirteen columns — the mapped join-path columns, the assembled title tag and a
+  four-armed size band computed in the query itself — and the session board narrows the sessions to
+  a half-open minute window and to the eighteen published reader groups before projecting the
+  session, its engagement tier and the catalogue item reached over the association. Both are
+  asserted against both keyed environments, so the window predicate, the membership test and the
+  multi-hop join paths must survive both physical bindings.
+
+  Mapping-level suites assert every conditional arm of the mapped cascades, the null sentinel arm,
+  the shelf headroom subtraction and each join path independently of the services, so a failure
+  localises to the mapping rather than to a service plan.
+
+modelSources:
+  model:
+    root: cobalt-tundra-2
+    files:
+      - test/cobalttundra2/connection/CatalogueConnections.pure
+      - test/cobalttundra2/domain/CatalogueDomain.pure
+      - test/cobalttundra2/mapping/CatalogueMapping.pure
+      - test/cobalttundra2/profile/CatalogueProfile.pure
+      - test/cobalttundra2/runtime/CatalogueRuntimes.pure
+      - test/cobalttundra2/service/ItemShelfRegisterByEnv.pure
+      - test/cobalttundra2/service/SessionEngagementBoardByEnv.pure
+      - test/cobalttundra2/store/CatalogueDatabase.pure
+
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:profile
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - environment-keyed-execution
+  - forced-inner-hop
+  - h2
+  - main-table-alias
+  - mapping-test
+  - multi-execution-service
+  - multi-hop-join-path
+  - primary-key
+  - reading-room-catalogue
+  - service-test
+  - set-membership-filter

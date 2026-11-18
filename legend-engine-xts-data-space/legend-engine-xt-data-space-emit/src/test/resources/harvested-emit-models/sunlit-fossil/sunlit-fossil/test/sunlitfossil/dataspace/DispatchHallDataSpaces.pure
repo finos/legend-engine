@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::sunlitfossil::dataspace::DispatchHallCuratedDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'curated';
+      description: 'Curated tier - the shared specimen-dispatch mapping resolved through the curated warehouse connection.';
+      mapping: test::sunlitfossil::mapping::SpecimenDispatchMapping;
+      defaultRuntime: test::sunlitfossil::runtime::DispatchHallCuratedRuntime;
+    }
+  ];
+  defaultExecutionContext: 'curated';
+  title: 'Sunlit Fossil Dispatch Hall - Curated';
+  description: 'Discovery surface over milestoned specimen dispatch dispatches, their line items and portions, bound to the curated deployment whose post-processor rewrites the dispatch-hall schema onto the curated listing schema.';
+}
+
+DataSpace test::sunlitfossil::dataspace::DispatchHallArchiveDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'archive';
+      description: 'Archive tier - the same specimen-dispatch mapping resolved through the archive warehouse connection.';
+      mapping: test::sunlitfossil::mapping::SpecimenDispatchMapping;
+      defaultRuntime: test::sunlitfossil::runtime::DispatchHallArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'archive';
+  title: 'Sunlit Fossil Dispatch Hall - Archive';
+  description: 'The same milestoned specimen-dispatch surface published against the archive deployment, where only the schema qualifier of the generated SQL differs from the curated tier.';
+}

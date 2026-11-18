@@ -1,0 +1,49 @@
+name: gilded-beacon-7
+title: "Coastal Beacon Watch Register - Point-in-Time Extent, Keeper Rollup and a Four-Armed Watch Band Projection"
+description: |
+  A coastal beacon-network model whose register of stations is business-temporal, so
+  every published reading has to open the extent at a date carried in the URL path
+  before it can be narrowed.
+
+    * `test::gildedbeacon7::domain::BeaconStation` is business-temporal. A station
+      version whose window closed before the requested date never reaches either
+      predicate, and a date standing before every window resolves to no rows at all.
+    * The rollup service pairs an enumeration equality on the lamp fitting with a
+      set-membership test on the district reached across the `Station_District` join
+      and a case-normalised shore comparison, then groups the surviving stations
+      behind the district and the keeper who holds the rota, summing the watch hours
+      and counting the stations.
+    * The band service keeps the stations whose code carries a requested prefix and
+      whose lens grade was recorded, then projects a four-armed watch band, a rounded
+      lux index and the elapsed days since the last inspection.
+
+  Both services are asserted over an inline H2 fixture whose rows cover each band
+  arm, the absent-lens row that is excluded, the out-of-district row and the station
+  version whose window had already closed.
+modelSources:
+  model:
+    root: gilded-beacon-7
+    files:
+      - test/gildedbeacon7/connection/BeaconH2Connection.pure
+      - test/gildedbeacon7/domain/BeaconDomain.pure
+      - test/gildedbeacon7/mapping/BeaconMapping.pure
+      - test/gildedbeacon7/runtime/BeaconRuntime.pure
+      - test/gildedbeacon7/service/BeaconServices.pure
+      - test/gildedbeacon7/store/BeaconDatabase.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:group-by
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - beacon-watch
+  - business-temporal
+  - coastal-network
+  - group-by
+  - h2
+  - point-in-time
+  - service-test

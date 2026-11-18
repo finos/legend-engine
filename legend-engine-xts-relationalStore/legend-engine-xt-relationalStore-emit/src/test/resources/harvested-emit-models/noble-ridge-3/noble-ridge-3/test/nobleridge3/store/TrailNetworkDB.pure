@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::nobleridge3::store::TrailNetworkDB
+(
+  Schema terrain
+  (
+    Table trail_segment
+    (
+      segment_code VARCHAR(24) PRIMARY KEY,
+      head_code VARCHAR(24) NOT NULL,
+      surface_code VARCHAR(24) NOT NULL,
+      difficulty_code VARCHAR(16) NOT NULL,
+      length_metres INTEGER NOT NULL
+    )
+    Table trail_head
+    (
+      head_code VARCHAR(24) PRIMARY KEY,
+      head_name VARCHAR(60) NOT NULL,
+      region_code VARCHAR(24) NOT NULL,
+      access_state VARCHAR(16) NOT NULL
+    )
+    Table region
+    (
+      region_code VARCHAR(24) PRIMARY KEY,
+      region_name VARCHAR(60) NOT NULL,
+      region_state VARCHAR(16) NOT NULL
+    )
+    Table steward_crew
+    (
+      steward_code VARCHAR(24) PRIMARY KEY,
+      crew_name VARCHAR(60) NOT NULL,
+      region_code VARCHAR(24) NOT NULL,
+      crew_state VARCHAR(16) NOT NULL
+    )
+  )
+
+  Join Segment_Head
+  (
+    terrain.trail_segment.head_code = terrain.trail_head.head_code
+      and terrain.trail_head.access_state = 'ACCESS-OPEN'
+  )
+
+  Join Head_Region
+  (
+    terrain.trail_head.region_code = terrain.region.region_code
+      and terrain.region.region_state = 'REGION-ACTIVE'
+  )
+
+  Join Region_Steward
+  (
+    terrain.region.region_code = terrain.steward_crew.region_code
+      and terrain.steward_crew.crew_state = 'CREW-ON-ROSTER'
+  )
+)

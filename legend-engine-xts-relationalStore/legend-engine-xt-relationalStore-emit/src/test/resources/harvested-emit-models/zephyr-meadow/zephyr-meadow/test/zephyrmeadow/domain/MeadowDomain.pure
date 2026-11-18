@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::zephyrmeadow::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'How serious a habitat finding is judged to be; the widest band is qualified rather than renamed.'} test::zephyrmeadow::domain::SeverityBand
+{
+  MINOR,
+  MODERATE,
+  SEVERE,
+  'VERY SEVERE'
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where a habitat finding sits in the restoration review lifecycle; two members are terminal.'} test::zephyrmeadow::domain::FindingStatus
+{
+  OPEN,
+  'IN REVIEW',
+  'CLOSED OUT',
+  WITHDRAWN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How much intervention the restoration partnership is willing to resource in the coming season.'} test::zephyrmeadow::domain::InterventionAppetite
+{
+  'LOW APPETITE',
+  'MEDIUM APPETITE',
+  'HIGH APPETITE'
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The management regime a meadow is held under.'} test::zephyrmeadow::domain::ManagementRegime
+{
+  GRAZED,
+  'CUT MEADOW',
+  UNMANAGED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Progress of the survey visit workflow.'} test::zephyrmeadow::domain::WorkflowStage
+{
+  PLANNED,
+  'IN PROGRESS',
+  COMPLETE
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A meadow under restoration management, versioned by the load that recorded it.'} test::zephyrmeadow::domain::RestorationSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  regime: ManagementRegime[0..1];
+  regionName: String[0..1];
+  stewardTeamName: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A field visit made to a restoration meadow.'} test::zephyrmeadow::domain::SurveyVisit
+{
+  visitCode: String[1];
+  visitedOn: StrictDate[0..1];
+  stage: WorkflowStage[0..1];
+  siteLabel: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An observation raised during a survey visit, classified by severity, lifecycle status and intervention appetite.'} test::zephyrmeadow::domain::HabitatFinding
+{
+  findingCode: String[1];
+  findingSummary: String[0..1];
+  displayLabel: String[0..1];
+  severity: SeverityBand[0..1];
+  status: FindingStatus[0..1];
+  appetite: InterventionAppetite[0..1];
+  stewardTeamName: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'The escalated view of the same observation relation, narrowed to live findings in the two most serious bands.'} test::zephyrmeadow::domain::EscalatedFinding
+{
+  findingCode: String[1];
+  severity: SeverityBand[0..1];
+  escalationNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A landscape region grouping restoration meadows; reference data that is not versioned.'} test::zephyrmeadow::domain::MeadowRegion
+{
+  regionCode: String[1];
+  regionName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The volunteer team stewarding the meadows of a region.'} test::zephyrmeadow::domain::StewardTeam
+{
+  stewardCode: String[1];
+  teamName: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a restoration meadow to the visits made to it.'} test::zephyrmeadow::domain::Site_Visit
+{
+  visits: SurveyVisit[*];
+  site: RestorationSite[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a survey visit to the findings it recorded.'} test::zephyrmeadow::domain::Visit_Finding
+{
+  findings: HabitatFinding[*];
+  recordedVisit: SurveyVisit[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a survey visit to the findings it was asked to re-check, a second and distinct role between the same pair of classes.'} test::zephyrmeadow::domain::Visit_ReviewFinding
+{
+  reviewedFindings: HabitatFinding[*];
+  reviewVisit: SurveyVisit[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a landscape region to the restoration meadows within it.'} test::zephyrmeadow::domain::Region_Site
+{
+  sites: RestorationSite[*];
+  region: MeadowRegion[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a landscape region to the volunteer team stewarding it.'} test::zephyrmeadow::domain::Region_Steward
+{
+  stewardTeam: StewardTeam[0..1];
+  regions: MeadowRegion[*];
+}

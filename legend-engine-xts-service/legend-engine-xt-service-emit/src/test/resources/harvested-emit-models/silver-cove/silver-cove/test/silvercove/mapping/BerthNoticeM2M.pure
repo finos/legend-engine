@@ -1,0 +1,222 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::silvercove::mapping::BerthNoticeM2M
+(
+  *demo::silvercove::notice::BerthNoticeEnvelope[berthNoticeEnvelope]: Pure
+  {
+    ~src demo::silvercove::notice::BerthNoticeSubmission
+    notice[berthNotice]: $src
+  }
+
+  demo::silvercove::notice::BerthNotice[berthNotice]: Pure
+  {
+    ~src demo::silvercove::notice::BerthNoticeSubmission
+    ~filter $src.identifier.idType->toOne()->toString() == 'BERTH-NOTICE' && $src.identifier.idSystem->toOne()->toString() == 'COVE-OFFICE' && (($src.movement->toOne() == demo::silvercove::notice::BerthMovementKind.ARRIVAL) || ($src.movement->toOne() == demo::silvercove::notice::BerthMovementKind.SHIFT)) && $src.harbourCode->toOne()->toString() == 'HB-COVE' && $src.berthCode->toOne()->toString() != 'BC-CLOSED' && $src.noticeRef->isNotEmpty()
+    noticeRef: $src.noticeRef->toOne(),
+    noticeNumber: $src.identifier.idValue->toOne()->substring(3)->parseInteger(),
+    movementLabel: $src.movement->toOne()->toString(),
+    harbourLabel: $src.harbourCode->toOne()->toString()->toLower(),
+    berthTag: $src.berthCode->toOne()->trim()->toUpper() + '/' + $src.identifier.idValue->toOne()->substring(0, 2),
+    draughtLabel: $src.draughtDecimetres->map(d|$d->toString() + ' dm')
+  }
+
+  testSuites:
+  [
+    berthNoticeSuite:
+    {
+      function: |demo::silvercove::notice::BerthNoticeEnvelope.all()->graphFetch(
+        #{
+          demo::silvercove::notice::BerthNoticeEnvelope{
+            notice{
+              noticeRef,
+              noticeNumber,
+              movementLabel,
+              harbourLabel,
+              berthTag,
+              draughtLabel
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::silvercove::notice::BerthNoticeEnvelope{
+            notice{
+              noticeRef,
+              noticeNumber,
+              movementLabel,
+              harbourLabel,
+              berthTag,
+              draughtLabel
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        admittedArrivalNotice:
+        {
+          doc: 'An arrival notice that passes every conjunct of the source filter, so the notice number is parsed out of the nested identifier value, the movement and harbour are rendered as strings after taking one, and the draught label is composed from the optional draught.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::notice::BerthNoticeSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"noticeRef":"BN-REF-01","identifier":{"idType":"BERTH-NOTICE","idSystem":"COVE-OFFICE","idValue":"BN-0042"},"movement":"ARRIVAL","harbourCode":"HB-COVE","berthCode":" bc-07 ","draughtDecimetres":31}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedNotice:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"notice":{"noticeRef":"BN-REF-01","noticeNumber":42,"movementLabel":"ARRIVAL","harbourLabel":"hb-cove","berthTag":"BC-07/BN","draughtLabel":"31 dm"}}';
+                  }#;
+              }#
+          ];
+        },
+        admittedShiftNoticeWithoutDraught:
+        {
+          doc: 'A shift notice admitted by the second arm of the movement disjunction and carrying no draught, so the optional draught label serialises as an explicit null.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::notice::BerthNoticeSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"noticeRef":"BN-REF-02","identifier":{"idType":"BERTH-NOTICE","idSystem":"COVE-OFFICE","idValue":"BN-0108"},"movement":"SHIFT","harbourCode":"HB-COVE","berthCode":"bc-02"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedNotice:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"notice":{"noticeRef":"BN-REF-02","noticeNumber":108,"movementLabel":"SHIFT","harbourLabel":"hb-cove","berthTag":"BC-02/BN","draughtLabel":null}}';
+                  }#;
+              }#
+          ];
+        },
+        departureNoticeRejectedByMovement:
+        {
+          doc: 'A departure notice whose identifier passes but whose movement matches neither arm of the disjunction, so the envelope arrives with no notice inside.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::notice::BerthNoticeSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"noticeRef":"BN-REF-03","identifier":{"idType":"BERTH-NOTICE","idSystem":"COVE-OFFICE","idValue":"BN-0055"},"movement":"DEPARTURE","harbourCode":"HB-COVE","berthCode":"BC-04","draughtDecimetres":22}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedNotice:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"notice":null}';
+                  }#;
+              }#
+          ];
+        },
+        noticeFromAnotherIssuingSystemRejected:
+        {
+          doc: 'An arrival notice whose nested identifier was issued by another system, so the string-coerced system equality rejects it and the envelope arrives empty.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::notice::BerthNoticeSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"noticeRef":"BN-REF-04","identifier":{"idType":"BERTH-NOTICE","idSystem":"PIER-OFFICE","idValue":"BN-0071"},"movement":"ARRIVAL","harbourCode":"HB-COVE","berthCode":"BC-05","draughtDecimetres":18}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedNotice:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"notice":null}';
+                  }#;
+              }#
+          ];
+        },
+        noticeAtAClosedBerthRejected:
+        {
+          doc: 'An arrival notice addressed to the closed berth, so the berth inequality conjunct rejects it and the envelope arrives empty.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::notice::BerthNoticeSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"noticeRef":"BN-REF-05","identifier":{"idType":"BERTH-NOTICE","idSystem":"COVE-OFFICE","idValue":"BN-0090"},"movement":"ARRIVAL","harbourCode":"HB-COVE","berthCode":"BC-CLOSED","draughtDecimetres":27}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedNotice:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"notice":null}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

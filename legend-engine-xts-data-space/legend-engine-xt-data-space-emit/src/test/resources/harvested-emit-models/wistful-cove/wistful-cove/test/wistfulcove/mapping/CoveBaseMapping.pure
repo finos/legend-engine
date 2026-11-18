@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulcove::mapping::CoveBaseMapping
+(
+  *test::wistfulcove::domain::CoveSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulcove::store::CoveDB]cove.cove_site.site_id
+    )
+    ~mainTable [test::wistfulcove::store::CoveDB]cove.cove_site
+    coveCode: [test::wistfulcove::store::CoveDB]cove.cove_site.cove_code,
+    coveName: [test::wistfulcove::store::CoveDB]cove.cove_site.cove_name,
+    shoreCode: [test::wistfulcove::store::CoveDB]cove.cove_site.shore_code
+  }
+
+  *test::wistfulcove::domain::ShoreZone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulcove::store::CoveDB]cove.shore_zone.zone_id
+    )
+    ~mainTable [test::wistfulcove::store::CoveDB]cove.shore_zone
+    shoreCode: [test::wistfulcove::store::CoveDB]cove.shore_zone.shore_code,
+    zoneName: [test::wistfulcove::store::CoveDB]cove.shore_zone.zone_name
+  }
+
+  *test::wistfulcove::domain::GradeBand[band]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulcove::store::ReferenceDB]reference.grade_band.band_id
+    )
+    ~mainTable [test::wistfulcove::store::ReferenceDB]reference.grade_band
+    gradeCode: [test::wistfulcove::store::ReferenceDB]reference.grade_band.grade_code,
+    bandName: [test::wistfulcove::store::ReferenceDB]reference.grade_band.band_name
+  }
+
+  *test::wistfulcove::domain::PatrolLog[patrol]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulcove::store::PatrolDB]patrol.patrol_log.log_id
+    )
+    ~mainTable [test::wistfulcove::store::PatrolDB]patrol.patrol_log
+    shoreCode: [test::wistfulcove::store::PatrolDB]patrol.patrol_log.shore_code,
+    patrolCode: [test::wistfulcove::store::PatrolDB]patrol.patrol_log.patrol_code,
+    sweepCount: [test::wistfulcove::store::PatrolDB]patrol.patrol_log.sweep_count
+  }
+
+  test::wistfulcove::domain::Site_Shore: Relational
+  {
+    AssociationMapping
+    (
+      shore[site, zone]: [test::wistfulcove::store::CoveDB]@Site_Shore_J,
+      sitesOnShore[zone, site]: [test::wistfulcove::store::CoveDB]@Site_Shore_J
+    )
+  }
+)

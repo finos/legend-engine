@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::crimsonotter3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A monitored river reach gathering the bankside holts of one catchment.'} demo::crimsonotter3::domain::RiverReach
+{
+  reachCode: String[1];
+  reachName: String[1];
+  catchmentCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bankside otter holt whose catchment is reached through the river reach it sits on.'} demo::crimsonotter3::domain::OtterHolt
+{
+  holtCode: String[1];
+  holtName: String[1];
+  gradeCode: String[1];
+  bankSide: String[1];
+  lastVisitedOn: StrictDate[1];
+  spraintCount: Integer[1];
+  catchmentCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One recorded field visit to a holt, carrying the outcome the surveyor logged.'} demo::crimsonotter3::domain::HoltVisit
+{
+  visitCode: String[1];
+  visitedOn: StrictDate[1];
+  outcomeCode: String[1];
+  observerName: String[1];
+  minutesSpent: Integer[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a holt to the field visits recorded on it, supplying the collection a survey predicate folds over.'} demo::crimsonotter3::domain::Holt_Visits
+{
+  holt: OtterHolt[0..1];
+  visits: HoltVisit[*];
+}

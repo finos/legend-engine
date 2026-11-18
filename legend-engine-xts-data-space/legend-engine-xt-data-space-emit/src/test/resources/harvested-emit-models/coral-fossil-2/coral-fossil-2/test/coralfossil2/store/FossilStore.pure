@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralfossil2::store::FossilDb
+(
+  Schema fossil
+  (
+    Table dig_site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      survey_date DATE PRIMARY KEY,
+      site_name VARCHAR(80),
+      stratum_label VARCHAR(40),
+      depth_m DOUBLE,
+      recorded_at TIMESTAMP
+    )
+    Table specimen
+    (
+      specimen_ref VARCHAR(16) PRIMARY KEY,
+      survey_date DATE PRIMARY KEY,
+      site_code VARCHAR(16),
+      taxon_name VARCHAR(80),
+      length_mm DOUBLE,
+      collector_name VARCHAR(80),
+      cataloged_at TIMESTAMP
+    )
+    Table coral_colony
+    (
+      colony_ref VARCHAR(16) PRIMARY KEY,
+      survey_date DATE PRIMARY KEY,
+      recorded_at TIMESTAMP PRIMARY KEY,
+      growth_form VARCHAR(40),
+      diameter_mm DOUBLE
+    )
+    Table field_collector
+    (
+      collector_code VARCHAR(16) PRIMARY KEY,
+      survey_date DATE PRIMARY KEY,
+      collector_name VARCHAR(80),
+      affiliation VARCHAR(80)
+    )
+  )
+
+  Join SpecimenDigSite(fossil.specimen.site_code = fossil.dig_site.site_code and fossil.specimen.survey_date = fossil.dig_site.survey_date)
+)

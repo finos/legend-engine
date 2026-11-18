@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::goldenarboretum3::connection::NurseryRegisterConnection
+{
+  store: test::goldenarboretum3::store::NurseryDb;
+  type: Snowflake;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'NURSERY_REGISTER';
+    account: 'nursery_register_account';
+    warehouse: 'NURSERY_QUERY_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'nursery_org';
+    role: 'NURSERY_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'nursery_register_oauth_key';
+    scopeName: 'SESSION:ROLE:NURSERY_READER';
+  };
+}
+
+
+###Connection
+RelationalDatabaseConnection test::goldenarboretum3::connection::NurseryReferenceConnection
+{
+  store: test::goldenarboretum3::store::NurseryReferenceDb;
+  type: Snowflake;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'NURSERY_REFERENCE';
+    account: 'nursery_reference_account';
+    warehouse: 'REFERENCE_QUERY_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'nursery_org';
+    role: 'REFERENCE_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'nursery_reference_oauth_key';
+    scopeName: 'SESSION:ROLE:REFERENCE_READER';
+  };
+}

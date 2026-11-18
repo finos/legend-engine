@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ambermarsh2::service::ErosionPinExposureBoard
+{
+  pattern: '/ambermarsh2/v1/erosionpin/{asOf}';
+  ownership: UserList { users: ['moorland-monitoring-desk'] };
+  documentation: 'Reads the erosion pin register over the two survey seasons preceding a caller-supplied instant, drops the readings whose exposure is below the reporting floor, and returns the exposure both as recorded and rescaled per season together with the reading age in days.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::ambermarsh2::domain::ErosionPinReading.all()->filter(
+      r|($r.exposedMm > 5) &&
+        ($r.readOn >= $asOf->adjust(-2, DurationUnit.YEARS)) &&
+        ($r.readOn <= $asOf)
+    )->project(
+      [
+        r|$r.readingCode->toUpper(),
+        r|$r.pinRef->trim()->toUpper(),
+        r|$r.exposedMm,
+        r|($r.exposedMm * 12) / (dateDiff($r.readOn, $asOf, DurationUnit.MONTHS) + 1),
+        r|dateDiff($r.readOn, $asOf, DurationUnit.DAYS)
+      ],
+      [
+        'Reading',
+        'Pin',
+        'ExposedMm',
+        'ExposedMmPerYear',
+        'ReadingAgeDays'
+      ]
+    )->sort(
+      [
+        desc('ExposedMmPerYear'),
+        asc('Pin')
+      ]
+    )};
+    mapping: test::ambermarsh2::mapping::MoorlandMapping;
+    runtime: test::ambermarsh2::runtime::MoorlandCoreRuntime;
+  }
+}

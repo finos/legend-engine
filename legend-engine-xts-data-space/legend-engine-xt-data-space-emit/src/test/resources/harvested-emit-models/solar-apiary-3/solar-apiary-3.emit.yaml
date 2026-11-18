@@ -1,0 +1,50 @@
+name: solar-apiary-3
+title: "Solar Apiary - a profiled pollinator transect binding surfaced through a two-tier data space"
+description: |
+  A pollinator meadow survey. Transect counts are bound to a single aliased
+  table through an explicit primary key, banded by bloom cover inside the
+  service projection, and surfaced through a data space that pairs an
+  in-process survey tier with a vault-authenticated warehouse tier. The
+  warehouse-tier service is compiled and plan-generated only, while the survey
+  tier carries the asserted fixture.
+modelSources:
+  model:
+    root: solar-apiary-3
+    files:
+      - test/solarapiary3/connection/MeadowConnections.pure
+      - test/solarapiary3/dataspace/MeadowDataSpace.pure
+      - test/solarapiary3/domain/MeadowDomain.pure
+      - test/solarapiary3/mapping/MeadowMapping.pure
+      - test/solarapiary3/profile/MeadowProfile.pure
+      - test/solarapiary3/runtime/MeadowRuntimes.pure
+      - test/solarapiary3/service/MeadowServices.pure
+      - test/solarapiary3/store/MeadowDb.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - ecology-survey
+  - h2
+  - plan-generation
+  - profile
+  - relational
+  - service-test
+  - snowflake

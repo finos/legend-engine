@@ -1,0 +1,40 @@
+name: opal-willow-2
+title: "Opal Willow 2 — Conservation Bindery Register Published As A Domain Contract Of Fifteen Classes, Seven Chained Associations, One Diagram And One Prose Element"
+description: |
+  A book-conservation bindery register published as a domain contract only. Fifteen classes
+  carry tens of typed properties - required scalars, optional scalars and to-many label
+  collections - and seven bidirectional associations wire them together through shared end
+  classes rather than through direct property references. Four of the associations chain:
+  a workshop reaches its benches, a bench the conservators standing at it, a conservator the
+  treatment rounds it leads, a round the volume it was booked against and the condition
+  reports written on it, so navigation crosses five hops and resolves from either end. A
+  second chain runs from a volume to its text blocks and from a text block to its folded
+  gatherings, meeting the first chain at the volume end. The remaining classes - cover
+  boards, endpapers, material lots, hand tools, finishing presses, storage boxes and
+  exhibition tours - hang off the graph by reference code. One diagram view lays twelve of
+  the classes out with the seven association edges between them, and one markdown text
+  element documents the register and what it deliberately leaves out. No store, mapping or
+  runtime is declared, so the EMIT run exercises parse, compile and generation of a single
+  class graph, its diagram and its prose.
+modelSources:
+  model:
+    root: opal-willow-2
+    files:
+      - test/opalwillow2/diagram/BinderyDiagram.pure
+      - test/opalwillow2/domain/BinderyDomain.pure
+      - test/opalwillow2/text/BinderyNotes.pure
+features:
+  - grammar:association
+  - grammar:diagram
+  - grammar:nested-association
+  - grammar:text-element
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bindery
+  - book-conservation
+  - diagram
+  - domain-contract
+  - nested-association
+  - text-element

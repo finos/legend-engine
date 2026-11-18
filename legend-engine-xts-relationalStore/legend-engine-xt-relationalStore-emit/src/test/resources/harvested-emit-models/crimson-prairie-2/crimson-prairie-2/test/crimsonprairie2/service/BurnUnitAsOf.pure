@@ -1,0 +1,162 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::crimsonprairie2::service::BurnUnitAsOf
+{
+  pattern: '/crimsonprairie2/burnUnitAsOf/{processingDate}/{businessDate}';
+  title: 'Crimson Prairie - Burn Unit As Of';
+  owners:
+  [
+    'prairie-range-office'
+  ];
+  documentation: 'Resolves the burn unit extent at one instant on both temporal dimensions, restricts it with a conjunction of two literal equality tests applied to columns produced by conditional mapping transforms, projects twelve aliased columns and collapses the duplicate rows produced by the one-to-many marker join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|demo::crimsonprairie2::domain::BurnUnit.all($processingDate, $businessDate)->filter(
+      u|(($u.breakFlag == 'BREAK') && ($u.moistureNote == 'READ')) && ($u.unitName->length() > 3)
+    )->project(
+      [
+        u|$u.unitCode,
+        u|$u.unitName,
+        u|$u.coverBand,
+        u|$u.moistureIndex,
+        u|$u.moistureNote,
+        u|$u.breakFlag,
+        u|$u.gradeFlag,
+        u|$u.tierFlag,
+        u|$u.seedFlag,
+        u|$u.grazeFlag,
+        u|$u.markerLabel,
+        u|$u.regionName
+      ],
+      [
+        'Unit',
+        'Name',
+        'Cover',
+        'Moisture',
+        'MoistureNote',
+        'Break',
+        'Grade',
+        'Tier',
+        'Seed',
+        'Graze',
+        'Marker',
+        'Region'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Unit')
+      ]
+    )};
+    mapping: demo::crimsonprairie2::mapping::PrairieMapping;
+    runtime: demo::crimsonprairie2::runtime::PrairieFieldRuntime;
+  }
+  testSuites:
+  [
+    burnUnitAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieField:
+            Relational
+            #{
+              range_survey.burn_unit:
+                'unit_id,unit_code,unit_name,cover_code,moisture_pct,break_flag,in_z,out_z,from_z,thru_z\n'+
+                '1,BU-1, north swale ,tall,12.4,B,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,BU-2, south swale ,mixed,,O,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,BU-3, east ridge ,short,40.0,B,2026-01-01,9999-12-31,2026-03-01,9999-12-31\n'+
+                '4,BU-4, west ridge ,tall,7.2,O,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '5,BU-5, retired flat ,mixed,3.0,B,2026-01-01,9999-12-31,2026-01-01,2026-01-15\n'+
+                '6,BU-6, fallow flat ,short,,B,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              range_survey.unit_marker:
+                'unit_id,marker_id,marker_status\n'+
+                '1,7,ACTIVE\n'+
+                '1,8,ACTIVE\n'+
+                '2,9,ACTIVE\n'+
+                '3,11,ACTIVE\n'+
+                '4,13,ACTIVE\n'+
+                '5,7,ACTIVE\n'+
+                '6,9,ACTIVE\n';
+              range_survey.marker_ref:
+                'marker_id,marker_code,marker_label,active_flag\n'+
+                '7,7,Grade Marker,Y\n'+
+                '8,7,Grade Marker,Y\n'+
+                '9,9,Tier Marker,Y\n'+
+                '11,11,Seed Marker,Y\n'+
+                '13,13,Graze Marker,Y\n';
+              range_tree.unit_node:
+                'unit_id,parent_code,region_name\n'+
+                '1,PC-1,North Range\n'+
+                '2,PC-2,South Range\n'+
+                '3,PC-3,East Range\n'+
+                '4,PC-4,West Range\n'+
+                '5,PC-5,Retired Range\n'+
+                '6,PC-6,Fallow Range\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        laterInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-05-01,
+            businessDate = %2026-05-01
+          ]
+          asserts:
+          [
+            twoEffectiveUnits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Unit":"BU-1","Name":"NORTH SWALE","Cover":"TALLGRASS","Moisture":13,"MoistureNote":"READ","Break":"BREAK","Grade":"Y","Tier":"N","Seed":"N","Graze":"N","Marker":"Grade Marker","Region":"North Range"},{"Unit":"BU-3","Name":"EAST RIDGE","Cover":"SHORTGRASS","Moisture":40,"MoistureNote":"READ","Break":"BREAK","Grade":"N","Tier":"N","Seed":"Y","Graze":"N","Marker":"Seed Marker","Region":"East Range"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-01,
+            businessDate = %2026-02-01
+          ]
+          asserts:
+          [
+            oneEffectiveUnit:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Unit":"BU-1","Name":"NORTH SWALE","Cover":"TALLGRASS","Moisture":13,"MoistureNote":"READ","Break":"BREAK","Grade":"Y","Tier":"N","Seed":"N","Graze":"N","Marker":"Grade Marker","Region":"North Range"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

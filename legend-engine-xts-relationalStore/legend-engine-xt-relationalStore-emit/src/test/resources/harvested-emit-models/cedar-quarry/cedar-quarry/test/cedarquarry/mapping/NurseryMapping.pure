@@ -1,0 +1,446 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarquarry::mapping::NurseryMapping
+(
+  include mapping test::cedarquarry::mapping::NurseryBaseMapping
+
+  *test::cedarquarry::domain::SeedlingLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.lot_code
+    )
+    ~mainTable [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot
+    lotCode: [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.lot_code,
+    speciesCode: [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.species_code,
+    heightCm: [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.height_cm,
+    moisturePct: [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.moisture_pct,
+    leafCount: [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.leaf_count,
+    vigour: EnumerationMapping VigourSource: [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.grade_code,
+    screenedVigour: EnumerationMapping VigourSource: substring(
+                      toUpper(trim([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.grade_code)),
+                      0,
+                      1
+                    ),
+    waterClass: EnumerationMapping WaterSource: case(
+                  lessThan([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.moisture_pct, 20),
+                  'F',
+                  case(
+                    lessThan([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.moisture_pct, 45),
+                    'M',
+                    'R'
+                  )
+                ),
+    hardiness: EnumerationMapping TierSource: case(
+                 greaterThanEqual([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.height_cm, 200),
+                 'T1',
+                 case(
+                   greaterThanEqual([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.height_cm, 100),
+                   'T2',
+                   'T3'
+                 )
+               ),
+    heightBand: case(
+                  isNull([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.height_cm),
+                  'UNMEASURED',
+                  case(
+                    greaterThan([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.height_cm, 200),
+                    'TALL',
+                    case(
+                      greaterThan([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.height_cm, 120),
+                      'MEDIUM',
+                      case(
+                        greaterThan([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.height_cm, 60),
+                        'SHORT',
+                        'SEEDLING'
+                      )
+                    )
+                  )
+                ),
+    careNote: case(
+                lessThan([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.moisture_pct, 20),
+                concat('WATER-', toUpper(trim([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.species_code))),
+                case(
+                  lessThan([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.leaf_count, 3),
+                  'PRUNE',
+                  sqlNull()
+                )
+              ),
+    labelText: concat(
+                 concat(
+                   toUpper(trim([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.species_code)),
+                   '-'
+                 ),
+                 [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.lot_code
+               ),
+    dispatchLabel: case(
+                     equal([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.grade_code, 'A'),
+                     concat(
+                       concat(
+                         toUpper(
+                           trim(
+                             substring(
+                               coalesce([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.species_code, 'NA'),
+                               0,
+                               6
+                             )
+                           )
+                         ),
+                         '-'
+                       ),
+                       concat(
+                         [test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.lot_code,
+                         '-PRIME'
+                       )
+                     ),
+                     case(
+                       equal([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.grade_code, 'B'),
+                       concat(
+                         toUpper(
+                           substring(
+                             trim([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.species_code),
+                             0,
+                             3
+                           )
+                         ),
+                         '-STD'
+                       ),
+                       case(
+                         isNull([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.grade_code),
+                         'UNGRADED',
+                         toString(
+                           length(
+                             trim(
+                               substring(
+                                 coalesce(
+                                   toUpper([test::cedarquarry::store::NurseryDatabase]nursery.seedling_lot.species_code),
+                                   'NA'
+                                 ),
+                                 0,
+                                 6
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   ),
+    speciesName: [test::cedarquarry::store::NurseryDatabase]@Lot_Species | [test::cedarquarry::store::NurseryDatabase]nursery.species.species_name,
+    speciesLabel: [test::cedarquarry::store::NurseryDatabase]@Lot_Label | [test::cedarquarry::store::NurseryDatabase]nursery.lot_label_vw.species_label,
+    greenhouseName: [test::cedarquarry::store::NurseryDatabase]@Lot_Bed > @Bed_Greenhouse | [test::cedarquarry::store::NurseryDatabase]estate.greenhouse.greenhouse_name,
+    zoneName: [test::cedarquarry::store::NurseryDatabase]@Lot_Bed > @Bed_Greenhouse > @Greenhouse_Zone | [test::cedarquarry::store::NurseryDatabase]estate.zone.zone_name,
+    bedLotCount: [test::cedarquarry::store::NurseryDatabase]@Lot_Yield | [test::cedarquarry::store::NurseryDatabase]nursery.bed_yield_vw.lot_count,
+    stewardship
+    (
+      propagatorName: [test::cedarquarry::store::NurseryDatabase]@Lot_Bed > @Bed_Propagator | [test::cedarquarry::store::NurseryDatabase]estate.propagator.propagator_name,
+      greenhouseName: [test::cedarquarry::store::NurseryDatabase]@Lot_Bed > @Bed_Greenhouse | [test::cedarquarry::store::NurseryDatabase]estate.greenhouse.greenhouse_name
+    )
+  }
+
+  test::cedarquarry::domain::Bed_Lots: Relational
+  {
+    AssociationMapping
+    (
+      lots[bed, lot]: [test::cedarquarry::store::NurseryDatabase]@Lot_Bed,
+      bed[lot, bed]: [test::cedarquarry::store::NurseryDatabase]@Lot_Bed
+    )
+  }
+
+  testSuites:
+  [
+    lotDerivationSuite:
+    {
+      function: |test::cedarquarry::domain::SeedlingLot.all()->project(
+  [
+    l|$l.lotCode,
+    l|$l.vigour,
+    l|$l.screenedVigour,
+    l|$l.waterClass,
+    l|$l.hardiness,
+    l|$l.heightBand,
+    l|$l.careNote,
+    l|$l.labelText,
+    l|$l.dispatchLabel,
+    l|$l.speciesName,
+    l|$l.speciesLabel,
+    l|$l.greenhouseName,
+    l|$l.zoneName,
+    l|$l.bedLotCount,
+    l|$l.stewardship.propagatorName
+  ],
+  [
+    'LotCode',
+    'Vigour',
+    'ScreenedVigour',
+    'WaterClass',
+    'Hardiness',
+    'HeightBand',
+    'CareNote',
+    'LabelText',
+    'DispatchLabel',
+    'SpeciesName',
+    'SpeciesLabel',
+    'GreenhouseName',
+    'ZoneName',
+    'BedLotCount',
+    'Propagator'
+  ]
+)->sort(
+  [
+    asc('LotCode')
+  ]
+);
+      tests:
+      [
+        everyDerivationArm:
+        {
+          doc: 'Eleven lots cover the composite enumeration source values, every height-band and care-note arm including the null-sentinel fallback, the unmapped grade source value that yields no enumeration member, the ungraded dispatch arm, the three enumeration mappings over computed expressions, the three-hop join onto the propagation zone, the grouped-view lot count and the embedded stewardship stamp.';
+          data:
+          [
+            test::cedarquarry::store::NurseryDatabase:
+              Relational
+              #{
+                nursery.seedling_lot:
+                  'lot_code,bed_code,species_code,grade_code,height_cm,moisture_pct,leaf_count,seedling_count\n'+
+                  'L01,BD-1,OAK,A,250,15,9,100\n'+
+                  'L02,BD-1,PINE,B,150,30,2,60\n'+
+                  'L03,BD-1,BIRCH,C,80,50,8,40\n'+
+                  'L04,BD-2,OAK,A/PRIME,30,60,5,20\n'+
+                  'L05,BD-2,ELM,B/STD,,10,4,15\n'+
+                  'L06,BD-2,ASH,Z,210,44,1,25\n'+
+                  'L07,BD-3,OAK,,120,46,6,10\n'+
+                  'L08,BD-1,WILLOW,A,61,19,3,12\n'+
+                  'L09,BD-2,ROWAN,B,200,45,0,18\n'+
+                  'L10,BD-3,HAZEL,C,300,80,12,55\n'+
+                  'L11,BD-1,MAPLE,C/CULL,100,100,7,33\n';
+                nursery.bed:
+                  'bed_code,bed_name,greenhouse_code,propagator_code,aspect,capacity,active_flag\n'+
+                  'BD-1,North Bed,GH-1,PR-1,NORTH,20,Y\n'+
+                  'BD-2,South Bed,GH-2,PR-2,SOUTH,30,Y\n'+
+                  'BD-3,Cold Bed,GH-1,PR-1,EAST,5,N\n';
+                nursery.species:
+                  'species_code,species_name,leaf_habit,retired_flag\n'+
+                  'OAK,Oak,DECIDUOUS,N\n'+
+                  'PINE,Pine,EVERGREEN,N\n'+
+                  'BIRCH,Birch,DECIDUOUS,N\n'+
+                  'ELM,Elm,DECIDUOUS,Y\n'+
+                  'ASH,Ash,DECIDUOUS,N\n'+
+                  'WILLOW,Willow,DECIDUOUS,N\n'+
+                  'ROWAN,Rowan,DECIDUOUS,N\n'+
+                  'HAZEL,Hazel,DECIDUOUS,N\n'+
+                  'MAPLE,Maple,DECIDUOUS,N\n';
+                estate.greenhouse:
+                  'greenhouse_code,greenhouse_name,zone_code,bench_slots\n'+
+                  'GH-1,Fern House,ZN-1,40\n'+
+                  'GH-2,Cedar House,ZN-2,\n';
+                estate.zone:
+                  'zone_code,zone_name,climate_band\n'+
+                  'ZN-1,North Zone,TEMPERATE\n'+
+                  'ZN-2,South Zone,WARM\n';
+                estate.propagator:
+                  'propagator_code,propagator_name,shift_code\n'+
+                  'PR-1,North Crew,EARLY\n'+
+                  'PR-2,South Crew,LATE\n';
+              }#
+          ];
+          asserts:
+          [
+            elevenDerivedLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotCode":"L01","Vigour":"PREMIUM","ScreenedVigour":"PREMIUM","WaterClass":"FREQUENT","Hardiness":"TIER_ONE","HeightBand":"TALL","CareNote":"WATER-OAK","LabelText":"OAK-L01","DispatchLabel":"OAK-L01-PRIME","SpeciesName":"Oak","SpeciesLabel":"SPECIES-OAK","GreenhouseName":"Fern House","ZoneName":"North Zone","BedLotCount":5,"Propagator":"North Crew"},{"LotCode":"L02","Vigour":"STANDARD","ScreenedVigour":"STANDARD","WaterClass":"MODERATE","Hardiness":"TIER_TWO","HeightBand":"MEDIUM","CareNote":"PRUNE","LabelText":"PINE-L02","DispatchLabel":"PIN-STD","SpeciesName":"Pine","SpeciesLabel":"SPECIES-PINE","GreenhouseName":"Fern House","ZoneName":"North Zone","BedLotCount":5,"Propagator":"North Crew"},{"LotCode":"L03","Vigour":"CULL","ScreenedVigour":"CULL","WaterClass":"SPARSE","Hardiness":"TIER_THREE","HeightBand":"SHORT","CareNote":null,"LabelText":"BIRCH-L03","DispatchLabel":"5","SpeciesName":"Birch","SpeciesLabel":"SPECIES-BIRCH","GreenhouseName":"Fern House","ZoneName":"North Zone","BedLotCount":5,"Propagator":"North Crew"},{"LotCode":"L04","Vigour":"PREMIUM","ScreenedVigour":"PREMIUM","WaterClass":"SPARSE","Hardiness":"TIER_THREE","HeightBand":"SEEDLING","CareNote":null,"LabelText":"OAK-L04","DispatchLabel":"3","SpeciesName":"Oak","SpeciesLabel":"SPECIES-OAK","GreenhouseName":"Cedar House","ZoneName":"South Zone","BedLotCount":4,"Propagator":"South Crew"},{"LotCode":"L05","Vigour":"STANDARD","ScreenedVigour":"STANDARD","WaterClass":"FREQUENT","Hardiness":"TIER_THREE","HeightBand":"UNMEASURED","CareNote":"WATER-ELM","LabelText":"ELM-L05","DispatchLabel":"3","SpeciesName":"Elm","SpeciesLabel":"SPECIES-ELM","GreenhouseName":"Cedar House","ZoneName":"South Zone","BedLotCount":4,"Propagator":"South Crew"},{"LotCode":"L06","Vigour":null,"ScreenedVigour":null,"WaterClass":"MODERATE","Hardiness":"TIER_ONE","HeightBand":"TALL","CareNote":"PRUNE","LabelText":"ASH-L06","DispatchLabel":"3","SpeciesName":"Ash","SpeciesLabel":"SPECIES-ASH","GreenhouseName":"Cedar House","ZoneName":"South Zone","BedLotCount":4,"Propagator":"South Crew"},{"LotCode":"L07","Vigour":null,"ScreenedVigour":null,"WaterClass":"SPARSE","Hardiness":"TIER_TWO","HeightBand":"SHORT","CareNote":null,"LabelText":"OAK-L07","DispatchLabel":"UNGRADED","SpeciesName":"Oak","SpeciesLabel":"SPECIES-OAK","GreenhouseName":"Fern House","ZoneName":"North Zone","BedLotCount":2,"Propagator":"North Crew"},{"LotCode":"L08","Vigour":"PREMIUM","ScreenedVigour":"PREMIUM","WaterClass":"FREQUENT","Hardiness":"TIER_THREE","HeightBand":"SHORT","CareNote":"WATER-WILLOW","LabelText":"WILLOW-L08","DispatchLabel":"WILLOW-L08-PRIME","SpeciesName":"Willow","SpeciesLabel":"SPECIES-WILLOW","GreenhouseName":"Fern House","ZoneName":"North Zone","BedLotCount":5,"Propagator":"North Crew"},{"LotCode":"L09","Vigour":"STANDARD","ScreenedVigour":"STANDARD","WaterClass":"SPARSE","Hardiness":"TIER_ONE","HeightBand":"MEDIUM","CareNote":"PRUNE","LabelText":"ROWAN-L09","DispatchLabel":"ROW-STD","SpeciesName":"Rowan","SpeciesLabel":"SPECIES-ROWAN","GreenhouseName":"Cedar House","ZoneName":"South Zone","BedLotCount":4,"Propagator":"South Crew"},{"LotCode":"L10","Vigour":"CULL","ScreenedVigour":"CULL","WaterClass":"SPARSE","Hardiness":"TIER_ONE","HeightBand":"TALL","CareNote":null,"LabelText":"HAZEL-L10","DispatchLabel":"5","SpeciesName":"Hazel","SpeciesLabel":"SPECIES-HAZEL","GreenhouseName":"Fern House","ZoneName":"North Zone","BedLotCount":2,"Propagator":"North Crew"},{"LotCode":"L11","Vigour":"CULL","ScreenedVigour":"CULL","WaterClass":"SPARSE","Hardiness":"TIER_TWO","HeightBand":"SHORT","CareNote":null,"LabelText":"MAPLE-L11","DispatchLabel":"5","SpeciesName":"Maple","SpeciesLabel":"SPECIES-MAPLE","GreenhouseName":"Fern House","ZoneName":"North Zone","BedLotCount":5,"Propagator":"North Crew"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    bedAssociationSuite:
+    {
+      function: |test::cedarquarry::domain::NurseryBed.all()->project(
+  [
+    b|$b.bedCode,
+    b|$b.bedName,
+    b|$b.lots.lotCode,
+    b|$b.lots.heightBand
+  ],
+  [
+    'BedCode',
+    'BedName',
+    'LotCode',
+    'HeightBand'
+  ]
+)->sort(
+  [
+    asc('BedCode'),
+    asc('LotCode')
+  ]
+);
+      tests:
+      [
+        activeBedsTraverseAssociation:
+        {
+          doc: 'Traversal from bed to lot resolves through the association mapping onto the store join, and the named bed filter suppresses the inactive undersized bed so its two lots never appear on this side.';
+          data:
+          [
+            test::cedarquarry::store::NurseryDatabase:
+              Relational
+              #{
+                nursery.seedling_lot:
+                  'lot_code,bed_code,species_code,grade_code,height_cm,moisture_pct,leaf_count,seedling_count\n'+
+                  'L01,BD-1,OAK,A,250,15,9,100\n'+
+                  'L04,BD-2,OAK,P,30,60,5,20\n'+
+                  'L07,BD-3,OAK,,120,46,6,10\n';
+                nursery.bed:
+                  'bed_code,bed_name,greenhouse_code,propagator_code,aspect,capacity,active_flag\n'+
+                  'BD-1,North Bed,GH-1,PR-1,NORTH,20,Y\n'+
+                  'BD-2,South Bed,GH-2,PR-2,SOUTH,30,Y\n'+
+                  'BD-3,Cold Bed,GH-1,PR-1,EAST,5,N\n';
+              }#
+          ];
+          asserts:
+          [
+            twoActiveBedsWithLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BedCode":"BD-1","BedName":"North Bed","LotCode":"L01","HeightBand":"TALL"},{"BedCode":"BD-2","BedName":"South Bed","LotCode":"L04","HeightBand":"SEEDLING"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    bedYieldSuite:
+    {
+      function: |test::cedarquarry::domain::BedYield.all()->project(
+  [
+    y|$y.bedCode,
+    y|$y.lotCount,
+    y|$y.totalSeedlings
+  ],
+  [
+    'BedCode',
+    'LotCount',
+    'TotalSeedlings'
+  ]
+)->sort(
+  [
+    asc('BedCode')
+  ]
+);
+      tests:
+      [
+        groupedInlineView:
+        {
+          doc: 'The grouped inline view aggregates lot count and seedling total per bed, so the class mapped onto the view returns one row per bed rather than one row per lot.';
+          data:
+          [
+            test::cedarquarry::store::NurseryDatabase:
+              Relational
+              #{
+                nursery.seedling_lot:
+                  'lot_code,bed_code,species_code,grade_code,height_cm,moisture_pct,leaf_count,seedling_count\n'+
+                  'L01,BD-1,OAK,A,250,15,9,100\n'+
+                  'L02,BD-1,PINE,B,150,30,2,60\n'+
+                  'L04,BD-2,OAK,P,30,60,5,20\n';
+              }#
+          ];
+          asserts:
+          [
+            twoAggregatedBeds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BedCode":"BD-1","LotCount":2,"TotalSeedlings":160},{"BedCode":"BD-2","LotCount":1,"TotalSeedlings":20}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graftSuite:
+    {
+      function: |test::cedarquarry::domain::GraftRecord.all()->project(
+  [
+    g|$g.graftCode,
+    g|$g.lotCode,
+    g|$g.rootstockCode,
+    g|$g.rootstockVigour,
+    g|$g.lotSpecies,
+    g|$g.graftedOn
+  ],
+  [
+    'GraftCode',
+    'LotCode',
+    'RootstockCode',
+    'RootstockVigour',
+    'LotSpecies',
+    'GraftedOn'
+  ]
+)->sort(
+  [
+    asc('GraftCode')
+  ]
+);
+      tests:
+      [
+        graftRegister:
+        {
+          doc: 'The graft register reads the fourth table of the propagation schema; the rootstock vigour is decoded by an enumeration mapping over the leading character of the trimmed rootstock code, and the record whose rootstock is unrecorded yields no enumeration member.';
+          data:
+          [
+            test::cedarquarry::store::NurseryDatabase:
+              Relational
+              #{
+                nursery.graft_record:
+                  'graft_code,lot_code,rootstock_code,grafted_on\n'+
+                  'GR-1,L01,a-11,2024-03-04\n'+
+                  'GR-2,L02,,2024-03-05\n';
+                nursery.seedling_lot:
+                  'lot_code,bed_code,species_code,grade_code,height_cm,moisture_pct,leaf_count,seedling_count\n'+
+                  'L01,BD-1,OAK,A,250,15,9,100\n'+
+                  'L02,BD-1,PINE,B,150,30,2,60\n';
+              }#
+          ];
+          asserts:
+          [
+            twoGraftRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GraftCode":"GR-1","LotCode":"L01","RootstockCode":"a-11","RootstockVigour":"PREMIUM","LotSpecies":"OAK","GraftedOn":"2024-03-04"},{"GraftCode":"GR-2","LotCode":"L02","RootstockCode":null,"RootstockVigour":null,"LotSpecies":"PINE","GraftedOn":"2024-03-05"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

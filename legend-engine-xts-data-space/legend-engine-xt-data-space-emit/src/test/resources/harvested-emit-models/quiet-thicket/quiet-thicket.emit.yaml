@@ -1,0 +1,70 @@
+name: quiet-thicket
+title: "Quiet Thicket — cross-schema multi-hop join paths and timestamp granularity reduction under keyed and sibling-product environments"
+description: >-
+  Wind fleet telemetry over a single store spanning three schemas, where more than a third of
+  the mapped properties reach their column through chained joins at one, two and three hops and
+  several of those hops cross a schema boundary. One mapping carries seven explicitly keyed
+  class bindings with pinned main tables plus an implementation for every navigable association
+  end, so relationship traversal is realised physically. The services reduce a timestamp to its
+  date portion before comparing — day equality against a parameter under three temporal entry
+  points, and an upper bound whose derived date is also projected beside the raw instant — while
+  keyed services and two sibling products each express the same environment split.
+modelSources:
+  model:
+    root: quiet-thicket
+    files:
+      - test/quietthicket/connection/ThicketProdConnection.pure
+      - test/quietthicket/connection/ThicketUatConnection.pure
+      - test/quietthicket/dataspace/ThicketProdDataSpace.pure
+      - test/quietthicket/dataspace/ThicketUatDataSpace.pure
+      - test/quietthicket/domain/ThicketDomain.pure
+      - test/quietthicket/mapping/TurbineMapping.pure
+      - test/quietthicket/runtime/ThicketProdRuntime.pure
+      - test/quietthicket/runtime/ThicketUatRuntime.pure
+      - test/quietthicket/service/LogsByCrewEnvironment.pure
+      - test/quietthicket/service/LogsOnDay.pure
+      - test/quietthicket/service/ReadingsByEnvironment.pure
+      - test/quietthicket/service/ReadingsOnDay.pure
+      - test/quietthicket/service/ReadingsThroughDay.pure
+      - test/quietthicket/store/TurbineDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:date-part-comparison
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - cross-schema-join
+  - date-part-comparison
+  - environment-keyed
+  - h2
+  - mapping-test
+  - multi-execution
+  - multi-hop-join-path
+  - sibling-data-spaces
+  - snowflake
+  - timestamp-granularity
+  - wind-fleet-telemetry

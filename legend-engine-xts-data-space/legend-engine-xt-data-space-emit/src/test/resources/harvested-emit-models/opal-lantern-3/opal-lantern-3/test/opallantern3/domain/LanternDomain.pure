@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opallantern3::domain::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A navigation lamp unit mounted on a harbour approach structure, versioned on the processing timeline.'} test::opallantern3::domain::LampUnit
+{
+  unitCode: String[1];
+  stationName: String[1];
+  lensGrade: String[1];
+  focalHeightMetres: Float[0..1];
+  ratedCandela: Decimal[0..1];
+  commissionedOn: StrictDate[0..1];
+  surveyedAt: DateTime[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A recorded servicing visit to one navigation lamp unit, carrying its own processing window columns so every stored version stays interpretable.'} test::opallantern3::domain::ServiceVisit
+{
+  visitCode: String[1];
+  technicianName: String[1];
+  outcomeCode: String[1];
+  durationHours: Float[0..1];
+  visitedOn: StrictDate[0..1];
+  windowIn: StrictDate[0..1];
+  windowOut: StrictDate[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'The harbour keeper accountable for a district of navigation lamp units.'} test::opallantern3::domain::LampKeeper
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+  districtName: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a lamp unit to its servicing visits, fanning out to many visits in one direction and back to the single serviced unit in the other.'} test::opallantern3::domain::Unit_Visit
+{
+  servicedUnit: LampUnit[1];
+  visits: ServiceVisit[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a lamp unit to the district keeper accountable for it, with a collection of units at the keeper end.'} test::opallantern3::domain::Unit_Keeper
+{
+  keeper: LampKeeper[0..1];
+  keptUnits: LampUnit[*];
+}

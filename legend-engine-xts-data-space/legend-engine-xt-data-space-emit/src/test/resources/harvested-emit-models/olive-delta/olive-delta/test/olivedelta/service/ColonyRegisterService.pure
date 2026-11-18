@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::olivedelta::service::ColonyRegisterService
+{
+  pattern: '/olivedelta/v1/colonies/register';
+  title: 'Colony Register';
+  owners:
+  [
+    'reef-monitoring'
+  ];
+  documentation: 'Publishes the tagged coral colony register for the requested lagoon zones, projecting the composed display tag alongside the site and dive team reached through the two association implementations.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {zones: String[*], minDiameter: Integer[1]|test::olivedelta::domain::SurveySite.all()->filter(
+      s|($s.lagoonZone->in($zones)) && ($s.colonies->exists(c|$c.diameterCm >= $minDiameter))
+    )->project(
+      [
+        s|$s.siteCode,
+        s|$s.siteName,
+        s|$s.colonies.displayTag
+      ],
+      [
+        'SiteCode',
+        'SiteName',
+        'ColonyTag'
+      ]
+    )->sort(
+      [
+        asc('SiteCode'),
+        asc('ColonyTag')
+      ]
+    )};
+    mapping: test::olivedelta::mapping::ReefMapping;
+    runtime: test::olivedelta::runtime::ReefRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reef.survey_site:
+                'site_code,site_name,lagoon_zone,team_code\n'+
+                'SS-01,Outer Spur,NORTH,DT-01\n'+
+                'SS-02,Inner Flat,SOUTH,DT-02\n';
+
+              reef.coral_colony:
+                'colony_code,site_code,growth_form,diameter_cm\n'+
+                'CC-01,SS-01,branching,64\n'+
+                'CC-02,SS-01,massive,120\n'+
+                'CC-03,SS-02,plating,38\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northernZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zones = ['NORTH'],
+            minDiameter = 50
+          ]
+          asserts:
+          [
+            twoNorthernColonies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SiteCode":"SS-01","SiteName":"Outer Spur","ColonyTag":"BRANCHING-CC-01"},{"SiteCode":"SS-01","SiteName":"Outer Spur","ColonyTag":"MASSIVE-CC-02"}]';
+                  }#;
+              }#
+          ]
+        },
+        unsurveyedZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zones = ['WEST'],
+            minDiameter = 10
+          ]
+          asserts:
+          [
+            noColonies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

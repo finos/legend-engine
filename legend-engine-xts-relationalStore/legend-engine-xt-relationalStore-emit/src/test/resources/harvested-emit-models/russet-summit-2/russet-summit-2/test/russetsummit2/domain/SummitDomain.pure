@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::russetsummit2::domain::*;
+
+Enum test::russetsummit2::domain::TaskStage
+{
+  RAISED,
+  SCHEDULED,
+  ACTIVE,
+  COMPLETE
+}
+
+Enum test::russetsummit2::domain::SurfaceKind
+{
+  STONE_PITCH,
+  AGGREGATE,
+  BOARDWALK
+}
+
+Enum test::russetsummit2::domain::UrgencyBand
+{
+  ROUTINE,
+  ELEVATED,
+  CRITICAL
+}
+
+Enum test::russetsummit2::domain::CrewGrade
+{
+  LEAD,
+  TRAINEE
+}
+
+Class test::russetsummit2::domain::FootpathSection
+{
+  sectionCode: String[1];
+  sectionName: String[1];
+  surface: SurfaceKind[0..1];
+  lengthM: Integer[1];
+}
+
+Class test::russetsummit2::domain::RepairTask
+{
+  taskId: Integer[1];
+  sectionCode: String[1];
+  stage: TaskStage[0..1];
+  urgency: UrgencyBand[0..1];
+  haulNote: String[0..1];
+  loadUnits: Integer[1];
+  crewGrade: CrewGrade[0..1];
+  wardenName: String[0..1];
+  sectionName: String[0..1];
+}
+
+Class test::russetsummit2::domain::WorkCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  crewKind: String[1];
+  wardenName: String[0..1];
+}
+
+Association test::russetsummit2::domain::Section_Tasks
+{
+  tasks: RepairTask[*];
+  section: FootpathSection[0..1];
+}

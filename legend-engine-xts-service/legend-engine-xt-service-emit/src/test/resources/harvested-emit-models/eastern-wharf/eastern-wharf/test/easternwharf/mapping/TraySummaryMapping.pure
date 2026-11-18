@@ -1,0 +1,349 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternwharf::mapping::TraySummaryMapping
+(
+  *test::easternwharf::domain::TraySummary[traySummary]: Pure
+  {
+    ~src test::easternwharf::source::PropagationRunFeed
+    runCode: $src.runCode,
+    trayCode: $src.bench.tray.trayCode,
+    benchLabel: if($src.bench->isNotEmpty(),
+                   | $src.bench.benchName->toOne(),
+                   | 'NO BENCH'),
+    trayLabel: test::easternwharf::function::normalizeLabel(if($src.bench.tray.trayCode->isNotEmpty(),
+                                                               | $src.bench.tray.trayCode->toOne(),
+                                                               | 'unbenched tray')),
+    stageLabel: if($src.bench.tray.stage->isNotEmpty() && !($src.bench.tray.stage->toOne() == 'WITHDRAWN'),
+                   | test::easternwharf::function::normalizeLabel(if($src.bench.tray.stage->toOne() == 'HARDENING',
+                                                                     | $src.bench.tray.stage->toOne(),
+                                                                     | 'in propagation')),
+                   | 'UNSTAGED'),
+    leadSeedling: if($src.bench.tray.seedlings->filter(s|$s.vigourClass->isNotEmpty() && ($s.vigourClass->toOne() == 'STRONG'))->isNotEmpty(),
+                     | $src.bench.tray.seedlings->filter(s|$s.vigourClass->isNotEmpty() && ($s.vigourClass->toOne() == 'STRONG'))->at(0).seedlingCode,
+                     | ''),
+    vigorousCount: $src.bench.tray.seedlings->filter(s|$s.vigourClass->isNotEmpty() && ($s.vigourClass->toOne() == 'STRONG'))->size(),
+    tallestHeightMicron: if($src.bench.tray.seedlings->filter(s|$s.heightMicron->isNotEmpty())->isEmpty(),
+                            | -1,
+                            | $src.bench.tray.seedlings->filter(s|$s.heightMicron->isNotEmpty())->map(s|$s.heightMicron->toOne())->max()->toOne())
+  }
+
+  testSuites:
+  [
+    traySummarySuite:
+    {
+      function: |test::easternwharf::domain::TraySummary.all()->graphFetch(
+        #{
+          test::easternwharf::domain::TraySummary{
+            runCode,
+            trayCode,
+            benchLabel,
+            trayLabel,
+            stageLabel,
+            leadSeedling,
+            vigorousCount,
+            tallestHeightMicron
+          }
+        }#
+      )->serialize(
+        #{
+          test::easternwharf::domain::TraySummary{
+            runCode,
+            trayCode,
+            benchLabel,
+            trayLabel,
+            stageLabel,
+            leadSeedling,
+            vigorousCount,
+            tallestHeightMicron
+          }
+        }#
+      );
+      tests:
+      [
+        hardeningStageReached:
+        {
+          doc: 'A tray that has reached the hardening stage publishes that stage as typed, and the one vigorous seedling on it leads the summary.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-11","bench":{"benchName":"North Aisle Bench","tray":{"trayCode":"TR-11","stage":"HARDENING","seedlings":[{"seedlingCode":"SD-11","vigourClass":"STRONG","heightMicron":14200},{"seedlingCode":"SD-12","vigourClass":"WEAK","heightMicron":9100}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            hardeningStageReachedAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-11","trayCode":"TR-11","benchLabel":"North Aisle Bench","trayLabel":"TR-11","stageLabel":"HARDENING","leadSeedling":"SD-11","vigorousCount":1,"tallestHeightMicron":14200}';
+                  }#;
+              }#
+          ];
+        },
+        earlierStageFallsBackToLiteral:
+        {
+          doc: 'A stage other than hardening is replaced by the in-propagation literal, and a hand-typed tray identifier is trimmed and upper-cased into its label while the raw value is published untouched.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-12","bench":{"benchName":"West Aisle Bench","tray":{"trayCode":" tr-12 ","stage":"SOWING","seedlings":[{"seedlingCode":"SD-21","vigourClass":"STRONG","heightMicron":11000},{"seedlingCode":"SD-22","vigourClass":"STRONG","heightMicron":12500}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            earlierStageFallsBackToLiteralAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-12","trayCode":" tr-12 ","benchLabel":"West Aisle Bench","trayLabel":"TR-12","stageLabel":"IN PROPAGATION","leadSeedling":"SD-21","vigorousCount":2,"tallestHeightMicron":12500}';
+                  }#;
+              }#
+          ];
+        },
+        withdrawnStageIsExcluded:
+        {
+          doc: 'A withdrawn tray fails the negated arm of the stage guard and is published as unstaged even though the document carries a stage.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-13","bench":{"benchName":"East Aisle Bench","tray":{"trayCode":"TR-13","stage":"WITHDRAWN","seedlings":[{"seedlingCode":"SD-31","vigourClass":"WEAK","heightMicron":8000}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            withdrawnStageIsExcludedAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-13","trayCode":"TR-13","benchLabel":"East Aisle Bench","trayLabel":"TR-13","stageLabel":"UNSTAGED","leadSeedling":"","vigorousCount":0,"tallestHeightMicron":8000}';
+                  }#;
+              }#
+          ];
+        },
+        absentStageIsUnstaged:
+        {
+          doc: 'A tray whose document carries no stage at all reaches the same unstaged label through the optionality arm of the guard rather than the negation.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-14","bench":{"benchName":"South Aisle Bench","tray":{"trayCode":"TR-14","seedlings":[{"seedlingCode":"SD-41","vigourClass":"STRONG","heightMicron":10500}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            absentStageIsUnstagedAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-14","trayCode":"TR-14","benchLabel":"South Aisle Bench","trayLabel":"TR-14","stageLabel":"UNSTAGED","leadSeedling":"SD-41","vigorousCount":1,"tallestHeightMicron":10500}';
+                  }#;
+              }#
+          ];
+        },
+        absentTrayCodeTakesLabelDefault:
+        {
+          doc: 'A tray made up without an identifier takes the defaulted label through the normalising helper while the optional published identifier stays null.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-15","bench":{"benchName":"North Aisle Bench","tray":{"stage":"HARDENING","seedlings":[{"seedlingCode":"SD-51","vigourClass":"STRONG","heightMicron":13300}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            absentTrayCodeTakesLabelDefaultAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-15","trayCode":null,"benchLabel":"North Aisle Bench","trayLabel":"UNBENCHED TRAY","stageLabel":"HARDENING","leadSeedling":"SD-51","vigorousCount":1,"tallestHeightMicron":13300}';
+                  }#;
+              }#
+          ];
+        },
+        absentBenchTakesEveryDefault:
+        {
+          doc: 'A propagation run logged before the tray was placed on a bench cuts the traversal at its first hop, so every derived property falls back to its typed default.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-16"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            absentBenchTakesEveryDefaultAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-16","trayCode":null,"benchLabel":"NO BENCH","trayLabel":"UNBENCHED TRAY","stageLabel":"UNSTAGED","leadSeedling":"","vigorousCount":0,"tallestHeightMicron":-1}';
+                  }#;
+              }#
+          ];
+        },
+        noVigorousSeedlingSelected:
+        {
+          doc: 'Seedlings of another vigour class, and one whose class is absent, never satisfy the selection, so the leading seedling stays empty while the tallest measured height is still reported.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-17","bench":{"benchName":"West Aisle Bench","tray":{"trayCode":"TR-17","stage":"SOWING","seedlings":[{"seedlingCode":"SD-71","vigourClass":"WEAK","heightMicron":7400},{"seedlingCode":"SD-72","heightMicron":8800}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            noVigorousSeedlingSelectedAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-17","trayCode":"TR-17","benchLabel":"West Aisle Bench","trayLabel":"TR-17","stageLabel":"IN PROPAGATION","leadSeedling":"","vigorousCount":0,"tallestHeightMicron":8800}';
+                  }#;
+              }#
+          ];
+        },
+        emptySeedlingCollection:
+        {
+          doc: 'A tray made up but not yet pricked out has no seedlings at all, so the count is zero and the height sentinel is published.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-18","bench":{"benchName":"South Aisle Bench","tray":{"trayCode":"TR-18","stage":"HARDENING","seedlings":[]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            emptySeedlingCollectionAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-18","trayCode":"TR-18","benchLabel":"South Aisle Bench","trayLabel":"TR-18","stageLabel":"HARDENING","leadSeedling":"","vigorousCount":0,"tallestHeightMicron":-1}';
+                  }#;
+              }#
+          ];
+        },
+        unmeasuredVigorousSeedling:
+        {
+          doc: 'A vigorous seedling that has not been measured yet still leads the summary, but leaves the height selection empty and therefore on its sentinel.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternwharf::source::PropagationRunFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-19","bench":{"benchName":"East Aisle Bench","tray":{"trayCode":"TR-19","stage":"SOWING","seedlings":[{"seedlingCode":"SD-91","vigourClass":"STRONG"}]}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            unmeasuredVigorousSeedlingAssert:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runCode":"RUN-19","trayCode":"TR-19","benchLabel":"East Aisle Bench","trayLabel":"TR-19","stageLabel":"IN PROPAGATION","leadSeedling":"SD-91","vigorousCount":1,"tallestHeightMicron":-1}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

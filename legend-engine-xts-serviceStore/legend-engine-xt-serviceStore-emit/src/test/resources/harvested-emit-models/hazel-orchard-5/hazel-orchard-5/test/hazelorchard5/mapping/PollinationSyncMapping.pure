@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelorchard5::mapping::PollinationSyncMapping
+(
+  *test::hazelorchard5::domain::HiveVisitEntry[hiveVisitEntrySet]: ServiceStore
+  {
+    ~service [test::hazelorchard5::store::HiveVisitApi] PollinationServices.HiveVisitFeedService
+  }
+
+  *test::hazelorchard5::domain::PollinationVisit[pollinationVisitSet]: Pure
+  {
+    ~src test::hazelorchard5::domain::HiveVisitEntry
+    visitId: $src.visitId,
+    orchardCode: $src.orchardCode,
+    seasonLabel: $src.seasonLabel,
+    hiveCode: $src.hiveCode,
+    blockCode: $src.blockCode,
+    rowCode: $src.rowCode,
+    colonyCode: $src.colonyCode,
+    inspectorCode: $src.inspectorCode,
+    observedOnDate: $src.observedOnDate,
+    startedAtTime: $src.startedAtTime,
+    endedAtTime: $src.endedAtTime,
+    weatherLabel: $src.weatherLabel,
+    cloudCoverLabel: $src.cloudCoverLabel,
+    windLabel: $src.windLabel,
+    temperatureCelsius: $src.temperatureCelsius,
+    humidityPercent: $src.humidityPercent,
+    visitDurationMinutes: $src.visitDurationMinutes,
+    frameCount: $src.frameCount,
+    broodFrameCount: $src.broodFrameCount,
+    foragerCountPerMinute: $src.foragerCountPerMinute,
+    blossomOpenPercent: $src.blossomOpenPercent,
+    blossomStageLabel: $src.blossomStageLabel,
+    nectarFlowLabel: $src.nectarFlowLabel,
+    pollenTrapGrams: $src.pollenTrapGrams,
+    hiveWeightKilograms: $src.hiveWeightKilograms,
+    queenSeenFlag: $src.queenSeenFlag,
+    varroaCountPerHundred: $src.varroaCountPerHundred,
+    diseaseSignLabel: $src.diseaseSignLabel,
+    feedGivenLitres: $src.feedGivenLitres,
+    equipmentLabel: $src.equipmentLabel,
+    noteTagLabels: $src.noteTags->map(t|'TAG-' + $t),
+    hiveCodeLabel: $src.hiveCode->toOne()->toUpper()->trim(),
+    sourceSystemLabel: 'ORCHARD-VISIT-API'
+  }
+
+  testSuites:
+  [
+    remoteHiveVisitReadSuite:
+    {
+      function: |test::hazelorchard5::domain::HiveVisitEntry.all()->graphFetch(
+      #{
+        test::hazelorchard5::domain::HiveVisitEntry
+        {
+          visitId,
+          hiveCode,
+          observedOnDate,
+          foragerCountPerMinute,
+          queenSeenFlag,
+          noteTags
+        }
+      }#
+    )->serialize(
+      #{
+        test::hazelorchard5::domain::HiveVisitEntry
+        {
+          visitId,
+          hiveCode,
+          observedOnDate,
+          foragerCountPerMinute,
+          queenSeenFlag,
+          noteTags
+        }
+      }#
+    );
+      tests:
+      [
+        stubbedFeedReturnsBothVisitDocuments:
+        {
+          doc: 'Resolves the bound hive-visit feed endpoint through the stubbed response, proving a fully populated visit document and a sparse one whose optional measures are absent.';
+          data:
+          [
+            test::hazelorchard5::store::HiveVisitApi:
+              ServiceStore
+              #{
+                [
+                  {
+                    request:
+                    {
+                      method: GET;
+                      url: '/pollination/hive-visits';
+                    };
+                    response:
+                    {
+                      body:
+                        ExternalFormat
+                        #{
+                          contentType: 'application/json';
+                          data: '[{"visitId":"HV-1001","orchardCode":"OR-NORTH","seasonLabel":"2026-BLOSSOM","hiveCode":"hv-a12","blockCode":"BLK-3","rowCode":"R-07","colonyCode":"CL-441","inspectorCode":"INS-22","observedOnDate":"2026-04-18","startedAtTime":"08:15","endedAtTime":"08:47","weatherLabel":"sunny","cloudCoverLabel":"scattered","windLabel":"light","temperatureCelsius":17.5,"humidityPercent":62.0,"visitDurationMinutes":32,"frameCount":10,"broodFrameCount":6,"foragerCountPerMinute":48,"blossomOpenPercent":71.5,"blossomStageLabel":"full-bloom","nectarFlowLabel":"strong","pollenTrapGrams":24.5,"hiveWeightKilograms":38.25,"queenSeenFlag":true,"varroaCountPerHundred":1.5,"diseaseSignLabel":"none","feedGivenLitres":0.5,"equipmentLabel":"super-added","noteTags":["hive-strong","frames-added"]},{"visitId":"HV-1002","orchardCode":"OR-NORTH","seasonLabel":"2026-BLOSSOM","hiveCode":"hv-b04","observedOnDate":"2026-04-19","foragerCountPerMinute":12,"queenSeenFlag":false,"noteTags":["queen-absent"]}]';
+                        }#;
+                    };
+                  }
+                ]
+              }#
+          ];
+          asserts:
+          [
+            bothVisitDocumentsSurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"visitId":"HV-1001","hiveCode":"hv-a12","observedOnDate":"2026-04-18","foragerCountPerMinute":48,"queenSeenFlag":true,"noteTags":["hive-strong","frames-added"]},{"visitId":"HV-1002","hiveCode":"hv-b04","observedOnDate":"2026-04-19","foragerCountPerMinute":12,"queenSeenFlag":false,"noteTags":["queen-absent"]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

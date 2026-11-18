@@ -1,0 +1,366 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+
+Service test::tealglacier4::service::CalibratedStakeLookup
+{
+  pattern: '/tealglacier4/v1/stakes/{glacierCode}/{observerCode}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Calibrated stake readings for one glacier taken by one observer.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {glacierCode: String[1], observerCode: String[1]|test::tealglacier4::domain::field::StakeReading.all()->filter(s|($s.calibrated == true) && (($s.glacierCode == $glacierCode) && ($s.observerCode == $observerCode)))->project(~[stakeCode: s|$s.stakeCode, glacierCode: s|$s.glacierCode, rangeCode: s|$s.rangeCode, observerCode: s|$s.observerCode, readOn: s|$s.readOn])->sort(~stakeCode->ascending())};
+    mapping: test::tealglacier4::mapping::GlacierFieldMapping;
+    runtime: test::tealglacier4::runtime::GlacierFieldRuntime;
+  }
+  testSuites:
+  [
+    calibratedLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierFieldConnection:
+            Relational
+            #{
+              icefield.stake_reading:
+                'Stake Code,Glacier Code,Range Code,Read On,Ablation Cm,Snow Depth Raw,Observer Code,Calibrated\n'+
+                'SK-01,GL-NORD,RG-A,2026-05-02,450.0,85,OB-1,true\n'+
+                'SK-02,GL-NORD,RG-A,2026-05-20,350.5,90,OB-2,true\n'+
+                'SK-03,GL-SUD,RG-A,2026-06-11,250.0,40,OB-1,false\n'+
+                'SK-04,GL-SUD,RG-B,2026-07-01,160.0,-999,OB-1,true\n'+
+                'SK-05,GL-NORD,RG-B,2026-04-15,95.5,70,OB-1,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        oneGlacierOneObserver:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            glacierCode = 'GL-NORD',
+            observerCode = 'OB-1'
+          ]
+          asserts:
+          [
+            uncalibratedAndOtherObserverDrop:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stakeCode":"SK-01","glacierCode":"GL-NORD","rangeCode":"RG-A","observerCode":"OB-1","readOn":"2026-05-02"},{"stakeCode":"SK-05","glacierCode":"GL-NORD","rangeCode":"RG-B","observerCode":"OB-1","readOn":"2026-04-15"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealglacier4::service::StakeMembershipFeed
+{
+  pattern: '/tealglacier4/v1/stakes/by-membership';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Stake readings whose glacier and observer both fall in the requested lists.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {glacierCodes: String[*], observerCodes: String[*]|test::tealglacier4::domain::field::StakeReading.all()->filter(s|$s.glacierCode->in($glacierCodes) && $s.observerCode->in($observerCodes))->project(~[stakeCode: s|$s.stakeCode, glacierCode: s|$s.glacierCode, rangeCode: s|$s.rangeCode, observerCode: s|$s.observerCode, readOn: s|$s.readOn])->sort(~stakeCode->ascending())};
+    mapping: test::tealglacier4::mapping::GlacierFieldMapping;
+    runtime: test::tealglacier4::runtime::GlacierFieldRuntime;
+  }
+  testSuites:
+  [
+    membershipSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierFieldConnection:
+            Relational
+            #{
+              icefield.stake_reading:
+                'Stake Code,Glacier Code,Range Code,Read On,Ablation Cm,Snow Depth Raw,Observer Code,Calibrated\n'+
+                'SK-01,GL-NORD,RG-A,2026-05-02,450.0,85,OB-1,true\n'+
+                'SK-02,GL-NORD,RG-A,2026-05-20,350.5,90,OB-2,true\n'+
+                'SK-03,GL-SUD,RG-A,2026-06-11,250.0,40,OB-1,false\n'+
+                'SK-04,GL-SUD,RG-B,2026-07-01,160.0,-999,OB-1,true\n'+
+                'SK-05,GL-NORD,RG-B,2026-04-15,95.5,70,OB-1,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothListsMustMatch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            glacierCodes = ['GL-SUD'],
+            observerCodes = ['OB-1', 'OB-3']
+          ]
+          asserts:
+          [
+            onlySouthernObserverOneRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stakeCode":"SK-03","glacierCode":"GL-SUD","rangeCode":"RG-A","observerCode":"OB-1","readOn":"2026-06-11"},{"stakeCode":"SK-04","glacierCode":"GL-SUD","rangeCode":"RG-B","observerCode":"OB-1","readOn":"2026-07-01"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealglacier4::service::StakeWindowFeed
+{
+  pattern: '/tealglacier4/v1/stakes/window';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Stake readings inside a date window, or whose glacier and range are both in the requested lists.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1], glacierCodes: String[*], rangeCodes: String[*]|test::tealglacier4::domain::field::StakeReading.all()->filter(s|(($s.readOn <= $toDate) && ($s.readOn >= $fromDate)) || ($s.glacierCode->in($glacierCodes) && $s.rangeCode->in($rangeCodes)))->project(~[stakeCode: s|$s.stakeCode, glacierCode: s|$s.glacierCode, rangeCode: s|$s.rangeCode, observerCode: s|$s.observerCode, readOn: s|$s.readOn])->sort(~stakeCode->ascending())};
+    mapping: test::tealglacier4::mapping::GlacierFieldMapping;
+    runtime: test::tealglacier4::runtime::GlacierFieldRuntime;
+  }
+  testSuites:
+  [
+    windowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierFieldConnection:
+            Relational
+            #{
+              icefield.stake_reading:
+                'Stake Code,Glacier Code,Range Code,Read On,Ablation Cm,Snow Depth Raw,Observer Code,Calibrated\n'+
+                'SK-01,GL-NORD,RG-A,2026-05-02,450.0,85,OB-1,true\n'+
+                'SK-02,GL-NORD,RG-A,2026-05-20,350.5,90,OB-2,true\n'+
+                'SK-03,GL-SUD,RG-A,2026-06-11,250.0,40,OB-1,false\n'+
+                'SK-04,GL-SUD,RG-B,2026-07-01,160.0,-999,OB-1,true\n'+
+                'SK-05,GL-NORD,RG-B,2026-04-15,95.5,70,OB-1,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        eitherBranchAdmits:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-05-01,
+            toDate = %2026-05-31,
+            glacierCodes = ['GL-SUD'],
+            rangeCodes = ['RG-B']
+          ]
+          asserts:
+          [
+            windowRowsPlusListedPair:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stakeCode":"SK-01","glacierCode":"GL-NORD","rangeCode":"RG-A","observerCode":"OB-1","readOn":"2026-05-02"},{"stakeCode":"SK-02","glacierCode":"GL-NORD","rangeCode":"RG-A","observerCode":"OB-2","readOn":"2026-05-20"},{"stakeCode":"SK-04","glacierCode":"GL-SUD","rangeCode":"RG-B","observerCode":"OB-1","readOn":"2026-07-01"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealglacier4::service::GlacierRegisterFeed
+{
+  pattern: '/tealglacier4/v1/glaciers';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Every registered glacier at flat width.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::tealglacier4::domain::field::Glacier.all()->project(~[glacierCode: g|$g.glacierCode, rangeCode: g|$g.rangeCode, glacierName: g|$g.glacierName, basinName: g|$g.basinName, monitored: g|$g.monitored, registeredOn: g|$g.registeredOn])->sort([~glacierCode->ascending(), ~rangeCode->ascending()]);
+    mapping: test::tealglacier4::mapping::GlacierFieldMapping;
+    runtime: test::tealglacier4::runtime::GlacierFieldRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierFieldConnection:
+            Relational
+            #{
+              icefield.glacier_register:
+                'Glacier Code,Range Code,Glacier Name,Basin Name,Area Sq Km,Monitored,Registered On,Updated At\n'+
+                'GL-NORD,RG-A,Nordbreen,Upper Dal,12.50,true,2019-06-01,2026-03-01 08:00:00\n'+
+                'GL-SUD,RG-A,Sudbreen,Lower Dal,8.25,false,2020-07-15,2026-03-02 08:00:00\n'+
+                'GL-NORD,RG-B,Nordbreen Upper,Kvit Basin,4.75,true,2021-05-20,2026-03-03 08:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allGlaciers:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeGlaciers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"glacierCode":"GL-NORD","rangeCode":"RG-A","glacierName":"Nordbreen","basinName":"Upper Dal","monitored":true,"registeredOn":"2019-06-01"},{"glacierCode":"GL-NORD","rangeCode":"RG-B","glacierName":"Nordbreen Upper","basinName":"Kvit Basin","monitored":true,"registeredOn":"2021-05-20"},{"glacierCode":"GL-SUD","rangeCode":"RG-A","glacierName":"Sudbreen","basinName":"Lower Dal","monitored":false,"registeredOn":"2020-07-15"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealglacier4::service::CrevasseSurveyFeed
+{
+  pattern: '/tealglacier4/v1/crevasses';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Current crevasse surveys as last processed.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::tealglacier4::domain::field::CrevasseSurvey.all(%latest)->project(~[crevasseCode: c|$c.crevasseCode, glacierCode: c|$c.glacierCode, rangeCode: c|$c.rangeCode, surveyNote: c|$c.surveyNote])->sort(~crevasseCode->ascending());
+    mapping: test::tealglacier4::mapping::GlacierFieldMapping;
+    runtime: test::tealglacier4::runtime::GlacierFieldRuntime;
+  }
+  testSuites:
+  [
+    crevasseSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierFieldConnection:
+            Relational
+            #{
+              icefield.crevasse_survey:
+                'Crevasse Code,Glacier Code,Range Code,Width M,Survey Note,in_z,out_z\n'+
+                'CV-1,GL-NORD,RG-A,2.5,open bergschrund,2025-01-01,9999-12-31\n'+
+                'CV-2,GL-SUD,RG-A,1.0,bridged span,2024-01-01,2025-03-01\n'+
+                'CV-3,GL-NORD,RG-B,3.25,new rift,2026-07-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            closedSurveyDrops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"crevasseCode":"CV-1","glacierCode":"GL-NORD","rangeCode":"RG-A","surveyNote":"open bergschrund"},{"crevasseCode":"CV-3","glacierCode":"GL-NORD","rangeCode":"RG-B","surveyNote":"new rift"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealglacier4::service::ArchivedStakeFeed
+{
+  pattern: '/tealglacier4/v1/archive/stakes';
+  documentation: 'Archived stake readings at flat width.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::tealglacier4::domain::archive::ArchivedStakeReading.all()->project(~[stakeCode: s|$s.stakeCode, glacierCode: s|$s.glacierCode, readOn: s|$s.readOn, snowDepth: s|$s.snowDepth, observerCode: s|$s.observerCode])->sort(~stakeCode->ascending());
+    mapping: test::tealglacier4::mapping::GlacierArchiveMapping;
+    runtime: test::tealglacier4::runtime::GlacierArchiveRuntime;
+  }
+  testSuites:
+  [
+    archiveSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierArchiveConnection:
+            Relational
+            #{
+              icearchive.archived_stake:
+                'Stake Code,Glacier Code,Range Code,Read On,Snow Depth Raw,Observer Code\n'+
+                'AS-01,GL-OST,RG-C,2015-05-04,95,OB-7\n'+
+                'AS-02,GL-VEST,RG-C,2015-06-09,-999,OB-8\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allArchived:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoArchivedReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stakeCode":"AS-01","glacierCode":"GL-OST","readOn":"2015-05-04","snowDepth":"95","observerCode":"OB-7"},{"stakeCode":"AS-02","glacierCode":"GL-VEST","readOn":"2015-06-09","snowDepth":null,"observerCode":"OB-8"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

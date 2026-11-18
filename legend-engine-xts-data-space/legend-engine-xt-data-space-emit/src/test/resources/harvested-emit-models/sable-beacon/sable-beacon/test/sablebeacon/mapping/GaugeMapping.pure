@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablebeacon::mapping::GaugeMapping
+(
+  *test::sablebeacon::domain::Reading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablebeacon::store::GaugeDB]hydro.reading.reading_id
+    )
+    ~mainTable [test::sablebeacon::store::GaugeDB]hydro.reading
+    readingId: [test::sablebeacon::store::GaugeDB]hydro.reading.reading_id,
+    readingDate: [test::sablebeacon::store::GaugeDB]hydro.reading.reading_date,
+    levelCm: [test::sablebeacon::store::GaugeDB]hydro.reading.level_cm,
+    gradeCode: [test::sablebeacon::store::GaugeDB]hydro.reading.grade_code,
+    gradeLabel: case(
+                  equal([test::sablebeacon::store::GaugeDB]hydro.reading.grade_code, 'A'),
+                  'PRIMARY',
+                  case(
+                    equal([test::sablebeacon::store::GaugeDB]hydro.reading.grade_code, 'B'),
+                    'SECONDARY',
+                    sqlNull()
+                  )
+                ),
+    sensorName: [test::sablebeacon::store::GaugeDB]@Reading_Sensor | [test::sablebeacon::store::GaugeDB]hydro.sensor.sensor_name,
+    basinName: [test::sablebeacon::store::GaugeDB]@Reading_Sensor > [test::sablebeacon::store::GaugeDB]@Sensor_Station > [test::sablebeacon::store::GaugeDB]@Station_District > [test::sablebeacon::store::GaugeDB]@District_GaugeZone > [test::sablebeacon::store::GaugeDB]@GaugeZone_Basin | [test::sablebeacon::store::GaugeDB]hydro.basin.basin_name
+  }
+
+  *test::sablebeacon::domain::ReadingBasin[readingBasin]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablebeacon::store::GaugeDB]hydro.ReadingBasinView.reading_id
+    )
+    ~mainTable [test::sablebeacon::store::GaugeDB]hydro.ReadingBasinView
+    readingId: [test::sablebeacon::store::GaugeDB]hydro.ReadingBasinView.reading_id,
+    basinName: [test::sablebeacon::store::GaugeDB]hydro.ReadingBasinView.basin_name
+  }
+)

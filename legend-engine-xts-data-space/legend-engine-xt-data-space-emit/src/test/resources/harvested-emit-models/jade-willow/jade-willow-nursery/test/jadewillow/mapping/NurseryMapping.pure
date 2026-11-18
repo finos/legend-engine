@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::jadewillow::mapping::NurseryMapping
+(
+  *demo::jadewillow::domain::NurseryBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::jadewillow::store::NurseryDB]nursery.nursery_bed.bed_id
+    )
+    ~mainTable [demo::jadewillow::store::NurseryDB]nursery.nursery_bed
+    bedLabel: [demo::jadewillow::store::NurseryDB]nursery.nursery_bed.bed_label,
+    substrate: [demo::jadewillow::store::NurseryDB]nursery.nursery_bed.substrate,
+    establishedOn: [demo::jadewillow::store::NurseryDB]nursery.nursery_bed.established_on,
+    bedAreaM2: [demo::jadewillow::store::NurseryDB]nursery.nursery_bed.bed_area_m2
+  }
+
+  *demo::jadewillow::domain::CuttingBatch[batch]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::jadewillow::store::NurseryDB]nursery.cutting_batch.batch_id
+    )
+    ~mainTable [demo::jadewillow::store::NurseryDB]nursery.cutting_batch
+    batchRef: [demo::jadewillow::store::NurseryDB]nursery.cutting_batch.batch_ref,
+    cultivar: [demo::jadewillow::store::NurseryDB]nursery.cutting_batch.cultivar,
+    cuttingCount: [demo::jadewillow::store::NurseryDB]nursery.cutting_batch.cutting_count,
+    rootedFraction: [demo::jadewillow::store::NurseryDB]nursery.cutting_batch.rooted_fraction,
+    collectedOn: [demo::jadewillow::store::NurseryDB]nursery.cutting_batch.collected_on,
+    pottedAt: [demo::jadewillow::store::NurseryDB]nursery.cutting_batch.potted_at,
+    bed[bed]: [demo::jadewillow::store::NurseryDB]@Batch_Bed
+  }
+
+  testSuites:
+  [
+    batchRosterSuite:
+    {
+      function: |demo::jadewillow::domain::CuttingBatch.all()->project(
+        [
+          x|$x.batchRef,
+          x|$x.cultivar,
+          x|$x.cuttingCount,
+          x|$x.bed.bedLabel,
+          x|$x.bed.substrate
+        ],
+        [
+          'Batch',
+          'Cultivar',
+          'Cuttings',
+          'Bed',
+          'Substrate'
+        ]
+      )->sort([asc('Batch')]);
+      tests:
+      [
+        fullyPopulatedRow:
+        {
+          doc: 'Projects a batch whose every bound column carries a value, resolving the bed attributes across the declared join.';
+          data:
+          [
+            demo::jadewillow::store::NurseryDB:
+              Relational
+              #{
+                nursery.nursery_bed:
+                  'bed_id,bed_label,substrate,established_on,bed_area_m2\n'+
+                  '1,Willow Row A,coir,2021-03-14,18.5\n';
+
+                nursery.cutting_batch:
+                  'batch_id,batch_ref,cultivar,cutting_count,rooted_fraction,collected_on,potted_at,bed_id\n'+
+                  '1,CB-001,Salix alba,240,0.75,2024-02-11,2024-04-02 08:30:00,1\n';
+              }#
+          ];
+          asserts:
+          [
+            populatedBatchProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"CB-001","Cultivar":"Salix alba","Cuttings":240,"Bed":"Willow Row A","Substrate":"coir"}]';
+                  }#;
+              }#
+          ];
+        },
+        nullBearingRows:
+        {
+          doc: 'Every non-key column is nullable, so this scenario adds a batch whose optional columns are empty in the fixture and asserts the nulls survive the projection alongside a fully populated row.';
+          data:
+          [
+            demo::jadewillow::store::NurseryDB:
+              Relational
+              #{
+                nursery.nursery_bed:
+                  'bed_id,bed_label,substrate,established_on,bed_area_m2\n'+
+                  '1,Willow Row A,coir,2021-03-14,18.5\n'+
+                  '2,Hazel Row B,perlite,,\n';
+
+                nursery.cutting_batch:
+                  'batch_id,batch_ref,cultivar,cutting_count,rooted_fraction,collected_on,potted_at,bed_id\n'+
+                  '1,CB-001,Salix alba,240,0.75,2024-02-11,2024-04-02 08:30:00,1\n'+
+                  '2,CB-002,,,,,,2\n';
+              }#
+          ];
+          asserts:
+          [
+            nullsSurviveProjection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"CB-001","Cultivar":"Salix alba","Cuttings":240,"Bed":"Willow Row A","Substrate":"coir"},{"Batch":"CB-002","Cultivar":null,"Cuttings":null,"Bed":"Hazel Row B","Substrate":"perlite"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

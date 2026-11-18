@@ -1,0 +1,292 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskygecko2::service::EnclosuresByHumidityFloor
+{
+  pattern: '/herpetarium/v1/enclosures/{minHumidity}';
+  title: 'Dusky Gecko - Enclosures Above A Humidity Floor';
+  owners:
+  [
+    'herpetarium-husbandry',
+    'reptile-house-operations'
+  ];
+  documentation: 'Returns the husbandry-schema enclosures whose recorded humidity reaches the supplied floor, labelling each one with a humidity band, ordered by enclosure code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minHumidity: Float[1]|test::duskygecko2::domain::Enclosure.all()->filter(
+      e|$e.humidityPct >= $minHumidity
+    )->project(
+      [
+        e|$e.enclosureCode,
+        e|$e.zoneLabel,
+        e|if($e.humidityPct >= 60.0, |'HUMID', |'ARID'),
+        e|$e.humidityPct
+      ],
+      [
+        'EnclosureCode',
+        'ZoneLabel',
+        'HumidityBand',
+        'HumidityPct'
+      ]
+    )->sort(
+      [
+        asc('EnclosureCode')
+      ]
+    )};
+    mapping: test::duskygecko2::mapping::HerpetariumMapping;
+    runtime: test::duskygecko2::runtime::HerpetariumH2Runtime;
+  }
+  testSuites:
+  [
+    enclosureHumiditySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herpetariumConnection:
+            Relational
+            #{
+              husbandry.enclosure:
+                'enclosure_id,enclosure_code,zone_label,humidity_pct,temp_setpoint,opened_on\n'+
+                '1,EN-01,Canopy Terrace,68.5,24.50,2026-02-01\n'+
+                '2,EN-02,Arid Range,32.25,29.50,2026-02-02\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTheHumidEnclosure:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minHumidity = 60.0
+          ]
+          asserts:
+          [
+            bandedEnclosure:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"EnclosureCode":"EN-01","ZoneLabel":"Canopy Terrace","HumidityBand":"HUMID","HumidityPct":68.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::duskygecko2::service::SpeciesProfilesByPattern
+{
+  pattern: '/herpetarium/v1/species/{pattern}';
+  title: 'Dusky Gecko - Species Profiles By Activity Pattern';
+  owners:
+  [
+    'herpetarium-husbandry',
+    'reptile-house-operations'
+  ];
+  documentation: 'Returns the taxonomy-schema species profiles recorded with the supplied activity pattern, so the second schema of the same database is exercised through its own aliased binding.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {pattern: String[1]|test::duskygecko2::domain::SpeciesProfile.all()->filter(
+      p|$p.activityPattern == $pattern
+    )->project(
+      [
+        p|$p.speciesAlias,
+        p|$p.activityPattern,
+        p|$p.adultLengthCm
+      ],
+      [
+        'SpeciesAlias',
+        'ActivityPattern',
+        'AdultLengthCm'
+      ]
+    )->sort(
+      [
+        asc('SpeciesAlias')
+      ]
+    )};
+    mapping: test::duskygecko2::mapping::HerpetariumMapping;
+    runtime: test::duskygecko2::runtime::HerpetariumH2Runtime;
+  }
+  testSuites:
+  [
+    speciesProfileSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herpetariumConnection:
+            Relational
+            #{
+              taxonomy.species_profile:
+                'profile_id,species_alias,activity_pattern,adult_length_cm\n'+
+                '1,Banded Rock Gecko,NOCTURNAL,14.5\n'+
+                '2,Sun Skink,DIURNAL,22.5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nocturnalProfiles:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            pattern = 'NOCTURNAL'
+          ]
+          asserts:
+          [
+            onlyTheNocturnalProfile:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SpeciesAlias":"Banded Rock Gecko","ActivityPattern":"NOCTURNAL","AdultLengthCm":14.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::duskygecko2::service::KeeperShiftsByEnclosure
+{
+  pattern: '/herpetarium/v1/shifts/{enclosureCode}';
+  title: 'Dusky Gecko - Keeper Shifts By Enclosure';
+  owners:
+  [
+    'herpetarium-husbandry',
+    'reptile-house-operations'
+  ];
+  documentation: 'Returns the keeper shifts recorded against one enclosure code, exercising the second husbandry table of the multi-table store through its own aliased binding.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {enclosureCode: String[1]|test::duskygecko2::domain::KeeperShift.all()->filter(
+      s|$s.enclosureCode == $enclosureCode
+    )->project(
+      [
+        s|$s.enclosureCode,
+        s|$s.keeperAlias
+      ],
+      [
+        'EnclosureCode',
+        'KeeperAlias'
+      ]
+    )->sort(
+      [
+        asc('KeeperAlias')
+      ]
+    )};
+    mapping: test::duskygecko2::mapping::HerpetariumMapping;
+    runtime: test::duskygecko2::runtime::HerpetariumH2Runtime;
+  }
+  testSuites:
+  [
+    keeperShiftSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herpetariumConnection:
+            Relational
+            #{
+              husbandry.keeper_shift:
+                'shift_id,enclosure_code,keeper_alias,started_at\n'+
+                '1,EN-01,dawn-keeper,2026-02-01 06:00:00\n'+
+                '2,EN-02,dusk-keeper,2026-02-01 18:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        shiftsForOneEnclosure:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            enclosureCode = 'EN-01'
+          ]
+          asserts:
+          [
+            onlyTheMatchingShift:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"EnclosureCode":"EN-01","KeeperAlias":"dawn-keeper"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::duskygecko2::service::EnclosuresOnWarehouse
+{
+  pattern: '/herpetarium/v1/warehouse/enclosures/{minHumidity}';
+  title: 'Dusky Gecko - Enclosures Above A Humidity Floor, Warehouse Tier';
+  owners:
+  [
+    'herpetarium-husbandry',
+    'reptile-house-operations'
+  ];
+  documentation: 'Warehouse-tier counterpart of the banded enclosure query: the same projection planned against the vault-authenticated warehouse runtime, compiled and plan-generated without an in-process fixture.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minHumidity: Float[1]|test::duskygecko2::domain::Enclosure.all()->filter(
+      e|$e.humidityPct >= $minHumidity
+    )->project(
+      [
+        e|$e.enclosureCode,
+        e|$e.zoneLabel,
+        e|if($e.humidityPct >= 60.0, |'HUMID', |'ARID'),
+        e|$e.humidityPct
+      ],
+      [
+        'EnclosureCode',
+        'ZoneLabel',
+        'HumidityBand',
+        'HumidityPct'
+      ]
+    )->sort(
+      [
+        asc('EnclosureCode')
+      ]
+    )};
+    mapping: test::duskygecko2::mapping::HerpetariumMapping;
+    runtime: test::duskygecko2::runtime::HerpetariumWarehouseRuntime;
+  }
+}

@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::jadelighthouse::service::InspectionRegisterFeed
+{
+  pattern: '/lighthouse/v1/inspections/{processingDate}/{businessDate}';
+  title: 'Coast Register - Inspection Feed';
+  documentation: 'Resolves the inspection extent at an independent processing and business instant and projects columns that cross association ends and enumeration translations before they become columns.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::jadelighthouse::domain::Inspection.all($processingDate, $businessDate)->filter(
+      i|($i.station.stationType->toOne()->in(['MAJOR', 'MINOR', 'HARBOUR', 'RANGE', 'DEPOT'])) &&
+        ($i.station.aidCode->toOne()->startsWith('JL-'))
+    )->project(
+      [
+        i|$i.inspectionId,
+        i|$i.station.aidCode,
+        i|$i.station.statusLabel,
+        i|$i.station.region.regionName,
+        i|$i.conditionGrade,
+        i|$i.hazardBand
+      ],
+      [
+        'Inspection/Id',
+        'Aid/Code',
+        'Aid/Status',
+        'Region/Name',
+        'Inspection/Condition',
+        'Inspection/Hazard'
+      ]
+    )->sort([asc('Inspection/Id')])};
+    mapping: test::jadelighthouse::mapping::LighthouseRuleMapping;
+    runtime: test::jadelighthouse::runtime::LighthouseServiceRuntime;
+  }
+  testSuites:
+  [
+    inspectionRegisterFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lighthouseConnection:
+            Relational
+            #{
+              coast.inspection:
+                'inspection_id,station_id,inspector_name,condition_code,hazard_code,in_z,out_z,from_z,thru_z\n'+
+                '1,1,mira holt,1,CA,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,2,dane orrel,2,MO,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,3,fen ashby,3,EX,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '4,4,rune keld,4,SE,2026-01-01,9999-12-31,2024-01-01,2025-01-01\n';
+
+              coast.station:
+                'station_id,station_code,station_name,region_code,station_type,status_code,tower_height_m,keeper_note,lamp_id\n'+
+                '1,JL-101,Gull Point Light,R-01,major,A,38,lens cleaned,1\n'+
+                '2,JL-102,Cobble Head Light,R-01,minor,G,21,scaffold in place,2\n'+
+                '3,JL-103,Sand Bar Light,R-02,harbour,F,14,quay resurfaced,3\n'+
+                '4,ZZ-104,Outer Mark,R-02,minor,A,9,unlisted prefix,4\n';
+
+              coast.region:
+                'region_code,region_name,coast_side\n'+
+                'R-01,North Shore Coast,west\n'+
+                'R-02,East Sands,east\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAtAsOfPair:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            listedAidsResolveAcrossJoinsAndEnumerations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection/Id":1,"Aid/Code":"JL-101","Aid/Status":"ACTIVE LIGHT","Region/Name":"North Shore Coast","Inspection/Condition":"Sound","Inspection/Hazard":"Calm"},{"Inspection/Id":2,"Aid/Code":"JL-102","Aid/Status":"UNDER REFIT","Region/Name":"North Shore Coast","Inspection/Condition":"Serviceable","Inspection/Hazard":"Moderate"},{"Inspection/Id":3,"Aid/Code":"JL-103","Aid/Status":"HARBOUR LIGHT","Region/Name":"East Sands","Inspection/Condition":"Degraded","Inspection/Hazard":"Exposed"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

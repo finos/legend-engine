@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralcove2::service::WaterReadingService
+{
+  pattern: '/coralcove/v1/readings/water';
+  title: 'Water Column Readings';
+  owners:
+  [
+    'reef-monitoring',
+    'water-quality'
+  ];
+  documentation: 'Publishes the water column readings of the reserve, filtered to the warm readings that trigger a bleaching watch.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::WaterReading.all()->filter(
+      r|$r.temperatureC >= 29
+    )->project(
+      [
+        r|$r.readingCode,
+        r|$r.takenOn,
+        r|$r.temperatureC,
+        r|$r.turbidityNtu
+      ],
+      [
+        'READING_CODE',
+        'TAKEN_ON',
+        'TEMPERATURE_C',
+        'TURBIDITY_NTU'
+      ]
+    )->sort(
+      [
+        asc('READING_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}
+
+Service test::coralcove2::service::SiteReadingService
+{
+  pattern: '/coralcove/v1/sites/readings';
+  title: 'Site Water Readings';
+  owners:
+  [
+    'reef-monitoring',
+    'water-quality'
+  ];
+  documentation: 'Publishes each site with the readings reached through the to-many association end, so a site without a reading contributes no row and a site with several multiplies them.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::ReefSite.all()->project(
+      [
+        s|$s.siteCode,
+        s|$s.readings.readingCode,
+        s|$s.readings.temperatureC
+      ],
+      [
+        'SITE_CODE',
+        'READING_CODE',
+        'TEMPERATURE_C'
+      ]
+    )->sort(
+      [
+        asc('SITE_CODE'),
+        asc('READING_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}
+
+Service test::coralcove2::service::BleachingEventService
+{
+  pattern: '/coralcove/v1/events/bleaching';
+  title: 'Bleaching Episodes';
+  owners:
+  [
+    'reef-monitoring',
+    'colony-assessment'
+  ];
+  documentation: 'Publishes every sequence entry of every bleaching episode, keyed by the episode identifier and its sequence number.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::BleachingEvent.all()->project(
+      [
+        e|$e.eventCode,
+        e|$e.eventSeq,
+        e|$e.eventOn,
+        e|$e.severityCode
+      ],
+      [
+        'EVENT_CODE',
+        'EVENT_SEQ',
+        'EVENT_ON',
+        'SEVERITY_CODE'
+      ]
+    )->sort(
+      [
+        asc('EVENT_CODE'),
+        asc('EVENT_SEQ')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}
+
+Service test::coralcove2::service::TransectSiteService
+{
+  pattern: '/coralcove/v1/transects/sites';
+  title: 'Transect Sites';
+  owners:
+  [
+    'reef-monitoring',
+    'survey-planning'
+  ];
+  documentation: 'Publishes each measuring line with the site reached through the to-one association end, which resolves to a single row rather than multiplying.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::coralcove2::domain::Transect.all()->project(
+      [
+        t|$t.transectCode,
+        t|$t.site.siteCode,
+        t|$t.site.siteName
+      ],
+      [
+        'TRANSECT_CODE',
+        'SITE_CODE',
+        'SITE_NAME'
+      ]
+    )->sort(
+      [
+        asc('TRANSECT_CODE')
+      ]
+    );
+    mapping: test::coralcove2::mapping::ReefMapping;
+    runtime: test::coralcove2::runtime::ReefRuntime;
+  }
+}

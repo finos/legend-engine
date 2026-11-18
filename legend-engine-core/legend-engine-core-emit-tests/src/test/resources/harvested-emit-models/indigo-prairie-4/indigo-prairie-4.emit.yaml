@@ -1,0 +1,34 @@
+name: indigo-prairie-4
+title: "Native Prairie Seed-Lot Certification"
+description: |
+  A model-to-model certification flow for native-prairie seed lots. Raw
+  collection records are refined into typed lots with a mapped provenance node,
+  an enumeration-backed germination grade, and deterministic certification
+  labels. A sibling tally mapping renders numeric, date and optional
+  collection values as text through string conversions and fallbacks.
+modelSources:
+  model:
+    root: indigo-prairie-4
+    files:
+      - test/indigoprairie4/domain/PrairieDomain.pure
+      - test/indigoprairie4/domain/PrairieTallyDomain.pure
+      - test/indigoprairie4/mapping/PrairieBaseMapping.pure
+      - test/indigoprairie4/mapping/PrairieMapping.pure
+      - test/indigoprairie4/mapping/PrairieTallyMapping.pure
+features:
+  - execution:mapping-test
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-string-function-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - certification
+  - prairie
+  - seed-lot
+  - transformation

@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A row of the volunteer grafting sheet, exactly as transcribed at the orchard gate.'} test::verdantisle3::domain::GraftSheetRow
+{
+  sheetRef: String[1];
+  rawRootstock: String[0..1];
+  rawScion: String[0..1];
+  rawPlot: String[0..1];
+  rawGrafter: String[0..1];
+  rawTool: String[0..1];
+  rawHealthScore: String[0..1];
+  rawWindowOpen: String[0..1];
+  rawWindowClose: String[0..1];
+  notes: test::verdantisle3::domain::GraftNoteRow[*];
+  payload: test::verdantisle3::domain::GraftPayload[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A free-text note attached to a grafting sheet row.'} test::verdantisle3::domain::GraftNoteRow
+{
+  noteKind: String[0..1];
+  noteText: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The shape shared by every version of the take-count payload appended to a sheet row.'} test::verdantisle3::domain::GraftPayload
+{
+  payloadVersion: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The payload version that carries the take and failure counts of a grafting batch.'} test::verdantisle3::domain::DetailedGraftPayload extends test::verdantisle3::domain::GraftPayload
+{
+  takeCount: Integer[1];
+  failCount: Integer[1];
+  inspectorTag: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A row of the nursery bed sheet holding tray, irrigation and soil transcriptions.'} test::verdantisle3::domain::NurseryRow
+{
+  bedRef: String[1];
+  rawTray: String[0..1];
+  rawLitres: String[0..1];
+  rawPh: String[0..1];
+  beds: test::verdantisle3::domain::NurseryBedRow[*];
+  payload: test::verdantisle3::domain::GraftPayload[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single bed within a nursery sheet row.'} test::verdantisle3::domain::NurseryBedRow
+{
+  bedCode: String[1];
+  slotCount: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The refined grafting record assembled from a sheet row and its nested wrappers.'} test::verdantisle3::domain::GraftDigest
+{
+  graftKey: String[1];
+  registerLabel: String[1];
+  inspectorLabel: String[1];
+  takeRateLabel: String[1];
+  noteDigest: String[0..1];
+  takeCount: Integer[0..1];
+  failCount: Integer[0..1];
+  rootstock: test::verdantisle3::domain::RootstockRef[1];
+  scion: test::verdantisle3::domain::ScionRef[1];
+  plot: test::verdantisle3::domain::PlotRef[1];
+  grafter: test::verdantisle3::domain::GrafterTag[1];
+  tool: test::verdantisle3::domain::ToolTag[1];
+  health: test::verdantisle3::domain::HealthBand[1];
+  window: test::verdantisle3::domain::SeasonWindow[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The refined nursery-bed record assembled from a nursery sheet row.'} test::verdantisle3::domain::NurseryDigest
+{
+  bedKey: String[1];
+  rowLabel: String[1];
+  payloadVersionLabel: String[1];
+  slotSummary: String[0..1];
+  litresPerWeek: Integer[0..1];
+  tray: test::verdantisle3::domain::TrayRef[1];
+  probe: test::verdantisle3::domain::SoilProbe[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper naming the rootstock a graft was worked onto.'} test::verdantisle3::domain::RootstockRef
+{
+  code: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper naming the scion wood taken for a graft.'} test::verdantisle3::domain::ScionRef
+{
+  code: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper naming the orchard plot a graft stands in.'} test::verdantisle3::domain::PlotRef
+{
+  plotCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper carrying the initials of the volunteer grafter.'} test::verdantisle3::domain::GrafterTag
+{
+  initials: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper naming the grafting knife used on a batch.'} test::verdantisle3::domain::ToolTag
+{
+  toolCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper holding the banded health assessment of a graft union.'} test::verdantisle3::domain::HealthBand
+{
+  band: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The grafting window a batch was worked in.'} test::verdantisle3::domain::SeasonWindow
+{
+  opensOn: String[1];
+  closesOn: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A one-property wrapper naming the propagation tray a nursery bed feeds.'} test::verdantisle3::domain::TrayRef
+{
+  trayCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The soil probe reading taken on a nursery bed.'} test::verdantisle3::domain::SoilProbe
+{
+  phLabel: String[1];
+}

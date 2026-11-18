@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldestuary2::mapping::EstuaryMapping
+(
+  include mapping test::emeraldestuary2::mapping::EstuaryBaseMapping
+  include mapping test::emeraldestuary2::mapping::SiteReferenceMapping
+
+  test::emeraldestuary2::domain::Plot_PrimarySite: Relational
+  {
+    AssociationMapping
+    (
+      primarySite[plot, site]: [test::emeraldestuary2::store::EstuaryStore]@Plot_PrimarySite,
+      primaryPlots[site, plot]: [test::emeraldestuary2::store::EstuaryStore]@Plot_PrimarySite
+    )
+  }
+
+  test::emeraldestuary2::domain::Plot_FallbackSite: Relational
+  {
+    AssociationMapping
+    (
+      fallbackSite[plot, site]: [test::emeraldestuary2::store::EstuaryStore]@Plot_FallbackSite,
+      fallbackPlots[site, plot]: [test::emeraldestuary2::store::EstuaryStore]@Plot_FallbackSite
+    )
+  }
+
+  test::emeraldestuary2::domain::Plot_AuditSite: Relational
+  {
+    AssociationMapping
+    (
+      auditSite[plot, site]: [test::emeraldestuary2::store::EstuaryStore]@Plot_AuditSite,
+      auditPlots[site, plot]: [test::emeraldestuary2::store::EstuaryStore]@Plot_AuditSite
+    )
+  }
+
+  testSuites:
+  [
+    coverageDerivationSuite:
+    {
+      function: |test::emeraldestuary2::domain::ReedPlot.all()->project(
+  [
+    p|$p.plotCode,
+    p|$p.statusLabel,
+    p|$p.coverBand,
+    p|$p.plotTag,
+    p|$p.nameLength,
+    p|$p.acceptedName
+  ],
+  [
+    'Plot',
+    'Status',
+    'CoverBand',
+    'Tag',
+    'NameLength',
+    'Accepted'
+  ]
+)->sort(
+  [
+    asc('Plot')
+  ]
+);
+      tests:
+      [
+        everyCoverageArm:
+        {
+          doc: 'Hits all eight arms of the coverage conditional, leaves the cover band at its null sentinel below the wet threshold, composes the tag and trimmed name length through string functions, and reads the accepted name from the borrowed synonym table the store pulls in through an include - including one plot whose synonym code is absent.';
+          data:
+          [
+            test::emeraldestuary2::store::EstuaryStore:
+              Reference
+              #{
+                test::emeraldestuary2::data::ReedCoverageData
+              }#
+          ];
+          asserts:
+          [
+            nineCoverageRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"RP-01","Status":"PRIME REED","CoverBand":"WET-TIDAL REEDBED","Tag":"TIDAL REEDBED/RP-01","NameLength":13,"Accepted":"Phragmites australis"},{"Plot":"RP-02","Status":"STRONG REED","CoverBand":"WET-UPPER MARSH","Tag":"UPPER MARSH/RP-02","NameLength":11,"Accepted":"Bolboschoenus maritimus"},{"Plot":"RP-03","Status":"GOOD REED","CoverBand":"WET-MID CHANNEL","Tag":"MID CHANNEL/RP-03","NameLength":11,"Accepted":"Phragmites australis"},{"Plot":"RP-04","Status":"MIXED REED","CoverBand":"WET-SALT PAN","Tag":"SALT PAN/RP-04","NameLength":8,"Accepted":"Bolboschoenus maritimus"},{"Plot":"RP-05","Status":"SPARSE REED","CoverBand":null,"Tag":"SAND FLAT/RP-05","NameLength":9,"Accepted":"Phragmites australis"},{"Plot":"RP-06","Status":"THIN REED","CoverBand":null,"Tag":"SHELL BANK/RP-06","NameLength":10,"Accepted":"Bolboschoenus maritimus"},{"Plot":"RP-07","Status":"TRACE REED","CoverBand":null,"Tag":"BARE SCRAPE/RP-07","NameLength":11,"Accepted":"Phragmites australis"},{"Plot":"RP-08","Status":"NO REED","CoverBand":null,"Tag":"STONE SPIT/RP-08","NameLength":10,"Accepted":"Bolboschoenus maritimus"},{"Plot":"RP-09","Status":"GOOD REED","CoverBand":"WET-LOST CREEK","Tag":"LOST CREEK/RP-09","NameLength":10,"Accepted":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteLinkSuite:
+    {
+      function: |test::emeraldestuary2::domain::ReedPlot.all()->project(
+  [
+    p|$p.plotCode,
+    p|$p.plotSeq,
+    p|$p.primarySite.siteName,
+    p|$p.fallbackSite.siteName,
+    p|$p.auditSite.regionName
+  ],
+  [
+    'Plot',
+    'Seq',
+    'PrimarySite',
+    'FallbackSite',
+    'AuditRegion'
+  ]
+)->sort(
+  [
+    asc('Plot'),
+    asc('Seq')
+  ]
+);
+      tests:
+      [
+        threeSiteLinks:
+        {
+          doc: 'Walks the three association implementations, each over its own store join onto the borrowed site reference table, keeps two surveys of one plot apart through the composite key and leaves all three links unresolved for the plot whose site codes are absent.';
+          data:
+          [
+            test::emeraldestuary2::store::EstuaryStore:
+              Reference
+              #{
+                test::emeraldestuary2::data::SiteLinkData
+              }#
+          ];
+          asserts:
+          [
+            linkedSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"RP-01","Seq":1,"PrimarySite":"Outer Bar Station","FallbackSite":"Mill Creek Station","AuditRegion":"Upper Estuary"},{"Plot":"RP-01","Seq":2,"PrimarySite":"Mill Creek Station","FallbackSite":"Reed Walk Station","AuditRegion":"Lower Estuary"},{"Plot":"RP-09","Seq":1,"PrimarySite":null,"FallbackSite":null,"AuditRegion":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

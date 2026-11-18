@@ -1,0 +1,86 @@
+name: sunlit-lagoon
+title: "Sunlit Lagoon — A Two-Namespace Observatory Register Reached Through Banding Derivations"
+description: |
+  An invented non-financial observatory register: one relational store split into
+  two namespaces, the sky namespace holding the observations and the telescopes
+  that took them, the operations namespace holding the sites those telescopes
+  stand on, the stewards of those sites and the service visits recorded against
+  them. Every reference path is declared on descriptive key columns, and the
+  register mapping traverses four of them as association implementations, so a
+  property bound through a path pulls the related unit - and, for the site path,
+  the second namespace - into the generated statement while a row whose
+  counterpart is missing keeps the row and surfaces the widened attributes as
+  absent. A named store filter on the site unit removes retired sites, so a visit
+  or a telescope pointing at one loses every traversed attribute without losing
+  its own row. Attribute derivations live on the classes rather than in the store:
+  a seeing band, an aperture class, an altitude band, a boolean exposure test, a
+  parameterised exposure band and a composed display label, all computed above
+  three defaulting relational transforms. A base mapping holds the site and
+  steward units and is included by the register mapping. Two single-execution
+  services filter, project and aggregate over the register - one keyed by a path
+  segment, one grouping on the joined site name - and a third publishes the same
+  body as two execution alternatives keyed by a supplied facility value. A data
+  space with two execution contexts lists the classes, publishes both tested
+  queries as executables and carries combined support contacts.
+
+modelSources:
+  model:
+    root: sunlit-lagoon
+    files:
+      - test/sunlitlagoon/connection/ObservatoryConnections.pure
+      - test/sunlitlagoon/dataspace/ObservatoryDataSpace.pure
+      - test/sunlitlagoon/domain/ObservatoryDomain.pure
+      - test/sunlitlagoon/mapping/ObservatoryBaseMapping.pure
+      - test/sunlitlagoon/mapping/ObservatoryMapping.pure
+      - test/sunlitlagoon/runtime/ObservatoryRuntimes.pure
+      - test/sunlitlagoon/service/ObservatoryServices.pure
+      - test/sunlitlagoon/store/ObservatoryDb.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-outer-join
+
+stores:
+  - relational
+
+complexity: advanced
+
+tags:
+  - aggregation
+  - association
+  - cross-schema
+  - data-space
+  - derived-property
+  - h2
+  - mapping-include
+  - mapping-test
+  - multi-execution-service
+  - outer-join
+  - relational
+  - service-test
+  - tabular-data-set

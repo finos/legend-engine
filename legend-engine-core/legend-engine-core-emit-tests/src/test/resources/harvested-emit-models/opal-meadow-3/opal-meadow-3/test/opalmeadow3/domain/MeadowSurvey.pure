@@ -1,0 +1,169 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::opalmeadow3::domain::*;
+import demo::opalmeadow3::profile::*;
+import meta::pure::profiles::*;
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Anything written into the meadow restoration register. Abstract: only concrete visits, plots and sightings are ever recorded.', MeadowCuration.recordedBy = 'register keepers'} demo::opalmeadow3::domain::RegisterEntry
+[
+  entryCodeShape
+  (
+    ~function: ($this.entryCode->trim()->length() == 9) && $this.entryCode->matches('[A-Z]{2}-[0-9]{6}')
+    ~enforcementLevel: Error
+    ~message: 'Register entry code must be two capitals, a dash and six digits'
+  ),
+  remarkNotBlank
+  (
+    ~function: $this.remark->isEmpty() || (($this.remark->toOne()->trim()->length() > 0) && ($this.remark->toOne()->length() <= 240))
+    ~enforcementLevel: Warn
+    ~message: 'A register remark, when present, must be non-blank and at most 240 characters'
+  )
+]
+{
+  {doc.doc = 'Register-wide code of the entry.'} entryCode: String[1];
+  <<MeadowStorage.shortText>> {doc.doc = 'Free text note left by the recorder.', MeadowStorage.storageNote = 'bounded free text'} remark: String[0..1];
+  {doc.doc = 'Initials of whoever entered the record.'} recorderInitials: String[1..3];
+}
+
+Class <<typemodifiers.abstract, MeadowCuration.sensitiveLocation>> {doc.doc = 'A fixed place on the reserve that surveys return to.'} demo::opalmeadow3::domain::SurveyLocality extends RegisterEntry
+{
+  {doc.doc = 'Grid reference of the locality centre.'} gridReference: String[1];
+  <<MeadowStorage.doublePrecision>> {doc.doc = 'Altitude of the locality centre in metres.', MeadowStorage.storageNote = 'wide floating point'} altitudeM: Float[1];
+}
+
+Class {doc.doc = 'A marked restoration plot that receives seed mixes and repeat visits.', MeadowCuration.vernacularName = 'plot'} demo::opalmeadow3::domain::RestorationPlot extends SurveyLocality
+{
+  {doc.doc = 'Habitat the plot is being restored toward.'} habitat: PlotHabitat[1];
+  {doc.doc = 'Seed mixes sown on the plot, at most three per season.'} seedMixes: SeedMix[0..3];
+  {doc.doc = 'Quadrats pegged out inside the plot.'} quadrats: Quadrat[1..7];
+}
+
+Class {doc.doc = 'A walked line through the reserve used for timed searches.'} demo::opalmeadow3::domain::SearchTransect extends SurveyLocality
+{
+  <<MeadowStorage.singlePrecision>> {doc.doc = 'Walked length of the transect in metres.'} lengthM: Float[1];
+  {doc.doc = 'Waypoints that mark the transect, between two and five.'} waypointCodes: String[2..5];
+}
+
+Class {doc.doc = 'A named blend of native seed sown onto a plot.'} demo::opalmeadow3::domain::SeedMix
+[
+  mixHasSpecies: $this.componentNames->isNotEmpty() && $this.componentNames->isDistinct(),
+  sowingRateWithinBand
+  (
+    ~function: ($this.sowingRateGm2 >= 0.5) && ($this.sowingRateGm2 <= 6.0)
+    ~enforcementLevel: Error
+    ~message: 'Seed mix sowing rate must sit between half a gram and six grams per square metre'
+  )
+]
+{
+  {doc.doc = 'Supplier code of the mix.'} mixCode: String[1];
+  {doc.doc = 'Plant names blended into the mix.'} componentNames: String[1..*];
+  <<MeadowStorage.singlePrecision>> {doc.doc = 'Sowing rate in grams per square metre.'} sowingRateGm2: Float[1];
+}
+
+Class {doc.doc = 'A one metre square pegged out inside a plot and counted on every visit.'} demo::opalmeadow3::domain::Quadrat
+[
+  pegCodeShape
+  (
+    ~function: $this.pegCode->isEmpty() || (($this.pegCode->toOne()->toUpper() == $this.pegCode->toOne()) && ($this.pegCode->toOne()->replace('Q', '')->length() == 3))
+    ~enforcementLevel: Error
+    ~message: 'A quadrat peg code must be upper case with a Q and three further characters'
+  ),
+  tallyLabelsDistinct
+  (
+    ~function: $this.tallies->isEmpty() || $this.tallies.plantName->isDistinct()
+    ~enforcementLevel: Error
+    ~message: 'A quadrat may tally each plant name at most once'
+  ),
+  coverAddsUp
+  (
+    ~function: $this.tallies->isEmpty() || (($this.tallies.coverPercent->sum() <= 100.0) && $this.tallies->filter(t | $t.coverPercent < 0.0)->isEmpty())
+    ~enforcementLevel: Warn
+    ~message: 'Percentage cover across the tallies of one quadrat must not exceed one hundred'
+  )
+]
+{
+  {doc.doc = 'Code painted on the corner peg, absent until the peg is replaced.'} pegCode: String[0..1];
+  {doc.doc = 'Plant tallies counted in the quadrat.'} tallies: PlantTally[*];
+}
+
+Class {doc.doc = 'One plant counted inside one quadrat on one visit.'} demo::opalmeadow3::domain::PlantTally
+[
+  stemCountSensible: ($this.stemCount >= 0) && ($this.stemCount <= 5000),
+  bloomStageConsistent
+  (
+    ~function: $this.bloomStage->isEmpty() || !($this.bloomStage == BloomStage.WITHERED) || ($this.stemCount == 0) || ($this.coverPercent <= 5.0)
+    ~enforcementLevel: Warn
+    ~message: 'A withered tally should carry no stems or only a trace of cover'
+  )
+]
+{
+  {doc.doc = 'Name of the plant tallied.'} plantName: String[1];
+  {doc.doc = 'Stems counted.'} stemCount: Integer[1];
+  <<MeadowStorage.doublePrecision>> {doc.doc = 'Estimated percentage cover.'} coverPercent: Float[1];
+  {doc.doc = 'Flowering stage seen, when one could be judged.'} bloomStage: BloomStage[0..1];
+  {doc.doc = 'Local rarity band of the plant.'} rarity: RarityBand[1];
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'A dated pass over the reserve by a survey team.'} demo::opalmeadow3::domain::SurveyVisit extends RegisterEntry
+{
+  {doc.doc = 'Day the visit took place.'} visitDate: StrictDate[1];
+  {doc.doc = 'How the visit gathered its records.'} method: SurveyMethod[1];
+  {doc.doc = 'Sightings logged on the visit.'} sightings: Sighting[*];
+}
+
+Class <<MeadowCuration.fieldVerified>> {doc.doc = 'A visit counting quadrats on restoration plots.'} demo::opalmeadow3::domain::PlotVisit extends SurveyVisit
+{
+  {doc.doc = 'Plots counted on the visit, between one and four.'} plots: RestorationPlot[1..4];
+}
+
+Class <<MeadowCuration.provisional>> {doc.doc = 'A visit walking search transects for scarce plants.'} demo::opalmeadow3::domain::TransectVisit extends SurveyVisit
+{
+  {doc.doc = 'Transects walked on the visit.'} transects: SearchTransect[1..*];
+  <<MeadowStorage.singlePrecision>> {doc.doc = 'Minutes spent searching.'} searchMinutes: Float[1];
+}
+
+Class {doc.doc = 'A single plant noticed on a visit, outside any quadrat count.'} demo::opalmeadow3::domain::Sighting
+[
+  rareSightingEvidenced
+  (
+    ~function: !($this.rarity->in([RarityBand.SCARCE, RarityBand.RARE])) || ($this.photoRefs->isNotEmpty() && $this.photoRefs->filter(r | $r->trim()->length() == 0)->isEmpty())
+    ~enforcementLevel: Error
+    ~message: 'A scarce or rare sighting must carry at least one non-blank photo reference'
+  ),
+  sightingCrossChecked
+  (
+    ~function: $this.confirmations->isEmpty() || $this.confirmations->filter({c | ($c.confirmerInitials->isNotEmpty() && (($c.confirmerInitials == $this.observerInitials) || (($c.agreedName->isEmpty() || ($c.agreedName->toOne()->trim()->toLower() == $this.plantName->trim()->toLower())) && ((($c.confidence == 'LOW') || ($c.confidence == 'MEDIUM')) || ((($c.confidence == 'HIGH') && $c.agreedName->isEmpty()))))))})->isEmpty()
+    ~enforcementLevel: Warn
+    ~message: 'A sighting confirmation must come from a second recorder who confidently agrees or names a different plant'
+  )
+]
+{
+  {doc.doc = 'Name of the plant as the observer recorded it.'} plantName: String[1];
+  {doc.doc = 'Initials of the observer.'} observerInitials: String[1];
+  {doc.doc = 'Local rarity band of the plant.'} rarity: RarityBand[1];
+  {doc.doc = 'Photograph references backing the sighting, up to six.'} photoRefs: String[0..6];
+  {doc.doc = 'Second opinions gathered on the sighting.'} confirmations: SightingConfirmation[0..3];
+}
+
+Class {doc.doc = 'The opinion a second recorder gave on a sighting.'} demo::opalmeadow3::domain::SightingConfirmation
+[
+  confidenceVocabulary: $this.confidence->in(['LOW', 'MEDIUM', 'HIGH'])
+]
+{
+  {doc.doc = 'Initials of the confirming recorder.'} confirmerInitials: String[0..1];
+  {doc.doc = 'Plant name the confirmer agreed on, absent when they could not say.'} agreedName: String[0..1];
+  {doc.doc = 'How sure the confirmer was.'} confidence: String[1];
+}

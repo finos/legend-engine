@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<test::indigotundra2::domain::TundraClassification.observational>> {test::indigotundra2::domain::TundraClassification.scope = 'reading supertype'} test::indigotundra2::domain::SurveyRecord
+{
+  recordRef: String[1];
+  season: test::indigotundra2::domain::SeasonWindow[0..1];
+  qualityFlag: test::indigotundra2::domain::DataQualityFlag[0..1];
+}
+
+Class test::indigotundra2::domain::PermafrostReading extends test::indigotundra2::domain::SurveyRecord
+{
+  activeLayerCentimetres: Integer[0..1];
+  probeNote: String[0..1];
+}
+
+Class test::indigotundra2::domain::SnowDepthReading extends test::indigotundra2::domain::SurveyRecord
+{
+  snowCentimetres: Integer[0..1];
+}
+
+Class test::indigotundra2::domain::LichenPatchCount extends test::indigotundra2::domain::SurveyRecord
+{
+  patchCount: Integer[0..1];
+}
+
+Class test::indigotundra2::domain::ThawProbeReading extends test::indigotundra2::domain::SurveyRecord
+{
+  thawCentimetres: Integer[0..1];
+}
+
+Class test::indigotundra2::domain::WindExposureReading extends test::indigotundra2::domain::SurveyRecord
+{
+  exposureToken: String[0..1];
+}

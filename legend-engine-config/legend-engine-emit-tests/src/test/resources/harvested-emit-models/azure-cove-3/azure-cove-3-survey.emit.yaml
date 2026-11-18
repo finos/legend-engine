@@ -1,0 +1,52 @@
+name: azure-cove-3-survey
+title: "Azure Cove 3 — Shoreline Plot Survey Domain (Milestoning, Association Topology, Diagram)"
+description: |
+  A store-less shoreline survey model whose whole complexity is model shape.
+  A wide business-milestoned plot root of roughly forty properties sits at the
+  centre of a hub-and-spoke topology: fifteen standalone associations reach its
+  schedules, records, sheets, marks and identifiers with required to-one,
+  optional to-one and unbounded to-many ends, four of them terminating on
+  classes owned by the reference module and one carrying a business-temporal
+  stereotype on the association itself, so the relationship is versioned
+  independently of the validity windows of its ends. Six classes specialise
+  bases declared outside this module, four of them adding nothing at all; one of
+  those specialisations adds a business timeline and one a processing timeline
+  that differs from its parent, so an inheritance edge and a milestoning
+  stereotype meet on the same class. Fourteen enumerations — including two pairs
+  that describe overlapping concepts with identical value sets, and one whose
+  values each carry documentation — supply closed value sets to the plot and its
+  schedules, and a diagram pins nineteen class views and sixteen property views
+  onto a canvas with explicit geometry.
+modelSources:
+  model:
+    root: azure-cove-3-survey
+    files:
+      - test/azurecove3/survey/PlotAssociations.pure
+      - test/azurecove3/survey/PlotDomain.pure
+      - test/azurecove3/survey/PlotVocabulary.pure
+      - test/azurecove3/survey/ShorelinePlotDiagram.pure
+  dependencies:
+    - source: azure-cove-3-reference.emit.yaml
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - business-temporal
+  - class-inheritance
+  - diagram
+  - enumeration
+  - hub-and-spoke
+  - milestoned-association
+  - processing-temporal
+  - shoreline-survey
+  - store-less
+  - wide-class

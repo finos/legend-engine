@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::goldenarboretum3::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Stage a propagation lot has reached in the nursery cycle.'} test::goldenarboretum3::domain::LotStage
+{
+  SOWN,
+  GERMINATED,
+  POTTED,
+  HARDENED,
+  DISPATCHED
+}
+
+Class {meta::pure::profiles::doc.doc = 'A batch of young plants raised together in one nursery bed, the unit the nursery plans and reports on.'} test::goldenarboretum3::domain::PropagationLot
+{
+  {meta::pure::profiles::doc.doc = 'Code of the lot in the nursery register.'} lotCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Label the nursery staff know the lot by.'} lotLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Stage the lot has reached, held as a closed set.'} stage: LotStage[0..1];
+  {meta::pure::profiles::doc.doc = 'Vigour band spelled out from the single-letter grade, empty when the grade is outside the published set.'} vigourLabel: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Whether the last health check happened, spelled out from the numeric flag and left empty when the flag is neither of the two known values.'} healthLabel: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Register the lot is published from, supplied as a constant by the binding.'} sourceRegister: String[1];
+  {meta::pure::profiles::doc.doc = 'Number of seeds or cuttings put down.'} sownCount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Number that took.'} struckCount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Date the lot was potted on.'} pottedOn: StrictDate[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the bed, reached through the bed join.'} bedName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the species, reached through the cross-store species join.'} speciesName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Family of the species, reached through the same cross-store join.'} familyName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the growing medium, reached through the cross-store substrate join.'} substrateName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Bed the lot occupies.'} bed: NurseryBed[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bed or bench in the nursery that lots are laid out on.'} test::goldenarboretum3::domain::NurseryBed
+{
+  {meta::pure::profiles::doc.doc = 'Code of the bed.'} bedCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Name of the bed.'} bedName: String[1];
+  {meta::pure::profiles::doc.doc = 'Length of bench available, in metres.'} benchMetres: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Shading state spelled out from the numeric flag, empty for an unrecognised flag.'} shadingLabel: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the zone the bed sits in, reached through the cross-store zone join.'} zoneName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Shelter class of that zone, reached through the same join.'} shelterClass: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A mother plant kept for cutting material, tied to the lot it was raised from.'} test::goldenarboretum3::domain::StockPlant
+{
+  {meta::pure::profiles::doc.doc = 'Code of the stock plant.'} stockCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Label of the stock plant.'} stockLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Stem girth in millimetres.'} girthMillimetres: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Cuttings taken this season.'} cuttingsTaken: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Label of the lot it came from, reached through the lot join.'} lotLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One treatment applied to a lot, such as a feed or a fungicide.'} test::goldenarboretum3::domain::TreatmentLog
+{
+  {meta::pure::profiles::doc.doc = 'Reference of the treatment entry.'} treatmentRef: String[1];
+  {meta::pure::profiles::doc.doc = 'Name of the treatment applied.'} treatmentName: String[1];
+  {meta::pure::profiles::doc.doc = 'Date of application.'} appliedOn: StrictDate[0..1];
+  {meta::pure::profiles::doc.doc = 'Dose applied, in millilitres.'} doseMillilitres: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Label of the treated lot, reached through the lot join.'} lotLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A species entry in the reference store, curated separately from the nursery register.'} test::goldenarboretum3::domain::SpeciesReference
+{
+  {meta::pure::profiles::doc.doc = 'Code of the species.'} speciesCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Accepted name of the species.'} speciesName: String[1];
+  {meta::pure::profiles::doc.doc = 'Family the species belongs to.'} familyName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Native range description.'} nativeRange: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A growing medium entry in the reference store.'} test::goldenarboretum3::domain::SubstrateReference
+{
+  {meta::pure::profiles::doc.doc = 'Code of the growing medium.'} substrateCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Name of the growing medium.'} substrateName: String[1];
+  {meta::pure::profiles::doc.doc = 'Drainage class of the medium.'} drainageClass: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A zone of the nursery site in the reference store.'} test::goldenarboretum3::domain::ZoneReference
+{
+  {meta::pure::profiles::doc.doc = 'Code of the zone.'} zoneCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Name of the zone.'} zoneName: String[1];
+  {meta::pure::profiles::doc.doc = 'Shelter class of the zone.'} shelterClass: String[0..1];
+}

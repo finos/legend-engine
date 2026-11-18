@@ -1,0 +1,154 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletthistle4::service::ContactProgrammeDigestByEnv
+{
+  pattern: '/scarletthistle4/contact-programme-digest/{environment}';
+  ownership: UserList { users: ['trail-register-stewardship-desk'] };
+  documentation: 'Publishes one row per volunteer contact and the programme its subscription places it in. Seven grouping keys carry the shape - two read off the contact extent itself and five reached through the to-one subscription association - and a single aggregate folds the to-many offering names reached over the second association hop into one delimited digest, so a contact whose subscription publishes several offerings still collapses to one row. A distinct reduction closes the body because the offering traversal fans the extent out before the grouping. The environment key chooses only the physical binding: both keyed executions name the same mapping and differ solely in the runtime they resolve to.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {|test::scarletthistle4::domain::TrailContact.all()->groupBy(
+      [
+        c|$c.contactCode,
+        c|$c.contactName,
+        c|$c.subscription.programName,
+        c|$c.subscription.regionCode,
+        c|$c.subscription.cadenceCode,
+        c|$c.subscription.tierCode,
+        c|$c.subscription.channelCode
+      ],
+      [
+        agg(
+          c|$c.subscription.offerings.offeringName,
+          v|$v->joinStrings(' | ')
+        )
+      ],
+      [
+        'ContactCode',
+        'ContactName',
+        'ProgramName',
+        'RegionCode',
+        'CadenceCode',
+        'TierCode',
+        'ChannelCode',
+        'OfferingDigest'
+      ]
+    )->distinct()->sort(
+      [
+        asc('ContactCode')
+      ]
+    )};
+    key: 'environment';
+    executions['field']:
+    {
+      mapping: test::scarletthistle4::mapping::ThistleMapping;
+      runtime: test::scarletthistle4::runtime::ThistleFieldRuntime;
+    }
+    executions['regional']:
+    {
+      mapping: test::scarletthistle4::mapping::ThistleMapping;
+      runtime: test::scarletthistle4::runtime::ThistleRegionalRuntime;
+    }
+  }
+  testSuites:
+  [
+    contactProgrammeDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thistleField:
+            Relational
+            #{
+              trail.contact:
+                'contact_code,contact_name,subscription_code\n'+
+                'CT-01,Ada Fernwood,SB-01\n'+
+                'CT-02,Ben Harrowby,SB-02\n'+
+                'CT-03,Cleo Marsden,SB-03\n'+
+                'CT-04,Dara Pinewell,\n'+
+                'CT-05,Eli Thornbury,SB-01\n';
+
+              trail.subscription:
+                'subscription_code,program_name,region_code,cadence_code,tier_code,channel_code\n'+
+                'SB-01,Ridge Path Stewardship,RG-NORTH,WEEKLY,TIER-1,EMAIL\n'+
+                'SB-02,Meadow Loop Restoration,RG-SOUTH,MONTHLY,TIER-2,POST\n'+
+                'SB-03,Fen Boardwalk Watch,RG-EAST,SEASONAL,TIER-3,EMAIL\n';
+
+              trail.offering:
+                'offering_code,subscription_code,offering_name\n'+
+                'OF-01,SB-01,Alder Gate Sweep\n'+
+                'OF-02,SB-01,Bramble Clearing\n'+
+                'OF-03,SB-01,Culvert Check\n'+
+                'OF-04,SB-02,Wildflower Count\n';
+            }#,
+          thistleRegional:
+            Relational
+            #{
+              trail.contact:
+                'contact_code,contact_name,subscription_code\n';
+
+              trail.subscription:
+                'subscription_code,program_name,region_code,cadence_code,tier_code,channel_code\n';
+
+              trail.offering:
+                'offering_code,subscription_code,offering_name\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        foldedOfferingsPerContactInTheFieldEnvironment:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['field'];
+          asserts:
+          [
+            severalOfferingsCollapseToOneDigestedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ContactCode":"CT-01","ContactName":"Ada Fernwood","ProgramName":"Ridge Path Stewardship","RegionCode":"RG-NORTH","CadenceCode":"WEEKLY","TierCode":"TIER-1","ChannelCode":"EMAIL","OfferingDigest":"Alder Gate Sweep | Bramble Clearing | Culvert Check"},{"ContactCode":"CT-02","ContactName":"Ben Harrowby","ProgramName":"Meadow Loop Restoration","RegionCode":"RG-SOUTH","CadenceCode":"MONTHLY","TierCode":"TIER-2","ChannelCode":"POST","OfferingDigest":"Wildflower Count"},{"ContactCode":"CT-03","ContactName":"Cleo Marsden","ProgramName":"Fen Boardwalk Watch","RegionCode":"RG-EAST","CadenceCode":"SEASONAL","TierCode":"TIER-3","ChannelCode":"EMAIL","OfferingDigest":null},{"ContactCode":"CT-04","ContactName":"Dara Pinewell","ProgramName":null,"RegionCode":null,"CadenceCode":null,"TierCode":null,"ChannelCode":null,"OfferingDigest":null},{"ContactCode":"CT-05","ContactName":"Eli Thornbury","ProgramName":"Ridge Path Stewardship","RegionCode":"RG-NORTH","CadenceCode":"WEEKLY","TierCode":"TIER-1","ChannelCode":"EMAIL","OfferingDigest":"Alder Gate Sweep | Bramble Clearing | Culvert Check"}]';
+                  }#;
+              }#
+          ]
+        },
+        theRegionalEnvironmentResolvesButYieldsNoRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['regional'];
+          asserts:
+          [
+            theKeyBindsAndNoRowsArePublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

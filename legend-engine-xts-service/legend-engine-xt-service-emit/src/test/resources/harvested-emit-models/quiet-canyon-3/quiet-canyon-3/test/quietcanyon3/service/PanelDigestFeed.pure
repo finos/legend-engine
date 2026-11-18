@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietcanyon3::service::PanelDigestFeed
+{
+  pattern: '/quietcanyon3/v1/panel-digest';
+  title: 'Quiet Canyon 3 - Panel Condition Digest Feed';
+  owners:
+  [
+    'rock-art-survey'
+  ];
+  documentation: 'Accepts inbound rock-art panel submissions as a JSON payload and returns the whole published panel graph, so every transform in the model-to-model mapping is exercised as one payload-in, payload-out call. The runtime is declared inline in the execution block and binds the model store to a document connection naming the submission class.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::quietcanyon3::domain::PanelReport.all()->graphFetch(
+      #{
+        test::quietcanyon3::domain::PanelReport
+        {
+          surveyRef,
+          panelCode,
+          conditionBand,
+          phaseLabel,
+          fractureIndex,
+          lichenLabel,
+          clearanceDigest,
+          visitedOn,
+          station
+          {
+            stationCode,
+            sector
+            {
+              sectorCode,
+              regionLabel
+            }
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::quietcanyon3::domain::PanelReport
+        {
+          surveyRef,
+          panelCode,
+          conditionBand,
+          phaseLabel,
+          fractureIndex,
+          lichenLabel,
+          clearanceDigest,
+          visitedOn,
+          station
+          {
+            stationCode,
+            sector
+            {
+              sectorCode,
+              regionLabel
+            }
+          }
+        }
+      }#
+    );
+    mapping: test::quietcanyon3::mapping::CanyonM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::quietcanyon3::mapping::CanyonM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          panelSubmissionConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::quietcanyon3::source::PanelSubmission;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    panelDigestFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          panelSubmissionConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"surveyRef":"SV-1001","panelCode":"PN-21","integrity":0.88,"phase":"dry season","fractureCount":2,"lichenPct":72.0,"clearanceNotes":["cleared"],"visitedOn":"2026-04-01","station":{"code":"qc-1","sector":{"code":"SEC-C","region":"  quiet reach  "}}},{"surveyRef":"SV-1002","panelCode":"PN-22","visitedOn":"2026-04-02"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        servedPanelGraph:
+        {
+          asserts:
+          [
+            servedPanelGraphRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"surveyRef":"SV-1001","panelCode":"PN-21","conditionBand":"PRISTINE","phaseLabel":"PHASE DRY SEASON","fractureIndex":7,"lichenLabel":"HEAVY COVER","clearanceDigest":"CLEARED","visitedOn":"2026-04-01","station":{"stationCode":"ST-QC-1","sector":{"sectorCode":"SC-SEC-C","regionLabel":"QUIET REACH"}}},{"surveyRef":"SV-1002","panelCode":"PN-22","conditionBand":"UNASSESSED","phaseLabel":"UNSTAGED","fractureIndex":0,"lichenLabel":"UNRECORDED","clearanceDigest":"NO NOTES","visitedOn":"2026-04-02","station":null}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

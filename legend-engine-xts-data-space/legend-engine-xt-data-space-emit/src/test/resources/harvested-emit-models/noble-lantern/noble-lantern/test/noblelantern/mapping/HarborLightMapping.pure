@@ -1,0 +1,188 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblelantern::mapping::HarborLightMapping
+(
+  test::noblelantern::domain::LanternStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.station_code
+    )
+    ~mainTable [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station
+    stationCode: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.station_code,
+    stationName: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.station_name,
+    districtName: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.district_name,
+    opticClass: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.optic_class,
+    stationKind: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.station_kind,
+    focalHeightM: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.focal_height_m,
+    towerHeightM: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.tower_height_m,
+    commissionedOn: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.commissioned_on,
+    inspectedAt: [test::noblelantern::store::HarborLightDatabase]beacon.lantern_station.inspected_at
+  }
+
+  test::noblelantern::domain::KeeperWatch[watch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.watch_code
+    )
+    ~mainTable [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch
+    watchCode: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.watch_code,
+    stationCode: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.station_code,
+    keeperName: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.keeper_name,
+    watchShift: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.watch_shift,
+    weatherNote: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.weather_note,
+    visibilityKm: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.visibility_km,
+    windSpeedKt: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.wind_speed_kt,
+    loggedOn: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.logged_on,
+    startedAt: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.started_at,
+    endedAt: [test::noblelantern::store::HarborLightDatabase]beacon.keeper_watch.ended_at
+  }
+
+  testSuites:
+  [
+    stationRegisterSuite:
+    {
+      function: |test::noblelantern::domain::LanternStation.all()->filter(
+        s|$s.focalHeightM > 10.0
+      )->project(
+        [
+          s|$s.stationCode,
+          s|$s.stationName,
+          s|$s.districtName,
+          s|$s.opticClass,
+          s|$s.stationKind,
+          s|$s.focalHeightM,
+          s|$s.towerHeightM,
+          s|$s.commissionedOn,
+          s|$s.inspectedAt
+        ],
+        [
+          'Station',
+          'Name',
+          'District',
+          'Optic',
+          'Kind',
+          'FocalHeight',
+          'TowerHeight',
+          'Commissioned',
+          'Inspected'
+        ]
+      )->sort(
+        [
+          asc('Station')
+        ]
+      );
+      tests:
+      [
+        stationRegister:
+        {
+          doc: 'Reads every mapped station column off the aliased main table, keeps the stations whose light is carried above the harbour reporting height and shows the optional tower height and inspection stamp as absent where the register never recorded them.';
+          data:
+          [
+            test::noblelantern::store::HarborLightDatabase:
+              Relational
+              #{
+                beacon.lantern_station:
+                  'station_code,station_name,district_name,optic_class,station_kind,focal_height_m,tower_height_m,commissioned_on,inspected_at\n'+
+                  'LS-01,North Head,NORTHERN APPROACH,FIRST_ORDER,MAINLAND,18.5,24.0,1902-05-14,2026-04-02 09:15:00\n'+
+                  'LS-02,Shoal Point,Southern Reach,SECOND_ORDER,MAINLAND,9.0,,1948-08-01,\n'+
+                  'LS-03,North Spit,NORTHERN APPROACH,THIRD_ORDER,ISLET,14.0,20.5,1976-02-20,2026-01-18 07:45:00\n'+
+                  'LS-04,Northgate Mole,Northgate Basin,HARBOR_LIGHT,MAINLAND,12.5,,2001-11-09,\n';
+              }#
+          ];
+          asserts:
+          [
+            registerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"LS-01","Name":"North Head","District":"NORTHERN APPROACH","Optic":"FIRST_ORDER","Kind":"MAINLAND","FocalHeight":18.5,"TowerHeight":24.0,"Commissioned":"1902-05-14","Inspected":"2026-04-02T09:15:00.000000000+0000"},{"Station":"LS-03","Name":"North Spit","District":"NORTHERN APPROACH","Optic":"THIRD_ORDER","Kind":"ISLET","FocalHeight":14.0,"TowerHeight":20.5,"Commissioned":"1976-02-20","Inspected":"2026-01-18T07:45:00.000000000+0000"},{"Station":"LS-04","Name":"Northgate Mole","District":"Northgate Basin","Optic":"HARBOR_LIGHT","Kind":"MAINLAND","FocalHeight":12.5,"TowerHeight":null,"Commissioned":"2001-11-09","Inspected":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    keeperWatchSuite:
+    {
+      function: |test::noblelantern::domain::KeeperWatch.all()->project(
+        [
+          w|$w.watchCode,
+          w|$w.stationCode,
+          w|$w.keeperName,
+          w|$w.watchShift,
+          w|$w.weatherNote,
+          w|$w.visibilityKm,
+          w|$w.windSpeedKt,
+          w|$w.loggedOn,
+          w|$w.startedAt,
+          w|$w.endedAt
+        ],
+        [
+          'Watch',
+          'Station',
+          'Keeper',
+          'Shift',
+          'Weather',
+          'Visibility',
+          'WindSpeed',
+          'LoggedOn',
+          'StartedAt',
+          'EndedAt'
+        ]
+      )->sort(
+        [
+          asc('Watch')
+        ]
+      );
+      tests:
+      [
+        keeperWatches:
+        {
+          doc: 'Reads the logged watches off their own main table so the observed weather measures and both watch stamps are checked independently of the station register.';
+          data:
+          [
+            test::noblelantern::store::HarborLightDatabase:
+              Relational
+              #{
+                beacon.keeper_watch:
+                  'watch_code,station_code,keeper_name,watch_shift,weather_note,visibility_km,wind_speed_kt,logged_on,started_at,ended_at\n'+
+                  'KW-01,LS-01,Halvard Nye,NIGHT,Clear horizon,12.5,18.0,2026-04-02,2026-04-02 20:00:00,2026-04-03 04:00:00\n'+
+                  'KW-02,LS-01,Marin Sault,DAY,,9.0,,2026-04-03,2026-04-03 06:00:00,\n';
+              }#
+          ];
+          asserts:
+          [
+            watchRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Watch":"KW-01","Station":"LS-01","Keeper":"Halvard Nye","Shift":"NIGHT","Weather":"Clear horizon","Visibility":12.5,"WindSpeed":18.0,"LoggedOn":"2026-04-02","StartedAt":"2026-04-02T20:00:00.000000000+0000","EndedAt":"2026-04-03T04:00:00.000000000+0000"},{"Watch":"KW-02","Station":"LS-01","Keeper":"Marin Sault","Shift":"DAY","Weather":null,"Visibility":9.0,"WindSpeed":null,"LoggedOn":"2026-04-03","StartedAt":"2026-04-03T06:00:00.000000000+0000","EndedAt":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

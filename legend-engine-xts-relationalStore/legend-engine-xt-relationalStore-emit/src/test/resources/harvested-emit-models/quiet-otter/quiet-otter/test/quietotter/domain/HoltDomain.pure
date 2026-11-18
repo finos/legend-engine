@@ -1,0 +1,22 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A survey of an otter holt on a river shore. The record is business-temporal: a holt whose survey window has closed is no longer part of the extent read at a later business date.'} test::quietotter::domain::HoltSurvey
+{
+  holtCode: String[1];
+  shoreName: String[1];
+  spraintScore: Float[1];
+  surveyedOn: StrictDate[1];
+}

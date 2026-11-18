@@ -1,0 +1,291 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::azurearboretum::*;
+
+Class <<temporal.bitemporal>> {doc.doc = 'A dated tree inspection.'} demo::azurearboretum::Inspection
+{
+  inspectionCode: String[1];
+  indicator: Integer[0..1];
+  phase: String[0..1];
+  watered: String[1];
+  specimenId: Integer[1];
+  tallyText: String[1];
+  gardenName: String[0..1];
+  groupCode: String[1];
+  noteCode: String[1];
+  releaseCode: String[1];
+  validCode: String[1];
+}
+
+Class {doc.doc = 'The display view of a garden section.'} demo::azurearboretum::Section
+{
+  sectionId: Integer[1];
+  sectionName: String[1];
+}
+
+Class {doc.doc = 'A garden reference from the included atlas.'} demo::azurearboretum::Garden
+{
+  gardenId: Integer[1];
+  gardenName: String[1];
+}
+
+Association {doc.doc = 'Inspections belong to a section.'} demo::azurearboretum::InspectionSection
+{
+  inspections: Inspection[*];
+  section: Section[0..1];
+}
+
+Class demo::azurearboretum::Review
+{
+  reviewCode: String[1];
+  specimenText: String[1];
+  tally: Integer[1];
+  phaseText: String[0..1];
+}
+
+Class demo::azurearboretum::RawReview
+{
+  inspectionCode: String[1];
+  specimenId: Integer[1];
+  tallyText: String[1];
+  phase: String[0..1];
+  watered: String[1];
+  groupCode: String[1];
+  noteCode: String[1];
+  releaseCode: String[1];
+  validCode: String[1];
+}
+
+###Relational
+Database test::azurearboretum::AtlasDb
+(
+  Schema atlas (Table garden(garden_id INTEGER PRIMARY KEY, garden_name VARCHAR(40), sector_flag INTEGER))
+)
+
+Database test::azurearboretum::ArboretumDb
+(
+  include test::azurearboretum::AtlasDb
+  Schema trees
+  (
+    Table inspection
+    (
+      milestoning(processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z), business(BUS_FROM = from_z, BUS_THRU = thru_z))
+      inspection_code VARCHAR(12) PRIMARY KEY,
+      section_text VARCHAR(12),
+      specimen_id INTEGER,
+      indicator INTEGER,
+      watered_flag INTEGER,
+      tally_text VARCHAR(12),
+      group_code VARCHAR(12),
+      note_code VARCHAR(12),
+      release_code VARCHAR(12),
+      valid_code VARCHAR(12),
+      in_z DATE PRIMARY KEY,
+      out_z DATE,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table section(section_id INTEGER PRIMARY KEY, section_name VARCHAR(40), garden_id INTEGER, partition_id INTEGER, ready_flag INTEGER)
+  )
+  Schema display
+  (
+    View section_view
+    (
+      ~distinct
+      section_id: trees.section.section_id PRIMARY KEY,
+      section_name: trees.section.section_name,
+      garden_name: @Section_Garden | atlas.garden.garden_name,
+      partition_id: trees.section.partition_id,
+      ready_flag: trees.section.ready_flag
+    )
+  )
+  Join Inspection_Section(parseInteger(trees.inspection.section_text) = trees.section.section_id)
+  Join Section_Garden(trees.section.garden_id = atlas.garden.garden_id and atlas.garden.sector_flag = 1)
+  Join Inspection_View(parseInteger(trees.inspection.section_text) = display.section_view.section_id)
+  Filter ReadySection(and(not(or(equal(display.section_view.partition_id, 2), equal(display.section_view.partition_id, 3), equal(display.section_view.partition_id, 4))), equal(display.section_view.ready_flag, 1)))
+)
+
+###Mapping
+Mapping test::azurearboretum::AtlasMapping
+(
+  *demo::azurearboretum::Garden[garden]: Relational
+  {
+    ~primaryKey ([test::azurearboretum::AtlasDb]atlas.garden.garden_id)
+    ~mainTable [test::azurearboretum::AtlasDb]atlas.garden
+    gardenId: [test::azurearboretum::AtlasDb]atlas.garden.garden_id,
+    gardenName: [test::azurearboretum::AtlasDb]atlas.garden.garden_name
+  }
+  testSuites:
+  [
+    atlasSuite:
+    {
+      function: |demo::azurearboretum::Garden.all()->project(~[garden:g|$g.gardenName]);
+      tests: [names: {data: [test::azurearboretum::AtlasDb: Reference #{test::azurearboretum::AtlasFixture}#]; asserts: [expected: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '[{"garden":"Canopy Garden"}]';}#;}#];}];
+    }
+  ]
+)
+
+Mapping test::azurearboretum::TreeMapping
+(
+  include mapping test::azurearboretum::AtlasMapping[test::azurearboretum::AtlasDb -> test::azurearboretum::ArboretumDb]
+  *demo::azurearboretum::Inspection[inspection]: Relational
+  {
+    ~primaryKey ([test::azurearboretum::ArboretumDb]trees.inspection.inspection_code, [test::azurearboretum::ArboretumDb]trees.inspection.in_z)
+    ~mainTable [test::azurearboretum::ArboretumDb]trees.inspection
+    inspectionCode: [test::azurearboretum::ArboretumDb]trees.inspection.inspection_code,
+    indicator: [test::azurearboretum::ArboretumDb]trees.inspection.indicator,
+    phase: case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 1), 'SEED',
+      case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 2), 'SPROUT',
+      case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 3), 'LEAF',
+      case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 4), 'BUD',
+      case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 5), 'FLOWER',
+      case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 6), 'FRUIT',
+      case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 7), 'REST',
+      case(equal([test::azurearboretum::ArboretumDb]trees.inspection.indicator, 8), 'DORMANT', sqlNull())))))))),
+    watered: case(equal([test::azurearboretum::ArboretumDb]trees.inspection.watered_flag, 1), 'YES', 'NO'),
+    specimenId: [test::azurearboretum::ArboretumDb]trees.inspection.specimen_id,
+    tallyText: [test::azurearboretum::ArboretumDb]trees.inspection.tally_text,
+    gardenName: [test::azurearboretum::ArboretumDb]@Inspection_Section > @Section_Garden | [test::azurearboretum::ArboretumDb]atlas.garden.garden_name,
+    groupCode: [test::azurearboretum::ArboretumDb]trees.inspection.group_code,
+    noteCode: [test::azurearboretum::ArboretumDb]trees.inspection.note_code,
+    releaseCode: [test::azurearboretum::ArboretumDb]trees.inspection.release_code,
+    validCode: [test::azurearboretum::ArboretumDb]trees.inspection.valid_code
+  }
+  *demo::azurearboretum::Section[section]: Relational
+  {
+    ~filter [test::azurearboretum::ArboretumDb]ReadySection
+    ~primaryKey ([test::azurearboretum::ArboretumDb]display.section_view.section_id)
+    ~mainTable [test::azurearboretum::ArboretumDb]display.section_view
+    sectionId: [test::azurearboretum::ArboretumDb]display.section_view.section_id,
+    sectionName: [test::azurearboretum::ArboretumDb]display.section_view.section_name
+  }
+  demo::azurearboretum::InspectionSection: Relational
+  {
+    AssociationMapping
+    (
+      section[inspection, section]: [test::azurearboretum::ArboretumDb]@Inspection_View,
+      inspections[section, inspection]: [test::azurearboretum::ArboretumDb]@Inspection_View
+    )
+  }
+  testSuites:
+  [
+    inspectionSuite:
+    {
+      function: |demo::azurearboretum::Inspection.all(%2026-06-01, %2026-06-01)->project(~[code:i|$i.inspectionCode, phase:i|$i.phase, watered:i|$i.watered, specimen:i|$i.specimenId, garden:i|$i.gardenName, section:i|$i.section.sectionName])->select(~[code, phase, watered, specimen, garden, section])->select(~[code, phase, watered, specimen, garden, section])->sort(~code->ascending());
+      tests:
+      [
+        phasesAndClosedWindows:
+        {
+          data: [test::azurearboretum::ArboretumDb: Reference #{test::azurearboretum::TreeFixture}#];
+          asserts:
+          [
+            expected: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '[{"code":"I01","phase":"SEED","watered":"YES","specimen":101,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I02","phase":"SPROUT","watered":"NO","specimen":102,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I03","phase":"LEAF","watered":"NO","specimen":103,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I04","phase":"BUD","watered":"YES","specimen":104,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I05","phase":"FLOWER","watered":"YES","specimen":105,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I06","phase":"FRUIT","watered":"YES","specimen":106,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I07","phase":"REST","watered":"YES","specimen":107,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I08","phase":"DORMANT","watered":"YES","specimen":108,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I09","phase":null,"watered":"YES","specimen":109,"garden":"Canopy Garden","section":"Fern Court"},{"code":"I10","phase":null,"watered":"YES","specimen":110,"garden":null,"section":null},{"code":"I11","phase":"SEED","watered":"YES","specimen":111,"garden":null,"section":null}]';}#;}#
+          ];
+        }
+      ];
+    },
+    sectionSuite:
+    {
+      function: |demo::azurearboretum::Section.all()->project(~[section:s|$s.sectionName]);
+      tests: [distinctAndFiltered: {data: [test::azurearboretum::ArboretumDb: Reference #{test::azurearboretum::TreeFixture}#]; asserts: [expected: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '[{"section":"Fern Court"}]';}#;}#];}];
+    }
+  ]
+)
+
+Mapping test::azurearboretum::ReviewMapping
+(
+  include mapping test::azurearboretum::TreeMapping
+  *demo::azurearboretum::Review: Pure
+  {
+    ~src demo::azurearboretum::RawReview
+    ~filter and(and(and(and(and(equal($src.groupCode->toString(), 'TREE'), equal($src.noteCode->toString(), 'OK')), or(equal($src.watered, 'YES'), equal($src.watered, 'NO'))), equal($src.releaseCode->toString(), 'READY')), equal($src.validCode->toString(), 'VALID')), $src.inspectionCode->isNotEmpty())
+    reviewCode: $src.inspectionCode->toUpper(),
+    specimenText: $src.specimenId->toString(),
+    tally: $src.tallyText->parseInteger(),
+    phaseText: $src.phase
+  }
+  testSuites:
+  [
+    reviewSuite:
+    {
+      function: |demo::azurearboretum::Review.all()->graphFetch(#{demo::azurearboretum::Review{reviewCode, specimenText, tally, phaseText}}#)->serialize(#{demo::azurearboretum::Review{reviewCode, specimenText, tally, phaseText}}#);
+      tests:
+      [
+        normalizedAndFiltered:
+        {
+          data: [ModelStore: Reference #{test::azurearboretum::ReviewFixture}#];
+          asserts: [expected: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '[{"reviewCode":"I01","specimenText":"101","tally":3,"phaseText":"SEED"},{"reviewCode":"I02","specimenText":"102","tally":4,"phaseText":"SPROUT"},{"reviewCode":"I03","specimenText":"103","tally":5,"phaseText":"LEAF"},{"reviewCode":"I04","specimenText":"104","tally":6,"phaseText":"BUD"},{"reviewCode":"I05","specimenText":"105","tally":7,"phaseText":"FLOWER"},{"reviewCode":"I06","specimenText":"106","tally":8,"phaseText":"FRUIT"},{"reviewCode":"I07","specimenText":"107","tally":9,"phaseText":"REST"},{"reviewCode":"I08","specimenText":"108","tally":10,"phaseText":"DORMANT"},{"reviewCode":"I09","specimenText":"109","tally":11},{"reviewCode":"I10","specimenText":"110","tally":12}]';}#;}#];
+        }
+      ];
+    }
+  ]
+)
+
+###Data
+Data test::azurearboretum::ReviewFixture
+{
+  ModelStore
+  #{
+    demo::azurearboretum::RawReview: ExternalFormat
+    #{
+      contentType: 'application/json';
+      data: '[{"inspectionCode":"I01","specimenId":101,"tallyText":"3","phase":"SEED","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I02","specimenId":102,"tallyText":"4","phase":"SPROUT","watered":"NO","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I03","specimenId":103,"tallyText":"5","phase":"LEAF","watered":"NO","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I04","specimenId":104,"tallyText":"6","phase":"BUD","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I05","specimenId":105,"tallyText":"7","phase":"FLOWER","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I06","specimenId":106,"tallyText":"8","phase":"FRUIT","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I07","specimenId":107,"tallyText":"9","phase":"REST","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I08","specimenId":108,"tallyText":"10","phase":"DORMANT","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I09","specimenId":109,"tallyText":"11","phase":null,"watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I10","specimenId":110,"tallyText":"12","phase":null,"watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I11","specimenId":101,"tallyText":"3","phase":"SEED","watered":"YES","groupCode":"TREE","noteCode":"NO","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I12","specimenId":101,"tallyText":"3","phase":"SEED","watered":"YES","groupCode":"SHRUB","noteCode":"OK","releaseCode":"READY","validCode":"VALID"},{"inspectionCode":"I13","specimenId":101,"tallyText":"3","phase":"SEED","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"WAIT","validCode":"VALID"},{"inspectionCode":"I14","specimenId":101,"tallyText":"3","phase":"SEED","watered":"YES","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"INVALID"},{"inspectionCode":"I15","specimenId":101,"tallyText":"3","phase":"SEED","watered":"UNKNOWN","groupCode":"TREE","noteCode":"OK","releaseCode":"READY","validCode":"VALID"}]';
+    }#
+  }#
+}
+
+Data test::azurearboretum::AtlasFixture
+{
+Relational #{atlas.garden: 'garden_id,garden_name,sector_flag\n1,Canopy Garden,1\n';}#
+}
+
+Data test::azurearboretum::TreeFixture
+{
+Relational
+#{
+  atlas.garden: 'garden_id,garden_name,sector_flag\n1,Canopy Garden,1\n';
+  trees.section: 'section_id,section_name,garden_id,partition_id,ready_flag\n1,Fern Court,1,1,1\n2,Shut Court,1,2,1\n3,Quiet Court,1,1,0\n';
+  trees.inspection: 'inspection_code,section_text,specimen_id,indicator,watered_flag,tally_text,group_code,note_code,release_code,valid_code,in_z,out_z,from_z,thru_z\n'+
+    'I01,1,101,1,1,3,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I02,1,102,2,0,4,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I03,1,103,3,,5,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I04,1,104,4,1,6,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I05,1,105,5,1,7,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I06,1,106,6,1,8,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I07,1,107,7,1,9,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I08,1,108,8,1,10,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I09,1,109,9,1,11,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I10,9,110,,1,12,TREE,OK,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I11,9,111,1,1,13,TREE,NO,READY,VALID,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+    'I12,1,112,1,1,14,TREE,OK,READY,VALID,2025-01-01,2025-12-31,2026-01-01,9999-12-31\n';
+}#
+}
+
+###Connection
+RelationalDatabaseConnection test::azurearboretum::TreeConnection
+{
+  store: test::azurearboretum::ArboretumDb;
+  type: H2;
+  specification: LocalH2 {testDataSetupSqls: [];};
+  auth: DefaultH2;
+}
+
+###Runtime
+Runtime test::azurearboretum::TreeRuntime
+{
+  mappings: [test::azurearboretum::TreeMapping, test::azurearboretum::ReviewMapping];
+  connections: [test::azurearboretum::ArboretumDb: [trees: test::azurearboretum::TreeConnection]];
+}

@@ -37,6 +37,7 @@
 
         <!--  Deprecated Flow  -->
         <module>legend-engine-external-format-jsonSchema</module>
+        <module>legend-engine-external-format-jsonSchema-emit</module>
 
     </modules>
 </project>

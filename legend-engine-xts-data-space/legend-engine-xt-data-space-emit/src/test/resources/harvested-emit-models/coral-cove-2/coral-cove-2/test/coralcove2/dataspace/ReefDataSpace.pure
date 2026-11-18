@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::coralcove2::dataspace::ReefMonitoringDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Warehouse environment - the reef mapping served through the delegated-authentication warehouse connection, so a consumer can execute the named queries without naming a mapping or a runtime.';
+      mapping: test::coralcove2::mapping::ReefMapping;
+      defaultRuntime: test::coralcove2::runtime::ReefRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Coral Cove Reef Monitoring Network';
+  description: 'Discovery surface over the reef monitoring network - coves, sites, transects, survey batch versions, colonies, species, bleaching episodes and water readings - naming the executable queries published over the single relational mapping.';
+  elements:
+  [
+    test::coralcove2::domain::BleachingEvent,
+    test::coralcove2::domain::CoralColony,
+    test::coralcove2::domain::Cove,
+    test::coralcove2::domain::Observer,
+    test::coralcove2::domain::ReefSite,
+    test::coralcove2::domain::Species,
+    test::coralcove2::domain::Station,
+    test::coralcove2::domain::SurveyBatch,
+    test::coralcove2::domain::Transect,
+    test::coralcove2::domain::WaterReading
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Cove Site Roster';
+      description: 'The association traversal from each cove to the sites monitored inside it.';
+      executable: test::coralcove2::service::CoveSiteRosterService;
+    },
+    {
+      id: 2;
+      title: 'Colony Health';
+      description: 'The colonies below the intervention threshold with their species name reached over the store join.';
+      executable: test::coralcove2::service::ColonyHealthService;
+    },
+    {
+      id: 3;
+      title: 'Bleaching Episodes';
+      description: 'Every sequence entry of every recorded bleaching episode.';
+      executable: test::coralcove2::service::BleachingEventService;
+    }
+  ];
+}

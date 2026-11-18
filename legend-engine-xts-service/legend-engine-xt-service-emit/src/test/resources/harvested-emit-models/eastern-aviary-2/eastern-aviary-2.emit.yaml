@@ -1,0 +1,58 @@
+name: eastern-aviary-2
+title: "Eastern Aviary 2 — A Nested Track-Inspection Notebook Dissolved Into Seven Sibling Collections By One Model-To-Model Mapping"
+description: |
+  A permanent-way inspection notebook arrives as one nested document — an optional header block and a
+  collection of section blocks, each holding two child collections and two optional single-valued
+  summary blocks — and a single model-to-model mapping dissolves that nesting into a flat published
+  run whose root carries an optional header beside seven independent sibling collections. Nine class
+  mappings do the work: a routing root that addresses each collection by class-mapping identifier, a
+  flat header copy, and seven flattening mappings that all read the same section collection with
+  different attribute subsets, so one source collection is consumed seven times. Four of them guard
+  themselves on the emptiness of the collection they flatten, and one computes a case-normalised
+  companion of the defect codes it also copies verbatim, alongside a digest that keeps only the long
+  defects. A tag profile carries the physical field contract the Pure types cannot express — text
+  lengths spanning three orders of magnitude, numeric precision and scale, and wide-integer and
+  document-valued markers. Two parameterless services publish the same flattening over inline
+  runtimes bound to one document connection, differing only in checked versus unchecked retrieval,
+  and only the unchecked one carries a suite. The mapping suite drives five heterogeneous serialised
+  notebooks through the guards: defects only, sleeper checks only, both, no header, and a document
+  whose optional survey date is absent and whose section satisfies no guard at all.
+modelSources:
+  model:
+    root: eastern-aviary-2
+    files:
+      - test/easternaviary2/domain/FlatInspectionRun.pure
+      - test/easternaviary2/mapping/RunFlattenMapping.pure
+      - test/easternaviary2/profile/FieldMetaProfile.pure
+      - test/easternaviary2/service/RunGraphChecked.pure
+      - test/easternaviary2/service/RunGraphDocument.pure
+      - test/easternaviary2/source/RunSubmission.pure
+features:
+  - scaffolding:model-connection
+  - execution:embedded-runtime
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:profile
+  - mapping:m2m-derived-source-property
+  - mapping:m2m-transform
+  - execution:graph-fetch
+  - execution:checked-graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - checked-graph-fetch
+  - derived-source-property
+  - embedded-runtime
+  - emptiness-guard
+  - fan-out
+  - mapping-test
+  - model-to-model
+  - profile
+  - service-test
+  - tagged-value
+  - track-inspection

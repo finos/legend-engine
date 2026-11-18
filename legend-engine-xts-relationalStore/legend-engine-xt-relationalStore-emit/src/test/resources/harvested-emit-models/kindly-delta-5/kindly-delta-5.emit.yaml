@@ -1,0 +1,49 @@
+name: kindly-delta-5
+title: "Kindly Delta 5 — Greenhouse Propagation Registry"
+description: |
+  A relational propagation registry combining cross-schema batch, tray and reference data with grouped inline views and nested join paths. Mapping transforms derive staged labels, joined species summaries and three expression-based enumeration properties while mapping suites exercise the resulting relations.
+modelSources:
+  model:
+    root: kindly-delta-5
+    files:
+      - test/kindlydelta5/connection/PropagationConnection.pure
+      - test/kindlydelta5/domain/PropagationDomain.pure
+      - test/kindlydelta5/mapping/PropagationBaseMapping.pure
+      - test/kindlydelta5/mapping/PropagationM2MMapping.pure
+      - test/kindlydelta5/mapping/PropagationMapping.pure
+      - test/kindlydelta5/runtime/PropagationRuntime.pure
+      - test/kindlydelta5/store/PropagationDB.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: basic
+tags:
+  - cross-schema
+  - duckdb
+  - enumeration-mapping
+  - greenhouse
+  - inline-view
+  - mapping-test
+  - nested-joins
+  - relational

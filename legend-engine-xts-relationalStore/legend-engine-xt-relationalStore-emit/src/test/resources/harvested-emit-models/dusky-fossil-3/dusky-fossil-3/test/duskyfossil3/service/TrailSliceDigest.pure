@@ -1,0 +1,334 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyfossil3::service::TrailRegionDigest
+{
+  pattern: '/duskyfossil3/regionDigest/{regionCode}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the stable chalk walkover reports of one region and adds the erosion and fragment counts into a single published load figure.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {regionCode: String[1]|test::duskyfossil3::domain::ConditionReport.all()->filter(
+      r|($r.conditionGrade == 'STABLE') && (($r.stratumCode == 'CHALK') && (($r.regionCode == $regionCode) && ($r.surveyKind == 'WALKOVER')))
+    )->project(
+      [
+        r|$r.reportId,
+        r|$r.regionCode,
+        r|$r.siteCode,
+        r|$r.erosionIndex + $r.fragmentCount,
+        r|$r.recordedOn,
+        r|'REGION-STABLE'
+      ],
+      [
+        'Report/Id',
+        'Report/Region',
+        'Report/Site',
+        'Report/Load',
+        'Report/RecordedOn',
+        'Report/Slice'
+      ]
+    )->sort(
+      [
+        asc('Report/Id')
+      ]
+    )};
+    mapping: test::duskyfossil3::mapping::TrailMapping;
+    runtime: test::duskyfossil3::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    sliceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailH2Connection:
+            Relational
+            #{
+              trail.condition_report:
+                'report_id,site_code,segment_code,region_code,stratum_code,survey_kind,condition_grade,recorded_on,erosion_index,fragment_count,recorder_code,note_text\n'+
+                'RPT-1,SITE-A,SEG-1,NORTH,CHALK,WALKOVER,STABLE,2026-03-04,2,14,  rc-11 ,ridge exposure clean\n'+
+                'RPT-2,SITE-A,SEG-2,NORTH,CHALK,WALKOVER,ERODING,2026-03-05,7,3,rc-12,slumping at the toe\n'+
+                'RPT-3,SITE-B,SEG-3,SOUTH,SHALE,DRONE,STABLE,2026-03-06,1,21,rc-13,\n'+
+                'RPT-4,SITE-B,SEG-4,SOUTH,SHALE,WALKOVER,STABLE,2026-04-02,4,9,,dry gully\n'+
+                'RPT-5,SITE-C,SEG-5,NORTH,GRIT,DRONE,ERODING,2026-04-03,9,1,rc-15,active headward cut\n'+
+                'RPT-6,SITE-A,SEG-6,NORTH,CHALK,WALKOVER,STABLE,2026-04-04,3,17,rc-16,fresh bedding plane\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        matchingRegion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            regionCode = 'NORTH'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report/Id":"RPT-1","Report/Region":"NORTH","Report/Site":"SITE-A","Report/Load":16,"Report/RecordedOn":"2026-03-04","Report/Slice":"REGION-STABLE"},{"Report/Id":"RPT-6","Report/Region":"NORTH","Report/Site":"SITE-A","Report/Load":20,"Report/RecordedOn":"2026-04-04","Report/Slice":"REGION-STABLE"}]';
+                  }#;
+              }#
+          ]
+        },
+        regionWithoutChalk:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            regionCode = 'SOUTH'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::duskyfossil3::service::TrailSurveyDigest
+{
+  pattern: '/duskyfossil3/surveyDigest/{surveyKind}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the reports of one survey kind without pinning any other dimension, so the widest of the six slices is the one whose extent is narrowed the least.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {surveyKind: String[1]|test::duskyfossil3::domain::ConditionReport.all()->filter(
+      r|$r.surveyKind == $surveyKind
+    )->project(
+      [
+        r|$r.reportId,
+        r|$r.surveyKind,
+        r|$r.siteCode,
+        r|$r.segmentCode,
+        r|$r.conditionGrade,
+        r|$r.recordedOn
+      ],
+      [
+        'Report/Id',
+        'Report/Survey',
+        'Report/Site',
+        'Report/Segment',
+        'Report/Grade',
+        'Report/RecordedOn'
+      ]
+    )->sort(
+      [
+        asc('Report/Id')
+      ]
+    )};
+    mapping: test::duskyfossil3::mapping::TrailMapping;
+    runtime: test::duskyfossil3::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    sliceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailH2Connection:
+            Relational
+            #{
+              trail.condition_report:
+                'report_id,site_code,segment_code,region_code,stratum_code,survey_kind,condition_grade,recorded_on,erosion_index,fragment_count,recorder_code,note_text\n'+
+                'RPT-1,SITE-A,SEG-1,NORTH,CHALK,WALKOVER,STABLE,2026-03-04,2,14,  rc-11 ,ridge exposure clean\n'+
+                'RPT-2,SITE-A,SEG-2,NORTH,CHALK,WALKOVER,ERODING,2026-03-05,7,3,rc-12,slumping at the toe\n'+
+                'RPT-3,SITE-B,SEG-3,SOUTH,SHALE,DRONE,STABLE,2026-03-06,1,21,rc-13,\n'+
+                'RPT-4,SITE-B,SEG-4,SOUTH,SHALE,WALKOVER,STABLE,2026-04-02,4,9,,dry gully\n'+
+                'RPT-5,SITE-C,SEG-5,NORTH,GRIT,DRONE,ERODING,2026-04-03,9,1,rc-15,active headward cut\n'+
+                'RPT-6,SITE-A,SEG-6,NORTH,CHALK,WALKOVER,STABLE,2026-04-04,3,17,rc-16,fresh bedding plane\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        droneReports:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyKind = 'DRONE'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report/Id":"RPT-3","Report/Survey":"DRONE","Report/Site":"SITE-B","Report/Segment":"SEG-3","Report/Grade":"STABLE","Report/RecordedOn":"2026-03-06"},{"Report/Id":"RPT-5","Report/Survey":"DRONE","Report/Site":"SITE-C","Report/Segment":"SEG-5","Report/Grade":"ERODING","Report/RecordedOn":"2026-04-03"}]';
+                  }#;
+              }#
+          ]
+        },
+        unknownSurveyKind:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyKind = 'LIDAR'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::duskyfossil3::service::TrailGradeDigest
+{
+  pattern: '/duskyfossil3/gradeDigest/{conditionGrade}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the northern chalk reports of one condition grade and is the single slice whose updates are gated rather than activated automatically, so a schema change here is reviewed before it is served.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {conditionGrade: String[1]|test::duskyfossil3::domain::ConditionReport.all()->filter(
+      r|($r.regionCode == 'NORTH') && (($r.stratumCode == 'CHALK') && (($r.conditionGrade == $conditionGrade) && ($r.surveyKind == 'WALKOVER')))
+    )->project(
+      [
+        r|$r.reportId,
+        r|$r.conditionGrade,
+        r|$r.siteCode,
+        r|$r.noteText->toOne()->trim()->toUpper()->substring(0, 6),
+        r|$r.fragmentCount,
+        r|'GRADE-GATED'
+      ],
+      [
+        'Report/Id',
+        'Report/Grade',
+        'Report/Site',
+        'Report/NoteHead',
+        'Report/Fragments',
+        'Report/Slice'
+      ]
+    )->sort(
+      [
+        asc('Report/Id')
+      ]
+    )};
+    mapping: test::duskyfossil3::mapping::TrailMapping;
+    runtime: test::duskyfossil3::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    sliceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailH2Connection:
+            Relational
+            #{
+              trail.condition_report:
+                'report_id,site_code,segment_code,region_code,stratum_code,survey_kind,condition_grade,recorded_on,erosion_index,fragment_count,recorder_code,note_text\n'+
+                'RPT-1,SITE-A,SEG-1,NORTH,CHALK,WALKOVER,STABLE,2026-03-04,2,14,  rc-11 ,ridge exposure clean\n'+
+                'RPT-2,SITE-A,SEG-2,NORTH,CHALK,WALKOVER,ERODING,2026-03-05,7,3,rc-12,slumping at the toe\n'+
+                'RPT-3,SITE-B,SEG-3,SOUTH,SHALE,DRONE,STABLE,2026-03-06,1,21,rc-13,\n'+
+                'RPT-4,SITE-B,SEG-4,SOUTH,SHALE,WALKOVER,STABLE,2026-04-02,4,9,,dry gully\n'+
+                'RPT-5,SITE-C,SEG-5,NORTH,GRIT,DRONE,ERODING,2026-04-03,9,1,rc-15,active headward cut\n'+
+                'RPT-6,SITE-A,SEG-6,NORTH,CHALK,WALKOVER,STABLE,2026-04-04,3,17,rc-16,fresh bedding plane\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        erodingGrade:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            conditionGrade = 'ERODING'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report/Id":"RPT-2","Report/Grade":"ERODING","Report/Site":"SITE-A","Report/NoteHead":"SLUMPI","Report/Fragments":3,"Report/Slice":"GRADE-GATED"}]';
+                  }#;
+              }#
+          ]
+        },
+        unusedGrade:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            conditionGrade = 'LOST'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

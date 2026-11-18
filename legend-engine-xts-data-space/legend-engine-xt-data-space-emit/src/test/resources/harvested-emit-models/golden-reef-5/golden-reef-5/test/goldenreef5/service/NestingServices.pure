@@ -1,0 +1,204 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenreef5::service::NestClutchCensus
+{
+  pattern: '/goldenreef/v1/nest-clutch-census';
+  title: 'Nesting Coast - Clutch Census';
+  owners:
+  [
+    'nesting-coast-survey',
+    'hatchling-monitoring'
+  ];
+  documentation: 'Returns the clutches laid inside a thirty-day window counted back from the requested date, keeping only the clutches that carry a predation marker, that are not marked by one of the excluded markers and that reach a minimum clutch size, and projecting the literal survey programme with the field station reached through the team-to-station join path. The result is de-duplicated, ordered by nest reference and capped.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {since: StrictDate[1], excludedMarkers: String[*], minClutch: Integer[1]|test::goldenreef5::domain::NestRecord.all()->filter(
+      r|(($r.laidDate >= $since->adjust(-30, meta::pure::functions::date::DurationUnit.DAYS)) && (!($r.predationCode->isEmpty()))) && ((!($r.predationCode->toOne()->in($excludedMarkers))) && ($r.clutchSize >= $minClutch))
+    )->project(
+      [
+        r|$r.nestRef,
+        r|$r.surveyProgram,
+        r|$r.clutchSize,
+        r|$r.hatchCount,
+        r|$r.stationName
+      ],
+      [
+        'Nest',
+        'Program',
+        'Clutch',
+        'Hatched',
+        'Station'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Nest')
+      ]
+    )->take(3)};
+    mapping: test::goldenreef5::mapping::NestingMapping;
+    runtime: test::goldenreef5::runtime::NestingH2Runtime;
+  }
+  testSuites:
+  [
+    clutchCensusSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              patrol.nest_record:
+                'nest_ref,site_code,team_code,laid_date,clutch_size,hatch_count,predation_code,sand_temp_c\n'+
+                'NR-01,NS-01,PT-01,2026-06-10,110,96,,29.50\n'+
+                'NR-02,NS-01,PT-01,2026-06-18,95,80,GHOST_CRAB,30.25\n'+
+                'NR-03,NS-02,PT-02,2026-06-20,120,0,MONITOR_LIZARD,31.00\n'+
+                'NR-04,NS-02,PT-02,2026-05-02,88,,FOX,28.75\n'+
+                'NR-05,NS-01,PT-01,2026-06-25,70,64,GHOST_CRAB,29.00\n';
+              patrol.patrol_team:
+                'team_code,team_name,station_code\n'+
+                'PT-01,Dawn Patrol,FS-01\n'+
+                'PT-02,Dusk Patrol,FS-02\n';
+              patrol.field_station:
+                'station_code,station_name,coast_region\n'+
+                'FS-01,North Ranger Station,NORTH COAST\n'+
+                'FS-02,South Ranger Station,SOUTH COAST\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        markedClutchesInWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            since = %2026-06-20,
+            excludedMarkers = ['MONITOR_LIZARD'],
+            minClutch = 80
+          ]
+          asserts:
+          [
+            onlyTheGhostCrabClutch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Nest":"NR-02","Program":"NEST-WATCH","Clutch":95,"Hatched":80,"Station":"North Ranger Station"}]';
+                  }#;
+              }#
+          ]
+        },
+        everyMarkerInWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            since = %2026-06-20,
+            excludedMarkers = ['FOX'],
+            minClutch = 60
+          ]
+          asserts:
+          [
+            threeMarkedClutches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Nest":"NR-02","Program":"NEST-WATCH","Clutch":95,"Hatched":80,"Station":"North Ranger Station"},{"Nest":"NR-03","Program":"NEST-WATCH","Clutch":120,"Hatched":0,"Station":"South Ranger Station"},{"Nest":"NR-05","Program":"NEST-WATCH","Clutch":70,"Hatched":64,"Station":"North Ranger Station"}]';
+                  }#;
+              }#
+          ]
+        },
+        noClutchAboveTheBound:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            since = %2026-06-20,
+            excludedMarkers = ['GHOST_CRAB', 'MONITOR_LIZARD'],
+            minClutch = 200
+          ]
+          asserts:
+          [
+            emptyCensus:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::goldenreef5::service::NestSiteTallyByEnvironment
+{
+  pattern: '/goldenreef/v1/nest-site-tally/{environment}';
+  title: 'Nesting Coast - Site Tally By Environment';
+  owners:
+  [
+    'nesting-coast-survey',
+    'hatchling-monitoring'
+  ];
+  documentation: 'Counts the monitored nesting sites of one coast region as they were recorded at a pinned instant, dropping the shell-grit substrate and the site versions whose processing window has already closed, then grouping the projected rows by region. Multi-execution keyed by environment so the same body plans against the local survey runtime and the coastal warehouse runtime.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {region: String[1]|test::goldenreef5::domain::NestSite.all(%2035-01-01)->filter(
+      s|($s.coastRegion->toOne() == $region) && (!($s.substrateCode->in(['SHELL_GRIT'])))
+    )->project(
+      [
+        col(s|$s.coastRegion->toOne(), 'Region'),
+        col(s|$s.siteCode, 'Site'),
+        col(s|$s.regionStationName->toOne(), 'Station')
+      ]
+    )->groupBy(
+      [
+        'Region'
+      ],
+      [
+        agg('Sites', x|$x.getString('Site'), y|$y->count())
+      ]
+    )->sort(
+      [
+        asc('Region')
+      ]
+    )};
+    key: 'environment';
+    executions['survey']:
+    {
+      mapping: test::goldenreef5::mapping::NestingMapping;
+      runtime: test::goldenreef5::runtime::NestingH2Runtime;
+    }
+    executions['coastal']:
+    {
+      mapping: test::goldenreef5::mapping::NestingMapping;
+      runtime: test::goldenreef5::runtime::NestingWarehouseRuntime;
+    }
+  }
+}

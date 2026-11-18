@@ -1,0 +1,67 @@
+name: hazel-prairie
+title: "Hazel Prairie - parameterised wildflower bloom services keyed by survey season"
+description: |
+  A wildflower-meadow survey corpus whose executable surface is two
+  multi-execution services, each keyed on a survey-season path segment that
+  selects between two runtime bindings over the same mapping, and each owned by
+  a deployment identifier. Both queries open the bloom-count extent, reach the
+  meadow region through a two-step property path (count to plot to meadow) and
+  combine a membership test over a caller-supplied region collection with
+  equality predicates on scalar string and date parameters. The roster projects
+  a trimmed, upper-cased species label beside the meadow name and de-duplicates
+  the pairs before sorting; the tally groups by meadow and a three-letter
+  upper-cased species stem, summing stems and counting records. Fixtures cover
+  region members and non-members, colour, observer and survey-day misses,
+  duplicate pairs collapsed by the distinct, and two species whose shared stem
+  merges them into one group, asserted under both execution keys.
+modelSources:
+  model:
+    root: hazel-prairie
+    files:
+      - test/hazelprairie/connection/PrairieAutumnConnection.pure
+      - test/hazelprairie/connection/PrairieSpringConnection.pure
+      - test/hazelprairie/data/PrairieTestData.pure
+      - test/hazelprairie/domain/PrairieDomain.pure
+      - test/hazelprairie/mapping/PrairieMapping.pure
+      - test/hazelprairie/runtime/PrairieAutumnRuntime.pure
+      - test/hazelprairie/runtime/PrairieSpringRuntime.pure
+      - test/hazelprairie/service/BloomRoster.pure
+      - test/hazelprairie/service/BloomStemTally.pure
+      - test/hazelprairie/store/PrairieDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-test
+  - execution:test-data
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:membership-test
+  - query:nested-property-path
+  - execution:service-parameter
+  - query:project
+  - query:sort-limit
+  - query:string-function
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - did-ownership
+  - distinct
+  - group-by
+  - h2
+  - membership
+  - multi-execution
+  - nested-navigation
+  - parameterised-service
+  - relational
+  - service-test
+  - wildflower-survey

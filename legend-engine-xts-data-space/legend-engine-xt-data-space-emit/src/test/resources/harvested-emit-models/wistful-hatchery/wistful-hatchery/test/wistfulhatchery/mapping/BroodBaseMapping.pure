@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulhatchery::mapping::BroodBaseMapping
+(
+  *test::wistfulhatchery::domain::Facility[facility]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulhatchery::store::BroodDb]brood.facility.facility_id
+    )
+    ~mainTable [test::wistfulhatchery::store::BroodDb]brood.facility
+    facilityName: [test::wistfulhatchery::store::BroodDb]brood.facility.facility_name,
+    regionName: [test::wistfulhatchery::store::BroodDb]brood.facility.region_name
+  }
+
+  *test::wistfulhatchery::domain::BroodRoom[room]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulhatchery::store::BroodDb]brood.brood_room.room_id
+    )
+    ~mainTable [test::wistfulhatchery::store::BroodDb]brood.brood_room
+    roomCode: [test::wistfulhatchery::store::BroodDb]brood.brood_room.room_code,
+    temperatureC: [test::wistfulhatchery::store::BroodDb]brood.brood_room.temperature_c,
+    facilityName: [test::wistfulhatchery::store::BroodDb]@Room_Facility | [test::wistfulhatchery::store::BroodDb]brood.facility.facility_name
+  }
+)

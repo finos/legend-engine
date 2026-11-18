@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltmarsh::service::SampleGrades
+{
+  pattern: '/cobaltmarsh/sampleGrades';
+  owners:
+  [
+    'wetland-monitoring'
+  ];
+  documentation: 'Projects water samples with their conditional quality band, including the null-sentinel fallback for ungraded samples and a composed sample label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::cobaltmarsh::domain::WaterSample.all()->project(
+      [
+        x|$x.sampleId,
+        x|$x.qualityBand,
+        x|$x.sampleLabel,
+        x|$x.oxygenMgl
+      ],
+      [
+        'SampleId',
+        'QualityBand',
+        'Label',
+        'OxygenMgl'
+      ]
+    )->sort(
+      [
+        asc('SampleId')
+      ]
+    );
+    mapping: test::cobaltmarsh::mapping::MarshMapping;
+    runtime: test::cobaltmarsh::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    sampleGradesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+                marsh.water_sample:
+                  'sample_id,station_id,turbidity_ntu,oxygen_mgl,sampled_on,grade_code\n'+
+                  'WS-01,ST-01,4.5,9.1,2024-05-02,A\n'+
+                  'WS-02,ST-02,12.25,7.4,2024-05-02,B\n'+
+                  'WS-03,ST-03,31.5,5.2,2024-05-03,C\n'+
+                  'WS-04,ST-04,58.75,3.1,2024-05-03,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        projectedRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SampleId":"WS-01","QualityBand":"Excellent","Label":"WS-01/A","OxygenMgl":9.1},{"SampleId":"WS-02","QualityBand":"Adequate","Label":"WS-02/B","OxygenMgl":7.4},{"SampleId":"WS-03","QualityBand":"Watch","Label":"WS-03/C","OxygenMgl":5.2},{"SampleId":"WS-04","QualityBand":null,"Label":"WS-04/NA","OxygenMgl":3.1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

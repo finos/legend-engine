@@ -1,0 +1,200 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblecavern8::mapping::CavernSketchMapping
+(
+  include test::noblecavern8::mapping::CavernStationMapping
+
+  *test::noblecavern8::domain::PassageSketch[passageSketch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblecavern8::store::CavernSketchDb]sketch.sketch_view.sketch_id
+    )
+    ~mainTable [test::noblecavern8::store::CavernSketchDb]sketch.sketch_view
+    sketchRef: [test::noblecavern8::store::CavernSketchDb]sketch.sketch_view.sketch_ref,
+    scaleRatio: [test::noblecavern8::store::CavernSketchDb]sketch.sketch_view.scale_ratio,
+    gridOffset: [test::noblecavern8::store::CavernSketchDb]sketch.sketch_view.grid_offset,
+    drawnAt: [test::noblecavern8::store::CavernSketchDb]sketch.sketch_view.drawn_at,
+    sketchLabel: concat(substring(rtrim(concat(toUpper(trim([test::noblecavern8::store::CavernSketchDb]sketch.sketch_view.artist_name)), ' PLAN', ' SHEET')), 1, 24), ' / ', 'GRID')
+  }
+
+  *test::noblecavern8::domain::SurveyMarker[surveyMarker]: Relational
+  {
+    ~primaryKey
+    (
+      [test::noblecavern8::store::CavernSketchDb]sketch.marker_view.marker_id
+    )
+    ~mainTable [test::noblecavern8::store::CavernSketchDb]sketch.marker_view
+    markerRef: [test::noblecavern8::store::CavernSketchDb]sketch.marker_view.marker_ref,
+    cairnHeight: [test::noblecavern8::store::CavernSketchDb]sketch.marker_view.cairn_height,
+    placedAt: [test::noblecavern8::store::CavernSketchDb]sketch.marker_view.placed_at,
+    markerLabel: concat(toLower(rtrim(substring(concat([test::noblecavern8::store::CavernSketchDb]sketch.marker_view.marker_kind, '-', 'CAIRN'), 1, 16))), ':', 'mk')
+  }
+
+  test::noblecavern8::domain::PassageLegSketches: Relational
+  {
+    AssociationMapping
+    (
+      sketches[passageLeg, passageSketch]: [test::noblecavern8::store::CavernSketchDb]@SketchView_Leg,
+      sketchedLeg[passageSketch, passageLeg]: [test::noblecavern8::store::CavernSketchDb]@SketchView_Leg
+    )
+  }
+
+  test::noblecavern8::domain::PassageSketchCrew: Relational
+  {
+    AssociationMapping
+    (
+      crewSketches[surveyCrew, passageSketch]: [test::noblecavern8::store::CavernSketchDb]@SketchView_Crew,
+      sketchCrew[passageSketch, surveyCrew]: [test::noblecavern8::store::CavernSketchDb]@SketchView_Crew
+    )
+  }
+
+  test::noblecavern8::domain::StationReadingMarkers: Relational
+  {
+    AssociationMapping
+    (
+      markers[stationReading, surveyMarker]: [test::noblecavern8::store::CavernSketchDb]@MarkerView_Reading,
+      markedReading[surveyMarker, stationReading]: [test::noblecavern8::store::CavernSketchDb]@MarkerView_Reading
+    )
+  }
+
+  test::noblecavern8::domain::SurveyMarkerCrew: Relational
+  {
+    AssociationMapping
+    (
+      crewMarkers[surveyCrew, surveyMarker]: [test::noblecavern8::store::CavernSketchDb]@MarkerView_Crew,
+      markerCrew[surveyMarker, surveyCrew]: [test::noblecavern8::store::CavernSketchDb]@MarkerView_Crew
+    )
+  }
+
+  testSuites:
+  [
+    passageSketchSuite:
+    {
+      function: |test::noblecavern8::domain::PassageSketch.all()->project(
+        [
+          col(s|$s.sketchRef, 'Sketch'),
+          col(s|$s.scaleRatio, 'Scale'),
+          col(s|$s.gridOffset, 'Offset'),
+          col(s|$s.sketchLabel, 'Label'),
+          col(s|$s.sketchedLeg.legRef, 'Leg'),
+          col(s|$s.sketchedLeg.run.runRef, 'Run'),
+          col(s|$s.sketchCrew.crewName, 'Crew')
+        ]
+      )->sort([asc('Sketch')]);
+      tests:
+      [
+        sketchReachesLegAndOpenCrew:
+        {
+          doc: 'Projects two sketches read through the sketch view: the open sketch carries the sentinel and reaches its crew through the composite join, the superseded sketch shares the crew code but misses the sentinel so its crew is empty, and both reach their leg and run through the view-to-table join.';
+          data:
+          [
+            test::noblecavern8::store::CavernSketchDb:
+              Relational
+              #{
+                survey.survey_run:
+                  'run_id,run_ref,system_code,crew_code,surveyed_on\n'+
+                  '1,SR-1,NC-1,CR-1,2026-05-04\n';
+
+                survey.passage_leg:
+                  'leg_id,leg_ref,run_ref,length_m,depth_m\n'+
+                  '1,LG-1,SR-1,120,45\n'+
+                  '2,LG-2,SR-1,80,30\n';
+
+                crew.survey_crew:
+                  'crew_id,crew_code,crew_name,base_camp\n'+
+                  '1,CR-1,North Karst Crew,Ridge Camp\n';
+
+                sketch.passage_sketch:
+                  'sketch_id,sketch_ref,leg_ref,crew_code,out_seq,scale_ratio,grid_offset,drawn_at,artist_name\n'+
+                  '1,SK-1,LG-1,CR-1,999999,2.50,0.75,2026-05-04 10:15:00,  ada moor \n'+
+                  '2,SK-2,LG-2,CR-1,3,5.00,1.25,2026-05-05 09:00:00,ivo lund\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sketch":"SK-1","Scale":2.5,"Offset":0.75,"Label":"ADA MOOR PLAN SHEET / GRID","Leg":"LG-1","Run":"SR-1","Crew":"North Karst Crew"},{"Sketch":"SK-2","Scale":5.0,"Offset":1.25,"Label":"IVO LUND PLAN SHEET / GRID","Leg":"LG-2","Run":"SR-1","Crew":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveyMarkerSuite:
+    {
+      function: |test::noblecavern8::domain::SurveyMarker.all()->project(
+        [
+          col(m|$m.markerRef, 'Marker'),
+          col(m|$m.markerLabel, 'Label'),
+          col(m|$m.markedReading.stationRef, 'Station'),
+          col(m|$m.markedReading.leg.legRef, 'Leg'),
+          col(m|$m.markerCrew.crewCode, 'Crew')
+        ]
+      )->sort([asc('Marker')]);
+      tests:
+      [
+        markerReachesReadingAndOpenCrew:
+        {
+          doc: 'Projects two markers read through the marker view: the open marker reaches its crew through the composite sentinel join and the superseded one does not, while both reach their station reading and leg through the view-to-table join.';
+          data:
+          [
+            test::noblecavern8::store::CavernSketchDb:
+              Relational
+              #{
+                survey.passage_leg:
+                  'leg_id,leg_ref,run_ref,length_m,depth_m\n'+
+                  '1,LG-1,SR-1,120,45\n';
+
+                survey.station_reading:
+                  'reading_id,station_ref,leg_ref,azimuth_deg,inclination_deg\n'+
+                  '1,ST-1,LG-1,180,12\n'+
+                  '2,ST-2,LG-1,200,8\n';
+
+                crew.survey_crew:
+                  'crew_id,crew_code,crew_name,base_camp\n'+
+                  '1,CR-1,North Karst Crew,Ridge Camp\n';
+
+                sketch.survey_marker:
+                  'marker_id,marker_ref,station_ref,crew_code,out_seq,cairn_height,placed_at,marker_kind\n'+
+                  '1,MK-1,ST-1,CR-1,999999,0.40,2026-05-04 11:00:00,STONE\n'+
+                  '2,MK-2,ST-2,CR-1,2,,2026-05-04 12:30:00,TAPE \n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Marker":"MK-1","Label":"stone-cairn:mk","Station":"ST-1","Leg":"LG-1","Crew":"CR-1"},{"Marker":"MK-2","Label":"tape -cairn:mk","Station":"ST-2","Leg":"LG-1","Crew":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

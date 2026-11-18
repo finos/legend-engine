@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {meta::external::function::description::openapi::profiles::ServiceSpecGeneration.specification = 'ridgeway-waymark-post'} test::meadowridge2::service::WaymarkPostDocument
+{
+  pattern: '/meadowridge/v1/waymark-post/{postNumber}';
+  title: 'Meadow Ridge - Waymark Post Document';
+  documentation: '';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'example-ridgeway-survey',
+    'example-ridgeway-stewardship'
+  ];
+  execution: Single
+  {
+    query: {postNumber: Float[1]|test::meadowridge2::domain::WaymarkPost.all()->filter(p|and((($p.postNumber == $postNumber) && ((($p.postCode->toLower()->trim()->startsWith('wp-')) && (($p.postFinish->toLower()->trim()->length() > 0))))), true))->graphFetch(#{test::meadowridge2::domain::WaymarkPost{postCode, postFinish, postNumber}}#)->serialize(#{test::meadowridge2::domain::WaymarkPost{postCode, postFinish, postNumber}}#)};
+    mapping: test::meadowridge2::mapping::RidgewayMapping;
+    runtime: test::meadowridge2::runtime::RidgewayRuntime;
+  }
+  testSuites:
+  [
+    waymarkPostSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          embeddedRidgewayConnection:
+            Relational
+            #{
+              RIDGEWAY.WAYMARK_POST:
+                'POST_FINISH,NODE_ID,POST_CODE,PATH_NODE_ID\n'+
+                'weathered oak,11.5,WP-11,2.0\n'+
+                'galvanised steel,12.0,WP-12,2.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        fractionalIdentifierResolvesOnePost:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            postNumber = 11.5
+          ]
+          asserts:
+          [
+            weatheredOakPost:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"postCode":"WP-11","postFinish":"weathered oak","postNumber":11.5}';
+                  }#;
+              }#
+          ]
+        },
+        unknownIdentifierResolvesNothing:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            postNumber = 99.0
+          ]
+          asserts:
+          [
+            noPost:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

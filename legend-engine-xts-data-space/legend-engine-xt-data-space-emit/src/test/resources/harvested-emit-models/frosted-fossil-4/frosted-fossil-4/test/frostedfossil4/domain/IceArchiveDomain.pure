@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::frostedfossil4::domain::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::frostedfossil4::domain::IceCore
+{
+  coreCode: String[1];
+  siteCode: String[1];
+  drillDepthMetres: Float[1];
+  isotopeIndex: Decimal[1];
+  sealedAt: DateTime[0..1];
+  retrievedOn: StrictDate[1];
+  siteRegion: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::frostedfossil4::domain::CoreSegment
+{
+  segmentCode: String[1];
+  coreCode: String[1];
+  segmentLengthCm: Integer[1];
+  densityGcm3: Float[1];
+}
+
+Class test::frostedfossil4::domain::DrillSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  regionName: String[1];
+}
+
+Association test::frostedfossil4::domain::Core_DrillSite
+{
+  drillSite: DrillSite[0..1];
+  cores: IceCore[*];
+}
+
+Association test::frostedfossil4::domain::Core_Segments
+{
+  core: IceCore[0..1];
+  segments: CoreSegment[*];
+}

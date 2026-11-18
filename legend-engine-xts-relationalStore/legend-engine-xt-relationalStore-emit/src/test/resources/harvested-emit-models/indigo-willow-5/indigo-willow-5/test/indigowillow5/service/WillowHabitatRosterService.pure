@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigowillow5::service::WillowHabitatRosterService
+{
+  pattern: '/indigowillow5/willowHabitatRoster/{observedOn}';
+  title: 'Willow Shoreline - Recently Walked Willow Habitat Roster As Of A Date';
+  owners:
+  [
+    'willow-grove-inspection-desk',
+    'willow-watch-eng'
+  ];
+  documentation: 'Opens the willow habitat extent as of the requested date, keeps the habitats walked since the rolling inspection horizon, and projects the habitat code beside a derived programme label and the observer who last walked it.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {observedOn: StrictDate[1], currentDate: StrictDate[1]|test::indigowillow5::domain::WillowHabitat.all($observedOn)->filter(
+      b|$b.habitatCode->startsWith('WIL') && ($b.lastCheckOn >= test::indigowillow5::function::willowHorizon($currentDate->adjust(-3650, meta::pure::functions::date::DurationUnit.DAYS)->cast(@StrictDate)))
+    )->project(
+      [
+      b|$b.habitatCode,
+        b|$b.programCode,
+        b|$b.observer.observerCode,
+        b|$b.habitatCode->toUpper()
+      ],
+      [
+        'Habitat',
+        'Programme',
+        'Observer',
+        'Habitat Label'
+      ]
+    )->distinct()->sort([asc('Habitat')])};
+    mapping: test::indigowillow5::mapping::WillowMapping;
+    runtime: test::indigowillow5::runtime::WillowRuntime;
+  }
+  testSuites:
+  [
+    willowHabitatRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          willowH2Connection:
+            Relational
+            #{
+              willow.willow_habitat:
+                'habitat_id,habitat_code,reed_area,last_check_on,observer_id,from_z,thru_z\n'+
+                '1,WIL-A,42,2026-03-02,100,2026-01-01,9999-12-31\n'+
+                '2,WIL-B,17,2005-04-19,200,2026-01-01,9999-12-31\n'+
+                '3,WIL-C,23,2026-05-11,,2026-01-01,9999-12-31\n'+
+                '4,WIL-D,31,2026-02-08,100,2015-01-01,2026-01-01\n';
+
+              willow.trail_observer:
+                'observer_id,observer_code,permit_tag\n'+
+                '100,REC-A,permit-north\n'+
+                '200,REC-B,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        habitatsWalkedSinceTheHorizon:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2026-06-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            staleAndRetiredHabitatsAreLeftOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Habitat":"WIL-A","Programme":"WILLOW-GROVE-WIL-A","Observer":"REC-A","Habitat Label":"WIL-A"}, {"Habitat":"WIL-C","Programme":"WILLOW-GROVE-WIL-C","Observer":null,"Habitat Label":"WIL-C"}]';
+                  }#;
+              }#
+          ]
+        },
+        dateBeforeEveryHabitatWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2011-06-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            noHabitatStandsAtThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

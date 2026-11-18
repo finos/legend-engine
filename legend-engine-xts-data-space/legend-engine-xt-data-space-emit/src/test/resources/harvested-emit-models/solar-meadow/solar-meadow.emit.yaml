@@ -1,0 +1,73 @@
+name: solar-meadow
+title: "Solar Meadow - Restored Wildflower Plots with a Grouped Inline View and Banded Bloom Counts"
+description: |
+  A meadow-restoration monitoring model whose single relational store carries live
+  plots, their sward types, the pollinator taxa recorded against them and a grouped
+  inline view of bloom counts per plot. One curated mapping reaches the view through
+  a plot-to-view join to expose the per-plot tally, resolves sward names over a
+  two-hop count-to-plot-to-sward join path, and lands an eight-arm cover-band case
+  with an unscored fallback; a cross-table class-mapping filter keeps only taxa that
+  were actually counted. A season-digest service rolls stems up per plot and cover
+  band inside a window derived by date arithmetic from its parameter, an outer-join
+  service places every plot beside its windowed tally so uncounted plots survive with
+  an empty tally, and a data space publishes the in-process and archive tiers.
+modelSources:
+  model:
+    root: solar-meadow
+    files:
+      - test/solarmeadow/connection/MeadowH2Connection.pure
+      - test/solarmeadow/connection/MeadowLakeConnection.pure
+      - test/solarmeadow/dataspace/MeadowDataSpace.pure
+      - test/solarmeadow/domain/MeadowDomain.pure
+      - test/solarmeadow/mapping/MeadowMapping.pure
+      - test/solarmeadow/runtime/MeadowH2Runtime.pure
+      - test/solarmeadow/runtime/MeadowLakeRuntime.pure
+      - test/solarmeadow/service/BloomTallyJoinService.pure
+      - test/solarmeadow/service/PlotSeasonDigestService.pure
+      - test/solarmeadow/store/MeadowDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data-branch-coverage
+  - grammar:derived-property
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-table-filter
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-left-outer-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - data-space
+  - date-arithmetic
+  - grouped-view
+  - h2
+  - inline-view
+  - multi-hop-join
+  - outer-join
+  - relational
+  - tabular-data-set

@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonisle3::mapping::ShelterNetworkMapping
+(
+  include mapping test::crimsonisle3::mapping::ShelterEnumMapping
+
+  *test::crimsonisle3::domain::TrailShelter[shelter]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.shelter_id
+    )
+    ~mainTable [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter
+    shelterCode: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.shelter_code,
+    shelterName: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.shelter_name,
+    tier: EnumerationMapping ShelterTierMapping: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.tier_code,
+    roof: EnumerationMapping RoofMaterialMapping: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.roof_code,
+    route: EnumerationMapping AccessRouteMapping: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.route_code,
+    bunkCount: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.bunk_count,
+    altitudeM: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.altitude_m,
+    waterSource: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.water_source,
+    sweepNote: [test::crimsonisle3::store::ShelterNetworkDB]alpine.shelter.sweep_note
+  }
+
+  *test::crimsonisle3::domain::InspectionRecord[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle3::store::ShelterNetworkDB]alpine.inspection.inspection_id
+    )
+    ~mainTable [test::crimsonisle3::store::ShelterNetworkDB]alpine.inspection
+    inspectionRef: [test::crimsonisle3::store::ShelterNetworkDB]alpine.inspection.inspection_ref,
+    checklistTag: [test::crimsonisle3::store::ShelterNetworkDB]alpine.inspection.checklist_tag,
+    outcome: EnumerationMapping InspectionOutcomeMapping: [test::crimsonisle3::store::ShelterNetworkDB]alpine.inspection.outcome_code,
+    inspectedOn: [test::crimsonisle3::store::ShelterNetworkDB]alpine.inspection.inspected_on
+  }
+
+  *test::crimsonisle3::domain::RoutineInspection[routineInspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle3::store::ShelterNetworkDB]alpine.routine_inspection.routine_id
+    )
+    ~mainTable [test::crimsonisle3::store::ShelterNetworkDB]alpine.routine_inspection
+    inspectionRef: [test::crimsonisle3::store::ShelterNetworkDB]alpine.routine_inspection.inspection_ref,
+    checklistTag: [test::crimsonisle3::store::ShelterNetworkDB]alpine.routine_inspection.checklist_tag,
+    outcome: EnumerationMapping InspectionOutcomeMapping: [test::crimsonisle3::store::ShelterNetworkDB]alpine.routine_inspection.outcome_code,
+    inspectedOn: [test::crimsonisle3::store::ShelterNetworkDB]alpine.routine_inspection.inspected_on,
+    checklistVersion: [test::crimsonisle3::store::ShelterNetworkDB]alpine.routine_inspection.checklist_version
+  }
+
+  *test::crimsonisle3::domain::StormInspection[stormInspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle3::store::ShelterNetworkDB]alpine.storm_inspection.storm_id
+    )
+    ~mainTable [test::crimsonisle3::store::ShelterNetworkDB]alpine.storm_inspection
+    inspectionRef: [test::crimsonisle3::store::ShelterNetworkDB]alpine.storm_inspection.inspection_ref,
+    checklistTag: [test::crimsonisle3::store::ShelterNetworkDB]alpine.storm_inspection.checklist_tag,
+    outcome: EnumerationMapping InspectionOutcomeMapping: [test::crimsonisle3::store::ShelterNetworkDB]alpine.storm_inspection.outcome_code,
+    inspectedOn: [test::crimsonisle3::store::ShelterNetworkDB]alpine.storm_inspection.inspected_on,
+    windSpeedKph: [test::crimsonisle3::store::ShelterNetworkDB]alpine.storm_inspection.wind_speed_kph
+  }
+
+  *test::crimsonisle3::domain::AccessPermit[permit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle3::store::ShelterNetworkDB]alpine.permit.permit_id
+    )
+    ~mainTable [test::crimsonisle3::store::ShelterNetworkDB]alpine.permit
+    permitRef: [test::crimsonisle3::store::ShelterNetworkDB]alpine.permit.permit_ref,
+    bunkAllowance: [test::crimsonisle3::store::ShelterNetworkDB]alpine.permit.bunk_allowance
+  }
+
+  *test::crimsonisle3::domain::WardenAssignment[warden]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle3::store::ShelterNetworkDB]alpine.warden_assignment.warden_id
+    )
+    ~mainTable [test::crimsonisle3::store::ShelterNetworkDB]alpine.warden_assignment
+    wardenName: [test::crimsonisle3::store::ShelterNetworkDB]alpine.warden_assignment.warden_name,
+    contactRadio: [test::crimsonisle3::store::ShelterNetworkDB]alpine.warden_assignment.contact_radio
+  }
+
+  test::crimsonisle3::domain::Shelter_Inspection: Relational
+  {
+    AssociationMapping
+    (
+      inspections[shelter, inspection]: [test::crimsonisle3::store::ShelterNetworkDB]@Shelter_Inspection,
+      inspectedShelter[inspection, shelter]: [test::crimsonisle3::store::ShelterNetworkDB]@Shelter_Inspection
+    )
+  }
+
+  test::crimsonisle3::domain::Shelter_Permit: Relational
+  {
+    AssociationMapping
+    (
+      permit[shelter, permit]: [test::crimsonisle3::store::ShelterNetworkDB]@Shelter_Permit,
+      permittedShelter[permit, shelter]: [test::crimsonisle3::store::ShelterNetworkDB]@Shelter_Permit
+    )
+  }
+
+  test::crimsonisle3::domain::Shelter_Warden: Relational
+  {
+    AssociationMapping
+    (
+      warden[shelter, warden]: [test::crimsonisle3::store::ShelterNetworkDB]@Shelter_Warden,
+      wardenedShelter[warden, shelter]: [test::crimsonisle3::store::ShelterNetworkDB]@Shelter_Warden
+    )
+  }
+)

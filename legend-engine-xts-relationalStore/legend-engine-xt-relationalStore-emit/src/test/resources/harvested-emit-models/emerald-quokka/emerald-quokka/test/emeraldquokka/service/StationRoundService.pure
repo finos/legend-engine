@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldquokka::service::StationRoundService
+{
+  pattern: '/emeraldquokka/v1/station-rounds/{environment}';
+  title: 'Emerald Quokka - Station Rounds By Environment Key';
+  ownership: UserList { users: ['park-browse-desk'] };
+  documentation: 'Restricts the feeding rounds to a caller-named set of browse stations through a membership predicate and projects the retained width; the environment key selects which runtime answers the same query, so the plan is generated once per key over an unchanged model.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {stations: String[*]|test::emeraldquokka::domain::FeedingRound.all()->filter(
+      r|$r.stationCode->in($stations)
+    )->project(
+      [
+        r|$r.roundCode,
+        r|$r.stationCode,
+        r|$r.portionsKg
+      ],
+      [
+        'Round',
+        'Station',
+        'Portions'
+      ]
+    )->sort([asc('Round')])};
+    key: 'environment';
+    executions['primary']:
+    {
+      mapping: test::emeraldquokka::mapping::ParkMapping;
+      runtime: test::emeraldquokka::runtime::ParkPrimaryRuntime;
+    }
+    executions['reserve']:
+    {
+      mapping: test::emeraldquokka::mapping::ParkMapping;
+      runtime: test::emeraldquokka::runtime::ParkReserveRuntime;
+    }
+  }
+  testSuites:
+  [
+    stationRoundSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          parkConnection:
+            Reference
+            #{
+              test::emeraldquokka::data::ParkTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        primaryKeyTwoStations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['primary'];
+          parameters:
+          [
+            stations = ['ST-BROWSE-1', 'ST-BROWSE-4']
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Round":"FR-001","Station":"ST-BROWSE-1","Portions":14},{"Round":"FR-002","Station":"ST-BROWSE-1","Portions":11},{"Round":"FR-005","Station":"ST-BROWSE-4","Portions":22}]';
+                  }#;
+              }#
+          ]
+        },
+        reserveKeyOneStation:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['reserve'];
+          parameters:
+          [
+            stations = ['ST-BROWSE-2']
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Round":"FR-003","Station":"ST-BROWSE-2","Portions":18}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

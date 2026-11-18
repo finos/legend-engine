@@ -1,0 +1,148 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantisle::service::ReadingCards
+{
+  pattern: '/verdantIsle/v1/readingCards';
+  title: 'Reading Room Cards';
+  owners:
+  [
+    'isle-reading-room',
+    'card-catalogue'
+  ];
+  documentation: 'Accepts an inbound reservation-card document and returns a checked object graph over a two-level property tree, so each surfaced card carries the raw source record and any parsing or multiplicity defects beside the transformed values. The whole execution is self-contained: the runtime is embedded inline and its only connection is a document-parsing model-store connection bound to the source class.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::verdantisle::domain::ReadingCard.all()->graphFetchChecked(
+      #{
+        test::verdantisle::domain::ReadingCard{
+          cardId,
+          givenName,
+          familyName,
+          edition{
+            code,
+            language
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::verdantisle::domain::ReadingCard{
+          cardId,
+          givenName,
+          familyName,
+          edition{
+            code,
+            language
+          }
+        }
+      }#
+    );
+    mapping: test::verdantisle::mapping::CardMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::verdantisle::mapping::CardMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          cardDocumentConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::verdantisle::source::CardDocument;
+              url: 'executor:default';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    wellFormedCardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cardDocumentConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"attr_cardId":"RC-2001","attr_shelfMark":"SM-441","text_readerName":"Ada Lovelace","attr_note":"desk by the window","elem_edition":{"attr_editionCode":"ED-7","attr_langTag":"eng"}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        checkedCardGraph:
+        {
+          asserts:
+          [
+            provenanceEnvelope:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"attr_cardId\\":\\"RC-2001\\",\\"attr_shelfMark\\":\\"SM-441\\",\\"text_readerName\\":\\"Ada Lovelace\\",\\"attr_note\\":\\"desk by the window\\",\\"elem_edition\\":{\\"attr_editionCode\\":\\"ED-7\\",\\"attr_langTag\\":\\"eng\\"}}"},"value":{"attr_cardId":"RC-2001","elem_edition":{"attr_editionCode":"ED-7","attr_langTag":"eng"},"text_readerName":"Ada Lovelace"}},"value":{"cardId":"RC-2001","givenName":"Ada","familyName":"Lovelace","edition":{"code":"ED-7","language":"ENG"}}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    repeatedSeparatorCardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cardDocumentConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"attr_cardId":"RC-2002","attr_shelfMark":"SM-118","text_readerName":"Ida Beth Kirkwood","elem_edition":{"attr_editionCode":"ED-2","attr_langTag":"fra"}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        checkedCardGraphWithRepeatedSeparator:
+        {
+          asserts:
+          [
+            provenanceEnvelope:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"attr_cardId\\":\\"RC-2002\\",\\"attr_shelfMark\\":\\"SM-118\\",\\"text_readerName\\":\\"Ida Beth Kirkwood\\",\\"elem_edition\\":{\\"attr_editionCode\\":\\"ED-2\\",\\"attr_langTag\\":\\"fra\\"}}"},"value":{"attr_cardId":"RC-2002","elem_edition":{"attr_editionCode":"ED-2","attr_langTag":"fra"},"text_readerName":"Ida Beth Kirkwood"}},"value":{"cardId":"RC-2002","givenName":"Ida","familyName":"Beth Kirkwood","edition":{"code":"ED-2","language":"FRA"}}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

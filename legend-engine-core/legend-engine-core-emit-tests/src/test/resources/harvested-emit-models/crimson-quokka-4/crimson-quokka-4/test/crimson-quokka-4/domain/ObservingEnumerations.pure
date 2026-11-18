@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonquokka4::profile::*;
+
+Enum {PlanDoc.purpose = 'How steady the air above the dome was judged to be while a block was observed.'} test::crimsonquokka4::domain::SeeingBand
+{
+  PRISTINE,
+  STEADY,
+  UNSETTLED,
+  TURBULENT
+}
+
+Enum test::crimsonquokka4::domain::TrackingMode
+{
+  SIDEREAL,
+  LUNAR,
+  NON_SIDEREAL,
+  PARKED
+}
+
+Enum test::crimsonquokka4::domain::CadenceUnit
+{
+  MINUTE,
+  HOUR,
+  NIGHT,
+  LUNATION
+}
+
+Enum test::crimsonquokka4::domain::MoonWindow
+{
+  DARK,
+  GREY,
+  BRIGHT
+}
+
+Enum test::crimsonquokka4::domain::SpectralResolution
+{
+  LOW,
+  MEDIUM,
+  HIGH
+}
+
+Enum test::crimsonquokka4::domain::ArchiveCompression
+{
+  NONE,
+  RICE,
+  GZIP,
+  BZIP,
+  PLIO,
+  HCOMPRESS,
+  DEFLATE,
+  LZW,
+  ZSTANDARD,
+  PACKBITS
+}

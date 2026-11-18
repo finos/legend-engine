@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::amberestuary2::service::SectorSummaryService
+{
+  pattern: '/reedbed/v1/sectors/summary';
+  title: 'Sector Summary';
+  owners:
+  [
+    'reed-bed-survey-team'
+  ];
+  documentation: 'Publishes the aggregate variant of the reed plot query: the surveyed plots clearing a parameterized stem floor rolled up per reserve sector into a total stem count and a surveyed plot tally, ordered by sector.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minStems: Integer[1]|test::amberestuary2::domain::ReedPlot.all()->filter(
+      p|$p.stemCount >= $minStems
+    )->groupBy(
+      [
+        p|$p.sectorCode
+      ],
+      [
+        agg(p|$p.stemCount, y|$y->sum()),
+        agg(p|$p.plotCode, y|$y->count())
+      ],
+      [
+        'Sector',
+        'TotalStems',
+        'SurveyCount'
+      ]
+    )->sort(
+      [
+        asc('Sector')
+      ]
+    )};
+    mapping: test::amberestuary2::mapping::ReedBedMapping;
+    runtime: test::amberestuary2::runtime::ReedBedRuntime;
+  }
+  testSuites:
+  [
+    sectorSummarySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              wetland.reed_plot:
+                'plot_code,survey_date,plot_label,sector_code,reed_density,water_depth_cm,stem_count,salinity_psu,canopy_pct,warden_code,habitat_note,season_code,access_flag,tide_stage\n'+
+                'RP-01,2026-04-12,North Reed Plot,SEC-NORTH,5.2,38.4,120,1.2,72.5,wd-north,dense stand,spring-early,Y,ebb\n'+
+                'RP-01,2026-05-18,North Reed Plot,SEC-NORTH,5.8,44.2,140,1.4,80.4,wd-north,dense stand,spring-late,Y,flood\n'+
+                'RP-02,,South Reed Plot,SEC-SOUTH,2.5,12.6,60,0.8,40.1,wd-south,patchy stand,summer-early,N,slack\n'+
+                'RP-03,2026-06-02,East Fen Plot,SEC-EAST,1.5,8.3,25,0.5,,,,summer-late,N,ebb\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sectorsAboveStemFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minStems = 40
+          ]
+          asserts:
+          [
+            twoSectorsRolledUp:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector":"SEC-NORTH","TotalStems":260,"SurveyCount":2},{"Sector":"SEC-SOUTH","TotalStems":60,"SurveyCount":1}]';
+                  }#;
+              }#
+          ]
+        },
+        sectorsAboveUnreachableStemFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minStems = 500
+          ]
+          asserts:
+          [
+            noSectorsRolledUp:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

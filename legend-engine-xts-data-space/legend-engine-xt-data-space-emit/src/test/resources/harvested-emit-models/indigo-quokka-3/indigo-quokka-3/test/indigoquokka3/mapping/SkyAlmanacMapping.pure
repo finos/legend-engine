@@ -1,0 +1,160 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigoquokka3::mapping::SkyAlmanacMapping
+(
+  test::indigoquokka3::domain::StarMagnitude[starMagnitude]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.star_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.observed_on
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw
+    starCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.star_code,
+    observedOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.observed_on,
+    bandCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.band_code,
+    magnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.magnitude,
+    magnitudeError: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.magnitude_error,
+    airmass: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.airmass,
+    observerCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_magnitude_vw.observer_code
+  }
+
+  test::indigoquokka3::domain::StarStatistics[starStatistics]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.star_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.season_year
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw
+    starCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.star_code,
+    seasonYear: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.season_year,
+    meanMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.mean_magnitude,
+    minMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.min_magnitude,
+    maxMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.max_magnitude,
+    observationCount: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.observation_count,
+    lastObservedOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.star_season_vw.last_observed_on
+  }
+
+  test::indigoquokka3::domain::CometMagnitude[cometMagnitude]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.comet_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.observed_on
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw
+    cometCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.comet_code,
+    observedOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.observed_on,
+    totalMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.total_magnitude,
+    comaArcmin: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.coma_arcmin,
+    tailDegrees: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.tail_degrees,
+    observerCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_magnitude_vw.observer_code
+  }
+
+  test::indigoquokka3::domain::CometStatistics[cometStatistics]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw.comet_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw.apparition_year
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw
+    cometCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw.comet_code,
+    apparitionYear: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw.apparition_year,
+    peakMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw.peak_magnitude,
+    perihelionOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw.perihelion_on,
+    observationCount: [test::indigoquokka3::store::SkyAlmanacDb]almanac.comet_apparition_vw.observation_count
+  }
+
+  test::indigoquokka3::domain::AsteroidMagnitude[asteroidMagnitude]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw.asteroid_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw.observed_on
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw
+    asteroidCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw.asteroid_code,
+    observedOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw.observed_on,
+    reducedMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw.reduced_magnitude,
+    phaseAngleDeg: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw.phase_angle_deg,
+    rotationHours: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_magnitude_vw.rotation_hours
+  }
+
+  test::indigoquokka3::domain::AsteroidStatistics[asteroidStatistics]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.asteroid_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.opposition_year
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw
+    asteroidCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.asteroid_code,
+    oppositionYear: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.opposition_year,
+    meanMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.mean_magnitude,
+    lightcurveAmplitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.lightcurve_amplitude,
+    observationCount: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.observation_count,
+    oppositionOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.asteroid_opposition_vw.opposition_on
+  }
+
+  test::indigoquokka3::domain::MeteorShowerRate[meteorShowerRate]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.shower_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.observed_on,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.station_code
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw
+    showerCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.shower_code,
+    observedOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.observed_on,
+    stationCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.station_code,
+    hourlyRate: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.hourly_rate,
+    limitingMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.limiting_magnitude,
+    cloudCoverPct: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_rate_vw.cloud_cover_pct
+  }
+
+  test::indigoquokka3::domain::MeteorShowerStatistics[meteorShowerStatistics]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw.shower_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw.season_year
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw
+    showerCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw.shower_code,
+    seasonYear: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw.season_year,
+    peakRate: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw.peak_rate,
+    peakOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw.peak_on,
+    meanRate: [test::indigoquokka3::store::SkyAlmanacDb]almanac.meteor_season_vw.mean_rate
+  }
+
+  test::indigoquokka3::domain::NovaMagnitude[novaMagnitude]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw.nova_code,
+      [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw.observed_on
+    )
+    ~mainTable [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw
+    novaCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw.nova_code,
+    observedOn: [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw.observed_on,
+    visualMagnitude: [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw.visual_magnitude,
+    declineRate: [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw.decline_rate,
+    observerCode: [test::indigoquokka3::store::SkyAlmanacDb]almanac.nova_magnitude_vw.observer_code
+  }
+)

@@ -1,0 +1,53 @@
+name: frosted-fossil-4
+title: "Frosted Fossil — Glacier Ice Core Archive (processing-temporal cores read at a parameterised instant, mapping include, join-reached site columns)"
+modelSources:
+  model:
+    root: frosted-fossil-4
+    files:
+      - test/frostedfossil4/connection/IceArchiveConnection.pure
+      - test/frostedfossil4/data/IceArchiveData.pure
+      - test/frostedfossil4/dataspace/IceArchiveDataSpace.pure
+      - test/frostedfossil4/domain/IceArchiveDomain.pure
+      - test/frostedfossil4/mapping/IceArchiveBaseMapping.pure
+      - test/frostedfossil4/mapping/IceArchiveMapping.pure
+      - test/frostedfossil4/runtime/IceArchiveRuntime.pure
+      - test/frostedfossil4/service/CoreCatalogueService.pure
+      - test/frostedfossil4/service/CoreDepthWindowService.pure
+      - test/frostedfossil4/service/SegmentRegisterService.pure
+      - test/frostedfossil4/store/IceArchiveDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - execution:mapping-test
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - data-space
+  - filter
+  - h2
+  - ice-core
+  - join-reached-column
+  - mapping-include
+  - point-in-time
+  - processing-temporal
+  - project
+  - snowflake

@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietarboretum2::mapping::AccessionMapping
+(
+  *test::quietarboretum2::domain::AccessionRecord[accession_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietarboretum2::store::AccessionDb]arbor.accession_record.accession_code
+    )
+    ~mainTable [test::quietarboretum2::store::AccessionDb]arbor.accession_record
+    accessionCode: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.accession_code,
+    taxonName: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.taxon_name,
+    bedCode: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.bed_code,
+    curatorName: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.curator_name,
+    specimenCount: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.specimen_count,
+    heightCm: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.height_cm,
+    spreadCm: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.spread_cm,
+    propagationCount: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.propagation_count,
+    plantedOn: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.planted_on,
+    verifiedOn: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.verified_on,
+    surveyedAt: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.surveyed_at,
+    updatedAt: [test::quietarboretum2::store::AccessionDb]arbor.accession_record.updated_at,
+    sourceRegister: 'ARBORETUM-CENTRAL'
+  }
+
+  testSuites:
+  [
+    accessionWindowSuite:
+    {
+      function: |test::quietarboretum2::domain::AccessionRecord.all(%2026-03-01)->project(
+        [
+          a|$a.accessionCode,
+          a|$a.taxonName,
+          a|$a.specimenCount,
+          a|$a.plantedOn,
+          a|$a.sourceRegister
+        ],
+        [
+          'AccessionCode',
+          'TaxonName',
+          'SpecimenCount',
+          'PlantedOn',
+          'SourceRegister'
+        ]
+      )->sort(
+        [
+          asc('AccessionCode')
+        ]
+      );
+      tests:
+      [
+        supersededRowFallsOutsideTheRequestedWindow:
+        {
+          doc: 'Reads the register at one processing instant so the plan-injected window predicate drops the superseded row, and proves the constant-valued property is surfaced for every row that survives.';
+          data:
+          [
+            test::quietarboretum2::store::AccessionDb:
+              Relational
+              #{
+                arbor.accession_record:
+                  'accession_code,taxon_name,bed_code,curator_name,specimen_count,height_cm,spread_cm,propagation_count,planted_on,verified_on,surveyed_at,updated_at,in_z,out_z\n'+
+                  'AC-01,quercus grove draft,BD-01,wren keeper,3,120,80,2,2024-04-01,2024-05-01,2024-05-01 09:15:00,2024-05-02 10:00:00,2026-01-01,2026-02-01\n'+
+                  'AC-01,quercus grove,BD-01,wren keeper,4,140,90,2,2024-04-01,2026-02-10,2026-02-10 08:00:00,2026-02-10 08:30:00,2026-02-01,9999-12-31\n'+
+                  'AC-02,acer terrace,BD-02,finch keeper,1,60,40,1,2025-03-15,2026-01-20,2026-01-20 07:45:00,2026-01-21 07:45:00,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            currentWindowRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AccessionCode":"AC-01","TaxonName":"quercus grove","SpecimenCount":4,"PlantedOn":"2024-04-01","SourceRegister":"ARBORETUM-CENTRAL"},{"AccessionCode":"AC-02","TaxonName":"acer terrace","SpecimenCount":1,"PlantedOn":"2025-03-15","SourceRegister":"ARBORETUM-CENTRAL"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

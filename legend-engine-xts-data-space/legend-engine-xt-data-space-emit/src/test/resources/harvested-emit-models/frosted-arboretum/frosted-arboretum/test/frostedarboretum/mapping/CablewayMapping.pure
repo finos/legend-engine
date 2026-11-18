@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedarboretum::mapping::CablewayMapping
+(
+  *test::frostedarboretum::domain::CabinAllotment[cabinAllotment]: Relational
+  {
+    ~filter [test::frostedarboretum::store::CablewayDb]WinterSeason
+    ~primaryKey
+    (
+      [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.allot_id
+    )
+    ~mainTable [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment
+    cabinCode: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.cabin_code,
+    stationCode: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.station_code,
+    cabinClass: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.cabin_class,
+    plannedZone: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.planned_zone,
+    serviceZone: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.service_zone,
+    haulKind: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.haul_kind,
+    allotState: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.allot_state,
+    seatCount: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.seat_count,
+    cableLengthM: [test::frostedarboretum::store::CablewayDb]cableway.cabin_allotment.cable_length_m,
+    stationName: [test::frostedarboretum::store::CablewayDb]@Allotment_Station | [test::frostedarboretum::store::CablewayDb]cableway.station_ref.station_name,
+    staffedFlag: [test::frostedarboretum::store::CablewayDb]@Allotment_Station | [test::frostedarboretum::store::CablewayDb]cableway.station_ref.staffed_flag
+  }
+
+  *test::frostedarboretum::domain::Station[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedarboretum::store::CablewayDb]cableway.station_ref.station_code
+    )
+    ~mainTable [test::frostedarboretum::store::CablewayDb]cableway.station_ref
+    stationCode: [test::frostedarboretum::store::CablewayDb]cableway.station_ref.station_code,
+    stationName: [test::frostedarboretum::store::CablewayDb]cableway.station_ref.station_name,
+    staffedFlag: [test::frostedarboretum::store::CablewayDb]cableway.station_ref.staffed_flag
+  }
+)

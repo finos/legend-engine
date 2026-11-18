@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblehatchery3::mapping::PropagationCuration
+(
+  *test::noblehatchery3::domain::CuratedPropagationRecord[curatedSet]: Pure
+  {
+    ~src test::noblehatchery3::source::IncomingPropagationRow
+    batchRef: $src.batchRef,
+    wingCode: $src.wingCode,
+    stageLabel: $src.stageToken,
+    notes: $src.notes,
+    validFrom: $src.observedFrom,
+    validThru: $src.observedThru,
+    mediumLabel: 'peat-free compost',
+    trayLabel: 'deep plug tray',
+    lightRegime: 'long day bench',
+    stewardLabel: 'propagation house',
+    reviewLabel: 'weekly walk-through',
+    gradeLabel: 'nursery grade one',
+    originLabel: 'mother stock bed',
+    methodLabel: 'softwood cutting',
+    retentionLabel: 'one growing season',
+    escalationLabel: 'curator on duty',
+    tallyLabel: 'tallied at potting on'
+  }
+
+  testSuites:
+  [
+    curatedDefaultsSuite:
+    {
+      function: |test::noblehatchery3::domain::CuratedPropagationRecord.all()->graphFetch(
+        #{
+          test::noblehatchery3::domain::CuratedPropagationRecord
+          {
+            batchRef,
+            wingCode,
+            stageLabel,
+            mediumLabel,
+            trayLabel,
+            gradeLabel,
+            tallyLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::noblehatchery3::domain::CuratedPropagationRecord
+          {
+            batchRef,
+            wingCode,
+            stageLabel,
+            mediumLabel,
+            trayLabel,
+            gradeLabel,
+            tallyLabel
+          }
+        }#
+      );
+      tests:
+      [
+        curatedRowsCarryTheLiteralDefaults:
+        {
+          doc: 'Two feed rows, one of them the row whose propagation window has already closed, both projected onto the curated shape so every literal-defaulted property lands on its constant.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::noblehatchery3::source::IncomingPropagationRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"batchRef":"NH-north-a","wingCode":"north","stageToken":"hardening","notes":"bench three","observedFrom":"2025-03-01T00:00:00","observedThru":"2025-09-01T00:00:00"},{"batchRef":"NH-north-b","wingCode":"north","stageToken":"graft union check","notes":"bench four","observedFrom":"2024-01-01T00:00:00","observedThru":"2025-01-01T00:00:00"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            bothRowsCurated:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"batchRef":"NH-north-a","wingCode":"north","stageLabel":"hardening","mediumLabel":"peat-free compost","trayLabel":"deep plug tray","gradeLabel":"nursery grade one","tallyLabel":"tallied at potting on"},{"batchRef":"NH-north-b","wingCode":"north","stageLabel":"graft union check","mediumLabel":"peat-free compost","trayLabel":"deep plug tray","gradeLabel":"nursery grade one","tallyLabel":"tallied at potting on"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

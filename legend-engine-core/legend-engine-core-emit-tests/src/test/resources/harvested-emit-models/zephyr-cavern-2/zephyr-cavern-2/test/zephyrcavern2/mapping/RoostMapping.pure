@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrcavern2::mapping::RoostMapping
+(
+  *test::zephyrcavern2::domain::RoostRecord[record]: Pure
+  {
+    ~src test::zephyrcavern2::domain::RoostPayload
+    recordCode: $src.recordCode,
+    caveCode: $src.caveCode,
+    roostCode: $src.roostCode
+  }
+  *test::zephyrcavern2::domain::RoostVisit[visit]: Pure
+  {
+    ~src test::zephyrcavern2::domain::RoostPayload
+    visitCode: $src.recordCode,
+    caveCode: $src.caveCode,
+    roostCode: $src.roostCode,
+    visitedOn: %2026-06-01
+  }
+  testSuites:
+  [
+    roostSuite:
+    {
+      function: |test::zephyrcavern2::domain::RoostRecord.all()->graphFetch(
+        #{
+          test::zephyrcavern2::domain::RoostRecord
+          {
+            recordCode,
+            caveCode,
+            roostCode
+          }
+        }#
+      )->serialize(
+        #{
+          test::zephyrcavern2::domain::RoostRecord
+          {
+            recordCode,
+            caveCode,
+            roostCode
+          }
+        }#
+      );
+      tests:
+      [
+        jsonRoostRows:
+        {
+          doc: 'Maps the store-less JSON fixture through the M2M source row.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::zephyrcavern2::domain::RoostPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordCode":"RV-01","caveCode":"CAVE-A","roostCode":"CAVE-A-R1"},{"recordCode":"RV-02","caveCode":"CAVE-B","roostCode":"CAVE-B-R1"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            roostRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordCode":"RV-01","caveCode":"CAVE-A","roostCode":"CAVE-A-R1"},{"recordCode":"RV-02","caveCode":"CAVE-B","roostCode":"CAVE-B-R1"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

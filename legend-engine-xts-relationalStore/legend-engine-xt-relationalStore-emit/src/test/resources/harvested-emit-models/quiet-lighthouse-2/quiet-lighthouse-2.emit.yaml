@@ -1,0 +1,64 @@
+name: quiet-lighthouse-2
+title: "Quiet Lighthouse Lamp Register — Processing-Milestoned Beacons, Sentinel Joins And A Model-To-Model Lamp Sheet"
+description: |
+  A lighthouse lamp register whose processing-milestoned beacon, coast section
+  and alias tables are joined through composite inner joins that conjoin the
+  key equality with an out-column sentinel test. Relational class mappings
+  apply named store filters, a lens subtype mapping extends the beacon mapping
+  with its own filter, a lamp mapping reads a filtered view, and three
+  association mappings connect beacons to sections, aliases and fitted lamps
+  one hop away. A model-to-model lamp sheet derives an eight-arm beam class
+  with a null fallback, marking flags from filtered collections, and three
+  enumerations from computed source expressions, and the published class
+  exposes a parameterised qualified property consumed by the graph fetch.
+
+modelSources:
+  model:
+    root: quiet-lighthouse-2
+    files:
+      - test/quietlighthouse2/connection/LightConnections.pure
+      - test/quietlighthouse2/domain/LightDomain.pure
+      - test/quietlighthouse2/mapping/LampSheetMapping.pure
+      - test/quietlighthouse2/mapping/LightRelationalMapping.pure
+      - test/quietlighthouse2/runtime/LightRuntimes.pure
+      - test/quietlighthouse2/store/LightDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-class-mapping-extends
+  - mapping:relational-conditional-transform
+  - mapping:relational-join-path
+  - store:relational-filter
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-composite-join
+  - store:relational-inner-join
+  - store:relational-view
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - class-mapping-extends
+  - composite-join
+  - enum-of-expression
+  - h2
+  - lighthouse-lamps
+  - m2m
+  - mapping-test
+  - processing-temporal
+  - relational
+  - sentinel-join
+  - view

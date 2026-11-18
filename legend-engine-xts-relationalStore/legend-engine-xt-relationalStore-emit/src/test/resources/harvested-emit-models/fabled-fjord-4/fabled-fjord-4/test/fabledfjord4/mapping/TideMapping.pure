@@ -1,0 +1,146 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledfjord4::mapping::TideMapping
+(
+  *test::fabledfjord4::domain::RawTideReading[tideSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledfjord4::store::TideDatabase]tide.tide_reading.reading_code
+    )
+    ~mainTable [test::fabledfjord4::store::TideDatabase]tide.tide_reading
+    readingCode: [test::fabledfjord4::store::TideDatabase]tide.tide_reading.reading_code,
+    beaconName: [test::fabledfjord4::store::TideDatabase]tide.tide_reading.beacon_name,
+    heightMetres: [test::fabledfjord4::store::TideDatabase]tide.tide_reading.height_metres,
+    readingLabel: [test::fabledfjord4::store::TideDatabase]tide.tide_reading.reading_label,
+    conditionNote: [test::fabledfjord4::store::TideDatabase]tide.tide_reading.condition_note
+  }
+
+  *test::fabledfjord4::domain::TideDigest[polishedTide]: Pure
+  {
+    ~src test::fabledfjord4::domain::RawTideReading
+    readingCode: $src.readingCode,
+    beaconName: $src.beaconName,
+    heightMetres: $src.heightMetres,
+    readingLabel: test::fabledfjord4::function::cleanReadingLabel(
+      test::fabledfjord4::function::annotateReadingLabel(
+        test::fabledfjord4::function::lookupReadingLabel($src.readingLabel)
+      )
+    ),
+    conditionNote: $src.conditionNote + '-' + $src.readingRank->toString()
+  }
+
+  testSuites:
+  [
+    tideDigestSuite:
+    {
+      function: |test::fabledfjord4::domain::TideDigest.all()->graphFetch(
+        #{
+          test::fabledfjord4::domain::TideDigest
+          {
+            readingCode,
+            beaconName,
+            heightMetres,
+            readingLabel,
+            conditionNote
+          }
+        }#
+      )->serialize(
+        #{
+          test::fabledfjord4::domain::TideDigest
+          {
+            readingCode,
+            beaconName,
+            heightMetres,
+            readingLabel,
+            conditionNote
+          }
+        }#
+      );
+      tests:
+      [
+        mapsTideReading:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::fabledfjord4::domain::RawTideReading:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"readingCode":"RD-11","beaconName":"North Spit","heightMetres":2.75,"readingLabel":"DAWN EDGE","conditionNote":"calm water","readingRank":1}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedTideDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"readingCode":"RD-11","beaconName":"North Spit","heightMetres":2.75,"readingLabel":"DAWN EDGE / TIDE READING","conditionNote":"calm water-1"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    tideReadingRelationSuite:
+    {
+      function: |test::fabledfjord4::domain::RawTideReading.all()->project(
+        ~[
+          READING_CODE: r|$r.readingCode,
+          BEACON_NAME: r|$r.beaconName,
+          HEIGHT_METRES: r|$r.heightMetres,
+          READING_LABEL: r|$r.readingLabel,
+          CONDITION_NOTE: r|$r.conditionNote
+        ]
+      )->select(
+        ~[READING_CODE, BEACON_NAME, HEIGHT_METRES, READING_LABEL, CONDITION_NOTE]
+      );
+      tests:
+      [
+        readsTideRegister:
+        {
+          data:
+          [
+            test::fabledfjord4::store::TideDatabase:
+              Relational
+              #{
+                tide.tide_reading:
+                  'reading_code,beacon_name,height_metres,reading_label,condition_note\n'+
+                  'RD-11,North Spit,2.75,DAWN EDGE,calm water\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedTideReading:
+              Relation
+              #{
+                READING_CODE,BEACON_NAME,HEIGHT_METRES,READING_LABEL,CONDITION_NOTE
+                RD-11,North Spit,2.75,DAWN EDGE,calm water;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

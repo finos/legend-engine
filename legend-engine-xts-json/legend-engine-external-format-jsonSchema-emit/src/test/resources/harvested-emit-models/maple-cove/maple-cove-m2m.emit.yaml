@@ -1,0 +1,36 @@
+name: maple-cove-m2m
+title: "Coastal Cove — Intermediate EMIT model (flat-data source, class inheritance, profile, M2M mapping & service)"
+description: |
+  An intermediate non-financial EMIT model in a coastal-cove shoreline-survey domain. It
+  materialises a profile, class inheritance (a tide-pool habitat specialising a base habitat),
+  a flat-data external-format binding describing the inbound feed record, a model-to-model
+  mapping that transforms the feed into the domain tide-pool, and a single-execution
+  model-to-model service. Assertion-backed coverage: a Mapping test and a Service test.
+modelSources:
+  model:
+    root: maple-cove-m2m
+    files:
+      - test/maplecove/connection/TidePoolFeedConnection.pure
+      - test/maplecove/domain/Cove.pure
+      - test/maplecove/external/TidePoolFormat.pure
+      - test/maplecove/mapping/CoveMapping.pure
+      - test/maplecove/runtime/CoveRuntime.pure
+      - test/maplecove/service/TransformTidePool.pure
+features:
+  - execution:service
+  - grammar:class-inheritance
+  - grammar:profile
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - store:flat-data-store
+stores:
+  - flat-data
+complexity: intermediate
+tags:
+  - class-inheritance
+  - cove
+  - flat-data
+  - model-to-model
+  - profile
+  - service-test

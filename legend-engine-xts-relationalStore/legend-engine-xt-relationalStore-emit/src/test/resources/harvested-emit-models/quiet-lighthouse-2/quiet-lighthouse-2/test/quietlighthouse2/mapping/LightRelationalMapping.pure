@@ -1,0 +1,397 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietlighthouse2::mapping::LightRelationalMapping
+(
+  test::quietlighthouse2::domain::LampKind: EnumerationMapping LampKindMapping
+  {
+    OIL: ['OI'],
+    ACETYLENE: ['AC'],
+    ELECTRIC: ['EL'],
+    UNRECORDED: ['ZZ']
+  }
+
+  *test::quietlighthouse2::domain::BeaconRecord[beacon]: Relational
+  {
+    ~filter [test::quietlighthouse2::store::LightDB]ListedBeacon
+    ~primaryKey
+    (
+      [test::quietlighthouse2::store::LightDB]lights.beacon.beacon_code,
+      [test::quietlighthouse2::store::LightDB]lights.beacon.in_z
+    )
+    ~mainTable [test::quietlighthouse2::store::LightDB]lights.beacon
+    beaconCode: [test::quietlighthouse2::store::LightDB]lights.beacon.beacon_code,
+    beaconName: toUpper(trim([test::quietlighthouse2::store::LightDB]lights.beacon.beacon_name)),
+    rangeNm: [test::quietlighthouse2::store::LightDB]lights.beacon.range_nm,
+    statusLabel: case(
+                   equal([test::quietlighthouse2::store::LightDB]lights.beacon.status_code, 'A'),
+                   'LIT',
+                   case(
+                     equal([test::quietlighthouse2::store::LightDB]lights.beacon.status_code, 'R'),
+                     'RESTING',
+                     'DARK'
+                   )
+                 ),
+    lampKind: EnumerationMapping LampKindMapping: [test::quietlighthouse2::store::LightDB]lights.beacon.lamp_kind_code
+  }
+
+  test::quietlighthouse2::domain::LensBeaconRecord[lensBeacon] extends [beacon]: Relational
+  {
+    ~filter [test::quietlighthouse2::store::LightDB]LensOnly
+    lensOrder: [test::quietlighthouse2::store::LightDB]lights.beacon.lens_order
+  }
+
+  *test::quietlighthouse2::domain::CoastSection[section]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse2::store::LightDB]lights.coast_section.section_code,
+      [test::quietlighthouse2::store::LightDB]lights.coast_section.in_z
+    )
+    ~mainTable [test::quietlighthouse2::store::LightDB]lights.coast_section
+    sectionCode: [test::quietlighthouse2::store::LightDB]lights.coast_section.section_code,
+    sectionName: trim([test::quietlighthouse2::store::LightDB]lights.coast_section.section_name)
+  }
+
+  *test::quietlighthouse2::domain::BeaconAlias[alias]: Relational
+  {
+    ~filter [test::quietlighthouse2::store::LightDB]NamedAlias
+    ~primaryKey
+    (
+      [test::quietlighthouse2::store::LightDB]lights.beacon_alias.alias_id,
+      [test::quietlighthouse2::store::LightDB]lights.beacon_alias.in_z
+    )
+    ~mainTable [test::quietlighthouse2::store::LightDB]lights.beacon_alias
+    aliasKind: [test::quietlighthouse2::store::LightDB]lights.beacon_alias.alias_kind,
+    aliasText: trim([test::quietlighthouse2::store::LightDB]lights.beacon_alias.alias_text)
+  }
+
+  *test::quietlighthouse2::domain::LampRecord[lamp]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietlighthouse2::store::LightDB]lights.fitted_lamp.lamp_code
+    )
+    ~mainTable [test::quietlighthouse2::store::LightDB]lights.fitted_lamp
+    lampCode: [test::quietlighthouse2::store::LightDB]lights.fitted_lamp.lamp_code,
+    lampText: [test::quietlighthouse2::store::LightDB]lights.fitted_lamp.lamp_text,
+    wattage: [test::quietlighthouse2::store::LightDB]lights.fitted_lamp.wattage,
+    fittedFlag: 'Y',
+    glassText: [test::quietlighthouse2::store::LightDB]lights.fitted_lamp.glass_text,
+    aspectCode: [test::quietlighthouse2::store::LightDB]lights.fitted_lamp.aspect_code
+  }
+
+  test::quietlighthouse2::domain::Beacon_Section: Relational
+  {
+    AssociationMapping
+    (
+      section[beacon, section]: [test::quietlighthouse2::store::LightDB]@Beacon_Section,
+      beacons[section, beacon]: [test::quietlighthouse2::store::LightDB]@Beacon_Section
+    )
+  }
+
+  test::quietlighthouse2::domain::Beacon_Alias: Relational
+  {
+    AssociationMapping
+    (
+      aliases[beacon, alias]: [test::quietlighthouse2::store::LightDB]@Beacon_Alias,
+      aliasedBeacon[alias, beacon]: [test::quietlighthouse2::store::LightDB]@Beacon_Alias
+    )
+  }
+
+  test::quietlighthouse2::domain::Beacon_Lamp: Relational
+  {
+    AssociationMapping
+    (
+      lamps[beacon, lamp]: [test::quietlighthouse2::store::LightDB]@Beacon_Lamp,
+      lampBeacon[lamp, beacon]: [test::quietlighthouse2::store::LightDB]@Beacon_Lamp
+    )
+  }
+
+  testSuites:
+  [
+    beaconAsOfSuite:
+    {
+      function: |test::quietlighthouse2::domain::BeaconRecord.all(%2026-06-01)->graphFetch(
+  #{
+    test::quietlighthouse2::domain::BeaconRecord
+  {
+    beaconCode,
+    beaconName,
+    statusLabel,
+    lampKind,
+    rangeBand
+  }
+  }#
+)->serialize(
+  #{
+    test::quietlighthouse2::domain::BeaconRecord
+  {
+    beaconCode,
+    beaconName,
+    statusLabel,
+    lampKind,
+    rangeBand
+  }
+  }#
+);
+      tests:
+      [
+        liveVersionsAndStatusArms:
+        {
+          doc: 'At the requested processing instant the earlier version of the point light and the lapsed skerry light are milestoned out of range and the withdrawn stack is removed by the listing filter; the status case expression reaches all three arms, the lamp kind codes are translated by the enumeration mapping and the range band qualified property takes both branches.';
+          data:
+          [
+            test::quietlighthouse2::store::LightDB:
+              Relational
+              #{
+                lights.beacon:
+                  'beacon_code,in_z,out_z,beacon_name,section_code,status_code,lamp_kind_code,beacon_type,lens_order,range_nm\n'+
+                  'B-01,2025-01-01,2026-01-01,quiet point beacon ,S-1,A,OI,B,,12\n'+
+                  'B-01,2026-01-01,9999-12-31, quiet point light,S-1,A,EL,B,,18\n'+
+                  'B-02,2026-01-01,2026-03-01,lapsed skerry light,S-2,A,EL,B,,10\n'+
+                  'B-03,2026-01-01,9999-12-31,gull rock light,S-2,R,OI,L,2,9\n'+
+                  'B-04,2026-01-01,9999-12-31,withdrawn stack,S-1,X,AC,B,,6\n'+
+                  'B-05,2026-01-01,9999-12-31,low ness light ,S-9,D,AC,L,4,4\n';
+              }#
+          ];
+          asserts:
+          [
+            threeListedBeacons:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"beaconCode":"B-01","beaconName":"QUIET POINT LIGHT","statusLabel":"LIT","lampKind":"ELECTRIC","rangeBand()":"LONG RANGE"},{"beaconCode":"B-03","beaconName":"GULL ROCK LIGHT","statusLabel":"RESTING","lampKind":"OIL","rangeBand()":"SHORT RANGE"},{"beaconCode":"B-05","beaconName":"LOW NESS LIGHT","statusLabel":"DARK","lampKind":"ACETYLENE","rangeBand()":"SHORT RANGE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    beaconLinkSuite:
+    {
+      function: |test::quietlighthouse2::domain::BeaconRecord.all(%2026-06-01)->graphFetch(
+  #{
+    test::quietlighthouse2::domain::BeaconRecord
+  {
+    beaconCode,
+    section
+    {
+      sectionName
+    },
+    aliases
+    {
+      aliasKind,
+      aliasText
+    },
+    lamps
+    {
+      lampCode
+    }
+  }
+  }#
+)->serialize(
+  #{
+    test::quietlighthouse2::domain::BeaconRecord
+  {
+    beaconCode,
+    section
+    {
+      sectionName
+    },
+    aliases
+    {
+      aliasKind,
+      aliasText
+    },
+    lamps
+    {
+      lampCode
+    }
+  }
+  }#
+);
+      tests:
+      [
+        liveLinksThroughSentinelJoins:
+        {
+          doc: 'The section and alias joins carry out-column sentinels so only live linked rows surface: the beacon in an unknown section has no section, the chart alias without text is removed by its store filter, the expired chart alias fails the sentinel and the unfitted lamp is hidden by the view filter.';
+          data:
+          [
+            test::quietlighthouse2::store::LightDB:
+              Relational
+              #{
+                lights.beacon:
+                  'beacon_code,in_z,out_z,beacon_name,section_code,status_code,lamp_kind_code,beacon_type,lens_order,range_nm\n'+
+                  'B-01,2025-01-01,2026-01-01,quiet point beacon ,S-1,A,OI,B,,12\n'+
+                  'B-01,2026-01-01,9999-12-31, quiet point light,S-1,A,EL,B,,18\n'+
+                  'B-02,2026-01-01,2026-03-01,lapsed skerry light,S-2,A,EL,B,,10\n'+
+                  'B-03,2026-01-01,9999-12-31,gull rock light,S-2,R,OI,L,2,9\n'+
+                  'B-04,2026-01-01,9999-12-31,withdrawn stack,S-1,X,AC,B,,6\n'+
+                  'B-05,2026-01-01,9999-12-31,low ness light ,S-9,D,AC,L,4,4\n';
+                lights.coast_section:
+                  'section_code,in_z,out_z,section_name\n'+
+                  'S-1,2026-01-01,9999-12-31,North Sound\n'+
+                  'S-2,2026-01-01,9999-12-31,Seal Bay\n';
+                lights.beacon_alias:
+                  'alias_id,in_z,out_z,beacon_code,alias_kind,alias_text\n'+
+                  '1,2026-01-01,9999-12-31,B-01,LOCAL,The Quiet\n'+
+                  '2,2026-01-01,9999-12-31,B-03,CHART,\n'+
+                  '3,2026-01-01,2026-02-01,B-03,CHART,Old Gull\n';
+                lights.lamp_record:
+                  'lamp_code,beacon_code,lamp_text,wattage,fitted_flag,glass_text,aspect_code\n'+
+                  'L-01,B-01,Electric arc,2500,Y,Ruby pane,S\n'+
+                  'L-02,B-01,Oil wick,1200,N,clear glass,H\n'+
+                  'L-03,B-03,Oil lamp,20,Y,,E\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLinkedBeacons:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"beaconCode":"B-01","section(2026-06-01)":{"sectionName":"North Sound"},"aliases(2026-06-01)":[{"aliasKind":"LOCAL","aliasText":"The Quiet"}],"lamps":[{"lampCode":"L-01"}]},{"beaconCode":"B-03","section(2026-06-01)":{"sectionName":"Seal Bay"},"aliases(2026-06-01)":[],"lamps":[{"lampCode":"L-03"}]},{"beaconCode":"B-05","section(2026-06-01)":null,"aliases(2026-06-01)":[],"lamps":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    lensBeaconSuite:
+    {
+      function: |test::quietlighthouse2::domain::LensBeaconRecord.all(%2026-06-01)->graphFetch(
+  #{
+    test::quietlighthouse2::domain::LensBeaconRecord
+  {
+    beaconCode,
+    lensOrder,
+    lensLabel
+  }
+  }#
+)->serialize(
+  #{
+    test::quietlighthouse2::domain::LensBeaconRecord
+  {
+    beaconCode,
+    lensOrder,
+    lensLabel
+  }
+  }#
+);
+      tests:
+      [
+        extendedMappingKeepsLensRows:
+        {
+          doc: 'The lens subtype mapping extends the beacon mapping, inherits its code property and narrows to lens rows through its own filter, adding the lens order and a derived order label.';
+          data:
+          [
+            test::quietlighthouse2::store::LightDB:
+              Relational
+              #{
+                lights.beacon:
+                  'beacon_code,in_z,out_z,beacon_name,section_code,status_code,lamp_kind_code,beacon_type,lens_order,range_nm\n'+
+                  'B-01,2025-01-01,2026-01-01,quiet point beacon ,S-1,A,OI,B,,12\n'+
+                  'B-01,2026-01-01,9999-12-31, quiet point light,S-1,A,EL,B,,18\n'+
+                  'B-02,2026-01-01,2026-03-01,lapsed skerry light,S-2,A,EL,B,,10\n'+
+                  'B-03,2026-01-01,9999-12-31,gull rock light,S-2,R,OI,L,2,9\n'+
+                  'B-04,2026-01-01,9999-12-31,withdrawn stack,S-1,X,AC,B,,6\n'+
+                  'B-05,2026-01-01,9999-12-31,low ness light ,S-9,D,AC,L,4,4\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLensBeacons:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"beaconCode":"B-03","lensOrder":2,"lensLabel()":"ORDER 2"},{"beaconCode":"B-05","lensOrder":4,"lensLabel()":"ORDER 4"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    fittedLampSuite:
+    {
+      function: |test::quietlighthouse2::domain::LampRecord.all()->graphFetch(
+  #{
+    test::quietlighthouse2::domain::LampRecord
+  {
+    lampCode,
+    lampText,
+    wattage,
+    fittedFlag,
+    glassText,
+    aspectCode
+  }
+  }#
+)->serialize(
+  #{
+    test::quietlighthouse2::domain::LampRecord
+  {
+    lampCode,
+    lampText,
+    wattage,
+    fittedFlag,
+    glassText,
+    aspectCode
+  }
+  }#
+);
+      tests:
+      [
+        viewHidesUnfittedLamps:
+        {
+          doc: 'The lamp mapping reads the filtered view, so only fitted lamps surface and the fitted flag is a literal default.';
+          data:
+          [
+            test::quietlighthouse2::store::LightDB:
+              Relational
+              #{
+                lights.lamp_record:
+                  'lamp_code,beacon_code,lamp_text,wattage,fitted_flag,glass_text,aspect_code\n'+
+                  'L-01,B-01,Electric arc,2500,Y,Ruby pane,S\n'+
+                  'L-02,B-01,Oil wick,1200,N,clear glass,H\n'+
+                  'L-03,B-03,Oil lamp,20,Y,,E\n';
+              }#
+          ];
+          asserts:
+          [
+            twoFittedLamps:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lampCode":"L-01","lampText":"Electric arc","wattage":2500,"fittedFlag":"Y","glassText":"Ruby pane","aspectCode":"S"},{"lampCode":"L-03","lampText":"Oil lamp","wattage":20,"fittedFlag":"Y","glassText":null,"aspectCode":"E"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

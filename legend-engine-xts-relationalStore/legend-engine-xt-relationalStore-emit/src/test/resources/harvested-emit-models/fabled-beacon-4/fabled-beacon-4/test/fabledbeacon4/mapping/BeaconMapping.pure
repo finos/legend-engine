@@ -1,0 +1,117 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledbeacon4::mapping::BeaconMapping
+(
+  *test::fabledbeacon4::domain::HabitatZone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledbeacon4::store::BeaconDB]habitat.zone.zone_code
+    )
+    ~mainTable [test::fabledbeacon4::store::BeaconDB]habitat.zone
+    zoneCode: [test::fabledbeacon4::store::BeaconDB]habitat.zone.zone_code,
+    zoneName: [test::fabledbeacon4::store::BeaconDB]habitat.zone.zone_name,
+    zoneTier: [test::fabledbeacon4::store::BeaconDB]habitat.zone.zone_tier,
+    note[note]: [test::fabledbeacon4::store::BeaconDB]@Zone_Note
+  }
+
+  *test::fabledbeacon4::domain::TreeRecord[tree]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledbeacon4::store::BeaconDB]grove.tree_record.tree_code
+    )
+    ~mainTable [test::fabledbeacon4::store::BeaconDB]grove.tree_record
+    treeCode: [test::fabledbeacon4::store::BeaconDB]grove.tree_record.tree_code,
+    treeName: [test::fabledbeacon4::store::BeaconDB]grove.tree_record.tree_name,
+    measuredAt: [test::fabledbeacon4::store::BeaconDB]grove.tree_record.measured_at,
+    healthyFlag: [test::fabledbeacon4::store::BeaconDB]grove.tree_record.healthy_flag,
+    zone[zone]: [test::fabledbeacon4::store::BeaconDB]@Tree_Zone
+  }
+
+  *test::fabledbeacon4::domain::ZoneNote[note]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledbeacon4::store::BeaconDB]habitat.zone_note.note_code
+    )
+    ~mainTable [test::fabledbeacon4::store::BeaconDB]habitat.zone_note
+    noteCode: [test::fabledbeacon4::store::BeaconDB]habitat.zone_note.note_code,
+    noteText: [test::fabledbeacon4::store::BeaconDB]habitat.zone_note.note_text
+  }
+
+  test::fabledbeacon4::domain::Tree_Zone: Relational
+  {
+    AssociationMapping
+    (
+      trees[zone, tree]: [test::fabledbeacon4::store::BeaconDB]@Tree_Zone,
+      zone[tree, zone]: [test::fabledbeacon4::store::BeaconDB]@Tree_Zone
+    )
+  }
+
+  testSuites:
+  [
+    treeMappingSuite:
+    {
+      function: |test::fabledbeacon4::domain::TreeRecord.all(%2026-06-01)->project(
+        [
+          t|$t.treeCode,
+          t|$t.treeName,
+          t|$t.zone.zoneName
+        ],
+        [
+          'Tree',
+          'Name',
+          'Zone'
+        ]
+      );
+      tests:
+      [
+        currentTrees:
+        {
+          data:
+          [
+            test::fabledbeacon4::store::BeaconDB:
+              Relation
+              #{
+                grove.tree_record:
+                  tree_code,zone_code,tree_name,measured_at,healthy_flag,from_z,thru_z
+                  TR-1,ZN-1,Juniper Rise,2026-04-01T08:00:00.000,TRUE,2026-01-01,9999-12-31
+                  TR-2,ZN-2,Willow Shelf,2026-04-02T08:00:00.000,FALSE,2026-01-01,9999-12-31;
+                habitat.zone:
+                  zone_code,zone_name,zone_tier
+                  ZN-1,North Canopy,3
+                  ZN-2,Creek Canopy,5;
+                habitat.zone_note:
+                  note_code,zone_code,note_text
+                  NT-1,ZN-1,Windward grove;
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              Relation
+              #{
+                Tree,Name,Zone
+                TR-1,Juniper Rise,North Canopy
+                TR-2,Willow Shelf,Creek Canopy;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::embercavern2::data::CavernData
+{
+  Relational
+  #{
+    survey.expedition:
+      'expedition_id,expedition_code,region_code,status_code,grade_code,rescue_cleared,leader_note,departed_at,due_back_at,depth_m,cave_code,rope_kit_code,lamp_kit_code,from_z,thru_z\n'+
+      '1,EX-01,NORTH,UND,2,1,rope rigged at pitch two,2026-05-02 08:00:00,2026-05-04 18:00:00,140,CV-A,KT-R1,KT-L2,2026-01-01,9999-12-31\n'+
+      '2,EX-02,NORTH,PLN,3,1,awaiting water levels,2026-05-20 07:30:00,,85,CV-B,,KT-L1,2026-01-01,9999-12-31\n'+
+      '3,EX-03,WEST,SRF,1,0,,2026-02-10 09:00:00,2026-02-11 16:00:00,60,CV-C,KT-R2,,2026-01-01,9999-12-31\n'+
+      '4,EX-04,KARST,UND,4,1,sump dive planned,2026-04-01 06:00:00,2026-04-08 12:00:00,210,CV-C,KT-L1,KT-L1,2026-01-01,9999-12-31\n'+
+      '5,EX-05,SEA,ABN,2,0,turned back at the entrance,2025-11-01 10:00:00,,30,CV-A,,,2026-01-01,9999-12-31\n'+
+      '6,EX-01,NORTH,PLN,2,1,first plan,2026-04-20 08:00:00,,0,CV-A,KT-R1,,2025-06-01,2026-01-01\n'+
+      '7,EX-06,WEST,UND,3,1,late start,2026-07-01 07:00:00,2026-07-03 19:00:00,95,CV-B,KT-R2,,2026-07-01,9999-12-31\n';
+
+    survey.cave:
+      'cave_id,cave_code,cave_name,entrance_kind,massif_code,from_z,thru_z\n'+
+      '1,CV-A,Ember Hollow,SHAFT,MS-1,2026-01-01,9999-12-31\n'+
+      '2,CV-B,Lantern Pot,ADIT,MS-1,2026-01-01,9999-12-31\n'+
+      '3,CV-C,Glowworm Rift,RESURGENCE,MS-2,2026-01-01,9999-12-31\n'+
+      '4,CV-C,Glowworm Sink,SINK,MS-2,2025-01-01,2026-01-01\n';
+
+    survey.expedition_member:
+      'expedition_code,caver_code\n'+
+      'EX-01,CR-1\n'+
+      'EX-01,CR-2\n'+
+      'EX-02,CR-3\n'+
+      'EX-04,CR-1\n'+
+      'EX-06,CR-2\n';
+
+    registry.caver:
+      'caver_code,caver_name,diver_flag\n'+
+      'CR-1,Ada Flint,1\n'+
+      'CR-2,Bo Marl,0\n'+
+      'CR-3,Cy Tuff,1\n';
+
+    registry.massif:
+      'massif_code,massif_name,district_code\n'+
+      'MS-1,Cinder Fells,DS-1\n'+
+      'MS-2,Ash Moor,DS-2\n';
+
+    registry.district:
+      'district_code,district_name,authority_code\n'+
+      'DS-1,Upper Dale,AU-1\n'+
+      'DS-2,Lower Dale,AU-9\n';
+
+    registry.authority:
+      'authority_code,authority_name\n'+
+      'AU-1,Fells Access Trust\n';
+
+    registry.kit:
+      'kit_code,kit_kind,rope_length_m,lumens\n'+
+      'KT-R1,ROPE,60,\n'+
+      'KT-R2,ROPE,35,\n'+
+      'KT-L1,LAMP,,1200\n'+
+      'KT-L2,LAMP,,800\n';
+  }#
+}

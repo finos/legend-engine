@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlycanyon::mapping::VisitMapping
+(
+  *test::kindlycanyon::domain::VisitTally[visitTally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlycanyon::store::CanyonVisitDB]visit.visit_tally.tally_id
+    )
+    ~mainTable [test::kindlycanyon::store::CanyonVisitDB]visit.visit_tally
+    tallyId: [test::kindlycanyon::store::CanyonVisitDB]visit.visit_tally.tally_id,
+    countedOn: [test::kindlycanyon::store::CanyonVisitDB]visit.visit_tally.counted_on,
+    slotLabel: [test::kindlycanyon::store::CanyonVisitDB]visit.visit_tally.slot_label,
+    headCount: [test::kindlycanyon::store::CanyonVisitDB]visit.visit_tally.head_count
+  }
+
+  *test::kindlycanyon::domain::VisitStation[visitStation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlycanyon::store::CanyonVisitDB]visit.visit_station.station_code
+    )
+    ~mainTable [test::kindlycanyon::store::CanyonVisitDB]visit.visit_station
+    stationCode: [test::kindlycanyon::store::CanyonVisitDB]visit.visit_station.station_code,
+    stationName: [test::kindlycanyon::store::CanyonVisitDB]visit.visit_station.station_name,
+    guideName: [test::kindlycanyon::store::CanyonVisitDB]@Station_Guide | [test::kindlycanyon::store::CanyonVisitDB]roster.guide_view.guide_name
+  }
+
+  test::kindlycanyon::domain::Tally_Station: Relational
+  {
+    AssociationMapping
+    (
+      station[visitTally, visitStation]: [test::kindlycanyon::store::CanyonVisitDB]@Tally_Station,
+      tallies[visitStation, visitTally]: [test::kindlycanyon::store::CanyonVisitDB]@Tally_Station
+    )
+  }
+
+  testSuites:
+  [
+    tallyRegisterSuite:
+    {
+      function: |test::kindlycanyon::domain::VisitTally.all()->project(
+        [
+          t|$t.tallyId,
+          t|$t.station.stationName,
+          t|$t.station.guideName,
+          t|$t.slotLabel,
+          t|$t.headCount,
+          t|if($t.headCount >= 50,
+              | 'BUSY',
+              | if($t.headCount >= 15,
+                  | 'STEADY',
+                  | 'QUIET'))
+        ],
+        [
+          'Tally',
+          'Station',
+          'Guide',
+          'Slot',
+          'Heads',
+          'Band'
+        ]
+      )->sort(
+        [
+          asc('Tally')
+        ]
+      );
+      tests:
+      [
+        everyBandAndBothAbsentHopsOfTheVisitorRegister:
+        {
+          doc: 'Reads each counted tally through the station hop and the cross-schema guide hop, so all three head bands, the station holding no guide and the tally naming a station that does not exist are proven from one fixture.';
+          data:
+          [
+            test::kindlycanyon::store::CanyonVisitDB:
+              Reference
+              #{
+                test::kindlycanyon::data::VisitFixture
+              }#
+          ];
+          asserts:
+          [
+            tallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tally":"VT-01","Station":"Rim Gate Kiosk","Guide":"Perrin Vale","Slot":"DAWN","Heads":18,"Band":"STEADY"},{"Tally":"VT-02","Station":"Rim Gate Kiosk","Guide":"Perrin Vale","Slot":"MIDDAY","Heads":64,"Band":"BUSY"},{"Tally":"VT-03","Station":"Rim Gate Kiosk","Guide":"Perrin Vale","Slot":"DUSK","Heads":27,"Band":"STEADY"},{"Tally":"VT-04","Station":"Cottonwood Hut","Guide":"Alix Fenner","Slot":"MIDDAY","Heads":41,"Band":"STEADY"},{"Tally":"VT-05","Station":"Narrows Shelter","Guide":null,"Slot":"DAWN","Heads":6,"Band":"QUIET"},{"Tally":"VT-06","Station":null,"Guide":null,"Slot":"MIDDAY","Heads":12,"Band":"QUIET"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

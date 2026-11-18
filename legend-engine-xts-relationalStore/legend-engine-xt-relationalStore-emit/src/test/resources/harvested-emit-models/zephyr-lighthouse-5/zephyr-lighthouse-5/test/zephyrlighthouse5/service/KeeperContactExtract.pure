@@ -1,0 +1,221 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::zephyrlighthouse5::service::KeeperContactExtract
+{
+  pattern: '/lighthouse/v1/keepers/{asOfDate}/contact/{contactKey}';
+  title: 'Lighthouse Keeper Contact Extract';
+  owners:
+  [
+    'zephyr-keeper-reference',
+    'coastal-watch-platform'
+  ];
+  documentation: 'Companion keeper reference extract selected by contact identifier: the requested instant is bound to a processing and a business local variable, the keeper extent is selected at that pair, qualifying keepers are those with a primary-watch tenure entry, a contact identifier present and that identifier equal to the requested one, and the same two dozen aliased columns are projected through instant-parameterized chains before a distinct reduction.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], contactKey: String[1]|let processingInstant = $asOfDate;
+      let businessInstant = $asOfDate;
+      test::zephyrlighthouse5::domain::Keeper.all($processingInstant, $businessInstant)->filter(
+        k|($k.contactCode->toOne() == $contactKey) && (($k.contactCode->isEmpty()->not()) && ($k.tenures($processingInstant, $businessInstant)->exists(
+          t|$t.dutyCode == 'watch-primary'
+        )))
+      )->project(
+        [
+          k|$k.keeperCode,
+          k|$k.contactCode,
+          k|$k.rosterCode,
+          k|$k.certCode,
+          k|$k.primaryName($processingInstant, $businessInstant).nameCode,
+          k|$k.primaryName($processingInstant, $businessInstant).salutationPart,
+          k|$k.primaryName($processingInstant, $businessInstant).givenPart,
+          k|$k.primaryName($processingInstant, $businessInstant).middlePart,
+          k|$k.primaryName($processingInstant, $businessInstant).familyPart,
+          k|$k.station($processingInstant, $businessInstant).stationCode,
+          k|$k.station($processingInstant, $businessInstant).stationLabel,
+          k|$k.station($processingInstant, $businessInstant).watchWindow,
+          k|$k.station($processingInstant, $businessInstant).lampType,
+          k|$k.station($processingInstant, $businessInstant).grade($processingInstant, $businessInstant).gradeCode,
+          k|$k.station($processingInstant, $businessInstant).grade($processingInstant, $businessInstant).gradeDescription,
+          k|$k.station($processingInstant, $businessInstant).grade($processingInstant, $businessInstant).gradeBandLabel,
+          k|$k.station($processingInstant, $businessInstant).district.districtCode,
+          k|$k.station($processingInstant, $businessInstant).district.districtName,
+          k|$k.station($processingInstant, $businessInstant).district.coastName,
+          k|$k.tenures($processingInstant, $businessInstant).tenureCode,
+          k|$k.tenures($processingInstant, $businessInstant).tenureYears,
+          k|$k.tenures($processingInstant, $businessInstant).dutyCode,
+          k|$k.tenures($processingInstant, $businessInstant).rotationCode,
+          k|$k.tenures($processingInstant, $businessInstant).postLabel
+        ],
+        [
+          'Keeper/Code',
+          'Keeper/Contact',
+          'Keeper/Roster',
+          'Keeper/Cert',
+          'Name/Code',
+          'Name/Salutation',
+          'Name/Given',
+          'Name/Middle',
+          'Name/Family',
+          'Station/Code',
+          'Station/Label',
+          'Station/Watch',
+          'Station/Lamp',
+          'Grade/Code',
+          'Grade/Description',
+          'Grade/Band',
+          'District/Code',
+          'District/Name',
+          'District/Coast',
+          'Tenure/Code',
+          'Tenure/Years',
+          'Tenure/Duty',
+          'Tenure/Rotation',
+          'Tenure/Post'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Keeper/Code'),
+          asc('Tenure/Code')
+        ]
+      );};
+    mapping: test::zephyrlighthouse5::mapping::KeeperMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::zephyrlighthouse5::mapping::KeeperMapping
+      ];
+      connections:
+      [
+        test::zephyrlighthouse5::store::KeeperRegisterDB:
+        [
+          inlineKeeperConnection:
+          #{
+            RelationalDatabaseConnection
+            {
+              store: test::zephyrlighthouse5::store::KeeperRegisterDB;
+              type: H2;
+              specification: LocalH2
+              {
+              };
+              auth: DefaultH2;
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    keeperContactSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inlineKeeperConnection:
+            Relational
+            #{
+              keepers.coast_district:
+                'district_code,district_name,coast_name\n'+
+                'CD-1,Windward District,north coast\n'+
+                'CD-2,Leeward District,south coast\n';
+              keepers.station_grade:
+                'grade_code,grade_description,grade_band_label,in_z,out_z,from_z,thru_z\n'+
+                'SG-1,principal watch grade,band-principal,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'SG-2,relief watch grade,band-relief,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              keepers.light_station:
+                'station_code,station_label,watch_window,lamp_type,grade_code,district_code,in_z,out_z,from_z,thru_z\n'+
+                'LS-1,Zephyr Point Light,dusk-to-dawn,ROTATING,SG-1,CD-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'LS-2,Shoal End Light,night-watch,FIXED,SG-9,CD-2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              keepers.keeper_name:
+                'name_code,salutation_part,given_part,middle_part,family_part,in_z,out_z,from_z,thru_z\n'+
+                'KN-1,Keeper,Ada,Marin,Halloway,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'KN-3,Keeper,Bram,Tace,Ostley,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'KN-6,Keeper,Cole,Ives,Renwick,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              keepers.tenure_entry:
+                'tenure_code,keeper_code,tenure_years,duty_code,rotation_code,post_label,in_z,out_z,from_z,thru_z\n'+
+                'TE-1,K-1,9,watch-primary,rot-a,Zephyr Point Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'TE-2,K-1,2,watch-relief,rot-b,Shoal End Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'TE-3,K-2,12,watch-primary,rot-a,Zephyr Point Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'TE-4,K-3,1,,rot-c,Harbour Arm Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'TE-5,K-4,1,watch-relief,rot-b,Shoal End Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'TE-6,K-6,20,watch-primary,rot-a,Cape Bell Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'TE-7,K-7,20,watch-primary,rot-a,Cape Bell Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'TE-8,K-8,8,watch-primary,rot-d,Outer Rock Post,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              keepers.keeper:
+                'keeper_code,contact_code,roster_code,cert_code,name_code,station_code,in_z,out_z,from_z,thru_z\n'+
+                'K-1,contact-1,roster-a,CERT-A,KN-1,LS-1,2026-01-01,9999-12-31,2026-05-01,9999-12-31\n'+
+                'K-2,,roster-b,CERT-B,KN-1,LS-1,2026-01-01,9999-12-31,2026-05-01,9999-12-31\n'+
+                'K-3,contact-3,roster-c,CERT-C,KN-3,LS-2,2026-01-01,9999-12-31,2026-05-01,9999-12-31\n'+
+                'K-4,contact-4,roster-d,CERT-D,KN-1,LS-1,2026-01-01,9999-12-31,2026-05-01,9999-12-31\n'+
+                'K-5,contact-5,roster-e,CERT-E,KN-1,LS-1,2026-01-01,9999-12-31,2026-05-01,9999-12-31\n'+
+                'K-6,contact-6,roster-f,CERT-F,KN-6,LS-1,2026-01-01,9999-12-31,2026-01-01,2026-03-01\n'+
+                'K-7,contact-7,roster-g,CERT-G,KN-1,LS-1,2026-01-01,2026-02-01,2026-01-01,9999-12-31\n'+
+                'K-8,contact-8,roster-h,CERT-H,KN-9,LS-9,2026-01-01,9999-12-31,2026-05-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        matchingContactIdentifier:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            contactKey = 'contact-1'
+          ]
+          asserts:
+          [
+            bothTenuresOfTheMatchedKeeper:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Keeper/Code":"K-1","Keeper/Contact":"contact-1","Keeper/Roster":"ROSTER-A","Keeper/Cert":"cert-a","Name/Code":"KN-1","Name/Salutation":"Keeper","Name/Given":"Ada","Name/Middle":"Marin","Name/Family":"Halloway","Station/Code":"LS-1","Station/Label":"Zephyr Point Light","Station/Watch":"dusk-to-dawn","Station/Lamp":"rotating","Grade/Code":"SG-1","Grade/Description":"principal watch grade","Grade/Band":"band-principal","District/Code":"CD-1","District/Name":"Windward District","District/Coast":"north coast","Tenure/Code":"TE-1","Tenure/Years":9,"Tenure/Duty":"watch-primary","Tenure/Rotation":"ROT-A","Tenure/Post":"Zephyr Point Post"},{"Keeper/Code":"K-1","Keeper/Contact":"contact-1","Keeper/Roster":"ROSTER-A","Keeper/Cert":"cert-a","Name/Code":"KN-1","Name/Salutation":"Keeper","Name/Given":"Ada","Name/Middle":"Marin","Name/Family":"Halloway","Station/Code":"LS-1","Station/Label":"Zephyr Point Light","Station/Watch":"dusk-to-dawn","Station/Lamp":"rotating","Grade/Code":"SG-1","Grade/Description":"principal watch grade","Grade/Band":"band-principal","District/Code":"CD-1","District/Name":"Windward District","District/Coast":"north coast","Tenure/Code":"TE-2","Tenure/Years":2,"Tenure/Duty":"watch-relief","Tenure/Rotation":"ROT-B","Tenure/Post":"Shoal End Post"}]';
+                  }#;
+              }#
+          ]
+        },
+        contactWithoutPrimaryWatchTenure:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            contactKey = 'contact-4'
+          ]
+          asserts:
+          [
+            noQualifyingKeeper:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

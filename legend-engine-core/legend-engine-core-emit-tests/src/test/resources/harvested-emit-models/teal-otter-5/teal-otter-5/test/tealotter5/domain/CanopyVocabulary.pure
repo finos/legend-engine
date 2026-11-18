@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::tealotter5::domain::*;
+
+Enum {doc.doc = 'The broad canopy register that holds a street planting record.'} test::tealotter5::domain::CanopyRegister
+{
+  Boulevard,
+  Parkland,
+  Reference
+}
+
+Enum <<ArboristGuidance.rootZoneSensitive>> {doc.doc = 'The planting technique used to establish a young tree in the verge.', ArboristGuidance.wateringNote = 'water in slowly for the first two seasons'} test::tealotter5::domain::PlantingMethod
+{
+  BareRoot,
+  BalledAndBurlapped,
+  ContainerGrown,
+  AirPotted,
+  RootBarriered,
+  StructuralSoil,
+  SuspendedPavement,
+  Transplanted,
+  DirectSeeded,
+  Unrecorded
+}
+
+Enum <<CanopyGovernance.fieldSurveyed>> {doc.doc = 'The vitality grade recorded for a tree during a canopy inspection.', CanopyGovernance.inspectionCadence = 'each survey round'} test::tealotter5::domain::VitalityGrade
+{
+  Thriving,
+  Healthy,
+  Stable,
+  Declining,
+  Dead
+}
+
+Enum {doc.doc = 'The physical support fitted around a young trunk.', ArboristGuidance.pruningNote = 'check ties before pruning'} test::tealotter5::domain::SupportStyle
+{
+  Stake,
+  Guy,
+  Cage,
+  Unsupported
+}
+
+Enum <<CanopyGovernance.councilApproved>> {doc.doc = 'The taxonomic rank recorded for a canopy determination.', CanopyGovernance.retentionBand = 'reference'} test::tealotter5::domain::TaxonRank
+{
+  Family,
+  Genus,
+  Species,
+  Subspecies,
+  Cultivar
+}
+
+Enum {doc.doc = 'The streetscape setting in which a canopy record was surveyed.', CanopyGovernance.stewardRole = 'field-surveyor'} test::tealotter5::domain::StreetSetting
+{
+  Verge,
+  Median,
+  Plaza,
+  Courtyard,
+  RiparianEdge
+}
+
+Enum <<CanopyGovernance.replacementPlanned>> {doc.doc = 'The route by which a planting entered the municipal canopy programme.', CanopyGovernance.stewardRole = 'intake-desk'} test::tealotter5::domain::IntakeRoute
+{
+  CapitalWorks,
+  CommunityRequest,
+  Donation,
+  NurserySurplus
+}
+
+Enum <<ArboristGuidance.climbingRestricted>> {doc.doc = 'The soil volume band available to the root plate.', ArboristGuidance.accessNote = 'confirm soil volume before excavation'} test::tealotter5::domain::SoilVolumeBand
+{
+  Constrained,
+  Moderate,
+  Generous,
+  Open
+}
+
+Enum {doc.doc = 'How exposed a planting is to prevailing wind.', ArboristGuidance.accessNote = 'limit crown lift on exposed sites'} test::tealotter5::domain::WindExposure
+{
+  Sheltered,
+  Moderate,
+  Exposed
+}
+
+Enum <<CanopyGovernance.heritageListed>> {doc.doc = 'The label script used on a heritage plaque.', CanopyGovernance.retentionBand = 'register'} test::tealotter5::domain::PlaqueScript
+{
+  Latin,
+  Greek,
+  Cyrillic
+}
+
+Enum <<ArboristGuidance.powerLineAdjacent, CanopyGovernance.removalPending>> {doc.doc = 'The habit of the mature crown as observed from the footway.', ArboristGuidance.pruningNote = 'respect the natural crown habit'} test::tealotter5::domain::CrownHabit
+{
+  Columnar,
+  Spreading,
+  Weeping,
+  Vase,
+  Pyramidal,
+  Rounded,
+  Irregular
+}
+
+Enum {doc.doc = 'The interval at which a canopy record is re-inspected.', CanopyGovernance.inspectionCadence = 'scheduled'} test::tealotter5::domain::InspectionCadence
+{
+  Monthly,
+  Quarterly,
+  Annual,
+  Biennial
+}
+
+Enum {doc.doc = 'The kind of maintenance visit logged against a planting.', ArboristGuidance.pruningNote = 'record crown work separately from watering'} test::tealotter5::domain::MaintenanceKind
+{
+  CrownLift,
+  DeadWooding,
+  FormativePrune,
+  Mulching,
+  Watering,
+  WeedControl
+}
+
+Enum {doc.doc = 'The certification tier held by an arborist crew.', CanopyGovernance.stewardRole = 'crew-lead'} test::tealotter5::domain::CrewTier
+{
+  Apprentice,
+  Qualified,
+  Consulting
+}

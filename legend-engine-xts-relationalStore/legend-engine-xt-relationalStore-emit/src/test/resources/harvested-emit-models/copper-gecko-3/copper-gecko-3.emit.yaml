@@ -1,0 +1,68 @@
+name: copper-gecko-3
+title: "Copper Gecko Apiary Register — An Embedded Inspection Context over a Three-Hop Site Path"
+description: |
+  An apiary inspection register over one relational schema whose hive walk, hive, site and
+  district tables are chained by single-column joins and summarised by a grouped view. A
+  register mapping binds the hive, the site, the grouped view and the district as their own set
+  implementations, each naming its main table alias and declaring its primary key, and gives the
+  site a property backed by the view rather than by a table so the hive count and the latest
+  installation year are read from the aggregate. A second mapping includes that register and
+  binds the inspection walk: the flat columns come from the main table alias, the queen line is
+  reached across one join, the site name across two and the district name across three, and the
+  inspector, the note and the queen line are grouped into an embedded context block on the
+  inspection class rather than a separate set implementation. Two mapping tests cover it — one
+  walks the whole multi-hop path, keeps an inspection with no note at all and an inspection
+  naming a hive the register does not hold, and the other reads the view-backed summary. Two
+  MemSQL connections over the same static datasource, delegated to Kerberos, and the two
+  runtimes over them stand the register up twice.
+  A second grouped view folds the inspection walks into a per-hive tally of walks, peak mite
+  count and brood total; a third mapping includes the register and binds that tally, reaching
+  the queen line across one join from the view to drive an eight-way lineage cascade that falls
+  through to a SQL null sentinel, splitting a pressure flag on the aggregated peak, and reading
+  the site and district names two and three hops out. Its mapping test pins one hive per
+  cascade arm, the null fall-through and a hive whose apiary the register does not hold.
+modelSources:
+  model:
+    root: copper-gecko-3
+    files:
+      - test/coppergecko3/connection/ApiaryConnections.pure
+      - test/coppergecko3/domain/ApiaryDomain.pure
+      - test/coppergecko3/domain/HiveTallyDomain.pure
+      - test/coppergecko3/mapping/ApiaryRegisterMapping.pure
+      - test/coppergecko3/mapping/HiveInspectionMapping.pure
+      - test/coppergecko3/mapping/HiveTallyMapping.pure
+      - test/coppergecko3/runtime/ApiaryRuntimes.pure
+      - test/coppergecko3/store/ApiaryDb.pure
+features:
+  - execution:mapping-test
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-view
+  - store:relational-view-group-by
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - apiary-register
+  - embedded-mapping
+  - h2
+  - mapping-include
+  - multi-hop-join
+  - relational-view
+  - view-backed-property

@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedvineyard4::mapping::VineyardMapping
+(
+  include test::gildedvineyard4::mapping::VineyardCoreMapping
+
+  *test::gildedvineyard4::domain::HarvestPass[harvestPass]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.pass_id
+    )
+    ~mainTable [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass
+    passCode: [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.pass_code,
+    crewCode: [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.crew_code,
+    passStage: [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.pass_stage,
+    yieldKg: [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.yield_kg,
+    sugarBrix: [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.sugar_brix,
+    pickedOn: [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.picked_on,
+    startedAt: [test::gildedvineyard4::store::VineyardDatabase]vineyard.harvest_pass.started_at,
+    varietalCode: [test::gildedvineyard4::store::VineyardDatabase]@Block_Pass | vineyard.vine_block.varietal_code
+  }
+
+  test::gildedvineyard4::domain::BlockPassLink: Relational
+  {
+    AssociationMapping
+    (
+      block[harvestPass,vineBlock]: [test::gildedvineyard4::store::VineyardDatabase]@Block_Pass,
+      passes[vineBlock,harvestPass]: [test::gildedvineyard4::store::VineyardDatabase]@Block_Pass
+    )
+  }
+
+  testSuites:
+  [
+    blockAliasSuite:
+    {
+      function: |test::gildedvineyard4::domain::VineBlock.all(%2026-03-01)->project(
+  [
+    b|$b.blockCode,
+    b|$b.estateCode,
+    b|$b.vineCount,
+    b|$b.hectares,
+    b|$b.soilPh,
+    b|$b.wardenName,
+    b|$b.canopyStyle
+  ],
+  [
+    'Block Code',
+    'Estate',
+    'Vines',
+    'Hectares',
+    'Soil pH',
+    'Warden',
+    'Canopy'
+  ]
+)->sort([asc('Block Code')]);
+      tests:
+      [
+        aliasedColumnsAndJoinReachedCanopy:
+        {
+          doc: 'Reads the block alias at a processing date: every mapped type is read from the alias, the canopy style is reached across the section join, and the version closed before the requested date is not visible.';
+          data:
+          [
+            test::gildedvineyard4::store::VineyardDatabase:
+              Relational
+              #{
+                vineyard.trellis_section:
+                  'section_id,section_code,canopy_style,estate_code,row_spacing_m,in_z,out_z\n'+
+                  'S1,SC-10,VERTICAL-SHOOT,EST-N,2.5,2026-01-01,9999-12-31\n'+
+                  'S2,SC-20,SPRAWL,EST-S,3.0,2026-01-01,9999-12-31\n';
+
+                vineyard.vine_block:
+                  'block_id,block_code,varietal_code,estate_code,section_id,vine_count,hectares,soil_ph,planted_on,surveyed_at,warden_name,in_z,out_z\n'+
+                  'B1,BL-100,VR-ALBA,EST-N,S1,4200,3.500,6.4,2019-04-01,2026-02-16 08:30:00,Wren Ash,2026-01-01,9999-12-31\n'+
+                  'B2,BL-200,VR-NOIR,EST-S,S2,3100,2.250,6.8,2020-05-01,,,2026-01-01,9999-12-31\n'+
+                  'B3,BL-300,VR-ALBA,EST-N,S1,1800,1.125,6.1,2021-03-01,2025-07-04 07:00:00,Rowan Vale,2025-01-01,2025-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            supersededVersionExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block Code":"BL-100","Estate":"EST-N","Vines":4200,"Hectares":3.5,"Soil pH":6.4,"Warden":"Wren Ash","Canopy":"VERTICAL-SHOOT"},{"Block Code":"BL-200","Estate":"EST-S","Vines":3100,"Hectares":2.25,"Soil pH":6.8,"Warden":null,"Canopy":"SPRAWL"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    passJoinSuite:
+    {
+      function: |test::gildedvineyard4::domain::HarvestPass.all(%2026-03-01)->project(
+  [
+    p|$p.passCode,
+    p|$p.passStage,
+    p|$p.yieldKg,
+    p|$p.sugarBrix,
+    p|$p.varietalCode
+  ],
+  [
+    'Pass Code',
+    'Stage',
+    'Yield',
+    'Brix',
+    'Varietal'
+  ]
+)->sort([asc('Pass Code')]);
+      tests:
+      [
+        joinReachedVarietalIsEmptyWithoutACounterpart:
+        {
+          doc: 'Reads harvest passes at a processing date and reaches the varietal across the block join; the pass whose block reference has no counterpart keeps its own alias-read columns and reports an empty varietal, so an unmatched reference narrows the reached property rather than the row set.';
+          data:
+          [
+            test::gildedvineyard4::store::VineyardDatabase:
+              Relational
+              #{
+                vineyard.vine_block:
+                  'block_id,block_code,varietal_code,estate_code,section_id,vine_count,hectares,soil_ph,planted_on,surveyed_at,warden_name,in_z,out_z\n'+
+                  'B1,BL-100,VR-ALBA,EST-N,S1,4200,3.500,6.4,2019-04-01,2026-02-16 08:30:00,Wren Ash,2026-01-01,9999-12-31\n'+
+                  'B2,BL-200,VR-NOIR,EST-S,S2,3100,2.250,6.8,2020-05-01,,,2026-01-01,9999-12-31\n';
+
+                vineyard.harvest_pass:
+                  'pass_id,pass_code,block_id,crew_code,pass_stage,yield_kg,sugar_brix,picked_on,started_at,in_z,out_z\n'+
+                  'P1,HP-01,B1,CR-A,FIRST,1250.50,21.5,2026-02-18,2026-02-18 06:00:00,2026-01-01,9999-12-31\n'+
+                  'P2,HP-02,B2,CR-B,FIRST,980.25,22.0,2026-02-19,,2026-01-01,9999-12-31\n'+
+                  'P3,HP-03,B9,CR-C,SECOND,410.00,23.5,2026-02-20,,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            unmatchedReferenceYieldsEmptyReachedColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pass Code":"HP-01","Stage":"FIRST","Yield":1250.50,"Brix":21.5,"Varietal":"VR-ALBA"},{"Pass Code":"HP-02","Stage":"FIRST","Yield":980.25,"Brix":22.0,"Varietal":"VR-NOIR"},{"Pass Code":"HP-03","Stage":"SECOND","Yield":410.00,"Brix":23.5,"Varietal":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

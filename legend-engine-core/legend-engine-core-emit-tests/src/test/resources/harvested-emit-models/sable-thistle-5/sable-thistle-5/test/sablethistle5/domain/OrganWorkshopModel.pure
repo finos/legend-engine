@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::sablethistle5::domain::*;
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Shared shape of everything the restoration workshop keeps a record of; never recorded on its own.'} test::sablethistle5::domain::WorkshopRecord
+{
+  {doc.doc = 'Workshop reference painted on the part or written on the job card.'} recordCode: String[1];
+  {doc.doc = 'Free-text remarks added by the bench hands, in the order they were written.'} remarks: String[*];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'A physical part of an instrument that passes through the workshop; specialised by pipes, ranks and chests.'} test::sablethistle5::domain::InstrumentPart extends WorkshopRecord
+{
+  {doc.doc = 'Material the part is made from.'} material: PartMaterial[1];
+}
+
+Class {doc.doc = 'A single speaking pipe.'} test::sablethistle5::domain::Pipe extends InstrumentPart
+{
+  {doc.doc = 'Speaking length from mouth to open end, in millimetres.'} speakingLengthMm: Float[1];
+  {doc.doc = 'Tonal family the pipe belongs to.'} family: StopFamily[1];
+}
+
+Class {doc.doc = 'A graded set of pipes of one tone colour, one pipe per note.'} test::sablethistle5::domain::Rank extends InstrumentPart
+{
+  {doc.doc = 'Nominal pitch of the rank in feet.'} footPitch: Float[1];
+  {doc.doc = 'Pipes of the rank; a rank always holds at least one pipe.'} pipes: Pipe[1..*];
+}
+
+Class {doc.doc = 'A wind chest carrying ranks over its pallets; the wind pressure it is regulated to must be positive.'} test::sablethistle5::domain::Windchest extends InstrumentPart
+[
+  positiveWindPressure: $this.windPressureMm->greaterThan(0)
+]
+{
+  {doc.doc = 'Wind pressure in millimetres of water column.'} windPressureMm: Float[1];
+  {doc.doc = 'Key action that opens the pallets.'} keyAction: KeyAction[1];
+  {doc.doc = 'Ranks standing on the chest; at least one.'} ranks: Rank[1..*];
+}
+
+Class {doc.doc = 'The playing desk of an instrument.'} test::sablethistle5::domain::Console extends WorkshopRecord
+{
+  {doc.doc = 'Number of manual keyboards.'} keyboardCount: Integer[1];
+  {doc.doc = 'Whether a pedal keyboard is fitted.'} hasPedalboard: Boolean[1];
+  {doc.doc = 'Engraved labels of the stop knobs, left to right.'} stopLabels: String[*];
+}
+
+Class {doc.doc = 'The blower and reservoir feeding wind to an instrument; it must deliver a positive pressure.'} test::sablethistle5::domain::WindSupply
+[
+  positiveBlowerPressure: $this.blowerPressureMm->greaterThan(0)
+]
+{
+  {doc.doc = 'Pressure delivered by the blower, in millimetres of water column.'} blowerPressureMm: Float[1];
+  {doc.doc = 'Whether a regulating reservoir sits between blower and chests.'} hasReservoir: Boolean[1];
+}
+
+Class {doc.doc = 'A complete instrument brought in for restoration, composed of its console and wind chests.'} test::sablethistle5::domain::Instrument extends WorkshopRecord
+{
+  {doc.doc = 'Year the instrument was first built.'} builtYear: Integer[0..1];
+  {doc.doc = 'Playing desk of the instrument.'} console: Console[1];
+  {doc.doc = 'Wind chests of the instrument; at least one.'} chests: Windchest[1..*];
+  {doc.doc = 'Wind supply feeding the chests.'} windSupply: WindSupply[1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'The stage a restoration had reached, on both the working timeline and the timeline the job card was written on.'} test::sablethistle5::domain::RestorationStep extends WorkshopRecord
+{
+  {doc.doc = 'Stage reached.'} stage: WorkStage[1];
+  {doc.doc = 'Instrument the stage applies to.'} instrument: Instrument[1];
+  {doc.doc = 'Hours booked against the stage.'} hoursBooked: Float[0..1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'A voicing change made to one pipe, corrected on the recording timeline when the voicing sheet is restated.'} test::sablethistle5::domain::VoicingAdjustment extends WorkshopRecord
+{
+  {doc.doc = 'Pipe that was adjusted.'} pipe: Pipe[1];
+  {doc.doc = 'Mouth cut-up after the adjustment, in millimetres.'} cutUpMm: Float[1];
+  {doc.doc = 'Notes the adjustment was checked against.'} checkedNotes: String[1..*];
+}

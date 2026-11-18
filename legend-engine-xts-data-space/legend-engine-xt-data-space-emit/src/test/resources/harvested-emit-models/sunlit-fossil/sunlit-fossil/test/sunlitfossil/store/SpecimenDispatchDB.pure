@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sunlitfossil::store::SpecimenDispatchDB
+(
+  Schema dispatchhall
+  (
+    Table dispatch_terms
+    (
+      milestoning
+      (
+        business(BUS_FROM = valid_from, BUS_THRU = valid_thru)
+      )
+
+      terms_code VARCHAR(24) PRIMARY KEY,
+      host_museum VARCHAR(64) NOT NULL,
+      courier_note VARCHAR(128),
+      max_crate_weight DECIMAL(9,2) NOT NULL,
+      review_cycle_days INTEGER NOT NULL,
+      agreed_at TIMESTAMP NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL
+    )
+
+    Table dispatch
+    (
+      milestoning
+      (
+        business(BUS_FROM = valid_from, BUS_THRU = valid_thru)
+      )
+
+      dispatch_code VARCHAR(24) PRIMARY KEY,
+      terms_code VARCHAR(24) NOT NULL,
+      destination_hall VARCHAR(64) NOT NULL,
+      curator_note VARCHAR(128),
+      declared_weight DECIMAL(9,2) NOT NULL,
+      crate_count INTEGER NOT NULL,
+      shipped_at TIMESTAMP NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL
+    )
+
+    Table dispatch_item
+    (
+      milestoning
+      (
+        business(BUS_FROM = valid_from, BUS_THRU = valid_thru)
+      )
+
+      dispatch_code VARCHAR(24) PRIMARY KEY,
+      line_ordinal INTEGER PRIMARY KEY,
+      specimen_label VARCHAR(64) NOT NULL,
+      packing_note VARCHAR(128),
+      item_weight DECIMAL(9,2) NOT NULL,
+      fragment_count INTEGER NOT NULL,
+      packed_at TIMESTAMP NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL
+    )
+
+    Table item_portion
+    (
+      milestoning
+      (
+        business(BUS_FROM = valid_from, BUS_THRU = valid_thru)
+      )
+
+      dispatch_code VARCHAR(24) PRIMARY KEY,
+      line_ordinal INTEGER PRIMARY KEY,
+      portion_code VARCHAR(24) PRIMARY KEY,
+      portion_label VARCHAR(64) NOT NULL,
+      portion_weight DECIMAL(9,2) NOT NULL,
+      tray_count INTEGER NOT NULL,
+      logged_at TIMESTAMP NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL
+    )
+  )
+
+  Join Dispatch_Item(dispatchhall.dispatch.dispatch_code = dispatchhall.dispatch_item.dispatch_code)
+
+  Join Item_Portion(dispatchhall.dispatch_item.dispatch_code = dispatchhall.item_portion.dispatch_code
+    and dispatchhall.dispatch_item.line_ordinal = dispatchhall.item_portion.line_ordinal)
+)

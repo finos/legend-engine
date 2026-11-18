@@ -1,0 +1,28 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sunlitlighthouse2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A coastal lamp station whose beacon is serviced on a keeper rota.'} test::sunlitlighthouse2::domain::LampStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  reachName: String[1];
+  districtName: String[1];
+  lampRangeNm: Integer[1];
+  focalHeightM: Integer[1];
+  commissionedOn: StrictDate[1];
+  rangeBand: String[1];
+}

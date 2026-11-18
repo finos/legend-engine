@@ -1,0 +1,43 @@
+name: maple-warren-servicestore
+title: "Museum Catalogue - Chained Model-to-Model Transform over a Remote Service Store"
+description: |
+  A model-to-model EMIT model in a museum curation domain. A remote catalogue
+  read is declared in a service store whose request and response ends are typed
+  by two JSON bindings, one covering only the narrow request class and one
+  covering the whole nested response graph. One mapping holds the remote class
+  mapping plus three chained pure-instance class mappings that share the remote
+  response as their source and forward complex nodes to each other by set
+  identifier. A parameterless service graph-fetches and serialises the same
+  three-level tree over one runtime that binds both the service store and the
+  model store. Two test suites replay a payload whose deepest optional nodes are
+  present and one where they are absent.
+modelSources:
+  model:
+    root: maple-warren-servicestore
+    files:
+      - test/maplewarren/binding/Bindings.pure
+      - test/maplewarren/connection/CatalogConnections.pure
+      - test/maplewarren/domain/Domain.pure
+      - test/maplewarren/mapping/CatalogMapping.pure
+      - test/maplewarren/runtime/CatalogRuntime.pure
+      - test/maplewarren/service/ExhibitTree.pure
+      - test/maplewarren/store/CatalogStore.pure
+features:
+  - execution:external-format-binding
+  - execution:service
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores:
+  - service
+complexity: basic
+tags:
+  - chained-set-implementation
+  - external-format-binding
+  - graph-fetch
+  - json
+  - model-to-model
+  - museum-catalogue
+  - service-store
+  - service-test

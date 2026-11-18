@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::verdantotter2::mapping::WaterwayMapping
+(
+  include demo::verdantotter2::mapping::ReachMapping
+
+  *demo::verdantotter2::domain::LockChamber[lockSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.lock_id
+    )
+    ~mainTable [demo::verdantotter2::store::PassageDB]waterway.lock_chamber
+    lockCode: [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.lock_code,
+    lockName: [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.lock_name,
+    reachCode: [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.reach_code,
+    reachName: [demo::verdantotter2::store::PassageDB]@Lock_Reach | navigation.reach.reach_name,
+    chamberLengthMetres: [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.chamber_length_metres,
+    riseMetres: [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.rise_metres,
+    commissionedOn: [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.commissioned_on,
+    surveyedAt: [demo::verdantotter2::store::PassageDB]waterway.lock_chamber.surveyed_at
+  }
+
+  *demo::verdantotter2::domain::Vessel[vesselSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::verdantotter2::store::PassageDB]waterway.vessel.vessel_id
+    )
+    ~mainTable [demo::verdantotter2::store::PassageDB]waterway.vessel
+    vesselCode: [demo::verdantotter2::store::PassageDB]waterway.vessel.vessel_code,
+    vesselName: [demo::verdantotter2::store::PassageDB]waterway.vessel.vessel_name,
+    reachCode: [demo::verdantotter2::store::PassageDB]waterway.vessel.reach_code,
+    reachName: [demo::verdantotter2::store::PassageDB]@Vessel_Reach | navigation.reach.reach_name,
+    beamMetres: [demo::verdantotter2::store::PassageDB]waterway.vessel.beam_metres,
+    registeredOn: [demo::verdantotter2::store::PassageDB]waterway.vessel.registered_on
+  }
+
+  *demo::verdantotter2::domain::KeeperShift[keeperSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::verdantotter2::store::PassageDB]waterway.keeper_shift.shift_id
+    )
+    ~mainTable [demo::verdantotter2::store::PassageDB]waterway.keeper_shift
+    keeperName: [demo::verdantotter2::store::PassageDB]waterway.keeper_shift.keeper_name,
+    shiftLabel: [demo::verdantotter2::store::PassageDB]waterway.keeper_shift.shift_label,
+    reachCode: [demo::verdantotter2::store::PassageDB]waterway.keeper_shift.reach_code,
+    reachName: [demo::verdantotter2::store::PassageDB]@Keeper_Reach | navigation.reach.reach_name,
+    hoursOnDuty: [demo::verdantotter2::store::PassageDB]waterway.keeper_shift.hours_on_duty
+  }
+
+  *demo::verdantotter2::domain::LockPassage[passageSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::verdantotter2::store::PassageDB]waterway.passage.passage_id
+    )
+    ~mainTable [demo::verdantotter2::store::PassageDB]waterway.passage
+    passageCode: [demo::verdantotter2::store::PassageDB]waterway.passage.passage_code,
+    lockCode: [demo::verdantotter2::store::PassageDB]waterway.passage.lock_code,
+    vesselCode: [demo::verdantotter2::store::PassageDB]waterway.passage.vessel_code,
+    crewSize: [demo::verdantotter2::store::PassageDB]waterway.passage.crew_size,
+    dwellMinutes: [demo::verdantotter2::store::PassageDB]waterway.passage.dwell_minutes,
+    waterLevelMetres: [demo::verdantotter2::store::PassageDB]waterway.passage.water_level_metres,
+    loggedOn: [demo::verdantotter2::store::PassageDB]waterway.passage.logged_on,
+    recordedAt: [demo::verdantotter2::store::PassageDB]waterway.passage.recorded_at
+  }
+)

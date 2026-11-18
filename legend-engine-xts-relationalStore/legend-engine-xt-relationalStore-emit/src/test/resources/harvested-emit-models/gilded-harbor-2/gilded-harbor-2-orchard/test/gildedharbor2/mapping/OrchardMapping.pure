@@ -1,0 +1,159 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedharbor2::mapping::OrchardMapping
+(
+  include test::gildedharbor2::mapping::OrchardBaseMapping
+
+  *test::gildedharbor2::domain::GraftedBlock[grafted_block]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.planting_code
+    )
+    ~mainTable [test::gildedharbor2::store::OrchardDb]orchard.grafted_block
+    plantingCode: [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.planting_code,
+    blockCode: [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.block_code,
+    plantedOn: [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.planted_on,
+    rowCount: [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.row_count,
+    cultivarName: [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.cultivar_name,
+    rootstockCode: [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.rootstock_code,
+    canopyAreaSqm: [test::gildedharbor2::store::OrchardDb]orchard.grafted_block.canopy_area_sqm,
+    stewardName: [test::gildedharbor2::store::OrchardDb]@BlockToLot > @LotToSteward | orchard.steward_desk.steward_name,
+    stewardZone: [test::gildedharbor2::store::OrchardDb]@BlockToLot > @LotToSteward | orchard.steward_desk.zone_code
+  }
+
+  test::gildedharbor2::domain::LotPlanting: Relational
+  {
+    AssociationMapping
+    (
+      lot[grafted_block, nursery_lot]: [test::gildedharbor2::store::OrchardDb]@BlockToLot,
+      blocks[nursery_lot, grafted_block]: [test::gildedharbor2::store::OrchardDb]@BlockToLot
+    )
+  }
+
+  testSuites:
+  [
+    graftedBlockSuite:
+    {
+      function: |test::gildedharbor2::domain::GraftedBlock.all(%2026-06-15T00:00:00)->project(
+  [
+    b|$b.plantingCode,
+    b|$b.blockCode,
+    b|$b.plantedOn,
+    b|$b.rowCount,
+    b|$b.cultivarName,
+    b|$b.rootstockCode,
+    b|$b.canopyAreaSqm,
+    b|$b.stewardName,
+    b|$b.stewardZone,
+    b|$b.lot(%2026-06-15T00:00:00).lotName
+  ],
+  [
+    'PlantingCode',
+    'BlockCode',
+    'PlantedOn',
+    'RowCount',
+    'CultivarName',
+    'RootstockCode',
+    'CanopyAreaSqm',
+    'StewardName',
+    'StewardZone',
+    'LotName'
+  ]
+)->sort(
+  [
+    asc('PlantingCode')
+  ]
+);
+      tests:
+      [
+        multiHopJoinHit:
+        {
+          doc: 'Every open block reaches its keeper across a two hop join path and its lot across the association implementation, so both rows carry keeper and lot columns.';
+          data:
+          [
+            test::gildedharbor2::store::OrchardDb:
+              Relational
+              #{
+                orchard.grafted_block:
+                  'planting_code,block_code,planted_on,row_count,cultivar_name,rootstock_code,canopy_area_sqm,lot_code,from_z,thru_z\n'+
+                  'GB-NORTH,BL-01,2026-04-05,120,Bramley,RS-M25,340.5,LT-ALPHA,2026-05-01,9999-12-31\n'+
+                  'GB-SOUTH,BL-02,2026-04-12,80,Discovery,RS-M9,210.25,LT-BETA,2026-04-15,9999-12-31\n';
+                orchard.nursery_lot:
+                  'lot_code,lot_name,steward_code,from_z,thru_z\n'+
+                  'LT-ALPHA,Alpha Terrace,SD-WREN,2026-03-01,9999-12-31\n'+
+                  'LT-BETA,Beta Terrace,SD-HERON,2026-03-01,9999-12-31\n';
+                orchard.steward_desk:
+                  'steward_code,steward_name,zone_code\n'+
+                  'SD-WREN,Wren Keeper,ZN-UPPER\n'+
+                  'SD-HERON,Heron Keeper,ZN-LOWER\n';
+              }#
+          ];
+          asserts:
+          [
+            bothBlocksReachTheirKeeper:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlantingCode":"GB-NORTH","BlockCode":"BL-01","PlantedOn":"2026-04-05","RowCount":120,"CultivarName":"Bramley","RootstockCode":"RS-M25","CanopyAreaSqm":340.5,"StewardName":"Wren Keeper","StewardZone":"ZN-UPPER","LotName":"Alpha Terrace"},{"PlantingCode":"GB-SOUTH","BlockCode":"BL-02","PlantedOn":"2026-04-12","RowCount":80,"CultivarName":"Discovery","RootstockCode":"RS-M9","CanopyAreaSqm":210.25,"StewardName":"Heron Keeper","StewardZone":"ZN-LOWER","LotName":"Beta Terrace"}]';
+                  }#;
+              }#
+          ];
+        },
+        milestoningOutOfRangeRowIsDropped:
+        {
+          doc: 'Adds a third block whose growing window closed before the requested date, so the out of range row is filtered out even though its lot and keeper still resolve.';
+          data:
+          [
+            test::gildedharbor2::store::OrchardDb:
+              Relational
+              #{
+                orchard.grafted_block:
+                  'planting_code,block_code,planted_on,row_count,cultivar_name,rootstock_code,canopy_area_sqm,lot_code,from_z,thru_z\n'+
+                  'GB-NORTH,BL-01,2026-04-05,120,Bramley,RS-M25,340.5,LT-ALPHA,2026-05-01,9999-12-31\n'+
+                  'GB-SOUTH,BL-02,2026-04-12,80,Discovery,RS-M9,210.25,LT-BETA,2026-04-15,9999-12-31\n'+
+                  'GB-EAST,BL-03,2026-02-02,45,Egremont,RS-M27,150.75,LT-ALPHA,2026-02-01,2026-06-01\n';
+                orchard.nursery_lot:
+                  'lot_code,lot_name,steward_code,from_z,thru_z\n'+
+                  'LT-ALPHA,Alpha Terrace,SD-WREN,2026-03-01,9999-12-31\n'+
+                  'LT-BETA,Beta Terrace,SD-HERON,2026-03-01,9999-12-31\n';
+                orchard.steward_desk:
+                  'steward_code,steward_name,zone_code\n'+
+                  'SD-WREN,Wren Keeper,ZN-UPPER\n'+
+                  'SD-HERON,Heron Keeper,ZN-LOWER\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyOpenBlocksSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlantingCode":"GB-NORTH","BlockCode":"BL-01","PlantedOn":"2026-04-05","RowCount":120,"CultivarName":"Bramley","RootstockCode":"RS-M25","CanopyAreaSqm":340.5,"StewardName":"Wren Keeper","StewardZone":"ZN-UPPER","LotName":"Alpha Terrace"},{"PlantingCode":"GB-SOUTH","BlockCode":"BL-02","PlantedOn":"2026-04-12","RowCount":80,"CultivarName":"Discovery","RootstockCode":"RS-M9","CanopyAreaSqm":210.25,"StewardName":"Heron Keeper","StewardZone":"ZN-LOWER","LotName":"Beta Terrace"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

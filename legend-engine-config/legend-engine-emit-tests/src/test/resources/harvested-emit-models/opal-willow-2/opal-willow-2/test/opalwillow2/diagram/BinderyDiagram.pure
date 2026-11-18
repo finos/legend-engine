@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::opalwillow2::diagram::BinderyDiagram
+{
+  classView cv01
+  {
+    class: test::opalwillow2::domain::BinderyWorkshop;
+    position: (60.0,60.0);
+    rectangle: (280.0,200.0);
+  }
+  classView cv02
+  {
+    class: test::opalwillow2::domain::Bench;
+    position: (420.0,60.0);
+    rectangle: (260.0,200.0);
+  }
+  classView cv03
+  {
+    class: test::opalwillow2::domain::Conservator;
+    position: (760.0,60.0);
+    rectangle: (260.0,180.0);
+  }
+  classView cv04
+  {
+    class: test::opalwillow2::domain::TreatmentRound;
+    position: (760.0,320.0);
+    rectangle: (260.0,200.0);
+  }
+  classView cv05
+  {
+    class: test::opalwillow2::domain::Volume;
+    position: (420.0,320.0);
+    rectangle: (260.0,220.0);
+  }
+  classView cv06
+  {
+    class: test::opalwillow2::domain::TextBlock;
+    position: (60.0,320.0);
+    rectangle: (280.0,200.0);
+  }
+  classView cv07
+  {
+    class: test::opalwillow2::domain::Gathering;
+    position: (60.0,600.0);
+    rectangle: (280.0,180.0);
+  }
+  classView cv08
+  {
+    class: test::opalwillow2::domain::ConditionReport;
+    position: (760.0,600.0);
+    rectangle: (260.0,180.0);
+  }
+  classView cv09
+  {
+    class: test::opalwillow2::domain::CoverBoard;
+    position: (1100.0,60.0);
+    rectangle: (240.0,180.0);
+  }
+  classView cv10
+  {
+    class: test::opalwillow2::domain::Endpaper;
+    position: (1100.0,320.0);
+    rectangle: (240.0,180.0);
+  }
+  classView cv11
+  {
+    class: test::opalwillow2::domain::StorageBox;
+    position: (1100.0,600.0);
+    rectangle: (240.0,180.0);
+  }
+  classView cv12
+  {
+    class: test::opalwillow2::domain::ExhibitionTour;
+    position: (420.0,600.0);
+    rectangle: (260.0,200.0);
+  }
+  propertyView
+  {
+    property: test::opalwillow2::domain::Workshop_Benches.benches;
+    source: cv01;
+    target: cv02;
+    points: [(200.0,160.0),(550.0,160.0)];
+  }
+  propertyView
+  {
+    property: test::opalwillow2::domain::Bench_Conservators.conservators;
+    source: cv02;
+    target: cv03;
+    points: [(550.0,160.0),(890.0,150.0)];
+  }
+  propertyView
+  {
+    property: test::opalwillow2::domain::Conservator_Rounds.ledRounds;
+    source: cv03;
+    target: cv04;
+    points: [(890.0,150.0),(890.0,420.0)];
+  }
+  propertyView
+  {
+    property: test::opalwillow2::domain::Volume_Rounds.treatmentRounds;
+    source: cv05;
+    target: cv04;
+    points: [(550.0,430.0),(890.0,420.0)];
+  }
+  propertyView
+  {
+    property: test::opalwillow2::domain::Round_Reports.conditionReports;
+    source: cv04;
+    target: cv08;
+    points: [(890.0,420.0),(890.0,690.0)];
+  }
+  propertyView
+  {
+    property: test::opalwillow2::domain::Volume_TextBlocks.textBlocks;
+    source: cv05;
+    target: cv06;
+    points: [(550.0,430.0),(200.0,420.0)];
+  }
+  propertyView
+  {
+    property: test::opalwillow2::domain::TextBlock_Gatherings.gatherings;
+    source: cv06;
+    target: cv07;
+    points: [(200.0,420.0),(200.0,690.0)];
+  }
+}

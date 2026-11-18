@@ -1,0 +1,50 @@
+name: golden-arboretum-4
+title: "Golden Arboretum 4 - propagation nursery register with seven enumerated translation tables"
+description: |
+  An intermediate relational model over a propagation nursery register. One
+  schema-qualified wide table supplies every mapped column, and two mappings
+  root two classes at that same main-table alias with explicit key columns: a
+  `PropagationBatch` carrying four enumerated properties plus optional scalar,
+  date and timestamp members, and a `NurseryBed` carrying three more. Seven
+  enumerations are translated by seven declared enumeration mappings, several of
+  them many-to-one, so an unmatched source code is an observable outcome.
+  A Snowflake connection with an OAuth authentication strategy and an engine
+  runtime supply the execution surface published by a data space whose single
+  default execution context names that mapping-and-runtime pair, described with
+  combined support metadata. Mapping testSuites execute both translated and
+  unmatched-code fixtures.
+modelSources:
+  model:
+    root: golden-arboretum-4
+    files:
+      - test/goldenarboretum4/connection/NurseryConnection.pure
+      - test/goldenarboretum4/dataspace/NurseryDataSpace.pure
+      - test/goldenarboretum4/domain/NurseryDomain.pure
+      - test/goldenarboretum4/mapping/BedRegisterMapping.pure
+      - test/goldenarboretum4/mapping/PropagationMapping.pure
+      - test/goldenarboretum4/runtime/NurseryRuntime.pure
+      - test/goldenarboretum4/store/NurseryDatabase.pure
+features:
+  - execution:data-space
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - dataspace
+  - enumeration
+  - enumeration-mapping
+  - h2
+  - mapping-test
+  - nursery-propagation
+  - oauth
+  - primary-key
+  - snowflake

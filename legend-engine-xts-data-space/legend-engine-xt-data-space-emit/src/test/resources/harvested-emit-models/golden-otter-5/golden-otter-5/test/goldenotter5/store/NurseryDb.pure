@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenotter5::store::NurseryDb
+(
+  Schema nursery
+  (
+    Table propagation_batch
+    (
+      batch_id INTEGER PRIMARY KEY,
+      bench_id INTEGER NOT NULL,
+      sown_date DATE NOT NULL,
+      cutting_count INTEGER NOT NULL,
+      vigour_code VARCHAR(12) NOT NULL,
+      cultivar_name VARCHAR(120) NOT NULL,
+      misting_note VARCHAR(200),
+      rooted_count INTEGER
+    )
+    Table bench
+    (
+      bench_id INTEGER PRIMARY KEY,
+      bench_label VARCHAR(60) NOT NULL,
+      house_id INTEGER NOT NULL,
+      bench_area_m2 INTEGER NOT NULL
+    )
+    Table glasshouse
+    (
+      house_id INTEGER PRIMARY KEY,
+      house_name VARCHAR(80) NOT NULL,
+      zone_label VARCHAR(40) NOT NULL
+    )
+    View bench_load_vw
+    (
+      ~groupBy (nursery.propagation_batch.bench_id)
+      bench_id: nursery.propagation_batch.bench_id PRIMARY KEY,
+      batch_count: count(nursery.propagation_batch.batch_id),
+      total_cuttings: sum(nursery.propagation_batch.cutting_count),
+      peak_cuttings: max(nursery.propagation_batch.cutting_count)
+    )
+    View batch_face_vw
+    (
+      batch_id: nursery.propagation_batch.batch_id PRIMARY KEY,
+      face_label: concat(toUpper(nursery.propagation_batch.vigour_code), concat('/', nursery.propagation_batch.cultivar_name))
+    )
+    View batch_grade_vw
+    (
+      batch_id: nursery.propagation_batch.batch_id PRIMARY KEY,
+      grade_label: case(
+        greaterThanEqual(nursery.propagation_batch.cutting_count, 120),
+        'DENSE',
+        case(
+          greaterThanEqual(nursery.propagation_batch.cutting_count, 40),
+          'STANDARD',
+          'SPARSE'
+        )
+      )
+    )
+    View bench_zone_vw
+    (
+      bench_id: nursery.bench.bench_id PRIMARY KEY,
+      zone_tag: concat('ZONE-', nursery.bench.bench_label)
+    )
+    View house_bench_count_vw
+    (
+      ~groupBy (nursery.bench.house_id)
+      house_id: nursery.bench.house_id PRIMARY KEY,
+      bench_count: count(nursery.bench.bench_id),
+      total_area_m2: sum(nursery.bench.bench_area_m2)
+    )
+    View bench_density_vw
+    (
+      bench_id: nursery.bench.bench_id PRIMARY KEY,
+      density_label: concat('DENSITY-', toString(nursery.bench.bench_area_m2)),
+      density_ratio: divide(nursery.bench.bench_area_m2, nursery.bench.bench_area_m2)
+    )
+    View misting_note_vw
+    (
+      batch_id: nursery.propagation_batch.batch_id PRIMARY KEY,
+      note_label: concat('MIST-', trim(nursery.propagation_batch.misting_note))
+    )
+  )
+  Filter activeCultivarFilter(nursery.propagation_batch.vigour_code = 'ACTIVE-STOCK' and nursery.propagation_batch.cultivar_name != 'WITHDRAWN')
+  Filter denseBatchFilter(nursery.propagation_batch.cutting_count >= 40)
+  Join Batch_Bench(nursery.propagation_batch.bench_id = nursery.bench.bench_id)
+  Join Bench_Glasshouse(nursery.bench.house_id = nursery.glasshouse.house_id)
+  Join Batch_BenchLoad(nursery.propagation_batch.bench_id = nursery.bench_load_vw.bench_id)
+)

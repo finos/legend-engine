@@ -1,0 +1,56 @@
+name: ivory-marsh-2
+title: "Wetland Boardwalk Estate — a section class gathered across three tables with collection-bounded, ordered and truncated registers"
+description: |
+  A wetland boardwalk estate model in which one boardwalk-section class is
+  gathered across three relational tables — the section itself plus the reserve
+  it crosses and the warden who holds it — so the mapping resolves attributes
+  from neighbouring tables rather than a single main table. Three
+  single-execution services expose the estate as tabular data sets and all of
+  them are bounded by collection parameters: the section register narrows by a
+  surface collection with a plank floor and a hazard ceiling before ordering and
+  truncating the page; the inspection backlog keeps an inspection when its grade
+  is in the requested collection or its defect tally passes a threshold, then
+  orders by defect tally and truncates to a caller-supplied page size; and the
+  hazard roster keeps every reserve when the reserve collection is left empty,
+  holds sections at or above a hazard floor, and truncates to the sections a rota
+  is called out for. Each service is exercised with deterministic relational
+  fixtures and asserted against expected JSON, including the empty-collection
+  path and the truncation path.
+
+modelSources:
+  model:
+    root: ivory-marsh-2
+    files:
+      - test/ivorymarsh2/connection/MarshConnections.pure
+      - test/ivorymarsh2/domain/MarshDomain.pure
+      - test/ivorymarsh2/mapping/MarshMapping.pure
+      - test/ivorymarsh2/runtime/MarshRuntimes.pure
+      - test/ivorymarsh2/service/HazardRoster.pure
+      - test/ivorymarsh2/service/InspectionBacklog.pure
+      - test/ivorymarsh2/service/SectionRegister.pure
+      - test/ivorymarsh2/store/MarshDb.pure
+
+features:
+  - execution:service
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+
+stores:
+  - relational
+
+complexity: intermediate
+
+tags:
+  - collection-bounded-queries
+  - h2
+  - multi-table-mapping
+  - sort-and-limit
+  - wetland-estate

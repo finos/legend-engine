@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::amberprairie::service::SeedLotsByPlotService
+{
+  pattern: '/prairie/v1/seed-lots/{plotRef}';
+  owners:
+  [
+    'example-prairie-restoration-lead',
+    'example-prairie-seed-steward'
+  ];
+  documentation: 'Lists the seed lots recorded against one restoration plot reference under spaced display aliases.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {plotRef: Float[1]|test::amberprairie::domain::SeedLot.all()->filter(l|$l.plotRef == $plotRef)->project([x|$x.lotCode, x|$x.speciesName, x|$x.plotRef], ['Lot Code', 'Species Name', 'Plot Reference'])};
+    mapping: test::amberprairie::mapping::PrairieMapping;
+    runtime: test::amberprairie::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    seedLotLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          embeddedPrairieConnection:
+            Relational
+            #{
+              PRAIRIE.SEED_LOT:
+                'LOT_ID,LOT_CODE,SPECIES_NAME,PLOT_ID\n'+
+                '10.0,SL-10,Little Bluestem,1.0\n'+
+                '11.0,SL-11,Purple Coneflower,2.0\n'+
+                '12.0,SL-12,Prairie Dropseed,2.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        plotWithTwoLots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            plotRef = 2.0
+          ]
+          asserts:
+          [
+            twoLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Lot Code" : "SL-11",\n  "Species Name" : "Purple Coneflower",\n  "Plot Reference" : 2.0\n}, {\n  "Lot Code" : "SL-12",\n  "Species Name" : "Prairie Dropseed",\n  "Plot Reference" : 2.0\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

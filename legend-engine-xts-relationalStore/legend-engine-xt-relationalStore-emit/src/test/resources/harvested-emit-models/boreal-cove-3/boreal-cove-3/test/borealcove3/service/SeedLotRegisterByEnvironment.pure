@@ -1,0 +1,195 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealcove3::service::SeedLotRegisterByEnvironment
+{
+  pattern: '/borealcove/v1/{environment}/seed-lots/{asOf}';
+  title: 'Dune Seed Depot - Seed Lot Register As Of A Business Date';
+  documentation: 'Resolves the seed lots of the depot register at a single business date, threading that same date through every navigation to a milestoned meadow plot, keeping only the active lots sitting on dune habitat whose plot carries at least one crewed germination trial, and returning the deduplicated register rows ordered by lot code and keeper name. Keyed by environment so the identical point-in-time shape is planned twice, once per runtime.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['dune-seed-depot-office'] };
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1]|test::borealcove3::domain::SeedLot.all($asOf)->filter(
+      l|(($l.lotState == test::borealcove3::domain::LotState.ACTIVE) && ($l.plot($asOf).habitatClass == test::borealcove3::domain::HabitatClass.DUNE)) && !$l.plot($asOf).trials.trialCrew->isEmpty()
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.taxonName,
+        l|$l.seedGrams,
+        l|$l.lotState,
+        l|$l.plot($asOf).plotCode,
+        l|$l.plot($asOf).plotName,
+        l|$l.plot($asOf).habitatClass,
+        l|$l.plot($asOf).keeper.keeperName,
+        l|$l.plot($asOf).keeper.contactNote,
+        l|$l.taxonName->toUpper(),
+        l|$l.taxonName->length(),
+        l|$l.plot($asOf).plotName->toOne()->trim()->toUpper()
+      ],
+      [
+        'Lot Code',
+        'Taxon',
+        'Seed Grams',
+        'Lot State',
+        'Plot Code',
+        'Plot Name',
+        'Habitat Class',
+        'Keeper Name',
+        'Contact Note',
+        'Taxon Tag',
+        'Taxon Width',
+        'Plot Tag'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Lot Code'),
+        asc('Keeper Name')
+      ]
+    )};
+    key: 'environment';
+    executions['register']:
+    {
+      mapping: test::borealcove3::mapping::SeedDepotMapping;
+      runtime: test::borealcove3::runtime::SeedDepotRegisterRuntime;
+    }
+    executions['mirror']:
+    {
+      mapping: test::borealcove3::mapping::SeedDepotMapping;
+      runtime: test::borealcove3::runtime::SeedDepotMirrorRuntime;
+    }
+  }
+  testSuites:
+  [
+    seedLotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedDepotRegister:
+            Relational
+            #{
+              meadow.seed_keeper:
+                'keeper_code,keeper_name,contact_note\n'+
+                'K-01,Rowan Sandhill,radio channel two\n'+
+                'K-02,Ash Duneway,\n';
+
+              meadow.germination_trial:
+                'trial_code,plot_code,trial_crew\n'+
+                'GT-01,MP-01,dawn crew\n'+
+                'GT-02,MP-01,dusk crew\n'+
+                'GT-03,MP-02,\n'+
+                'GT-04,MP-03,heath crew\n';
+
+              meadow.meadow_plot:
+                'plot_code,plot_name,habitat_code,keeper_code,from_z,thru_z\n'+
+                'MP-01, Windward Dune ,DU,K-01,2026-01-01,9999-12-31\n'+
+                'MP-02,Hollow Dune,DU,K-02,2026-01-01,9999-12-31\n'+
+                'MP-03,Ridge Heath,HE,K-01,2026-01-01,9999-12-31\n'+
+                'MP-04,Retired Dune,DU,K-01,2026-01-01,2026-02-01\n';
+
+              meadow.seed_lot:
+                'lot_code,plot_code,taxon_name,seed_grams,state_code,from_z,thru_z\n'+
+                'SL-01,MP-01,dune fescue,120,AC,2026-02-01,9999-12-31\n'+
+                'SL-02,MP-02,hollow vetch,45,AC,2026-02-01,9999-12-31\n'+
+                'SL-03,MP-03,heath bedstraw,60,AC,2026-02-01,9999-12-31\n'+
+                'SL-04,MP-01,rested fescue,30,RE,2026-02-01,9999-12-31\n'+
+                'SL-05,MP-04,retired lot,15,AC,2026-02-01,9999-12-31\n'+
+                'SL-06,MP-01,marram grass,80,AC,2026-01-01,2026-02-15\n';
+            }#,
+          seedDepotMirror:
+            Relational
+            #{
+              meadow.seed_keeper:
+                'keeper_code,keeper_name,contact_note\n'+
+                'K-01,Rowan Sandhill,radio channel two\n'+
+                'K-02,Ash Duneway,\n';
+
+              meadow.germination_trial:
+                'trial_code,plot_code,trial_crew\n'+
+                'GT-01,MP-01,dawn crew\n'+
+                'GT-02,MP-01,dusk crew\n'+
+                'GT-03,MP-02,\n'+
+                'GT-04,MP-03,heath crew\n';
+
+              meadow.meadow_plot:
+                'plot_code,plot_name,habitat_code,keeper_code,from_z,thru_z\n'+
+                'MP-01, Windward Dune ,DU,K-01,2026-01-01,9999-12-31\n'+
+                'MP-02,Hollow Dune,DU,K-02,2026-01-01,9999-12-31\n'+
+                'MP-03,Ridge Heath,HE,K-01,2026-01-01,9999-12-31\n'+
+                'MP-04,Retired Dune,DU,K-01,2026-01-01,2026-02-01\n';
+
+              meadow.seed_lot:
+                'lot_code,plot_code,taxon_name,seed_grams,state_code,from_z,thru_z\n'+
+                'SL-01,MP-01,dune fescue,120,AC,2026-02-01,9999-12-31\n'+
+                'SL-02,MP-02,hollow vetch,45,AC,2026-02-01,9999-12-31\n'+
+                'SL-03,MP-03,heath bedstraw,60,AC,2026-02-01,9999-12-31\n'+
+                'SL-04,MP-01,rested fescue,30,RE,2026-02-01,9999-12-31\n'+
+                'SL-05,MP-04,retired lot,15,AC,2026-02-01,9999-12-31\n'+
+                'SL-06,MP-01,marram grass,80,AC,2026-01-01,2026-02-15\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        activeDuneLotsAtTheBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['register', 'mirror'];
+          parameters:
+          [
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            onlyTheCrewedDuneLotUnderBothEnvironments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot Code":"SL-01","Taxon":"dune fescue","Seed Grams":120,"Lot State":"ACTIVE","Plot Code":"MP-01","Plot Name":" Windward Dune ","Habitat Class":"DUNE","Keeper Name":"Rowan Sandhill","Contact Note":"radio channel two","Taxon Tag":"DUNE FESCUE","Taxon Width":11,"Plot Tag":"WINDWARD DUNE"}]';
+                  }#;
+              }#
+          ]
+        },
+        theWithdrawnWindowStillOpenAtTheEarlierDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['register'];
+          parameters:
+          [
+            asOf = %2026-02-10
+          ]
+          asserts:
+          [
+            theLotWhoseWindowLaterClosesIsCarriedAtTheEarlierDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot Code":"SL-01","Taxon":"dune fescue","Seed Grams":120,"Lot State":"ACTIVE","Plot Code":"MP-01","Plot Name":" Windward Dune ","Habitat Class":"DUNE","Keeper Name":"Rowan Sandhill","Contact Note":"radio channel two","Taxon Tag":"DUNE FESCUE","Taxon Width":11,"Plot Tag":"WINDWARD DUNE"},{"Lot Code":"SL-06","Taxon":"marram grass","Seed Grams":80,"Lot State":"ACTIVE","Plot Code":"MP-01","Plot Name":" Windward Dune ","Habitat Class":"DUNE","Keeper Name":"Rowan Sandhill","Contact Note":"radio channel two","Taxon Tag":"MARRAM GRASS","Taxon Width":12,"Plot Tag":"WINDWARD DUNE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblelantern::service::StationRegisterService
+{
+  pattern: '/noble-lantern/v1/northern-stations';
+  title: 'Noble Lantern - Northern Approach Station Register';
+  owners:
+  [
+    'harbor-light-register-desk',
+    'coastal-navigation-ops'
+  ];
+  documentation: 'Publishes the northern-approach lantern stations: the district name is normalised before the prefix test, the optic class is checked against the accepted optic set, and only mainland stations carrying their light above the harbour reporting height survive; the projected rows are then narrowed once more, ordered and capped.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::noblelantern::domain::LanternStation.all()->filter(
+      s|$s.districtName->toUpper()->startsWith('NORTH') && ($s.opticClass->in(['FIRST_ORDER', 'FOURTH_ORDER', 'HARBOR_LIGHT', 'SECOND_ORDER', 'THIRD_ORDER']) && (($s.stationKind == 'MAINLAND') && ($s.focalHeightM >= 12.0)))
+    )->project(
+      [
+        s|$s.stationCode,
+        s|$s.stationName,
+        s|$s.districtName,
+        s|$s.opticClass,
+        s|$s.stationKind,
+        s|$s.focalHeightM,
+        s|$s.towerHeightM,
+        s|$s.commissionedOn,
+        s|$s.inspectedAt
+      ],
+      [
+        'Station',
+        'Name',
+        'District',
+        'Optic',
+        'Kind',
+        'FocalHeight',
+        'TowerHeight',
+        'Commissioned',
+        'Inspected'
+      ]
+    )->filter(
+      r|$r.getString('Optic')->toLower()->startsWith('f') || ($r.getString('Kind') == 'MAINLAND')
+    )->sort(
+      [
+        asc('Station')
+      ]
+    )->limit(10);
+    mapping: test::noblelantern::mapping::HarborLightMapping;
+    runtime: test::noblelantern::runtime::HarborLightRuntime;
+  }
+  testSuites:
+  [
+    northernStationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborLightConnection:
+            Relational
+            #{
+              beacon.lantern_station:
+                'station_code,station_name,district_name,optic_class,station_kind,focal_height_m,tower_height_m,commissioned_on,inspected_at\n'+
+                'LS-01,North Head,NORTHERN APPROACH,FIRST_ORDER,MAINLAND,18.5,24.0,1902-05-14,2026-04-02 09:15:00\n'+
+                'LS-02,Shoal Point,Southern Reach,SECOND_ORDER,MAINLAND,9.0,,1948-08-01,\n'+
+                'LS-03,North Spit,NORTHERN APPROACH,THIRD_ORDER,ISLET,14.0,20.5,1976-02-20,2026-01-18 07:45:00\n'+
+                'LS-04,Northgate Mole,Northgate Basin,HARBOR_LIGHT,MAINLAND,12.5,,2001-11-09,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northernStationRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            mainlandNorthernStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"LS-01","Name":"North Head","District":"NORTHERN APPROACH","Optic":"FIRST_ORDER","Kind":"MAINLAND","FocalHeight":18.5,"TowerHeight":24.0,"Commissioned":"1902-05-14","Inspected":"2026-04-02T09:15:00.000000000+0000"},{"Station":"LS-04","Name":"Northgate Mole","District":"Northgate Basin","Optic":"HARBOR_LIGHT","Kind":"MAINLAND","FocalHeight":12.5,"TowerHeight":null,"Commissioned":"2001-11-09","Inspected":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

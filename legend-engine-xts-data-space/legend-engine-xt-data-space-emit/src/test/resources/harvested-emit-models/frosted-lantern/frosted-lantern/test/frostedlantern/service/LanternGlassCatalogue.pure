@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedlantern::service::LanternGlassCatalogue
+{
+  pattern: '/lantern/v1/glass-catalogue';
+  title: 'Frosted Lantern - Glass and finish catalogue';
+  owners:
+  [
+    'lantern-catalogue-desk',
+    'heritage-glass-registry'
+  ];
+  documentation: 'Parameterless catalogue of the distinct glass and finish pairs present in the catalogued items, reduced with distinct and sorted by glass type then finish code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::frostedlantern::domain::LanternItem.all()->project(
+      [
+        i|$i.glassType,
+        i|$i.finishCode
+      ],
+      [
+        'Item/Glass',
+        'Item/Finish'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Item/Glass'),
+        asc('Item/Finish')
+      ]
+    );};
+    mapping: test::frostedlantern::mapping::LanternMapping;
+    runtime: test::frostedlantern::runtime::LanternCatalogueRuntime;
+  }
+  testSuites:
+  [
+    glassCatalogueSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lanternConnection:
+            Relational
+            #{
+              catalogue.workshop:
+                'workshop_code,workshop_name,town_name,guild_code\n'+
+                'WS-1,Frost Glassworks,Rimehaven,GLAZIERS\n'+
+                'WS-2,Pane And Pane,Rimehaven,GLAZIERS\n'+
+                'WS-3,Lantern Loft,Bellmoor,SMITHS\n'+
+                'WS-4,Clearlight Shed,Coldwater,GLAZIERS\n';
+              catalogue.lantern_item:
+                'item_code,item_name,glass_type,finish_code,workshop_code,pane_count,catalogue_year\n'+
+                'LI-1,Harbour Lantern,SODA,FROSTED,WS-1,6,1899\n'+
+                'LI-2,Cellar Lantern,LEAD,FROSTED,WS-2,4,1901\n'+
+                'LI-3,Signal Lantern,SODA,CLEAR,WS-1,8,1903\n'+
+                'LI-4,Chapel Lantern,BOROSILICATE,FROSTED,WS-3,12,1905\n'+
+                'LI-5,Cart Lantern,SODA,FROSTED,WS-4,3,1907\n'+
+                'LI-6,Storm Lantern,LEAD,FROSTED,WS-1,10,1910\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        distinctGlassFinishPairs:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            fourPairs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Item/Glass":"BOROSILICATE","Item/Finish":"FROSTED"},{"Item/Glass":"LEAD","Item/Finish":"FROSTED"},{"Item/Glass":"SODA","Item/Finish":"CLEAR"},{"Item/Glass":"SODA","Item/Finish":"FROSTED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

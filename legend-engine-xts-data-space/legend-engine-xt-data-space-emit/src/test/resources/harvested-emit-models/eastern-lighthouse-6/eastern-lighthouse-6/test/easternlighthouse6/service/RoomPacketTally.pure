@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternlighthouse6::service::RoomPacketTally
+{
+  pattern: '/seedvault/v1/rooms/packets';
+  title: 'Seed Vault - Packets held per storage room';
+  owners:
+  [
+    'seed-vault-collections',
+    'upland-survey'
+  ];
+  documentation: 'Totals the packets of every accession collected in a named year into the storage room holding them, so the result grain is the room rather than the accession.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {collectionYear: Integer[1]|test::easternlighthouse6::domain::SeedAccession.all()->filter(
+      a|$a.collectedAt->year() == $collectionYear
+    )->groupBy(
+      [
+        a|$a.storageRoomCode
+      ],
+      [
+        agg(
+          a|$a.packetCount,
+          y|$y->sum()
+        )
+      ],
+      [
+        'StorageRoomCode',
+        'PacketCount'
+      ]
+    )->sort(
+      [
+        asc('StorageRoomCode')
+      ]
+    )};
+    mapping: test::easternlighthouse6::mapping::SeedVaultMapping;
+    runtime: test::easternlighthouse6::runtime::SeedVaultRegisterRuntime;
+  }
+  testSuites:
+  [
+    roomPacketSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultConnection: Reference
+            #{
+              test::easternlighthouse6::data::SeedVaultTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        roomsCollectedInTheNamedYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            collectionYear = 2026
+          ]
+          asserts:
+          [
+            roomRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StorageRoomCode":"R-1","PacketCount":6}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierYearReachesTheSecondRoom:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            collectionYear = 2025
+          ]
+          asserts:
+          [
+            earlierRoomRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StorageRoomCode":"R-2","PacketCount":5}]';
+                  }#;
+              }#
+          ]
+        },
+        yearWithNoCollections:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            collectionYear = 2024
+          ]
+          asserts:
+          [
+            noRoomRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

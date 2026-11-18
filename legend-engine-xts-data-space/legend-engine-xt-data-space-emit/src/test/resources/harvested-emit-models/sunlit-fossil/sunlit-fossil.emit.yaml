@@ -1,0 +1,48 @@
+name: sunlit-fossil
+title: "Specimen Dispatch Dispatches — Business-Temporal Two-Hop Join Chain"
+description: |
+  An advanced relational model over natural-history specimen dispatches. A single
+  store holds four business-milestoned tables forming a three-level chain: dispatch
+  terms, dispatches, dispatch line items and item portions. One relational
+  mapping carries four root class mappings with explicit primary keys and main
+  table aliases, and reaches the child collections through a single-column join
+  and a composite two-column join, so every traversal also carries the
+  milestoning predicate. Two data spaces publish that one mapping under two
+  execution contexts, each pinning a runtime whose Snowflake connection carries
+  its own schema-rewrite post-processor, so only the schema qualifier of the
+  generated SQL differs between tiers.
+modelSources:
+  model:
+    root: sunlit-fossil
+    files:
+      - test/sunlitfossil/connection/DispatchHallConnections.pure
+      - test/sunlitfossil/dataspace/DispatchHallDataSpaces.pure
+      - test/sunlitfossil/domain/SpecimenDispatchDomain.pure
+      - test/sunlitfossil/mapping/SpecimenDispatchMapping.pure
+      - test/sunlitfossil/runtime/DispatchHallRuntimes.pure
+      - test/sunlitfossil/store/SpecimenDispatchDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - composite-join
+  - data-space
+  - h2
+  - relational
+  - specimen-dispatch
+  - two-hop-join

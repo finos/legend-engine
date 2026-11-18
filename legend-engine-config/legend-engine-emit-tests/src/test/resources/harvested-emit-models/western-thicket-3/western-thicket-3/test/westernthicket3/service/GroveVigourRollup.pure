@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernthicket3::service::GroveVigourRollup
+{
+  pattern: '/westernthicket3/v1/grove-vigour-rollup';
+  title: 'Coppice Wood - Cut Rollup Placed Beside The Grove Tallies It Was Cut Under';
+  ownership: UserList { users: ['coppice-survey-desk'] };
+  documentation: 'Folds the cutting register of one business date together by the cut that was carried out, totalling counted stems and tallying the surveys of each cut, then places each fold beside the grove tallies its surveys were cut under by joining it to a distinct projection of the same extent that reaches the tally three hops out over the grouped view, and keeps the ordered distinct rows.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query:
+    {
+      asOfDate: StrictDate[1]|
+      test::westernthicket3::domain::CutSurveyRecord.all($asOfDate)->filter(
+        x|$x.stemCount > 0
+      )->groupBy(
+        [
+          x|$x.cutKind
+        ],
+        [
+          agg(x|$x.stemCount, vals|$vals->sum()),
+          agg(x|$x.surveyCode, vals|$vals->count())
+        ],
+        [
+          'Cut',
+          'Total Stems',
+          'Surveys'
+        ]
+      )->join(
+        test::westernthicket3::domain::CutSurveyRecord.all($asOfDate)->filter(
+          x|$x.standTally->isNotEmpty()
+        )->project(
+          [
+            x|$x.cutKind,
+            x|$x.standTally->toOne()
+          ],
+          [
+            'Joined Cut',
+            'Tally'
+          ]
+        )->distinct(),
+        meta::relational::metamodel::join::JoinType.INNER,
+        {l, r|$l.getString('Cut') == $r.getString('Joined Cut')}
+      )->restrict(
+        [
+          'Cut',
+          'Total Stems',
+          'Surveys',
+          'Tally'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Cut'),
+          asc('Tally')
+        ]
+      )->limit(10)
+    };
+    mapping: test::westernthicket3::mapping::ThicketSurveyMapping;
+    runtime: test::westernthicket3::runtime::ThicketWoodRuntime;
+  }
+  testSuites:
+  [
+    groveVigourRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketConnection:
+            Reference
+            #{
+              test::westernthicket3::data::ThicketTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        eachCutBesideTheTalliesItWasCutUnder:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            fourFoldsSpreadOverTheirGroveTallies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut":"COPPICE","Total Stems":274,"Surveys":4,"Tally":1},{"Cut":"COPPICE","Total Stems":274,"Surveys":4,"Tally":2},{"Cut":"LAYERING","Total Stems":50,"Surveys":2,"Tally":1},{"Cut":"POLLARDING","Total Stems":22,"Surveys":2,"Tally":2},{"Cut":"SINGLING","Total Stems":100,"Surveys":2,"Tally":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

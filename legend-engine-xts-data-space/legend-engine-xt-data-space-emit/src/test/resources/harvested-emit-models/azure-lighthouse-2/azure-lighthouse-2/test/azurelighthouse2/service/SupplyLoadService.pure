@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::azurelighthouse2::service::SupplyLoadService
+{
+  pattern: '/lighthouse/v1/supply-runs';
+  title: 'Beacon supply load';
+  owners:
+  [
+    'beacon-logistics-team'
+  ];
+  documentation: 'Publish the recorded supply runs as a tabular load sheet so a third mapped table of the same store resolves its own main table into relational instantiation and SQL plan nodes.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::azurelighthouse2::domain::SupplyRun.all()->filter(
+      r|$r.crateCount >= 2
+    )->project(
+      [
+        x|$x.runId,
+        x|$x.cargoKind->toUpper(),
+        x|$x.crateCount * 25
+      ],
+      [
+        'Run',
+        'Cargo',
+        'LoadKg'
+      ]
+    );
+    mapping: demo::azurelighthouse2::mapping::LighthouseMapping;
+    runtime: demo::azurelighthouse2::runtime::LighthouseRuntime;
+  }
+  testSuites:
+  [
+    supplyLoadSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconWarehouse:
+            Relational
+            #{
+              beacons.supply_run:
+                'run_id,station_code,cargo_kind,crate_count\n'+
+                'SR-01,LS-01,lamp glass,4\n'+
+                'SR-02,LS-02,paraffin,6\n'+
+                'SR-03,LS-03,rope,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        loadedRuns:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            singleCrateRunDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"SR-01","Cargo":"LAMP GLASS","LoadKg":100},{"Run":"SR-02","Cargo":"PARAFFIN","LoadKg":150}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

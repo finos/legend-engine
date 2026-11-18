@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalwarren2::mapping::BellRegisterMapping
+(
+  include mapping test::opalwarren2::mapping::BellBaseMapping
+
+  test::opalwarren2::domain::BellHousing: Relational
+  {
+    AssociationMapping
+    (
+      housedBells[belfry, bell]: [test::opalwarren2::store::BellRegisterDb]@Bell_Belfry,
+      belfry[bell, belfry]: [test::opalwarren2::store::BellRegisterDb]@Bell_Belfry
+    )
+  }
+
+  testSuites:
+  [
+    bellRegisterSuite:
+    {
+      function: |test::opalwarren2::domain::TowerBell.all()->project(
+        [
+          b|$b.bellRef,
+          b|$b.bellName,
+          b|$b.toneLabel,
+          b|$b.ringingTier,
+          b|$b.headstockCode,
+          b|$b.swingMargin,
+          b|$b.belfry.belfryName->toOne()
+        ],
+        [
+          'Bell',
+          'Name',
+          'Tone',
+          'Tier',
+          'Headstock',
+          'Margin',
+          'Belfry'
+        ]
+      )->sort([asc('Bell')]);
+      tests:
+      [
+        gradedRing:
+        {
+          doc: 'Walks every arm of the tone ladder over one ring of bells, folds the unnamed bell and the unrecorded headstock onto their sentinels, derives the swing margin arithmetically, and reads the belfry frame name one join hop out through the association implementation; the scrapped bell is removed by the store filter.';
+          data:
+          [
+            test::opalwarren2::store::BellRegisterDb:
+              Relational
+              #{
+                tower.hung_bell:
+                  'bell_id,bell_ref,bell_name,tone_code,canon_weight_kg,headstock_code,belfry_code,status_code\n'+
+                  '1,OW-101,Tenor of Kettle Rise,T1,1500,hs-a,BF-1,SOUND\n'+
+                  '2,OW-102,Seventh of Kettle Rise,T2,1200,hs-a,BF-1,SOUND\n'+
+                  '3,OW-103,Sixth of Kettle Rise,T3,1000,hs-b,BF-1,SOUND\n'+
+                  '4,OW-104,Fifth of Kettle Rise,T4,900,hs-b,BF-2,SOUND\n'+
+                  '5,OW-105,Fourth of Kettle Rise,T5,800,hs-c,BF-2,SOUND\n'+
+                  '6,OW-106,Third of Kettle Rise,T6,700,hs-c,BF-2,SOUND\n'+
+                  '7,OW-107,Second of Kettle Rise,T7,600,hs-d,BF-2,SOUND\n'+
+                  '8,OW-108,Treble of Kettle Rise,T8,500,hs-d,BF-2,SOUND\n'+
+                  '9,OW-109,,TZ,400,,BF-2,SOUND\n'+
+                  '10,OW-110,Cracked Bell of Kettle Rise,T1,1400,hs-e,BF-1,SCRAPPED\n';
+
+                tower.belfry_frame:
+                  'belfry_code,belfry_name,frame_kind\n'+
+                  'BF-1,Kettle Rise North Frame,cast iron\n'+
+                  'BF-2,Kettle Rise South Frame,oak\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bell":"OW-101","Name":"Tenor of Kettle Rise","Tone":"TENOR BELL","Tier":"BACK SIX TIER","Headstock":"HS-A","Margin":1000,"Belfry":"Kettle Rise North Frame"},{"Bell":"OW-102","Name":"Seventh of Kettle Rise","Tone":"SEVENTH BELL","Tier":"BACK SIX TIER","Headstock":"HS-A","Margin":1600,"Belfry":"Kettle Rise North Frame"},{"Bell":"OW-103","Name":"Sixth of Kettle Rise","Tone":"SIXTH BELL","Tier":"BACK SIX TIER","Headstock":"HS-B","Margin":2000,"Belfry":"Kettle Rise North Frame"},{"Bell":"OW-104","Name":"Fifth of Kettle Rise","Tone":"FIFTH BELL","Tier":"MIDDLE TIER","Headstock":"HS-B","Margin":2200,"Belfry":"Kettle Rise South Frame"},{"Bell":"OW-105","Name":"Fourth of Kettle Rise","Tone":"FOURTH BELL","Tier":"MIDDLE TIER","Headstock":"HS-C","Margin":2400,"Belfry":"Kettle Rise South Frame"},{"Bell":"OW-106","Name":"Third of Kettle Rise","Tone":"THIRD BELL","Tier":"MIDDLE TIER","Headstock":"HS-C","Margin":2600,"Belfry":"Kettle Rise South Frame"},{"Bell":"OW-107","Name":"Second of Kettle Rise","Tone":"SECOND BELL","Tier":"FRONT TIER","Headstock":"HS-D","Margin":2800,"Belfry":"Kettle Rise South Frame"},{"Bell":"OW-108","Name":"Treble of Kettle Rise","Tone":"TREBLE BELL","Tier":"FRONT TIER","Headstock":"HS-D","Margin":3000,"Belfry":"Kettle Rise South Frame"},{"Bell":"OW-109","Name":"UNNAMED BELL OW-109","Tone":"UNRECORDED TONE","Tier":"FRONT TIER","Headstock":"NO HEADSTOCK RECORDED","Margin":3200,"Belfry":"Kettle Rise South Frame"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,62 @@
+name: gilded-vineyard-6
+title: "Gilded Vineyard 6 — Association-Backed Join Reach across a Multi-Table Trail Store"
+description: |
+  A ridge trail-network maintenance model. One relational store declares five
+  independent tables in a single schema plus three named equi-joins, and one
+  mapping binds five flat domain classes to them: each class mapping declares an
+  explicit primary key and an aliased main table, and three of them reach a label
+  column across a single join hop. Three associations are implemented over the
+  same three joins, so the trailhead-to-segment, segment-to-shelter and
+  shelter-to-visit paths are traversable from either side. Five single-execution
+  services project the mapped classes with explicit result labels and no
+  predicate — one of them adding a year extraction over the visit date — and a
+  data space with an email support contact publishes the whole binding through a
+  single execution context.
+modelSources:
+  model:
+    root: gilded-vineyard-6
+    files:
+      - test/gildedvineyard6/connection/TrailWarehouseConnection.pure
+      - test/gildedvineyard6/dataspace/TrailDataSpace.pure
+      - test/gildedvineyard6/domain/TrailDomain.pure
+      - test/gildedvineyard6/mapping/TrailMapping.pure
+      - test/gildedvineyard6/profile/TrailProfile.pure
+      - test/gildedvineyard6/runtime/TrailRuntime.pure
+      - test/gildedvineyard6/service/PatrolLog.pure
+      - test/gildedvineyard6/service/RegionCatalog.pure
+      - test/gildedvineyard6/service/SegmentInventory.pure
+      - test/gildedvineyard6/service/ShelterRoster.pure
+      - test/gildedvineyard6/service/TrailheadDirectory.pure
+      - test/gildedvineyard6/store/TrailNetworkDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - data-space
+  - h2
+  - inner-join
+  - multi-table-store
+  - profile
+  - snowflake
+  - trail-network

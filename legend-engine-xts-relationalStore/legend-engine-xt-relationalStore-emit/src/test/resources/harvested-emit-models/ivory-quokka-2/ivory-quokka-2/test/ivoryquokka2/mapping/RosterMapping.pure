@@ -1,0 +1,192 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryquokka2::mapping::RosterMapping
+(
+  include mapping test::ivoryquokka2::mapping::ColonyBaseMapping
+
+  test::ivoryquokka2::domain::EnclosureTerrain: EnumerationMapping TerrainMapping
+  {
+    HEATH: ['H'],
+    WOODLAND: ['W'],
+    DUNE: ['D']
+  }
+
+  test::ivoryquokka2::domain::KeeperShiftKind: EnumerationMapping ShiftKindMapping
+  {
+    DAWN: ['A'],
+    MIDDAY: ['N'],
+    DUSK: ['U']
+  }
+
+  *test::ivoryquokka2::domain::KeeperVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryquokka2::store::SanctuaryRosterDb]roster.keeper_shift.shift_code
+    )
+    ~mainTable [test::ivoryquokka2::store::SanctuaryRosterDb]roster.keeper_shift
+    shiftCode: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.keeper_shift.shift_code,
+    keeperName: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.keeper_shift.keeper_name,
+    checksDone: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.keeper_shift.checks_done,
+    startedAt: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.keeper_shift.started_at,
+    shiftKind: EnumerationMapping ShiftKindMapping: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.keeper_shift.shift_kind_code,
+    enclosureTerrain: EnumerationMapping TerrainMapping: [test::ivoryquokka2::store::SanctuaryRosterDb]@Shift_Enclosure | [test::ivoryquokka2::store::SanctuaryRosterDb]sanctuary.enclosure_record.terrain_code
+  }
+
+  *test::ivoryquokka2::domain::EnclosureShiftTally[tally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.enclosure_code,
+      [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.keeper_name
+    )
+    ~mainTable [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw
+    enclosureCode: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.enclosure_code,
+    keeperName: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.keeper_name,
+    shiftTotal: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.shift_total,
+    mostChecks: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.most_checks,
+    fewestChecks: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.fewest_checks,
+    firstStartKey: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.first_start_key,
+    latestStartKey: [test::ivoryquokka2::store::SanctuaryRosterDb]roster.shift_tally_vw.latest_start_key
+  }
+
+  testSuites:
+  [
+    keeperRosterSuite:
+    {
+      function: |test::ivoryquokka2::domain::KeeperVisit.all()->project(
+  [
+    v|$v.shiftCode,
+    v|$v.keeperName,
+    v|$v.checksDone,
+    v|$v.shiftKind,
+    v|$v.enclosureTerrain
+  ],
+  [
+    'ShiftCode',
+    'KeeperName',
+    'ChecksDone',
+    'ShiftKind',
+    'EnclosureTerrain'
+  ]
+)->sort(
+  [
+    asc('ShiftCode')
+  ]
+);
+      tests:
+      [
+        shiftTerrainResolved:
+        {
+          doc: 'Reads the roster relation of the including store, resolves the shift part from its source code including a code no roster enumeration member claims, and resolves the enclosure terrain enumeration from a column reached across the single equality hop onto the enclosure relation of the included store.';
+          data:
+          [
+            test::ivoryquokka2::store::SanctuaryRosterDb:
+              Relational
+              #{
+                roster.keeper_shift:
+                  'shift_code,enclosure_code,keeper_name,shift_kind_code,checks_done,started_at\n'+
+                  'KS-01,EN-01,Rowan Deane,A,6,2031-04-02 05:30:00\n'+
+                  'KS-02,EN-02,Ines Faber,N,4,2031-04-02 11:15:00\n'+
+                  'KS-03,EN-03,Piet Larsen,U,3,2031-04-03 17:45:00\n'+
+                  'KS-04,EN-01,Ada Rowe,Q,5,2031-04-04 05:20:00\n';
+                sanctuary.enclosure_record:
+                  'enclosure_code,enclosure_name,terrain_code,canopy_pct\n'+
+                  'EN-01,Heath Run,H,35\n'+
+                  'EN-02,Peppermint Grove,W,72\n'+
+                  'EN-03,Foredune Walk,D,8\n';
+              }#
+          ];
+          asserts:
+          [
+            fourShiftsResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ShiftCode":"KS-01","KeeperName":"Rowan Deane","ChecksDone":6,"ShiftKind":"DAWN","EnclosureTerrain":"HEATH"},{"ShiftCode":"KS-02","KeeperName":"Ines Faber","ChecksDone":4,"ShiftKind":"MIDDAY","EnclosureTerrain":"WOODLAND"},{"ShiftCode":"KS-03","KeeperName":"Piet Larsen","ChecksDone":3,"ShiftKind":"DUSK","EnclosureTerrain":"DUNE"},{"ShiftCode":"KS-04","KeeperName":"Ada Rowe","ChecksDone":5,"ShiftKind":null,"EnclosureTerrain":"HEATH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    shiftTallySuite:
+    {
+      function: |test::ivoryquokka2::domain::EnclosureShiftTally.all()->project(
+  [
+    t|$t.enclosureCode,
+    t|$t.keeperName,
+    t|$t.shiftTotal,
+    t|$t.mostChecks,
+    t|$t.fewestChecks,
+    t|$t.firstStartKey,
+    t|$t.latestStartKey
+  ],
+  [
+    'EnclosureCode',
+    'KeeperName',
+    'ShiftTotal',
+    'MostChecks',
+    'FewestChecks',
+    'FirstStartKey',
+    'LatestStartKey'
+  ]
+)->sort(
+  [
+    asc('EnclosureCode'),
+    asc('KeeperName')
+  ]
+);
+      tests:
+      [
+        shiftsGroupedPerKeeperAndEnclosure:
+        {
+          doc: 'Reads the grouped roster tally view: shifts of the same keeper at the same enclosure collapse into one row carrying the shift count, the extreme check counts and the first and latest start days across a month end, while a keeper with a single shift keeps equal extremes.';
+          data:
+          [
+            test::ivoryquokka2::store::SanctuaryRosterDb:
+              Relational
+              #{
+                roster.keeper_shift:
+                  'shift_code,enclosure_code,keeper_name,shift_kind_code,checks_done,started_at\n'+
+                  'KS-11,EN-01,Rowan Deane,A,6,2031-04-29 05:30:00\n'+
+                  'KS-12,EN-01,Rowan Deane,U,2,2031-05-02 17:40:00\n'+
+                  'KS-13,EN-01,Rowan Deane,N,4,2031-04-30 11:05:00\n'+
+                  'KS-14,EN-02,Ines Faber,N,5,2031-05-01 11:15:00\n'+
+                  'KS-15,EN-01,Ada Rowe,A,3,2031-05-03 05:20:00\n';
+              }#
+          ];
+          asserts:
+          [
+            threeTallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"EnclosureCode":"EN-01","KeeperName":"Ada Rowe","ShiftTotal":1,"MostChecks":3,"FewestChecks":3,"FirstStartKey":20310503,"LatestStartKey":20310503},{"EnclosureCode":"EN-01","KeeperName":"Rowan Deane","ShiftTotal":3,"MostChecks":6,"FewestChecks":2,"FirstStartKey":20310429,"LatestStartKey":20310502},{"EnclosureCode":"EN-02","KeeperName":"Ines Faber","ShiftTotal":1,"MostChecks":5,"FewestChecks":5,"FirstStartKey":20310501,"LatestStartKey":20310501}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

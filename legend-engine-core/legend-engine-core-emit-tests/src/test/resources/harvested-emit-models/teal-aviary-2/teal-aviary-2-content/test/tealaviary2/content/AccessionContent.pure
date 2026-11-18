@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::tealaviary2::content::RelatedHolder
+{
+  holderRef: String[0..1];
+}
+
+Class test::tealaviary2::content::CollectorHolder extends test::tealaviary2::content::RelatedHolder
+{
+  collectorName: String[0..1];
+  fieldRegion: String[0..1];
+}
+
+Class test::tealaviary2::content::NurseryHolder extends test::tealaviary2::content::RelatedHolder
+{
+  nurseryName: String[0..1];
+  bedCount: Integer[0..1];
+}
+
+Class test::tealaviary2::content::AgentRef
+{
+  agentCode: String[0..1];
+}
+
+Class test::tealaviary2::content::DateMark
+{
+  markedOn: StrictDate[0..1];
+}
+
+Class test::tealaviary2::content::TraitTag
+{
+  tagLabel: String[0..1];
+}
+
+Class test::tealaviary2::content::TaxonTrait
+{
+  traitName: String[0..1];
+  tags: test::tealaviary2::content::TraitTag[*];
+}
+
+Class test::tealaviary2::content::AccessionContent
+{
+  docTitle: String[0..1];
+  sampledOn: StrictDate[0..1];
+  recordedDates: test::tealaviary2::content::DateMark[*];
+  agents: test::tealaviary2::content::AgentRef[*];
+  traits: test::tealaviary2::content::TaxonTrait[*];
+  primaryHolder: test::tealaviary2::content::RelatedHolder[0..1];
+  secondaryHolder: test::tealaviary2::content::RelatedHolder[0..1];
+}
+
+Class test::tealaviary2::content::GerminationContent extends test::tealaviary2::content::AccessionContent
+{
+  germinationPct: Integer[0..1];
+}
+
+Class test::tealaviary2::content::StorageContent extends test::tealaviary2::content::AccessionContent
+{
+  vaultShelf: String[0..1];
+}
+
+Class test::tealaviary2::content::CollectionContent extends test::tealaviary2::content::AccessionContent
+{
+  siteName: String[0..1];
+}
+
+Class test::tealaviary2::content::ViabilityContent extends test::tealaviary2::content::AccessionContent
+{
+  viabilityScore: Float[0..1];
+}
+
+Class test::tealaviary2::content::ExchangeContent extends test::tealaviary2::content::AccessionContent
+{
+  partnerCode: String[0..1];
+}
+
+Class test::tealaviary2::content::ImagingContent extends test::tealaviary2::content::AccessionContent
+{
+  imageCount: Integer[0..1];
+}

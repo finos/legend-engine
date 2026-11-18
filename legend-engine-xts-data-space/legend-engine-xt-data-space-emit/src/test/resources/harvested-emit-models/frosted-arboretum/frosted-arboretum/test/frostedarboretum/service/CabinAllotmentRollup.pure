@@ -1,0 +1,200 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedarboretum::service::CabinAllotmentRollup
+{
+  pattern: '/frostedarboretum/v1/cabin-allotment-rollup/{environment}/{asOfDate}/{stationCode}/{haulKind}';
+  title: 'Frosted Arboretum - Cabin Allotment Rollout';
+  ownership: UserList { users: ['cableway-operations-desk'] };
+  documentation: 'Rolls the seasonal cabin allotments of one cableway station up to a class total as of a single business date. The allotment extent is business-temporal, so the requested date resolves one validity window per read and an allotment whose window has already closed is not counted; the winter season filter lives in the store below the query, so a summer allotment never reaches the predicate. The predicate itself is a four-operand conjunction: two request parameters, a column-to-column comparison that holds only where the cabin runs the zone it was planned for, and a literal state test. The surviving rows are grouped by the station reached over the reference join and the cabin class, both measures are summed, and two extended columns are appended over the grouped table. The same query and mapping are planned under two keyed environments differing only in runtime and connection.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {asOfDate: StrictDate[1], stationCode: String[1], haulKind: String[1]|test::frostedarboretum::domain::CabinAllotment.all($asOfDate)->filter(
+      a|($a.stationCode == $stationCode) && (($a.serviceZone == $a.plannedZone) && (($a.haulKind == $haulKind) && ($a.allotState == 'ACTIVE')))
+    )->groupBy(
+      [
+        a|$a.stationName,
+        a|$a.cabinClass
+      ],
+      [
+        agg(a|$a.seatCount, y|$y->sum()),
+        agg(a|$a.cableLengthM, y|$y->sum())
+      ],
+      [
+        'Station',
+        'CabinClass',
+        'TotalSeats',
+        'TotalCableM'
+      ]
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getString('Station') + ' / ' + $r.getString('CabinClass'),
+        'Lift'
+      )
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getInteger('TotalSeats') * 2,
+        'SeatMoves'
+      )
+    )->sort(
+      [
+        asc('CabinClass')
+      ]
+    )};
+    key: 'environment';
+    executions['winter']:
+    {
+      mapping: test::frostedarboretum::mapping::CablewayMapping;
+      runtime: test::frostedarboretum::runtime::CablewayWinterRuntime;
+    }
+    executions['shoulder']:
+    {
+      mapping: test::frostedarboretum::mapping::CablewayMapping;
+      runtime: test::frostedarboretum::runtime::CablewayShoulderRuntime;
+    }
+  }
+  testSuites:
+  [
+    winterEnvironmentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cablewayWinter:
+            Relational
+            #{
+              cableway.cabin_allotment:
+                'allot_id,cabin_code,station_code,cabin_class,planned_zone,service_zone,haul_kind,allot_state,season_code,seat_count,cable_length_m,bus_from,bus_thru\n'+
+                '1,CB-1,ST-1,SIX_SEAT,Z-1,Z-1,PASSENGER,ACTIVE,WINTER,6,1200,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '2,CB-2,ST-1,SIX_SEAT,Z-1,Z-1,PASSENGER,ACTIVE,WINTER,6,1300,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '3,CB-3,ST-1,EIGHT_SEAT,Z-2,Z-2,PASSENGER,ACTIVE,WINTER,8,1500,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '4,CB-4,ST-1,SIX_SEAT,Z-1,Z-3,PASSENGER,ACTIVE,WINTER,6,1000,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '5,CB-5,ST-1,SIX_SEAT,Z-1,Z-1,FREIGHT,ACTIVE,WINTER,6,1100,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '6,CB-6,ST-1,SIX_SEAT,Z-1,Z-1,PASSENGER,RETIRED,WINTER,6,900,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '7,CB-7,ST-2,SIX_SEAT,Z-1,Z-1,PASSENGER,ACTIVE,WINTER,6,800,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '8,CB-8,ST-1,SIX_SEAT,Z-1,Z-1,PASSENGER,ACTIVE,SUMMER,6,700,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '9,CB-9,ST-1,SIX_SEAT,Z-1,Z-1,PASSENGER,ACTIVE,WINTER,6,600,2025-01-01 00:00:00.000,2025-06-01 00:00:00.000\n';
+
+              cableway.station_ref:
+                'station_code,station_name,staffed_flag\n'+
+                'ST-1,Alpine Base,Y\n'+
+                'ST-2,Ridge Top,N\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        winterKeyTwoClassTotals:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['winter'];
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            stationCode = 'ST-1',
+            haulKind = 'PASSENGER'
+          ]
+          asserts:
+          [
+            twoClassTotalsForTheStaffedBase:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"Alpine Base","CabinClass":"EIGHT_SEAT","TotalSeats":8,"TotalCableM":1500,"Lift":"Alpine Base / EIGHT_SEAT","SeatMoves":16},{"Station":"Alpine Base","CabinClass":"SIX_SEAT","TotalSeats":12,"TotalCableM":2500,"Lift":"Alpine Base / SIX_SEAT","SeatMoves":24}]';
+                  }#;
+              }#
+          ]
+        },
+        winterKeyStationWithNoQualifyingCabins:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['winter'];
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            stationCode = 'ST-3',
+            haulKind = 'PASSENGER'
+          ]
+          asserts:
+          [
+            noRowsForAnUnallottedStation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    shoulderEnvironmentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cablewayShoulder:
+            Relational
+            #{
+              cableway.cabin_allotment:
+                'allot_id,cabin_code,station_code,cabin_class,planned_zone,service_zone,haul_kind,allot_state,season_code,seat_count,cable_length_m,bus_from,bus_thru\n'+
+                '11,CB-11,ST-1,EIGHT_SEAT,Z-2,Z-2,PASSENGER,ACTIVE,WINTER,8,1400,2026-02-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '12,CB-12,ST-1,EIGHT_SEAT,Z-2,Z-2,PASSENGER,ACTIVE,WINTER,8,1450,2024-01-01 00:00:00.000,2025-03-01 00:00:00.000\n';
+
+              cableway.station_ref:
+                'station_code,station_name,staffed_flag\n'+
+                'ST-1,Alpine Base,Y\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        shoulderKeySingleClassTotal:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['shoulder'];
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            stationCode = 'ST-1',
+            haulKind = 'PASSENGER'
+          ]
+          asserts:
+          [
+            oneClassTotalUnderTheShoulderRuntime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"Alpine Base","CabinClass":"EIGHT_SEAT","TotalSeats":8,"TotalCableM":1400,"Lift":"Alpine Base / EIGHT_SEAT","SeatMoves":16}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

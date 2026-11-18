@@ -1,0 +1,27 @@
+name: sunlit-wharf
+title: "Sunlit Wharf - Store-less business-temporal harbour register with milestoned associations"
+description: |
+  A store-less Pure domain for a working harbour's shoreline-survey register.
+  Business-temporal classes are navigated through associations whose both ends
+  are milestoned, and every survey observation is typed against a closed
+  enumeration rather than free text.
+modelSources:
+  model:
+    root: sunlit-wharf
+    files:
+      - test/sunlitwharf/domain/HarbourDomain.pure
+      - test/sunlitwharf/domain/HarbourEnums.pure
+features:
+  - grammar:association
+  - grammar:enumeration
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - business-temporal
+  - enumeration
+  - harbour-survey
+  - milestoned-association
+  - model-only
+  - optional-association-end

@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::opalreef2::connection::ReefH2Connection
+{
+  store: test::opalreef2::store::ReefSurveyDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists tidepool;',
+      'create schema tidepool;',
+      'create table tidepool.pool (pool_id integer primary key, pool_code varchar(16) not null, shore_zone varchar(32) not null, exposure_class varchar(32) not null);',
+      'create table tidepool.census (census_id integer primary key, census_code varchar(16) not null, species_name varchar(64) not null, tally_n integer not null, survey_on date not null, surveyor_name varchar(32) not null, method_c varchar(32) not null, pool_id integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

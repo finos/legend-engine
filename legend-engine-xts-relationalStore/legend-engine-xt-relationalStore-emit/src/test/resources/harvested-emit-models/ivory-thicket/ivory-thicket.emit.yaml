@@ -1,0 +1,53 @@
+name: ivory-thicket
+title: "Cycle-Share Fleet Lattice — Constrained Business-Temporal Frames, Selectors and an Eight-Arm Wear Band"
+description: |
+  A municipal cycle-share fleet whose business-temporal frame root carries four
+  constraints, parameterised selector properties over its inspections, collection
+  operation derived properties, subtype-cast accessors into its cargo body and a
+  coalescing provisional label, all inherited by a three-level subtype chain, widened
+  by three associations and annotated through a profile and two enumerations. A single
+  fleet table maps the root and derives a street wear band through an eight-arm nested
+  conditional whose default and absent-index fallback are covered by a point-in-time
+  mapping test that also drops a frame whose business window closed earlier.
+modelSources:
+  model:
+    root: ivory-thicket
+    files:
+      - test/ivorythicket/domain/CycleEnums.pure
+      - test/ivorythicket/domain/CycleProfile.pure
+      - test/ivorythicket/domain/CycleRecord.pure
+      - test/ivorythicket/domain/Inspection.pure
+      - test/ivorythicket/mapping/CycleMapping.pure
+      - test/ivorythicket/store/CycleDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:relational-conditional-transform
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - conditional-transform
+  - constraint
+  - h2
+  - inheritance
+  - mapping-test
+  - qualified-property
+  - subtype-cast
+  - urban-mobility

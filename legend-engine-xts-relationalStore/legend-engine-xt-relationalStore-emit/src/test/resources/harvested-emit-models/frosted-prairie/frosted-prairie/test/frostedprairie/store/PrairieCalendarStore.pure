@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedprairie::store::PrairieCalendarStore
+(
+  Schema phenology
+  (
+    Table prairie_day
+    (
+      day_id INTEGER PRIMARY KEY,
+      grain_code VARCHAR(12) NOT NULL,
+      season_year INTEGER NOT NULL,
+      week_ordinal INTEGER NOT NULL,
+      month_ordinal INTEGER NOT NULL,
+      quarter_ordinal INTEGER NOT NULL,
+      day_of_season INTEGER NOT NULL,
+      calendar_date DATE,
+      season_window_start DATE,
+      season_window_end DATE,
+      burn_regime_code VARCHAR(8),
+      burn_intensity_code INTEGER,
+      burn_window_start DATE,
+      burn_window_end DATE,
+      planned_burn_days INTEGER,
+      burn_crew_code VARCHAR(12),
+      burn_crew_name VARCHAR(120),
+      rotation_code VARCHAR(8),
+      graze_window_start DATE,
+      graze_window_end DATE,
+      water_table_cm INTEGER,
+      hydrology_note VARCHAR(200),
+      pollinator_count INTEGER,
+      bloom_index DECIMAL(9, 2),
+      survey_note VARCHAR(200),
+      survey_window_start DATE,
+      survey_window_end DATE
+    )
+  )
+
+  Filter FinestGrainFilter(phenology.prairie_day.grain_code = 'DAY')
+)

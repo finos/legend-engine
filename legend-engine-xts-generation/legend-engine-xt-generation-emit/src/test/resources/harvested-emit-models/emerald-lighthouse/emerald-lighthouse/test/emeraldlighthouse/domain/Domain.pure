@@ -1,0 +1,181 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.projection', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '4', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'north-watch-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'periodKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedPeriodDate', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.projection'} test::emeraldlighthouse::domain::PeriodProjection
+{
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'organisational unit the projection belongs to'} stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} periodKind: test::emeraldlighthouse::enumeration::PeriodKind[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'period start encoded as YYYYMMDD'} encodedPeriodDate: Integer[1];
+  projectedLampHours: Float[1];
+  projectedVisibilityNm: Float[1];
+  provisional: Boolean[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.projection', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '4', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'north-watch-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'false', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'periodKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedPeriodDate', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'measureType', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.projection'} test::emeraldlighthouse::domain::ProjectionDifference
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  periodKind: test::emeraldlighthouse::enumeration::PeriodKind[1];
+  encodedPeriodDate: Integer[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} measureType: test::emeraldlighthouse::enumeration::MeasureType[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'signed difference, may be zero or negative'} differenceAmount: Float[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} differenceNote: String[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.target', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '2', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'network-planning-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'measureType', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedEffectiveDate', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.target'} test::emeraldlighthouse::domain::StationTarget
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  measureType: test::emeraldlighthouse::enumeration::MeasureType[1];
+  targetAmount: Float[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'effective date encoded as YYYYMMDD'} encodedEffectiveDate: Integer[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.target', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '2', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'network-planning-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader,survey-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'false', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'measureType', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} test::emeraldlighthouse::domain::StationMinimum
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  measureType: test::emeraldlighthouse::enumeration::MeasureType[1];
+  minimumAmount: Float[1];
+  enforced: Boolean[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.adjustment', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '4', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'duty-supervisor-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'false', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'adjustmentKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedAdjustmentDate', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'agentKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'approvalState', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'adjustmentAmount', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.adjustment'} test::emeraldlighthouse::domain::ProjectionAdjustment
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'only one adjustment kind exists today'} adjustmentKind: test::emeraldlighthouse::enumeration::AdjustmentKind[1];
+  encodedAdjustmentDate: Integer[1];
+  adjustmentAmount: Float[1];
+  agentKind: test::emeraldlighthouse::enumeration::AgentKind[1];
+  approvalState: test::emeraldlighthouse::enumeration::ApprovalState[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.threshold', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '2', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'network-planning-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'bufferCategory', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'sizingTag', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.threshold'} test::emeraldlighthouse::domain::ThresholdSetting
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  bufferCategory: test::emeraldlighthouse::enumeration::BufferCategory[1];
+  thresholdAmount: Float[1];
+  sizingTag: test::emeraldlighthouse::enumeration::SizingTag[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.breach', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '3', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'compliance-watch-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'breachReference', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.breach'} test::emeraldlighthouse::domain::BreachRecord
+{
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'opaque breach reference'} breachReference: String[1];
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  encodedBreachDate: Integer[1];
+  breachAmount: Float[1];
+  acknowledged: Boolean[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.stock', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '3', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'depot-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'bufferCategory', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'unitOfMeasure', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.stock'} test::emeraldlighthouse::domain::CategorisedStock
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  bufferCategory: test::emeraldlighthouse::enumeration::BufferCategory[1];
+  unitOfMeasure: test::emeraldlighthouse::enumeration::UnitOfMeasure[1];
+  stockQuantity: Float[1];
+  countedItems: Integer[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.tally', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '2', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'depot-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedTallyDate', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'unitOfMeasure', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.tally'} test::emeraldlighthouse::domain::OpeningTally
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'tally date encoded as an integer, not validated'} encodedTallyDate: Integer[1];
+  openingQuantity: Float[1];
+  unitOfMeasure: test::emeraldlighthouse::enumeration::UnitOfMeasure[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.resupply', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '4', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'depot-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader,survey-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'requestKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'direction', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'sizingTag', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedRaisedDate', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.resupply'} test::emeraldlighthouse::domain::ResupplyRecommendation
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  requestKind: test::emeraldlighthouse::enumeration::RequestKind[1];
+  direction: test::emeraldlighthouse::enumeration::Direction[1];
+  recommendedQuantity: Float[1];
+  encodedRaisedDate: Integer[1];
+  sizingTag: test::emeraldlighthouse::enumeration::SizingTag[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.workflow', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '4', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'duty-supervisor-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader,survey-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'false', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'workflowReference', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stepNumber', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.workflow'} test::emeraldlighthouse::domain::WorkflowRecord
+{
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} workflowReference: String[1];
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  approvalState: test::emeraldlighthouse::enumeration::ApprovalState[1];
+  agentKind: test::emeraldlighthouse::enumeration::AgentKind[1];
+  stepNumber: Integer[1];
+  completed: Boolean[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.lamphour', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '3', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'north-watch-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'false', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'beaconKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedPeriodDate', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'periodKind', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.lamphour'} test::emeraldlighthouse::domain::LampHourProjection
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  beaconKind: test::emeraldlighthouse::enumeration::BeaconKind[1];
+  encodedPeriodDate: Integer[1];
+  projectedHours: Float[1];
+  periodKind: test::emeraldlighthouse::enumeration::PeriodKind[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.reserveband', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '3', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'depot-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'bufferCategory', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'bandLabel', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.reserveband'} test::emeraldlighthouse::domain::SupplyReserveBand
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  bufferCategory: test::emeraldlighthouse::enumeration::BufferCategory[1];
+  bandFloorQuantity: Float[1];
+  bandCeilingQuantity: Float[1];
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} bandLabel: String[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.visibility', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '4', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'survey-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'false', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'measureType', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'unitOfMeasure', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedObservedDate', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.visibility'} test::emeraldlighthouse::domain::VisibilityMeasure
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  measureType: test::emeraldlighthouse::enumeration::MeasureType[1];
+  unitOfMeasure: test::emeraldlighthouse::enumeration::UnitOfMeasure[1];
+  observedValue: Float[1];
+  encodedObservedDate: Integer[1];
+  degraded: Boolean[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.patrol', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '3', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'duty-supervisor-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'patrolReference', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'agentKind', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.patrol'} test::emeraldlighthouse::domain::PatrolAssignment
+{
+  patrolReference: String[1];
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  agentKind: test::emeraldlighthouse::enumeration::AgentKind[1];
+  direction: test::emeraldlighthouse::enumeration::Direction[1];
+  encodedAssignedDate: Integer[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.maintenance', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '3', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'engineering-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'beaconKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'referenceKind', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.maintenance'} test::emeraldlighthouse::domain::MaintenanceThreshold
+{
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  beaconKind: test::emeraldlighthouse::enumeration::BeaconKind[1];
+  referenceKind: test::emeraldlighthouse::enumeration::ReferenceKind[1];
+  thresholdHours: Integer[1];
+  thresholdAmount: Float[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.roster', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '4', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'duty-supervisor-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'rosterReference', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'encodedRosterDate', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} test::emeraldlighthouse::domain::KeeperRoster
+{
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = ''} rosterReference: String[1];
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  agentKind: test::emeraldlighthouse::enumeration::AgentKind[1];
+  shiftCount: Integer[1];
+  encodedRosterDate: Integer[1];
+  published: Boolean[1];
+}
+
+Class {test::emeraldlighthouse::profile::TransportProfile.'transport.topic' = 'beacon.outage', test::emeraldlighthouse::profile::TransportProfile.'transport.partitions' = '5', test::emeraldlighthouse::profile::TransportProfile.'transport.owner' = 'engineering-desk', test::emeraldlighthouse::profile::TransportProfile.'transport.consumers' = 'network-report-reader,depot-reader,survey-reader', test::emeraldlighthouse::profile::TransportProfile.'transport.retained' = 'true', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'outageReference', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'stationUnit', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'beaconKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'referenceKind', test::emeraldlighthouse::profile::TransportProfile.'transport.key' = 'outageMinutes', test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'record of beacon.outage'} test::emeraldlighthouse::domain::SignalOutageRecord
+{
+  {test::emeraldlighthouse::profile::TransportProfile.'transport.doc' = 'reference issued by the duty log'} outageReference: String[1];
+  stationUnit: test::emeraldlighthouse::enumeration::StationUnit[1];
+  beaconKind: test::emeraldlighthouse::enumeration::BeaconKind[1];
+  referenceKind: test::emeraldlighthouse::enumeration::ReferenceKind[1];
+  outageMinutes: Integer[1];
+  outageAmount: Float[1];
+  resolved: Boolean[1];
+}

@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::easternquarry5::profile::*;
+
+Profile test::easternquarry5::profile::RefugePrivacyProfile
+{
+  stereotypes: [openRecord, wardenOnly];
+}
+
+Profile test::easternquarry5::profile::RefugeProductProfile
+{
+  stereotypes: [catalogued];
+  tags: [steward, refreshCadence];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A nightly bed-count log of one high-altitude mountain refuge; every correction is a new processing version.'} test::easternquarry5::domain::RefugeOccupancy
+{
+  {doc.doc = 'Identifier of the log entry, stable across processing versions.'} logCode: String[1];
+  {doc.doc = 'Identifier of the refuge.'} refugeCode: String[1];
+  {doc.doc = 'Night the bed count refers to.'} nightOf: StrictDate[0..1];
+  {doc.doc = 'Bunks occupied that night.'} bunksOccupied: Float[0..1];
+  {doc.doc = 'Bunks left free that night.'} bunksFree: Float[0..1];
+  {doc.doc = 'Mean length of stay of the guests in nights.'} meanStayNights: Float[0..1];
+  {doc.doc = 'Instant the warden filed the entry.'} recordedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A warden note on the state of one approach trail.'} test::easternquarry5::domain::TrailConditionNote
+{
+  {doc.doc = 'Identifier of the note, stable across processing versions.'} noteCode: String[1];
+  {doc.doc = 'Identifier of the approach trail.'} trailCode: String[1];
+  {doc.doc = 'Free-text surface state observed on the trail.'} surfaceState: String[0..1];
+  {doc.doc = 'Snow depth on the trail in centimetres.'} snowDepthCm: Float[0..1];
+  {doc.doc = 'Share of the trail covered by ice.'} iceCoverPct: Float[0..1];
+  {doc.doc = 'Day the trail was walked.'} observedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the warden filed the note.'} recordedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A hand-dug snowpack profile taken near a refuge; its table keeps no version columns.'} test::easternquarry5::domain::SnowpackProfile
+{
+  {doc.doc = 'Identifier of the snowpack profile.'} profileCode: String[1];
+  {doc.doc = 'Compass aspect of the slope the pit was dug on.'} slopeAspect: String[0..1];
+  {doc.doc = 'Number of distinct snow layers in the pit.'} layerCount: Float[0..1];
+  {doc.doc = 'Bulk snow density in kilograms per cubic metre.'} densityKgM3: Float[0..1];
+  {doc.doc = 'Depth of the pit in centimetres.'} pitDepthCm: Float[0..1];
+  {doc.doc = 'Day the pit was dug.'} takenOn: StrictDate[0..1];
+  {doc.doc = 'Instant the profile was filed.'} recordedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A flow and temperature reading of the spring feeding a refuge.'} test::easternquarry5::domain::SpringFlowReading
+{
+  {doc.doc = 'Identifier of the reading, stable across processing versions.'} readingCode: String[1];
+  {doc.doc = 'Identifier of the spring.'} springCode: String[1];
+  {doc.doc = 'Spring flow in litres per minute.'} flowLitresMin: Float[0..1];
+  {doc.doc = 'Spring water temperature in degrees Celsius.'} waterTempC: Float[0..1];
+  {doc.doc = 'Optical turbidity of the spring water.'} turbidityNtu: Float[0..1];
+  {doc.doc = 'Day the spring was sampled.'} sampledOn: StrictDate[0..1];
+  {doc.doc = 'Instant the reading was filed.'} recordedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A log of one helicopter supply drop to a refuge.'} test::easternquarry5::domain::SupplyDropLog
+{
+  {doc.doc = 'Identifier of the drop, stable across processing versions.'} dropCode: String[1];
+  {doc.doc = 'Identifier of the refuge supplied.'} refugeCode: String[1];
+  {doc.doc = 'Number of crates set down.'} cratesDelivered: Float[0..1];
+  {doc.doc = 'Total payload in kilograms.'} payloadKg: Float[0..1];
+  {doc.doc = 'Rotor running time for the drop in minutes.'} rotorMinutes: Float[0..1];
+  {doc.doc = 'Day of the drop.'} droppedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the drop log was filed.'} recordedAt: DateTime[0..1];
+}

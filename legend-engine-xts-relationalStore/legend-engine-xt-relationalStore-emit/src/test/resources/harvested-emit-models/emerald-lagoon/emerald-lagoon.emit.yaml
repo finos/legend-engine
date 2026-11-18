@@ -1,0 +1,48 @@
+name: emerald-lagoon
+title: "Emerald Lagoon Registers — Two Single-Execution Services Over A Windowed Four-Operand Predicate"
+description: |
+  A lagoon monitoring model exposing two single-execution services over one relational store,
+  each restricting its own relation with the same four-operand predicate: an equality on the
+  zone requested by the caller, an equality on the recorded status, a lower bound derived by
+  offsetting the requested date back by a fixed number of days, and an upper bound taken from
+  the day the register is read, so a row recorded ahead of that day never qualifies. Each
+  service projects a derived column computed from measured columns alongside the raw ones and
+  the age of the record counted from the requested date, then de-duplicates and orders the
+  result. Both services carry test suites pinning a call that returns exactly one row and a
+  call whose zone qualifies nothing, so the empty result is asserted rather than assumed.
+modelSources:
+  model:
+    root: emerald-lagoon
+    files:
+      - test/emeraldlagoon/connection/LagoonH2Connection.pure
+      - test/emeraldlagoon/domain/LagoonDomain.pure
+      - test/emeraldlagoon/mapping/LagoonMapping.pure
+      - test/emeraldlagoon/runtime/LagoonH2Runtime.pure
+      - test/emeraldlagoon/service/InflowRegisterService.pure
+      - test/emeraldlagoon/service/PatchRegisterService.pure
+      - test/emeraldlagoon/store/LagoonDatabase.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - date-arithmetic
+  - derived-column
+  - empty-result
+  - h2
+  - h2-runtime
+  - lagoon-survey
+  - plan-generation
+  - service-test
+  - windowed-predicate

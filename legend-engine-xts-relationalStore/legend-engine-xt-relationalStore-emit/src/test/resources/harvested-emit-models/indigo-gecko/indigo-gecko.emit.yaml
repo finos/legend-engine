@@ -1,0 +1,76 @@
+name: indigo-gecko
+title: "Indigo Gecko — Store-Side Derivation And Association Merit Over A Two-Schema Vivarium Register"
+description: |
+  A vivarium occupancy register whose reported values are decided almost
+  entirely by the mapping layer: a handling band and a care note are derived
+  through nested conditionals pushed into the store, a constant registry tag is
+  folded in as a literal, and measurement detail is assembled from columns of
+  the register row itself rather than through its own root mapping, so it
+  travels inside the parent instance. Two vocabularies are translated by
+  enumeration mappings driven by expressions, and a source value outside the
+  mapped set resolves to nothing rather than passing through. Enclosures and
+  keepers live in a second schema, so every merit crosses a schema boundary
+  through a named join, and the merit join narrows on the keeper shift as well
+  as on the code, which leaves a keeper named by register rows merited with
+  nothing. A retired enclosure is withheld by a store filter, and per-enclosure
+  occupancy totals resolve through a grouped inline view reached by a join path,
+  so those columns come from a derived table. Mapping tests read the graph
+  rather than a tabular projection and pin every conditional arm, the fallback
+  neither arm claims, both unmapped vocabulary values, the filtered enclosure
+  and the unmerited animal.
+
+modelSources:
+  model:
+    root: indigo-gecko
+    files:
+      - test/indigogecko/connection/GeckoConnections.pure
+      - test/indigogecko/data/GeckoTestData.pure
+      - test/indigogecko/domain/GeckoDomain.pure
+      - test/indigogecko/mapping/GeckoEnumMappings.pure
+      - test/indigogecko/mapping/GeckoMapping.pure
+      - test/indigogecko/runtime/GeckoRuntimes.pure
+      - test/indigogecko/store/GeckoDb.pure
+
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-merit
+  - conditional-transform
+  - embedded-property
+  - enumeration-mapping
+  - graph-fetch
+  - inline-view
+  - literal-property
+  - store-filter
+  - vivarium-register

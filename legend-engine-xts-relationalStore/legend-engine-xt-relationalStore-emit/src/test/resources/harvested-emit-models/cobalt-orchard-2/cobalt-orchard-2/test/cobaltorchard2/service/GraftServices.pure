@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltorchard2::service::GraftsSinceSeasonStart
+{
+  pattern: '/orchard/v1/grafts-since-season';
+  title: 'Grafts Since Season Start';
+  owners:
+  [
+    'orchard-nursery-desk',
+    'orchard-stewards'
+  ];
+  documentation: 'Counts graft records recorded on or after a cutoff derived from the evaluation date by subtracting the graft season window, grouped by rootstock and graft status, published against the production and rehearsal estates.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: |test::cobaltorchard2::domain::GraftRecord.all()->filter(
+      g|$g.recordedAt->toOne() >= test::cobaltorchard2::function::graftSeasonCutoff()
+    )->groupBy(
+      [
+        g|$g.rootstockCode,
+        g|$g.graftStatus
+      ],
+      [
+        agg(g|$g.graftId, y|$y->count())
+      ],
+      [
+        'Rootstock',
+        'Status',
+        'GraftCount'
+      ]
+    )->sort(
+      [
+        asc('Rootstock'),
+        asc('Status')
+      ]
+    );
+    key: 'estate';
+    executions['production']:
+    {
+      mapping: test::cobaltorchard2::mapping::GraftMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardProductionRuntime;
+    }
+    executions['rehearsal']:
+    {
+      mapping: test::cobaltorchard2::mapping::GraftMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardRehearsalRuntime;
+    }
+  }
+}
+
+Service test::cobaltorchard2::service::GraftsRecordedToday
+{
+  pattern: '/orchard/v1/grafts-today';
+  title: 'Grafts Recorded Today';
+  owners:
+  [
+    'orchard-nursery-desk',
+    'orchard-stewards'
+  ];
+  documentation: 'Counts graft records whose timestamp sits between the start of the evaluation date and the evaluation instant, grouped by rootstock and graft status, so a rootstock worked on earlier in the season contributes nothing to the answer.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {currentDateTime: DateTime[1], currentDate: StrictDate[1]|test::cobaltorchard2::domain::GraftRecord.all()->filter(
+      g|($g.recordedAt->toOne() <= $currentDateTime) && ($g.recordedAt->toOne() >= $currentDate)
+    )->groupBy(
+      [
+        g|$g.rootstockCode,
+        g|$g.graftStatus
+      ],
+      [
+        agg(g|$g.graftId, y|$y->count())
+      ],
+      [
+        'Rootstock',
+        'Status',
+        'GraftCount'
+      ]
+    )->sort(
+      [
+        asc('Rootstock'),
+        asc('Status')
+      ]
+    )};
+    key: 'estate';
+    executions['production']:
+    {
+      mapping: test::cobaltorchard2::mapping::GraftMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardProductionRuntime;
+    }
+    executions['rehearsal']:
+    {
+      mapping: test::cobaltorchard2::mapping::GraftMapping;
+      runtime: test::cobaltorchard2::runtime::OrchardRehearsalRuntime;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonquokka5::mapping::CoastalMapping
+(
+  test::crimsonquokka5::domain::QuokkaObservation: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation.observation_code
+    )
+    ~mainTable [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation
+    observationCode: [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation.observation_code,
+    habitatCode: [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation.habitat_code,
+    coveName: [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation.cove_name,
+    wingSpanCm: [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation.wing_span_cm,
+    spottedOn: [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation.spotted_on,
+    fieldNote: [test::crimsonquokka5::store::CoastalSurveyDB]coastal.quokka_observation.field_note
+  }
+)

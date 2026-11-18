@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::goldenridge2::service::DuplicateFindings
+{
+  pattern: '/goldenridge/v1/duplicates/{vouchers}';
+  title: 'Duplicate Voucher Findings';
+  owners:
+  [
+    'herbarium-curation',
+    'ridge-field-survey'
+  ];
+  documentation: 'Returns the duplicate-detection verdict of every requested voucher alongside the field observer who logged it, correlating the herbarium duplicate view with the field station store through the cross-store association.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {vouchers: String[*]|demo::goldenridge2::domain::FieldLog.all()->filter(
+      l|$l.voucherCode->in($vouchers)
+    )->graphFetch(
+      #{
+        demo::goldenridge2::domain::FieldLog{
+          logCode,
+          voucherCode,
+          observerName,
+          stationName,
+          duplicateFinding{
+            voucherCode,
+            sheetCount,
+            duplicateVerdict
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        demo::goldenridge2::domain::FieldLog{
+          logCode,
+          voucherCode,
+          observerName,
+          stationName,
+          duplicateFinding{
+            voucherCode,
+            sheetCount,
+            duplicateVerdict
+          }
+        }
+      }#
+    )};
+    mapping: demo::goldenridge2::mapping::RidgeCrossMapping;
+    runtime: demo::goldenridge2::runtime::RidgeCurationRuntime;
+  }
+  testSuites:
+  [
+    duplicateFindingsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herbariumConnection:
+            Relational
+            #{
+              herbarium.sheet_record:
+                'sheet_id,voucher_code,taxon_code,collector_code,mount_count,vigour_score,handling_code,valid_from,valid_thru\n'+
+                'S01,V01,T1,C1,1,5,,2026-01-01,9999-12-31\n'+
+                'S11,V01,T1,C1,3,8,,2026-01-01,9999-12-31\n'+
+                'S02,V02,T1,C1,1,15,,2026-01-01,9999-12-31\n'+
+                'S03,V03,T2,C2,2,25,,2026-01-01,9999-12-31\n';
+            }#,
+          stationConnection:
+            Relational
+            #{
+              station.station_ref:
+                'station_code,station_name\n'+
+                'ST1,Upper Ridge Hut\n'+
+                'ST2,Lower Ridge Hut\n';
+
+              station.field_log:
+                'log_code,voucher_code,station_code,observer_name,tally\n'+
+                'L01,V01,ST1,Rowan Ash,2\n'+
+                'L02,V02,ST2,Iona Reed,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        requestedVouchersOnly:
+        {
+          parameters:
+          [
+            vouchers = ['V01', 'V02']
+          ]
+          asserts:
+          [
+            duplicateAndSingleton:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"logCode":"L01","voucherCode":"V01","observerName":"Rowan Ash","stationName":"Upper Ridge Hut","duplicateFinding":{"voucherCode":"V01","sheetCount":2,"duplicateVerdict":"DUPLICATE"}},{"logCode":"L02","voucherCode":"V02","observerName":"Iona Reed","stationName":"Lower Ridge Hut","duplicateFinding":{"voucherCode":"V02","sheetCount":1,"duplicateVerdict":"SINGLETON"}}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

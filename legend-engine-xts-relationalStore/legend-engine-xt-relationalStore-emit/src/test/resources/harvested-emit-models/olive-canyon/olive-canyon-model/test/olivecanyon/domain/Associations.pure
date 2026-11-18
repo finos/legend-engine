@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::olivecanyon::domain::*;
+
+Association test::olivecanyon::domain::District_PublicSpace
+{
+  district: District[1];
+  spaces: PublicSpace[*];
+}
+
+Association test::olivecanyon::domain::District_Steward
+{
+  homeDistrict: District[1];
+  stewards: Steward[*];
+}
+
+Association test::olivecanyon::domain::Park_TrailSegment
+{
+  park: Park[1];
+  trailSegments: TrailSegment[*];
+}
+
+Association test::olivecanyon::domain::TrailSegment_Bench
+{
+  segment: TrailSegment[0..1];
+  benches: Bench[*];
+}
+
+Association test::olivecanyon::domain::Steward_Park
+{
+  steward: Steward[0..1];
+  stewardedParks: Park[*];
+}
+
+Association test::olivecanyon::domain::PublicSpace_MaintenanceLog
+{
+  space: PublicSpace[1];
+  maintenanceLogs: MaintenanceLog[*];
+}

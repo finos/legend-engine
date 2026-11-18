@@ -1,0 +1,68 @@
+name: ivory-hatchery
+title: "Ivory Hatchery — Egg Lot Register (banded conditional transforms, four-hop reference reach, embedded and inline-embedded tray detail)"
+description: |
+  A quail hatchery register whose egg lots are described almost entirely by
+  derivation: a lot code is stitched from its identifier, a growth band is chosen
+  by an eight-armed conditional over a single band letter with a null sentinel on
+  the ninth arm, and string, arithmetic and null-coalescing transforms supply the
+  roster tag, the trimmed stem, the name length and the note fallback. Three
+  enumerated properties are decoded from computed expressions rather than bare
+  columns — clutch vigour from a remapped code joined to the upper-cased ration,
+  the ration itself, and the tray fit band from a suffixed size code — so a source
+  value the enumeration mapping does not know arrives undecoded. Reference data is
+  reached across a second schema through a four-hop chain of grade, setter
+  cabinet, brooder barn and growing region, with an embedded tray stamp and an
+  inline-embedded tally hanging off the same main table. The fixture carries one
+  row per conditional arm, one row that falls through to the null band, one row
+  per broken hop of the reach, and one row whose vigour source value is unmapped.
+
+modelSources:
+  model:
+    root: ivory-hatchery
+    files:
+      - test/ivoryhatchery/data/HatcheryTestData.pure
+      - test/ivoryhatchery/domain/HatcheryDomain.pure
+      - test/ivoryhatchery/mapping/HatcheryMapping.pure
+      - test/ivoryhatchery/store/HatcheryReferenceStore.pure
+      - test/ivoryhatchery/store/HatcheryStore.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-inline-embedded
+  - mapping:relational-literal-list
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+
+stores:
+  - relational
+
+complexity: advanced
+
+tags:
+  - branch-coverage
+  - conditional-transform
+  - embedded
+  - enumeration-mapping
+  - hatchery
+  - multi-hop-join
+  - relational

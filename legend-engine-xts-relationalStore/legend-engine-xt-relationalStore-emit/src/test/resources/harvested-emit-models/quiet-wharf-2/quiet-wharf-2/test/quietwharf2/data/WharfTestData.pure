@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::quietwharf2::data::WharfTestData
+{
+  Relational
+  #{
+    reference.wharf:
+      'wharf_code,wharf_name,warden_name,harbour_code\n'+
+      'WH-1,Quiet Wharf North,Iris Calder,HB-1\n'+
+      'WH-2,Slipway Basin,Owen Tarrant,HB-2\n';
+
+    mooring.berth_allocation:
+      'allocation_key,allocation_code,vessel_name,berth_number,length_metres,wharf_code,from_z,thru_z\n'+
+      'AK-1,BA-1001,Kestrel,4,12.5,WH-1,2026-01-01,9999-12-31\n'+
+      'AK-2,BA-1002,Marigold,5,18.0,WH-2,2026-01-01,9999-12-31\n'+
+      'AK-3,BA-1003,Puffin,6,9.75,WH-1,2025-01-01,2026-01-01\n';
+  }#
+}

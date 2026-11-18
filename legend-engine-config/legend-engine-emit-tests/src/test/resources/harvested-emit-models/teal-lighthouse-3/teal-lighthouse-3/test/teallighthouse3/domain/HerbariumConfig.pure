@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::teallighthouse3::domain::*;
+
+Class {doc.doc = 'Root of the digitisation configuration schema. One programme owns the collections being digitised, the per-environment capability records the pipeline runs under, and the publication targets its output reaches.'} test::teallighthouse3::domain::DigitisationProgramme
+{
+  {doc.doc = 'Programme code the configuration is filed under.'} programmeCode: String[1];
+  {doc.doc = 'Display title of the programme.'} programmeTitle: String[1];
+  {doc.doc = 'Access label the programme configuration itself is published under.'} accessLabel: AccessLabel[1];
+  {doc.doc = 'Collections in scope; a programme always digitises at least one.'} collections: SpecimenCollection[1..*];
+  {doc.doc = 'Per-environment capability records the programme runs under.'} environments: EnvironmentProfile[*];
+  {doc.doc = 'Publication targets the programme output is pushed to.'} publicationTargets: PublicationTarget[*];
+  {doc.doc = 'Sheet imaging specification shared by every collection, absent where imaging is out of scope.'} imagingSpec: SheetImageSpec[0..1];
+}
+
+Class {doc.doc = 'A herbarium collection being digitised, holding the dataset declarations produced from it.'} test::teallighthouse3::domain::SpecimenCollection
+{
+  {doc.doc = 'Collection code.'} collectionCode: String[1];
+  {doc.doc = 'Collection title.'} collectionTitle: String[1];
+  {doc.doc = 'Datasets declared for this collection.'} datasets: DatasetDefinition[1..*];
+  {doc.doc = 'Curator responsible for the collection, absent for an unattributed legacy collection.'} curator: CuratorContact[0..1];
+  {doc.doc = 'Free-text notes on collection provenance.'} collectionNotes: String[*];
+}
+
+Class {doc.doc = 'One dataset declaration: the shape it takes, the label it carries, the columns it exposes and the retention it is kept under.'} test::teallighthouse3::domain::DatasetDefinition
+{
+  {doc.doc = 'Dataset name.'} datasetName: String[1];
+  {doc.doc = 'Shape the dataset declaration takes.'} schemaKind: SchemaKind[1];
+  {doc.doc = 'Access label the dataset is published under.'} accessLabel: AccessLabel[1];
+  {doc.doc = 'Columns the dataset exposes.'} columns: ColumnDefinition[1..*];
+  {doc.doc = 'Retention policy the dataset is kept under, absent where retention is inherited from the programme.'} retention: RetentionPolicy[0..1];
+  {doc.doc = 'Validation rules asserted over the dataset.'} validationRules: ValidationRule[*];
+  {doc.doc = 'Descriptive dataset tags.'} datasetTags: String[*];
+}
+
+Class {doc.doc = 'One column of a dataset declaration, carrying its own width bound, required flag and the labels that restrict it.'} test::teallighthouse3::domain::ColumnDefinition
+{
+  {doc.doc = 'Column name.'} columnName: String[1];
+  {doc.doc = 'Declared column type name.'} columnType: String[1];
+  {doc.doc = 'Declared width bound, absent for an unbounded column.'} widthLimit: Integer[0..1];
+  {doc.doc = 'Whether the column must be present on every row.'} requiredColumn: Boolean[1];
+  {doc.doc = 'Labels restricting the column; empty where the column inherits the dataset label.'} columnLabels: AccessLabel[*];
+}
+
+Class {doc.doc = 'How long a dataset is kept and where it is archived once the horizon passes.'} test::teallighthouse3::domain::RetentionPolicy
+{
+  {doc.doc = 'Retention horizon in days.'} horizonDays: Integer[1];
+  {doc.doc = 'Archive target name, absent where expired data is discarded rather than archived.'} archiveTarget: String[0..1];
+  {doc.doc = 'Whether a sealed dataset is exempt from the horizon.'} sealedExempt: Boolean[1];
+}
+
+Class {doc.doc = 'The curator a collection is attributed to.'} test::teallighthouse3::domain::CuratorContact
+{
+  {doc.doc = 'Curator display name.'} displayName: String[1];
+  {doc.doc = 'Institution the curator works from.'} institution: String[1];
+  {doc.doc = 'Role title, absent for a volunteer curator.'} roleTitle: String[0..1];
+}
+
+Class {doc.doc = 'A per-environment capability record. Every property of this type is a collection of the capability enumeration, so the environment is described purely by which capability variants it enables on each side of the pipeline.'} test::teallighthouse3::domain::EnvironmentProfile
+{
+  {doc.doc = 'Environment name.'} environmentName: String[1];
+  {doc.doc = 'Capability variants enabled on the ingest side.'} ingestCapabilities: CapabilityFlag[*];
+  {doc.doc = 'Capability variants enabled on the export side.'} exportCapabilities: CapabilityFlag[*];
+  {doc.doc = 'Capability variants enabled for preview surfaces.'} previewCapabilities: CapabilityFlag[*];
+  {doc.doc = 'Capability variants explicitly withheld in this environment.'} withheldCapabilities: CapabilityFlag[*];
+}
+
+Class {doc.doc = 'A consumer-facing API surface exposing a subset of the declared datasets.'} test::teallighthouse3::domain::ConsumerApi
+{
+  {doc.doc = 'API name.'} apiName: String[1];
+  {doc.doc = 'Shape the API serves its payloads in.'} servedKind: SchemaKind[1];
+  {doc.doc = 'Datasets exposed through the API.'} exposedDatasets: DatasetDefinition[*];
+  {doc.doc = 'Call quota, absent for an unmetered internal API.'} quota: ApiQuota[0..1];
+  {doc.doc = 'Path segment the API is mounted at, absent where the mount point is derived from the name.'} mountPath: String[0..1];
+}
+
+Class {doc.doc = 'Per-call limits applied to a consumer API.'} test::teallighthouse3::domain::ApiQuota
+{
+  {doc.doc = 'Maximum rows returned by one call.'} maxRowsPerCall: Integer[1];
+  {doc.doc = 'Burst allowance above the per-call maximum, absent where no burst is granted.'} burstAllowance: Integer[0..1];
+}
+
+Class {doc.doc = 'Imaging specification the sheet scans are captured under.'} test::teallighthouse3::domain::SheetImageSpec
+{
+  {doc.doc = 'Capture resolution in dots per inch.'} resolutionDpi: Integer[1];
+  {doc.doc = 'Colour profile name.'} colourProfile: String[1];
+  {doc.doc = 'Derivative formats produced from the master scan.'} derivativeFormats: String[1..*];
+}
+
+Class {doc.doc = 'A rule asserted over one or more columns of a dataset declaration.'} test::teallighthouse3::domain::ValidationRule
+{
+  {doc.doc = 'Rule code.'} ruleCode: String[1];
+  {doc.doc = 'Human-readable statement of what the rule asserts.'} ruleStatement: String[1];
+  {doc.doc = 'Severity the rule is raised at.'} severity: String[1];
+  {doc.doc = 'Columns the rule applies to.'} appliesTo: ColumnDefinition[1..*];
+}
+
+Class {doc.doc = 'Somewhere the programme output is published, exposing one or more consumer APIs under its own label.'} test::teallighthouse3::domain::PublicationTarget
+{
+  {doc.doc = 'Publication target name.'} targetName: String[1];
+  {doc.doc = 'Access label the target publishes under.'} accessLabel: AccessLabel[1];
+  {doc.doc = 'Consumer APIs served from the target.'} apis: ConsumerApi[1..*];
+  {doc.doc = 'Operational notes, absent for a target with nothing noteworthy.'} operationalNote: String[0..1];
+}

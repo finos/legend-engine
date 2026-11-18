@@ -1,0 +1,54 @@
+name: dusky-hatchery
+title: Dusky Hatchery Pond Operations Register
+description: >
+  A freshwater hatchery register whose rearing ponds are milestoned on a single processing axis
+  and bound, one class per table, across a five-table relational store through explicit identity
+  column sets and anchoring main tables. A curated entry point groups the mapping, the warehouse
+  runtime, two layout diagrams and three parameterised single-execution endpoints that project
+  tabular rows resolved at a caller supplied processing instant.
+modelSources:
+  model:
+    root: dusky-hatchery
+    files:
+      - test/duskyhatchery/connection/HatcheryConnection.pure
+      - test/duskyhatchery/dataspace/HatcheryDataSpace.pure
+      - test/duskyhatchery/diagram/HatcheryDiagram.pure
+      - test/duskyhatchery/domain/HatcheryDomain.pure
+      - test/duskyhatchery/mapping/HatcheryMapping.pure
+      - test/duskyhatchery/runtime/HatcheryRuntime.pure
+      - test/duskyhatchery/service/FeedAudit.pure
+      - test/duskyhatchery/service/PondRegister.pure
+      - test/duskyhatchery/service/StockDigest.pure
+      - test/duskyhatchery/store/HatcheryDB.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aquaculture
+  - data-space
+  - diagram
+  - h2
+  - processing-temporal
+  - relational
+  - snowflake
+  - tabular-projection

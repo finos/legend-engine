@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealthicket4::mapping::ThicketMapping
+(
+  include mapping test::borealthicket4::mapping::CrewRefMapping
+  include mapping test::borealthicket4::mapping::SpeciesRefMapping
+  include mapping test::borealthicket4::mapping::StandRefMapping
+
+  test::borealthicket4::domain::SnowStake[stake]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealthicket4::store::ThicketDb]thicket.snow_stake.stake_code
+    )
+    ~mainTable [test::borealthicket4::store::ThicketDb]thicket.snow_stake
+    stakeCode: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.stake_code,
+    stakeName: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.stake_name,
+    standCode: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.stand_code,
+    speciesCode: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.species_code,
+    crewCode: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.crew_code,
+    depthCm: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.depth_cm,
+    densityPct: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.density_pct,
+    readOn: [test::borealthicket4::store::ThicketDb]thicket.snow_stake.read_on,
+    standName: [test::borealthicket4::store::ThicketDb]@Stake_Stand | [test::borealthicket4::store::ThicketDb]thicket.stand_block.stand_name,
+    standTier: [test::borealthicket4::store::ThicketDb]@Stake_Stand | [test::borealthicket4::store::ThicketDb]thicket.stand_block.stand_tier,
+    speciesName: [test::borealthicket4::store::ThicketDb]@Stake_Species | [test::borealthicket4::store::ThicketDb]thicket.species_tag.species_name,
+    crewRoster[crew]: [test::borealthicket4::store::ThicketDb]@Stake_Crew
+  }
+
+  testSuites:
+  [
+    stakeRegisterSuite:
+    {
+      function: |test::borealthicket4::domain::SnowStake.all(%2026-03-15)->project([
+                   col(s|$s.stakeCode, 'Stake'),
+                   col(s|$s.standName, 'Stand'),
+                   col(s|$s.standTier, 'Tier'),
+                   col(s|$s.speciesName, 'Species'),
+                   col(s|$s.depthCm, 'Depth'),
+                   col(s|$s.densityPct, 'Density')
+                 ])->sort([asc('Stake')]);
+      tests:
+      [
+        theLiveStakesResolveTheirIncludedReferenceContext:
+        {
+          doc: 'At the as-of instant the three stakes whose business window is open resolve the stand name and canopy tier through the stand join and the species name through the species join, both of which are mapped only by included mappings; the stake whose window closed before the instant is cut as an out-of-range row and the stake carrying no stand, species or crew key survives with empty reference columns because the traversals are emitted as outer joins.';
+          data:
+          [
+            test::borealthicket4::store::ThicketDb:
+              Relational
+              #{
+                thicket.snow_stake:
+                  'stake_code,stake_name,stand_code,species_code,crew_code,depth_cm,density_pct,read_on,valid_from,valid_thru\n'+
+                  'S-1,Stake Ridge North,ST-1,SP-1,CR-1,92.5,45,2026-03-01,2026-01-01,9999-12-31\n'+
+                  'S-2,Stake Hollow Mid,ST-2,SP-2,CR-2,64.0,55,2026-03-02,2026-02-01,9999-12-31\n'+
+                  'S-3,Stake Burn Old,ST-1,SP-1,CR-1,40.0,70,2025-05-01,2025-01-01,2025-09-01\n'+
+                  'S-4,Stake Muskeg Edge,,,,18.0,30,2026-03-05,2026-01-15,9999-12-31\n';
+                thicket.stand_block:
+                  'stand_code,stand_name,stand_tier\n'+
+                  'ST-1,North Ridge Stand,UPPER\n'+
+                  'ST-2,Hollow Stand,LOWER\n';
+                thicket.species_tag:
+                  'species_code,species_name\n'+
+                  'SP-1,Black Spruce\n'+
+                  'SP-2,Jack Pine\n';
+                thicket.survey_crew:
+                  'crew_code,crew_name\n'+
+                  'CR-1,Ridge Crew\n'+
+                  'CR-2,Hollow Crew\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLiveStakesWithHoppedContext:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stake":"S-1","Stand":"North Ridge Stand","Tier":"UPPER","Species":"Black Spruce","Depth":92.5,"Density":45},{"Stake":"S-2","Stand":"Hollow Stand","Tier":"LOWER","Species":"Jack Pine","Depth":64.0,"Density":55},{"Stake":"S-4","Stand":null,"Tier":null,"Species":null,"Depth":18.0,"Density":30}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

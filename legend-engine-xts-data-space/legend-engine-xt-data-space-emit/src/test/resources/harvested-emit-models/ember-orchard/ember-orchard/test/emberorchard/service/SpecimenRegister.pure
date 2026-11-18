@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberorchard::service::SpecimenRegister
+{
+  pattern: '/orchard/v1/specimen-register/{environment}';
+  title: 'Ember Orchard - Specimen Register';
+  documentation: 'Publishes the whole propagation register as a wide tabular result: every documented property of the specimen record is projected under a named column, with no restriction, ordering or aggregation, so the shape of the result is fixed entirely by the projection. The environment path segment picks which warehouse the identical projection is planned against, the nursery warehouse or its archive counterpart.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'orchard-propagation-desk',
+    'orchard-register-ops'
+  ];
+  execution: Multi
+  {
+    query: {|(test::emberorchard::domain::SpecimenRecord.all())->project(
+      [
+        s|$s.specimenCode,
+        s|$s.blockCode,
+        s|$s.rowCode,
+        s|$s.commonName,
+        s|$s.botanicalName,
+        s|$s.cultivarName,
+        s|$s.rootstockCode,
+        s|$s.propagationMethod,
+        s|$s.germinationBatch,
+        s|$s.sownOn,
+        s|$s.transplantedOn,
+        s|$s.containerSize,
+        s|$s.substrateMix,
+        s|$s.canopyHeightCm,
+        s|$s.stemCaliperMm,
+        s|$s.leafCount,
+        s|$s.rootZoneDepthCm,
+        s|$s.vigourGrade,
+        s|$s.hardinessZone,
+        s|$s.sunExposure,
+        s|$s.pruningCycle,
+        s|$s.lastInspectedOn,
+        s|$s.inspectorCode,
+        s|$s.healthNote,
+        s|$s.nurseryTier,
+        s|$s.saleReadyFlag,
+        s|$s.retiredFlag,
+        s|$s.updatedAt
+      ],
+      [
+        'Specimen/Code',
+        'Specimen/Block',
+        'Specimen/Row',
+        'Specimen/CommonName',
+        'Specimen/BotanicalName',
+        'Specimen/Cultivar',
+        'Specimen/Rootstock',
+        'Specimen/PropagationMethod',
+        'Specimen/GerminationBatch',
+        'Specimen/SownOn',
+        'Specimen/TransplantedOn',
+        'Specimen/ContainerSize',
+        'Specimen/SubstrateMix',
+        'Specimen/CanopyHeightCm',
+        'Specimen/StemCaliperMm',
+        'Specimen/LeafCount',
+        'Specimen/RootZoneDepthCm',
+        'Specimen/VigourGrade',
+        'Specimen/HardinessZone',
+        'Specimen/SunExposure',
+        'Specimen/PruningCycle',
+        'Specimen/LastInspectedOn',
+        'Specimen/InspectorCode',
+        'Specimen/HealthNote',
+        'Specimen/NurseryTier',
+        'Specimen/SaleReadyFlag',
+        'Specimen/RetiredFlag',
+        'Specimen/UpdatedAt'
+      ]
+    )};
+    key: 'environment';
+    executions['nursery']:
+    {
+      mapping: test::emberorchard::mapping::OrchardMapping;
+      runtime: test::emberorchard::runtime::OrchardNurseryRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::emberorchard::mapping::OrchardMapping;
+      runtime: test::emberorchard::runtime::OrchardArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    specimenRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardWarehouse:
+            Relational
+            #{
+              nursery.specimen_register:
+                'specimen_code,block_code,row_code,common_name,botanical_name,cultivar_name,rootstock_code,propagation_method,germination_batch,sown_on,transplanted_on,container_size,substrate_mix,canopy_height_cm,stem_caliper_mm,leaf_count,root_zone_depth_cm,vigour_grade,hardiness_zone,sun_exposure,pruning_cycle,last_inspected_on,inspector_code,health_note,nursery_tier,sale_ready_flag,retired_flag,updated_at\n'+
+                'SPC-01,BLK-A,ROW-03,Quince,Cydonia oblonga,Vranja,QA-DWARF,GRAFT,GB-2026-04,2026-02-10,2026-03-15,12,BARK-LOAM,148.5,18.25,26,32.0,STRONG,ZONE-8,PART-SHADE,WINTER,2026-04-02,INSP-07,Graft union callused cleanly.,BENCH-TWO,Y,N,2026-04-03 07:30:00.000\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theWideProjectionPublishesEveryDocumentedProperty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['nursery'];
+          asserts:
+          [
+            everyRegisteredColumnIsCarriedThroughUnrestrictedAndUnordered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen/Code":"SPC-01","Specimen/Block":"BLK-A","Specimen/Row":"ROW-03","Specimen/CommonName":"Quince","Specimen/BotanicalName":"Cydonia oblonga","Specimen/Cultivar":"Vranja","Specimen/Rootstock":"QA-DWARF","Specimen/PropagationMethod":"GRAFT","Specimen/GerminationBatch":"GB-2026-04","Specimen/SownOn":"2026-02-10","Specimen/TransplantedOn":"2026-03-15","Specimen/ContainerSize":"12","Specimen/SubstrateMix":"BARK-LOAM","Specimen/CanopyHeightCm":148.5,"Specimen/StemCaliperMm":18.25,"Specimen/LeafCount":26,"Specimen/RootZoneDepthCm":32.0,"Specimen/VigourGrade":"STRONG","Specimen/HardinessZone":"ZONE-8","Specimen/SunExposure":"PART-SHADE","Specimen/PruningCycle":"WINTER","Specimen/LastInspectedOn":"2026-04-02","Specimen/InspectorCode":"INSP-07","Specimen/HealthNote":"Graft union callused cleanly.","Specimen/NurseryTier":"BENCH-TWO","Specimen/SaleReadyFlag":"Y","Specimen/RetiredFlag":"N","Specimen/UpdatedAt":"2026-04-03T07:30:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

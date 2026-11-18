@@ -1,0 +1,525 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westerncavern6::mapping::WesternMapping
+(
+  include mapping test::westerncavern6::mapping::WesternSurveyMapping
+
+  *test::westerncavern6::domain::CaveNote: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rescueNote, batNote)
+  }
+
+  test::westerncavern6::domain::CaveNote[rescueNote]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern6::store::CavernOpsDb]ops.rescue_note.note_code
+    )
+    ~mainTable [test::westerncavern6::store::CavernOpsDb]ops.rescue_note
+    noteCode: [test::westerncavern6::store::CavernOpsDb]ops.rescue_note.note_code,
+    cavernCode: [test::westerncavern6::store::CavernOpsDb]ops.rescue_note.cavern_code,
+    noteText: [test::westerncavern6::store::CavernOpsDb]ops.rescue_note.note_text,
+    loggedOn: [test::westerncavern6::store::CavernOpsDb]ops.rescue_note.logged_on
+  }
+
+  test::westerncavern6::domain::CaveNote[batNote]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerncavern6::store::CavernOpsDb]archive.bat_tally.tally_code
+    )
+    ~mainTable [test::westerncavern6::store::CavernOpsDb]archive.bat_tally
+    noteCode: [test::westerncavern6::store::CavernOpsDb]archive.bat_tally.tally_code,
+    cavernCode: [test::westerncavern6::store::CavernOpsDb]archive.bat_tally.cavern_code,
+    noteText: concat('Bat count: ', [test::westerncavern6::store::CavernOpsDb]archive.bat_tally.species_text),
+    loggedOn: [test::westerncavern6::store::CavernOpsDb]archive.bat_tally.counted_on
+  }
+
+  *test::westerncavern6::domain::SurveySheet[sheet]: Pure
+  {
+    ~src test::westerncavern6::domain::RawSurveySheet
+    sheetCode: $src.sheetCode->toUpper(),
+    sheetLabel: $src.cavernCode->toUpper() + '/' + $src.sheetCode->toUpper(),
+    status: EnumerationMapping StatusMapping: [if($src.statusText->toLower()->trim()->startsWith('open'), |'OPEN', |if($src.statusText->toLower()->contains('gate'), |'GATE', |'FLOOD'))],
+    flow: EnumerationMapping FlowMapping: [if($src.flowText->toLower()->contains('sump'), |'P', |if($src.flowText->toLower()->contains('stream'), |'S', |if($src.flowText->toLower()->contains('damp'), |'M', |'D')))],
+    floor: EnumerationMapping FloorMapping: [if($src.floorText->toLower()->trim()->startsWith('mud'), |'MU', |if($src.floorText->toLower()->trim()->startsWith('sand'), |'SA', |'RO'))]
+  }
+
+  testSuites:
+  [
+    cavernRegisterSuite:
+    {
+      function: |test::westerncavern6::domain::Cavern.all()->project(
+  [
+    c|$c.cavernCode,
+    c|$c.cavernName,
+    c|$c.status,
+    c|$c.altitudeBand,
+    c|$c.registrySource,
+    c|$c.surveyYear,
+    c|$c.displayLabel,
+    c|$c.steward.stewardName,
+    c|$c.steward.stewardPhone,
+    c|$c.locality.massifName,
+    c|$c.locality.regionName,
+    c|$c.locality.authorityName,
+    c|$c.trips.tripCount
+  ],
+  [
+    'Code',
+    'Name',
+    'Status',
+    'AltitudeBand',
+    'RegistrySource',
+    'SurveyYear',
+    'Label',
+    'Steward',
+    'Phone',
+    'Massif',
+    'Region',
+    'Authority',
+    'Trips'
+  ]
+)->sort(
+  [
+    asc('Code')
+  ]
+);
+      tests:
+      [
+        registerResolvesLocalityAndTrips:
+        {
+          doc: 'Reads every unsealed cavern with its status folded from a padded mixed-case code, the altitude band over a null altitude and the exclusive band boundary, the literal registry source, the survey year, the label, the embedded steward including a steward-less row, the embedded locality reached through one, two and three join hops including chains broken at the massif and at the authority, and the trip count from the grouped view; the sealed cavern is withheld by the store filter and the status code no enumeration value maps to comes back null.';
+          data:
+          [
+            test::westerncavern6::store::CavernSurveyDb:
+              Relational
+              #{
+                karst.cavern:
+                  'cavern_code,massif_code,cavern_name,status_code,entrance_alt,surveyed_on,steward_name,steward_phone\n'+
+                  'WC-01,MS-1,Long Gallery,open ,1620,2025-08-14,ana,555-0101\n'+
+                  'WC-02,MS-2,Echo Pit,gate,840,2026-02-02,,\n'+
+                  'WC-03,MS-9,Drip Hollow,FLOOD,,,cy,\n'+
+                  'WC-04,MS-1,Rubble Choke,RUBBLE,1500,2024-05-05,bo,555-0104\n'+
+                  'WC-05,MS-1,Sealed Shaft,SEALED,900,2023-01-01,dee,555-0105\n';
+                registry.massif:
+                  'massif_code,massif_name,region_code\n'+
+                  'MS-1,Western Massif,RG-1\n'+
+                  'MS-2,Low Karst,RG-2\n';
+                registry.region:
+                  'region_code,region_name,authority_code\n'+
+                  'RG-1,Upper Vale,AU-1\n'+
+                  'RG-2,Lower Vale,AU-9\n';
+                registry.authority:
+                  'authority_code,authority_name\n'+
+                  'AU-1,Karst Trust\n';
+                survey.trip_log:
+                  'trip_code,cavern_code,team_code,hours\n'+
+                  'TR-1,WC-01,TM-A,4\n'+
+                  'TR-2,WC-01,TM-B,6\n'+
+                  'TR-3,WC-02,TM-A,3\n';
+              }#
+          ];
+          asserts:
+          [
+            fourOpenCaverns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"WC-01","Name":"Long Gallery","Status":"OPEN","AltitudeBand":"ALPINE","RegistrySource":"western-karst-register","SurveyYear":2025,"Label":"LONG GALLERY #wc-01","Steward":"ana","Phone":"555-0101","Massif":"Western Massif","Region":"Upper Vale","Authority":"Karst Trust","Trips":2},{"Code":"WC-02","Name":"Echo Pit","Status":"GATED","AltitudeBand":"VALLEY","RegistrySource":"western-karst-register","SurveyYear":2026,"Label":"ECHO PIT #wc-02","Steward":null,"Phone":null,"Massif":"Low Karst","Region":"Lower Vale","Authority":null,"Trips":1},{"Code":"WC-03","Name":"Drip Hollow","Status":"FLOODED","AltitudeBand":"UNSURVEYED","RegistrySource":"western-karst-register","SurveyYear":null,"Label":"DRIP HOLLOW #wc-03","Steward":"cy","Phone":null,"Massif":null,"Region":null,"Authority":null,"Trips":null},{"Code":"WC-04","Name":"Rubble Choke","Status":null,"AltitudeBand":"VALLEY","RegistrySource":"western-karst-register","SurveyYear":2024,"Label":"RUBBLE CHOKE #wc-04","Steward":"bo","Phone":"555-0104","Massif":"Western Massif","Region":"Upper Vale","Authority":"Karst Trust","Trips":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    passageSuite:
+    {
+      function: |test::westerncavern6::domain::Passage.all()->project(
+  [
+    p|$p.passageCode,
+    p|$p.lengthM,
+    p|$p.gradeLabel,
+    p|$p.flow,
+    p|$p.nextPassageCode,
+    p|$p.nextPassageLength,
+    p|$p.authorityName,
+    p|$p.cavern.cavernName
+  ],
+  [
+    'Passage',
+    'Length',
+    'Grade',
+    'Flow',
+    'Next',
+    'NextLength',
+    'Authority',
+    'Cavern'
+  ]
+)->sort(
+  [
+    asc('Passage')
+  ]
+);
+      tests:
+      [
+        passagesWalkFourHopsToTheAuthority:
+        {
+          doc: 'Reads every surveyed passage with its grade over every arm including an ungraded row, the flow folded from a padded lower-case code including a null code that defaults to dry and a code no enumeration value maps to, the next passage reached over the self join including a dangling reference, the licensing authority reached over four join hops including chains broken at the authority and at the cavern, and the cavern over the association whose composite join only matches after trimming and upper-casing the reference and fails on a zero-length passage; the draft passage is withheld by the store filter.';
+          data:
+          [
+            test::westerncavern6::store::CavernSurveyDb:
+              Relational
+              #{
+                karst.cavern:
+                  'cavern_code,massif_code,cavern_name,status_code,entrance_alt,surveyed_on,steward_name,steward_phone\n'+
+                  'WC-01,MS-1,Long Gallery,OPEN,1620,2025-08-14,ana,555-0101\n'+
+                  'WC-02,MS-2,Echo Pit,GATE,840,2026-02-02,,\n';
+                registry.massif:
+                  'massif_code,massif_name,region_code\n'+
+                  'MS-1,Western Massif,RG-1\n'+
+                  'MS-2,Low Karst,RG-2\n';
+                registry.region:
+                  'region_code,region_name,authority_code\n'+
+                  'RG-1,Upper Vale,AU-1\n'+
+                  'RG-2,Lower Vale,AU-9\n';
+                registry.authority:
+                  'authority_code,authority_name\n'+
+                  'AU-1,Karst Trust\n';
+                survey.passage:
+                  'passage_code,cavern_ref,next_code,length_m,grade_num,flow_code,survey_state\n'+
+                  'PG-01, wc-01 ,PG-02,120,2,s,DONE\n'+
+                  'PG-02,WC-01,,40,4,,DONE\n'+
+                  'PG-03,WC-02,PG-09,15,6,p,DONE\n'+
+                  'PG-04,WC-77,,8,,x,DONE\n'+
+                  'PG-05,WC-01,,60,1,M,DRAFT\n'+
+                  'PG-06,WC-02,,0,1,M,DONE\n';
+              }#
+          ];
+          asserts:
+          [
+            fiveSurveyedPassages:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Passage":"PG-01","Length":120,"Grade":"EASY","Flow":"STREAM","Next":"PG-02","NextLength":40,"Authority":"Karst Trust","Cavern":"Long Gallery"},{"Passage":"PG-02","Length":40,"Grade":"SPORTING","Flow":"DRY","Next":null,"NextLength":null,"Authority":"Karst Trust","Cavern":"Long Gallery"},{"Passage":"PG-03","Length":15,"Grade":"SEVERE","Flow":"SUMP","Next":"PG-09","NextLength":null,"Authority":null,"Cavern":"Echo Pit"},{"Passage":"PG-04","Length":8,"Grade":"UNGRADED","Flow":null,"Next":null,"NextLength":null,"Authority":null,"Cavern":null},{"Passage":"PG-06","Length":0,"Grade":"EASY","Flow":"DAMP","Next":null,"NextLength":null,"Authority":null,"Cavern":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    chamberSuite:
+    {
+      function: |test::westerncavern6::domain::Chamber.all(%2026-06-01)->project(
+  [
+    c|$c.chamberCode,
+    c|$c.cavernCode,
+    c|$c.depthM,
+    c|$c.depthBand,
+    c|$c.kind,
+    c|$c.floor,
+    c|$c.cavernName,
+    c|$c.surveyMonth
+  ],
+  [
+    'Chamber',
+    'Cavern',
+    'Depth',
+    'DepthBand',
+    'Kind',
+    'Floor',
+    'CavernName',
+    'SurveyMonth'
+  ]
+)->sort(
+  [
+    asc('Chamber'),
+    asc('Cavern')
+  ]
+);
+      tests:
+      [
+        chambersStandingAtTheSurveyDate:
+        {
+          doc: 'Reads the business-temporal chamber register as of a survey date over its two-column key, banding depth over every arm including the exclusive deep boundary, a wadeable and a surface chamber and an unplumbed chamber, folding the integer kind and the padded floor code including values no enumeration value maps to, and reaching the cavern name including a chamber of an unregistered cavern; the chamber whose business range closed before the survey date is absent.';
+          data:
+          [
+            test::westerncavern6::store::CavernSurveyDb:
+              Relational
+              #{
+                karst.cavern:
+                  'cavern_code,massif_code,cavern_name,status_code,entrance_alt,surveyed_on,steward_name,steward_phone\n'+
+                  'WC-01,MS-1,Long Gallery,OPEN,1620,2025-08-14,ana,555-0101\n'+
+                  'WC-02,MS-2,Echo Pit,GATE,840,2026-02-02,,\n';
+                survey.chamber:
+                  'chamber_code,cavern_code,depth_m,kind_num,floor_code,mapped_on,from_z,thru_z\n'+
+                  'CH-1,WC-01,140,1,mu,2026-03-10,2026-01-01,9999-12-31\n'+
+                  'CH-1,WC-02,31,2,ro ,2026-04-02,2026-01-01,9999-12-31\n'+
+                  'CH-2,WC-01,30,4,SA,2025-11-30,2025-06-01,9999-12-31\n'+
+                  'CH-3,WC-01,,7,xx,,2026-01-01,9999-12-31\n'+
+                  'CH-4,WC-01,50,1,MU,2026-01-15,2026-01-01,2026-03-01\n'+
+                  'CH-5,WC-88,12,3,RO,2026-02-02,2026-01-01,9999-12-31\n'+
+                  'CH-6,WC-02,5,2,sa,2026-05-20,2026-01-01,9999-12-31\n'+
+                  'CH-7,WC-02,0,1,MU,2026-01-31,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            sevenChambersStand:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Chamber":"CH-1","Cavern":"WC-01","Depth":140,"DepthBand":"ABYSSAL","Kind":"HALL","Floor":"MUD","CavernName":"Long Gallery","SurveyMonth":3},{"Chamber":"CH-1","Cavern":"WC-02","Depth":31,"DepthBand":"DEEP","Kind":"GROTTO","Floor":"ROCK","CavernName":"Echo Pit","SurveyMonth":4},{"Chamber":"CH-2","Cavern":"WC-01","Depth":30,"DepthBand":"SHALLOW","Kind":"SHAFT","Floor":"SAND","CavernName":"Long Gallery","SurveyMonth":11},{"Chamber":"CH-3","Cavern":"WC-01","Depth":null,"DepthBand":"UNPLUMBED","Kind":null,"Floor":null,"CavernName":"Long Gallery","SurveyMonth":null},{"Chamber":"CH-5","Cavern":"WC-88","Depth":12,"DepthBand":"SHALLOW","Kind":"SHAFT","Floor":"ROCK","CavernName":null,"SurveyMonth":2},{"Chamber":"CH-6","Cavern":"WC-02","Depth":5,"DepthBand":"WADEABLE","Kind":"GROTTO","Floor":"SAND","CavernName":"Echo Pit","SurveyMonth":5},{"Chamber":"CH-7","Cavern":"WC-02","Depth":0,"DepthBand":"SURFACE","Kind":"HALL","Floor":"MUD","CavernName":"Echo Pit","SurveyMonth":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    tripSummarySuite:
+    {
+      function: |test::westerncavern6::domain::TripSummary.all()->project(
+  [
+    t|$t.cavernCode,
+    t|$t.tripCount,
+    t|$t.totalHours,
+    t|$t.tripCavern.cavernName
+  ],
+  [
+    'Cavern',
+    'Trips',
+    'Hours',
+    'CavernName'
+  ]
+)->sort(
+  [
+    asc('Cavern')
+  ]
+);
+      tests:
+      [
+        tripsGroupPerCavern:
+        {
+          doc: 'Groups the trip log per cavern in the grouped view, counting trips and summing hours over a cavern with three trips and one with a single trip, and reaches back to the cavern over the association including a trip logged against an unregistered cavern.';
+          data:
+          [
+            test::westerncavern6::store::CavernSurveyDb:
+              Relational
+              #{
+                karst.cavern:
+                  'cavern_code,massif_code,cavern_name,status_code,entrance_alt,surveyed_on,steward_name,steward_phone\n'+
+                  'WC-01,MS-1,Long Gallery,OPEN,1620,2025-08-14,ana,555-0101\n'+
+                  'WC-02,MS-2,Echo Pit,GATE,840,2026-02-02,,\n';
+                survey.trip_log:
+                  'trip_code,cavern_code,team_code,hours\n'+
+                  'TR-1,WC-01,TM-A,4\n'+
+                  'TR-2,WC-01,TM-B,6\n'+
+                  'TR-3,WC-01,TM-A,2\n'+
+                  'TR-4,WC-02,TM-A,3\n'+
+                  'TR-5,WC-66,TM-C,1\n';
+              }#
+          ];
+          asserts:
+          [
+            threeCavernGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cavern":"WC-01","Trips":3,"Hours":12,"CavernName":"Long Gallery"},{"Cavern":"WC-02","Trips":1,"Hours":3,"CavernName":"Echo Pit"},{"Cavern":"WC-66","Trips":1,"Hours":1,"CavernName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    teamVisitSuite:
+    {
+      function: |test::westerncavern6::domain::TeamVisit.all()->project(
+  [
+    v|$v.teamCode,
+    v|$v.cavernCode
+  ],
+  [
+    'Team',
+    'Cavern'
+  ]
+)->sort(
+  [
+    asc('Team'),
+    asc('Cavern')
+  ]
+);
+      tests:
+      [
+        repeatVisitsCollapse:
+        {
+          doc: 'Reads the distinct team visit view over a trip log in which one team visits the same cavern twice, so the repeated pair collapses to a single visit.';
+          data:
+          [
+            test::westerncavern6::store::CavernSurveyDb:
+              Relational
+              #{
+                survey.trip_log:
+                  'trip_code,cavern_code,team_code,hours\n'+
+                  'TR-1,WC-01,TM-A,4\n'+
+                  'TR-2,WC-01,TM-A,6\n'+
+                  'TR-3,WC-02,TM-A,2\n'+
+                  'TR-4,WC-01,TM-B,3\n';
+              }#
+          ];
+          asserts:
+          [
+            threeDistinctVisits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Team":"TM-A","Cavern":"WC-01"},{"Team":"TM-A","Cavern":"WC-02"},{"Team":"TM-B","Cavern":"WC-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    noteUnionSuite:
+    {
+      function: |test::westerncavern6::domain::CaveNote.all()->project(
+  [
+    n|$n.noteCode,
+    n|$n.cavernCode,
+    n|$n.noteText,
+    n|$n.loggedOn
+  ],
+  [
+    'Note',
+    'Cavern',
+    'Text',
+    'Logged'
+  ]
+)->sort(
+  [
+    asc('Note')
+  ]
+);
+      tests:
+      [
+        notesFromBothLogs:
+        {
+          doc: 'Gathers the note extent over the union operation mapping, so both the rescue log and the archived bat tallies, whose text is prefixed during mapping, contribute rows.';
+          data:
+          [
+            test::westerncavern6::store::CavernOpsDb:
+              Relational
+              #{
+                ops.rescue_note:
+                  'note_code,cavern_code,note_text,logged_on\n'+
+                  'RN-1,WC-01,Rope rigged at pitch,2026-03-02\n'+
+                  'RN-2,WC-02,Flood warning posted,2026-03-05\n';
+                archive.bat_tally:
+                  'tally_code,cavern_code,species_text,counted_on\n'+
+                  'BT-1,WC-01,pipistrelle,2026-02-11\n';
+              }#
+          ];
+          asserts:
+          [
+            threeNotes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Note":"BT-1","Cavern":"WC-01","Text":"Bat count: pipistrelle","Logged":"2026-02-11"},{"Note":"RN-1","Cavern":"WC-01","Text":"Rope rigged at pitch","Logged":"2026-03-02"},{"Note":"RN-2","Cavern":"WC-02","Text":"Flood warning posted","Logged":"2026-03-05"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveySheetSuite:
+    {
+      function: |test::westerncavern6::domain::SurveySheet.all()->graphFetch(
+        #{
+          test::westerncavern6::domain::SurveySheet{
+            sheetCode,
+            sheetLabel,
+            status,
+            flow,
+            floor
+          }
+        }#
+      )->serialize(
+        #{
+          test::westerncavern6::domain::SurveySheet{
+            sheetCode,
+            sheetLabel,
+            status,
+            flow,
+            floor
+          }
+        }#
+      );
+      tests:
+      [
+        sheetWordingFoldsOntoTheRegister:
+        {
+          doc: 'Lifts the free wording written on underground survey sheets onto the register enumerations through computed source expressions over every arm, including a sheet whose wording matches nothing and therefore lands on each fall-through code.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westerncavern6::domain::RawSurveySheet:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetCode":"s-1","cavernCode":"wc-01","statusText":" Open entrance","flowText":"active stream way","floorText":"mud banks"},{"sheetCode":"s-2","cavernCode":"wc-02","statusText":"locked gate","flowText":"sump at end","floorText":" sand floor"},{"sheetCode":"s-3","cavernCode":"wc-03","statusText":"under water","flowText":"damp walls","floorText":"bare rock"},{"sheetCode":"s-4","cavernCode":"wc-04","statusText":"unreadable","flowText":"unreadable","floorText":"unreadable"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourSheets:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetCode":"S-1","sheetLabel":"WC-01/S-1","status":"OPEN","flow":"STREAM","floor":"MUD"},{"sheetCode":"S-2","sheetLabel":"WC-02/S-2","status":"GATED","flow":"SUMP","floor":"SAND"},{"sheetCode":"S-3","sheetLabel":"WC-03/S-3","status":"FLOODED","flow":"DAMP","floor":"ROCK"},{"sheetCode":"S-4","sheetLabel":"WC-04/S-4","status":"FLOODED","flow":"DRY","floor":"ROCK"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

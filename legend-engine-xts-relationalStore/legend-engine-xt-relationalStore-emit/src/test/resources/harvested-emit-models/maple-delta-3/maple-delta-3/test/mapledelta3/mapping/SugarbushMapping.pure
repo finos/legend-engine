@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::mapledelta3::mapping::SugarbushMapping
+(
+  *test::mapledelta3::domain::TapRun[tapRun]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.run_code
+    )
+    ~mainTable [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run
+    runCode: [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.run_code,
+    standCode: [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.stand_code,
+    sapGrade: [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.sap_grade,
+    litres: [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.litres,
+    collectedOn: [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.collected_on,
+    crewLabel: [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.crew_label,
+    seasonCode: [test::mapledelta3::store::SugarbushDb]sugarbush.tap_run.season_code,
+    spiles[runSpile]: [test::mapledelta3::store::SugarbushDb]@Run_Spile
+  }
+
+  *test::mapledelta3::domain::RunSpile[runSpile]: Relational
+  {
+    ~primaryKey
+    (
+      [test::mapledelta3::store::SugarbushDb]sugarbush.run_spile.spile_code
+    )
+    ~mainTable [test::mapledelta3::store::SugarbushDb]sugarbush.run_spile
+    spileCode: [test::mapledelta3::store::SugarbushDb]sugarbush.run_spile.spile_code,
+    spileKind: [test::mapledelta3::store::SugarbushDb]sugarbush.run_spile.spile_kind,
+    boreMm: [test::mapledelta3::store::SugarbushDb]sugarbush.run_spile.bore_mm
+  }
+)

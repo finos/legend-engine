@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::gildedthicket::store::CanopyStore
+(
+  include test::gildedthicket::store::GreenwayStore
+
+  Schema survey
+  (
+    Table street_block
+    (
+      block_id INTEGER PRIMARY KEY,
+      block_code VARCHAR(24) NOT NULL,
+      ward_id INTEGER NOT NULL,
+      surface_code VARCHAR(8) NOT NULL,
+      street_label VARCHAR(120) NOT NULL
+    )
+    Table street_tree
+    (
+      tree_id INTEGER PRIMARY KEY,
+      tree_code VARCHAR(24) NOT NULL,
+      species_code VARCHAR(24) NOT NULL,
+      block_id INTEGER NOT NULL
+    )
+    Table canopy_survey
+    (
+      survey_id INTEGER PRIMARY KEY,
+      survey_code VARCHAR(24),
+      tree_id INTEGER NOT NULL,
+      condition_code VARCHAR(8),
+      crown_code VARCHAR(8) NOT NULL,
+      care_code VARCHAR(8) NOT NULL,
+      spread_m DOUBLE NOT NULL,
+      note_text VARCHAR(240)
+    )
+    Table canopy_survey_archive
+    (
+      survey_id INTEGER PRIMARY KEY,
+      survey_code VARCHAR(24) NOT NULL,
+      tree_id INTEGER NOT NULL,
+      spread_m DOUBLE NOT NULL
+    )
+
+    View block_canopy_vw
+    (
+      block_id: survey.street_block.block_id PRIMARY KEY,
+      block_code: survey.street_block.block_code,
+      surface_code: survey.street_block.surface_code,
+      ward_name: [test::gildedthicket::store::CanopyStore]@Block_Ward | [test::gildedthicket::store::GreenwayStore]arbor.ward.ward_name
+    )
+  )
+
+  Join Survey_Tree(survey.canopy_survey.tree_id = survey.street_tree.tree_id)
+
+  Join Tree_Block(survey.street_tree.block_id = survey.street_block.block_id)
+
+  Join Block_Ward(survey.street_block.ward_id = [test::gildedthicket::store::GreenwayStore]arbor.ward.ward_id)
+
+  Join Ward_District([test::gildedthicket::store::GreenwayStore]arbor.ward.district_id = [test::gildedthicket::store::GreenwayStore]arbor.district.district_id)
+
+  Join District_Borough([test::gildedthicket::store::GreenwayStore]arbor.district.borough_id = [test::gildedthicket::store::GreenwayStore]arbor.borough.borough_id)
+
+  Join Tree_BlockView(survey.street_tree.block_id = survey.block_canopy_vw.block_id)
+
+  Filter SurveyCoded(survey.canopy_survey.survey_code != '')
+)

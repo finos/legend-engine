@@ -1,0 +1,159 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazellighthouse4::service::PumpStationRegisterService
+{
+  pattern: '/waterworks/v1/pump-station/register/{district}';
+  title: 'Waterworks - Pump Station Register';
+  owners:
+  [
+    'waterworks-network-office'
+  ];
+  documentation: 'Single-execution register of the pump stations serving one district: the district parameter reaches the joined district column, and the projection mixes string, floating point and boolean columns with a derived daily volume column.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: district: String[1]|test::hazellighthouse4::domain::PumpStation.all()->filter(
+      s|$s.districtLabel == $district
+    )->project(
+      [
+        col(
+          s|$s.stationCode,
+          'StationCode'
+        ),
+        col(
+          s|$s.modelName,
+          'ModelName'
+        ),
+        col(
+          s|$s.reservoir.reservoirName,
+          'ReservoirName'
+        ),
+        col(
+          s|$s.districtLabel,
+          'District'
+        ),
+        col(
+          s|$s.ratedFlowLps,
+          'RatedFlowLps'
+        ),
+        col(
+          s|$s.headMetres,
+          'HeadMetres'
+        ),
+        col(
+          s|$s.activeFlag,
+          'Active'
+        ),
+        col(
+          s|$s.ratedFlowLps * 24.0,
+          'DailyVolumeM3'
+        )
+      ]
+    )->sort(
+      [
+        asc('StationCode')
+      ]
+    );
+    mapping: test::hazellighthouse4::mapping::WaterworksMapping;
+    runtime: test::hazellighthouse4::runtime::WaterworksRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          waterworksWarehouseConnection:
+            Relational
+            #{
+              waterworks.reservoir:
+                'reservoir_code,reservoir_name,district_name,commissioned_on\n'+
+                'RS-1,Hazel Ridge Reservoir,North Ridge,2015-04-01\n'+
+                'RS-2,Alder Flat Reservoir,South Fen,2017-06-15\n'+
+                'RS-3,Basalt Mesa Reservoir,South Fen,2019-09-30\n'+
+                'RS-4,Granite Bay Reservoir,East Bay,2021-03-20\n';
+
+              waterworks.pump_station:
+                'station_code,reservoir_code,model_name,rated_flow_lps,head_metres,active_flag\n'+
+                'PS-1,RS-1,GX-40,3.5,90.0,true\n'+
+                'PS-2,RS-1,GX-40,3.5,85.0,true\n'+
+                'PS-3,RS-2,HX-52,4.0,110.0,true\n'+
+                'PS-4,RS-9,GX-40,1.5,70.0,false\n'+
+                'PS-5,RS-4,LX-30,2.0,75.0,true\n';
+
+              waterworks.service_call:
+                'call_code,station_code,crew_code,called_on,downtime_hours,completed\n'+
+                'SC-1,PS-1,CR-1,2026-02-10,4.5,true\n'+
+                'SC-2,PS-2,CR-2,2026-02-12,2.0,true\n'+
+                'SC-3,PS-3,CR-9,2026-03-01,6.5,false\n';
+
+              waterworks.maintenance_crew:
+                'crew_code,crew_name,depot_name\n'+
+                'CR-1,Ridge Crew,North Depot\n'+
+                'CR-2,Flat Crew,North Depot\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        districtWithStations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'North Ridge'
+          ]
+          asserts:
+          [
+            twoStationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"PS-1","ModelName":"GX-40","ReservoirName":"Hazel Ridge Reservoir","District":"North Ridge","RatedFlowLps":3.5,"HeadMetres":90.0,"Active":true,"DailyVolumeM3":84.0},{"StationCode":"PS-2","ModelName":"GX-40","ReservoirName":"Hazel Ridge Reservoir","District":"North Ridge","RatedFlowLps":3.5,"HeadMetres":85.0,"Active":true,"DailyVolumeM3":84.0}]';
+                  }#;
+              }#
+          ]
+        },
+        districtWithoutStations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'West Moor'
+          ]
+          asserts:
+          [
+            noStationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

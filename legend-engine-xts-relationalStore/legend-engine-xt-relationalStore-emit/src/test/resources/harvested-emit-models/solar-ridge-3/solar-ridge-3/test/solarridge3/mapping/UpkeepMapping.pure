@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarridge3::mapping::UpkeepMapping
+(
+  *test::solarridge3::domain::TrailSegment[segment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.segment_id
+    )
+    ~mainTable [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment
+    segmentId: [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.segment_id,
+    segmentCode: [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.segment_code,
+    districtName: [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.district_name,
+    surfaceType: [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.surface_type,
+    metresCleared: [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.metres_cleared,
+    crewSize: [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.crew_size,
+    clearanceNote: [test::solarridge3::store::UpkeepDatabase]upkeep.trail_segment.clearance_note
+  }
+)

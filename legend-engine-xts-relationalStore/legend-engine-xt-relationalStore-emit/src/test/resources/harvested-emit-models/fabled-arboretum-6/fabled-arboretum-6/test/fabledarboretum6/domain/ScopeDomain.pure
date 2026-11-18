@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::fabledarboretum6::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'The way a telescope tube is carried and driven.'} test::fabledarboretum6::domain::MountKind
+{
+  EQUATORIAL,
+  DOBSONIAN,
+  ALTAZIMUTH,
+  ROBOTIC
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The optical arrangement a telescope gathers light with.'} test::fabledarboretum6::domain::OpticKind
+{
+  REFRACTOR,
+  REFLECTOR,
+  CATADIOPTRIC
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How ready a telescope is to be lent for a viewing night.'} test::fabledarboretum6::domain::ReadinessBand
+{
+  READY,
+  WATCH,
+  HOLD,
+  RETIRED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The reflective coating laid on a telescope optic.'} test::fabledarboretum6::domain::CoatingKind
+{
+  ALUMINIUM,
+  DIELECTRIC,
+  FLUORIDE
+}
+
+Class {meta::pure::profiles::doc.doc = 'A telescope held in the lending pool of a public observatory.'} test::fabledarboretum6::domain::Telescope
+{
+  scopeCode: String[1];
+  scopeName: String[1];
+  apertureMm: Integer[1];
+  tubeState: String[1];
+  loggedHours: Integer[1];
+  readinessNote: String[0..1];
+  mountKind: MountKind[0..1];
+  opticKind: OpticKind[0..1];
+  readinessBand: ReadinessBand[0..1];
+  siteName: String[0..1];
+  altitudeM: Integer[0..1];
+  regionName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The measured coating grade of one optical arrangement.'} test::fabledarboretum6::domain::OpticGrade
+{
+  opticCode: String[1];
+  coatingKind: CoatingKind[0..1];
+  gradeNote: String[1];
+  strehlPct: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Root of the lending-desk document posted for one hire request.'} test::fabledarboretum6::domain::HireRequestPayload
+{
+  requestRef: String[0..1];
+  revision: Integer[0..1];
+  entry: HireEntryNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The request entry node of a lending-desk document.'} test::fabledarboretum6::domain::HireEntryNode
+{
+  memberCode: String[0..1];
+  nightsAsked: Integer[0..1];
+  mountCode: String[0..1];
+  desk: HireDeskNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The lending desk a request was taken at.'} test::fabledarboretum6::domain::HireDeskNode
+{
+  deskName: String[0..1];
+  wardenCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A settled hire request as the lending register reads it.'} test::fabledarboretum6::domain::HireDigest
+{
+  requestRef: String[1];
+  memberLabel: String[1];
+  nightBand: String[1];
+  mountKind: MountKind[0..1];
+  deskLabel: String[1];
+}

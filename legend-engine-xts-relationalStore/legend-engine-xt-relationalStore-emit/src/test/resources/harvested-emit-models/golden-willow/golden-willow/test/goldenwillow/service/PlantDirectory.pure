@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenwillow::service::PlantDirectory
+{
+  pattern: '/goldenwillow/v1/plant-directory';
+  title: 'Golden Willow - Plant Directory';
+  owners:
+  [
+    'garden-registry',
+    'grounds-eng'
+  ];
+  documentation: 'Unfiltered directory listing every catalogued plant with its status, projected and name-sorted over the primary environment as the trivial counterpart to the deeply-filtered active-plantings query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::goldenwillow::domain::Plant.all()->project(
+      [
+        p|$p.commonName,
+        p|$p.statusCode
+      ],
+      [
+        'CommonName',
+        'Status'
+      ]
+    )->sort([asc('CommonName')])};
+    mapping: test::goldenwillow::mapping::GardenMapping;
+    runtime: test::goldenwillow::runtime::GardenPrimaryRuntime;
+  }
+  testSuites:
+  [
+    directorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gardenConnection:
+            Relational
+            #{
+              catalogue.plant:
+                'plant_id,common_name,species_code,status_code,bed_code,planted_on,retired_on\n'+
+                '1,Fern,FER,ACTIVE,B1,2020-03-15,\n'+
+                '2,Ivy,IVY,MATURE,B2,2019-06-01,9999-12-31\n'+
+                '3,Moss,MOS,RETIRED,B1,2018-01-01,2021-05-05\n'+
+                '4,Reed,REE,ACTIVE,B3,2021-07-07,\n'+
+                '5,Sage,SAG,ACTIVE,B4,2099-01-01,\n';
+
+              layout.bed:
+                'bed_code,garden_zone,surface_code\n'+
+                'B1,EAST,LOAM\n'+
+                'B2,NORTH,CLAY\n'+
+                'B3,WEST,SAND\n'+
+                'B4,EAST,PEAT\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        fullDirectory:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+          ]
+          asserts:
+          [
+            allFivePlants:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CommonName":"Fern","Status":"ACTIVE"},{"CommonName":"Ivy","Status":"MATURE"},{"CommonName":"Moss","Status":"RETIRED"},{"CommonName":"Reed","Status":"ACTIVE"},{"CommonName":"Sage","Status":"ACTIVE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

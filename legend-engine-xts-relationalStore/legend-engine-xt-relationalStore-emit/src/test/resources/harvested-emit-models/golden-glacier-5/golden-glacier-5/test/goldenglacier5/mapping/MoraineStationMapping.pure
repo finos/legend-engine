@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenglacier5::mapping::MoraineStationMapping
+(
+  test::goldenglacier5::domain::MoraineStage: EnumerationMapping MoraineStageMapping
+  {
+    ACTIVE: ['ACT'],
+    STABILISED: ['STB'],
+    RELICT: ['RLC']
+  }
+
+  test::goldenglacier5::domain::SurveyInstrument: EnumerationMapping SurveyInstrumentMapping
+  {
+    STAKE_ARRAY: ['STK'],
+    LASER_SCAN: ['LSR'],
+    DRONE_PHOTO: ['DRN']
+  }
+
+  *test::goldenglacier5::domain::MoraineStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.station_code
+    )
+    ~mainTable [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station
+    stationCode: [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.station_code,
+    ridgeName: [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.ridge_name,
+    moraineStage: EnumerationMapping MoraineStageMapping: [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.stage_code,
+    surveyInstrument: EnumerationMapping SurveyInstrumentMapping: [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.instrument_code,
+    elevationM: [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.elevation_m,
+    observedOn: [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.observed_on,
+    loggedAt: [test::goldenglacier5::store::MoraineDatabase]moraine.moraine_station.logged_at,
+    basinName: [test::goldenglacier5::store::MoraineDatabase]@Station_Basin | [test::goldenglacier5::store::MoraineDatabase]moraine.drainage_basin.basin_name
+  }
+
+  testSuites:
+  [
+    stationEnumerationSuite:
+    {
+      function: |test::goldenglacier5::domain::MoraineStation.all()->project(
+  [
+    s|$s.stationCode,
+    s|$s.ridgeName,
+    s|$s.moraineStage,
+    s|$s.surveyInstrument,
+    s|$s.basinName,
+    s|$s.elevationM
+  ],
+  [
+    'StationCode',
+    'RidgeName',
+    'Stage',
+    'Instrument',
+    'BasinName',
+    'ElevationM'
+  ]
+)->sort(
+  [
+    asc('StationCode')
+  ]
+);
+      tests:
+      [
+        codeColumnsTranslated:
+        {
+          doc: 'Both coded columns are translated into their enumeration members and the basin name is reached through the declared join; the last fixture row carries a stage code outside the mapped set.';
+          data:
+          [
+            test::goldenglacier5::store::MoraineDatabase:
+              Relational
+              #{
+                moraine.moraine_station:
+                  'station_code,ridge_name,stage_code,instrument_code,elevation_m,observed_on,logged_at,basin_code\n'+
+                  'MS-01,Crescent Ridge,ACT,STK,1840.5,2026-05-04,2026-05-04 06:15:00,DB-1\n'+
+                  'MS-02,Boulder Apron,STB,LSR,1610.25,2026-05-05,2026-05-05 07:20:00,DB-1\n'+
+                  'MS-03,Hanging Bench,RLC,DRN,1725.0,2026-05-06,2026-05-06 05:45:00,DB-2\n'+
+                  'MS-04,Scree Fan,XXX,STK,1490.75,2026-05-07,2026-05-07 08:05:00,DB-2\n';
+
+                moraine.drainage_basin:
+                  'basin_code,basin_name,catchment_area_km2\n'+
+                  'DB-1,Upper Tarn Basin,42.75\n'+
+                  'DB-2,Lower Scree Basin,18.5\n';
+              }#
+          ];
+          asserts:
+          [
+            fourStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"MS-01","RidgeName":"Crescent Ridge","Stage":"ACTIVE","Instrument":"STAKE_ARRAY","BasinName":"Upper Tarn Basin","ElevationM":1840.5},{"StationCode":"MS-02","RidgeName":"Boulder Apron","Stage":"STABILISED","Instrument":"LASER_SCAN","BasinName":"Upper Tarn Basin","ElevationM":1610.25},{"StationCode":"MS-03","RidgeName":"Hanging Bench","Stage":"RELICT","Instrument":"DRONE_PHOTO","BasinName":"Lower Scree Basin","ElevationM":1725.0},{"StationCode":"MS-04","RidgeName":"Scree Fan","Stage":null,"Instrument":"STAKE_ARRAY","BasinName":"Lower Scree Basin","ElevationM":1490.75}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

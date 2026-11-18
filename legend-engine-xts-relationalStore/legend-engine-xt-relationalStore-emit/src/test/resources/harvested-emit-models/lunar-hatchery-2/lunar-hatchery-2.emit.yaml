@@ -1,0 +1,51 @@
+name: lunar-hatchery-2
+title: "Lunar Hatchery - A Thin Rostered Tank Read Refined In Memory Through A Model-Chained Digest Layer"
+description: |
+  A fish-hatchery tank roster whose physical surface is deliberately minimal: one store with a
+  single table of a big-integer key, a bounded label and a single-bit aeration flag, bound by a
+  relational mapping that names its main table alias, declares an explicit primary key and binds
+  only two properties of one class. A model-to-model layer includes that relational mapping and
+  refines the rostered tank into four digest views over five small classes joined by three
+  associations, prefixing tags, stringifying the aeration flag through an unknown fallback and
+  folding the label width outside the physical read. Two H2 connections and a model-chain
+  connection over the roster mapping pair into four engine runtimes, so one execution can read
+  the roster and then transform it in memory without a second call.
+modelSources:
+  model:
+    root: lunar-hatchery-2
+    files:
+      - test/lunarhatchery2/connection/HatcheryConnections.pure
+      - test/lunarhatchery2/domain/HatcheryDomain.pure
+      - test/lunarhatchery2/mapping/HatcheryDigestM2M.pure
+      - test/lunarhatchery2/mapping/HatcheryRosterMapping.pure
+      - test/lunarhatchery2/runtime/HatcheryRuntimes.pure
+      - test/lunarhatchery2/store/HatcheryDb.pure
+features:
+  - execution:mapping-test
+  - scaffolding:model-chain-connection
+  - grammar:association
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - execution:graph-fetch
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association
+  - h2
+  - mapping-test
+  - model-chain
+  - model-to-model
+  - primary-key
+  - relational
+  - tabular-data-set

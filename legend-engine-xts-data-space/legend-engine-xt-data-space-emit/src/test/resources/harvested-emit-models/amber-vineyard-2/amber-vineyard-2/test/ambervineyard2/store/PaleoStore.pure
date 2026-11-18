@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ambervineyard2::store::PaleoStore
+(
+  include test::ambervineyard2::store::FossilStore
+  include test::ambervineyard2::store::SiteStore
+
+  Join Fossil_Site([test::ambervineyard2::store::FossilStore]fossil.dig_fossil.site_id = [test::ambervineyard2::store::SiteStore]site.dig_site.site_id
+    and [test::ambervineyard2::store::SiteStore]site.dig_site.site_status = 'OPEN')
+
+  Join Site_Excavator([test::ambervineyard2::store::SiteStore]site.dig_site.excavator_id = [test::ambervineyard2::store::SiteStore]site.excavator.excavator_id)
+
+  Join Fossil_TaxonRef([test::ambervineyard2::store::FossilStore]fossil.dig_fossil.ref_code = [test::ambervineyard2::store::FossilStore]catalog.taxon_ref.ref_code
+    and [test::ambervineyard2::store::FossilStore]catalog.taxon_ref.ref_type_code = 'PRIMARY')
+
+  Join Fossil_Parent([test::ambervineyard2::store::FossilStore]fossil.dig_fossil.parent_fossil_id = [test::ambervineyard2::store::FossilStore]{target}.fossil_id)
+)

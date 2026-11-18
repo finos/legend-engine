@@ -1,0 +1,176 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedprairie2::service::PlotRegisterAsOf
+{
+  pattern: '/gildedprairie2/v1/plot-register-as-of';
+  title: 'Plot Register As Of A Processing Instant';
+  owners:
+  [
+    'prairie-survey-platform',
+    'grassland-stewardship'
+  ];
+  documentation: 'Enters the model through the processing-temporal plot accessor with a caller-supplied instant, keeps only the plots whose upper-cased name starts with a caller prefix supplied already upper-cased and whose recorded area clears a caller floor, projects the plot together with the region name reached one join away, orders the result and takes a bounded slice of it. The ordering and the bound are part of the plan, so the slice is decided in the generated statement rather than by the caller.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], namePrefix: String[1], minArea: Float[1]|test::gildedprairie2::domain::Plot.all($asOf)->filter(
+      p|($p.plotName->toUpper()->startsWith($namePrefix)) && ($p.plotAreaM2->isNotEmpty() && ($p.plotAreaM2->toOne() > $minArea))
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.plotName,
+        p|$p.regionName,
+        p|$p.plotAreaM2
+      ],
+      [
+        'PlotCode',
+        'PlotName',
+        'RegionName',
+        'AreaM2'
+      ]
+    )->sort(
+      [
+        asc('PlotCode')
+      ]
+    )->limit(2);};
+    mapping: test::gildedprairie2::mapping::PrairieCatalogMapping;
+    runtime: test::gildedprairie2::runtime::PrairieCatalogRuntime;
+  }
+  testSuites:
+  [
+    plotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie_plot.plot:
+                'plot_code,plot_name,region_code,established_on,plot_area_m2,in_z,out_z\n'+
+                'PL-01,North Ridge Sward,RG-01,2019-04-01,2400.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-02,North Bench Sward,RG-01,2019-06-01,1500.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-03,North Hollow Sward,RG-01,2019-07-01,1100.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-04,North Shelf Sward,RG-01,2018-02-01,3000.0,2018-01-01 00:00:00,2019-01-01 00:00:00\n'+
+                'PL-05,North Verge Sward,RG-01,2025-02-01,2600.0,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-06,South Draw Sward,RG-01,2019-08-01,2800.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-07,North Slope Sward,RG-99,2019-09-01,2700.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-08,North Fold Sward,RG-01,2019-10-01,,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+              prairie_ref.region_ref:
+                'region_code,region_name,steward_code,hectares,in_z,out_z\n'+
+                'RG-01,Tallgrass North,ST-01,412.50,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        boundedSliceOfEffectivePlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            namePrefix = 'NORTH',
+            minArea = 1200.0
+          ]
+          asserts:
+          [
+            twoLeadingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-01","PlotName":"North Ridge Sward","RegionName":"Tallgrass North","AreaM2":2400.0},{"PlotCode":"PL-02","PlotName":"North Bench Sward","RegionName":"Tallgrass North","AreaM2":1500.0}]';
+                  }#;
+              }#
+          ]
+        },
+        prefixExcludesOtherPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            namePrefix = 'SOUTH',
+            minArea = 1200.0
+          ]
+          asserts:
+          [
+            onlySouthPlot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-06","PlotName":"South Draw Sward","RegionName":"Tallgrass North","AreaM2":2800.0}]';
+                  }#;
+              }#
+          ]
+        },
+        areaFloorAndAbsentAreaExcluded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            namePrefix = 'NORTH H',
+            minArea = 1200.0
+          ]
+          asserts:
+          [
+            noRowClearsFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstantSelectsClosedVersionWithUnresolvedRegion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2018-06-01T00:00:00,
+            namePrefix = 'NORTH',
+            minArea = 1200.0
+          ]
+          asserts:
+          [
+            onlyClosedVersionRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-04","PlotName":"North Shelf Sward","RegionName":null,"AreaM2":3000.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

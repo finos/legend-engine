@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::embertundra4::service::AnnotatedSpecimens
+{
+  pattern: '/ember-tundra-4/v1/annotated/{processingDate}/{businessDate}';
+  title: 'Herbarium - Confirmed Specimens In A Collection Window';
+  documentation: 'Keeps the specimens of the requested families collected on or before a window end that defaults to the current date when no end is supplied, and that carry at least one business-dated determination note whose verdict confirms the name; every note author of such a specimen is reported once.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['herbarium-determination-desk'] };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1], families: String[*], endDate: StrictDate[0..1]|let windowEnd = if($endDate->isNotEmpty(), |$endDate->toOne(), |today()); test::embertundra4::domain::Specimen.all($processingDate, $businessDate)->filter(s|$s.familyCode->in($families) && ($s.collectedOn <= $windowEnd) && $s.annotations($businessDate)->exists(a|$a.verdict->toUpper()->contains('CONFIRM')))->project([s|$s.specimenCode, s|$s.taxonName, s|$s.annotations($businessDate).authorName], ['Specimen', 'Taxon', 'Author'])->distinct()->sort([asc('Specimen'), asc('Author')]);};
+    mapping: test::embertundra4::mapping::HerbariumMapping;
+    runtime: test::embertundra4::runtime::HerbariumServicesRuntime;
+  }
+  testSuites:
+  [
+    annotatedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herbariumServices:
+            Relational
+            #{
+              herbarium.specimen:
+                'specimen_id,specimen_code,taxon_name,family_code,sheet_count,height_cm,collected_on,condition_code,cabinet_id,in_z,out_z,from_z,thru_z\n'+
+                '1,AN-01,Rosa canina,ROS,2,40.5,2024-05-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,AN-02,Aster amellus,AST,1,35.5,2025-08-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,AN-03,Rosa arvensis,ROS,1,38.5,2026-07-15,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '4,AN-04,Poa annua,POA,1,30.5,2024-04-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '5,AN-05,Rosa gallica,ROS,1,33.5,2023-03-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '6,AN-06,Aster tripolium,AST,1,36.5,2023-02-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '7,AN-07,Rosa majalis,ROS,1,39.5,2099-01-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              herbarium.annotation:
+                'note_id,specimen_id,note_code,author_name,verdict,noted_on,from_z,thru_z\n'+
+                '1,1,NT-01,Iris Vale,confirmed,2025-01-10,2026-01-01,9999-12-31\n'+
+                '2,1,NT-02,Iris Vale,Confirmed again,2025-02-10,2026-01-01,9999-12-31\n'+
+                '3,1,NT-03,Rowan Hale,queried,2025-03-10,2026-01-01,9999-12-31\n'+
+                '4,2,NT-04,Rowan Hale,disputed,2025-09-10,2026-01-01,9999-12-31\n'+
+                '5,3,NT-05,Iris Vale,confirmed,2026-07-20,2026-01-01,9999-12-31\n'+
+                '6,4,NT-06,Iris Vale,confirmed,2024-05-01,2026-01-01,9999-12-31\n'+
+                '7,5,NT-07,Rowan Hale,confirmed,2023-04-01,2024-01-01,2026-01-01\n'+
+                '8,7,NT-08,Iris Vale,confirmed,2099-01-02,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        suppliedWindowEnd:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-06-01,
+            families = ['ROS', 'AST'],
+            endDate = %2026-06-30
+          ]
+          asserts:
+          [
+            onlyTheConfirmedSheetInsideTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen":"AN-01","Taxon":"Rosa canina","Author":"Iris Vale"},{"Specimen":"AN-01","Taxon":"Rosa canina","Author":"Rowan Hale"}]';
+                  }#;
+              }#
+          ]
+        },
+        windowEndDefaultsToToday:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-06-01,
+            families = ['ROS', 'AST']
+          ]
+          asserts:
+          [
+            theLaterConfirmedSheetJoins:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen":"AN-01","Taxon":"Rosa canina","Author":"Iris Vale"},{"Specimen":"AN-01","Taxon":"Rosa canina","Author":"Rowan Hale"},{"Specimen":"AN-03","Taxon":"Rosa arvensis","Author":"Iris Vale"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

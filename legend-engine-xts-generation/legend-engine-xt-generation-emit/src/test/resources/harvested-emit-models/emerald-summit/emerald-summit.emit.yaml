@@ -1,0 +1,25 @@
+name: emerald-summit
+title: "Alpine Survey — Domain Classes with Avro File Generation"
+description: |
+  A mountaineering corpus that exercises EMIT file/artifact generation. Two
+  domain classes (Peak with a derived isEightThousander property, and
+  Expedition) feed an Avro FileGeneration collected into a
+  GenerationSpecification, driving EMIT parse, compile and file-generation
+  phases. Store-less: no mapping, runtime or test execution.
+modelSources:
+  model:
+    root: emerald-summit
+    files:
+      - test/emeraldsummit/domain/MountaineeringDomain.pure
+      - test/emeraldsummit/generation/SummitGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - avro
+  - file-generation
+  - generation-specification
+  - mountaineering

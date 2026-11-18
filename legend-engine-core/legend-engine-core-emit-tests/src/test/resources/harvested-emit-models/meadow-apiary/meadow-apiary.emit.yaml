@@ -1,0 +1,31 @@
+name: meadow-apiary
+title: "Meadow Apiary — Temporal Colony Register"
+description: |
+  An apiary register describes apiaries, hives, colonies, queen lineages, inspections,
+  forage sites, and seasonal forage visits. Three business-temporal classes carry the
+  operating history of apiaries, hives, and colonies, while a shallow hierarchy and
+  eight bidirectional associations connect the register for navigable colony context.
+  Profiles annotate lifecycle, stewardship, and data-quality details across classes,
+  properties, and the forage condition enumeration. The model is a pure domain graph
+  with required, optional, and to-many typed references and no external store.
+modelSources:
+  model:
+    root: meadow-apiary
+    files:
+      - test/meadowapiary/domain/ApiaryDomain.pure
+      - test/meadowapiary/profile/ApiaryProfiles.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:profile
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - apiary
+  - business-temporal
+  - colony-register
+  - pure-domain
+  - queen-lineage

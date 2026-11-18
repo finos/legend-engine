@@ -1,0 +1,508 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelfossil3::mapping::FossilBaseMapping
+(
+  include mapping test::hazelfossil3::mapping::FossilEnumMappings
+
+  *test::hazelfossil3::domain::Specimen[specimen]: Relational
+  {
+    ~filter [test::hazelfossil3::store::FossilDigDb]GradedSpecimens
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]dig.specimen
+    specimenCode: [test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_code,
+    recordCode: concat('SPEC-', toString([test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_id)),
+    registerLabel: 'DIG REGISTER',
+    spanBand: case(
+                lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 20),
+                'SPAN-A',
+                case(
+                  lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 40),
+                  'SPAN-B',
+                  case(
+                    lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 60),
+                    'SPAN-C',
+                    case(
+                      lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 80),
+                      'SPAN-D',
+                      case(
+                        lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 120),
+                        'SPAN-E',
+                        case(
+                          lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 160),
+                          'SPAN-F',
+                          case(
+                            lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 200),
+                            'SPAN-G',
+                            case(
+                              lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 260),
+                              'SPAN-H',
+                              sqlNull()
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+    massScore: minus(
+                 times([test::hazelfossil3::store::FossilDigDb]dig.specimen.span_mm, 100),
+                 times([test::hazelfossil3::store::FossilDigDb]dig.specimen.fragment_count, 10)
+               ),
+    matrixMassG: case(
+                   isNull([test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_mass_g),
+                   0.0,
+                   [test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_mass_g
+                 ),
+    logSummary: case(
+                  and(
+                    isNull([test::hazelfossil3::store::FossilDigDb]dig.specimen.condition_note),
+                    isNull([test::hazelfossil3::store::FossilDigDb]dig.specimen.logged_on)
+                  ),
+                  'UNLOGGED',
+                  case(
+                    equal([test::hazelfossil3::store::FossilDigDb]dig.specimen.condition_note, 'pending'),
+                    'PENDING',
+                    case(
+                      and(
+                        equal([test::hazelfossil3::store::FossilDigDb]dig.specimen.condition_note, 'queued'),
+                        isNull([test::hazelfossil3::store::FossilDigDb]dig.specimen.logged_on)
+                      ),
+                      'QUEUED',
+                      toString([test::hazelfossil3::store::FossilDigDb]dig.specimen.logged_on)
+                    )
+                  )
+                ),
+    matrixLabel: case(
+                   equal([test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_code, 'LS'),
+                   'LIMESTONE ROCK',
+                   case(
+                     equal([test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_code, 'SH'),
+                     'SHALE ROCK',
+                     [test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_code
+                   )
+                 ),
+    faceLabel: [test::hazelfossil3::store::FossilDigDb]@Specimen_Face | [test::hazelfossil3::store::FossilDigDb]dig.specimen_face_vw.face_label,
+    lotMassTotal: [test::hazelfossil3::store::FossilDigDb]@Specimen_Yield | [test::hazelfossil3::store::FossilDigDb]dig.lot_yield_vw.lot_mass_total,
+    bedName: [test::hazelfossil3::store::FossilDigDb]@Specimen_Bed | [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed.bed_name,
+    regionName: [test::hazelfossil3::store::FossilDigDb]@Specimen_Bed > @Bed_Site > @Site_District > @District_Region | [test::hazelfossil3::store::FossilDigDb]codes.region.region_name,
+    bedTally: if(
+                isNull([test::hazelfossil3::store::FossilDigDb]@Specimen_Bed | [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed.fragment_target),
+                0,
+                [test::hazelfossil3::store::FossilDigDb]@Specimen_Bed | [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed.fragment_target
+              ),
+    matrix: EnumerationMapping MatrixSource: [test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_code,
+    prep: EnumerationMapping PrepSource: toUpper(trim([test::hazelfossil3::store::FossilDigDb]dig.specimen.prep_code)),
+    condition: EnumerationMapping ConditionSource: case(
+                 isNotEmpty([test::hazelfossil3::store::FossilDigDb]dig.specimen.condition_code),
+                 toUpper(trim([test::hazelfossil3::store::FossilDigDb]dig.specimen.condition_code)),
+                 'PA'
+               ),
+    tier: EnumerationMapping TierSource: case(
+            lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.fragment_count, 25),
+            'LT',
+            case(
+              lessThan([test::hazelfossil3::store::FossilDigDb]dig.specimen.fragment_count, 60),
+              'ST',
+              'HV'
+            )
+          ),
+    label
+    (
+      labelText: [test::hazelfossil3::store::FossilDigDb]dig.specimen.label_text,
+      sleeveLabel: case(
+                     isNotEmpty([test::hazelfossil3::store::FossilDigDb]dig.specimen.sleeve_text),
+                     toUpper([test::hazelfossil3::store::FossilDigDb]dig.specimen.sleeve_text),
+                     sqlNull()
+                   )
+    ),
+    yield[specimenYield]: [test::hazelfossil3::store::FossilDigDb]@Specimen_Lot,
+    stamp() Inline[specimenStamp]
+  }
+
+  test::hazelfossil3::domain::SpecimenStamp[specimenStamp]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]dig.specimen
+    stampCode: [test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_code,
+    stampLabel: concat('STAMP-', toUpper(substring([test::hazelfossil3::store::FossilDigDb]dig.specimen.specimen_code, 4, 2)))
+  }
+
+  *test::hazelfossil3::domain::SpecimenYield[specimenYield]: Relational
+  {
+    ~groupBy
+    (
+      [test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.specimen_code
+    )
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.specimen_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]dig.fragment_lot
+    specimenCode: [test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.specimen_code,
+    lotCount: count([test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.lot_code),
+    fragmentTotal: sum([test::hazelfossil3::store::FossilDigDb]dig.fragment_lot.fragment_count)
+  }
+
+  *test::hazelfossil3::domain::MatrixRoster[matrixRoster]: Relational
+  {
+    ~distinct
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]dig.specimen
+    matrixCode: [test::hazelfossil3::store::FossilDigDb]dig.specimen.matrix_code,
+    rosterLabel: 'DIG MATRIX'
+  }
+
+  *test::hazelfossil3::domain::QuarryBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed.bed_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed
+    bedCode: [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed.bed_code,
+    bedName: [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed.bed_name,
+    siteCode: [test::hazelfossil3::store::FossilDigDb]registry.quarry_bed.site_code
+  }
+
+  *test::hazelfossil3::domain::DigSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]registry.dig_site.site_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]registry.dig_site
+    siteCode: [test::hazelfossil3::store::FossilDigDb]registry.dig_site.site_code,
+    siteName: [test::hazelfossil3::store::FossilDigDb]registry.dig_site.site_name,
+    districtCode: [test::hazelfossil3::store::FossilDigDb]registry.dig_site.district_code
+  }
+
+  *test::hazelfossil3::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]registry.district.district_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]registry.district
+    districtCode: [test::hazelfossil3::store::FossilDigDb]registry.district.district_code,
+    districtName: [test::hazelfossil3::store::FossilDigDb]registry.district.district_name,
+    regionCode: [test::hazelfossil3::store::FossilDigDb]registry.district.region_code
+  }
+
+  *test::hazelfossil3::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelfossil3::store::FossilDigDb]codes.region.region_code
+    )
+    ~mainTable [test::hazelfossil3::store::FossilDigDb]codes.region
+    regionCode: [test::hazelfossil3::store::FossilDigDb]codes.region.region_code,
+    regionName: [test::hazelfossil3::store::FossilDigDb]codes.region.region_name,
+    terrainLabel: concat('TERRAIN-', toUpper([test::hazelfossil3::store::FossilDigDb]codes.region.terrain_text))
+  }
+
+  test::hazelfossil3::domain::Specimen_Bed: Relational
+  {
+    AssociationMapping
+    (
+      specimens[bed, specimen]: [test::hazelfossil3::store::FossilDigDb]@Specimen_Bed,
+      inBed[specimen, bed]: [test::hazelfossil3::store::FossilDigDb]@Specimen_Bed
+    )
+  }
+
+  test::hazelfossil3::domain::Bed_Site: Relational
+  {
+    AssociationMapping
+    (
+      beds[site, bed]: [test::hazelfossil3::store::FossilDigDb]@Bed_Site,
+      inSite[bed, site]: [test::hazelfossil3::store::FossilDigDb]@Bed_Site
+    )
+  }
+
+  test::hazelfossil3::domain::Site_District: Relational
+  {
+    AssociationMapping
+    (
+      sites[district, site]: [test::hazelfossil3::store::FossilDigDb]@Site_District,
+      inDistrict[site, district]: [test::hazelfossil3::store::FossilDigDb]@Site_District
+    )
+  }
+
+  test::hazelfossil3::domain::District_Region: Relational
+  {
+    AssociationMapping
+    (
+      districts[region, district]: [test::hazelfossil3::store::FossilDigDb]@District_Region,
+      inRegion[district, region]: [test::hazelfossil3::store::FossilDigDb]@District_Region
+    )
+  }
+
+  testSuites:
+  [
+    specimenDerivationSuite:
+    {
+      function: |test::hazelfossil3::domain::Specimen.all()->project(~[specimenCode: s|$s.specimenCode, band: s|$s.spanBand, score: s|$s.massScore, massG: s|$s.matrixMassG, log: s|$s.logSummary, matrixLabel: s|$s.matrixLabel])->sort([~specimenCode->ascending()]);
+      tests:
+      [
+        everyBandArmAndTheLogChain:
+        {
+          doc: 'Covers all eight arms of the span conditional plus the fallback that leaves the band with no value, the arithmetic mass score, the null-defaulted matrix mass and every arm of the four-deep log summary chain, and drops the specimen the store filter withholds.';
+          data:
+          [
+            test::hazelfossil3::store::FossilDigDb:
+              Relational
+              #{
+                dig.specimen:
+                  'specimen_code,specimen_id,bed_code,matrix_code,prep_code,condition_code,condition_note,logged_on,fragment_count,matrix_mass_g,label_text,sleeve_text,grade_flag,span_mm\n'+
+                  'HF-01,101,B-01,LS,raw,WH,pending,,12,1500.5,label north,sleeve alpha,1,15\n'+
+                  'HF-02,102,B-01,SH,cleaned,PA,queued,,20,,label north,,1,30\n'+
+                  'HF-03,103,B-01,SS,mounted,CR,sorted,2026-03-01,28,2600.0,label east,sleeve gamma,2,50\n'+
+                  'HF-04,104,B-02,LS,raw,,,,36,3600.0,label west,sleeve delta,1,70\n'+
+                  'HF-05,105,B-02,SH,cleaned,WH,sorted,2026-03-02,44,4400.0,label west,sleeve epsilon,1,100\n'+
+                  'HF-06,106,B-02,SS,mounted,PA,sorted,2026-03-03,52,5200.0,label south,sleeve zeta,2,150\n'+
+                  'HF-07,107,B-03,LS,raw,CR,sorted,2026-03-04,60,6000.0,label south,sleeve eta,1,180\n'+
+                  'HF-08,108,B-03,ZZ,cleaned,WH,sorted,2026-03-05,68,6800.0,label rim,sleeve theta,1,240\n'+
+                  'HF-09,109,B-03,LS,raw,WH,sorted,2026-03-06,76,7600.0,label rim,sleeve iota,2,400\n'+
+                  'HF-10,110,B-04,LS,raw,WH,sorted,2026-03-07,24,2400.0,label far,sleeve kappa,1,35\n'+
+                  'HF-11,111,B-09,LS,raw,WH,sorted,2026-03-08,30,3000.0,label edge,sleeve lambda,1,25\n'+
+                  'HF-12,112,B-01,LS,raw,WH,sorted,2026-03-09,18,1800.0,label old,sleeve mu,3,22\n';
+              }#
+          ];
+          asserts:
+          [
+            bandedSpecimens:
+              Relation
+              #{
+                specimenCode,band,score,massG,log,matrixLabel
+                HF-01,SPAN-A,1380,1500.5,PENDING,LIMESTONE ROCK
+                HF-02,SPAN-B,2800,0.0,QUEUED,SHALE ROCK
+                HF-03,SPAN-C,4720,2600.0,2026-03-01,SS
+                HF-04,SPAN-D,6640,3600.0,UNLOGGED,LIMESTONE ROCK
+                HF-05,SPAN-E,9560,4400.0,2026-03-02,SHALE ROCK
+                HF-06,SPAN-F,14480,5200.0,2026-03-03,SS
+                HF-07,SPAN-G,17400,6000.0,2026-03-04,LIMESTONE ROCK
+                HF-08,SPAN-H,23320,6800.0,2026-03-05,ZZ
+                HF-09,,39240,7600.0,2026-03-06,LIMESTONE ROCK
+                HF-10,SPAN-B,3260,2400.0,2026-03-07,LIMESTONE ROCK
+                HF-11,SPAN-B,2200,3000.0,2026-03-08,LIMESTONE ROCK;
+              }#
+          ];
+        }
+      ];
+    },
+    specimenReferenceSuite:
+    {
+      function: |test::hazelfossil3::domain::Specimen.all()->project(~[specimenCode: s|$s.specimenCode, face: s|$s.faceLabel, bed: s|$s.bedName, region: s|$s.regionName, tally: s|$s.bedTally, matrix: s|$s.matrix, prep: s|$s.prep, condition: s|$s.condition, tier: s|$s.tier, label: s|$s.label.labelText, sleeve: s|$s.label.sleeveLabel, stamp: s|$s.stamp.stampLabel, record: s|$s.recordCode, register: s|$s.registerLabel])->sort([~specimenCode->ascending()]);
+      tests:
+      [
+        joinPathsEnumerationsAndFoldedBlocks:
+        {
+          doc: 'Reads the derived face view, the single-hop bed name, the four-hop bed-to-site-to-district-to-region path that misses when the district carries no region and again when the bed row is absent, the join-reached fragment target defaulted where it is null, the matrix code no enumeration member claims, the three expression-sourced enumerations, the folded label block with its empty sleeve and the inline stamp.';
+          data:
+          [
+            test::hazelfossil3::store::FossilDigDb:
+              Relational
+              #{
+                dig.specimen:
+                  'specimen_code,specimen_id,bed_code,matrix_code,prep_code,condition_code,condition_note,logged_on,fragment_count,matrix_mass_g,label_text,sleeve_text,grade_flag,span_mm\n'+
+                  'HF-01,101,B-01,LS,raw,WH,pending,,12,1500.5,label north,sleeve alpha,1,15\n'+
+                  'HF-02,102,B-01,SH,cleaned,PA,queued,,20,,label north,,1,30\n'+
+                  'HF-03,103,B-01,SS,mounted,CR,sorted,2026-03-01,28,2600.0,label east,sleeve gamma,2,50\n'+
+                  'HF-04,104,B-02,LS,raw,,,,36,3600.0,label west,sleeve delta,1,70\n'+
+                  'HF-07,107,B-03,LS,raw,CR,sorted,2026-03-04,60,6000.0,label south,sleeve eta,1,180\n'+
+                  'HF-08,108,B-03,ZZ,cleaned,WH,sorted,2026-03-05,68,6800.0,label rim,sleeve theta,1,240\n'+
+                  'HF-10,110,B-04,LS,raw,WH,sorted,2026-03-07,24,2400.0,label far,sleeve kappa,1,35\n'+
+                  'HF-11,111,B-09,LS,raw,WH,sorted,2026-03-08,30,3000.0,label edge,sleeve lambda,1,25\n';
+
+                registry.quarry_bed:
+                  'bed_code,bed_name,site_code,fragment_target\n'+
+                  'B-01,North Bench Bed,S-01,40\n'+
+                  'B-02,Mid Bench Bed,S-01,60\n'+
+                  'B-03,South Bench Bed,S-02,\n'+
+                  'B-04,Far Bench Bed,S-04,15\n';
+
+                registry.dig_site:
+                  'site_code,site_name,district_code\n'+
+                  'S-01,Upper Quarry Site,D-01\n'+
+                  'S-02,Lower Quarry Site,D-02\n'+
+                  'S-04,Outer Quarry Site,D-04\n';
+
+                registry.district:
+                  'district_code,district_name,region_code\n'+
+                  'D-01,Northern District,R-1\n'+
+                  'D-02,Southern District,R-2\n'+
+                  'D-04,Outer District,\n';
+
+                codes.region:
+                  'region_code,region_name,terrain_text\n'+
+                  'R-1,Highland Region,upper slope\n'+
+                  'R-2,Lowland Region,valley floor\n';
+              }#
+          ];
+          asserts:
+          [
+            referencedSpecimens:
+              Relation
+              #{
+                specimenCode,face,bed,region,tally,matrix,prep,condition,tier,label,sleeve,stamp,record,register
+                HF-01,LS/raw,North Bench Bed,Highland Region,40,LIMESTONE,RAW,WHOLE,LIGHT,label north,SLEEVE ALPHA,STAMP-01,SPEC-101,DIG REGISTER
+                HF-02,SH/cleaned,North Bench Bed,Highland Region,40,SHALE,CLEANED,PARTIAL,LIGHT,label north,,STAMP-02,SPEC-102,DIG REGISTER
+                HF-03,SS/mounted,North Bench Bed,Highland Region,40,SANDSTONE,MOUNTED,CRUSHED,STANDARD,label east,SLEEVE GAMMA,STAMP-03,SPEC-103,DIG REGISTER
+                HF-04,LS/raw,Mid Bench Bed,Highland Region,60,LIMESTONE,RAW,PARTIAL,STANDARD,label west,SLEEVE DELTA,STAMP-04,SPEC-104,DIG REGISTER
+                HF-07,LS/raw,South Bench Bed,Lowland Region,0,LIMESTONE,RAW,CRUSHED,HEAVY,label south,SLEEVE ETA,STAMP-07,SPEC-107,DIG REGISTER
+                HF-08,ZZ/cleaned,South Bench Bed,Lowland Region,0,,CLEANED,WHOLE,HEAVY,label rim,SLEEVE THETA,STAMP-08,SPEC-108,DIG REGISTER
+                HF-10,LS/raw,Far Bench Bed,,15,LIMESTONE,RAW,WHOLE,LIGHT,label far,SLEEVE KAPPA,STAMP-10,SPEC-110,DIG REGISTER
+                HF-11,LS/raw,,,0,LIMESTONE,RAW,WHOLE,STANDARD,label edge,SLEEVE LAMBDA,STAMP-11,SPEC-111,DIG REGISTER;
+              }#
+          ];
+        }
+      ];
+    },
+    fragmentYieldSuite:
+    {
+      function: |test::hazelfossil3::domain::Specimen.all()->project(~[specimenCode: s|$s.specimenCode, lotCount: s|$s.yield.lotCount, fragmentTotal: s|$s.yield.fragmentTotal, massTotal: s|$s.lotMassTotal])->sort([~specimenCode->ascending()]);
+      tests:
+      [
+        lotRowsFoldToOneRowPerSpecimen:
+        {
+          doc: 'Reaches the grouped fragment-lot extent and the summing store view from each specimen, folding several lot rows into a lot tally, a fragment total and a mass total; the specimen with no lot row reaches nothing.';
+          data:
+          [
+            test::hazelfossil3::store::FossilDigDb:
+              Relational
+              #{
+                dig.specimen:
+                  'specimen_code,specimen_id,bed_code,matrix_code,prep_code,condition_code,condition_note,logged_on,fragment_count,matrix_mass_g,label_text,sleeve_text,grade_flag,span_mm\n'+
+                  'HF-21,121,B-01,LS,raw,WH,sorted,2026-04-01,12,1500.0,label north,sleeve alpha,1,15\n'+
+                  'HF-22,122,B-01,SH,cleaned,PA,sorted,2026-04-02,20,2000.0,label north,sleeve beta,1,30\n'+
+                  'HF-23,123,B-01,SS,mounted,CR,sorted,2026-04-03,28,2800.0,label east,sleeve gamma,1,50\n';
+
+                dig.fragment_lot:
+                  'lot_code,specimen_code,fragment_count,cleaned_count,lot_mass_g\n'+
+                  'FL-21,HF-21,40,36,1200.0\n'+
+                  'FL-22,HF-21,25,20,800.0\n'+
+                  'FL-23,HF-22,10,10,300.0\n';
+              }#
+          ];
+          asserts:
+          [
+            foldedFragmentLots:
+              Relation
+              #{
+                specimenCode,lotCount,fragmentTotal,massTotal
+                HF-21,2,65,2000.0
+                HF-22,1,10,300.0
+                HF-23,,,;
+              }#
+          ];
+        }
+      ];
+    },
+    matrixRosterSuite:
+    {
+      function: |test::hazelfossil3::domain::MatrixRoster.all()->project(~[matrixCode: r|$r.matrixCode, rosterLabel: r|$r.rosterLabel])->sort([~matrixCode->ascending()]);
+      tests:
+      [
+        repeatedMatrixCodesCollapse:
+        {
+          doc: 'Collapses the repeated matrix codes of the specimen table to one row each and stamps every row with the same literal roster label.';
+          data:
+          [
+            test::hazelfossil3::store::FossilDigDb:
+              Relational
+              #{
+                dig.specimen:
+                  'specimen_code,specimen_id,bed_code,matrix_code,prep_code,condition_code,condition_note,logged_on,fragment_count,matrix_mass_g,label_text,sleeve_text,grade_flag,span_mm\n'+
+                  'HF-31,131,B-01,LS,raw,WH,sorted,2026-05-01,12,1500.0,label north,sleeve alpha,1,15\n'+
+                  'HF-32,132,B-01,LS,cleaned,PA,sorted,2026-05-02,20,2000.0,label north,sleeve beta,1,30\n'+
+                  'HF-33,133,B-01,SH,mounted,CR,sorted,2026-05-03,28,2800.0,label east,sleeve gamma,1,50\n'+
+                  'HF-34,134,B-01,SS,raw,WH,sorted,2026-05-04,30,3000.0,label east,sleeve delta,1,55\n';
+              }#
+          ];
+          asserts:
+          [
+            distinctMatrixCodes:
+              Relation
+              #{
+                matrixCode,rosterLabel
+                LS,DIG MATRIX
+                SH,DIG MATRIX
+                SS,DIG MATRIX;
+              }#
+          ];
+        }
+      ];
+    },
+    referenceChainSuite:
+    {
+      function: |test::hazelfossil3::domain::QuarryBed.all()->project(~[bedCode: b|$b.bedCode, site: b|$b.inSite.siteName, district: b|$b.inSite.inDistrict.districtName, region: b|$b.inSite.inDistrict.inRegion.regionName, terrain: b|$b.inSite.inDistrict.inRegion.terrainLabel])->sort([~bedCode->ascending()]);
+      tests:
+      [
+        associationChainWalksTheReferenceChain:
+        {
+          doc: 'Walks the bed-to-site-to-district-to-region association chain the reference tables carry, so every bed reaches its site name, district name, region name and the literal-prefixed terrain label of that region.';
+          data:
+          [
+            test::hazelfossil3::store::FossilDigDb:
+              Relational
+              #{
+                registry.quarry_bed:
+                  'bed_code,bed_name,site_code,fragment_target\n'+
+                  'B-01,North Bench Bed,S-01,40\n'+
+                  'B-02,Mid Bench Bed,S-01,60\n'+
+                  'B-03,South Bench Bed,S-02,\n';
+
+                registry.dig_site:
+                  'site_code,site_name,district_code\n'+
+                  'S-01,Upper Quarry Site,D-01\n'+
+                  'S-02,Lower Quarry Site,D-02\n';
+
+                registry.district:
+                  'district_code,district_name,region_code\n'+
+                  'D-01,Northern District,R-1\n'+
+                  'D-02,Southern District,R-2\n';
+
+                codes.region:
+                  'region_code,region_name,terrain_text\n'+
+                  'R-1,Highland Region,upper slope\n'+
+                  'R-2,Lowland Region,valley floor\n';
+              }#
+          ];
+          asserts:
+          [
+            walkedChain:
+              Relation
+              #{
+                bedCode,site,district,region,terrain
+                B-01,Upper Quarry Site,Northern District,Highland Region,TERRAIN-UPPER SLOPE
+                B-02,Upper Quarry Site,Northern District,Highland Region,TERRAIN-UPPER SLOPE
+                B-03,Lower Quarry Site,Southern District,Lowland Region,TERRAIN-VALLEY FLOOR;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

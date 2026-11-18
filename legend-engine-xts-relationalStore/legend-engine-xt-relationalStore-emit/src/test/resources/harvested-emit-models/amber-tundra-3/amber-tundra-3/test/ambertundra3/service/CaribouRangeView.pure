@@ -1,0 +1,309 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ambertundra3::service::CaribouRangeView
+{
+  pattern: '/ambertundra3/v1/caribou-range/{environment}';
+  title: 'Amber Tundra - Caribou Range View';
+  ownership: UserList { users: ['tundra-survey-team'] };
+  documentation: 'Filters collared caribou by a date window and a selected range, then serialises the nested herd-range graph.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {windowStart: StrictDate[1], windowEnd: StrictDate[1], rangeCodeParameter: String[1], focusCode: String[1]|test::ambertundra3::domain::Caribou.all()->filter(
+      c|(
+        (
+          (($c.firstSeen >= $windowStart->adjust(-7, DurationUnit.DAYS)) && ($c.firstSeen < $windowEnd)) ||
+          (($c.lastSeen >= $windowStart) && ($c.lastSeen < $windowEnd->adjust(7, DurationUnit.DAYS)))
+        ) &&
+        and(
+          not($c.ranges->filter(r|$r.rangeCode == $rangeCodeParameter)->isEmpty()),
+          and(
+            not(equal($c.herdName, '')),
+            ($c.animalCode == $focusCode)
+          )
+        )
+      )
+    )->graphFetch(
+      #{
+        test::ambertundra3::domain::Caribou
+        {
+          animalCode,
+          herdName,
+          collarStatus,
+          firstSeen,
+          lastSeen,
+          collarAgeMonths,
+          statusLabel,
+          travelLabel,
+          ranges
+          {
+            rangeCode,
+            rangeName,
+            seasonName,
+            latitudeBand
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::ambertundra3::domain::Caribou
+        {
+          animalCode,
+          herdName,
+          collarStatus,
+          firstSeen,
+          lastSeen,
+          collarAgeMonths,
+          statusLabel,
+          travelLabel,
+          ranges
+          {
+            rangeCode,
+            rangeName,
+            seasonName,
+            latitudeBand
+          }
+        }
+      }#
+    )};
+    key: 'environment';
+    executions['field']:
+    {
+      mapping: test::ambertundra3::mapping::HerdMapping;
+      runtime: test::ambertundra3::runtime::TundraRuntime;
+    }
+    executions['survey']:
+    {
+      mapping: test::ambertundra3::mapping::HerdMapping;
+      runtime: test::ambertundra3::runtime::TundraSurveyRuntime;
+    }
+  }
+  testSuites:
+  [
+    conditionalArmsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          tundraField:
+            Relational
+            #{
+              tundra.caribou:
+                'animal_code,herd_name,collar_status,first_seen,last_seen,collar_age_months,range_code\n'+
+                'CAR-A,Amber Herd,A,2026-01-01,2026-07-01,18,R-1\n'+
+                'CAR-B,Amber Herd,B,2026-01-02,2026-07-02,19,R-1\n'+
+                'CAR-C,Amber Herd,C,2026-01-03,2026-07-03,20,R-1\n'+
+                'CAR-D,Amber Herd,D,2026-01-04,2026-07-04,21,R-1\n'+
+                'CAR-E,Amber Herd,E,2026-01-05,2026-07-05,22,R-1\n'+
+                'CAR-F,Amber Herd,F,2026-01-06,2026-07-06,23,R-1\n'+
+                'CAR-N,Amber Herd,,2026-01-07,2026-07-07,24,R-1\n';
+              tundra.herd_range:
+                'range_code,range_name,season_name,latitude_band\n'+
+                'R-1,East Calving Range,Spring,4\n';
+            }#,
+          tundraSurvey:
+            Relational
+            #{
+              tundra.caribou:
+                'animal_code,herd_name,collar_status,first_seen,last_seen,collar_age_months,range_code\n'+
+                'CAR-A,Amber Herd,A,2026-01-01,2026-07-01,18,R-1\n'+
+                'CAR-B,Amber Herd,B,2026-01-02,2026-07-02,19,R-1\n'+
+                'CAR-C,Amber Herd,C,2026-01-03,2026-07-03,20,R-1\n'+
+                'CAR-D,Amber Herd,D,2026-01-04,2026-07-04,21,R-1\n'+
+                'CAR-E,Amber Herd,E,2026-01-05,2026-07-05,22,R-1\n'+
+                'CAR-F,Amber Herd,F,2026-01-06,2026-07-06,23,R-1\n'+
+                'CAR-N,Amber Herd,,2026-01-07,2026-07-07,24,R-1\n';
+              tundra.herd_range:
+                'range_code,range_name,season_name,latitude_band\n'+
+                'R-1,East Calving Range,Spring,4\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        armOne:
+        {
+          keys: ['field'];
+          parameters:
+          [
+            windowStart = %2026-01-01,
+            windowEnd = %2026-12-31,
+            rangeCodeParameter = 'R-1',
+            focusCode = 'CAR-A'
+          ]
+          asserts:
+          [
+            alphaArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"animalCode":"CAR-A","herdName":"Amber Herd","collarStatus":"A","firstSeen":"2026-01-01","lastSeen":"2026-07-01","collarAgeMonths":18,"statusLabel":"ALPHA","travelLabel":null,"ranges":[{"rangeCode":"R-1","rangeName":"East Calving Range","seasonName":"Spring","latitudeBand":4}]}}';
+                  }#;
+              }#
+          ]
+        },
+        armTwo:
+        {
+          keys: ['field'];
+          parameters:
+          [
+            windowStart = %2026-01-01,
+            windowEnd = %2026-12-31,
+            rangeCodeParameter = 'R-1',
+            focusCode = 'CAR-B'
+          ]
+          asserts:
+          [
+            betaArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"animalCode":"CAR-B","herdName":"Amber Herd","collarStatus":"B","firstSeen":"2026-01-02","lastSeen":"2026-07-02","collarAgeMonths":19,"statusLabel":"BETA","travelLabel":null,"ranges":[{"rangeCode":"R-1","rangeName":"East Calving Range","seasonName":"Spring","latitudeBand":4}]}}';
+                  }#;
+              }#
+          ]
+        },
+        armThree:
+        {
+          keys: ['field'];
+          parameters:
+          [
+            windowStart = %2026-01-01,
+            windowEnd = %2026-12-31,
+            rangeCodeParameter = 'R-1',
+            focusCode = 'CAR-C'
+          ]
+          asserts:
+          [
+            gammaArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"animalCode":"CAR-C","herdName":"Amber Herd","collarStatus":"C","firstSeen":"2026-01-03","lastSeen":"2026-07-03","collarAgeMonths":20,"statusLabel":"GAMMA","travelLabel":null,"ranges":[{"rangeCode":"R-1","rangeName":"East Calving Range","seasonName":"Spring","latitudeBand":4}]}}';
+                  }#;
+              }#
+          ]
+        },
+        armFour:
+        {
+          keys: ['field'];
+          parameters:
+          [
+            windowStart = %2026-01-01,
+            windowEnd = %2026-12-31,
+            rangeCodeParameter = 'R-1',
+            focusCode = 'CAR-D'
+          ]
+          asserts:
+          [
+            deltaArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"animalCode":"CAR-D","herdName":"Amber Herd","collarStatus":"D","firstSeen":"2026-01-04","lastSeen":"2026-07-04","collarAgeMonths":21,"statusLabel":null,"travelLabel":"DELTA","ranges":[{"rangeCode":"R-1","rangeName":"East Calving Range","seasonName":"Spring","latitudeBand":4}]}}';
+                  }#;
+              }#
+          ]
+        },
+        armFive:
+        {
+          keys: ['field'];
+          parameters:
+          [
+            windowStart = %2026-01-01,
+            windowEnd = %2026-12-31,
+            rangeCodeParameter = 'R-1',
+            focusCode = 'CAR-E'
+          ]
+          asserts:
+          [
+            epsilonArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"animalCode":"CAR-E","herdName":"Amber Herd","collarStatus":"E","firstSeen":"2026-01-05","lastSeen":"2026-07-05","collarAgeMonths":22,"statusLabel":null,"travelLabel":"EPSILON","ranges":[{"rangeCode":"R-1","rangeName":"East Calving Range","seasonName":"Spring","latitudeBand":4}]}}';
+                  }#;
+              }#
+          ]
+        },
+        armSix:
+        {
+          keys: ['field'];
+          parameters:
+          [
+            windowStart = %2026-01-01,
+            windowEnd = %2026-12-31,
+            rangeCodeParameter = 'R-1',
+            focusCode = 'CAR-F'
+          ]
+          asserts:
+          [
+            phiArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"animalCode":"CAR-F","herdName":"Amber Herd","collarStatus":"F","firstSeen":"2026-01-06","lastSeen":"2026-07-06","collarAgeMonths":23,"statusLabel":null,"travelLabel":"PHI","ranges":[{"rangeCode":"R-1","rangeName":"East Calving Range","seasonName":"Spring","latitudeBand":4}]}}';
+                  }#;
+              }#
+          ]
+        },
+        fallbackNull:
+        {
+          keys: ['survey'];
+          parameters:
+          [
+            windowStart = %2026-01-01,
+            windowEnd = %2026-12-31,
+            rangeCodeParameter = 'R-1',
+            focusCode = 'CAR-N'
+          ]
+          asserts:
+          [
+            nullFallback:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"animalCode":"CAR-N","herdName":"Amber Herd","collarStatus":null,"firstSeen":"2026-01-07","lastSeen":"2026-07-07","collarAgeMonths":24,"statusLabel":null,"travelLabel":null,"ranges":[{"rangeCode":"R-1","rangeName":"East Calving Range","seasonName":"Spring","latitudeBand":4}]}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

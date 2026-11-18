@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealwarren2::service::ColoniesAsOf
+{
+  pattern: '/tealwarren2/coloniesAsOf';
+  title: 'Warren Colonies As Of';
+  owners:
+  [
+    'warren-monitoring'
+  ];
+  documentation: 'Returns monitored rabbit colonies whose business validity window contains the supplied date, projecting the concatenated warren label, the surveyor pair, the derived density tier and a parameterised display tag. Colonies below the supplied burrow threshold are filtered out.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: DateTime[1], minBurrows: Integer[1]|test::tealwarren2::domain::WarrenColony.all($businessDate)->filter(
+      c|($c.burrowCount >= $minBurrows) && ($c.soilCode->length() >= 4)
+    )->project(
+      [
+        c|$c.colonyCode,
+        c|$c.warrenLabel,
+        c|$c.surveyorInitials,
+        c|$c.densityTier,
+        c|$c.displayTag($minBurrows)
+      ],
+      [
+        'ColonyCode',
+        'WarrenLabel',
+        'Surveyor',
+        'DensityTier',
+        'DisplayTag'
+      ]
+    )->sort([asc('ColonyCode')])};
+    mapping: test::tealwarren2::mapping::WarrenMapping;
+    runtime: test::tealwarren2::runtime::WarrenRuntime;
+  }
+  testSuites:
+  [
+    coloniesAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warrenConnection:
+            Relational
+            #{
+              habitat.warren_colony:
+                'colony_code,warren_name,burrow_count,soil_code,surveyor_first,surveyor_last,from_z,thru_z\n'+
+                'WC-01,Bracken Slope,72,CHALK,Ada,Fenwick,2024-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'WC-02,Hollow Ridge,31,LOAM,Ivo,Marsden,2024-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'WC-03,Gorse Ledge,9,SAND,Rhea,Colby,2023-01-01 00:00:00,2024-06-30 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        asOfMid2025:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-06-01T00:00:00,
+            minBurrows = 20
+          ]
+          asserts:
+          [
+            twoLiveColonies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ColonyCode":"WC-01","WarrenLabel":"Bracken Slope #WC-01","Surveyor":"Ada Fenwick","DensityTier":"ESTABLISHED","DisplayTag":"BRACKE/chalk/72"},{"ColonyCode":"WC-02","WarrenLabel":"Hollow Ridge #WC-02","Surveyor":"Ivo Marsden","DensityTier":"GROWING","DisplayTag":"HOLLOW/loam/31"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealwarren2::service::ColoniesAsOfByRegion
+{
+  pattern: '/tealwarren2/coloniesAsOf/{region}';
+  title: 'Warren Colonies As Of by Region';
+  owners:
+  [
+    'warren-monitoring'
+  ];
+  documentation: 'Multi-execution counterpart of the as-of colony query: one execution key per monitoring region, each routed to the warren runtime, so a consumer chooses the environment explicitly rather than inheriting a default.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {businessDate: DateTime[1], minBurrows: Integer[1]|test::tealwarren2::domain::WarrenColony.all($businessDate)->filter(
+      c|$c.burrowCount >= $minBurrows
+    )->project(
+      [
+        c|$c.colonyCode,
+        c|$c.warrenLabel,
+        c|$c.densityTier
+      ],
+      [
+        'ColonyCode',
+        'WarrenLabel',
+        'DensityTier'
+      ]
+    )->sort([asc('ColonyCode')])};
+    key: 'region';
+    executions['upland']:
+    {
+      mapping: test::tealwarren2::mapping::WarrenMapping;
+      runtime: test::tealwarren2::runtime::WarrenRuntime;
+    }
+    executions['lowland']:
+    {
+      mapping: test::tealwarren2::mapping::WarrenMapping;
+      runtime: test::tealwarren2::runtime::WarrenRuntime;
+    }
+  }
+}

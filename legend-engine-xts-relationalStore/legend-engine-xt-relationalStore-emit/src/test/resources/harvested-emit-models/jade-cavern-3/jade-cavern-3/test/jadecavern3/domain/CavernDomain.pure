@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadecavern3::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A surveyed leg of a karst cave system, valid over a business-effective window.'} test::jadecavern3::domain::SurveyLeg
+{
+  legRef: String[1];
+  caveCode: String[1];
+  gradeCode: String[1];
+  crewCode: String[1];
+  loggedMetres: Float[1];
+  spoilMetres: Float[1];
+  periodStart: StrictDate[1];
+  periodEnd: StrictDate[1];
+  loggedOn: StrictDate[1];
+  passage: PassageRecord[0..1];
+  netSpanOn(surveyDate: StrictDate[1])
+  {
+    $this.passage($surveyDate)->toOne().roofHeightMetres - $this.spoilMetres
+  }: Float[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The passage record standing for a survey leg on a given business date.'} test::jadecavern3::domain::PassageRecord
+{
+  passageRef: String[1];
+  caveCode: String[1];
+  roofHeightMetres: Float[1];
+  widthMetres: Float[1];
+  spec: PassageSpec[0..1];
+  altSpec: PassageSpec[0..1];
+}
+
+Class test::jadecavern3::domain::PassageSpec
+{
+  specRef: String[1];
+}
+
+Class test::jadecavern3::domain::SumpSpec extends PassageSpec
+{
+  waterDepthMetres: Float[1];
+}
+
+Class test::jadecavern3::domain::ChamberSpec extends PassageSpec
+{
+  floorAreaSquareMetres: Float[1];
+}

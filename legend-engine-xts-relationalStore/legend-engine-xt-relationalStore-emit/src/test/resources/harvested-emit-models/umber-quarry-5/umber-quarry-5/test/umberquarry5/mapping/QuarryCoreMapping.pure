@@ -1,0 +1,370 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberquarry5::mapping::QuarryCoreMapping
+(
+  include mapping test::umberquarry5::mapping::QuarryRefMapping
+
+  *test::umberquarry5::domain::Block[block]: Relational
+  {
+    ~filter [test::umberquarry5::store::QuarryDb]QuarriedBlocks
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryDb]pit.block.pit_code,
+      [test::umberquarry5::store::QuarryDb]pit.block.bench_no,
+      [test::umberquarry5::store::QuarryDb]pit.block.block_seq
+    )
+    ~mainTable [test::umberquarry5::store::QuarryDb]pit.block
+    blockRef: [test::umberquarry5::store::QuarryDb]pit.block.block_ref,
+    pitCode: [test::umberquarry5::store::QuarryDb]pit.block.pit_code,
+    benchNo: [test::umberquarry5::store::QuarryDb]pit.block.bench_no,
+    blockSeq: [test::umberquarry5::store::QuarryDb]pit.block.block_seq,
+    partsLabel: case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 1), trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 2), concat(trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_2)), case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 3), concat(trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_2), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_3)), case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 4), concat(trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_2), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_3), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_4)), case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 5), concat(trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_2), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_3), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_4), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_5)), case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 6), concat(trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_2), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_3), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_4), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_5), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_6)), case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 7), concat(trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_2), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_3), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_4), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_5), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_6), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_7)), case(equal([test::umberquarry5::store::QuarryDb]pit.block.part_count, 8), concat(trim([test::umberquarry5::store::QuarryDb]pit.block.part_1), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_2), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_3), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_4), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_5), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_6), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_7), '-', trim([test::umberquarry5::store::QuarryDb]pit.block.part_8)), sqlNull())))))))),
+    grade: EnumerationMapping GradeCodes: case(isNull([test::umberquarry5::store::QuarryDb]pit.block.grade_code), 'NULL', case(equal(trim([test::umberquarry5::store::QuarryDb]pit.block.grade_code), ''), 'BLANK', toUpper(trim([test::umberquarry5::store::QuarryDb]pit.block.grade_code)))),
+    shape: EnumerationMapping ShapeCodes: toUpper(trim([test::umberquarry5::store::QuarryDb]pit.block.shape_code)),
+    benchLevel: EnumerationMapping LevelCodes: parseInteger([test::umberquarry5::store::QuarryDb]@Block_Bench | [test::umberquarry5::store::QuarryDb]pit.bench.level_text),
+    sawCut: equal([test::umberquarry5::store::QuarryDb]pit.block.saw_flag, 'Y'),
+    openFace: [test::umberquarry5::store::QuarryDb]@Block_Bench | case(equal(pit.bench.face_code, 'OPEN'), 'true', 'false'),
+    stoneName: [test::umberquarry5::store::QuarryDb]@Block_StoneType | ref.stone_type.type_name,
+    stoneFamily: EnumerationMapping StoneFamilyCodes: [test::umberquarry5::store::QuarryDb]@Block_StoneType | ref.stone_type.family_code,
+    finishLabel: [test::umberquarry5::store::QuarryDb]@Block_Finish | ref.finish_code.finish_label,
+    pitName: [test::umberquarry5::store::QuarryDb]@Block_Bench > @Bench_Pit | pit.quarry_pit.pit_name,
+    districtName: [test::umberquarry5::store::QuarryDb]@Block_Bench > (INNER) @Bench_Pit > @Pit_District | ref.district.district_name,
+    colourTag: [test::umberquarry5::store::QuarryDb]@Block_TagView | yard.block_tag_vw.colour_tag
+  }
+
+  *test::umberquarry5::domain::Bench[bench]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryDb]pit.bench.pit_code,
+      [test::umberquarry5::store::QuarryDb]pit.bench.bench_no
+    )
+    ~mainTable [test::umberquarry5::store::QuarryDb]pit.bench
+    pitCode: [test::umberquarry5::store::QuarryDb]pit.bench.pit_code,
+    benchNo: [test::umberquarry5::store::QuarryDb]pit.bench.bench_no,
+    faceCode: trim([test::umberquarry5::store::QuarryDb]pit.bench.face_code),
+    level: EnumerationMapping LevelCodes: parseInteger([test::umberquarry5::store::QuarryDb]pit.bench.level_text)
+  }
+
+  test::umberquarry5::domain::BlockOnBench: Relational
+  {
+    AssociationMapping
+    (
+      bench[block, bench]: [test::umberquarry5::store::QuarryDb]@Block_Bench,
+      blocks[bench, block]: [test::umberquarry5::store::QuarryDb]@Block_Bench
+    )
+  }
+
+  *test::umberquarry5::domain::YardLot[allLots]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(lotYard, lotOffcut)
+  }
+
+  test::umberquarry5::domain::YardLot[lotYard]: Relational
+  {
+    ~filter [test::umberquarry5::store::QuarryDb]ActiveYardLots
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryDb]yard.lot.lot_code
+    )
+    ~mainTable [test::umberquarry5::store::QuarryDb]yard.lot
+    lotCode: [test::umberquarry5::store::QuarryDb]yard.lot.lot_code,
+    lotSource: 'YARD',
+    yardCode: toUpper(trim([test::umberquarry5::store::QuarryDb]yard.lot.yard_code)),
+    blockRef: [test::umberquarry5::store::QuarryDb]@Lot_Block | pit.block.block_ref
+  }
+
+  test::umberquarry5::domain::YardLot[lotOffcut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryDb]yard.offcut_lot.lot_code
+    )
+    ~mainTable [test::umberquarry5::store::QuarryDb]yard.offcut_lot
+    lotCode: [test::umberquarry5::store::QuarryDb]yard.offcut_lot.lot_code,
+    lotSource: 'OFFCUT',
+    yardCode: toUpper(trim([test::umberquarry5::store::QuarryDb]yard.offcut_lot.yard_code)),
+    blockRef: [test::umberquarry5::store::QuarryDb]@Offcut_Block | pit.block.block_ref
+  }
+
+  *test::umberquarry5::domain::BlockTagSummary[blockTagSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.pit_code,
+      [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.bench_no,
+      [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.block_seq
+    )
+    ~mainTable [test::umberquarry5::store::QuarryDb]yard.block_tag_vw
+    pitCode: [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.pit_code,
+    benchNo: [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.bench_no,
+    blockSeq: [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.block_seq,
+    colourTag: [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.colour_tag,
+    gritTag: [test::umberquarry5::store::QuarryDb]yard.block_tag_vw.grit_tag
+  }
+
+  testSuites:
+  [
+    blockRegisterSuite:
+    {
+      function: |test::umberquarry5::domain::Block.all()->project(
+        [
+        x|$x.blockRef,
+        x|$x.partsLabel,
+        x|$x.grade,
+        x|$x.shape,
+        x|$x.benchLevel,
+        x|$x.sawCut,
+        x|$x.openFace,
+        x|$x.stoneName,
+        x|$x.stoneFamily,
+        x|$x.finishLabel,
+        x|$x.pitName,
+        x|$x.districtName,
+        x|$x.colourTag,
+        x|$x.bench.faceCode
+        ],
+        ['Ref', 'Parts', 'Grade', 'Shape', 'Level', 'Sawn', 'OpenFace', 'Stone', 'Family', 'Finish', 'Pit', 'District', 'Colour', 'BenchFace']
+      )->sort([asc('Ref')]);
+      tests:
+      [
+        everyPartsArmAndSentinels:
+        {
+          doc: 'Each part count from one to eight assembles its own marking and a zero count falls back to null; grade codes are trimmed and upper cased with blank and null sentinels and an unknown grade has no value; the bench level is an integer parse reached over the bench join; the district is reached over three joins and a pit whose district is missing has none; a held block is filtered out.';
+          data:
+          [
+            test::umberquarry5::store::QuarryDb:
+              Relational
+              #{
+                ref.stone_type:
+                  'type_code,type_name,family_code\n'+
+                  'GRN,Granite,IGN\n'+
+                  'LMS,Limestone,SED\n'+
+                  'MRB,Marble,MET\n'+
+                  'TUF,Tuff,VOL\n';
+
+                ref.finish_code:
+                  'finish_code,finish_label\n'+
+                  'RAW,Rough sawn\n'+
+                  'HON,Honed\n'+
+                  'POL,Polished\n';
+
+                ref.district:
+                  'district_code,district_name,active_flag\n'+
+                  'D-1,Southern Fells,Y\n'+
+                  'D-2,Old Workings,N\n'+
+                  'D-3,Eastern Scar,Y\n';
+
+                pit.quarry_pit:
+                  'pit_code,pit_name,district_code\n'+
+                  'PT-1,Umber Hollow,D-1\n'+
+                  'PT-2,Ochre Ledge,D-9\n';
+
+                pit.bench:
+                  'pit_code,bench_no,face_code,level_text\n'+
+                  'PT-1,1,OPEN,1\n'+
+                  'PT-1,2,SHUT,2\n'+
+                  'PT-2,1,OPEN,3\n'+
+                  'PT-2,2,SHUT,7\n';
+
+                pit.block:
+                  'pit_code,bench_no,block_seq,block_ref,type_code,finish_code,grade_code,shape_code,saw_flag,part_count,part_1,part_2,part_3,part_4,part_5,part_6,part_7,part_8,state_code\n'+
+                  'PT-1,1,1,QB-01,GRN,POL,p,cube,Y,1,ash,,,,,,,,Q\n'+
+                  'PT-1,1,2,QB-02,LMS,, s ,  plate ,N,2,ash,birch,,,,,,,Q\n'+
+                  'PT-1,1,3,QB-03,MRB,HON,R,IRR,Y,3,ash,birch,cedar,,,,,,Q\n'+
+                  'PT-1,2,1,QB-04,TUF,POL, ,slab,N,4,ash,birch,cedar,dune,,,,,Q\n'+
+                  'PT-1,2,2,QB-05,GRN,,,cube,Y,5,ash,birch,cedar,dune,elm,,,,Q\n'+
+                  'PT-2,1,1,QB-06,LMS,HON,X,blob,N,6,ash,birch,cedar,dune,elm,fern,,,Q\n'+
+                  'PT-2,1,2,QB-07,MRB,POL,P,slab,Y,7,ash,birch,cedar,dune,elm,fern,gorse,,Q\n'+
+                  'PT-2,2,1,QB-08,GRN,RAW,S,cube,N,8,ash,birch,cedar,dune,elm,fern,gorse,heath,Q\n'+
+                  'PT-2,2,2,QB-09,ZZZ,,R,cube,Y,0,,,,,,,,,Q\n'+
+                  'PT-1,1,4,QB-10,GRN,POL,P,cube,Y,1,ash,,,,,,,,H\n';
+
+                yard.stack_tag:
+                  'pit_code,bench_no,block_seq,tag_group,tag_slot,tag_value\n'+
+                  'PT-1,1,1,1,1,umber\n'+
+                  'PT-1,1,1,2,1,fine\n'+
+                  'PT-1,1,1,1,2,ignored\n'+
+                  'PT-1,1,2,2,1,coarse\n'+
+                  'PT-2,1,1,1,1,ochre\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ref":"QB-01","Parts":"ash","Grade":"PREMIUM","Shape":"CUBE","Level":"UPPER","Sawn":true,"OpenFace":true,"Stone":"Granite","Family":"IGNEOUS","Finish":"Polished","Pit":"Umber Hollow","District":"Southern Fells","Colour":"umber","BenchFace":"OPEN"},{"Ref":"QB-02","Parts":"ash-birch","Grade":"STANDARD","Shape":"SLAB","Level":"UPPER","Sawn":false,"OpenFace":true,"Stone":"Limestone","Family":"SEDIMENTARY","Finish":"Rough sawn","Pit":"Umber Hollow","District":"Southern Fells","Colour":null,"BenchFace":"OPEN"},{"Ref":"QB-03","Parts":"ash-birch-cedar","Grade":"RUBBLE","Shape":"IRREGULAR","Level":"UPPER","Sawn":true,"OpenFace":true,"Stone":"Marble","Family":"METAMORPHIC","Finish":"Honed","Pit":"Umber Hollow","District":"Southern Fells","Colour":null,"BenchFace":"OPEN"},{"Ref":"QB-04","Parts":"ash-birch-cedar-dune","Grade":"BLANK_GRADE","Shape":"SLAB","Level":"MIDDLE","Sawn":false,"OpenFace":false,"Stone":null,"Family":null,"Finish":"Polished","Pit":"Umber Hollow","District":"Southern Fells","Colour":null,"BenchFace":"SHUT"},{"Ref":"QB-05","Parts":"ash-birch-cedar-dune-elm","Grade":"UNGRADED","Shape":"CUBE","Level":"MIDDLE","Sawn":true,"OpenFace":false,"Stone":"Granite","Family":"IGNEOUS","Finish":"Rough sawn","Pit":"Umber Hollow","District":"Southern Fells","Colour":null,"BenchFace":"SHUT"},{"Ref":"QB-06","Parts":"ash-birch-cedar-dune-elm-fern","Grade":null,"Shape":null,"Level":"LOWER","Sawn":false,"OpenFace":true,"Stone":"Limestone","Family":"SEDIMENTARY","Finish":"Honed","Pit":"Ochre Ledge","District":null,"Colour":"ochre","BenchFace":"OPEN"},{"Ref":"QB-07","Parts":"ash-birch-cedar-dune-elm-fern-gorse","Grade":"PREMIUM","Shape":"SLAB","Level":"LOWER","Sawn":true,"OpenFace":true,"Stone":"Marble","Family":"METAMORPHIC","Finish":"Polished","Pit":"Ochre Ledge","District":null,"Colour":null,"BenchFace":"OPEN"},{"Ref":"QB-08","Parts":"ash-birch-cedar-dune-elm-fern-gorse-heath","Grade":"STANDARD","Shape":"CUBE","Level":null,"Sawn":false,"OpenFace":false,"Stone":"Granite","Family":"IGNEOUS","Finish":"Rough sawn","Pit":"Ochre Ledge","District":null,"Colour":null,"BenchFace":"SHUT"},{"Ref":"QB-09","Parts":null,"Grade":"RUBBLE","Shape":"CUBE","Level":null,"Sawn":true,"OpenFace":false,"Stone":null,"Family":null,"Finish":"Rough sawn","Pit":"Ochre Ledge","District":null,"Colour":null,"BenchFace":"SHUT"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    yardLotSuite:
+    {
+      function: |test::umberquarry5::domain::YardLot.all()->project(
+        [
+        x|$x.lotCode,
+        x|$x.lotSource,
+        x|$x.yardCode,
+        x|$x.blockRef
+        ],
+        ['Lot', 'Source', 'Yard', 'Block']
+      )->sort([asc('Lot')]);
+      tests:
+      [
+        yardAndOffcutUnion:
+        {
+          doc: 'Unions yard lots and offcuts; a closed yard lot is filtered out, a rubble lot fails the lot-kind branch of its join and an offcut of an unknown block has no block.';
+          data:
+          [
+            test::umberquarry5::store::QuarryDb:
+              Relational
+              #{
+                pit.block:
+                  'pit_code,bench_no,block_seq,block_ref,type_code,finish_code,grade_code,shape_code,saw_flag,part_count,part_1,part_2,part_3,part_4,part_5,part_6,part_7,part_8,state_code\n'+
+                  'PT-1,1,1,QB-01,GRN,POL,p,cube,Y,1,ash,,,,,,,,Q\n'+
+                  'PT-1,1,2,QB-02,LMS,, s ,  plate ,N,2,ash,birch,,,,,,,Q\n'+
+                  'PT-1,1,3,QB-03,MRB,HON,R,IRR,Y,3,ash,birch,cedar,,,,,,Q\n'+
+                  'PT-2,1,1,QB-06,LMS,HON,X,blob,N,6,ash,birch,cedar,dune,elm,fern,,,Q\n';
+
+                yard.lot:
+                  'lot_code,pit_code,bench_no,block_seq,lot_kind,yard_code\n'+
+                  'L-1,PT-1,1,1,SLAB, y1 \n'+
+                  'L-2,PT-1,1,2,TILE,Y2\n'+
+                  'L-3,PT-1,1,3,RUBBLE,Y1\n'+
+                  'L-4,PT-1,1,1,SLAB,CLOSED\n';
+
+                yard.offcut_lot:
+                  'lot_code,pit_code,bench_no,block_seq,yard_code\n'+
+                  'O-1,PT-2,1,1,Y3\n'+
+                  'O-2,PT-9,9,9,Y3\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"L-1","Source":"YARD","Yard":"Y1","Block":"QB-01"},{"Lot":"L-2","Source":"YARD","Yard":"Y2","Block":"QB-02"},{"Lot":"L-3","Source":"YARD","Yard":"Y1","Block":null},{"Lot":"O-1","Source":"OFFCUT","Yard":"Y3","Block":"QB-06"},{"Lot":"O-2","Source":"OFFCUT","Yard":"Y3","Block":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    blockTagSuite:
+    {
+      function: |test::umberquarry5::domain::BlockTagSummary.all()->project(
+        [
+        x|$x.pitCode,
+        x|$x.blockSeq,
+        x|$x.colourTag,
+        x|$x.gritTag
+        ],
+        ['Pit', 'Seq', 'Colour', 'Grit']
+      )->sort([asc('Pit'), asc('Seq')]);
+      tests:
+      [
+        pivotedTagsPerBlock:
+        {
+          doc: 'The grouped view pivots the colour and grit tags of each block into one row, an off-slot tag being ignored and a missing tag being null.';
+          data:
+          [
+            test::umberquarry5::store::QuarryDb:
+              Relational
+              #{
+                yard.stack_tag:
+                  'pit_code,bench_no,block_seq,tag_group,tag_slot,tag_value\n'+
+                  'PT-1,1,1,1,1,umber\n'+
+                  'PT-1,1,1,2,1,fine\n'+
+                  'PT-1,1,1,1,2,ignored\n'+
+                  'PT-1,1,2,2,1,coarse\n'+
+                  'PT-2,1,1,1,1,ochre\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pit":"PT-1","Seq":1,"Colour":"umber","Grit":"fine"},{"Pit":"PT-1","Seq":2,"Colour":null,"Grit":"coarse"},{"Pit":"PT-2","Seq":1,"Colour":"ochre","Grit":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    benchSuite:
+    {
+      function: |test::umberquarry5::domain::Bench.all()->project(
+        [
+        x|$x.pitCode,
+        x|$x.benchNo,
+        x|$x.faceCode,
+        x|$x.level
+        ],
+        ['Pit', 'Bench', 'Face', 'Level']
+      )->sort([asc('Pit'), asc('Bench')]);
+      tests:
+      [
+        benchLevelsParsed:
+        {
+          doc: 'Bench level text parses to an integer level; an unknown level number has no level.';
+          data:
+          [
+            test::umberquarry5::store::QuarryDb:
+              Relational
+              #{
+                pit.bench:
+                  'pit_code,bench_no,face_code,level_text\n'+
+                  'PT-1,1,OPEN,1\n'+
+                  'PT-1,2,SHUT,2\n'+
+                  'PT-2,1,OPEN,3\n'+
+                  'PT-2,2,SHUT,7\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pit":"PT-1","Bench":1,"Face":"OPEN","Level":"UPPER"},{"Pit":"PT-1","Bench":2,"Face":"SHUT","Level":"MIDDLE"},{"Pit":"PT-2","Bench":1,"Face":"OPEN","Level":"LOWER"},{"Pit":"PT-2","Bench":2,"Face":"SHUT","Level":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

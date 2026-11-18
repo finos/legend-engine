@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::indigoquokka3::diagram::SkyAlmanacDiagram
+{
+  classView cv_0
+  {
+    class: test::indigoquokka3::domain::StarMagnitude;
+    position: (40.0,40.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_1
+  {
+    class: test::indigoquokka3::domain::StarStatistics;
+    position: (340.0,40.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_2
+  {
+    class: test::indigoquokka3::domain::CometMagnitude;
+    position: (640.0,40.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_3
+  {
+    class: test::indigoquokka3::domain::CometStatistics;
+    position: (40.0,240.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_4
+  {
+    class: test::indigoquokka3::domain::AsteroidMagnitude;
+    position: (340.0,240.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_5
+  {
+    class: test::indigoquokka3::domain::AsteroidStatistics;
+    position: (640.0,240.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_6
+  {
+    class: test::indigoquokka3::domain::MeteorShowerRate;
+    position: (40.0,440.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_7
+  {
+    class: test::indigoquokka3::domain::MeteorShowerStatistics;
+    position: (340.0,440.0);
+    rectangle: (240.0,160.0);
+  }
+  classView cv_8
+  {
+    class: test::indigoquokka3::domain::NovaMagnitude;
+    position: (640.0,440.0);
+    rectangle: (240.0,160.0);
+  }
+}

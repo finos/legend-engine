@@ -1,0 +1,392 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigogecko::mapping::GeckoMapping
+(
+  include mapping test::indigogecko::mapping::GeckoEnumMappings
+
+  *test::indigogecko::domain::GeckoRecord[geckoRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.gecko_id
+    )
+    ~mainTable [test::indigogecko::store::GeckoDb]vivarium_core.gecko_log
+    geckoCode: [test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.gecko_code,
+    clutchCode: [test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.clutch_code,
+    handlingBand: case(
+                    and(
+                      equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.temp_grade, 1),
+                      notEqual([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.health_flag, 0)
+                    ),
+                    'gentle-hold',
+                    case(
+                      greaterThan([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.temp_grade, 3),
+                      'warm-hold',
+                      'standard-hold'
+                    )
+                  ),
+    careNote: case(
+                greaterThan([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.health_flag, 2),
+                concat('WATCH-', toUpper([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.clutch_code)),
+                case(
+                  equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.health_flag, 0),
+                  'REST',
+                  sqlNull()
+                )
+              ),
+    registryTag: 'VIVARIUM-REGISTER',
+    feedKind: EnumerationMapping FeedKindMapping: case(
+                equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.feed_code, 'cri'),
+                'CRI',
+                case(
+                  equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.feed_code, 'roa'),
+                  'ROA',
+                  case(
+                    equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.feed_code, 'wor'),
+                    'WOR',
+                    sqlNull()
+                  )
+                )
+              ),
+    moultStage: EnumerationMapping MoultStageMapping: case(
+                  equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.moult_code, 'pre'),
+                  'PS',
+                  case(
+                    equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.moult_code, 'she'),
+                    'SH',
+                    case(
+                      equal([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.moult_code, 'pos'),
+                      'AS',
+                      sqlNull()
+                    )
+                  )
+                ),
+    measurement
+    (
+      lengthMm: [test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.length_mm,
+      girthMm: [test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.girth_mm,
+      sizeLabel: case(
+                   greaterThanEqual([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.length_mm, 120),
+                   'large',
+                   case(
+                     greaterThanEqual([test::indigogecko::store::GeckoDb]vivarium_core.gecko_log.length_mm, 80),
+                     'medium',
+                     'small'
+                   )
+                 )
+    )
+  }
+
+  *test::indigogecko::domain::Habitat[habitat]: Relational
+  {
+    ~filter [test::indigogecko::store::GeckoDb]ActiveHabitatFilter
+    ~primaryKey
+    (
+      [test::indigogecko::store::GeckoDb]vivarium_reference.habitat.habitat_code
+    )
+    ~mainTable [test::indigogecko::store::GeckoDb]vivarium_reference.habitat
+    habitatCode: [test::indigogecko::store::GeckoDb]vivarium_reference.habitat.habitat_code,
+    habitatName: [test::indigogecko::store::GeckoDb]vivarium_reference.habitat.habitat_name,
+    zoneCode: [test::indigogecko::store::GeckoDb]vivarium_reference.habitat.zone_code,
+    tally[habitatTally]: [test::indigogecko::store::GeckoDb]@Habitat_Tally
+  }
+
+  *test::indigogecko::domain::HabitatTally[habitatTally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko::store::GeckoDb]vivarium_core.habitat_tally_view.habitat_code
+    )
+    ~mainTable [test::indigogecko::store::GeckoDb]vivarium_core.habitat_tally_view
+    habitatCode: [test::indigogecko::store::GeckoDb]vivarium_core.habitat_tally_view.habitat_code,
+    geckoCount: [test::indigogecko::store::GeckoDb]vivarium_core.habitat_tally_view.gecko_count,
+    totalWeightG: [test::indigogecko::store::GeckoDb]vivarium_core.habitat_tally_view.total_weight_g
+  }
+
+  *test::indigogecko::domain::KeeperRecord[keeperRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko::store::GeckoDb]vivarium_reference.keeper_log.keeper_code
+    )
+    ~mainTable [test::indigogecko::store::GeckoDb]vivarium_reference.keeper_log
+    keeperCode: [test::indigogecko::store::GeckoDb]vivarium_reference.keeper_log.keeper_code,
+    keeperName: [test::indigogecko::store::GeckoDb]vivarium_reference.keeper_log.keeper_name,
+    dutyNote: 'day-shift roster'
+  }
+
+  test::indigogecko::domain::Habitat_Gecko: Relational
+  {
+    AssociationMapping
+    (
+      geckos[habitat, geckoRecord]: [test::indigogecko::store::GeckoDb]@Gecko_Habitat,
+      habitat[geckoRecord, habitat]: [test::indigogecko::store::GeckoDb]@Gecko_Habitat
+    )
+  }
+
+  test::indigogecko::domain::Keeper_Gecko: Relational
+  {
+    AssociationMapping
+    (
+      tended[keeperRecord, geckoRecord]: [test::indigogecko::store::GeckoDb]@Gecko_Keeper,
+      keeper[geckoRecord, keeperRecord]: [test::indigogecko::store::GeckoDb]@Gecko_Keeper
+    )
+  }
+
+  testSuites:
+  [
+    geckoDerivationSuite:
+    {
+      function: |test::indigogecko::domain::GeckoRecord.all()->graphFetch(
+        #{
+          test::indigogecko::domain::GeckoRecord
+          {
+            geckoCode,
+            clutchCode,
+            handlingBand,
+            careNote,
+            registryTag,
+            feedKind,
+            moultStage,
+            measurement
+            {
+              lengthMm,
+              girthMm,
+              sizeLabel
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::indigogecko::domain::GeckoRecord
+          {
+            geckoCode,
+            clutchCode,
+            handlingBand,
+            careNote,
+            registryTag,
+            feedKind,
+            moultStage,
+            measurement
+            {
+              lengthMm,
+              girthMm,
+              sizeLabel
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        allConditionalArms:
+        {
+          doc: 'Covers every arm of the handling, care-note and size conditionals, the null care-note fallback that neither arm claims, both enumeration translations including the two source values outside the mapped sets, the constant registry tag and the embedded measurement assembled from the register row itself.';
+          data:
+          [
+            test::indigogecko::store::GeckoDb: Reference
+              #{
+                test::indigogecko::data::GeckoTestData
+              }#
+          ];
+          asserts:
+          [
+            nineRegisterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"geckoCode":"GK-01","clutchCode":"CL-A","handlingBand":"gentle-hold","careNote":"WATCH-CL-A","registryTag":"VIVARIUM-REGISTER","feedKind":"CRICKET","moultStage":"PRE_SHED","measurement":{"lengthMm":130,"girthMm":40,"sizeLabel":"large"}},{"geckoCode":"GK-02","clutchCode":"CL-A","handlingBand":"warm-hold","careNote":null,"registryTag":"VIVARIUM-REGISTER","feedKind":"CRICKET","moultStage":"PRE_SHED","measurement":{"lengthMm":100,"girthMm":32,"sizeLabel":"medium"}},{"geckoCode":"GK-03","clutchCode":"CL-B","handlingBand":"standard-hold","careNote":"REST","registryTag":"VIVARIUM-REGISTER","feedKind":"ROACH","moultStage":"SHEDDING","measurement":{"lengthMm":70,"girthMm":22,"sizeLabel":"small"}},{"geckoCode":"GK-04","clutchCode":"CL-B","handlingBand":"gentle-hold","careNote":"WATCH-CL-B","registryTag":"VIVARIUM-REGISTER","feedKind":"WORM","moultStage":"POST_SHED","measurement":{"lengthMm":125,"girthMm":38,"sizeLabel":"large"}},{"geckoCode":"GK-05","clutchCode":"CL-C","handlingBand":"standard-hold","careNote":"REST","registryTag":"VIVARIUM-REGISTER","feedKind":"CRICKET","moultStage":"PRE_SHED","measurement":{"lengthMm":85,"girthMm":26,"sizeLabel":"medium"}},{"geckoCode":"GK-06","clutchCode":"CL-C","handlingBand":"warm-hold","careNote":null,"registryTag":"VIVARIUM-REGISTER","feedKind":"ROACH","moultStage":"SHEDDING","measurement":{"lengthMm":60,"girthMm":20,"sizeLabel":"small"}},{"geckoCode":"GK-07","clutchCode":"CL-D","handlingBand":"gentle-hold","careNote":"WATCH-CL-D","registryTag":"VIVARIUM-REGISTER","feedKind":"WORM","moultStage":"POST_SHED","measurement":{"lengthMm":140,"girthMm":44,"sizeLabel":"large"}},{"geckoCode":"GK-08","clutchCode":"CL-D","handlingBand":"standard-hold","careNote":null,"registryTag":"VIVARIUM-REGISTER","feedKind":null,"moultStage":"PRE_SHED","measurement":{"lengthMm":95,"girthMm":30,"sizeLabel":"medium"}},{"geckoCode":"GK-09","clutchCode":"CL-A","handlingBand":"warm-hold","careNote":"REST","registryTag":"VIVARIUM-REGISTER","feedKind":"CRICKET","moultStage":null,"measurement":{"lengthMm":79,"girthMm":24,"sizeLabel":"small"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    habitatRosterSuite:
+    {
+      function: |test::indigogecko::domain::Habitat.all()->graphFetch(
+        #{
+          test::indigogecko::domain::Habitat
+          {
+            habitatCode,
+            habitatName,
+            zoneCode,
+            geckos
+            {
+              geckoCode
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::indigogecko::domain::Habitat
+          {
+            habitatCode,
+            habitatName,
+            zoneCode,
+            geckos
+            {
+              geckoCode
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        activeHabitatsOnly:
+        {
+          doc: 'Navigates the housing association from the enclosure side across the schema boundary, and shows that the retired enclosure the store filter withholds is absent from the extent together with the animal it houses.';
+          data:
+          [
+            test::indigogecko::store::GeckoDb: Reference
+              #{
+                test::indigogecko::data::GeckoTestData
+              }#
+          ];
+          asserts:
+          [
+            twoActiveEnclosures:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"habitatCode":"HB-1","habitatName":"Fernwall Enclosure","zoneCode":"ZN-NORTH","geckos":[{"geckoCode":"GK-01"},{"geckoCode":"GK-02"},{"geckoCode":"GK-03"},{"geckoCode":"GK-08"}]},{"habitatCode":"HB-2","habitatName":"Driftwood Enclosure","zoneCode":"ZN-SOUTH","geckos":[{"geckoCode":"GK-04"},{"geckoCode":"GK-05"},{"geckoCode":"GK-06"},{"geckoCode":"GK-09"}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    habitatTallySuite:
+    {
+      function: |test::indigogecko::domain::Habitat.all()->graphFetch(
+        #{
+          test::indigogecko::domain::Habitat
+          {
+            habitatCode,
+            tally
+            {
+              habitatCode,
+              geckoCount,
+              totalWeightG
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::indigogecko::domain::Habitat
+          {
+            habitatCode,
+            tally
+            {
+              habitatCode,
+              geckoCount,
+              totalWeightG
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        occupancyTotals:
+        {
+          doc: 'Reaches the grouped inline view through a join path, so the occupancy count and weight total resolve through a derived table rather than a base table.';
+          data:
+          [
+            test::indigogecko::store::GeckoDb: Reference
+              #{
+                test::indigogecko::data::GeckoTestData
+              }#
+          ];
+          asserts:
+          [
+            perEnclosureTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"habitatCode":"HB-1","tally":{"habitatCode":"HB-1","geckoCount":4,"totalWeightG":158.0}},{"habitatCode":"HB-2","tally":{"habitatCode":"HB-2","geckoCount":4,"totalWeightG":155.5}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    keeperMeritSuite:
+    {
+      function: |test::indigogecko::domain::KeeperRecord.all()->graphFetch(
+        #{
+          test::indigogecko::domain::KeeperRecord
+          {
+            keeperCode,
+            keeperName,
+            dutyNote,
+            tended
+            {
+              geckoCode
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::indigogecko::domain::KeeperRecord
+          {
+            keeperCode,
+            keeperName,
+            dutyNote,
+            tended
+            {
+              geckoCode
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        dayShiftMeritsOnly:
+        {
+          doc: 'Navigates the merit association whose join predicate narrows on the keeper shift as well as on the code, so the night-shift keeper is merited with nothing even though register rows name them, and the animal with no keeper code is merited to nobody.';
+          data:
+          [
+            test::indigogecko::store::GeckoDb: Reference
+              #{
+                test::indigogecko::data::GeckoTestData
+              }#
+          ];
+          asserts:
+          [
+            meritedAnimals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"keeperCode":"KP-1","keeperName":"Ada Fern","dutyNote":"day-shift roster","tended":[{"geckoCode":"GK-01"},{"geckoCode":"GK-02"},{"geckoCode":"GK-07"},{"geckoCode":"GK-08"}]},{"keeperCode":"KP-2","keeperName":"Bo Drift","dutyNote":"day-shift roster","tended":[{"geckoCode":"GK-03"},{"geckoCode":"GK-04"},{"geckoCode":"GK-09"}]},{"keeperCode":"KP-3","keeperName":"Cy Dusk","dutyNote":"day-shift roster","tended":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

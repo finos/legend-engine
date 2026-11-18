@@ -1,0 +1,62 @@
+name: ivory-ridge-2
+title: "Ivory Ridge — Aliased Multi-Table Airtime Mapping, Windowed Endpoints & Governed Publication"
+description: |
+  A community-radio airtime schedule spread across four sibling tables in one schema: stations
+  with their transmitter ratings, the programmes they carry, the rostered presenters and the
+  aired slots. Each class mapping selects its own main table and declares an explicit composite
+  primary key of mixed type - the slot key spans a code, an aired date and a sequence number,
+  the programme key spans a code and the carrying station - while the station label is reached
+  through a two-hop join path and one presenter and one station deliberately have no slot of
+  their own. Three structurally distinct endpoints run over the mapping through the local
+  runtime: a genre-filtered projection of mixed-type columns including the derived label,
+  listener-minute and audience-band values, a grouped listener and airtime rollup per station,
+  and a partitioned ranking whose partitions contain tied slots, a single slot and an unattached
+  programme. A warehouse connection fixes the Snowflake dialect, datasource specification and
+  public-key authentication strategy for the warehouse runtime, and a governed publication wires
+  the mapping, both runtimes and the featured endpoints together.
+modelSources:
+  model:
+    root: ivory-ridge-2
+    files:
+      - test/ivoryridge2/connection/BroadcastConnections.pure
+      - test/ivoryridge2/dataspace/BroadcastDataSpace.pure
+      - test/ivoryridge2/domain/BroadcastDomain.pure
+      - test/ivoryridge2/mapping/BroadcastMapping.pure
+      - test/ivoryridge2/runtime/BroadcastRuntimes.pure
+      - test/ivoryridge2/service/AudienceRank.pure
+      - test/ivoryridge2/service/SlotRoster.pure
+      - test/ivoryridge2/service/StationTotals.pure
+      - test/ivoryridge2/store/BroadcastDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - community-radio
+  - composite-primary-key
+  - data-space
+  - h2
+  - main-table-alias
+  - relational-join
+  - service-test
+  - snowflake-connection
+  - window

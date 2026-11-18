@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::goldenotter9::diagram::SanctuaryDiagram
+{
+  classView habitat
+  {
+    class: test::goldenotter9::domain::Habitat;
+    position: (40.0, 40.0);
+    rectangle: (220.0, 140.0);
+  }
+  classView reach
+  {
+    class: test::goldenotter9::domain::RiverReach;
+    position: (360.0, 40.0);
+    rectangle: (220.0, 140.0);
+  }
+  classView holt
+  {
+    class: test::goldenotter9::domain::Holt;
+    position: (360.0, 260.0);
+    rectangle: (220.0, 140.0);
+  }
+  classView sighting
+  {
+    class: test::goldenotter9::domain::Sighting;
+    position: (40.0, 480.0);
+    rectangle: (220.0, 140.0);
+  }
+  classView observer
+  {
+    class: test::goldenotter9::domain::Observer;
+    position: (680.0, 480.0);
+    rectangle: (220.0, 140.0);
+  }
+  propertyView
+  {
+    property: test::goldenotter9::domain::ReachHabitat.habitat;
+    source: reach;
+    target: habitat;
+    points: [(470.0, 110.0), (150.0, 110.0)];
+  }
+  propertyView
+  {
+    property: test::goldenotter9::domain::ReachHolts.holts;
+    source: reach;
+    target: holt;
+    points: [(470.0, 110.0), (470.0, 330.0)];
+  }
+  propertyView
+  {
+    property: test::goldenotter9::domain::HoltSightings.sightings;
+    source: holt;
+    target: sighting;
+    points: [(470.0, 330.0), (150.0, 550.0)];
+  }
+  propertyView
+  {
+    property: test::goldenotter9::domain::ObserverSightings.sightings;
+    source: observer;
+    target: sighting;
+    points: [(790.0, 550.0), (150.0, 550.0)];
+  }
+  propertyView
+  {
+    property: test::goldenotter9::domain::HoltKeeper.keeper;
+    source: holt;
+    target: observer;
+    points: [(470.0, 330.0), (790.0, 550.0)];
+  }
+}

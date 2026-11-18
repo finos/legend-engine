@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of failure categories an error information record can carry.'} test::azurewharf::domain::ErrorCategory
+{
+  VALIDATION,
+  TIMEOUT,
+  NOT_FOUND,
+  INTERNAL
+}
+
+Class {meta::pure::profiles::doc.doc = 'Structured failure detail attached to a response when a survey report operation does not complete.'} test::azurewharf::domain::ErrorInfo
+{
+  category: test::azurewharf::domain::ErrorCategory[1];
+  summary: String[1];
+  detail: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Abstract base for every request in the coastal-survey reporting contract.'} test::azurewharf::domain::ReportRequest
+{
+  requestId: String[1];
+  requestedBy: String[0..1];
+}
+
+Class test::azurewharf::domain::QueryReportRequest extends test::azurewharf::domain::ReportRequest
+{
+  surveyArea: String[1];
+  sinceDepthMetres: Integer[0..1];
+}
+
+Class test::azurewharf::domain::RenderReportRequest extends test::azurewharf::domain::ReportRequest
+{
+  template: test::azurewharf::domain::TemplateArtifact[1];
+  paperless: Boolean[0..1];
+}
+
+Class test::azurewharf::domain::StoreReportRequest extends test::azurewharf::domain::ReportRequest
+{
+  payload: test::azurewharf::domain::DatasetArtifact[1];
+  overwrite: Boolean[0..1];
+}
+
+Class test::azurewharf::domain::DeliverReportRequest extends test::azurewharf::domain::ReportRequest
+{
+  channel: test::azurewharf::domain::DeliveryChannel[1];
+  file: test::azurewharf::domain::FileArtifact[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Abstract base for every response in the coastal-survey reporting contract; may carry error information.'} test::azurewharf::domain::ReportResponse
+{
+  requestId: String[1];
+  error: test::azurewharf::domain::ErrorInfo[0..1];
+}
+
+Class test::azurewharf::domain::QueryReportResponse extends test::azurewharf::domain::ReportResponse
+{
+  dataset: test::azurewharf::domain::DatasetArtifact[0..1];
+  matchedRows: Integer[0..1];
+}
+
+Class test::azurewharf::domain::RenderReportResponse extends test::azurewharf::domain::ReportResponse
+{
+  rendered: test::azurewharf::domain::FileArtifact[0..1];
+}
+
+Class test::azurewharf::domain::StoreReportResponse extends test::azurewharf::domain::ReportResponse
+{
+  storedLocation: String[0..1];
+}
+
+Class test::azurewharf::domain::DeliverReportResponse extends test::azurewharf::domain::ReportResponse
+{
+  deliveredAt: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Abstract base for transfer objects moved between the reporting stages.'} test::azurewharf::domain::ReportArtifact
+{
+  artifactId: String[1];
+  label: String[0..1];
+}
+
+Class test::azurewharf::domain::DatasetArtifact extends test::azurewharf::domain::ReportArtifact
+{
+  rowCount: Integer[1];
+  columns: String[*];
+}
+
+Class test::azurewharf::domain::TemplateArtifact extends test::azurewharf::domain::ReportArtifact
+{
+  layout: String[1];
+  datasetTemplates: test::azurewharf::domain::DatasetArtifact[*];
+}
+
+Class test::azurewharf::domain::FileArtifact extends test::azurewharf::domain::ReportArtifact
+{
+  mediaType: String[1];
+  sizeBytes: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Abstract base for the channels a rendered report can be delivered through.'} test::azurewharf::domain::DeliveryChannel
+{
+  channelId: String[1];
+}
+
+Class test::azurewharf::domain::MailboxChannel extends test::azurewharf::domain::DeliveryChannel
+{
+  address: String[1];
+}
+
+Class test::azurewharf::domain::PortalChannel extends test::azurewharf::domain::DeliveryChannel
+{
+  portalUrl: String[1];
+  requiresSignIn: Boolean[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A recurring emission of a survey report, holding the request that seeds each run.'} test::azurewharf::domain::ReportSchedule
+{
+  scheduleId: String[1];
+  cadence: String[1];
+  seed: test::azurewharf::domain::ReportRequest[1];
+}

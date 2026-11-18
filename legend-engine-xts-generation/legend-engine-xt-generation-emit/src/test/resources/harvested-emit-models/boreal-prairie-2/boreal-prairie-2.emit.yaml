@@ -1,0 +1,34 @@
+name: boreal-prairie-2
+title: "Boreal Prairie 2 — grain handling hierarchy documented in a text element and published as a JSON schema"
+description: |
+  A prairie grain-handling register built around one specialised hierarchy. A handling movement
+  supertype holds what every movement of grain through a terminal has in common, and intake,
+  outload and bin-to-bin transfer movements each add the fields only that kind of movement
+  carries; storage bins and moisture samples sit alongside as plain classes. A markdown text
+  element documents how the hierarchy is meant to be read, so the narrative travels with the
+  model rather than in a separate wiki. A JSON schema file generation is scoped at the supertype
+  with related types pulled in, so the emitted schema covers the specialisations reachable from
+  it, and a generation specification collects that generation as the declared entry point.
+modelSources:
+  model:
+    root: boreal-prairie-2
+    files:
+      - test/borealprairie2/domain/HandlingDomain.pure
+      - test/borealprairie2/generation/HandlingGeneration.pure
+      - test/borealprairie2/text/HandlingOverview.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:text-element
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - file-generation
+  - generation-specification
+  - grain-handling
+  - json-schema
+  - store-less
+  - text-element

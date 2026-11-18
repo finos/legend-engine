@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::sablewharf::mapping::WharfMapping
+(
+  demo::sablewharf::domain::HandlingClass: EnumerationMapping HandlingClassMapping
+  {
+    CHILLED: ['CHILLED'],
+    AMBIENT: ['AMBIENT'],
+    HAZARDOUS: ['HAZARDOUS']
+  }
+
+  demo::sablewharf::domain::BerthAssignment[berthAssignment]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.BERTH_ASSIGNMENT.ASSIGNMENT_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.BERTH_ASSIGNMENT
+    assignmentRef: [demo::sablewharf::store::WharfDatabase]HARBOUR.BERTH_ASSIGNMENT.ASSIGNMENT_REF,
+    berthCode: [demo::sablewharf::store::WharfDatabase]HARBOUR.BERTH_ASSIGNMENT.BERTH_CODE,
+    plan[stowagePlan]: [demo::sablewharf::store::WharfDatabase]@BerthAssignment_StowagePlan
+  }
+
+  demo::sablewharf::domain::StowagePlan[stowagePlan]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_PLAN.PLAN_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_PLAN
+    planRef: [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_PLAN.PLAN_REF,
+    specification[chilledLotSpecification]: [demo::sablewharf::store::WharfDatabase]@StowagePlan_LotSpec,
+    stowageLines[stowageLine]: [demo::sablewharf::store::WharfDatabase]@StowagePlan_StowageLine
+  }
+
+  demo::sablewharf::domain::LotSpecification[lotSpecification]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.LOT_SPEC.SPEC_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.LOT_SPEC
+    specRef: [demo::sablewharf::store::WharfDatabase]HARBOUR.LOT_SPEC.SPEC_REF
+  }
+
+  demo::sablewharf::domain::ChilledLotSpecification[chilledLotSpecification] extends [lotSpecification]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.LOT_SPEC.SPEC_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.LOT_SPEC
+    setPointCelsius: [demo::sablewharf::store::WharfDatabase]HARBOUR.LOT_SPEC.SET_POINT_CELSIUS
+  }
+
+  demo::sablewharf::domain::StowageLine[stowageLine]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_LINE.LINE_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_LINE
+    lineRef: [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_LINE.LINE_REF,
+    handlingClass: EnumerationMapping HandlingClassMapping: [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_LINE.HANDLING_CLASS,
+    grossKilos: [demo::sablewharf::store::WharfDatabase]HARBOUR.STOWAGE_LINE.GROSS_KILOS,
+    unit[reeferCargoUnit]: [demo::sablewharf::store::WharfDatabase]@StowageLine_CargoUnit,
+    spareUnit[flatRackCargoUnit]: [demo::sablewharf::store::WharfDatabase]@StowageLine_SpareCargoUnit
+  }
+
+  demo::sablewharf::domain::CargoUnit[cargoUnit]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT.UNIT_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT
+    unitRef: [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT.UNIT_REF
+  }
+
+  demo::sablewharf::domain::ReeferCargoUnit[reeferCargoUnit] extends [cargoUnit]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT.UNIT_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT
+    plugSlots: [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT.PLUG_SLOTS
+  }
+
+  demo::sablewharf::domain::FlatRackCargoUnit[flatRackCargoUnit] extends [cargoUnit]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT.UNIT_REF
+    )
+    ~mainTable [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT
+    deckLength: [demo::sablewharf::store::WharfDatabase]HARBOUR.CARGO_UNIT.DECK_LENGTH
+  }
+)

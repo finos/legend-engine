@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::ambermarsh2::dataspace::MoorlandRestorationDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'core';
+      description: 'Core tier - the restoration delivery registers bound to the moorland mapping and the core runtime.';
+      mapping: test::ambermarsh2::mapping::MoorlandMapping;
+      defaultRuntime: test::ambermarsh2::runtime::MoorlandCoreRuntime;
+    }
+  ];
+  defaultExecutionContext: 'core';
+  title: 'Moorland Restoration Delivery';
+  description: 'A governed entry point over the restoration delivery side of the moorland estate - the bare peat patches awaiting work, the gully blocks and reprofiled grips already installed, the moss plug batches planted over them and the brash, stone and crew records that supported the work.';
+  elements:
+  [
+    test::ambermarsh2::domain::BarePeatPatch,
+    test::ambermarsh2::domain::GullyBlockInstall,
+    test::ambermarsh2::domain::GripReprofileRun,
+    test::ambermarsh2::domain::SphagnumPlugBatch,
+    test::ambermarsh2::domain::BrashBaleDelivery,
+    test::ambermarsh2::domain::HeatherCutPlot,
+    test::ambermarsh2::domain::PathRepairSection,
+    test::ambermarsh2::domain::ContractorVisit,
+    test::ambermarsh2::domain::MossDonorSite,
+    test::ambermarsh2::domain::GrazingExclosure
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Bare peat stage board';
+      description: 'Patches past the survey stage ordered by slope-weighted area.';
+      executable: test::ambermarsh2::service::BarePeatStageBoard;
+    },
+    {
+      id: 2;
+      title: 'Plug planting board';
+      description: 'Plug batches expressed in whole delivery trays.';
+      executable: test::ambermarsh2::service::PlugPlantingBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'moorland-restoration-desk@example.invalid';
+  };
+}
+
+DataSpace test::ambermarsh2::dataspace::MoorlandMonitoringDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'core';
+      description: 'Core tier - the monitoring registers bound to the moorland mapping and the core runtime.';
+      mapping: test::ambermarsh2::mapping::MoorlandMapping;
+      defaultRuntime: test::ambermarsh2::runtime::MoorlandCoreRuntime;
+    }
+  ];
+  defaultExecutionContext: 'core';
+  title: 'Moorland Condition Monitoring';
+  description: 'A governed entry point over the monitoring side of the same estate - peat depth probes and cores, dipwell and flume readings, erosion pins, vegetation quadrats, flux chambers, drone sorties and the wildfire scars they map.';
+  elements:
+  [
+    test::ambermarsh2::domain::PeatDepthSurvey,
+    test::ambermarsh2::domain::PeatCoreSample,
+    test::ambermarsh2::domain::WaterTableDip,
+    test::ambermarsh2::domain::RunoffFlumeReading,
+    test::ambermarsh2::domain::ErosionPinReading,
+    test::ambermarsh2::domain::VegetationQuadrat,
+    test::ambermarsh2::domain::CarbonFluxChamber,
+    test::ambermarsh2::domain::DroneFlightLog,
+    test::ambermarsh2::domain::WildfireScarMap,
+    test::ambermarsh2::domain::DamInspection
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Peat depth profile board';
+      description: 'Probe depths normalised per probe over a rolling year.';
+      executable: test::ambermarsh2::service::PeatDepthProfileBoard;
+    },
+    {
+      id: 2;
+      title: 'Water table trend board';
+      description: 'Recent dipwell readings with their age in days.';
+      executable: test::ambermarsh2::service::WaterTableTrendBoard;
+    },
+    {
+      id: 3;
+      title: 'Erosion pin exposure board';
+      description: 'Pin exposure rescaled to an annual rate.';
+      executable: test::ambermarsh2::service::ErosionPinExposureBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'moorland-monitoring-desk@example.invalid';
+  };
+}

@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::tealglacier3::service::BridgeRegisterService
+{
+  pattern: '/tealglacier3/v1/bridge-register/{environment}';
+  title: 'Teal Glacier 3 - Bridge Register';
+  ownership: UserList { users: ['alpine-trail-register-desk'] };
+  documentation: 'Publishes the footbridge register as an explicit column contract carrying no predicate of its own: the district name is reached across the declared join inside the mapping and the span label is computed off the mapped code and span after the row is instantiated. The query and mapping are planned under an environment key the caller selects.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {|demo::tealglacier3::domain::TrailBridge.all()->project(
+      [
+        b|$b.bridgeCode,
+        b|$b.districtCode,
+        b|$b.districtName,
+        b|$b.spanLabel,
+        b|$b.spanM,
+        b|$b.inspectedOn,
+        b|$b.loadRated
+      ],
+      [
+        'Bridge',
+        'District',
+        'DistrictName',
+        'SpanLabel',
+        'Span',
+        'Inspected',
+        'LoadRated'
+      ]
+    )};
+    key: 'environment';
+    executions['register']:
+    {
+      mapping: demo::tealglacier3::mapping::TrailMapping;
+      runtime: demo::tealglacier3::runtime::TrailRegisterRuntime;
+    }
+  }
+
+  testSuites:
+  [
+    bridgeRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailRegister:
+            Relational
+            #{
+              alpine.trail_bridge:
+                'bridge_id,bridge_code,district_code,span_m,inspected_on,load_rated\n'+
+                '1,TB-01,DT-01,18,2026-05-04,true\n';
+
+              alpine.district:
+                'district_code,district_name\n'+
+                'DT-01,North Cirque\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerKeyPublishesTheBridgeRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['register'];
+          asserts:
+          [
+            bridgeRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bridge":"TB-01","District":"DT-01","DistrictName":"North Cirque","SpanLabel":"TB-01/018M","Span":18,"Inspected":"2026-05-04","LoadRated":true}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

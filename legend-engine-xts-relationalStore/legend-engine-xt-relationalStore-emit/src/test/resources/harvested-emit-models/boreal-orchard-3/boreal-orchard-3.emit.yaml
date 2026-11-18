@@ -1,0 +1,60 @@
+name: boreal-orchard-3
+title: "Boreal Orchard 3 — Upland Hut and Trail Maintenance Register with a Joined-Table Job Hierarchy"
+description: |
+  An upland walking-network register whose maintenance jobs are read
+  polymorphically off one base table with two joined subtype tables, one for
+  timber and stone bridge decks and one for culvert pipes. The network store
+  spans two schemas — the walked trail side and the keeper roster side — so the
+  job register reaches its hut through a two-hop path and the keeper who holds
+  that hut through a three-hop path that crosses the schema boundary. A second
+  reference store carries the region block and the surface-grade reference; the
+  reference mapping over it declares the surface-grade and hut-class value
+  translations and is included by the network mapping, which adds the job
+  priority and shift kind translations of its own. Every class mapping addresses
+  its columns through a qualified main table and declares its primary key, and
+  each mapping test suite asserts a deterministic projection over fixture rows:
+  the join-reached job register, the register narrowed to its bridge subtype,
+  the hut roster, the closure log, the shift roster, the certificate register,
+  the graded segments and the enumerated surface reference.
+modelSources:
+  model:
+    root: boreal-orchard-3
+    files:
+      - test/borealorchard3/domain/TrailDomain.pure
+      - test/borealorchard3/mapping/TrailNetworkMapping.pure
+      - test/borealorchard3/mapping/TrailReferenceMapping.pure
+      - test/borealorchard3/store/TrailNetworkDb.pure
+      - test/borealorchard3/store/TrailReferenceDb.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-joined-table-inheritance
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-polymorphic-query
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cross-schema
+  - enumeration-mapping
+  - h2
+  - hut-register
+  - joined-table-inheritance
+  - mapping-include
+  - nested-join
+  - polymorphic-query
+  - trail-maintenance

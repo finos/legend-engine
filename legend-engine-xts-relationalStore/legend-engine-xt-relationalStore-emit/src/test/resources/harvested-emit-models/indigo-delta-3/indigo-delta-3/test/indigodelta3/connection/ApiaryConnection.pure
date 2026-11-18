@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::indigodelta3::connection::ApiaryConnection
+{
+  store: test::indigodelta3::store::ApiaryDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists apiary;',
+      'create schema apiary;',
+      'create table apiary.hive_inspection (inspection_id integer primary key, hive_tag varchar(24) not null, yard_code varchar(24) not null, brood_pattern varchar(32) not null, mite_wash_count integer not null, super_count integer not null, log_state varchar(16) not null);',
+      'create table apiary.hive_yard (yard_id integer primary key, yard_code varchar(24) not null, yard_name varchar(120), forage_zone varchar(60), steward_name varchar(120), shelter_note varchar(120));',
+      'create table apiary.forage_sample (sample_id integer primary key, yard_code varchar(24) not null, nectar_source varchar(60) not null, gram_yield integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

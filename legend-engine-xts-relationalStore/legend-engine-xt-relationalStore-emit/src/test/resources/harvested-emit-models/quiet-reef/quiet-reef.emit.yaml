@@ -1,0 +1,56 @@
+name: quiet-reef
+title: "Quiet Reef — an included relational mapping whose conditional, string-built and multi-hop transforms are proved row by row"
+description: |
+  A marine-park coral monitoring model. One store holds patches, reefs, zones,
+  districts and dive surveys, a cross-table filter that keeps only the patches of
+  an open reef, two grouped inline views — one tallying surveys, one banding cover
+  by a store-side conditional — and joins chained up to three hops deep.
+  A base mapping binds the reef, zone and district classes; the patch mapping
+  includes it and derives its labels entirely by transform: an eight-armed tier
+  chain with a fallback, a three-armed health chain with a fallback, a trail
+  string concatenated from the one, two and three hop join paths with an untraced
+  fallback, and a note arm that falls through to a null column. A single mapping
+  suite asserts all ten kept rows so every arm, every hop and both views are hit.
+modelSources:
+  model:
+    root: quiet-reef
+    files:
+      - test/quietreef/domain/ReefDomain.pure
+      - test/quietreef/mapping/ReefBaseMapping.pure
+      - test/quietreef/mapping/ReefPatchMapping.pure
+      - test/quietreef/store/ReefDB.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-table-filter
+  - store:relational-dyna-function
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - coral
+  - cross-table-filter
+  - grouped-view
+  - h2
+  - mapping-include
+  - mapping-test
+  - marine-park
+  - multi-hop-join
+  - reef
+  - string-function

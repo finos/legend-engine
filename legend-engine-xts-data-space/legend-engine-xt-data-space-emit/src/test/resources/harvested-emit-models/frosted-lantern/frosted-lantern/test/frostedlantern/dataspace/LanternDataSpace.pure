@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::frostedlantern::dataspace::LanternDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'catalogue';
+      description: 'Catalogue environment - the lantern item, workshop and finish lot binding served through the in-process catalogue database.';
+      mapping: test::frostedlantern::mapping::LanternMapping;
+      defaultRuntime: test::frostedlantern::runtime::LanternCatalogueRuntime;
+    }
+  ];
+  defaultExecutionContext: 'catalogue';
+  title: 'Frosted Lantern Heritage Catalogue';
+  description: 'Discovery surface over the heritage lantern catalogue: catalogued items, the workshops that made them and the finish lots they were finished in.';
+  elements:
+  [
+    test::frostedlantern::domain::LanternItem,
+    test::frostedlantern::domain::Workshop,
+    test::frostedlantern::domain::FinishLot
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Lantern Register Extract';
+      description: 'The qualified register query over a requested finish, guild and town set.';
+      executable: test::frostedlantern::service::LanternRegisterExtract;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'lantern-catalogue-desk@heritageglass.invalid';
+  };
+}

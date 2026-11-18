@@ -1,0 +1,27 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::ivoryfjord3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A single water sample drawn by a probe unit, carrying its measured readings.'} test::ivoryfjord3::domain::WaterSample
+{
+  sampleCode: String[1];
+  collectorName: String[1];
+  collectedOn: StrictDate[1];
+  temperatureC: Float[1];
+  salinity: Float[1];
+  depthM: Float[1];
+  probe: ProbeUnit[0..1];
+  collectorTag() {if($this.collectorName->length() >= 1, |$this.collectorName->toUpper(), |'UNKNOWN')}: String[1];
+}

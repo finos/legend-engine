@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetorchard::mapping::OrchardMapping
+(
+  *test::russetorchard::domain::Orchard[orchard]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetorchard::store::OrchardDB]grove.orchard.orchard_id
+    )
+    ~mainTable [test::russetorchard::store::OrchardDB]grove.orchard
+    name: [test::russetorchard::store::OrchardDB]grove.orchard.orchard_name
+  }
+
+  *test::russetorchard::domain::FruitTree[fruitTree]: Relational
+  {
+    ~filter [test::russetorchard::store::OrchardDB] HeavyYield
+    ~primaryKey
+    (
+      [test::russetorchard::store::OrchardDB]grove.fruit_tree.tree_id
+    )
+    ~mainTable [test::russetorchard::store::OrchardDB]grove.fruit_tree
+    label: [test::russetorchard::store::OrchardDB]grove.fruit_tree.label,
+    kind: EnumerationMapping FruitKindMapping: [test::russetorchard::store::OrchardDB]grove.fruit_tree.kind_code,
+    yieldKg: [test::russetorchard::store::OrchardDB]grove.fruit_tree.yield_kg
+  }
+
+  test::russetorchard::domain::Orchard_Tree: Relational
+  {
+    AssociationMapping
+    (
+      orchard[fruitTree, orchard]: [test::russetorchard::store::OrchardDB]@Tree_Orchard,
+      trees[orchard, fruitTree]: [test::russetorchard::store::OrchardDB]@Tree_Orchard
+    )
+  }
+
+  test::russetorchard::domain::FruitKind: EnumerationMapping FruitKindMapping
+  {
+    APPLE: ['A'],
+    PEAR: ['P'],
+    CHERRY: ['C']
+  }
+)

@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ExternalFormat
+SchemaSet test::emberotter::external::SightingDigestSchema
+{
+  format: JSON;
+  schemas: [
+    {
+      id: sightingDigest;
+      location: 'SightingDigest.json';
+      content: '{"title":"test::emberotter::domain::SightingDigest","type":"object","properties":{"recordCode":{"type":"string"},"reachCode":{"type":"string"},"otterCount":{"type":"integer"},"waterTemperatureCelsius":{"type":"number"},"pupPresenceFlag":{"type":"string"}},"required":["recordCode"]}';
+    }
+  ];
+}
+
+Binding test::emberotter::external::SightingDigestJsonBinding
+{
+  schemaSet: test::emberotter::external::SightingDigestSchema;
+  schemaId: sightingDigest;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::emberotter::domain::SightingDigest
+  ];
+}
+
+###ExternalFormat
+SchemaSet test::emberotter::external::HoltDigestSchema
+{
+  format: JSON;
+  schemas: [
+    {
+      id: holtDigest;
+      location: 'HoltDigest.json';
+      content: '{"title":"test::emberotter::domain::HoltDigest","type":"object","properties":{"recordCode":{"type":"string"},"holtCode":{"type":"string"},"chamberCount":{"type":"integer"},"substrateLabel":{"type":"string"}},"required":["recordCode"]}';
+    }
+  ];
+}
+
+Binding test::emberotter::external::HoltDigestJsonBinding
+{
+  schemaSet: test::emberotter::external::HoltDigestSchema;
+  schemaId: holtDigest;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::emberotter::domain::HoltDigest
+  ];
+}

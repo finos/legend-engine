@@ -1,0 +1,49 @@
+name: copper-canyon-3-relational
+title: "Copper Canyon — Street-Tree Canopy Inventory over a Two-Table Relational Store"
+description: |
+  A municipal street-tree canopy inventory mapped over a two-table relational
+  store. Planting sites and tree specimens live in separate tables joined on the
+  site code, so the specimen binding reaches its district label through the join
+  while keeping its own primary key and main-table alias on the specimen table.
+  A girth band is derived inside the relational mapping from a nested case
+  expression over trimmed and length-checked character columns, falling through
+  to a SQL null when the species label is too short to classify. A tabular
+  service projects the joined census and both the mapping and the service carry
+  test suites over the same relational fixture.
+
+modelSources:
+  model:
+    root: copper-canyon-3-relational
+    files:
+      - test/coppercanyon3/connection/CanopyConnection.pure
+      - test/coppercanyon3/domain/Canopy.pure
+      - test/coppercanyon3/mapping/CanopyMapping.pure
+      - test/coppercanyon3/runtime/CanopyRuntime.pure
+      - test/coppercanyon3/service/CanopyCensus.pure
+      - test/coppercanyon3/store/CanopyDB.pure
+
+features:
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - canopy-inventory
+  - db2
+  - h2
+  - kerberos
+  - main-table-alias
+  - multi-table
+  - primary-key
+  - projection
+  - service-test
+  - urban-planning

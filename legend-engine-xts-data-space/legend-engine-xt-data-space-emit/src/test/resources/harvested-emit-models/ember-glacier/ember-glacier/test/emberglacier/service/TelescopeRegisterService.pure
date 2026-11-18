@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberglacier::service::TelescopeRegisterService
+{
+  pattern: '/emberglacier/v1/telescope-register';
+  title: 'Ember Glacier - Telescope Register';
+  ownership: UserList { users: ['skywatch-estate-desk'] };
+  documentation: 'Every telescope with its mirror and mount, reaching its enclosure and then the site behind that enclosure, so one projection column is two association hops deep.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::emberglacier::domain::Telescope.all()->project(
+      [
+        t|$t.telescopeCode,
+        t|$t.mountKind,
+        t|$t.mirrorCm,
+        t|$t.dome.domeCode,
+        t|$t.dome.observatory.observatoryName
+      ],
+      [
+        'Telescope',
+        'Mount',
+        'MirrorCm',
+        'Dome',
+        'Observatory'
+      ]
+    )->sort([asc('Telescope')]);
+    mapping: test::emberglacier::mapping::SkywatchMapping;
+    runtime: test::emberglacier::runtime::SkywatchRuntime;
+  }
+  testSuites:
+  [
+    telescopeRegisterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skywatchConnection:
+            Relational
+            #{
+              skywatch.observatory:
+                'observatory_id,observatory_code,observatory_name,elevation_m,opened_on,public_nights\n'+
+                '1,OB-01,Ridge Crest Observatory,1820,2001-04-12,true\n'+
+                '2,OB-02,Lake Bluff Observatory,640,1994-09-30,false\n'+
+                '3,OB-03,Pine Flat Observatory,310,2015-06-01,true\n';
+              skywatch.dome:
+                'dome_id,dome_code,observatory_id,aperture_m,shutter_kind\n'+
+                '1,DM-01,1,6.5,CLAMSHELL\n'+
+                '2,DM-02,1,4.0,UPDOWN\n'+
+                '3,DM-03,2,3.2,ROLLOFF\n';
+              skywatch.telescope:
+                'telescope_id,telescope_code,dome_id,mirror_cm,mount_kind\n'+
+                '1,TS-01,1,90,EQUATORIAL\n'+
+                '2,TS-02,2,60,ALTAZ\n'+
+                '3,TS-03,3,40,ALTAZ\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyTelescopeWithItsSite:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeTelescopes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Telescope":"TS-01","Mount":"EQUATORIAL","MirrorCm":90,"Dome":"DM-01","Observatory":"Ridge Crest Observatory"},{"Telescope":"TS-02","Mount":"ALTAZ","MirrorCm":60,"Dome":"DM-02","Observatory":"Ridge Crest Observatory"},{"Telescope":"TS-03","Mount":"ALTAZ","MirrorCm":40,"Dome":"DM-03","Observatory":"Lake Bluff Observatory"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarprairie4::mapping::PrairieMapping
+(
+  test::cedarprairie4::domain::PlotStanding: EnumerationMapping StandingCodeMapping
+  {
+    SEEDED: ['SEEDED'],
+    ESTABLISHING: ['ESTABLISHING'],
+    ESTABLISHED: ['ESTABLISHED'],
+    RETIRED: ['RETIRED']
+  }
+
+  *test::cedarprairie4::domain::RestorationPlot[plot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot.plot_code
+    )
+    ~mainTable [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot
+    plotCode: [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot.plot_code,
+    plotName: [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot.plot_name,
+    regionName: [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot.region_name,
+    hectares: [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot.hectares,
+    standing: EnumerationMapping StandingCodeMapping: [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot.standing_code,
+    parentPlotName: [test::cedarprairie4::store::PrairieDb]@Plot_Parent | [test::cedarprairie4::store::PrairieDb]prairie.restoration_plot.plot_name
+  }
+
+  *test::cedarprairie4::domain::PlotSurvey[survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarprairie4::store::PrairieDb]prairie.plot_survey.survey_code
+    )
+    ~mainTable [test::cedarprairie4::store::PrairieDb]prairie.plot_survey
+    surveyCode: [test::cedarprairie4::store::PrairieDb]prairie.plot_survey.survey_code,
+    plotCode: [test::cedarprairie4::store::PrairieDb]prairie.plot_survey.plot_code,
+    coverPct: [test::cedarprairie4::store::PrairieDb]prairie.plot_survey.cover_pct,
+    surveyedOn: [test::cedarprairie4::store::PrairieDb]prairie.plot_survey.surveyed_on,
+    crewReport: Binding test::cedarprairie4::binding::CrewReportBinding : [test::cedarprairie4::store::PrairieDb]prairie.plot_survey.crew_doc
+  }
+
+  testSuites:
+  [
+    prairieMappingSuite:
+    {
+      function: |test::cedarprairie4::domain::RestorationPlot.all()->project(
+  [
+    p|$p.plotCode,
+    p|$p.plotName,
+    p|$p.regionName,
+    p|$p.standing,
+    p|$p.parentPlotName
+  ],
+  [
+    'PlotCode',
+    'PlotName',
+    'RegionName',
+    'Standing',
+    'ParentPlotName'
+  ]
+)->sort(
+  [
+    asc('PlotCode')
+  ]
+);
+      tests:
+      [
+        nestedPlotsReachTheirParentName:
+        {
+          doc: 'Each nested plot reaches its parent plot name over the self join inside the plot table, the top plot carries no parent name, and every standing code resolves through the enumeration mapping.';
+          data:
+          [
+            test::cedarprairie4::store::PrairieDb:
+              Relational
+              #{
+                prairie.restoration_plot:
+                  'plot_code,plot_name,region_name,hectares,standing_code,parent_plot_code\n'+
+                  'PL-1,North Prairie,Upper Prairie,12.5,ESTABLISHED,\n'+
+                  'PL-2,North Verge,Upper Prairie,2.5,ESTABLISHING,PL-1\n'+
+                  'PL-3,South Swale,Lower Prairie,4.0,SEEDED,PL-1\n';
+              }#
+          ];
+          asserts:
+          [
+            parentNameReachedOnlyByNestedPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-1","PlotName":"North Prairie","RegionName":"Upper Prairie","Standing":"ESTABLISHED","ParentPlotName":null},{"PlotCode":"PL-2","PlotName":"North Verge","RegionName":"Upper Prairie","Standing":"ESTABLISHING","ParentPlotName":"North Prairie"},{"PlotCode":"PL-3","PlotName":"South Swale","RegionName":"Lower Prairie","Standing":"SEEDED","ParentPlotName":"North Prairie"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,48 @@
+name: fabled-ridge-7
+title: "Observatory Night-Log Digest — Ten Shared Rule Functions Driving One Model-to-Model Report over Referenced Data Elements"
+description: |
+  A public observatory's volunteer logbook feed digested into the night-session report it publishes.
+  The raw log payload arrives as a nested, almost entirely optional graph — the conditions read off
+  the sky, the filters and targets worked and the instrument used — and a single model-to-model class
+  mapping derives every published column by calling into ten shared, separately tested rule
+  functions rather than by inlining the logic: the stamped log key, the observer attribution with
+  its unsigned-page fallback, an eight-step seeing band, a four-step cloud band, the filter and
+  target summaries that tell a single-entry night from a broad-band and a narrow-band set, the
+  instrument and aperture classes, a night grade that composes the seeing reading with the cloud
+  reading over nine arms, and the usability the grade and filter count together allow. Each rule
+  function carries its own assertions, and the service is exercised by three suites whose input is
+  supplied by referenced data elements: one walking every seeing step and the unread-sky fallback,
+  one walking every grade arm including both readings absent, and one walking the logbook gaps — an
+  unsigned page, an unnamed instrument, an unrecorded aperture and an unfiltered, idle night.
+modelSources:
+  model:
+    root: fabled-ridge-7
+    files:
+      - test/fabledridge7/connection/NightLogConnection.pure
+      - test/fabledridge7/data/NightLogData.pure
+      - test/fabledridge7/domain/NightLogDomain.pure
+      - test/fabledridge7/function/NightLogRules.pure
+      - test/fabledridge7/mapping/NightSessionM2M.pure
+      - test/fabledridge7/runtime/NightLogRuntime.pure
+      - test/fabledridge7/service/NightSessionDigestService.pure
+features:
+  - execution:data-element
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:function
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: basic
+tags:
+  - astronomy
+  - conditional-arms
+  - data-element
+  - deep-expression
+  - graph-fetch
+  - model-to-model
+  - reusable-function
+  - service-test

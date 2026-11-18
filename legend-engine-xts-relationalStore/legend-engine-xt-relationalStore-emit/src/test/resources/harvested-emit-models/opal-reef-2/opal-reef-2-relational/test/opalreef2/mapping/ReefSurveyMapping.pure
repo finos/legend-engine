@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalreef2::mapping::ReefSurveyMapping
+(
+  test::opalreef2::domain::Tidepool[pool]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalreef2::store::ReefSurveyDB]tidepool.pool.pool_id
+    )
+    ~mainTable [test::opalreef2::store::ReefSurveyDB]tidepool.pool
+    poolCode: [test::opalreef2::store::ReefSurveyDB]tidepool.pool.pool_code,
+    shoreZone: [test::opalreef2::store::ReefSurveyDB]tidepool.pool.shore_zone,
+    exposureClass: [test::opalreef2::store::ReefSurveyDB]tidepool.pool.exposure_class
+  }
+
+  test::opalreef2::domain::Census[census]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalreef2::store::ReefSurveyDB]tidepool.census.census_id
+    )
+    ~mainTable [test::opalreef2::store::ReefSurveyDB]tidepool.census
+    censusCode: [test::opalreef2::store::ReefSurveyDB]tidepool.census.census_code,
+    species: [test::opalreef2::store::ReefSurveyDB]tidepool.census.species_name,
+    tally: [test::opalreef2::store::ReefSurveyDB]tidepool.census.tally_n,
+    surveyOn: [test::opalreef2::store::ReefSurveyDB]tidepool.census.survey_on,
+    surveyor: [test::opalreef2::store::ReefSurveyDB]tidepool.census.surveyor_name,
+    surveyMethod: [test::opalreef2::store::ReefSurveyDB]tidepool.census.method_c,
+    pool[pool]: [test::opalreef2::store::ReefSurveyDB]@Census_Pool
+  }
+)

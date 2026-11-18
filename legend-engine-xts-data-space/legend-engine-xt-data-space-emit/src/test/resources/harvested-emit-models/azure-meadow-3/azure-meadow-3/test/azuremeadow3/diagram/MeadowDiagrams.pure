@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::azuremeadow3::diagram::MeadowCutDiagram
+{
+  classView parcel-cv
+  {
+    class: test::azuremeadow3::domain::MeadowParcel;
+    position: (300.0,180.0);
+    rectangle: (260.0,120.0);
+  }
+  classView alpine-cv
+  {
+    class: test::azuremeadow3::domain::AlpineParcel;
+    position: (700.0,180.0);
+    rectangle: (280.0,140.0);
+  }
+  classView cut-cv
+  {
+    class: test::azuremeadow3::domain::HayCut;
+    position: (1120.0,180.0);
+    rectangle: (280.0,160.0);
+  }
+}
+
+
+###Diagram
+Diagram test::azuremeadow3::diagram::MeadowTerraceDiagram
+{
+  classView terrace-cv
+  {
+    class: test::azuremeadow3::domain::TerraceRef;
+    position: (320.0,420.0);
+    rectangle: (260.0,120.0);
+  }
+  classView load-cv
+  {
+    class: test::azuremeadow3::domain::TerraceLoad;
+    position: (760.0,420.0);
+    rectangle: (260.0,120.0);
+  }
+  classView summary-cv
+  {
+    class: test::azuremeadow3::domain::TerraceSummary;
+    position: (1200.0,420.0);
+    rectangle: (260.0,120.0);
+  }
+}

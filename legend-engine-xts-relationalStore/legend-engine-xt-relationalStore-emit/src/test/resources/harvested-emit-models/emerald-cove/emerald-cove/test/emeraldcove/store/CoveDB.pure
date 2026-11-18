@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emeraldcove::store::CoveDB
+(
+  Schema cove
+  (
+    Table rockpool_walk
+    (
+      walk_id VARCHAR(24) PRIMARY KEY,
+      walk_name VARCHAR(80) NOT NULL,
+      pool_id VARCHAR(16),
+      guide_id VARCHAR(16),
+      marker_code VARCHAR(12),
+      marker_label VARCHAR(60),
+      walk_state VARCHAR(12)
+    )
+    Table tide_pool
+    (
+      pool_id VARCHAR(16) PRIMARY KEY,
+      pool_name VARCHAR(60),
+      shore_id VARCHAR(16),
+      access_code VARCHAR(12)
+    )
+    Table shore_section
+    (
+      shore_id VARCHAR(16) PRIMARY KEY,
+      shore_label VARCHAR(60),
+      exposure_code VARCHAR(12)
+    )
+    Table walk_guide
+    (
+      guide_id VARCHAR(16) PRIMARY KEY,
+      guide_name VARCHAR(80),
+      guide_grade VARCHAR(8)
+    )
+  )
+
+  Filter OpenPools(cove.tide_pool.access_code = 'OPEN')
+  Filter WalkOnOpenPool(cove.rockpool_walk.pool_id = cove.tide_pool.pool_id and cove.tide_pool.access_code = 'OPEN')
+
+  Join Walk_Pool(cove.rockpool_walk.pool_id = cove.tide_pool.pool_id)
+  Join Pool_Shore(cove.tide_pool.shore_id = cove.shore_section.shore_id)
+  Join Walk_Guide(cove.rockpool_walk.guide_id = cove.walk_guide.guide_id)
+)

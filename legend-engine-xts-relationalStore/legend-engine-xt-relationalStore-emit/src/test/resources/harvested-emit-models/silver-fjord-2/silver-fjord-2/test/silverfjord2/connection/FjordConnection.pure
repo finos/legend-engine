@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::silverfjord2::connection::FjordGaugeConnection
+{
+  store: test::silverfjord2::store::FjordDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists fjord;',
+      'create schema fjord;',
+      'create table fjord.tide_gauge (reading_id integer primary key, gauge_name varchar(200) not null, station_code varchar(50) not null, gauge_status varchar(20) not null, tide_height integer not null, wave_count integer not null);',
+      'insert into fjord.tide_gauge values (1, \'Outer Sill\', \'NorthArm\', \'OPEN\', 120, 40);',
+      'insert into fjord.tide_gauge values (2, \'Inner Sill\', \'NorthArm\', \'ACTIVE\', 80, 60);',
+      'insert into fjord.tide_gauge values (3, \'Dry Shelf\', \'NorthArm\', \'SEALED\', 0, 10);',
+      'insert into fjord.tide_gauge values (4, \'Far Head\', \'SouthArm\', \'OPEN\', 200, 90);',
+      'insert into fjord.tide_gauge values (5, \'Mid Reach\', \'NorthArm\', \'OPEN\', 140, 20);'
+      ];
+  };
+  auth: DefaultH2;
+}

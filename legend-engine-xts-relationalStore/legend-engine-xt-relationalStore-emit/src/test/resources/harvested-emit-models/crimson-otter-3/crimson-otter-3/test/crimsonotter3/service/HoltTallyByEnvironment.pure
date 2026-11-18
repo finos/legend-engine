@@ -1,0 +1,189 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::crimsonotter3::service::HoltTallyByEnvironment
+{
+  pattern: '/crimsonotter/v1/holt-tally/{catchmentCode}';
+  title: 'Riverbank Otter Survey - Occupied Holt Tally';
+  owners:
+  [
+    'riverbank-otter-survey',
+    'catchment-monitoring'
+  ];
+  documentation: 'Tallies the graded holts of one catchment, keeping only the holts with at least one field visit that was not logged as abandoned, and banding each kept holt by the days between its last visit and the requested survey instant before the rows are grouped on the catchment reached through the river reach. Multi-execution keyed by environment so the same body plans against the field runtime and the mirrored runtime.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {catchmentCode: String[1], gradeCodes: String[*], asOf: StrictDate[1]|demo::crimsonotter3::domain::OtterHolt.all()->filter(
+      h|(($h.visits->exists(v|($v.outcomeCode == 'ABANDONED')->not())) && ($h.catchmentCode->toOne() == $catchmentCode)) && ($h.gradeCode->in($gradeCodes))
+    )->project(
+      [
+        col(h|$h.catchmentCode->toOne(), 'Catchment'),
+        col(h|$h.holtCode, 'Holt'),
+        col(h|demo::crimsonotter3::function::visitLagDays($h.lastVisitedOn, $asOf), 'LagDays')
+      ]
+    )->groupBy(
+      [
+        'Catchment'
+      ],
+      [
+        agg('Holts', x|$x.getString('Holt'), y|$y->count()),
+        agg('MaxLagDays', x|$x.getInteger('LagDays'), y|$y->max())
+      ]
+    )->sort([asc('Catchment')])};
+    key: 'environment';
+    executions['field']:
+    {
+      mapping: demo::crimsonotter3::mapping::OtterMapping;
+      runtime: demo::crimsonotter3::runtime::OtterFieldRuntime;
+    }
+    executions['mirror']:
+    {
+      mapping: demo::crimsonotter3::mapping::OtterMapping;
+      runtime: demo::crimsonotter3::runtime::OtterMirrorRuntime;
+    }
+  }
+  testSuites:
+  [
+    fieldTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fieldConnection:
+            Relational
+            #{
+              survey.river_reach:
+                'reach_code,reach_name,catchment_code\n'+
+                'R-1,Willow Bend,C-NORTH\n'+
+                'R-2,Alder Shallows,C-SOUTH\n';
+              survey.otter_holt:
+                'holt_code,holt_name,reach_code,grade_code,bank_side,last_visited_on,spraint_count\n'+
+                'H-1,Willow Root,R-1,A,LEFT,2026-04-01,12\n'+
+                'H-2,Kingfisher Cut,R-1,B,RIGHT,2026-03-20,4\n'+
+                'H-3,Alder Stump,R-2,A,LEFT,2026-03-01,7\n'+
+                'H-4,Sedge Hollow,R-1,C,LEFT,2026-02-10,0\n';
+              survey.holt_visit:
+                'visit_code,holt_code,visited_on,outcome_code,observer_name,minutes_spent\n'+
+                'V-1,H-1,2026-04-01,OCCUPIED,crew-a,45\n'+
+                'V-2,H-2,2026-03-20,ABANDONED,crew-a,30\n'+
+                'V-3,H-3,2026-03-01,OCCUPIED,crew-b,25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northernCatchmentKeepsOnlyTheUnabandonedGradedHolt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['field'];
+          parameters:
+          [
+            catchmentCode = 'C-NORTH',
+            gradeCodes = ['A', 'B'],
+            asOf = %2026-04-11
+          ]
+          asserts:
+          [
+            oneOccupiedNorthernHolt:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Catchment":"C-NORTH","Holts":1,"MaxLagDays":10}]';
+                  }#;
+              }#
+          ]
+        },
+        southernCatchmentBandsItsHoltOnTheComputedLag:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['field'];
+          parameters:
+          [
+            catchmentCode = 'C-SOUTH',
+            gradeCodes = ['A'],
+            asOf = %2026-04-11
+          ]
+          asserts:
+          [
+            oneOccupiedSouthernHolt:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Catchment":"C-SOUTH","Holts":1,"MaxLagDays":41}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    mirrorTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          mirrorConnection:
+            Relational
+            #{
+              survey.river_reach:
+                'reach_code,reach_name,catchment_code\n'+
+                'R-2,Alder Shallows,C-SOUTH\n';
+              survey.otter_holt:
+                'holt_code,holt_name,reach_code,grade_code,bank_side,last_visited_on,spraint_count\n'+
+                'H-3,Alder Stump,R-2,A,LEFT,2026-03-01,7\n';
+              survey.holt_visit:
+                'visit_code,holt_code,visited_on,outcome_code,observer_name,minutes_spent\n'+
+                'V-9,H-3,2026-03-01,ABANDONED,crew-b,25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        mirroredCatchmentHasNoUnabandonedHolt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['mirror'];
+          parameters:
+          [
+            catchmentCode = 'C-SOUTH',
+            gradeCodes = ['A'],
+            asOf = %2026-04-11
+          ]
+          asserts:
+          [
+            emptyMirroredTally:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

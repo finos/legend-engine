@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::kindlyquarry::service::CorridorPatronageRank
+{
+  pattern: '/kindlyquarry/v1/corridor-patronage-rank/{since}';
+  title: 'Kindly Quarry - Corridor Patronage Rank';
+  owners:
+  [
+    'transit-network-planning'
+  ];
+  documentation: 'Rolls counted boardings up to the corridor each count reaches across the count-to-stop-to-corridor path, ranks the corridors with a window function over the rolled-up totals and returns the busiest few.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {since: StrictDate[1]|demo::kindlyquarry::domain::PatronageCount.all()->filter(
+      p | dateDiff($since, $p.countedOn, DurationUnit.DAYS) >= 0
+    )->project(
+      ~[
+        corridorName: p|$p.corridorName,
+        boardings: p|$p.boardings
+      ]
+    )->groupBy(
+      ~[corridorName],
+      ~[totalBoardings: x|$x.boardings: y|$y->sum()]
+    )->extend(
+      ~corridorName->over(~totalBoardings->descending()),
+      ~patronageRank: {p, w, r | $p->rowNumber($r)}
+    )->sort(~totalBoardings->descending())->limit(3)};
+    key: 'horizon';
+    executions['published']:
+    {
+      mapping: demo::kindlyquarry::mapping::TransitMapping;
+      runtime: demo::kindlyquarry::runtime::TransitWarehouseRuntime;
+    }
+    executions['inProcess']:
+    {
+      mapping: demo::kindlyquarry::mapping::TransitMapping;
+      runtime: demo::kindlyquarry::runtime::TransitH2Runtime;
+    }
+  }
+}

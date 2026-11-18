@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::noblequarry::live::store::QuarryLiveDB
+(
+  include test::noblequarry::shared::store::CodeSchemeDB
+
+  Schema quarry
+  (
+    Table bench_survey
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      survey_ref VARCHAR(16) PRIMARY KEY,
+      in_z TIMESTAMP PRIMARY KEY,
+      out_z TIMESTAMP NOT NULL,
+      bench_code VARCHAR(16) NOT NULL,
+      surveyor_code VARCHAR(16) NOT NULL,
+      face_height_m DOUBLE NOT NULL,
+      surveyed_on DATE NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_to DATE
+    )
+    Table blast_record
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      blast_ref VARCHAR(16) PRIMARY KEY,
+      in_z TIMESTAMP PRIMARY KEY,
+      out_z TIMESTAMP NOT NULL,
+      bench_code VARCHAR(16) NOT NULL,
+      site_ref VARCHAR(24) NOT NULL,
+      fired_on DATE NOT NULL,
+      charge_kg DOUBLE NOT NULL,
+      hole_count INTEGER NOT NULL
+    )
+  )
+
+  Join LiveSurvey_Blast(quarry.bench_survey.bench_code = quarry.blast_record.bench_code and quarry.blast_record.fired_on >= quarry.bench_survey.valid_from and (isNull(quarry.bench_survey.valid_to) or quarry.blast_record.fired_on < quarry.bench_survey.valid_to))
+  Join LiveSurvey_Scheme(quarry.bench_survey.survey_ref = xref.code_scheme.local_code and xref.code_scheme.source_key = 'SURVEY' and xref.code_scheme.out_batch = 999999999)
+  Join LiveBlast_Scheme(quarry.blast_record.site_ref = xref.code_scheme.local_code and xref.code_scheme.source_key = 'REGISTRY' and xref.code_scheme.out_batch = 999999999)
+  Join LiveScheme_Link(xref.code_scheme.link_group = {target}.link_group and xref.code_scheme.source_key != {target}.source_key and {target}.out_batch = 999999999)
+  Join LiveScheme_Site(xref.code_scheme.linked_code = toString(registry.quarry_site.site_id) and xref.code_scheme.source_key = 'REGISTRY' and xref.code_scheme.out_batch = 999999999)
+)

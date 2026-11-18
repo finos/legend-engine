@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::hazelthistle2::dataspace::PeatlandDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'restoration';
+      description: 'Restoration environment - the moss survey binding served through the local restoration warehouse.';
+      mapping: demo::hazelthistle2::mapping::MossMapping;
+      defaultRuntime: demo::hazelthistle2::runtime::BogRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse environment - the same binding planned against the shared peatland warehouse.';
+      mapping: demo::hazelthistle2::mapping::MossMapping;
+      defaultRuntime: demo::hazelthistle2::runtime::BogWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'restoration';
+  title: 'Peatland Moss Restoration';
+  description: 'Discovery surface over the peatland restoration survey: the business-temporal moss readings, the plot register behind them and the two endpoints published from them.';
+  elements:
+  [
+    demo::hazelthistle2::domain::BogPlot,
+    demo::hazelthistle2::domain::Catchment,
+    demo::hazelthistle2::domain::MossSurvey
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Moss cover as of';
+      description: 'Featured endpoint returning the surveys effective on a business date with their recovery band.';
+      executable: demo::hazelthistle2::service::MossCoverAsOf;
+    },
+    {
+      id: 2;
+      title: 'Catchment plot register';
+      description: 'Featured endpoint returning the plot register of one catchment through the included reference mapping.';
+      executable: demo::hazelthistle2::service::CatchmentRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'peatland-restoration-desk@peatlandrestoration.invalid';
+  };
+}

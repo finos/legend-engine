@@ -1,0 +1,46 @@
+name: marsh-survey
+title: "Ember Marsh - deduplicated two-column projection over a conditionally transformed wetland sighting log"
+description: |
+  A wetland bird-survey model whose single parameterless read service projects
+  exactly two aliased columns out of the sighting log and then deduplicates the
+  projected pair, so repeated visits by the same observer collapse to one row.
+  The projected species label and the habitat-zone label are produced by nested
+  relational string and conditional transforms with an absent-code fallback, so
+  the deduplication runs over computed columns rather than raw ones.
+modelSources:
+  model:
+    root: marsh-survey
+    files:
+      - test/embermarsh/connection/MarshH2Connection.pure
+      - test/embermarsh/domain/SurveyDomain.pure
+      - test/embermarsh/mapping/MarshMapping.pure
+      - test/embermarsh/runtime/MarshRuntime.pure
+      - test/embermarsh/service/ObserverSpeciesRoster.pure
+      - test/embermarsh/store/MarshDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - deduplication
+  - h2
+  - projection
+  - service
+  - string-functions
+  - wetland-survey

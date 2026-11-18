@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::indigoharbor4::domain::*;
+
+Class <<temporal.bitemporal>> {doc.doc = 'A watch held over a harbour fixture: effective over business time and corrected over processing time.'} test::indigoharbor4::domain::HarbourWatch
+[
+  watchWindowOrdered
+  (
+    ~function: $this.watchEnd >= $this.watchStart
+    ~enforcementLevel: Error
+  )
+]
+{
+  watchCode: String[1];
+  watchStart: StrictDate[1];
+  watchEnd: StrictDate[1];
+  state: WatchState[1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'A lamp watch: a keeper keeping a beacon lit through a window.'} test::indigoharbor4::domain::LampWatch extends test::indigoharbor4::domain::HarbourWatch
+{
+  beaconCode: String[1];
+  lampKind: LampKind[1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'A tide watch: readings expected from a gauge through a window.'} test::indigoharbor4::domain::TideWatch extends test::indigoharbor4::domain::HarbourWatch
+{
+  gaugeCode: String[1];
+  band: TideBand[1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'A rota post a keeper holds; re-graded over business time and corrected over processing time.'} test::indigoharbor4::domain::KeeperPost
+{
+  postCode: String[1];
+  handCode: String[1];
+  grade: KeeperGrade[1];
+}
+
+Class <<temporal.bitemporal>> {doc.doc = 'The rota a post works to for a season.'} test::indigoharbor4::domain::WatchRota
+{
+  rotaCode: String[1];
+  nightsPerWeek: Integer[1];
+}
+
+Association test::indigoharbor4::domain::PostLampWatches
+{
+  post: test::indigoharbor4::domain::KeeperPost[0..1];
+  lampWatches: test::indigoharbor4::domain::LampWatch[*];
+}
+
+Association test::indigoharbor4::domain::PostRota
+{
+  rotaPosts: test::indigoharbor4::domain::KeeperPost[*];
+  rota: test::indigoharbor4::domain::WatchRota[0..1];
+}

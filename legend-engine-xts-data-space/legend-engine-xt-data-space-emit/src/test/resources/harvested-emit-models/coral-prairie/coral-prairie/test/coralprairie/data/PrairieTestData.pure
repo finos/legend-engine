@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::coralprairie::data::PrairieTestData
+{
+  Relational
+  #{
+    restoration.burn_unit:
+      'burn_code,burn_name,rotation_years\n'+
+      'B1,Spring Rotation,3\n'+
+      'B2,Autumn Rotation,5\n';
+
+    restoration.management_zone:
+      'zone_code,zone_name,burn_code\n'+
+      'Z1,north terrace,B1\n'+
+      'Z2,south terrace,B1\n'+
+      'Z3,creek margin,B2\n';
+
+    restoration.seed_mix:
+      'mix_code,mix_label,species_count\n'+
+      'M1,Tallgrass Mix,24\n'+
+      'M2,Shortgrass Mix,11\n';
+
+    restoration.soil_series:
+      'soil_code,soil_label\n'+
+      'S1,Loam Series\n'+
+      'S2,Silt Series\n';
+
+    restoration.field_technician:
+      'technician_code,technician_name\n'+
+      'T1,ren okafor\n'+
+      'T2,mira lindqvist\n';
+
+    restoration.restoration_plot:
+      'plot_id,plot_name,hectares,zone_code,mix_code,soil_code,technician_code\n'+
+      '1,north terrace strip,12.5,Z1,M1,S1,T1\n'+
+      '2,willow creek bench,8.25,Z1,M2,S2,T1\n'+
+      '3,south terrace flat,15.75,Z2,M1,S1,T2\n'+
+      '4,creek margin verge,4.5,Z3,M2,S2,T2\n';
+  }#
+}

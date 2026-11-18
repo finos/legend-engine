@@ -1,0 +1,66 @@
+name: russet-canyon-2
+title: "Russet Canyon 2 - processing-temporal trail survey with association joins, an included mapping, a diagram and a governed data space"
+description: |
+  A canyon trail survey in which the trail heads, their segments and the rock layers beneath
+  those segments are all processing-temporal, so every read resolves at a processing instant and
+  superseded versions of a row are invisible. The two model associations are implemented as
+  association mappings routed through named inner joins in the store, which makes traversal from
+  a segment to its trail head and from a layer to its segment a relational join in the plan
+  rather than an in-memory link. A base mapping holds every class and association mapping and an
+  outer mapping only includes it, so the query surface resolves inherited class mappings. A
+  diagram lays the classes and both association ends out as a compiled view of the same model,
+  and a data space wraps the outer mapping and runtime into one consumer-facing execution context
+  with a featured element, a published executable and a support address. Both services and the
+  mapping test suite seed a superseded version alongside the current one to prove the
+  milestoning predicate reaches the generated SQL.
+modelSources:
+  model:
+    root: russet-canyon-2
+    files:
+      - test/russetcanyon2/connection/CanyonWarehouseConnection.pure
+      - test/russetcanyon2/dataspace/CanyonSurveyDataSpace.pure
+      - test/russetcanyon2/diagram/CanyonDiagram.pure
+      - test/russetcanyon2/domain/CanyonDomain.pure
+      - test/russetcanyon2/mapping/CanyonBaseMapping.pure
+      - test/russetcanyon2/mapping/CanyonMapping.pure
+      - test/russetcanyon2/runtime/CanyonRuntime.pure
+      - test/russetcanyon2/service/LayerThicknessSurvey.pure
+      - test/russetcanyon2/service/SegmentGradeSurvey.pure
+      - test/russetcanyon2/store/CanyonDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:diagram
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:filter
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - canyon-trail-survey
+  - data-space
+  - diagram
+  - h2
+  - mapping-include
+  - processing-temporal
+  - snowflake
+  - snowflake-public-auth

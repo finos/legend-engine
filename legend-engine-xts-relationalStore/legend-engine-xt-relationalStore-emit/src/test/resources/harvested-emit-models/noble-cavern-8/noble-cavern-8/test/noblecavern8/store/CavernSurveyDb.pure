@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::noblecavern8::store::CavernSurveyDb
+(
+  include test::noblecavern8::store::CavernRefDb
+
+  Schema survey
+  (
+    Table survey_run
+    (
+      run_id INTEGER PRIMARY KEY,
+      run_ref VARCHAR(20) NOT NULL,
+      system_code VARCHAR(20) NOT NULL,
+      crew_code VARCHAR(20) NOT NULL,
+      surveyed_on DATE NOT NULL
+    )
+
+    Table passage_leg
+    (
+      leg_id INTEGER PRIMARY KEY,
+      leg_ref VARCHAR(20) NOT NULL,
+      run_ref VARCHAR(20) NOT NULL,
+      length_m INTEGER NOT NULL,
+      depth_m INTEGER NOT NULL
+    )
+
+    Table station_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      station_ref VARCHAR(20) NOT NULL,
+      leg_ref VARCHAR(20) NOT NULL,
+      azimuth_deg INTEGER NOT NULL,
+      inclination_deg INTEGER NOT NULL
+    )
+  )
+
+  Schema crew
+  (
+    Table survey_crew
+    (
+      crew_id INTEGER PRIMARY KEY,
+      crew_code VARCHAR(20) NOT NULL,
+      crew_name VARCHAR(60) NOT NULL,
+      base_camp VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join Run_Leg(equal(survey.survey_run.run_ref, survey.passage_leg.run_ref))
+
+  Join Leg_Reading(equal(survey.passage_leg.leg_ref, survey.station_reading.leg_ref))
+
+  Join Run_Crew(equal(survey.survey_run.crew_code, crew.survey_crew.crew_code))
+
+  Join Run_System(equal(survey.survey_run.system_code, ref.cave_system.system_code))
+)

@@ -1,0 +1,38 @@
+name: emerald-apiary
+title: "Emerald Apiary — cross-schema orchard grafting register with composite-key relational mappings"
+description: |
+  An orchard grafting register whose relational store splits nursery propagation
+  material and planted orchard blocks across two schemas. Four class mappings pin
+  composite primary keys onto explicit main tables, and a block reaches its
+  propagation attributes through joins that cross the schema boundary. Mapping test
+  suites project the joined block view, composite-key nursery lots and canopy survey
+  measurements over tabular-data-set fixtures, including a block whose nursery row is
+  absent.
+modelSources:
+  model:
+    root: emerald-apiary
+    files:
+      - test/emeraldapiary/connection/GraftConnection.pure
+      - test/emeraldapiary/domain/Domain.pure
+      - test/emeraldapiary/mapping/GraftMapping.pure
+      - test/emeraldapiary/runtime/GraftRuntime.pure
+      - test/emeraldapiary/store/GraftDatabase.pure
+features:
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - test::emeraldapiary::store::GraftDatabase
+complexity: basic
+tags:
+  - cross-schema
+  - grafting
+  - h2
+  - mapping-test
+  - orchard
+  - relational

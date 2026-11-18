@@ -1,0 +1,26 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+function {meta::pure::profiles::doc.doc = 'The mass in kilograms a dressed block has to reach before the yard register reports it, held in one place so the register and the yard notices cannot drift apart.'}
+test::copperquarry::function::reportableMassFloorKg(): Integer[1]
+{
+  500
+}
+
+function {meta::pure::profiles::doc.doc = 'The finish label the yard writes on a block that never received one, so the register can tell an undressed block from a dressed one without a null.'}
+test::copperquarry::function::undressedFinishLabel(): String[1]
+{
+  'UNFINISHED'
+}

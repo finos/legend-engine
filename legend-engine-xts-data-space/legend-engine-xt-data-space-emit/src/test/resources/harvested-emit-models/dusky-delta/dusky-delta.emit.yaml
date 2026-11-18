@@ -1,0 +1,78 @@
+name: dusky-delta
+title: "Dusky Delta — A Two-Store Apiary Register With A Graded Band Transform And A Version-Resolved Colony Register"
+description: |
+  An apiary field register split over two relational stores, each holding its tabular units in two
+  namespaces. The hive unit is mapped with a graded transform whose eight ordered arms fall through
+  to an unbanded sentinel, a second sentinel arm that turns a placeholder queen token into an absent
+  value, a fixed register label carried as a mapped literal, and stand, forage and keeper attributes
+  reached through one- and two-hop reference paths that cross the namespace boundary. Two declared
+  relationships between the stand, the forage belt and the hive unit are resolved through their
+  shared reference paths rather than through carried columns. The second store keeps a versioned
+  colony register whose rows carry validity bounds, so resolving it at the open instant discards the
+  superseded version of a colony while still driving the label transform arms and the inspector
+  reference path. Two endpoints publish the two mappings, each narrowing rows with a conjunctive
+  predicate whose bound and membership list drop out of the pushed-down statement when the parameter
+  is not supplied. A data space catalogues both mappings and both warehouse runtimes as two
+  execution contexts. Mapping tests cover every transform arm, both absent-value outcomes and the
+  discarded version; endpoint tests cover the supplied and unsupplied path of every parameter.
+modelSources:
+  model:
+    root: dusky-delta
+    files:
+      - test/duskydelta/connection/ApiaryConnections.pure
+      - test/duskydelta/dataspace/ApiaryDataSpace.pure
+      - test/duskydelta/domain/ApiaryDomain.pure
+      - test/duskydelta/domain/RegistryDomain.pure
+      - test/duskydelta/mapping/ApiaryMapping.pure
+      - test/duskydelta/mapping/ColonyRegistryMapping.pure
+      - test/duskydelta/runtime/ApiaryRuntimes.pure
+      - test/duskydelta/service/HiveBoardServices.pure
+      - test/duskydelta/store/ApiaryDatabase.pure
+      - test/duskydelta/store/ColonyRegistryDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - apiary-field-register
+  - association
+  - conditional-transform
+  - cross-schema
+  - data-space
+  - h2
+  - multi-store
+  - null-sentinel
+  - processing-temporal
+  - service-test
+  - snowflake

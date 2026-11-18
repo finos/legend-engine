@@ -1,0 +1,57 @@
+name: silver-delta
+title: "Silver Delta — Profile-Annotated Point-in-Time Bird-Ringing Register Read by Deep Service Query Shapes"
+description: |
+  A river-delta bird-ringing register. A profile carries the stereotypes and
+  tags that mark restricted, field-derived and ringer-verified material and is
+  applied to the classes and to individual properties, including the units the
+  measurements are recorded in. The business-temporal ringed-bird class is
+  opened at an observation instant assigned into a local variable, and four
+  service shapes read it: a deeply nested condition query that narrows on delta
+  arm membership, a wing-length floor and an existence quantifier over
+  minimum-effort captures, derives a condition band from the mass-to-wing
+  ratio, narrows again over the projected relation and then orders and
+  truncates; an aggregating summary grouped by station and delta arm; an
+  emptiness quantifier over birds never worked; and a folded-case substring
+  narrowing over projected vernacular names. The condition query is asserted
+  row by row against an in-process H2 runtime, including a bird whose milestone
+  window closed before the default observation instant and is visible only when
+  the register is read inside that window.
+modelSources:
+  model:
+    root: silver-delta
+    files:
+      - test/silverdelta/connection/DeltaH2Connection.pure
+      - test/silverdelta/domain/DeltaDomain.pure
+      - test/silverdelta/domain/RingingProfile.pure
+      - test/silverdelta/mapping/DeltaMapping.pure
+      - test/silverdelta/runtime/DeltaRuntime.pure
+      - test/silverdelta/service/RingedBirdCondition.pure
+      - test/silverdelta/service/StationEffortSummary.pure
+      - test/silverdelta/service/UnworkedBirds.pure
+      - test/silverdelta/store/DeltaDB.pure
+features:
+  - execution:service
+  - grammar:profile
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - aggregation
+  - bird-ringing
+  - business-temporal
+  - collection-op
+  - deep-query
+  - h2
+  - point-in-time
+  - profile
+  - relational
+  - service-test
+  - sort-limit

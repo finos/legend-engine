@@ -1,0 +1,161 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberquarry5::mapping::QuarryRefMapping
+(
+  test::umberquarry5::domain::StoneFamily: EnumerationMapping StoneFamilyCodes
+  {
+    IGNEOUS: ['IGN'],
+    SEDIMENTARY: ['SED'],
+    METAMORPHIC: ['MET']
+  }
+
+  test::umberquarry5::domain::BlockGrade: EnumerationMapping GradeCodes
+  {
+    PREMIUM: ['P'],
+    STANDARD: ['S'],
+    RUBBLE: ['R'],
+    BLANK_GRADE: ['BLANK'],
+    UNGRADED: ['NULL']
+  }
+
+  test::umberquarry5::domain::BlockShape: EnumerationMapping ShapeCodes
+  {
+    CUBE: ['CUBE'],
+    SLAB: ['SLAB', 'PLATE'],
+    IRREGULAR: ['IRR']
+  }
+
+  test::umberquarry5::domain::BenchLevel: EnumerationMapping LevelCodes
+  {
+    UPPER: [1],
+    MIDDLE: [2],
+    LOWER: [3]
+  }
+
+  *test::umberquarry5::domain::District[district]: Relational
+  {
+    ~filter [test::umberquarry5::store::QuarryRefDb]OpenDistrict
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryRefDb]ref.district.district_code
+    )
+    ~mainTable [test::umberquarry5::store::QuarryRefDb]ref.district
+    districtCode: [test::umberquarry5::store::QuarryRefDb]ref.district.district_code,
+    districtName: toUpper(trim([test::umberquarry5::store::QuarryRefDb]ref.district.district_name))
+  }
+
+  *test::umberquarry5::domain::StoneType[stoneType]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberquarry5::store::QuarryRefDb]ref.stone_type.type_code
+    )
+    ~mainTable [test::umberquarry5::store::QuarryRefDb]ref.stone_type
+    typeCode: [test::umberquarry5::store::QuarryRefDb]ref.stone_type.type_code,
+    typeName: [test::umberquarry5::store::QuarryRefDb]ref.stone_type.type_name,
+    family: EnumerationMapping StoneFamilyCodes: trim([test::umberquarry5::store::QuarryRefDb]ref.stone_type.family_code)
+  }
+
+  testSuites:
+  [
+    districtSuite:
+    {
+      function: |test::umberquarry5::domain::District.all()->project(
+        [
+        x|$x.districtCode,
+        x|$x.districtName
+        ],
+        ['Code', 'Name']
+      )->sort([asc('Code')]);
+      tests:
+      [
+        openDistrictsOnly:
+        {
+          doc: 'The open-district filter keeps the two open districts and drops the worked-out one; names are trimmed and upper cased.';
+          data:
+          [
+            test::umberquarry5::store::QuarryRefDb:
+              Relational
+              #{
+                ref.district:
+                  'district_code,district_name,active_flag\n'+
+                  'D-1,Southern Fells,Y\n'+
+                  'D-2,Old Workings,N\n'+
+                  'D-3,Eastern Scar,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"D-1","Name":"SOUTHERN FELLS"},{"Code":"D-3","Name":"EASTERN SCAR"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    stoneTypeSuite:
+    {
+      function: |test::umberquarry5::domain::StoneType.all()->project(
+        [
+        x|$x.typeCode,
+        x|$x.typeName,
+        x|$x.family
+        ],
+        ['Code', 'Name', 'Family']
+      )->sort([asc('Code')]);
+      tests:
+      [
+        familyCodesAndUnmappedCode:
+        {
+          doc: 'Three rock family codes map to their family; a volcanic code has no family value.';
+          data:
+          [
+            test::umberquarry5::store::QuarryRefDb:
+              Relational
+              #{
+                ref.stone_type:
+                  'type_code,type_name,family_code\n'+
+                  'GRN,Granite,IGN\n'+
+                  'LMS,Limestone,SED\n'+
+                  'MRB,Marble,MET\n'+
+                  'TUF,Tuff,VOL\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"GRN","Name":"Granite","Family":"IGNEOUS"},{"Code":"LMS","Name":"Limestone","Family":"SEDIMENTARY"},{"Code":"MRB","Name":"Marble","Family":"METAMORPHIC"},{"Code":"TUF","Name":"Tuff","Family":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

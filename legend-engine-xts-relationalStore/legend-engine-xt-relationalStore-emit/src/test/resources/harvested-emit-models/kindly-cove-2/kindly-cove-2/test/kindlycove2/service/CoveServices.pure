@@ -1,0 +1,162 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlycove2::service::PlotRegister
+{
+  pattern: '/cove/plots/{asOf}';
+  title: 'Cove plot register';
+  documentation: 'Lists active survey plots at a requested business date after a simple zone filter.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['cove-ranger-desk'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::kindlycove2::domain::SurveyPlot.all($asOf)->filter(
+      p|$p.zoneCode->in(['NORTH', 'SOUTH', 'EAST', 'WEST'])
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.plotLabel,
+        p|$p.coveName,
+        p|$p.visitorCapacity
+      ],
+      [
+        'Plot',
+        'Label',
+        'Cove',
+        'Capacity'
+      ]
+    )};
+    mapping: test::kindlycove2::mapping::CoveMapping;
+    runtime: test::kindlycove2::runtime::CoveH2Runtime;
+  }
+  testSuites:
+  [
+    plotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              cove.survey_plot:
+                'plot_id,plot_code,cove_name,ranger_id,zone_code,opened_on,visitor_capacity,from_z,thru_z\n'+
+                '1,TP-ALPHA,Quiet Cove,7,NORTH,2024-03-01,40,2026-01-01,2026-12-31\n'+
+                '2,TP-BRAVO,Quiet Cove,8,SOUTH,2024-04-02,25,2025-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        milestoningOutOfRangeRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            onlyCurrentPlotIsReturned:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"TP-ALPHA","Label":"TP-ALPHA - Quiet Cove","Cove":"Quiet Cove","Capacity":40}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::kindlycove2::service::TallySummary
+{
+  pattern: '/cove/tallies/{asOf}';
+  title: 'Cove tally summary';
+  documentation: 'Groups daily visitor tallies by plot and projects the selected direct columns.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['cove-ranger-desk'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::kindlycove2::domain::VisitorTally.all()->filter(
+      t|$t.visitorCount >= 0
+    )->groupBy(
+      [
+        t|$t.plotId
+      ],
+      [
+        agg(t|$t.visitorCount, y|$y->sum())
+      ],
+      [
+        'PlotId',
+        'Visitors'
+      ]
+    )};
+    mapping: test::kindlycove2::mapping::CoveMapping;
+    runtime: test::kindlycove2::runtime::CoveH2Runtime;
+  }
+  testSuites:
+  [
+    tallySummarySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              cove.visitor_tally:
+                'tally_id,plot_id,tally_date,visitor_count\n'+
+                '201,1,2026-06-01,12\n'+
+                '202,1,2026-06-02,8\n'+
+                '203,2,2026-06-02,5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        groupedVisitors:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-30
+          ]
+          asserts:
+          [
+            visitorsByPlot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotId":1,"Visitors":20},{"PlotId":2,"Visitors":5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

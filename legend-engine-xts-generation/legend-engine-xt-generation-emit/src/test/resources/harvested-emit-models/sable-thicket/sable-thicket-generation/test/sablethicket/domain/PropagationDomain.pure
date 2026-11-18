@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::sablethicket::domain::*;
+import meta::json::schema::*;
+
+Profile test::sablethicket::domain::PropagationProfile
+{
+  stereotypes: [indexed];
+  tags: [
+    summary,
+    keyField,
+    requiredness,
+    sortable,
+    indexOrder,
+    metadataSource,
+    valueSemantics,
+    exampleSet,
+    unit,
+    steward
+  ];
+}
+
+Class <<PropagationProfile.indexed>> {PropagationProfile.summary = 'A dispatch note covering the crates of seed lots leaving a propagation glasshouse.', PropagationProfile.steward = 'propagation-desk', PropagationProfile.exampleSet = 'spring-dispatch'} test::sablethicket::domain::ConsignmentNote
+{
+  {PropagationProfile.keyField = 'true', PropagationProfile.requiredness = 'optional'} noteRef: String[0..1];
+  {PropagationProfile.sortable = 'true'} dispatchedOn: StrictDate[0..1];
+  <<JSONSchemaTypeExtension.int64>> {PropagationProfile.unit = 'crates'} crateCount: Integer[0..1];
+  <<JSONSchemaTypeExtension.int64>> {PropagationProfile.unit = 'grams'} totalMassGrams: Integer[0..1];
+  {PropagationProfile.valueSemantics = 'repeated-child'} crates: CrateRecord[*];
+  {PropagationProfile.valueSemantics = 'single-reference'} site: NurserySite[0..1];
+}
+
+Class <<PropagationProfile.indexed>> {PropagationProfile.summary = 'One crate of a single seed lot as packed for dispatch.'} test::sablethicket::domain::CrateRecord
+{
+  {PropagationProfile.keyField = 'true'} crateRef: String[0..1];
+  {PropagationProfile.metadataSource = 'seed-lot-register'} seedLotRef: String[0..1];
+  <<JSONSchemaTypeExtension.int64>> {PropagationProfile.unit = 'seeds'} seedCount: Integer[0..1];
+  {PropagationProfile.unit = 'percent'} moisturePercent: Integer[0..1];
+  {PropagationProfile.indexOrder = '2'} packedOn: StrictDate[0..1];
+}
+
+Class {PropagationProfile.summary = 'A glasshouse nursery site that raises and dispatches seed lots.'} test::sablethicket::domain::NurserySite
+{
+  {PropagationProfile.keyField = 'true'} siteCode: String[0..1];
+  name: String[0..1];
+  <<JSONSchemaTypeExtension.int64>> {PropagationProfile.unit = 'glasshouses'} glasshouseCount: Integer[0..1];
+  {PropagationProfile.unit = 'metres'} elevationMeters: Integer[0..1];
+  {PropagationProfile.metadataSource = 'site-gazetteer'} region: String[0..1];
+}
+
+Class <<PropagationProfile.indexed>> {PropagationProfile.summary = 'A germination survey run over a sown tray batch, holding its individual growth readings.', PropagationProfile.exampleSet = 'autumn-survey'} test::sablethicket::domain::GerminationSurvey
+{
+  {PropagationProfile.keyField = 'true'} surveyRef: String[0..1];
+  {PropagationProfile.sortable = 'true'} observedOn: StrictDate[0..1];
+  <<JSONSchemaTypeExtension.int64>> {PropagationProfile.unit = 'seeds'} sownSeedCount: Integer[0..1];
+  <<JSONSchemaTypeExtension.int64>> {PropagationProfile.unit = 'seedlings'} germinatedCount: Integer[0..1];
+  {PropagationProfile.valueSemantics = 'repeated-child'} readings: GrowthReading[*];
+  {PropagationProfile.valueSemantics = 'single-reference'} curator: CuratorContact[0..1];
+}
+
+Class {PropagationProfile.summary = 'A single seedling growth measurement captured during a survey.'} test::sablethicket::domain::GrowthReading
+{
+  {PropagationProfile.keyField = 'true'} readingRef: String[0..1];
+  <<JSONSchemaTypeExtension.int64>> {PropagationProfile.unit = 'millimetres'} shootHeightMillimeters: Integer[0..1];
+  leafCount: Integer[0..1];
+  {PropagationProfile.sortable = 'true'} recordedOn: StrictDate[0..1];
+}
+
+Class {PropagationProfile.summary = 'The curation contact accountable for a germination survey.'} test::sablethicket::domain::CuratorContact
+{
+  {PropagationProfile.keyField = 'true'} contactRef: String[0..1];
+  displayName: String[0..1];
+  team: String[0..1];
+  {PropagationProfile.metadataSource = 'curation-directory'} inbox: String[0..1];
+}

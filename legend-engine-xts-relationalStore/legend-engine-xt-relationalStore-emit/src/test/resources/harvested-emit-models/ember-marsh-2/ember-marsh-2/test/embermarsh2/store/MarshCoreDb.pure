@@ -1,0 +1,197 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::embermarsh2::store::MarshCoreDb
+(
+  Schema reserve
+  (
+    Table marsh_unit
+    (
+      unit_id VARCHAR(16) PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      unit_name VARCHAR(60),
+      zone_code VARCHAR(8),
+      grid_ref VARCHAR(12),
+      area_ha DOUBLE,
+      perimeter_m INTEGER,
+      regime_code VARCHAR(8),
+      access_code VARCHAR(8),
+      condition_code VARCHAR(8),
+      retired_flag CHAR(1)
+    )
+    Table zone
+    (
+      zone_code VARCHAR(8) PRIMARY KEY,
+      zone_name VARCHAR(60),
+      region_code VARCHAR(8)
+    )
+    Table region
+    (
+      region_code VARCHAR(8) PRIMARY KEY,
+      region_name VARCHAR(60),
+      programme_code VARCHAR(8)
+    )
+    Table programme
+    (
+      programme_code VARCHAR(8) PRIMARY KEY,
+      programme_name VARCHAR(60),
+      retired_flag CHAR(1)
+    )
+  )
+
+  Schema survey
+  (
+    Table visit
+    (
+      visit_id VARCHAR(16) PRIMARY KEY,
+      unit_code VARCHAR(24),
+      observer_code VARCHAR(8),
+      visit_date DATE,
+      water_depth_cm INTEGER,
+      void_flag CHAR(1)
+    )
+    Table observer
+    (
+      observer_code VARCHAR(8) PRIMARY KEY,
+      observer_alias VARCHAR(60),
+      team_code VARCHAR(8)
+    )
+    Table team
+    (
+      team_code VARCHAR(8) PRIMARY KEY,
+      team_name VARCHAR(60)
+    )
+  )
+
+  Schema species
+  (
+    Table sighting
+    (
+      sighting_id VARCHAR(16) PRIMARY KEY,
+      visit_id VARCHAR(16),
+      taxon_code VARCHAR(8),
+      individuals INTEGER,
+      ringed_flag CHAR(1)
+    )
+    Table taxon
+    (
+      taxon_code VARCHAR(8) PRIMARY KEY,
+      taxon_name VARCHAR(60),
+      guild_code VARCHAR(8)
+    )
+    Table guild
+    (
+      guild_code VARCHAR(8) PRIMARY KEY,
+      guild_name VARCHAR(40)
+    )
+  )
+
+  Schema habitat
+  (
+    Table vegetation
+    (
+      veg_id VARCHAR(16) PRIMARY KEY,
+      unit_code VARCHAR(24),
+      cover_pct INTEGER,
+      sward_height_cm DOUBLE,
+      survey_year INTEGER
+    )
+    Table water_regime
+    (
+      regime_code VARCHAR(8) PRIMARY KEY,
+      regime_name VARCHAR(40),
+      mean_depth_cm INTEGER
+    )
+
+    View unit_cover_summary
+    (
+      ~groupBy
+      (
+        habitat.vegetation.unit_code
+      )
+      unit_code: habitat.vegetation.unit_code PRIMARY KEY,
+      survey_count: count(habitat.vegetation.veg_id),
+      max_cover_pct: max(habitat.vegetation.cover_pct)
+    )
+  )
+
+  Schema equipment
+  (
+    Table depth_logger
+    (
+      logger_id VARCHAR(16) PRIMARY KEY,
+      unit_code VARCHAR(24),
+      logger_serial VARCHAR(24),
+      install_year INTEGER,
+      status_code VARCHAR(8)
+    )
+    Table calibration
+    (
+      calibration_id VARCHAR(16) PRIMARY KEY,
+      logger_id VARCHAR(16),
+      drift_ppm DOUBLE
+    )
+
+    View logger_drift_summary
+    (
+      ~groupBy
+      (
+        equipment.calibration.logger_id
+      )
+      logger_id: equipment.calibration.logger_id PRIMARY KEY,
+      calibration_count: count(equipment.calibration.calibration_id),
+      max_drift_ppm: max(equipment.calibration.drift_ppm)
+    )
+  )
+
+  Schema reference
+  (
+    Table condition_ref
+    (
+      condition_code VARCHAR(8) PRIMARY KEY,
+      condition_label VARCHAR(40),
+      severity_rank INTEGER
+    )
+    Table access_ref
+    (
+      access_code VARCHAR(8) PRIMARY KEY,
+      access_label VARCHAR(40)
+    )
+  )
+
+  Filter ActiveUnitFilter(or(isNull(reserve.marsh_unit.retired_flag), equal(reserve.marsh_unit.retired_flag, 'N')))
+  Filter NamedUnitFilter(not(equal(coalesce(reserve.marsh_unit.unit_name, ''), 'DECOMMISSIONED PLOT')))
+  Filter PostedVisitFilter(and(isNull(survey.visit.void_flag), greaterThanEqual(survey.visit.water_depth_cm, 0)))
+  Filter GaugedVisitFilter(and(greaterThan(survey.visit.water_depth_cm, 0), lessThan(survey.visit.water_depth_cm, 400)))
+  Filter RecentVegetationFilter(and(greaterThanEqual(habitat.vegetation.survey_year, 2015), lessThanEqual(habitat.vegetation.survey_year, 2035)))
+  Filter ServiceableLoggerFilter(and(isNotNull(equipment.depth_logger.status_code), not(equal(trim(equipment.depth_logger.status_code), 'RETIRED'))))
+
+  Join Unit_Zone(reserve.marsh_unit.zone_code = reserve.zone.zone_code)
+  Join Zone_Region(reserve.zone.region_code = reserve.region.region_code)
+  Join Region_Programme(reserve.region.programme_code = reserve.programme.programme_code and reserve.programme.retired_flag = 'N')
+  Join Unit_CoverSummary(reserve.marsh_unit.unit_code = habitat.unit_cover_summary.unit_code)
+  Join Unit_Vegetation(reserve.marsh_unit.unit_code = habitat.vegetation.unit_code)
+  Join Unit_Regime(reserve.marsh_unit.regime_code = habitat.water_regime.regime_code)
+  Join Unit_Condition(reserve.marsh_unit.condition_code = reference.condition_ref.condition_code)
+  Join Unit_Access(reserve.marsh_unit.access_code = reference.access_ref.access_code)
+  Join Unit_Visit(reserve.marsh_unit.unit_code = survey.visit.unit_code)
+  Join Visit_Observer(survey.visit.observer_code = survey.observer.observer_code)
+  Join Observer_Team(survey.observer.team_code = survey.team.team_code)
+  Join Visit_Sighting(survey.visit.visit_id = species.sighting.visit_id)
+  Join Sighting_Taxon(species.sighting.taxon_code = species.taxon.taxon_code)
+  Join Taxon_Guild(species.taxon.guild_code = species.guild.guild_code)
+  Join Unit_Logger(reserve.marsh_unit.unit_code = equipment.depth_logger.unit_code)
+  Join Logger_Drift(equipment.depth_logger.logger_id = equipment.logger_drift_summary.logger_id)
+)

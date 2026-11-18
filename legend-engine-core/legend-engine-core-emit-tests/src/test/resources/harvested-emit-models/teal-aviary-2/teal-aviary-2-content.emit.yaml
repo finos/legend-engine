@@ -1,0 +1,24 @@
+name: teal-aviary-2-content
+title: "Teal Aviary 2 Content — Seed Accession Document Model Shared by the Seed Vault Register"
+description: |
+  A content model for a seed vault's accession documents. A base accession
+  content class carries a title, a sampling date and to-many nested
+  collections of recorded dates, recording agents and taxonomy traits with
+  their tags, plus two holder references whose type is a supertype with a
+  collector and a nursery subtype. Six document-specific content classes
+  extend it with one extra field each. The seed vault register depends on it
+  for the content stored in each staged document.
+modelSources:
+  model:
+    root: teal-aviary-2-content
+    files:
+      - test/tealaviary2/content/AccessionContent.pure
+features:
+  - scaffolding:class
+stores:
+  - relational
+complexity: basic
+tags:
+  - content-model
+  - seed-vault
+  - subtype

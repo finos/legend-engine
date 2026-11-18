@@ -1,0 +1,216 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::verdantmeadow4::mapping::MeadowBaseMapping
+(
+  include mapping demo::verdantmeadow4::mapping::MeadowEnumMappings
+
+  *demo::verdantmeadow4::domain::MeadowPlot[plot]: Relational
+  {
+    ~filter [demo::verdantmeadow4::store::MeadowDatabase]KeptPlots
+    ~primaryKey
+    (
+      [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.plot_code
+    )
+    ~mainTable [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot
+    recordCode: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.plot_code,
+    statusCode: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.status_code,
+    plotCode: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.plot_code,
+    meadowCode: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.meadow_code,
+    speciesCount: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count,
+    cutCount: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.cut_count,
+    areaHa: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.area_ha,
+    seedKg: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.seed_kg,
+    speciesBand: case(
+                   lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 5),
+                   'BAND-A',
+                   case(
+                     lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 10),
+                     'BAND-B',
+                     case(
+                       lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 20),
+                       'BAND-C',
+                       case(
+                         lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 35),
+                         'BAND-D',
+                         case(
+                           lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 55),
+                           'BAND-E',
+                           case(
+                             lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 80),
+                             'BAND-F',
+                             case(
+                               lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 120),
+                               'BAND-G',
+                               case(
+                                 lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 200),
+                                 'BAND-H',
+                                 sqlNull()
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    cutLoad: times([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.cut_count, [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.area_ha),
+    restIndex: minus([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.cut_count),
+    vigourScore: plus([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, times([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.cut_count, 2)),
+    seedRate: divide([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.seed_kg, [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.area_ha),
+    coverIndex: divide(plus(times([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 2), 1), 4),
+    tagText: [demo::verdantmeadow4::store::MeadowDatabase]@Plot_Tag | [demo::verdantmeadow4::store::MeadowDatabase]habitat.plot_tag.tag_text,
+    regionName: [demo::verdantmeadow4::store::MeadowDatabase]@Plot_Meadow > (INNER) @Meadow_Region | [demo::verdantmeadow4::store::MeadowDatabase]register.region.region_name,
+    zoneName: [demo::verdantmeadow4::store::MeadowDatabase]@Plot_Meadow > (INNER) @Meadow_Region > (INNER) @Region_Zone | [demo::verdantmeadow4::store::MeadowDatabase]register.zone.zone_name,
+    sward: EnumerationMapping SwardMapping: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.sward_code,
+    grazing: EnumerationMapping GrazingMapping: case(
+               isNotEmpty([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.grazing_code),
+               toUpper(trim([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.grazing_code)),
+               'UNG'
+             ),
+    condition: EnumerationMapping ConditionMapping: case(
+                 lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 10),
+                 'UNF',
+                 case(
+                   lessThan([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.species_count, 40),
+                   'REC',
+                   'FAV'
+                 )
+               ),
+    seedPlan
+    (
+      bandLabel: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.band_label,
+      tagLabel: case(
+                  isNotEmpty([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.tag_label),
+                  toUpper([demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.tag_label),
+                  sqlNull()
+                )
+    ),
+    contact
+    (
+      wardenLabel: [demo::verdantmeadow4::store::MeadowDatabase]habitat.meadow_plot.warden_code,
+      contactLabel: [demo::verdantmeadow4::store::MeadowDatabase]@Plot_Warden | [demo::verdantmeadow4::store::MeadowDatabase]register.warden.contact_text
+    ),
+    summary[summary]: [demo::verdantmeadow4::store::MeadowDatabase]@Plot_Summary
+  }
+
+  *demo::verdantmeadow4::domain::PlotSummary[summary]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::verdantmeadow4::store::MeadowDatabase]habitat.plot_species_summary.meadow_code
+    )
+    ~mainTable [demo::verdantmeadow4::store::MeadowDatabase]habitat.plot_species_summary
+    recordCode: [demo::verdantmeadow4::store::MeadowDatabase]habitat.plot_species_summary.meadow_code,
+    meadowCode: [demo::verdantmeadow4::store::MeadowDatabase]habitat.plot_species_summary.meadow_code,
+    plotCount: [demo::verdantmeadow4::store::MeadowDatabase]habitat.plot_species_summary.plot_count,
+    maxSpecies: [demo::verdantmeadow4::store::MeadowDatabase]habitat.plot_species_summary.max_species
+  }
+
+  testSuites:
+  [
+    plotDerivationSuite:
+    {
+      function: |demo::verdantmeadow4::domain::MeadowPlot.all()->project(
+        [
+          col(p|$p.plotCode, 'Plot'),
+          col(p|$p.recordCode, 'Record'),
+          col(p|$p.speciesBand, 'Band'),
+          col(p|$p.cutLoad, 'CutLoad'),
+          col(p|$p.restIndex, 'RestIndex'),
+          col(p|$p.vigourScore, 'Vigour'),
+          col(p|$p.seedRate, 'SeedRate'),
+          col(p|$p.coverIndex, 'CoverIndex'),
+          col(p|$p.tagText, 'Tag'),
+          col(p|$p.regionName, 'Region'),
+          col(p|$p.zoneName, 'Zone'),
+          col(p|$p.sward, 'Sward'),
+          col(p|$p.grazing, 'Grazing'),
+          col(p|$p.condition, 'Condition'),
+          col(p|$p.seedPlan.bandLabel, 'BandLabel'),
+          col(p|$p.seedPlan.tagLabel, 'TagLabel'),
+          col(p|$p.contact.wardenLabel, 'WardenLabel'),
+          col(p|$p.contact.contactLabel, 'Contact'),
+          col(p|$p.summary.plotCount, 'MeadowPlots'),
+          col(p|$p.summary.maxSpecies, 'MeadowMaxSpecies')
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        everyBandArmAndEveryReachedRow:
+        {
+          doc: 'Covers all eight species-band arms of the nested conditional and its null fallback, the five arithmetic derivations, the three enumeration mappings including an unlisted sward source value and the empty grazing code that falls back to the ungrazed member, the two embedded blocks with their null fallbacks, the derived tag view, the two-hop plot-to-region path and the three-hop plot-to-zone path, the plot whose meadow has no register row, the plot whose warden is unknown and the plot the store filter withholds.';
+          data:
+          [
+            demo::verdantmeadow4::store::MeadowDatabase:
+              Relational
+              #{
+                habitat.meadow_plot:
+                  'plot_code,meadow_code,warden_code,sward_code,grazing_code,species_count,cut_count,area_ha,seed_kg,band_label,tag_label,note_text,status_code\n'+
+                  'VM-01,M-01,W-01,HAY,CAT,3,1,2,10,band north,tag alpha,first cut note,KEPT\n'+
+                  'VM-02,M-01,W-01,PAS,SHE,7,2,4,12,band north,tag beta,second cut note,KEPT\n'+
+                  'VM-03,M-01,W-02,FEN,UNG,15,3,5,20,band east,,no tag note,KEPT\n'+
+                  'VM-04,M-02,W-02,HAY,,30,4,6,24,band west,tag delta,no grazing note,KEPT\n'+
+                  'VM-05,M-02,W-03,PAS,CAT,50,5,10,30,band west,tag epsilon,rotation note,KEPT\n'+
+                  'VM-06,M-02,W-03,FEN,SHE,70,6,7,35,band south,tag zeta,late cut note,KEPT\n'+
+                  'VM-07,M-03,W-04,HAY,CAT,100,7,8,40,band south,tag eta,rich sward note,KEPT\n'+
+                  'VM-08,M-03,W-04,PAS,SHE,150,8,9,45,band rim,tag theta,very rich note,KEPT\n'+
+                  'VM-09,M-03,W-09,FEN,UNG,250,9,10,50,band rim,tag iota,unknown warden note,KEPT\n'+
+                  'VM-10,M-01,W-01,ZZ,CAT,4,1,2,10,band north,tag kappa,unlisted sward note,KEPT\n'+
+                  'VM-11,M-04,W-01,HAY,CAT,12,2,3,9,band far,tag lambda,unregistered meadow note,KEPT\n'+
+                  'VM-12,M-01,W-01,PAS,SHE,20,2,4,8,band old,tag mu,retired plot note,RETIRED\n';
+
+                register.meadow:
+                  'meadow_code,meadow_name,region_code,status_code\n'+
+                  'M-01,Lower Hay Meadow,R-01,LISTED\n'+
+                  'M-02,Upper Hay Meadow,R-01,LISTED\n'+
+                  'M-03,Fen Meadow,R-02,LISTED\n';
+
+                register.region:
+                  'region_code,region_name,zone_code\n'+
+                  'R-01,Valley Region,Z-01\n'+
+                  'R-02,Fenland Region,Z-02\n';
+
+                register.zone:
+                  'zone_code,zone_name,sector_label\n'+
+                  'Z-01,Valley Zone,west sector\n'+
+                  'Z-02,Fenland Zone,east sector\n';
+
+                register.warden:
+                  'warden_code,warden_name,contact_text\n'+
+                  'W-01,Iris Bramble,radio one\n'+
+                  'W-02,Rowan Sedge,radio two\n'+
+                  'W-03,Linnet Fescue,radio three\n'+
+                  'W-04,Alder Vetch,radio four\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"VM-01","Record":"VM-01","Band":"BAND-A","CutLoad":2,"RestIndex":2,"Vigour":5,"SeedRate":5,"CoverIndex":1.75,"Tag":"HAY/tag alpha","Region":"Valley Region","Zone":"Valley Zone","Sward":"HAY_MEADOW","Grazing":"CATTLE","Condition":"UNFAVOURABLE","BandLabel":"band north","TagLabel":"TAG ALPHA","WardenLabel":"W-01","Contact":"radio one","MeadowPlots":5,"MeadowMaxSpecies":20},{"Plot":"VM-02","Record":"VM-02","Band":"BAND-B","CutLoad":8,"RestIndex":5,"Vigour":11,"SeedRate":3,"CoverIndex":3.75,"Tag":"PAS/tag beta","Region":"Valley Region","Zone":"Valley Zone","Sward":"PASTURE","Grazing":"SHEEP","Condition":"UNFAVOURABLE","BandLabel":"band north","TagLabel":"TAG BETA","WardenLabel":"W-01","Contact":"radio one","MeadowPlots":5,"MeadowMaxSpecies":20},{"Plot":"VM-03","Record":"VM-03","Band":"BAND-C","CutLoad":15,"RestIndex":12,"Vigour":21,"SeedRate":4,"CoverIndex":7.75,"Tag":"FEN/","Region":"Valley Region","Zone":"Valley Zone","Sward":"FEN_MEADOW","Grazing":"UNGRAZED","Condition":"RECOVERING","BandLabel":"band east","TagLabel":null,"WardenLabel":"W-02","Contact":"radio two","MeadowPlots":5,"MeadowMaxSpecies":20},{"Plot":"VM-04","Record":"VM-04","Band":"BAND-D","CutLoad":24,"RestIndex":26,"Vigour":38,"SeedRate":4,"CoverIndex":15.25,"Tag":"HAY/tag delta","Region":"Valley Region","Zone":"Valley Zone","Sward":"HAY_MEADOW","Grazing":"UNGRAZED","Condition":"RECOVERING","BandLabel":"band west","TagLabel":"TAG DELTA","WardenLabel":"W-02","Contact":"radio two","MeadowPlots":3,"MeadowMaxSpecies":70},{"Plot":"VM-05","Record":"VM-05","Band":"BAND-E","CutLoad":50,"RestIndex":45,"Vigour":60,"SeedRate":3,"CoverIndex":25.25,"Tag":"PAS/tag epsilon","Region":"Valley Region","Zone":"Valley Zone","Sward":"PASTURE","Grazing":"CATTLE","Condition":"FAVOURABLE","BandLabel":"band west","TagLabel":"TAG EPSILON","WardenLabel":"W-03","Contact":"radio three","MeadowPlots":3,"MeadowMaxSpecies":70},{"Plot":"VM-06","Record":"VM-06","Band":"BAND-F","CutLoad":42,"RestIndex":64,"Vigour":82,"SeedRate":5,"CoverIndex":35.25,"Tag":"FEN/tag zeta","Region":"Valley Region","Zone":"Valley Zone","Sward":"FEN_MEADOW","Grazing":"SHEEP","Condition":"FAVOURABLE","BandLabel":"band south","TagLabel":"TAG ZETA","WardenLabel":"W-03","Contact":"radio three","MeadowPlots":3,"MeadowMaxSpecies":70},{"Plot":"VM-07","Record":"VM-07","Band":"BAND-G","CutLoad":56,"RestIndex":93,"Vigour":114,"SeedRate":5,"CoverIndex":50.25,"Tag":"HAY/tag eta","Region":"Fenland Region","Zone":"Fenland Zone","Sward":"HAY_MEADOW","Grazing":"CATTLE","Condition":"FAVOURABLE","BandLabel":"band south","TagLabel":"TAG ETA","WardenLabel":"W-04","Contact":"radio four","MeadowPlots":3,"MeadowMaxSpecies":250},{"Plot":"VM-08","Record":"VM-08","Band":"BAND-H","CutLoad":72,"RestIndex":142,"Vigour":166,"SeedRate":5,"CoverIndex":75.25,"Tag":"PAS/tag theta","Region":"Fenland Region","Zone":"Fenland Zone","Sward":"PASTURE","Grazing":"SHEEP","Condition":"FAVOURABLE","BandLabel":"band rim","TagLabel":"TAG THETA","WardenLabel":"W-04","Contact":"radio four","MeadowPlots":3,"MeadowMaxSpecies":250},{"Plot":"VM-09","Record":"VM-09","Band":null,"CutLoad":90,"RestIndex":241,"Vigour":268,"SeedRate":5,"CoverIndex":125.25,"Tag":"FEN/tag iota","Region":"Fenland Region","Zone":"Fenland Zone","Sward":"FEN_MEADOW","Grazing":"UNGRAZED","Condition":"FAVOURABLE","BandLabel":"band rim","TagLabel":"TAG IOTA","WardenLabel":"W-09","Contact":null,"MeadowPlots":3,"MeadowMaxSpecies":250},{"Plot":"VM-10","Record":"VM-10","Band":"BAND-A","CutLoad":2,"RestIndex":3,"Vigour":6,"SeedRate":5,"CoverIndex":2.25,"Tag":"ZZ/tag kappa","Region":"Valley Region","Zone":"Valley Zone","Sward":null,"Grazing":"CATTLE","Condition":"UNFAVOURABLE","BandLabel":"band north","TagLabel":"TAG KAPPA","WardenLabel":"W-01","Contact":"radio one","MeadowPlots":5,"MeadowMaxSpecies":20},{"Plot":"VM-11","Record":"VM-11","Band":"BAND-C","CutLoad":6,"RestIndex":10,"Vigour":16,"SeedRate":3,"CoverIndex":6.25,"Tag":"HAY/tag lambda","Region":null,"Zone":null,"Sward":"HAY_MEADOW","Grazing":"CATTLE","Condition":"RECOVERING","BandLabel":"band far","TagLabel":"TAG LAMBDA","WardenLabel":"W-01","Contact":"radio one","MeadowPlots":1,"MeadowMaxSpecies":12}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

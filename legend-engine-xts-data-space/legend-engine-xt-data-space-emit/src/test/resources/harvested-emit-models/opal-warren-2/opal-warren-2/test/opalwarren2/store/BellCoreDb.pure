@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::opalwarren2::store::BellCoreDb
+(
+  Schema tower
+  (
+    Table hung_bell
+    (
+      bell_id INTEGER PRIMARY KEY,
+      bell_ref VARCHAR(16),
+      bell_name VARCHAR(128),
+      tone_code VARCHAR(8),
+      canon_weight_kg INTEGER,
+      headstock_code VARCHAR(16),
+      belfry_code VARCHAR(16),
+      status_code VARCHAR(16)
+    )
+    Table belfry_frame
+    (
+      belfry_code VARCHAR(16) PRIMARY KEY,
+      belfry_name VARCHAR(128),
+      frame_kind VARCHAR(32)
+    )
+  )
+)

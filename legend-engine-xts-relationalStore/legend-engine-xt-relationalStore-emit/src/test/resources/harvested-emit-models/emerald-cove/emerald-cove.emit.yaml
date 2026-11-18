@@ -1,0 +1,51 @@
+name: emerald-cove
+title: "Emerald Cove — Rockpool Walk Register Reaching Its Shore Through A Chained Join Path With An Inline Marker And An Otherwise-Backed Guide"
+description: |
+  A cove rockpool-walk register whose whole behaviour sits in the relational
+  layer: a multi-table store declares the walk, pool, shore and guide tables
+  with named joins between them, a single-table access filter over the pools and
+  a cross-table filter that predicates a walk against the access code of the
+  pool it is routed through, so applying it forces a join into the filtered row
+  set. The walk class mapping pins its main table alias, declares its primary
+  key explicitly, reads its pool name across one join hop and its shore label
+  across a chained two-hop path, carries its waymarker plate as an inline
+  embedded property mapping and carries its guide as an embedded mapping with an
+  otherwise branch, so a walk with no guide key falls back to the standalone
+  guide set instead of materialising an inline instance. Mapping test suites
+  assert the multi-hop join hit, the absent-guide row and the filter-dropped
+  walk row by row, and a second suite asserts the pool set the single-table
+  filter admits.
+modelSources:
+  model:
+    root: emerald-cove
+    files:
+      - test/emeraldcove/domain/CoveDomain.pure
+      - test/emeraldcove/mapping/CoveMapping.pure
+      - test/emeraldcove/store/CoveDB.pure
+features:
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-otherwise-embedded
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-table-filter
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: basic
+tags:
+  - cross-table-filter
+  - embedded-mapping
+  - h2
+  - mapping-test
+  - multi-hop-join
+  - otherwise-embedded
+  - relational
+  - rockpool-walks
+  - store-filter

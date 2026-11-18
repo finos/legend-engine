@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::emeraldlantern::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'What a keeper visit left behind at the station.'} test::emeraldlantern::domain::VisitOutcome
+{
+  Serviceable,
+  Repaired,
+  Escalated
+}
+
+Class {meta::pure::profiles::doc.doc = 'One keeper visit to a lantern station, numbered within the station, with the district office and coast sector reached through the station it was paid to.'} test::emeraldlantern::domain::KeeperVisit
+{
+  {meta::pure::profiles::doc.doc = 'Station half of the two-part visit key.'} stationId: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Running visit number within the station, the second half of the key.'} visitSeq: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Plate of the visited station; empty when the visit names no registered station.'} stationCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Readable label of the visit kind; empty for kinds with no label.'} visitLabel: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Outcome folded from the stored outcome code; empty when the code has no constant.'} outcome: VisitOutcome[0..1];
+  {meta::pure::profiles::doc.doc = 'Whole hours the keeper spent on site.'} hoursOnSite: Integer[1];
+  {meta::pure::profiles::doc.doc = 'District office answering for the visited station.'} districtOffice: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Coast sector of that district office, two hops away from the visit.'} coastSector: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper visit reduced to the queue urgency and the shift effort it implies.'} test::emeraldlantern::domain::VisitDigest
+{
+  {meta::pure::profiles::doc.doc = 'Plate of the visited station, upper-cased, or a placeholder when unplated.'} stationCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Visit number carried over from the visit.'} visitSeq: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Queue urgency derived from the hours spent on site.'} urgency: ServiceTier[1];
+  {meta::pure::profiles::doc.doc = 'Whether the visit took a full shift or part of one.'} effortBand: String[1];
+}

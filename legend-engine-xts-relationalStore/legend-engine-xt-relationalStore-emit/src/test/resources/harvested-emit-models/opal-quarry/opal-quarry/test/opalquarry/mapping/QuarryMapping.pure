@@ -1,0 +1,415 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalquarry::mapping::QuarryMapping
+(
+  *test::opalquarry::domain::StoneBlock[stoneBlock]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalquarry::store::QuarryDB]stoneyard.block.block_code
+    )
+    ~mainTable [test::opalquarry::store::QuarryDB]stoneyard.block
+    blockCode: [test::opalquarry::store::QuarryDB]stoneyard.block.block_code,
+    blockLabel: [test::opalquarry::store::QuarryDB]stoneyard.block.block_label,
+    gradeLabel: case(
+                  equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'A'),
+                  'Statuary grade',
+                  case(
+                    equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'B'),
+                    'Monument grade',
+                    case(
+                      equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'C'),
+                      'Facade grade',
+                      case(
+                        equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'D'),
+                        'Paving grade',
+                        case(
+                          equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'E'),
+                          'Kerb grade',
+                          case(
+                            equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'F'),
+                            'Rubble grade',
+                            case(
+                              equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'G'),
+                              'Ballast grade',
+                              case(
+                                equal([test::opalquarry::store::QuarryDB]stoneyard.block.grade_code, 'H'),
+                                'Fill grade',
+                                [test::opalquarry::store::QuarryDB]stoneyard.block.grade_code
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+    finishLabel: if(
+                   equal([test::opalquarry::store::QuarryDB]stoneyard.block.finish_code, 'P'),
+                   'Polished',
+                   if(
+                     equal([test::opalquarry::store::QuarryDB]stoneyard.block.finish_code, 'H'),
+                     'Honed',
+                     if(
+                       equal([test::opalquarry::store::QuarryDB]stoneyard.block.finish_code, 'R'),
+                       'Rough',
+                       [test::opalquarry::store::QuarryDB]stoneyard.block.finish_code
+                     )
+                   )
+                 ),
+    massBand: case(
+                greaterThan([test::opalquarry::store::QuarryDB]stoneyard.block.mass_kg, 3000.0),
+                'HEAVY',
+                case(
+                  greaterThan(divide([test::opalquarry::store::QuarryDB]stoneyard.block.mass_kg, 1000.0), 1.0),
+                  'MEDIUM',
+                  case(
+                    greaterThan([test::opalquarry::store::QuarryDB]stoneyard.block.mass_kg, 100.0),
+                    'LIGHT',
+                    'MINIMAL'
+                  )
+                )
+              ),
+    quarriedDate: [test::opalquarry::store::QuarryDB]stoneyard.block.quarried_date,
+    benchLabel: [test::opalquarry::store::QuarryDB]@Block_Bench | [test::opalquarry::store::QuarryDB]stoneyard.bench.bench_label,
+    seamCode: [test::opalquarry::store::QuarryDB]@Block_Bench | [test::opalquarry::store::QuarryDB]stoneyard.bench.seam_code,
+    cutterLabel: [test::opalquarry::store::QuarryDB]@Block_Cutter | [test::opalquarry::store::QuarryDB]stoneyard.cutter.cutter_label,
+    toolLabel: [test::opalquarry::store::QuarryDB]@Block_Tool | [test::opalquarry::store::QuarryDB]stoneyard.tool_ref.tool_label,
+    peakPassCount: [test::opalquarry::store::QuarryDB]@Block_PassLoad | [test::opalquarry::store::QuarryDB]stoneyard.bench_pass_load.peak_pass_count,
+    dimensions
+    (
+      lengthMm: [test::opalquarry::store::QuarryDB]stoneyard.block.length_mm,
+      widthMm: [test::opalquarry::store::QuarryDB]stoneyard.block.width_mm,
+      heightMm: [test::opalquarry::store::QuarryDB]stoneyard.block.height_mm,
+      caliperSource: 'yard-caliper',
+      gaugedWith: [test::opalquarry::store::QuarryDB]@Block_Tool | [test::opalquarry::store::QuarryDB]stoneyard.tool_ref.blade_kind
+    )
+  }
+
+  test::opalquarry::domain::Bench[bench]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalquarry::store::QuarryDB]stoneyard.bench.bench_code
+    )
+    ~mainTable [test::opalquarry::store::QuarryDB]stoneyard.bench
+    benchCode: [test::opalquarry::store::QuarryDB]stoneyard.bench.bench_code,
+    benchLabel: [test::opalquarry::store::QuarryDB]stoneyard.bench.bench_label,
+    seamCode: [test::opalquarry::store::QuarryDB]stoneyard.bench.seam_code,
+    depthMeters: [test::opalquarry::store::QuarryDB]stoneyard.bench.depth_m,
+    openedDate: [test::opalquarry::store::QuarryDB]stoneyard.bench.opened_date
+  }
+
+  test::opalquarry::domain::Cutter[cutter]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalquarry::store::QuarryDB]stoneyard.cutter.cutter_id
+    )
+    ~mainTable [test::opalquarry::store::QuarryDB]stoneyard.cutter
+    cutterId: [test::opalquarry::store::QuarryDB]stoneyard.cutter.cutter_id,
+    cutterLabel: [test::opalquarry::store::QuarryDB]stoneyard.cutter.cutter_label,
+    shiftLabel: [test::opalquarry::store::QuarryDB]stoneyard.cutter.shift_label,
+    activeFlag: [test::opalquarry::store::QuarryDB]stoneyard.cutter.active_flag
+  }
+
+  test::opalquarry::domain::CutRecord[cutRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalquarry::store::QuarryDB]stoneyard.cut_log.cut_id
+    )
+    ~mainTable [test::opalquarry::store::QuarryDB]stoneyard.cut_log
+    cutId: [test::opalquarry::store::QuarryDB]stoneyard.cut_log.cut_id,
+    blockCode: [test::opalquarry::store::QuarryDB]stoneyard.cut_log.block_code,
+    passCount: [test::opalquarry::store::QuarryDB]stoneyard.cut_log.pass_count,
+    cutDate: [test::opalquarry::store::QuarryDB]stoneyard.cut_log.cut_date,
+    toolLabel: [test::opalquarry::store::QuarryDB]@CutLog_Tool | [test::opalquarry::store::QuarryDB]stoneyard.tool_ref.tool_label,
+    blockPeakPassCount: [test::opalquarry::store::QuarryDB]@CutLog_PassLoad | [test::opalquarry::store::QuarryDB]stoneyard.bench_pass_load.peak_pass_count
+  }
+
+  test::opalquarry::domain::PolishRecord[polishRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalquarry::store::QuarryDB]stoneyard.polish_log.polish_id
+    )
+    ~mainTable [test::opalquarry::store::QuarryDB]stoneyard.polish_log
+    polishId: [test::opalquarry::store::QuarryDB]stoneyard.polish_log.polish_id,
+    blockCode: [test::opalquarry::store::QuarryDB]stoneyard.polish_log.block_code,
+    gritValue: [test::opalquarry::store::QuarryDB]stoneyard.polish_log.grit_value,
+    gritLabel: case(
+                 greaterThan([test::opalquarry::store::QuarryDB]stoneyard.polish_log.grit_value, 800),
+                 'MIRROR',
+                 case(
+                   greaterThan([test::opalquarry::store::QuarryDB]stoneyard.polish_log.grit_value, 200),
+                   'SATIN',
+                   'MATTE'
+                 )
+               ),
+    polisherLabel: [test::opalquarry::store::QuarryDB]stoneyard.polish_log.polisher_label
+  }
+
+  testSuites:
+  [
+    blockGradeArmCoverage:
+    {
+      function: |test::opalquarry::domain::StoneBlock.all()->project(
+  [
+    col(b|$b.blockCode, 'Block'),
+    col(b|$b.gradeLabel, 'Grade'),
+    col(b|$b.finishLabel, 'Finish'),
+    col(b|$b.massBand, 'MassBand'),
+    col(b|$b.benchLabel, 'Bench'),
+    col(b|$b.seamCode, 'Seam'),
+    col(b|$b.cutterLabel, 'Cutter'),
+    col(b|$b.toolLabel, 'Tool'),
+    col(b|$b.peakPassCount, 'PeakPasses')
+  ]
+)->sort([asc('Block')]);
+      tests:
+      [
+        gradeArmsAndJoinMisses:
+        {
+          doc: 'Nine block rows cover all eight grade arms plus the fallback row whose grade code is absent, the three finish arms with a pass-through code, every mass band including the arithmetic middle band, the bench and tool lookups, the view-backed peak pass count and the two-condition cutter join whose inactive counterpart is skipped.';
+          data:
+          [
+            test::opalquarry::store::QuarryDB:
+              Relational
+              #{
+                stoneyard.block:
+                  'block_code,block_label,bench_code,cutter_id,grade_code,finish_code,length_mm,width_mm,height_mm,mass_kg,quarried_date,logged_stamp,tool_code\n'+
+                  'B1,Ridge Slab,BN-1,CT-1,A,P,2400,1200,900,3200.5,2026-01-05,2026-01-05 08:00:00,TL-1\n'+
+                  'B2,Ledge Slab,BN-1,CT-2,B,H,2200,1100,800,1800.0,2026-01-06,2026-01-06 08:00:00,TL-2\n'+
+                  'B3,Seam Block,BN-2,CT-1,C,R,2000,1000,700,900.0,2026-01-07,2026-01-07 08:00:00,TL-3\n'+
+                  'B4,Quarry Face,BN-2,CT-3,D,P,1800,900,600,450.0,2026-01-08,2026-01-08 08:00:00,TL-1\n'+
+                  'B5,Talus Chunk,BN-3,CT-1,E,H,1600,800,500,220.0,2026-01-09,2026-01-09 08:00:00,TL-2\n'+
+                  'B6,Cap Slab,BN-3,CT-2,F,R,1400,700,400,120.0,2026-01-10,2026-01-10 08:00:00,TL-3\n'+
+                  'B7,Sill Block,BN-4,CT-1,G,P,1200,600,300,60.0,2026-01-11,2026-01-11 08:00:00,TL-1\n'+
+                  'B8,Rubble Block,BN-4,CT-9,H,X,1000,500,200,30.0,2026-01-12,2026-01-12 08:00:00,TL-1\n'+
+                  'B9,Unsorted Block,,,,,,,,,,,\n';
+                stoneyard.bench:
+                  'bench_code,bench_label,seam_code,depth_m,opened_date\n'+
+                  'BN-1,Upper Bench,SM-1,12.5,2025-11-01\n'+
+                  'BN-2,Lower Bench,SM-1,18.0,2025-11-15\n'+
+                  'BN-3,North Bench,SM-2,9.0,2025-12-01\n'+
+                  'BN-4,South Bench,,22.0,2025-12-15\n';
+                stoneyard.cutter:
+                  'cutter_id,cutter_label,active_flag,primary_tool,shift_label\n'+
+                  'CT-1,Ana Cutter,Y,TL-1,Day\n'+
+                  'CT-2,Bo Cutter,Y,TL-2,Night\n'+
+                  'CT-3,Cy Cutter,Y,TL-3,Day\n'+
+                  'CT-9,Retired Cutter,N,TL-1,Day\n';
+                stoneyard.tool_ref:
+                  'tool_code,tool_label,blade_kind,blade_width_mm\n'+
+                  'TL-1,Wire Saw,wire,6\n'+
+                  'TL-2,Chain Saw,chain,8\n'+
+                  'TL-3,Disc Saw,disc,10\n';
+                stoneyard.cut_log:
+                  'cut_id,block_code,tool_code,pass_count,cut_date,cut_stamp\n'+
+                  'C1,B1,TL-1,3,2026-01-05,2026-01-05 09:00:00\n'+
+                  'C2,B1,TL-2,5,2026-01-06,2026-01-06 09:00:00\n'+
+                  'C3,B2,TL-2,2,2026-01-07,2026-01-07 09:00:00\n'+
+                  'C4,B3,TL-3,7,2026-01-08,2026-01-08 09:00:00\n';
+                stoneyard.polish_log:
+                  'polish_id,block_code,grit_value,polish_stamp,polisher_label\n'+
+                  'P1,B1,1200,2026-01-06 10:00:00,Mirror Line\n'+
+                  'P2,B2,400,2026-01-07 10:00:00,Satin Line\n'+
+                  'P3,B3,90,2026-01-08 10:00:00,Matte Line\n';
+              }#
+          ];
+          asserts:
+          [
+            blockRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"B1","Grade":"Statuary grade","Finish":"Polished","MassBand":"HEAVY","Bench":"Upper Bench","Seam":"SM-1","Cutter":"Ana Cutter","Tool":"Wire Saw","PeakPasses":5},{"Block":"B2","Grade":"Monument grade","Finish":"Honed","MassBand":"MEDIUM","Bench":"Upper Bench","Seam":"SM-1","Cutter":"Bo Cutter","Tool":"Chain Saw","PeakPasses":2},{"Block":"B3","Grade":"Facade grade","Finish":"Rough","MassBand":"LIGHT","Bench":"Lower Bench","Seam":"SM-1","Cutter":"Ana Cutter","Tool":"Disc Saw","PeakPasses":7},{"Block":"B4","Grade":"Paving grade","Finish":"Polished","MassBand":"LIGHT","Bench":"Lower Bench","Seam":"SM-1","Cutter":"Cy Cutter","Tool":"Wire Saw","PeakPasses":null},{"Block":"B5","Grade":"Kerb grade","Finish":"Honed","MassBand":"LIGHT","Bench":"North Bench","Seam":"SM-2","Cutter":"Ana Cutter","Tool":"Chain Saw","PeakPasses":null},{"Block":"B6","Grade":"Rubble grade","Finish":"Rough","MassBand":"LIGHT","Bench":"North Bench","Seam":"SM-2","Cutter":"Bo Cutter","Tool":"Disc Saw","PeakPasses":null},{"Block":"B7","Grade":"Ballast grade","Finish":"Polished","MassBand":"MINIMAL","Bench":"South Bench","Seam":null,"Cutter":"Ana Cutter","Tool":"Wire Saw","PeakPasses":null},{"Block":"B8","Grade":"Fill grade","Finish":"X","MassBand":"MINIMAL","Bench":"South Bench","Seam":null,"Cutter":null,"Tool":"Wire Saw","PeakPasses":null},{"Block":"B9","Grade":null,"Finish":null,"MassBand":"MINIMAL","Bench":null,"Seam":null,"Cutter":null,"Tool":null,"PeakPasses":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    embeddedDimensionSuite:
+    {
+      function: |test::opalquarry::domain::StoneBlock.all()->filter(b|$b.blockCode == 'B1')->graphFetch(
+  #{
+    test::opalquarry::domain::StoneBlock
+    {
+      blockCode,
+      blockLabel,
+      gradeLabel,
+      dimensions
+      {
+        lengthMm,
+        widthMm,
+        heightMm,
+        caliperSource,
+        gaugedWith
+      }
+    }
+  }#
+)->serialize(
+  #{
+    test::opalquarry::domain::StoneBlock
+    {
+      blockCode,
+      blockLabel,
+      gradeLabel,
+      dimensions
+      {
+        lengthMm,
+        widthMm,
+        heightMm,
+        caliperSource,
+        gaugedWith
+      }
+    }
+  }#
+);
+      tests:
+      [
+        embeddedDimensionsPopulated:
+        {
+          doc: 'The embedded dimension block is assembled from the enclosing table alias, carries its literal caliper source and reaches the blade kind through the tool join, so the embedded columns travel inside the parent block SQL.';
+          data:
+          [
+            test::opalquarry::store::QuarryDB:
+              Relational
+              #{
+                stoneyard.block:
+                  'block_code,block_label,bench_code,cutter_id,grade_code,finish_code,length_mm,width_mm,height_mm,mass_kg,quarried_date,logged_stamp,tool_code\n'+
+                  'B1,Ridge Slab,BN-1,CT-1,A,P,2400,1200,900,3200.5,2026-01-05,2026-01-05 08:00:00,TL-1\n'+
+                  'B9,Unsorted Block,,,,,,,,,,,\n';
+                stoneyard.tool_ref:
+                  'tool_code,tool_label,blade_kind,blade_width_mm\n'+
+                  'TL-1,Wire Saw,wire,6\n';
+              }#
+          ];
+          asserts:
+          [
+            embeddedBlock:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"blockCode":"B1","blockLabel":"Ridge Slab","gradeLabel":"Statuary grade","dimensions":{"lengthMm":2400,"widthMm":1200,"heightMm":900,"caliperSource":"yard-caliper","gaugedWith":"wire"}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    polishGritSuite:
+    {
+      function: |test::opalquarry::domain::PolishRecord.all()->project(
+  [
+    col(p|$p.polishId, 'Polish'),
+    col(p|$p.blockCode, 'Block'),
+    col(p|$p.gritValue, 'Grit'),
+    col(p|$p.gritLabel, 'GritBand')
+  ]
+)->sort([asc('Polish')]);
+      tests:
+      [
+        gritBands:
+        {
+          doc: 'The polish grit conditional resolves each of its three bands from a single numeric column.';
+          data:
+          [
+            test::opalquarry::store::QuarryDB:
+              Relational
+              #{
+                stoneyard.polish_log:
+                  'polish_id,block_code,grit_value,polish_stamp,polisher_label\n'+
+                  'P1,B1,1200,2026-01-06 10:00:00,Mirror Line\n'+
+                  'P2,B2,400,2026-01-07 10:00:00,Satin Line\n'+
+                  'P3,B3,90,2026-01-08 10:00:00,Matte Line\n';
+              }#
+          ];
+          asserts:
+          [
+            gritRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Polish":"P1","Block":"B1","Grit":1200,"GritBand":"MIRROR"},{"Polish":"P2","Block":"B2","Grit":400,"GritBand":"SATIN"},{"Polish":"P3","Block":"B3","Grit":90,"GritBand":"MATTE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    cutRecordViewSuite:
+    {
+      function: |test::opalquarry::domain::CutRecord.all()->project(
+  [
+    col(c|$c.cutId, 'Cut'),
+    col(c|$c.blockCode, 'Block'),
+    col(c|$c.passCount, 'Passes'),
+    col(c|$c.toolLabel, 'Tool'),
+    col(c|$c.blockPeakPassCount, 'BlockPeak')
+  ]
+)->sort([asc('Cut')]);
+      tests:
+      [
+        cutRowsAgainstView:
+        {
+          doc: 'Each cut row reports its own pass count next to the grouped peak for its block read through the second traversal onto the derived view, so the aggregate subselect is exercised from a different alias than the block mapping uses.';
+          data:
+          [
+            test::opalquarry::store::QuarryDB:
+              Relational
+              #{
+                stoneyard.cut_log:
+                  'cut_id,block_code,tool_code,pass_count,cut_date,cut_stamp\n'+
+                  'C1,B1,TL-1,3,2026-01-05,2026-01-05 09:00:00\n'+
+                  'C2,B1,TL-2,5,2026-01-06,2026-01-06 09:00:00\n'+
+                  'C3,B2,TL-2,2,2026-01-07,2026-01-07 09:00:00\n'+
+                  'C4,B3,TL-9,7,2026-01-08,2026-01-08 09:00:00\n';
+                stoneyard.tool_ref:
+                  'tool_code,tool_label,blade_kind,blade_width_mm\n'+
+                  'TL-1,Wire Saw,wire,6\n'+
+                  'TL-2,Chain Saw,chain,8\n';
+              }#
+          ];
+          asserts:
+          [
+            cutRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut":"C1","Block":"B1","Passes":3,"Tool":"Wire Saw","BlockPeak":5},{"Cut":"C2","Block":"B1","Passes":5,"Tool":"Chain Saw","BlockPeak":5},{"Cut":"C3","Block":"B2","Passes":2,"Tool":"Chain Saw","BlockPeak":2},{"Cut":"C4","Block":"B3","Passes":7,"Tool":null,"BlockPeak":7}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

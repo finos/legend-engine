@@ -1,0 +1,35 @@
+name: gilded-cove-2-generation
+title: "Gilded Cove 2 — Basic EMIT model (paged response envelopes, generation-affecting property stereotypes, JSON-schema file generation)"
+description: |
+  A basic non-financial EMIT model in a coastal rock-pool survey domain. It materialises a
+  cove site, a constrained rock-pool reading, a species record, shared continuation
+  bookkeeping and two page-envelope classes that each own an unbounded collection of a
+  detail class plus an optional marker, two enumerations used as property types, and a
+  JSON-schema file generation (constraints and stereotypes included) sequenced by its
+  generation specification. Several integer properties carry schema-generation stereotypes
+  that widen their numeric type in the emitted document only, so the published contract and
+  the model deliberately disagree on precision. The model has no testable elements; it is
+  validated by compiling and running the JSON-schema generation artifact task.
+modelSources:
+  model:
+    root: gilded-cove-2-generation
+    files:
+      - test/gildedcove2/domain/CoveSurvey.pure
+      - test/gildedcove2/generation/CoveGenerationSpecification.pure
+      - test/gildedcove2/generation/CoveJsonSchema.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:constraint
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - cove
+  - file-generation
+  - generation-specification
+  - gilded
+  - json-schema
+  - nested-collection
+  - stereotyped-property

@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsoncanyon::mapping::LayerM2M
+(
+  *test::crimsoncanyon::domain::StrataLayer: Pure
+  {
+    ~src test::crimsoncanyon::source::IncomingLayer
+    unitCode: $src.code,
+    name: $src.label,
+    thicknessMeters: $src.thickness,
+    status: $src.status
+  }
+
+  testSuites:
+  [
+    layerSuite:
+    {
+      function: |test::crimsoncanyon::domain::StrataLayer.all()->graphFetch(
+        #{
+          test::crimsoncanyon::domain::StrataLayer
+          {
+            unitCode,
+            name,
+            thicknessMeters,
+            status,
+            thicknessBand
+          }
+        }#
+      )->serialize(
+        #{
+          test::crimsoncanyon::domain::StrataLayer
+          {
+            unitCode,
+            name,
+            thicknessMeters,
+            status,
+            thicknessBand
+          }
+        }#
+      );
+      tests:
+      [
+        layerAlpha:
+        {
+          doc: 'Round-trips an inbound strata layer record through the model-to-model transform and derived band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::crimsoncanyon::source::IncomingLayer:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"RU-01","label":"Sandstone Bed","thickness":45.0,"status":"EXPOSED"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedLayer:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"unitCode":"RU-01","name":"Sandstone Bed","thicknessMeters":45.0,"status":"EXPOSED","thicknessBand()":"MEDIUM"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

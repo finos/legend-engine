@@ -1,0 +1,36 @@
+name: sable-thicket-generation
+title: "Seed Propagation Domain — Nested Class-Typed Properties and JSON Schema Generation"
+description: |
+  A glasshouse seed-propagation corpus built entirely from standalone Pure elements: no store,
+  no mapping and no executable test suite. Two root classes each hold a repeated child collection
+  and a single child reference, so the whole model is exactly one level of nesting deep and every
+  property is optional. A locally declared profile supplies one stereotype and ten tags covering
+  summary, key, requiredness, sortability, index order, metadata source, value semantics,
+  example set, unit and stewardship, and those annotations are attached at class and property
+  level. Seven numeric properties are additionally pinned to a fixed integer width with a
+  stereotype from the JSON schema type-extension profile. A JSON schema file generation scoped at
+  the domain package, wrapped in a generation specification, drives the generation phase and
+  exercises how nested class-typed properties are traversed into the emitted schema collection.
+modelSources:
+  model:
+    root: sable-thicket-generation
+    files:
+      - test/sablethicket/domain/PropagationDomain.pure
+      - test/sablethicket/generation/PropagationGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:complex-typed-property
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - file-generation
+  - generation-specification
+  - glasshouse
+  - json-schema
+  - nested-types
+  - profile
+  - propagation
+  - stereotypes

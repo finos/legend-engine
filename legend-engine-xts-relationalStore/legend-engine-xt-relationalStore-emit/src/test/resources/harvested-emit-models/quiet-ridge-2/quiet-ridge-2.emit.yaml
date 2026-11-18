@@ -1,0 +1,64 @@
+name: quiet-ridge-2
+title: "Quiet Ridge 2 - Keyed Mast Check Register"
+description: |
+  A ridge-line radio repeater register that publishes active mast artifacts and their
+  passing inspection counts through two keyed service environments. Relational
+  filters retain active artifacts and dish masts, inherited mapping resolves the
+  ridge artifact hierarchy, an association joins each mast to its checks, and the
+  service projects a sorted five-column TDS register with an optional artifact-kind
+  filter and a caller-supplied review floor. Assertion-backed coverage includes
+  active and retired artifacts, dish and panel subtype filtering, string transforms,
+  passing and ungraded checks, multi-execution routing, and an empty archive result.
+modelSources:
+  model:
+    root: quiet-ridge-2
+    files:
+      - test/quietridge2/connection/RidgeMastConnections.pure
+      - test/quietridge2/domain/RidgeMastDomain.pure
+      - test/quietridge2/function/RidgeMastFunctions.pure
+      - test/quietridge2/mapping/RidgeMastMapping.pure
+      - test/quietridge2/runtime/RidgeMastRuntimes.pure
+      - test/quietridge2/service/MastCheckRegister.pure
+      - test/quietridge2/store/RidgeMastDb.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:function
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - antenna
+  - class-inheritance
+  - dish
+  - h2
+  - mast
+  - multi-execution
+  - relational
+  - ridge
+  - service-test
+  - subtype-cast

@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::westernorchard::service::LotLookup
+{
+  pattern: '/orchard/v1/harvest-lots/{blockCode}';
+  title: 'Western Orchard - Harvest Lots By Block';
+  owners:
+  [
+    'example-orchard-estate-team',
+    'example-orchard-steward'
+  ];
+  documentation: 'Projects the harvest lots picked from one block, widening each row with the block label, the planted variety reached two association hops away and the rostered picking crew.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {blockCode: String[1]|demo::westernorchard::domain::HarvestLot.all()->filter(
+      l|$l.block.blockCode == $blockCode
+    )->project(
+      [
+        l|$l.lotRef,
+        l|$l.block.blockName,
+        l|$l.block.cultivar.cultivarName,
+        l|$l.crew.crewName,
+        l|$l.binCount
+      ],
+      [
+        'LotRef',
+        'BlockName',
+        'CultivarName',
+        'CrewName',
+        'BinCount'
+      ]
+    )->sort(
+      [
+        asc('LotRef')
+      ]
+    )};
+    mapping: demo::westernorchard::mapping::OrchardMapping;
+    runtime: demo::westernorchard::runtime::OrchardRuntime;
+  }
+  testSuites:
+  [
+    lotLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardWarehouse:
+            Relational
+            #{
+              orchard.cultivar:
+                'cultivar_code,cultivar_name,rootstock\n'+
+                'CV-1,Braeburn,M9\n'+
+                'CV-2,Gala,M26\n';
+
+              orchard.orchard_block:
+                'block_code,block_name,hectares,planted_on,irrigated,cultivar_code\n'+
+                'BK-01,North Slope,4.5,2018-04-12,true,CV-1\n'+
+                'BK-02,Windbreak Row,2.25,2020-09-30,false,CV-2\n';
+
+              orchard.picking_crew:
+                'crew_code,crew_name,headcount\n'+
+                'CR-1,Dawn Pickers,12\n'+
+                'CR-2,Ridge Pickers,8\n';
+
+              orchard.harvest_lot:
+                'lot_ref,block_code,crew_code,picked_on,bin_count,grade_label\n'+
+                'HL-100,BK-01,CR-1,2026-09-14,240,PREMIUM\n'+
+                'HL-101,BK-02,CR-2,2026-09-15,90,STANDARD\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        windbreakRowLots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            blockCode = 'BK-02'
+          ]
+          asserts:
+          [
+            lotRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotRef":"HL-101","BlockName":"Windbreak Row","CultivarName":"Gala","CrewName":"Ridge Pickers","BinCount":90}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

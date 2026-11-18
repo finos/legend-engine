@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silvercavern2::mapping::TripSummaryMapping
+(
+  *test::silvercavern2::domain::TripSummary[trip_summary]: Pure
+  {
+    ~src test::silvercavern2::domain::TripNote
+    recordReference: $src.noteReference->toUpper(),
+    filedBy: $src.clerk->trim(),
+    tripTitle: $src.title->trim(),
+    legTally: $src.legReferences->size(),
+    leadLegReference: $src.legReferences->at(0)->toUpper(),
+    deepestBand: if($src.deepestMetres->isEmpty(),
+                    | 'NO DEPTH LOGGED',
+                    | 'DEEPEST ' + $src.deepestMetres->toOne()->round()->toString() + ' METRES')
+  }
+
+  testSuites:
+  [
+    tripSummarySuite:
+    {
+      function: |test::silvercavern2::domain::TripSummary.all()->graphFetch(
+        #{
+          test::silvercavern2::domain::TripSummary
+          {
+            recordReference,
+            filedBy,
+            tripTitle,
+            legTally,
+            leadLegReference,
+            deepestBand
+          }
+        }#
+      )->serialize(
+        #{
+          test::silvercavern2::domain::TripSummary
+          {
+            recordReference,
+            filedBy,
+            tripTitle,
+            legTally,
+            leadLegReference,
+            deepestBand
+          }
+        }#
+      );
+      tests:
+      [
+        talliedLegsAndTheDepthSentinel:
+        {
+          doc: 'Counts the tagged leg references into the tally the summary constraint demands, indexes the first reference as the lead leg, and either composes the rounded deepest-point band or falls back to the unlogged sentinel when no depth was carried.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::silvercavern2::domain::TripNote:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteReference":"cv-03061","clerk":" Wren Halvard ","title":" Silver Traverse ","legReferences":["cv-01021","cv-01022"],"deepestMetres":41.0},{"noteReference":"cv-03062","clerk":"Iver Snowdon","title":"Moth Round","legReferences":["cv-01023"]},{"noteReference":"cv-03063","clerk":"Odile Ferrar","title":"Echo Circuit","legReferences":["cv-01022","cv-01023","cv-01021"],"deepestMetres":12.0}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeTripSummaries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordReference":"CV-03061","filedBy":"Wren Halvard","tripTitle":"Silver Traverse","legTally":2,"leadLegReference":"CV-01021","deepestBand":"DEEPEST 41 METRES"},{"recordReference":"CV-03062","filedBy":"Iver Snowdon","tripTitle":"Moth Round","legTally":1,"leadLegReference":"CV-01023","deepestBand":"NO DEPTH LOGGED"},{"recordReference":"CV-03063","filedBy":"Odile Ferrar","tripTitle":"Echo Circuit","legTally":3,"leadLegReference":"CV-01022","deepestBand":"DEEPEST 12 METRES"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

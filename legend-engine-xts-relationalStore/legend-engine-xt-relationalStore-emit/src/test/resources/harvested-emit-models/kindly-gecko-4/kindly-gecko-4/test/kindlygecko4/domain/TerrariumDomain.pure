@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::kindlygecko4::domain::*;
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One terrarium occupant as the herpetarium register knew it over a processing window, so a re-measured occupant arrives as a later version of the same occupant code rather than an update in place.'} test::kindlygecko4::domain::TerrariumOccupant
+{
+  occupantCode: String[1];
+  terrariumCode: String[1];
+  speciesName: String[1];
+  snoutVentMm: Integer[1];
+  massGrams: Integer[0..1];
+  careNote: String[0..1];
+  hatchedOn: StrictDate[0..1];
+  displayLabel: String[1];
+  registerLabel: String[1];
+  lengthBand: String[1];
+  careNoteLength: Integer[0..1];
+  sizeBand(floorMm: Integer[1])
+  {
+    if($this.snoutVentMm >= $floorMm,
+       | 'AT_OR_ABOVE_' + $floorMm->toString(),
+       | 'BELOW_' + $floorMm->toString())
+  }: String[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A gecko occupant of the register. Its lamp and shed-cycle columns live in the very same occupant relation as every other occupant, so the specialisation is resolved by narrowing the shared relation rather than by reading a second table.'} test::kindlygecko4::domain::GeckoOccupant extends TerrariumOccupant
+{
+  baskingLampCode: String[0..1];
+  shedCycleDays: Integer[0..1];
+  lampLabel(fallback: String[1])
+  {
+    if($this.baskingLampCode->isEmpty(),
+       | $fallback->toUpper(),
+       | $this.baskingLampCode->toOne()->toUpper())
+  }: String[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A skink occupant of the register, specialised on the burrow substrate column of the shared occupant relation.'} test::kindlygecko4::domain::SkinkOccupant extends TerrariumOccupant
+{
+  burrowSubstrate: String[0..1];
+  substrateLabel(fallback: String[1])
+  {
+    if($this.burrowSubstrate->isEmpty(),
+       | $fallback->toUpper(),
+       | $this.burrowSubstrate->toOne()->toUpper())
+  }: String[1];
+}

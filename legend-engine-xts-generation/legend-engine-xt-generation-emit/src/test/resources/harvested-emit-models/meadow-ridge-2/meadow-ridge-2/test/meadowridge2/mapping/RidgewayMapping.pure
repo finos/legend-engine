@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowridge2::mapping::RidgewayMapping
+(
+  test::meadowridge2::domain::MeadowPath[path]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.MEADOW_PATH.NODE_ID
+    )
+    ~mainTable [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.MEADOW_PATH
+    pathName: [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.MEADOW_PATH.PATH_NAME,
+    surfaceType: [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.MEADOW_PATH.SURFACE_TYPE,
+    posts[post]: [test::meadowridge2::store::RidgewayDatabase]@Path_Post
+  }
+
+  test::meadowridge2::domain::WaymarkPost[post]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.WAYMARK_POST.NODE_ID
+    )
+    ~mainTable [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.WAYMARK_POST
+    postCode: [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.WAYMARK_POST.POST_CODE,
+    postFinish: [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.WAYMARK_POST.POST_FINISH,
+    postNumber: [test::meadowridge2::store::RidgewayDatabase]RIDGEWAY.WAYMARK_POST.NODE_ID
+  }
+
+  MappingTests
+  [
+    pathPostTree
+    (
+      query: |test::meadowridge2::domain::MeadowPath.all()->graphFetch(#{test::meadowridge2::domain::MeadowPath{pathName, surfaceType, posts{postCode, postFinish, postNumber}}}#)->serialize(#{test::meadowridge2::domain::MeadowPath{pathName, surfaceType, posts{postCode, postFinish, postNumber}}}#);
+      data:
+      [
+        <Relational, SQL, test::meadowridge2::store::RidgewayDatabase,
+          'drop schema if exists RIDGEWAY cascade;\n'+
+          'create schema RIDGEWAY;\n'+
+          'create table RIDGEWAY.MEADOW_PATH(NODE_ID DOUBLE PRIMARY KEY, PATH_NAME VARCHAR(16777216), SURFACE_TYPE VARCHAR(16777216));\n'+
+          'create table RIDGEWAY.WAYMARK_POST(NODE_ID DOUBLE PRIMARY KEY, POST_CODE VARCHAR(24), POST_FINISH VARCHAR(24), PATH_NODE_ID DOUBLE);\n'+
+          'delete from RIDGEWAY.WAYMARK_POST;\n'+
+          'delete from RIDGEWAY.MEADOW_PATH;\n'+
+          'insert into RIDGEWAY.MEADOW_PATH (NODE_ID, PATH_NAME, SURFACE_TYPE) values (1.0, \'North Hay Ridge\', \'mown sward\');\n'+
+          'insert into RIDGEWAY.MEADOW_PATH (NODE_ID, PATH_NAME, SURFACE_TYPE) values (2.0, \'East Cowslip Ridge\', \'stone flag\');\n'+
+          'insert into RIDGEWAY.WAYMARK_POST (NODE_ID, POST_CODE, POST_FINISH, PATH_NODE_ID) values (10.0, \'WP-10\', \'oiled larch\', 1.0);\n'+
+          'insert into RIDGEWAY.WAYMARK_POST (NODE_ID, POST_CODE, POST_FINISH, PATH_NODE_ID) values (11.5, \'WP-11\', \'weathered oak\', 2.0);\n'+
+          'insert into RIDGEWAY.WAYMARK_POST (NODE_ID, POST_CODE, POST_FINISH, PATH_NODE_ID) values (12.0, \'WP-12\', \'galvanised steel\', 2.0);\n'
+        >
+      ];
+      assert: '[{"pathName":"North Hay Ridge","surfaceType":"mown sward","posts":[{"postCode":"WP-10","postFinish":"oiled larch","postNumber":10.0}]},{"pathName":"East Cowslip Ridge","surfaceType":"stone flag","posts":[{"postCode":"WP-11","postFinish":"weathered oak","postNumber":11.5},{"postCode":"WP-12","postFinish":"galvanised steel","postNumber":12.0}]}]';
+    )
+  ]
+)

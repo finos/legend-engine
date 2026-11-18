@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealotter3::service::AccessionRegister
+{
+  pattern: '/tealotter/v1/accession-register/{taxonCode}/{vaultCode}';
+  title: 'Seed Vault - Accession Register';
+  owners:
+  [
+    'seed-conservation-office'
+  ];
+  documentation: 'Narrows the stored accessions to one taxon, one vault and a seed-count floor, keeps only the accessions that have at least one germination trial clearing the viability threshold, and projects eight columns of mixed type including the literal curation column, the expression-derived grade column and the vault name coerced to a single value.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {taxonCode: String[1], vaultCode: String[1], minSeeds: Integer[1]|test::tealotter3::domain::SeedAccession.all()->filter(
+      a|((($a.taxon.taxonCode == $taxonCode) && ($a.vault.vaultCode == $vaultCode)) && ($a.seedCount >= $minSeeds)) && $a.trials->exists(
+        t|$t.germinatedPct >= 60
+      )
+    )->project(
+      [
+        a|$a.accessionCode,
+        a|$a.collectedOn,
+        a|$a.seedCount,
+        a|$a.viablePct,
+        a|$a.dried,
+        a|$a.curationLabel,
+        a|$a.gradeLabel,
+        a|$a.vault.vaultName->toOne()
+      ],
+      [
+        'Accession',
+        'Collected On',
+        'Seeds',
+        'Viable Pct',
+        'Dried',
+        'Curation',
+        'Grade',
+        'Vault Name'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Collected On')
+      ]
+    )};
+    mapping: test::tealotter3::mapping::SeedArchiveMapping;
+    runtime: test::tealotter3::runtime::SeedVaultRuntime;
+  }
+  testSuites:
+  [
+    accessionRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultWarehouse: Reference
+            #{
+              test::tealotter3::data::SeedArchiveData
+            }#
+        ]
+      ]
+      tests:
+      [
+        parametersSelectTheTrialledAccessions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            taxonCode = 'TX-01',
+            vaultCode = 'VL-01',
+            minSeeds = 500
+          ]
+          asserts:
+          [
+            bothCollectionsOfTheAccessionAreReturned:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-01","Collected On":"2026-01-04","Seeds":1200,"Viable Pct":91.5,"Dried":true,"Curation":"CURATED","Grade":"GRADE-TX-01","Vault Name":"North Chill Room"},{"Accession":"AC-01","Collected On":"2026-03-09","Seeds":800,"Viable Pct":88.25,"Dried":true,"Curation":"CURATED","Grade":"GRADE-TX-01","Vault Name":"North Chill Room"}]';
+                  }#;
+              }#
+          ]
+        },
+        theSeedFloorExcludesEveryAccession:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            taxonCode = 'TX-01',
+            vaultCode = 'VL-01',
+            minSeeds = 5000
+          ]
+          asserts:
+          [
+            noRowsClearTheFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

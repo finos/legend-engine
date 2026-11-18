@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ivoryvineyard2::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A planted vineyard parcel whose trellis and slope are effective over business time.'} test::ivoryvineyard2::domain::Parcel
+{
+  parcelCode: String[1];
+  trellisCode: String[1];
+  slopePct: Float[1];
+  blockCode: String[0..1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A grade awarded to a parcel, corrected over processing time and effective over business time.'} test::ivoryvineyard2::domain::ParcelGrade
+{
+  gradeCode: String[1];
+}
+
+Class test::ivoryvineyard2::domain::TastingPanel
+{
+  panelName: String[1];
+  wardenName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A pressing of picked fruit from one parcel, recorded once per run whatever press carried it.'} test::ivoryvineyard2::domain::PressRun
+{
+  runCode: String[1];
+  parcelCode: String[0..1];
+  juiceLitres: Float[0..1];
+  mustKg: Integer[0..1];
+  regionCode: String[0..1];
+}
+
+Class test::ivoryvineyard2::domain::BasketPress extends PressRun
+{
+  basketLabel: String[0..1];
+}
+
+Class test::ivoryvineyard2::domain::BladderPress extends PressRun
+{
+  bladderLabel: String[0..1];
+}
+
+Class test::ivoryvineyard2::domain::HarvestLot
+{
+  lotCode: String[1];
+  regionCode: String[0..1];
+  tonnes: Integer[0..1];
+}
+
+Class test::ivoryvineyard2::domain::PressDigest
+{
+  runRef: String[1];
+  kindLabel: String[1];
+  batchCount: Integer[1];
+  totalLitres: Float[1];
+  brixBand: String[1];
+  batchSummary: String[1];
+}
+
+Class test::ivoryvineyard2::domain::PanelDigest
+{
+  panelRef: String[1];
+  wardenLabel: String[1];
+}
+
+Association test::ivoryvineyard2::domain::Parcel_Grade
+{
+  parcels: Parcel[*];
+  grade: ParcelGrade[0..1];
+}
+
+Association test::ivoryvineyard2::domain::Grade_Panel
+{
+  grades: ParcelGrade[*];
+  panel: TastingPanel[1];
+}

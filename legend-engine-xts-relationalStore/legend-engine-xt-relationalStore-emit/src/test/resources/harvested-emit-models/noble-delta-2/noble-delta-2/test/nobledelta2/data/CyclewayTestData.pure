@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data demo::nobledelta2::data::CyclewayTestData
+{
+  Relational
+  #{
+    network.planning_district:
+      'district_ref,district_label\n'+
+      'DIS-1,Northgate District\n'+
+      'DIS-2,Eastfield District\n';
+
+    network.path_segment:
+      'segment_ref,segment_label,district_ref\n'+
+      'SG-1,Riverside Path,DIS-1\n'+
+      'SG-2,Mill Lane Link,DIS-2\n';
+
+    network.counter_unit:
+      'counter_ref,segment_ref,unit_label,mount_code,active_flag\n'+
+      'CU-1,SG-1,North Quay Counter,POST,Y\n'+
+      'CU-2,SG-2,Mill Lane Counter,RAIL,Y\n'+
+      'CU-3,SG-1,Kiln Yard Counter,POST,N\n';
+
+    network.count_session:
+      'session_ref,counter_ref,weather_code,surface_code,rider_total,note_text,retired_flag\n'+
+      'CS-01,CU-1,W1,S1,150,clear run,N\n'+
+      'CS-02,CU-1,W2,S2,80,thin cloud,N\n'+
+      'CS-03,CU-1,W3,S3,60,grey sky,N\n'+
+      'CS-04,CU-1,W4,S1,120,light drizzle,N\n'+
+      'CS-05,CU-1,W5,S4,40,steady rain,N\n'+
+      'CS-06,CU-1,W6,S2,200,gusting,N\n'+
+      'CS-07,CU-1,W7,S5,30,thick fog,N\n'+
+      'CS-08,CU-1,W8,S1,90,hard frost,N\n'+
+      'CS-09,CU-1,ZZ,S6,110,code not recognised,N\n'+
+      'CS-10,CU-2,W1,S2,175,second corridor,N\n'+
+      'CS-11,CU-1,W2,S1,55,withdrawn session,Y\n'+
+      'CS-12,CU-1,W3,S2,0,no riders logged,N\n';
+  }#
+}

@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternaviary2::service::RunGraphDocument
+{
+  pattern: '/easternaviary2/v1/run-graph';
+  title: 'Eastern Aviary 2 - Flattened Inspection Run Document';
+  owners:
+  [
+    'permanent-way-records',
+    'track-survey-desk'
+  ];
+  documentation: 'Returns the flattened inspection run graph unchecked, so a structural violation in a submitted notebook document surfaces only as missing or malformed output rather than as a reported defect. The runtime is declared inline in the execution block and binds the model store to one document connection over the submission root class.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::easternaviary2::domain::FlatInspectionRun.all()->graphFetch(
+      #{
+        test::easternaviary2::domain::FlatInspectionRun
+        {
+          runRef,
+          header
+          {
+            notebookRef,
+            gangName
+          },
+          defectRows
+          {
+            sectionCode,
+            defectTally
+          },
+          defectCodeRows
+          {
+            upperDefectCodes,
+            longDefectDigest
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::easternaviary2::domain::FlatInspectionRun
+        {
+          runRef,
+          header
+          {
+            notebookRef,
+            gangName
+          },
+          defectRows
+          {
+            sectionCode,
+            defectTally
+          },
+          defectCodeRows
+          {
+            upperDefectCodes,
+            longDefectDigest
+          }
+        }
+      }#
+    );
+    mapping: test::easternaviary2::mapping::RunFlattenMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::easternaviary2::mapping::RunFlattenMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          runSubmissionConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::easternaviary2::source::RunSubmission;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    runGraphDocumentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          runSubmissionConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"runRef":"RUN-9101","header":{"notebookRef":"NB-31","loggedAt":"2026-05-02T07:20:00.000+0000","surveyedOn":"2026-05-01","gangName":"Viaduct Gang"},"sections":[{"sectionCode":"SEC-58A","mileageChain":6740,"sectionNote":"cess drainage cleared","railDefects":[{"defectCode":"squat-d","severityBand":"amber","lengthMm":77,"foundAt":"2026-05-01T09:15:00.000+0000"}],"sleeperChecks":[{"sleeperRef":"SL-501","conditionCode":"C2","voidDepthMm":5,"checkedOn":"2026-05-01","replaceFlag":false}],"gaugeSummary":{"widenMm":4,"twistMm":2,"sampleCount":190},"ballastSummary":{"ballastGrade":"B","shoulderMm":350,"fouledFlag":false}}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        flattenedRunDocument:
+        {
+          asserts:
+          [
+            runDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"runRef":"RUN-9101","header":{"notebookRef":"NB-31","gangName":"Viaduct Gang"},"defectRows":[{"sectionCode":"SEC-58A","defectTally":1}],"defectCodeRows":[{"upperDefectCodes":["SQUAT-D"],"longDefectDigest":"SQUAT-D"}]}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

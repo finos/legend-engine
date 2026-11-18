@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silvercavern2::mapping::ChamberDigestMapping
+(
+  *test::silvercavern2::domain::ChamberDigest[chamber_digest]: Pure
+  {
+    ~src test::silvercavern2::domain::ChamberNote
+    recordReference: $src.noteReference->toUpper(),
+    filedBy: $src.clerk->trim(),
+    chamberLabel: $src.label->trim()->toUpper(),
+    ceilingBand: if($src.ceilingMetres->isEmpty(),
+                    | 'UNMEASURED',
+                    | if($src.ceilingMetres->toOne() >= 12.0,
+                         | 'LOFTY',
+                         | if($src.ceilingMetres->toOne() >= 4.0,
+                              | 'WALKABLE',
+                              | 'CRAWL'))),
+    draughtNote: if($src.draught->isEmpty(),
+                    | 'no draught logged',
+                    | $src.draught->toOne()->trim()->toLower())
+  }
+
+  testSuites:
+  [
+    chamberDigestSuite:
+    {
+      function: |test::silvercavern2::domain::ChamberDigest.all()->graphFetch(
+        #{
+          test::silvercavern2::domain::ChamberDigest
+          {
+            recordReference,
+            filedBy,
+            chamberLabel,
+            ceilingBand,
+            draughtNote
+          }
+        }#
+      )->serialize(
+        #{
+          test::silvercavern2::domain::ChamberDigest
+          {
+            recordReference,
+            filedBy,
+            chamberLabel,
+            ceilingBand,
+            draughtNote
+          }
+        }#
+      );
+      tests:
+      [
+        everyCeilingBandArmAndTheDraughtFallback:
+        {
+          doc: 'Walks all four ceiling-band arms - lofty, walkable, crawl and the unmeasured fallback taken when the ceiling height is absent - while the label is trimmed and upper-cased into the shape the digest constraint demands and the draught note either falls back to the unlogged sentinel or is trimmed and lower-cased.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::silvercavern2::domain::ChamberNote:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteReference":"cv-02041","clerk":" Wren Halvard ","label":" silver hall ","ceilingMetres":15.0,"draught":" STRONG UPDRAUGHT "},{"noteReference":"cv-02042","clerk":"Iver Snowdon","label":"moth gallery","ceilingMetres":6.5},{"noteReference":"cv-02043","clerk":"Marek Aldbury","label":"drip crawl","ceilingMetres":1.25,"draught":"Faint"},{"noteReference":"cv-02044","clerk":"Odile Ferrar","label":"echo bend","draught":"Steady"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourDigestedChambers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordReference":"CV-02041","filedBy":"Wren Halvard","chamberLabel":"SILVER HALL","ceilingBand":"LOFTY","draughtNote":"strong updraught"},{"recordReference":"CV-02042","filedBy":"Iver Snowdon","chamberLabel":"MOTH GALLERY","ceilingBand":"WALKABLE","draughtNote":"no draught logged"},{"recordReference":"CV-02043","filedBy":"Marek Aldbury","chamberLabel":"DRIP CRAWL","ceilingBand":"CRAWL","draughtNote":"faint"},{"recordReference":"CV-02044","filedBy":"Odile Ferrar","chamberLabel":"ECHO BEND","ceilingBand":"UNMEASURED","draughtNote":"steady"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

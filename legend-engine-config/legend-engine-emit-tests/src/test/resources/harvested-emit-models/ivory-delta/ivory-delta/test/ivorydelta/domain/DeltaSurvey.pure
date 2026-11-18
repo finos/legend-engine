@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::ivorydelta::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A navigable water channel of the river delta that groups the stations surveyed along it.'} test::ivorydelta::domain::DeltaChannel
+{
+  channelCode: String[1];
+  channelName: String[0..1];
+  surveyPriority: Integer[1];
+  stations: SurveyStation[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fixed observation point on a delta channel; carries the only constraints in the model.'} test::ivorydelta::domain::SurveyStation
+[
+  stationLabelPresent: $this.stationLabel->isNotEmpty(),
+  firstSurveyedOnPresent: $this.firstSurveyedOn->isNotEmpty(),
+  channelBackReferenceConsistent: $this.channel.stations->exists(s|$s.stationLabel == $this.stationLabel)
+]
+{
+  stationLabel: String[1];
+  firstSurveyedOn: StrictDate[1];
+  waterVolumeCubicMetres: Float[1];
+  channel: DeltaChannel[1];
+  sightings: SpeciesSighting[1..*];
+  packets: SamplePacket[*];
+  countedSightings() {$this.sightings->filter(s|$s.individualCount->isNotEmpty())->size()}: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One recorded encounter with a species at a survey station, with its count and biomass measures.'} test::ivorydelta::domain::SpeciesSighting
+{
+  sightingRef: String[1];
+  speciesName: String[0..1];
+  individualCount: Integer[1];
+  biomassKilograms: Float[1];
+  station: SurveyStation[1];
+  observer: FieldObserver[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A person who records sightings in the field; holds only scalar attributes and its back-reference.'} test::ivorydelta::domain::FieldObserver
+{
+  observerCode: String[1];
+  fullName: String[1];
+  sightings: SpeciesSighting[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sealed water or sediment sample taken at a station; holds only scalar attributes and its back-reference.'} test::ivorydelta::domain::SamplePacket
+{
+  packetRef: String[1];
+  sealCondition: String[0..1];
+  station: SurveyStation[1];
+}

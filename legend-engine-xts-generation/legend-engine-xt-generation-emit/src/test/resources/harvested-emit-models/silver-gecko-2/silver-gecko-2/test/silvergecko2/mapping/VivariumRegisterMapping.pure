@@ -1,0 +1,185 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silvergecko2::mapping::VivariumRegisterMapping
+(
+  *test::silvergecko2::domain::FeedLog: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.feed_log.log_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.feed_log
+    recordCode: [test::silvergecko2::store::VivariumDb]vivarium.feed_log.log_code,
+    recordKind: 'FEED LOG',
+    residentName: [test::silvergecko2::store::VivariumDb]@Feed_Resident | [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_name,
+    keeperName: [test::silvergecko2::store::VivariumDb]@Feed_Keeper | [test::silvergecko2::store::VivariumDb]vivarium.keeper.keeper_name,
+    feedCode: [test::silvergecko2::store::VivariumDb]vivarium.feed_log.feed_code,
+    feedGrams: [test::silvergecko2::store::VivariumDb]vivarium.feed_log.feed_grams,
+    fedOn: [test::silvergecko2::store::VivariumDb]vivarium.feed_log.fed_on
+  }
+
+  *test::silvergecko2::domain::HealthCheck: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.health_check.check_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.health_check
+    recordCode: [test::silvergecko2::store::VivariumDb]vivarium.health_check.check_code,
+    recordKind: 'HEALTH CHECK',
+    residentName: [test::silvergecko2::store::VivariumDb]@Check_Resident | [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_name,
+    keeperName: [test::silvergecko2::store::VivariumDb]@Check_Keeper | [test::silvergecko2::store::VivariumDb]vivarium.keeper.keeper_name,
+    outcomeCode: [test::silvergecko2::store::VivariumDb]vivarium.health_check.outcome_code,
+    checkedOn: [test::silvergecko2::store::VivariumDb]vivarium.health_check.checked_on
+  }
+
+  *test::silvergecko2::domain::MoultRecord: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.moult_record.moult_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.moult_record
+    recordCode: [test::silvergecko2::store::VivariumDb]vivarium.moult_record.moult_code,
+    recordKind: 'MOULT RECORD',
+    residentName: [test::silvergecko2::store::VivariumDb]@Moult_Resident | [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_name,
+    stageCode: [test::silvergecko2::store::VivariumDb]vivarium.moult_record.stage_code,
+    recordedOn: [test::silvergecko2::store::VivariumDb]vivarium.moult_record.recorded_on
+  }
+
+  *test::silvergecko2::domain::WeightReading: Relational
+  {
+    ~primaryKey
+    (
+      [test::silvergecko2::store::VivariumDb]vivarium.weight_reading.reading_id
+    )
+    ~mainTable [test::silvergecko2::store::VivariumDb]vivarium.weight_reading
+    recordCode: [test::silvergecko2::store::VivariumDb]vivarium.weight_reading.reading_code,
+    recordKind: 'WEIGHT READING',
+    residentName: [test::silvergecko2::store::VivariumDb]@Weight_Resident | [test::silvergecko2::store::VivariumDb]vivarium.resident.resident_name,
+    grams: [test::silvergecko2::store::VivariumDb]vivarium.weight_reading.grams,
+    readOn: [test::silvergecko2::store::VivariumDb]vivarium.weight_reading.read_on
+  }
+
+  testSuites:
+  [
+    feedLogSuite:
+    {
+      function: |test::silvergecko2::domain::FeedLog.all()->project(
+  [
+    f|$f.recordCode,
+    f|$f.recordKind,
+    f|$f.residentName,
+    f|$f.keeperName,
+    f|$f.feedCode,
+    f|$f.feedGrams
+  ],
+  [
+    'RecordCode', 'RecordKind', 'ResidentName', 'KeeperName', 'FeedCode', 'FeedGrams'
+  ]
+)->sort([asc('RecordCode')]);
+      tests:
+      [
+        feedRows:
+        {
+          doc: 'Covers the inherited record properties on a subtype, the model-fixed record label, both keeper and resident equality joins and a log whose keeper row is absent, so the traversal yields no keeper name.';
+          data:
+          [
+            test::silvergecko2::store::VivariumDb:
+              Relational
+              #{
+                vivarium.feed_log:
+                  'log_id,resident_id,keeper_id,log_code,feed_code,feed_grams,fed_on\n'+
+                  '1,1,1,FL-1,CR-1,12,2026-05-04\n'+
+                  '2,2,2,FL-2,CR-2,20,2026-05-05\n'+
+                  '3,1,9,FL-3,CR-1,7,2026-05-06\n';
+                vivarium.resident:
+                  'resident_id,enclosure_id,species_id,resident_code,resident_name,hatched_on,length_mm\n'+
+                  '1,1,1,RS-1,Pebble,2024-03-04,120\n'+
+                  '2,1,3,RS-2,Ochre,2023-07-19,210\n';
+                vivarium.keeper:
+                  'keeper_id,team_id,keeper_code,keeper_name\n'+
+                  '1,1,KP-1,Iris Marlow\n'+
+                  '2,2,KP-2,Fern Alcott\n';
+              }#
+          ];
+          asserts:
+          [
+            joinedAndUnmatchedFeedLogs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"FL-1","RecordKind":"FEED LOG","ResidentName":"Pebble","KeeperName":"Iris Marlow","FeedCode":"CR-1","FeedGrams":12},{"RecordCode":"FL-2","RecordKind":"FEED LOG","ResidentName":"Ochre","KeeperName":"Fern Alcott","FeedCode":"CR-2","FeedGrams":20},{"RecordCode":"FL-3","RecordKind":"FEED LOG","ResidentName":"Pebble","KeeperName":null,"FeedCode":"CR-1","FeedGrams":7}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    residentHistorySuite:
+    {
+      function: |test::silvergecko2::domain::WeightReading.all()->project(
+  [
+    w|$w.recordCode,
+    w|$w.recordKind,
+    w|$w.residentName,
+    w|$w.grams
+  ],
+  [
+    'RecordCode', 'RecordKind', 'ResidentName', 'Grams'
+  ]
+)->sort([asc('RecordCode')]);
+      tests:
+      [
+        weightRows:
+        {
+          doc: 'Covers a second subtype of the shared record supertype and the resident inner join on the weight relation.';
+          data:
+          [
+            test::silvergecko2::store::VivariumDb:
+              Relational
+              #{
+                vivarium.weight_reading:
+                  'reading_id,resident_id,reading_code,grams,read_on\n'+
+                  '1,1,WR-1,48,2026-05-03\n'+
+                  '2,2,WR-2,26,2026-05-03\n';
+                vivarium.resident:
+                  'resident_id,enclosure_id,species_id,resident_code,resident_name,hatched_on,length_mm\n'+
+                  '1,1,1,RS-1,Pebble,2024-03-04,120\n'+
+                  '2,1,3,RS-2,Ochre,2023-07-19,210\n';
+              }#
+          ];
+          asserts:
+          [
+            twoWeightReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"WR-1","RecordKind":"WEIGHT READING","ResidentName":"Pebble","Grams":48},{"RecordCode":"WR-2","RecordKind":"WEIGHT READING","ResidentName":"Ochre","Grams":26}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

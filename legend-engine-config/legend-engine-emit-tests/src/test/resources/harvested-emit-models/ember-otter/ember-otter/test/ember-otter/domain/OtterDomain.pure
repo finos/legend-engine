@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::emberotter::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Identity and provenance shared by every record the riverbank otter survey publishes.'} test::emberotter::domain::SurveyRecord
+{
+  recordCode: String[1];
+  reachCode: String[0..1];
+  observerName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One field sighting of otters on a river reach, inheriting the shared survey identity.'} test::emberotter::domain::OtterSighting extends SurveyRecord
+{
+  otterCount: Integer[0..1];
+  waterTemperatureCelsius: Float[0..1];
+  sightedOn: StrictDate[0..1];
+  loggedAt: DateTime[0..1];
+  pupPresenceFlag: String[0..1];
+  holtCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One structural survey of a riverbank holt, inheriting the shared survey identity.'} test::emberotter::domain::HoltSurvey extends SurveyRecord
+{
+  holtCode: String[0..1];
+  chamberCount: Integer[0..1];
+  shoreHeightMetres: Float[0..1];
+  surveyedOn: StrictDate[0..1];
+  substrateLabel: String[0..1];
+}

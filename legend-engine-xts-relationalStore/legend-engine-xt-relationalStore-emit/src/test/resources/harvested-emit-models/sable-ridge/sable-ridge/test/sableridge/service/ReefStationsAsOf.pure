@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sableridge::service::ReefStationsAsOf
+{
+  pattern: '/sableridge/v1/stations';
+  title: 'Sable Ridge - Reef Stations As Of A Pinned Instant';
+  owners:
+  [
+    'reef-survey',
+    'marine-observatory'
+  ];
+  documentation: 'Returns the reef survey stations whose identifier is a member of the supplied identifier list, resolved at a literal instant pinned far in the future so that only the version whose business window contains that instant survives. The depth band column branches on the recorded depth.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {stationIds: Integer[*]|test::sableridge::domain::ReefStation.all(%2035-06-01T00:00:00)->filter(
+      s|$s.stationId->in($stationIds)
+    )->project(
+      [
+        s|$s.stationName,
+        s|$s.habitatCode,
+        s|if($s.depthMetres >= 30, | 'DEEP', | 'SHALLOW'),
+        s|$s.depthMetres
+      ],
+      [
+        'StationName',
+        'HabitatCode',
+        'DepthBand',
+        'DepthMetres'
+      ]
+    )->sort(
+      [
+        asc('StationName')
+      ]
+    )};
+    mapping: test::sableridge::mapping::ReefMapping;
+    runtime: test::sableridge::runtime::ReefRuntime;
+  }
+  testSuites:
+  [
+    reefStationsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reefsurvey.station:
+                'station_id,station_name,habitat_code,depth_metres,bus_from_z,bus_thru_z\n'+
+                '1,Kelp Terrace,RF-A,42,2020-01-01 00:00:00,2030-01-01 00:00:00\n'+
+                '2,Lagoon Shelf,RF-B,18,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '3,Outer Spur,RF-C,55,2040-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        pinnedInstantWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            stationIds = [1, 2, 3]
+          ]
+          asserts:
+          [
+            onlyTheContainingVersion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationName":"Lagoon Shelf","HabitatCode":"RF-B","DepthBand":"SHALLOW","DepthMetres":18}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::sableridge::service::ReefStationsAsOfByEnv
+{
+  pattern: '/sableridge/v1/stations/{env}';
+  title: 'Sable Ridge - Reef Stations As Of, Keyed By Environment';
+  owners:
+  [
+    'reef-survey',
+    'marine-observatory'
+  ];
+  documentation: 'Environment-keyed counterpart of the pinned-instant station query. The key selects a whole execution stack, each binding naming its own mapping and runtime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {stationIds: Integer[*]|test::sableridge::domain::ReefStation.all(%2035-06-01T00:00:00)->filter(
+      s|$s.stationId->in($stationIds)
+    )->project(
+      [
+        s|$s.stationName,
+        s|$s.habitatCode,
+        s|if($s.depthMetres >= 30, | 'DEEP', | 'SHALLOW'),
+        s|$s.depthMetres
+      ],
+      [
+        'StationName',
+        'HabitatCode',
+        'DepthBand',
+        'DepthMetres'
+      ]
+    )->sort(
+      [
+        asc('StationName')
+      ]
+    )};
+    key: 'env';
+    executions['inshore']:
+    {
+      mapping: test::sableridge::mapping::ReefMapping;
+      runtime: test::sableridge::runtime::ReefRuntime;
+    }
+    executions['offshore']:
+    {
+      mapping: test::sableridge::mapping::ReefMapping;
+      runtime: test::sableridge::runtime::ReefRuntime;
+    }
+  }
+}

@@ -1,0 +1,41 @@
+name: hazel-estuary
+title: "Hazel Estuary - processing-temporal gauge readings projected through string-function transforms"
+description: |
+  An estuary turbidity-monitoring corpus. A processing-temporal reading extent is opened at a
+  requested processing date and projected into a four-column tabular result, so the milestoning
+  window is the only predicate the plan carries. Two of the four columns are produced by relational
+  string-function transforms over the same source column, and the fixture carries readings whose
+  processing window has already closed so the out-of-range rows are proven to drop out.
+modelSources:
+  model:
+    root: hazel-estuary
+    files:
+      - test/hazelestuary/connection/EstuaryH2Connection.pure
+      - test/hazelestuary/domain/EstuaryDomain.pure
+      - test/hazelestuary/mapping/EstuaryMapping.pure
+      - test/hazelestuary/runtime/EstuaryRuntime.pure
+      - test/hazelestuary/service/GaugeReadingsAsOf.pure
+      - test/hazelestuary/store/EstuaryDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-string-function-transform
+  - milestoning:processing-temporal
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - estuary-monitoring
+  - h2
+  - marine-biology
+  - processing-temporal
+  - relational
+  - string-function-transform
+  - tabular-projection

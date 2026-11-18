@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetwarren2::mapping::TrayDigestM2M
+(
+  test::russetwarren2::domain::CuttingKind: EnumerationMapping DigestKindMapping
+  {
+    SOFTWOOD: ['SOFTWOOD'],
+    SEMIRIPE: ['SEMIRIPE']
+  }
+
+  *test::russetwarren2::domain::TrayDigest[trayDigestSet]: Pure
+  {
+    ~src test::russetwarren2::domain::TrayPayload
+    trayRef: $src.trayRef->toOne(),
+    keeperLabel: 'K' + $src.revision->toOne()->toString() + '-' + $src.record.keeperCode->toOne()->toUpper()->trim(),
+    aisleHint: if($src.record.bed.aisle.aisleCode->isEmpty(),
+                  | 'UNAISLED',
+                  | 'AISLE/' + $src.record.bed.aisle.aisleCode->toOne()->toUpper()->trim()),
+    mistBand: if($src.record.mistPct->isEmpty(),
+                 | 'BAND-NONE',
+                 | if($src.record.mistPct->toOne() >= 80,
+                      | 'BAND-4',
+                      | if($src.record.mistPct->toOne() >= 55,
+                           | 'BAND-3',
+                           | if($src.record.mistPct->toOne() >= 30,
+                                | 'BAND-2',
+                                | 'BAND-1')))),
+    kind: EnumerationMapping DigestKindMapping: [if($src.record.kindCode->isEmpty(),
+                                                    | 'SOFTWOOD',
+                                                    | $src.record.kindCode->toOne()->toUpper()->trim())]->toOne()
+  }
+
+  testSuites:
+  [
+    trayDigestSuite:
+    {
+      function: |test::russetwarren2::domain::TrayDigest.all()->graphFetch(
+        #{
+          test::russetwarren2::domain::TrayDigest
+          {
+            trayRef,
+            keeperLabel,
+            aisleHint,
+            mistBand,
+            kind
+          }
+        }#
+      )->serialize(
+        #{
+          test::russetwarren2::domain::TrayDigest
+          {
+            trayRef,
+            keeperLabel,
+            aisleHint,
+            mistBand,
+            kind
+          }
+        }#
+      );
+      tests:
+      [
+        submittedTrayDocuments:
+        {
+          doc: 'Three submitted tray documents: a fully populated one, one whose bed carries no aisle so the aisle hint falls back, and one with neither a misting percentage nor a cutting code so both the no-band label and the sentinel-substituted cutting kind are exercised.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::russetwarren2::domain::TrayPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"trayRef":"TP-01","revision":2,"record":{"keeperCode":"kp-1","mistPct":85,"kindCode":"softwood","bed":{"bedName":"Mist Bed","aisle":{"aisleCode":"a-1"}}}},{"trayRef":"TP-02","revision":3,"record":{"keeperCode":"kp-2","mistPct":40,"kindCode":"semiripe","bed":{"bedName":"Sand Bed"}}},{"trayRef":"TP-03","revision":4,"record":{"keeperCode":"kp-3","bed":{"bedName":"Grit Bed","aisle":{"aisleCode":"a-3"}}}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"trayRef":"TP-01","keeperLabel":"K2-KP-1","aisleHint":"AISLE/A-1","mistBand":"BAND-4","kind":"SOFTWOOD"},{"trayRef":"TP-02","keeperLabel":"K3-KP-2","aisleHint":"UNAISLED","mistBand":"BAND-2","kind":"SEMIRIPE"},{"trayRef":"TP-03","keeperLabel":"K4-KP-3","aisleHint":"AISLE/A-3","mistBand":"BAND-NONE","kind":"SOFTWOOD"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

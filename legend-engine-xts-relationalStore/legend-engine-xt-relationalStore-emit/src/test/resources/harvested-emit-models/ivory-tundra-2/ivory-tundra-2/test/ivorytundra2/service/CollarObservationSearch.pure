@@ -1,0 +1,183 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivorytundra2::service::CollarObservationSearch
+{
+  pattern: '/tundra/v1/collar-observations';
+  title: 'Tundra - Collar Observation Search';
+  documentation: 'Optional-parameter search over collar observations. A flag-or-verified disjunction is conjoined with three empty-guard-or-membership guards, so every identifier list degrades to a no-op when left empty, and the wide projection resolves the bitemporal herd season four times at a caller-supplied processing and business instant before dereferencing the resolved season two further hops.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'tundra-collar-programme',
+    'herd-range-monitoring'
+  ];
+  execution: Single
+  {
+    query: {rangeMode: String[1], herdCodes: String[*], collarCodes: String[*], observerCodes: String[*], processingDate: StrictDate[1], businessDate: StrictDate[1]|test::ivorytundra2::domain::ObservationRecord.all()->filter(
+      o|((((($rangeMode == 'ALL') || ($o.verified == true)) && (($herdCodes->isEmpty()) || ($o.herdCode->in($herdCodes)))) && (($collarCodes->isEmpty()) || ($o.collarCode->in($collarCodes)))) && (($observerCodes->isEmpty()) || ($o.observerCode->in($observerCodes))))
+    )->project(
+      [
+        o|$o.recordCode,
+        o|$o.herdCode,
+        o|$o.collarCode,
+        o|$o.observerCode,
+        o|$o.observedOn,
+        o|$o.surveyMethod,
+        o|$o.verified,
+        o|$o.sightingCount,
+        o|$o.herdSeason($processingDate, $businessDate).seasonLabel,
+        o|$o.herdSeason($processingDate, $businessDate).forageIndex,
+        o|$o.herdSeason($processingDate, $businessDate).rangeZone.zoneName,
+        o|$o.herdSeason($processingDate, $businessDate).rangeZone.station.stationName
+      ],
+      [
+        'Observation/RecordCode',
+        'Observation/HerdCode',
+        'Observation/CollarCode',
+        'Observation/ObserverCode',
+        'Observation/ObservedOn',
+        'Observation/SurveyMethod',
+        'Observation/Verified',
+        'Observation/SightingCount',
+        'Season/Label',
+        'Season/ForageIndex',
+        'Season/Zone',
+        'Season/Station'
+      ]
+    )};
+    mapping: test::ivorytundra2::mapping::TundraMapping;
+    runtime: test::ivorytundra2::runtime::TundraH2Runtime;
+  }
+  testSuites:
+  [
+    collarObservationSearchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              tundra.field_station:
+                'station_id,station_name,region_code\n'+
+                '1,Kaskan Ridge Station,NORTH-01\n'+
+                '2,Willow Flats Station,WEST-02\n';
+
+              tundra.range_zone:
+                'zone_id,zone_name,terrain_class,station_id\n'+
+                '100,Kaskan Uplands,ALPINE,1\n'+
+                '101,Willow Flats,LOWLAND,2\n';
+
+              tundra.herd_season:
+                'season_id,season_label,forage_index,zone_id,in_z,out_z,from_z,thru_z\n'+
+                '10,Autumn Rut 2026,72,100,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '11,Spring Calving 2026,58,101,2025-01-01,2025-12-31,2026-01-01,9999-12-31\n'+
+                '12,Winter Range 2025,41,101,2026-01-01,9999-12-31,2024-01-01,2025-06-30\n';
+
+              tundra.observation:
+                'observation_id,record_code,herd_code,collar_code,observer_code,observed_on,survey_method,verified,sighting_count,season_id\n'+
+                '1,OBS-1001,H-KASKAN,C-77,SV-11,2026-03-02,AERIAL_TRANSECT,true,128,10\n'+
+                '2,OBS-1002,H-WILLOW,C-81,SV-12,2026-03-05,GROUND_TRANSECT,false,64,11\n'+
+                '3,OBS-1003,H-WILLOW,C-82,SV-12,2026-02-11,AERIAL_TRANSECT,true,36,12\n'+
+                '4,OBS-1004,H-KASKAN,C-77,SV-13,2025-12-20,COLLAR_TELEMETRY,true,12,10\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyListParameterEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            rangeMode = 'ALL',
+            herdCodes = [],
+            collarCodes = [],
+            observerCodes = [],
+            processingDate = %2026-04-01,
+            businessDate = %2026-04-01
+          ]
+          asserts:
+          [
+            everyRowWithTemporalMisses:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observation/RecordCode":"OBS-1001","Observation/HerdCode":"H-KASKAN","Observation/CollarCode":"C-77","Observation/ObserverCode":"SV-11","Observation/ObservedOn":"2026-03-02","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/Verified":true,"Observation/SightingCount":128,"Season/Label":"Autumn Rut 2026","Season/ForageIndex":72,"Season/Zone":"Kaskan Uplands","Season/Station":"Kaskan Ridge Station"},{"Observation/RecordCode":"OBS-1002","Observation/HerdCode":"H-WILLOW","Observation/CollarCode":"C-81","Observation/ObserverCode":"SV-12","Observation/ObservedOn":"2026-03-05","Observation/SurveyMethod":"GROUND_TRANSECT","Observation/Verified":false,"Observation/SightingCount":64,"Season/Label":null,"Season/ForageIndex":null,"Season/Zone":null,"Season/Station":null},{"Observation/RecordCode":"OBS-1003","Observation/HerdCode":"H-WILLOW","Observation/CollarCode":"C-82","Observation/ObserverCode":"SV-12","Observation/ObservedOn":"2026-02-11","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/Verified":true,"Observation/SightingCount":36,"Season/Label":null,"Season/ForageIndex":null,"Season/Zone":null,"Season/Station":null},{"Observation/RecordCode":"OBS-1004","Observation/HerdCode":"H-KASKAN","Observation/CollarCode":"C-77","Observation/ObserverCode":"SV-13","Observation/ObservedOn":"2025-12-20","Observation/SurveyMethod":"COLLAR_TELEMETRY","Observation/Verified":true,"Observation/SightingCount":12,"Season/Label":"Autumn Rut 2026","Season/ForageIndex":72,"Season/Zone":"Kaskan Uplands","Season/Station":"Kaskan Ridge Station"}]';
+                  }#;
+              }#
+          ]
+        },
+        everyListParameterPopulated:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            rangeMode = 'VERIFIED_ONLY',
+            herdCodes = ['H-KASKAN', 'H-TALUS'],
+            collarCodes = ['C-77'],
+            observerCodes = ['SV-11', 'SV-19'],
+            processingDate = %2026-04-01,
+            businessDate = %2026-04-01
+          ]
+          asserts:
+          [
+            onlyTheFullyMatchingRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observation/RecordCode":"OBS-1001","Observation/HerdCode":"H-KASKAN","Observation/CollarCode":"C-77","Observation/ObserverCode":"SV-11","Observation/ObservedOn":"2026-03-02","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/Verified":true,"Observation/SightingCount":128,"Season/Label":"Autumn Rut 2026","Season/ForageIndex":72,"Season/Zone":"Kaskan Uplands","Season/Station":"Kaskan Ridge Station"}]';
+                  }#;
+              }#
+          ]
+        },
+        processingAxisOutOfRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            rangeMode = 'VERIFIED_ONLY',
+            herdCodes = [],
+            collarCodes = ['C-82'],
+            observerCodes = [],
+            processingDate = %2025-06-01,
+            businessDate = %2025-01-15
+          ]
+          asserts:
+          [
+            seasonColumnsEmptyOnProcessingMiss:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observation/RecordCode":"OBS-1003","Observation/HerdCode":"H-WILLOW","Observation/CollarCode":"C-82","Observation/ObserverCode":"SV-12","Observation/ObservedOn":"2026-02-11","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/Verified":true,"Observation/SightingCount":36,"Season/Label":null,"Season/ForageIndex":null,"Season/Zone":null,"Season/Station":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::emberreef3::domain::*;
+import meta::pure::profiles::*;
+
+Class <<typemodifiers.abstract, temporal.businesstemporal>> {doc.doc = 'Anything the observatory holds on its instrument register over a stretch of calendar time. Abstract and business-temporal, so every instrument kind inherits the one timeline the register is published against.'} demo::emberreef3::domain::RegisteredArtifact
+{
+  {doc.doc = 'Register identifier of the artifact.'} artifactCode: String[1];
+  {doc.doc = 'Name the artifact is labelled with in the dome.'} artifactName: String[1];
+  {doc.doc = 'Identifier of the mountain site the artifact stands on.'} siteCode: String[1];
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal>> {doc.doc = 'An artifact that gathers light on its own mount, still abstract so the collecting geometry is stated once for every optical kind below it.'} demo::emberreef3::domain::LightCollector extends RegisteredArtifact
+{
+  {doc.doc = 'Clear aperture of the collector in millimetres.'} apertureMm: Integer[1];
+  {doc.doc = 'Focal length of the collector in millimetres.'} focalLengthMm: Integer[1];
+  {doc.doc = 'Kind of mount the collector is carried on.'} mountKind: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A reflecting telescope on the register, three levels down the artifact hierarchy and inheriting both the register identity and the business timeline from above.'} demo::emberreef3::domain::ReflectingTelescope extends LightCollector
+{
+  {doc.doc = 'Coating applied to the primary mirror.'} mirrorCoating: String[1];
+  {doc.doc = 'Number of mirrors in the optical train.'} mirrorCount: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A refracting telescope on the register, sharing the collecting geometry of its supertype and adding only the glass it is figured from.'} demo::emberreef3::domain::RefractingTelescope extends LightCollector
+{
+  {doc.doc = 'Glass type the objective lens is figured from.'} glassType: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A spectrograph fed by a collector, an instrument kind that hangs off the register root directly rather than off the collecting geometry.'} demo::emberreef3::domain::Spectrograph extends RegisteredArtifact
+{
+  {doc.doc = 'Grating ruling density in lines per millimetre.'} gratingLinesPerMm: Integer[1];
+  {doc.doc = 'Shortest wavelength the spectrograph passes, in nanometres.'} minWavelengthNm: Integer[1];
+  {doc.doc = 'Longest wavelength the spectrograph passes, in nanometres.'} maxWavelengthNm: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A survey camera fixed to a collector, recorded on the same register timeline as the optics it images through.'} demo::emberreef3::domain::SurveyCamera extends RegisteredArtifact
+{
+  {doc.doc = 'Detector width in pixels.'} pixelWidth: Integer[1];
+  {doc.doc = 'Detector height in pixels.'} pixelHeight: Integer[1];
+  {doc.doc = 'Filter wheel slots the camera carries.'} filterSlots: Integer[0..1];
+}

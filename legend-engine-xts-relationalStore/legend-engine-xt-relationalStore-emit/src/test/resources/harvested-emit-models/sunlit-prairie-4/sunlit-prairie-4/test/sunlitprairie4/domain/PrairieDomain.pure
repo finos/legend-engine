@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sunlitprairie4::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'The shared identity of any prairie survey unit: its survey code, patch code, survey date and stem tally.'} test::sunlitprairie4::domain::SurveyUnit
+{
+  surveyCode: String[1];
+  patchCode: String[1];
+  surveyedOn: StrictDate[1];
+  stemTally: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A burned prairie patch, extending the survey unit with grassland detail and the warden properties reached over the tract.'} test::sunlitprairie4::domain::BurnPatch extends SurveyUnit
+{
+  grassName: String[1];
+  seedCode: String[1];
+  patchAreaSqm: Float[1];
+  wardenName: String[0..1];
+  wardenDistrict: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A prairie tract that burn patches are grouped into.'} test::sunlitprairie4::domain::PrairieTract
+{
+  tractCode: String[1];
+  tractName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A distinct grass sighting of a tract, collapsed from the repeated sighting log rows.'} test::sunlitprairie4::domain::GrassSighting
+{
+  tractCode: String[1];
+  grassName: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Bidirectional link between a prairie tract and the burn patches surveyed within it.'} test::sunlitprairie4::domain::TractPatching
+{
+  tract: PrairieTract[1];
+  patches: BurnPatch[*];
+}

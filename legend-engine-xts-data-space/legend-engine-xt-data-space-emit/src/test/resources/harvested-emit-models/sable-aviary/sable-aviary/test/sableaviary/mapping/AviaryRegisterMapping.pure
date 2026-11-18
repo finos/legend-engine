@@ -1,0 +1,333 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sableaviary::mapping::AviaryRegisterMapping
+(
+  *test::sableaviary::domain::RingedBird[ringedBird]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableaviary::store::AviaryRegisterDb]aviary.ringed_bird.bird_id
+    )
+    ~mainTable [test::sableaviary::store::AviaryRegisterDb]aviary.ringed_bird
+    ringCode: [test::sableaviary::store::AviaryRegisterDb]aviary.ringed_bird.ring_code,
+    wingSpanCm: [test::sableaviary::store::AviaryRegisterDb]aviary.ringed_bird.wing_span_cm,
+    massGrams: [test::sableaviary::store::AviaryRegisterDb]aviary.ringed_bird.mass_grams,
+    ringedOn: [test::sableaviary::store::AviaryRegisterDb]aviary.ringed_bird.ringed_on,
+    keeperNote: [test::sableaviary::store::AviaryRegisterDb]aviary.ringed_bird.keeper_note,
+    registerSource: 'SABLE AVIARY REGISTER',
+    enclosureLabel: [test::sableaviary::store::AviaryRegisterDb]@Bird_Enclosure | toUpper([test::sableaviary::store::AviaryRegisterDb]aviary.enclosure.enclosure_name)
+  }
+
+  *test::sableaviary::domain::Enclosure[enclosure]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableaviary::store::AviaryRegisterDb]aviary.enclosure.enclosure_code
+    )
+    ~mainTable [test::sableaviary::store::AviaryRegisterDb]aviary.enclosure
+    enclosureCode: [test::sableaviary::store::AviaryRegisterDb]aviary.enclosure.enclosure_code,
+    enclosureName: [test::sableaviary::store::AviaryRegisterDb]aviary.enclosure.enclosure_name,
+    perchCount: [test::sableaviary::store::AviaryRegisterDb]aviary.enclosure.perch_count,
+    coverNote: [test::sableaviary::store::AviaryRegisterDb]aviary.enclosure.cover_note
+  }
+
+  *test::sableaviary::domain::FeedBatch[feedBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableaviary::store::AviaryRegisterDb]aviary.feed_batch.batch_id
+    )
+    ~mainTable [test::sableaviary::store::AviaryRegisterDb]aviary.feed_batch
+    batchCode: [test::sableaviary::store::AviaryRegisterDb]aviary.feed_batch.batch_code,
+    feedKind: [test::sableaviary::store::AviaryRegisterDb]aviary.feed_batch.feed_kind,
+    kilograms: [test::sableaviary::store::AviaryRegisterDb]aviary.feed_batch.kilograms,
+    deliveredOn: [test::sableaviary::store::AviaryRegisterDb]aviary.feed_batch.delivered_on
+  }
+
+  *test::sableaviary::domain::SpeciesGuide[speciesGuide]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.species_code
+    )
+    ~mainTable [test::sableaviary::store::AviaryRegisterDb]aviary.species_guide
+    speciesCode: [test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.species_code,
+    speciesName: [test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.species_name,
+    dietLabel: case(
+                 equal(toUpper([test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.diet_code), 'GR'),
+                 'GRANIVORE',
+                 case(
+                   equal(toUpper([test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.diet_code), 'IN'),
+                   'INSECTIVORE',
+                   case(
+                     equal(toUpper([test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.diet_code), 'FR'),
+                     'FRUGIVORE',
+                     case(
+                       equal(toUpper([test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.diet_code), 'NE'),
+                       'NECTARIVORE',
+                       'UNRECORDED DIET'
+                     )
+                   )
+                 )
+               ),
+    flightClass: [test::sableaviary::store::AviaryRegisterDb]aviary.species_guide.flight_class
+  }
+
+  *test::sableaviary::domain::KeeperShift[keeperShift]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableaviary::store::AviaryRegisterDb]aviary.keeper_shift.shift_code
+    )
+    ~mainTable [test::sableaviary::store::AviaryRegisterDb]aviary.keeper_shift
+    shiftCode: [test::sableaviary::store::AviaryRegisterDb]aviary.keeper_shift.shift_code,
+    shiftName: [test::sableaviary::store::AviaryRegisterDb]aviary.keeper_shift.shift_name,
+    keeperName: [test::sableaviary::store::AviaryRegisterDb]aviary.keeper_shift.keeper_name
+  }
+
+  test::sableaviary::domain::Bird_Enclosure: Relational
+  {
+    AssociationMapping
+    (
+      birds[enclosure, ringedBird]: [test::sableaviary::store::AviaryRegisterDb]@Bird_Enclosure,
+      enclosure[ringedBird, enclosure]: [test::sableaviary::store::AviaryRegisterDb]@Bird_Enclosure
+    )
+  }
+
+  test::sableaviary::domain::Bird_Species: Relational
+  {
+    AssociationMapping
+    (
+      speciesBirds[speciesGuide, ringedBird]: [test::sableaviary::store::AviaryRegisterDb]@Bird_Species,
+      species[ringedBird, speciesGuide]: [test::sableaviary::store::AviaryRegisterDb]@Bird_Species
+    )
+  }
+
+  test::sableaviary::domain::Enclosure_Shift: Relational
+  {
+    AssociationMapping
+    (
+      enclosures[keeperShift, enclosure]: [test::sableaviary::store::AviaryRegisterDb]@Enclosure_Shift,
+      shift[enclosure, keeperShift]: [test::sableaviary::store::AviaryRegisterDb]@Enclosure_Shift
+    )
+  }
+
+  test::sableaviary::domain::Feed_Enclosure: Relational
+  {
+    AssociationMapping
+    (
+      feedBatches[enclosure, feedBatch]: [test::sableaviary::store::AviaryRegisterDb]@Feed_Enclosure,
+      fedEnclosure[feedBatch, enclosure]: [test::sableaviary::store::AviaryRegisterDb]@Feed_Enclosure
+    )
+  }
+
+  testSuites:
+  [
+    birdRegisterSuite:
+    {
+      function: |test::sableaviary::domain::RingedBird.all(%2026-06-01)->project(
+        [
+          b|$b.ringLabel(),
+          b|$b.conditionBand(),
+          b|$b.birdDigest(),
+          b|$b.keeperLabel(),
+          b|$b.registerSource,
+          b|$b.enclosureLabel->toOne(),
+          b|$b.species.speciesName,
+          b|$b.species.dietLabel
+        ],
+        [
+          'Ring',
+          'Band',
+          'Digest',
+          'Keeper',
+          'Source',
+          'Enclosure',
+          'Species',
+          'Diet'
+        ]
+      )->sort([asc('Ring')]);
+      tests:
+      [
+        registerAsOfProcessingDate:
+        {
+          doc: 'Every condition arm and both note sentinels resolve at the register processing date, while the restated bird row closed out before that date is out of range.';
+          data:
+          [
+            test::sableaviary::store::AviaryRegisterDb:
+              Relational
+              #{
+                aviary.ringed_bird:
+                  'bird_id,ring_code,species_code,enclosure_code,wing_span_cm,mass_grams,ringed_on,keeper_note,in_z,out_z\n'+
+                  '1,SA-1001,GR,EN-1,44,940,2026-01-04,wing measured on arrival,2026-01-01,9999-12-31\n'+
+                  '2,SA-1002,IN,EN-1,42,610,2026-01-05,light frame,2026-01-01,9999-12-31\n'+
+                  '3,SA-1003,FR,EN-2,33,760,2026-01-06,,2026-01-01,9999-12-31\n'+
+                  '4,SA-1004,NE,EN-2,31,480,2026-01-07,mid wing recheck,2026-01-01,9999-12-31\n'+
+                  '5,SA-1005,GR,EN-2,24,520,2026-01-08,steady on perch,2026-01-01,9999-12-31\n'+
+                  '6,SA-1006,ZZ,EN-3,22,390,2026-01-09,,2026-01-01,9999-12-31\n'+
+                  '7,SA-1007,IN,EN-3,14,220,2026-01-10,fledgling ringed,2026-01-01,9999-12-31\n'+
+                  '8,SA-1008,FR,EN-3,8,140,2026-01-11,unbanded pending,2026-01-01,9999-12-31\n'+
+                  '9,SA-1009,GR,EN-1,45,950,2026-01-02,restated on intake,2025-01-01,2025-06-01\n';
+
+                aviary.enclosure:
+                  'enclosure_code,enclosure_name,shift_code,perch_count,cover_note,in_z,out_z\n'+
+                  'EN-1,North Flight Aviary,SH-1,18,mesh renewed,2026-01-01,9999-12-31\n'+
+                  'EN-2,Reed Flight Aviary,SH-1,12,,2026-01-01,9999-12-31\n'+
+                  'EN-3,Fledging Aviary,SH-2,9,shade cloth fitted,2026-01-01,9999-12-31\n';
+
+                aviary.species_guide:
+                  'species_code,species_name,diet_code,flight_class\n'+
+                  'GR,Sable Finch,GR,perching\n'+
+                  'IN,Marsh Warbler,IN,perching\n'+
+                  'FR,Fig Pigeon,FR,soaring\n'+
+                  'NE,Sunbird,NE,hovering\n'+
+                  'ZZ,Unlisted Passerine,XX,perching\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring":"SA-1001","Band":"PRIME FLIER","Digest":"PRIME FLIER / SA-100","Keeper":"WING MEASURED ON ARRIVAL","Source":"SABLE AVIARY REGISTER","Enclosure":"NORTH FLIGHT AVIARY","Species":"Sable Finch","Diet":"GRANIVORE"},{"Ring":"SA-1002","Band":"LONG WING LIGHT","Digest":"LONG WING LIGHT / SA-100","Keeper":"LIGHT FRAME","Source":"SABLE AVIARY REGISTER","Enclosure":"NORTH FLIGHT AVIARY","Species":"Marsh Warbler","Diet":"INSECTIVORE"},{"Ring":"SA-1003","Band":"STRONG FLIER","Digest":"STRONG FLIER / SA-100","Keeper":"UNVISITED","Source":"SABLE AVIARY REGISTER","Enclosure":"REED FLIGHT AVIARY","Species":"Fig Pigeon","Diet":"FRUGIVORE"},{"Ring":"SA-1004","Band":"MID WING LIGHT","Digest":"MID WING LIGHT / SA-100","Keeper":"MID WING RECHECK","Source":"SABLE AVIARY REGISTER","Enclosure":"REED FLIGHT AVIARY","Species":"Sunbird","Diet":"NECTARIVORE"},{"Ring":"SA-1005","Band":"STEADY FLIER","Digest":"STEADY FLIER / SHORT WING SA-1005","Keeper":"STEADY ON PERCH","Source":"SABLE AVIARY REGISTER","Enclosure":"REED FLIGHT AVIARY","Species":"Sable Finch","Diet":"GRANIVORE"},{"Ring":"SA-1006","Band":"SHORT WING LIGHT","Digest":"SHORT WING LIGHT / SHORT WING SA-1006","Keeper":"UNVISITED","Source":"SABLE AVIARY REGISTER","Enclosure":"FLEDGING AVIARY","Species":"Unlisted Passerine","Diet":"UNRECORDED DIET"},{"Ring":"SA-1007","Band":"FLEDGLING","Digest":"FLEDGLING / SHORT WING SA-1007","Keeper":"FLEDGLING RINGED","Source":"SABLE AVIARY REGISTER","Enclosure":"FLEDGING AVIARY","Species":"Marsh Warbler","Diet":"INSECTIVORE"},{"Ring":"SA-1008","Band":"UNBANDED","Digest":"UNBANDED / SHORT WING SA-1008","Keeper":"UNBANDED PENDING","Source":"SABLE AVIARY REGISTER","Enclosure":"FLEDGING AVIARY","Species":"Fig Pigeon","Diet":"FRUGIVORE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    enclosureRosterSuite:
+    {
+      function: |test::sableaviary::domain::Enclosure.all(%2026-06-01)->project(
+        [
+          e|$e.enclosureCode,
+          e|$e.enclosureName,
+          e|$e.roomyEnclosure(),
+          e|$e.coverLabel(),
+          e|$e.shift.keeperName
+        ],
+        [
+          'Enclosure',
+          'Name',
+          'Roomy',
+          'Cover',
+          'Keeper'
+        ]
+      )->sort([asc('Enclosure')]);
+      tests:
+      [
+        rosterAsOfProcessingDate:
+        {
+          doc: 'The enclosure roster resolves at a processing date, so the decommissioned enclosure closed out earlier is out of range while the keeper shift reached across the join is not milestoned at all.';
+          data:
+          [
+            test::sableaviary::store::AviaryRegisterDb:
+              Relational
+              #{
+                aviary.enclosure:
+                  'enclosure_code,enclosure_name,shift_code,perch_count,cover_note,in_z,out_z\n'+
+                  'EN-1,North Flight Aviary,SH-1,18,mesh renewed,2026-01-01,9999-12-31\n'+
+                  'EN-2,Reed Flight Aviary,SH-1,12,,2026-01-01,9999-12-31\n'+
+                  'EN-9,Retired Flight Aviary,SH-2,6,decommissioned,2024-01-01,2025-01-01\n';
+
+                aviary.keeper_shift:
+                  'shift_code,shift_name,keeper_name\n'+
+                  'SH-1,Dawn Shift,Rowan Kestrel\n'+
+                  'SH-2,Dusk Shift,Ilma Sedge\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Enclosure":"EN-1","Name":"North Flight Aviary","Roomy":true,"Cover":"MESH RENEWED","Keeper":"Rowan Kestrel"},{"Enclosure":"EN-2","Name":"Reed Flight Aviary","Roomy":true,"Cover":"OPEN COVER","Keeper":"Rowan Kestrel"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    feedTallySuite:
+    {
+      function: |test::sableaviary::domain::FeedBatch.all(%2026-06-01)->groupBy(
+        [
+          f|$f.fedEnclosure.enclosureName,
+          f|$f.feedKind
+        ],
+        [
+          agg(
+            f|$f.kilograms,
+            y|$y->sum()
+          )
+        ],
+        [
+          'Enclosure',
+          'FeedKind',
+          'TotalKg'
+        ]
+      )->sort([asc('Enclosure'), asc('FeedKind')]);
+      tests:
+      [
+        tallyAsOfProcessingDate:
+        {
+          doc: 'The feed tally groups the in-range batches per enclosure and feed kind; the restated batch closed out before the register date is excluded from every total.';
+          data:
+          [
+            test::sableaviary::store::AviaryRegisterDb:
+              Relational
+              #{
+                aviary.feed_batch:
+                  'batch_id,batch_code,enclosure_code,feed_kind,kilograms,delivered_on,in_z,out_z\n'+
+                  '1,FB-01,EN-1,seed,40,2026-02-01,2026-01-01,9999-12-31\n'+
+                  '2,FB-02,EN-1,seed,25,2026-02-08,2026-01-01,9999-12-31\n'+
+                  '3,FB-03,EN-1,insect,12,2026-02-09,2026-01-01,9999-12-31\n'+
+                  '4,FB-04,EN-2,fruit,30,2026-02-10,2026-01-01,9999-12-31\n'+
+                  '5,FB-05,EN-2,seed,18,2026-02-11,2026-01-01,9999-12-31\n'+
+                  '6,FB-06,EN-1,seed,99,2026-02-12,2024-01-01,2025-01-01\n';
+
+                aviary.enclosure:
+                  'enclosure_code,enclosure_name,shift_code,perch_count,cover_note,in_z,out_z\n'+
+                  'EN-1,North Flight Aviary,SH-1,18,mesh renewed,2026-01-01,9999-12-31\n'+
+                  'EN-2,Reed Flight Aviary,SH-1,12,,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Enclosure":"North Flight Aviary","FeedKind":"insect","TotalKg":12},{"Enclosure":"North Flight Aviary","FeedKind":"seed","TotalKg":65},{"Enclosure":"Reed Flight Aviary","FeedKind":"fruit","TotalKg":30},{"Enclosure":"Reed Flight Aviary","FeedKind":"seed","TotalKg":18}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

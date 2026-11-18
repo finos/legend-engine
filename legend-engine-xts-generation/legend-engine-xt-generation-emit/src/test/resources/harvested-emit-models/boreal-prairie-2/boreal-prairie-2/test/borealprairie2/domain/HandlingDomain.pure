@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::borealprairie2::domain::*;
+
+Class test::borealprairie2::domain::StorageBin
+{
+  binCode: String[1];
+  binName: String[1];
+  capacityTonnes: Float[1];
+  aerated: Boolean[1];
+}
+
+Class test::borealprairie2::domain::MoistureSample
+{
+  sampleCode: String[1];
+  drawnOn: StrictDate[1];
+  moisturePercent: Float[1];
+  screeningsPercent: Float[0..1];
+}
+
+Class test::borealprairie2::domain::HandlingMovement
+{
+  movementCode: String[1];
+  recordedOn: StrictDate[1];
+  netTonnes: Float[1];
+  cropName: String[1];
+  operatorInitials: String[0..1];
+}
+
+Class test::borealprairie2::domain::IntakeMovement extends HandlingMovement
+{
+  intoBin: StorageBin[1];
+  haulerName: String[1];
+  gradeAssigned: String[1];
+  intakeSample: MoistureSample[0..1];
+}
+
+Class test::borealprairie2::domain::OutloadMovement extends HandlingMovement
+{
+  fromBin: StorageBin[1];
+  railcarCount: Integer[1];
+  destinationTerminal: String[1];
+}
+
+Class test::borealprairie2::domain::TransferMovement extends HandlingMovement
+{
+  sourceBin: StorageBin[1];
+  targetBin: StorageBin[1];
+  blendedWith: String[0..1];
+}
+
+Class test::borealprairie2::domain::AeratedTransferMovement extends TransferMovement
+{
+  fanRunHours: Float[1];
+  targetMoisturePercent: Float[1];
+}

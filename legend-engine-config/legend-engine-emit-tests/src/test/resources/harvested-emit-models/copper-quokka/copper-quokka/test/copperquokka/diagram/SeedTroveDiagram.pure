@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::copperquokka::diagram::SeedTroveDiagram
+{
+  classView seedRecordView
+  {
+    class: test::copperquokka::SeedRecord;
+    position: (520.0, 60.0);
+    rectangle: (260.0, 150.0);
+  }
+  classView collectedSeedView
+  {
+    class: test::copperquokka::CollectedSeed;
+    position: (520.0, 280.0);
+    rectangle: (280.0, 150.0);
+  }
+  classView cataloguedSeedView
+  {
+    class: test::copperquokka::CataloguedSeed;
+    position: (520.0, 500.0);
+    rectangle: (280.0, 170.0);
+  }
+  classView storedSeedView
+  {
+    class: test::copperquokka::StoredSeed;
+    position: (260.0, 750.0);
+    rectangle: (280.0, 170.0);
+  }
+  classView propagatedSeedView
+  {
+    class: test::copperquokka::PropagatedSeed;
+    position: (780.0, 750.0);
+    rectangle: (280.0, 170.0);
+  }
+  classView seedLotView
+  {
+    class: test::copperquokka::SeedLot;
+    position: (80.0, 60.0);
+    rectangle: (260.0, 170.0);
+  }
+  classView habitatSampleView
+  {
+    class: test::copperquokka::HabitatSample;
+    position: (80.0, 330.0);
+    rectangle: (260.0, 150.0);
+  }
+  classView curationNoteView
+  {
+    class: test::copperquokka::CurationNote;
+    position: (1080.0, 60.0);
+    rectangle: (280.0, 170.0);
+  }
+  generalizationView
+  {
+    source: collectedSeedView;
+    target: seedRecordView;
+    points: [(660.0, 430.0), (660.0, 210.0)];
+  }
+  generalizationView
+  {
+    source: cataloguedSeedView;
+    target: collectedSeedView;
+    points: [(660.0, 670.0), (660.0, 430.0)];
+  }
+  generalizationView
+  {
+    source: storedSeedView;
+    target: cataloguedSeedView;
+    points: [(540.0, 750.0), (580.0, 670.0)];
+  }
+  generalizationView
+  {
+    source: propagatedSeedView;
+    target: cataloguedSeedView;
+    points: [(920.0, 750.0), (740.0, 670.0)];
+  }
+  propertyView
+  {
+    property: test::copperquokka::SeedLot.sourceRecord;
+    source: seedLotView;
+    target: seedRecordView;
+    points: [(340.0, 130.0), (520.0, 130.0)];
+  }
+  propertyView
+  {
+    property: test::copperquokka::HabitatSample.sourceLot;
+    source: habitatSampleView;
+    target: seedLotView;
+    points: [(210.0, 330.0), (210.0, 230.0)];
+  }
+  propertyView
+  {
+    property: test::copperquokka::CataloguedSeed.curationNotes;
+    source: cataloguedSeedView;
+    target: curationNoteView;
+    points: [(800.0, 585.0), (930.0, 585.0), (1080.0, 145.0)];
+  }
+  propertyView
+  {
+    property: test::copperquokka::StoredSeed.seedLot;
+    source: storedSeedView;
+    target: seedLotView;
+    points: [(300.0, 750.0), (300.0, 500.0), (210.0, 230.0)];
+  }
+  propertyView
+  {
+    property: test::copperquokka::PropagatedSeed.sourceHabitat;
+    source: propagatedSeedView;
+    target: habitatSampleView;
+    points: [(780.0, 830.0), (500.0, 830.0), (340.0, 405.0)];
+  }
+  propertyView
+  {
+    property: test::copperquokka::CurationNote.subject;
+    source: curationNoteView;
+    target: seedRecordView;
+    points: [(1080.0, 145.0), (780.0, 130.0)];
+  }
+}

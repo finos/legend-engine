@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyquarry4::service::BookingCollectionBoard
+{
+  pattern: '/kindlyquarry4/v1/booking-collection/{branchCode}';
+  title: 'Kindly Quarry 4 - Observatory Booking Collection Board';
+  ownership: UserList { users: ['observatory-booking-desk'] };
+  documentation: 'Publishes the earliest telescope bookings booked at one observatory branch, reporting the lending tier and the optical family as the enumerated values they are mapped to rather than as raw codes, and returning only the first three rows of the ordered board so the endpoint is bounded whatever the branch holds.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {branchCode: String[1]|test::kindlyquarry4::domain::TelescopeBooking.all()->filter(
+      l|$l.branchCode == $branchCode
+    )->project(
+      [
+        l|$l.bookingCode,
+        l|$l.instrumentCode,
+        l|$l.bookingTier,
+        l|$l.opticGrade,
+        l|$l.bookedOn,
+        l|$l.nightsBooked,
+        l|$l.apertureMm
+      ],
+      [
+        'Booking',
+        'Instrument',
+        'Tier',
+        'Optic',
+        'Booked',
+        'Nights',
+        'ApertureMm'
+      ]
+    )->sort([asc('Booked'), asc('Booking')])->take(3)};
+    mapping: test::kindlyquarry4::mapping::ObservatoryBookingMapping;
+    runtime: test::kindlyquarry4::runtime::ObservatoryBookingRuntime;
+  }
+  testSuites:
+  [
+    bookingCollectionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          observatoryBookingConnection:
+            Relational
+            #{
+              BOOKING.TELESCOPE_BOOKING:
+              'BOOKING_CODE,BRANCH_CODE,INSTRUMENT_CODE,BOOKING_TIER,OPTIC_GRADE,BOOKED_ON,COLLECTED_AT,NIGHTS_BOOKED,APERTURE_MM\n'+
+              'LN-01,BR-1,IN-11,STANDARD,REFRACTOR,2026-05-01,2026-05-01T20:15:00,3,102\n'+
+              'LN-02,BR-1,IN-12,EXTENDED,REFLECTOR,2026-05-02,2026-05-02T20:30:00,7,203\n'+
+              'LN-03,BR-1,IN-13,TUITION,CATADIOPTRIC,2026-05-03,2026-05-03T19:45:00,2,235\n'+
+              'LN-04,BR-1,IN-14,STANDARD,REFLECTOR,2026-05-04,2026-05-04T21:00:00,4,150\n'+
+              'LN-05,BR-2,IN-21,EXTENDED,REFRACTOR,2026-05-05,2026-05-05T20:10:00,5,120\n'+
+              'LN-06,BR-3,IN-31,TUITION,REFLECTOR,2026-05-06,2026-05-06T19:20:00,1,254\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theBoardStopsAtThreeBookings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters: [branchCode = 'BR-1']
+          asserts:
+          [
+            earliestThreeBookingsOfTheBranch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"LN-01","Instrument":"IN-11","Tier":"STANDARD","Optic":"REFRACTOR","Booked":"2026-05-01","Nights":3,"ApertureMm":102},{"Booking":"LN-02","Instrument":"IN-12","Tier":"EXTENDED","Optic":"REFLECTOR","Booked":"2026-05-02","Nights":7,"ApertureMm":203},{"Booking":"LN-03","Instrument":"IN-13","Tier":"TUITION","Optic":"CATADIOPTRIC","Booked":"2026-05-03","Nights":2,"ApertureMm":235}]';
+                  }#;
+              }#
+          ]
+        },
+        aBranchWithASingleBookingIsNotPadded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters: [branchCode = 'BR-3']
+          asserts:
+          [
+            theOneTuitionBooking:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"LN-06","Instrument":"IN-31","Tier":"TUITION","Optic":"REFLECTOR","Booked":"2026-05-06","Nights":1,"ApertureMm":254}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

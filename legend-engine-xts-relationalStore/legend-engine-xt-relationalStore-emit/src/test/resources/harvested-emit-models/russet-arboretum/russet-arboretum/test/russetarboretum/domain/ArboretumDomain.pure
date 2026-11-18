@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::russetarboretum::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Lifecycle stage of a living collection specimen.'} test::russetarboretum::domain::LifecycleStage
+{
+  Planted,
+  Established,
+  Retired
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Habitat class assigned to a planting bed.'} test::russetarboretum::domain::HabitatClass
+{
+  Woodland,
+  Meadow,
+  Wetland
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A collection site whose naming and region assignment are tracked on a business timeline.'} test::russetarboretum::domain::CollectionSite
+{
+  siteName: String[1];
+  regionCode: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A planting bed on a collection site, valid over a business interval.'} test::russetarboretum::domain::PlantingBed
+{
+  bedCode: String[1];
+  habitat: HabitatClass[1];
+  site: CollectionSite[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'An accessioned specimen, its bed placement and the specimen it was propagated from.'} test::russetarboretum::domain::Specimen
+{
+  accessionCode: String[1];
+  speciesName: String[1];
+  stage: LifecycleStage[1];
+  plantingYear: Integer[1];
+  bed: PlantingBed[0..1];
+  propagatedFrom: Specimen[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A care operation recorded against a specimen.'} test::russetarboretum::domain::CareEvent
+{
+  eventCode: String[1];
+  performedOn: StrictDate[1];
+  specimen: Specimen[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A pruning care operation carrying the crown reduction it applied.'} test::russetarboretum::domain::PruningEvent extends CareEvent
+{
+  crownReductionPct: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A survey care operation carrying the measured specimen height.'} test::russetarboretum::domain::SurveyEvent extends CareEvent
+{
+  heightCm: Integer[1];
+}

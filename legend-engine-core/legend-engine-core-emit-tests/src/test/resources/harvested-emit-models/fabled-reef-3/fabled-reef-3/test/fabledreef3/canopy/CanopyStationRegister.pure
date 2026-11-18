@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::fabledreef3::canopy::*;
+import demo::fabledreef3::annotation::*;
+import meta::pure::profiles::*;
+
+Class <<typemodifiers.abstract, temporal.businesstemporal, RegisterMeta.publishedField>> {RegisterMeta.custodian = 'canopy-survey-office', RegisterMeta.surveyProgramme = 'nearshore-canopy'} demo::fabledreef3::canopy::CanopyStation
+{
+  <<RegisterMeta.stationKey, Nullability.required>> {RegisterMeta.fieldWidth = '14'} stationCode: String[1];
+  <<Nullability.required>> {RegisterMeta.fieldWidth = '80'} stationLabel: String[1];
+  <<Nullability.optional>> {Nullability.absentMeaning = 'station has never been depth-sounded'} soundedDepthMetres: Float[0..1];
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal, RegisterMeta.publishedField>> {RegisterMeta.custodian = 'canopy-survey-office'} demo::fabledreef3::canopy::CanopyTransectStation extends CanopyStation
+{
+  <<Nullability.required>> transectLengthMetres: Integer[1];
+  <<Nullability.required>> {RegisterMeta.fieldWidth = '12'} transectBearing: String[1];
+  <<Nullability.optional>> swimDirection: String[0..1];
+}
+
+Class <<temporal.businesstemporal, RegisterMeta.rolledUpField>> {RegisterMeta.custodian = 'canopy-survey-office', RegisterMeta.surveyProgramme = 'canopy-density'} demo::fabledreef3::canopy::CanopyDensityStation extends CanopyTransectStation
+{
+  <<Nullability.required>> stipesPerSquareMetre: Float[1];
+  <<Nullability.required>> canopyCoverPercent: Float[1];
+  <<Nullability.optional>> {Nullability.absentMeaning = 'no understorey pass was swum'} understoreyCoverPercent: Float[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::fabledreef3::canopy::CanopyHoldfastStation extends CanopyTransectStation
+{
+  <<Nullability.required>> holdfastCount: Integer[1];
+  <<Nullability.optional>> meanHoldfastWidthCm: Float[0..1];
+}
+
+Class <<temporal.businesstemporal, RegisterMeta.retiredField>> {RegisterMeta.custodian = 'archive-desk'} demo::fabledreef3::canopy::CanopyDropCameraStation extends CanopyStation
+{
+  <<Nullability.required>> {RegisterMeta.fieldWidth = '10'} cameraRigCode: String[1];
+  <<Nullability.required>> framesRetained: Integer[1];
+  <<Nullability.optional>> waterClarityBand: String[0..1];
+}

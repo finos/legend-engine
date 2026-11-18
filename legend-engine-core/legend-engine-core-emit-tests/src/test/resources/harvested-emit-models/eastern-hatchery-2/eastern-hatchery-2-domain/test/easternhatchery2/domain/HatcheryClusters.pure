@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::easternhatchery2::domain::*;
+
+Class {doc.doc = 'Root of the subscriber cluster; a subscriber must reference at least one telemetry dataset, so the collection is one-or-more and an instance with an empty collection is invalid.'} test::easternhatchery2::domain::TelemetrySubscriber
+{
+  subscriberLabel: String[1];
+  contactMailbox: String[0..1];
+  <<CollectionSemantics.set>> {CollectionSemantics.membership = 'duplicate-free'} datasetReferences: DatasetReference[1..*];
+}
+
+Class {doc.doc = 'A reference from a subscriber to one telemetry dataset of the hatchery estate.'} test::easternhatchery2::domain::DatasetReference
+{
+  datasetKey: String[1];
+  surveyLane: String[0..1];
+}
+
+Class {doc.doc = 'Root of the watermark cluster; holds the per-dataset low and high batch bounds the ingest has already accepted, again one-or-more rather than zero-or-more.'} test::easternhatchery2::domain::WatermarkRegister
+{
+  registerLabel: String[1];
+  <<CollectionSemantics.set>> {CollectionSemantics.membership = 'duplicate-free'} batchBounds: DatasetBatchBounds[1..*];
+}
+
+Class {doc.doc = 'The low and high accepted batch bound for one telemetry dataset.'} test::easternhatchery2::domain::DatasetBatchBounds
+{
+  datasetKey: String[1];
+  lowBatch: Integer[1];
+  highBatch: Integer[1];
+}
+
+Class {doc.doc = 'Metadata describing one ingested telemetry batch: an optional business date, an end-of-period flag and the two instants the batch was ingested and processed at.'} test::easternhatchery2::domain::IngestedBatchMetadata
+{
+  batchLabel: String[1];
+  businessDate: StrictDate[0..1];
+  endOfPeriod: Boolean[1];
+  ingestedAt: DateTime[1];
+  processedAt: DateTime[1];
+}

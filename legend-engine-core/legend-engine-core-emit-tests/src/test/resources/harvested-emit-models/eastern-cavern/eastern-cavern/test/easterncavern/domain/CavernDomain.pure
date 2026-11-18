@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import test::easterncavern::domain::*;
+
+Class <<typemodifiers.abstract, temporal.businesstemporal>> {doc.doc = 'Abstract root of every surveyed karst feature; validity of a feature is tracked on a business timeline and inherited by all subtypes.'} test::easterncavern::domain::KarstFeature
+{
+  {doc.doc = 'Registry code carried by every surveyed feature.'} featureCode: String[1];
+  {doc.doc = 'Human readable label used on published maps.'} label: String[0..1];
+  {doc.doc = 'Precision grade of the survey that produced the feature.'} surveyGrade: SurveyGrade[0..1];
+}
+
+Class {doc.doc = 'A cavern system reachable from one or more surface entrances. Business milestoning is inherited from the abstract root.'} test::easterncavern::domain::Cavern extends KarstFeature
+{
+  {doc.doc = 'Count of mapped surface entrances.'} entranceCount: Integer[0..1];
+  {doc.doc = 'Karst region the system belongs to.'} regionName: String[0..1];
+}
+
+Class {doc.doc = 'A mapped passage inside a cavern system.'} test::easterncavern::domain::CavePassage extends KarstFeature
+{
+  {doc.doc = 'Recorded cross-section shape, absent until the passage is surveyed.'} shape: PassageShape[0..1];
+  {doc.doc = 'Surveyed centre-line length in metres.'} lengthMetres: Float[0..1];
+}
+
+Class {doc.doc = 'A water-filled passage section, a second-level subtype whose temporal semantics come from the root two levels above it.'} test::easterncavern::domain::SumpPassage extends CavePassage
+{
+  {doc.doc = 'Deepest sounded point in metres below the sump pool.'} maxDepthMetres: Float[0..1];
+  {doc.doc = 'Whether the sump has been dived through to open passage.'} throughDived: Boolean[0..1];
+}
+
+Class <<CavernMeta.provisional>> {doc.doc = 'A mineral deposit catalogued at a passage.', CavernMeta.steward = 'cavern survey registry'} test::easterncavern::domain::MineralFormation extends KarstFeature
+{
+  {doc.doc = 'Deposit family, absent while the deposit is unclassified.'} kind: FormationKind[0..1];
+  {doc.doc = 'Measured height of the deposit in centimetres.'} heightCm: Float[0..1];
+}
+
+Class {doc.doc = 'A fixed survey station; stations are permanent marks and carry no temporal semantics.'} test::easterncavern::domain::SurveyStation
+{
+  {doc.doc = 'Station mark stamped on the rock.'} stationCode: String[1];
+  {doc.doc = 'Depth below the entrance datum in metres.'} depthBelowDatum: Float[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A narrative observation about a feature, milestoned on when the registry learned of it rather than when it was true.'} test::easterncavern::domain::SurveyNote
+{
+  {doc.doc = 'Free text observation recorded by the survey team.'} noteText: String[0..1];
+  {doc.doc = 'Team that filed the observation.'} filedBy: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'Instrument calibration record, known to the registry from the moment it is filed.'} test::easterncavern::domain::InstrumentCalibration
+{
+  {doc.doc = 'Instrument serial mark.'} instrumentMark: String[1];
+  {doc.doc = 'Correction applied to compass bearings in degrees.'} bearingCorrection: Float[0..1];
+}
+
+Association {doc.doc = 'Links a cavern system to its passages; the cavern end is optional so an orphan passage can be surveyed before the system it belongs to is registered.'} test::easterncavern::domain::Cavern_Passages
+{
+  {doc.doc = 'Owning cavern system, absent for an unattached passage.'} cavern: Cavern[0..1];
+  {doc.doc = 'Passages mapped inside the system.'} passages: CavePassage[*];
+}
+
+Association <<CavernMeta.provisional>> {doc.doc = 'Links a passage to the mineral deposits catalogued along it; both ends are milestoned on the same business timeline.', CavernMeta.revision = 'second edition'} test::easterncavern::domain::Passage_Formations
+{
+  {doc.doc = 'Passage the deposit was catalogued in.'} passage: CavePassage[0..1];
+  {doc.doc = 'Deposits catalogued along the passage.'} formations: MineralFormation[*];
+}
+
+Association {doc.doc = 'Links a passage to the permanent survey stations along it, crossing from a business-milestoned end to a non-milestoned one.'} test::easterncavern::domain::Passage_Stations
+{
+  {doc.doc = 'Passage the station was set in.'} passage: CavePassage[1];
+  {doc.doc = 'Stations set along the passage centre line.'} stations: SurveyStation[*];
+}
+
+Association <<CavernMeta.superseded>> {doc.doc = 'Links a cavern system to the observations filed about it, crossing a milestoning-kind boundary between a business timeline and a processing timeline.'} test::easterncavern::domain::Cavern_Notes
+{
+  {doc.doc = 'Cavern system the observation is about.'} cavern: Cavern[0..1];
+  {doc.doc = 'Observations filed about the system.'} notes: SurveyNote[*];
+}
+
+Association {doc.doc = 'Links survey stations to the calibration records of the instruments used at them, joining a non-milestoned end to a processing-milestoned one.'} test::easterncavern::domain::Station_Calibrations
+{
+  {doc.doc = 'Station where the instrument was used.'} station: SurveyStation[0..1];
+  {doc.doc = 'Calibration records filed for the instruments used at the station.'} calibrations: InstrumentCalibration[*];
+}

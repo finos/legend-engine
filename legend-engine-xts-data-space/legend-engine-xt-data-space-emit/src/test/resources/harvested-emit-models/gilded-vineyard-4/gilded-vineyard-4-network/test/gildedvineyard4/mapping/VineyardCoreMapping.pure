@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedvineyard4::mapping::VineyardCoreMapping
+(
+  *test::gildedvineyard4::domain::TrellisSection[trellisSection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard4::store::VineyardDatabase]vineyard.trellis_section.section_id
+    )
+    ~mainTable [test::gildedvineyard4::store::VineyardDatabase]vineyard.trellis_section
+    sectionCode: [test::gildedvineyard4::store::VineyardDatabase]vineyard.trellis_section.section_code,
+    canopyStyle: [test::gildedvineyard4::store::VineyardDatabase]vineyard.trellis_section.canopy_style,
+    estateCode: [test::gildedvineyard4::store::VineyardDatabase]vineyard.trellis_section.estate_code,
+    rowSpacingM: [test::gildedvineyard4::store::VineyardDatabase]vineyard.trellis_section.row_spacing_m
+  }
+
+  *test::gildedvineyard4::domain::VineBlock[vineBlock]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.block_id
+    )
+    ~mainTable [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block
+    blockCode: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.block_code,
+    varietalCode: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.varietal_code,
+    estateCode: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.estate_code,
+    vineCount: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.vine_count,
+    hectares: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.hectares,
+    soilPh: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.soil_ph,
+    plantedOn: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.planted_on,
+    surveyedAt: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.surveyed_at,
+    wardenName: [test::gildedvineyard4::store::VineyardDatabase]vineyard.vine_block.warden_name,
+    canopyStyle: [test::gildedvineyard4::store::VineyardDatabase]@Block_Section | vineyard.trellis_section.canopy_style
+  }
+
+  test::gildedvineyard4::domain::BlockSectionLink: Relational
+  {
+    AssociationMapping
+    (
+      section[vineBlock,trellisSection]: [test::gildedvineyard4::store::VineyardDatabase]@Block_Section,
+      blocks[trellisSection,vineBlock]: [test::gildedvineyard4::store::VineyardDatabase]@Block_Section
+    )
+  }
+)

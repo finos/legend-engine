@@ -1,0 +1,48 @@
+name: umber-fjord
+title: "Umber Fjord - Multi-Hop Relational Mapping With Banded Flow Service"
+description: |
+  A fjord hydrology model whose flow readings resolve their owning basin through
+  a three-hop station-catchment-basin join path and carry a conditional flow
+  band derived from the recorded flow rate. A single service filters readings by
+  threshold and region prefix, keeps the high and critical bands via a
+  collection membership test, and projects the banded rows grouped by basin.
+modelSources:
+  model:
+    root: umber-fjord
+    files:
+      - test/umberfjord/connection/HydroConnection.pure
+      - test/umberfjord/domain/HydroDomain.pure
+      - test/umberfjord/mapping/HydroMapping.pure
+      - test/umberfjord/runtime/HydroRuntime.pure
+      - test/umberfjord/service/BasinFlowFeed.pure
+      - test/umberfjord/store/HydroDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - collection-op
+  - conditional-transform
+  - fjord
+  - h2
+  - hydrology
+  - multi-hop-join
+  - projection
+  - relational
+  - service

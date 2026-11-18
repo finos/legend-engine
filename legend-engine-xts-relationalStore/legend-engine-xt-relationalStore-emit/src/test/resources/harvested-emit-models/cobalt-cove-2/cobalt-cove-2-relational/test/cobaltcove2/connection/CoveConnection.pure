@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::cobaltcove2::connection::CoveConnection
+{
+  store: test::cobaltcove2::store::CoveDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists cove;',
+      'create schema cove;',
+      'create table cove.trail_segment (segment_code varchar(24), reserve_name varchar(96) not null, surface_grade integer not null, from_z date, thru_z date);',
+      'create table cove.camera_station (station_code varchar(24), segment_code varchar(24) not null, battery_percent integer not null, in_z date, out_z date);',
+      'create table cove.sighting (sighting_code varchar(24) primary key, segment_code varchar(24) not null, species_name varchar(96) not null, count_seen integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

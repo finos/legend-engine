@@ -1,0 +1,311 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletwillow3::service::VisitDigest
+{
+  pattern: '/scarletwillow/v1/visit-digest/{asOf}';
+  title: 'Reserve Estate - Visit Digest';
+  documentation: 'Reads the survey visits recorded at one processing instant, navigates the milestoned patch association and the unversioned observer lookup beneath it, narrows the patch to its deep-peat subtype for a property the supertype does not carry, and labels each row through the date-parameterised logic-bearing property that re-enters the milestoned association itself.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], observerNames: String[*]|test::scarletwillow3::domain::SurveyVisit.all($asOf)->filter(
+      v|($v.observer.observerName->in($observerNames)) && ($v.speciesCount >= 2)
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.visitKind,
+        v|$v.speciesCount,
+        v|$v.remarkText,
+        v|$v.observerName,
+        v|$v.teamName,
+        v|$v.patch.patchCode,
+        v|$v.patch.habitatKind,
+        v|$v.patch->cast(@test::scarletwillow3::domain::PeatPatch).peatDepthCm,
+        v|$v.patchBandAt($asOf)
+      ],
+      [
+        'Visit/Code',
+        'Visit/Kind',
+        'Visit/Species',
+        'Visit/Remark',
+        'Observer/Name',
+        'Team/Name',
+        'Patch/Code',
+        'Patch/Habitat',
+        'Patch/PeatDepth',
+        'Patch/BandKind'
+      ]
+    )->sort(
+      [
+        asc('Visit/Code')
+      ]
+    )};
+    mapping: test::scarletwillow3::mapping::ReserveWarehouseMapping;
+    runtime: test::scarletwillow3::runtime::ReserveWarehouseRuntime;
+  }
+  testSuites:
+  [
+    visitDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection: Reference
+            #{
+              test::scarletwillow3::data::ReserveWarehouseData
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentVisits:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            observerNames = ['Rowan Field', 'Sage Field']
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit/Code": "sv-1", "Visit/Kind": "TRANSECT", "Visit/Species": 12, "Visit/Remark": "NOTE:DITCH CLEARED", "Observer/Name": "Rowan Field", "Team/Name": "Fen Team", "Patch/Code": "hp-1", "Patch/Habitat": "CARR", "Patch/PeatDepth": 120, "Patch/BandKind": "LARGE/TRANSECT/LINE"}, {"Visit/Code": "sv-2", "Visit/Kind": "FIXEDPOINT", "Visit/Species": 4, "Visit/Remark": null, "Observer/Name": "Sage Field", "Team/Name": null, "Patch/Code": "hp-1", "Patch/Habitat": "CARR", "Patch/PeatDepth": 120, "Patch/BandKind": "LARGE/FIXEDPOINT/GRID"}, {"Visit/Code": "sv-3", "Visit/Kind": "WALKOVER", "Visit/Species": 2, "Visit/Remark": "NOTE:REED CUT", "Observer/Name": "Rowan Field", "Team/Name": "Fen Team", "Patch/Code": "hp-2", "Patch/Habitat": "FEN", "Patch/PeatDepth": null, "Patch/BandKind": "SMALL/WALKOVER/FOOT"}]';
+                  }#;
+              }#
+          ]
+        },
+        narrowedObserverSelection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            observerNames = ['Rowan Field']
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit/Code": "sv-1", "Visit/Kind": "TRANSECT", "Visit/Species": 12, "Visit/Remark": "NOTE:DITCH CLEARED", "Observer/Name": "Rowan Field", "Team/Name": "Fen Team", "Patch/Code": "hp-1", "Patch/Habitat": "CARR", "Patch/PeatDepth": 120, "Patch/BandKind": "LARGE/TRANSECT/LINE"}, {"Visit/Code": "sv-3", "Visit/Kind": "WALKOVER", "Visit/Species": 2, "Visit/Remark": "NOTE:REED CUT", "Observer/Name": "Rowan Field", "Team/Name": "Fen Team", "Patch/Code": "hp-2", "Patch/Habitat": "FEN", "Patch/PeatDepth": null, "Patch/BandKind": "SMALL/WALKOVER/FOOT"}]';
+                  }#;
+              }#
+          ]
+        },
+        supersededVisitWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2020-06-01,
+            observerNames = ['Rowan Field', 'Sage Field']
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit/Code": "sv-4", "Visit/Kind": "WALKOVER", "Visit/Species": 6, "Visit/Remark": "NOTE:OLD NOTE", "Observer/Name": "Rowan Field", "Team/Name": "Fen Team", "Patch/Code": null, "Patch/Habitat": null, "Patch/PeatDepth": null, "Patch/BandKind": "SMALL/WALKOVER/FOOT"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::scarletwillow3::service::HabitatTally
+{
+  pattern: '/scarletwillow/v1/habitat-tally/{asOf}';
+  title: 'Reserve Estate - Habitat Tally';
+  documentation: 'Reduces the patches recorded at one processing instant to one row per translated habitat, region reached across the site join and area band, summing the mapped areas and counting the patches, so a row whose site path is broken collapses into the null-keyed group.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::scarletwillow3::domain::HabitatPatch.all($asOf)->filter(
+      p|$p.wetnessPct >= 10
+    )->groupBy(
+      [
+        p|$p.habitatKind,
+        p|$p.site.regionName,
+        p|$p.areaBand()
+      ],
+      [
+        agg(p|$p.areaHectares, y|$y->sum()),
+        agg(p|$p.wetnessPct, y|$y->count())
+      ],
+      [
+        'Patch/Habitat',
+        'Site/Region',
+        'Patch/AreaBand',
+        'Patch/TotalArea',
+        'Patch/Count'
+      ]
+    )->sort(
+      [
+        asc('Patch/Habitat'),
+        asc('Patch/AreaBand')
+      ]
+    )};
+    mapping: test::scarletwillow3::mapping::ReserveWarehouseMapping;
+    runtime: test::scarletwillow3::runtime::ReserveWarehouseRuntime;
+  }
+  testSuites:
+  [
+    habitatTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection: Reference
+            #{
+              test::scarletwillow3::data::ReserveWarehouseData
+            }#
+        ]
+      ]
+      tests:
+      [
+        groupedTally:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch/Habitat": "CARR", "Site/Region": "Northern Levels", "Patch/AreaBand": "LARGE", "Patch/TotalArea": 6.5, "Patch/Count": 1}, {"Patch/Habitat": "FEN", "Site/Region": "Northern Levels", "Patch/AreaBand": "SMALL", "Patch/TotalArea": 1.5, "Patch/Count": 1}, {"Patch/Habitat": null, "Site/Region": null, "Patch/AreaBand": "MEDIUM", "Patch/TotalArea": 3.0, "Patch/Count": 1}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyTallyWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2019-06-01
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::scarletwillow3::service::SiteLinkTrace
+{
+  pattern: '/scarletwillow/v1/site-link-trace';
+  title: 'Reserve Estate - Site Link Trace';
+  documentation: 'Lists the parent-child links of the reserve estate, where the store predicate comparing the two ancestry columns of a row removes the self-referencing link before the model ever sees it.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::scarletwillow3::domain::SiteLink.all()->project(
+      [
+        l|$l.entityCode,
+        l|$l.parentSiteId
+      ],
+      [
+        'Link/Child',
+        'Link/Parent'
+      ]
+    )->sort(
+      [
+        asc('Link/Child')
+      ]
+    )};
+    mapping: test::scarletwillow3::mapping::ReserveWarehouseMapping;
+    runtime: test::scarletwillow3::runtime::ReserveWarehouseRuntime;
+  }
+  testSuites:
+  [
+    siteLinkTraceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection: Reference
+            #{
+              test::scarletwillow3::data::ReserveWarehouseData
+            }#
+        ]
+      ]
+      tests:
+      [
+        selfLinkExcluded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Link/Child": "ST-2", "Link/Parent": "ST-1"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

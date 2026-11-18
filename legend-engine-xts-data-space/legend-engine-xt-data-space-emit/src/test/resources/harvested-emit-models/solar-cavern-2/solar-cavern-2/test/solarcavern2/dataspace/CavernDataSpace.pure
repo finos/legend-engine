@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::solarcavern2::profile::CavernMeta.catalogued>> {meta::pure::profiles::doc.doc = 'Catalogued entry point over the show-cave monitoring register.', test::solarcavern2::profile::CavernMeta.taxonomyNode = 'conservation/show-cave/monitoring', test::solarcavern2::profile::CavernMeta.licenceStatus = 'open-with-attribution', test::solarcavern2::profile::CavernMeta.provider = 'Cavern Monitoring Round'} test::solarcavern2::dataspace::CavernDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'monitoringRegister';
+      description: 'The single tier - the curated reading mapping bound to the warehouse runtime the register endpoint also pins.';
+      mapping: test::solarcavern2::mapping::CavernMapping;
+      defaultRuntime: test::solarcavern2::runtime::CavernWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'monitoringRegister';
+  title: 'Show-Cave Chamber Monitoring';
+  description: 'A catalogued entry point over the chamber reading register: one flat reading class whose three round dates are reconstructed from a compact numeric encoding, wired to the warehouse runtime and to the tabular endpoint consumers should start from.';
+  elements:
+  [
+    test::solarcavern2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Chamber reading register';
+      description: 'Featured endpoint returning every monitored chamber reading as a labelled tabular result.';
+      executable: test::solarcavern2::service::ChamberReadingRegister;
+    }
+  ];
+  supportInfo: Email {
+    address: 'cavern-monitoring@example.invalid';
+  };
+}

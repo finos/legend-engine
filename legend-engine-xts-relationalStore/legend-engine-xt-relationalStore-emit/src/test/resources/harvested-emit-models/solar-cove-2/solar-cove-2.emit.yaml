@@ -1,0 +1,53 @@
+name: solar-cove-2
+title: "Solar Cove — Versioned Crossing Inventory Domain (profile stereotypes, inheritance across version namespaces, processing timeline, composite-key constraints)"
+description: >-
+  A municipal street-crossing inventory domain declared twice over two coexisting schema
+  versions: a shared processing-temporal observation supertype and flag bundle in a common
+  namespace, first- and second-generation subtypes in per-version namespaces, and a closed
+  vocabulary set whose review-stage enumeration exists in both a shared and a versioned
+  form with overlapping but non-identical values. Three aggregate roots carry constraints
+  that check composite-key uniqueness across several child collections at differing key
+  widths, one profile supplies the governance stereotypes and tagged values applied at
+  class, property, enumeration-value and association-end level, and a mapping test asserts
+  a point-in-time projection of the observation supertype so the inherited processing
+  timeline is exercised against an out-of-range row.
+modelSources:
+  model:
+    root: solar-cove-2
+    files:
+      - test/solarcove2/domain/Common.pure
+      - test/solarcove2/domain/V1.pure
+      - test/solarcove2/domain/V2.pure
+      - test/solarcove2/domain/Vocabulary.pure
+      - test/solarcove2/mapping/CrossingMapping.pure
+      - test/solarcove2/profile/CivicMeta.pure
+      - test/solarcove2/store/CrossingDB.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - class-inheritance
+  - composite-key-constraint
+  - crossing-inventory
+  - enumeration-mapping
+  - h2
+  - processing-temporal
+  - profile-stereotypes
+  - schema-versioning
+  - street-network
+  - urban-planning

@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'Closed set of access labels a digitised herbarium dataset or column can be published under.'} test::teallighthouse3::domain::AccessLabel
+{
+  OPEN,
+  RESTRICTED,
+  EMBARGOED,
+  SEALED
+}
+
+Enum {doc.doc = 'Small closed set of shapes a dataset declaration can take.'} test::teallighthouse3::domain::SchemaKind
+{
+  TABULAR,
+  HIERARCHICAL,
+  RELATION
+}
+
+Enum {doc.doc = 'Large closed set of capability variants an environment can enable, spanning both the ingest side and the export side of the digitisation pipeline.'} test::teallighthouse3::domain::CapabilityFlag
+{
+  INGEST_SHEET_SCAN,
+  INGEST_LABEL_TRANSCRIPTION,
+  INGEST_GEOREFERENCE_LOOKUP,
+  INGEST_TAXON_RECONCILIATION,
+  INGEST_DUPLICATE_DETECTION,
+  INGEST_BATCH_RESUME,
+  INGEST_CHECKSUM_VERIFY,
+  INGEST_QUARANTINE_HOLD,
+  EXPORT_TABULAR_EXTRACT,
+  EXPORT_IMAGE_DERIVATIVE,
+  EXPORT_TAXON_TREE,
+  EXPORT_OCCURRENCE_FEED,
+  EXPORT_LABEL_TRANSCRIPT,
+  EXPORT_COLLECTOR_INDEX,
+  EXPORT_REDACTED_LOCALITY,
+  EXPORT_BULK_ARCHIVE,
+  PREVIEW_SHEET_THUMBNAIL,
+  PREVIEW_SCHEMA_SAMPLE,
+  PREVIEW_VALIDATION_REPORT
+}

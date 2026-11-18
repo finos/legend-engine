@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter2::service::BedInventory
+{
+  pattern: '/garden/v1/beds';
+  title: 'Golden Otter - Bed inventory';
+  owners:
+  [
+    'glasshouse-register-desk',
+    'botanic-collections-office'
+  ];
+  documentation: 'Bed-level inventory over the active bed extent: every derived bed column is projected, sorted by bed code and limited to the first page of rows.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::goldenotter2::domain::PlantBed.all()->project(
+      [
+        b|$b.bedCode,
+        b|$b.bedName,
+        b|$b.soilCode,
+        b|$b.registerCode,
+        b|$b.bedLabel,
+        b|$b.glasshouseName,
+        b|$b.rotaLabel
+      ],
+      [
+        'Bed/Code',
+        'Bed/Name',
+        'Bed/Soil',
+        'Bed/Register',
+        'Bed/Label',
+        'Bed/Glasshouse',
+        'Bed/Rota'
+      ]
+    )->sort(
+      [
+        asc('Bed/Code')
+      ]
+    )->take(5);};
+    mapping: test::goldenotter2::mapping::GardenMapping;
+    runtime: test::goldenotter2::runtime::GardenRuntime;
+  }
+  testSuites:
+  [
+    bedInventorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gardenConnection:
+            Relational
+            #{
+                glass.glasshouse:
+                'glasshouse_code,glasshouse_name,zone_code\n'+
+                'GH-1,Palm House,ZONE-A\n'+
+                'GH-2,Fern House,ZONE-B\n';
+              glass.watering_rota:
+                'rota_code,glasshouse_code,rota_label,week_number\n'+
+                'WR-1,GH-1,morning-rota,1\n'+
+                'WR-2,GH-2,evening-rota,2\n';
+              beds.plant_bed:
+                'bed_code,bed_name,glasshouse_code,soil_code,active_flag\n'+
+                'PB-1,North Bed,GH-1,loam mix,Y\n'+
+                'PB-2,South Bed,GH-2,peat free,Y\n'+
+                'PB-3,Old Bed,GH-1,sand mix,N\n';
+              beds.plant_accession:
+                'accession_code,bed_code,taxon_name,potted_count,label_text\n'+
+                'PA-1,PB-1,Nepenthes alata,6,label one\n'+
+                'PA-2,PB-1,Dryopteris affinis,3,label two\n'+
+                'PA-3,PB-2,Adiantum raddianum,9,label three\n'+
+                'PA-4,PB-3,Cyathea dealbata,4,label four\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        activeBedsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoActiveBeds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bed/Code":"PB-1","Bed/Name":"NORTH BED","Bed/Soil":"loam-mix","Bed/Register":"BOTANIC-REGISTER","Bed/Label":"BED-PB-1","Bed/Glasshouse":"Palm House","Bed/Rota":"morning-rota"},{"Bed/Code":"PB-2","Bed/Name":"SOUTH BED","Bed/Soil":"peat-free","Bed/Register":"BOTANIC-REGISTER","Bed/Label":"BED-PB-2","Bed/Glasshouse":"Fern House","Bed/Rota":"evening-rota"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

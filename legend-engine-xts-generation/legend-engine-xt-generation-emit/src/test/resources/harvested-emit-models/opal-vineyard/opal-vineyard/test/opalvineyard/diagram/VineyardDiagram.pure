@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::opalvineyard::diagram::HarvestDiagram
+{
+  classView cvBatch
+  {
+    class: test::opalvineyard::domain::HarvestBatch;
+    position: (80.0,60.0);
+    rectangle: (220.0,72.0);
+  }
+  classView cvSubmission
+  {
+    class: test::opalvineyard::domain::HarvestSubmission;
+    position: (460.0,60.0);
+    rectangle: (240.0,86.0);
+  }
+  classView cvRecord
+  {
+    class: test::opalvineyard::domain::HarvestRecord;
+    position: (240.0,300.0);
+    rectangle: (280.0,540.0);
+  }
+  classView cvBlock
+  {
+    class: test::opalvineyard::domain::VineyardBlock;
+    position: (720.0,320.0);
+    rectangle: (200.0,60.0);
+  }
+  classView cvRootstock
+  {
+    class: test::opalvineyard::domain::Rootstock;
+    position: (720.0,440.0);
+    rectangle: (200.0,60.0);
+  }
+  propertyView
+  {
+    property: test::opalvineyard::domain::HarvestBatchRecords.records;
+    source: cvBatch;
+    target: cvRecord;
+    points: [(190.0,96.0),(380.0,570.0)];
+  }
+  propertyView
+  {
+    property: test::opalvineyard::domain::HarvestBatchRecords.batch;
+    source: cvRecord;
+    target: cvBatch;
+    points: [(380.0,570.0),(190.0,96.0)];
+  }
+  propertyView
+  {
+    property: test::opalvineyard::domain::HarvestSubmission.records;
+    source: cvSubmission;
+    target: cvRecord;
+    points: [(580.0,103.0),(380.0,570.0)];
+  }
+  propertyView
+  {
+    property: test::opalvineyard::domain::HarvestRecord.blocks;
+    source: cvRecord;
+    target: cvBlock;
+    points: [(380.0,570.0),(820.0,350.0)];
+  }
+  propertyView
+  {
+    property: test::opalvineyard::domain::HarvestRecord.rootstock;
+    source: cvRecord;
+    target: cvRootstock;
+    points: [(380.0,570.0),(820.0,470.0)];
+  }
+}

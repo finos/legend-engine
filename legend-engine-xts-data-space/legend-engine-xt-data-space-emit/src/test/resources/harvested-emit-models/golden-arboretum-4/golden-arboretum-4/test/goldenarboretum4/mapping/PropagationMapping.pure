@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenarboretum4::mapping::PropagationMapping
+(
+  test::goldenarboretum4::domain::PropagationBatch: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.BATCH_CODE
+    )
+    ~mainTable [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD
+    batchCode: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.BATCH_CODE,
+    taxonName: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.TAXON_NAME,
+    familyName: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.FAMILY_NAME,
+    habit: EnumerationMapping GrowthHabitMapping: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.HABIT_CODE,
+    vigour: EnumerationMapping VigourBandMapping: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.VIGOUR_CODE,
+    rooting: EnumerationMapping RootingMethodMapping: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.ROOTING_CODE,
+    grade: EnumerationMapping StockGradeMapping: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.GRADE_CODE,
+    cuttingsStruck: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.CUTTINGS_STRUCK,
+    sownOn: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.SOWN_ON,
+    loggedAt: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.LOGGED_AT,
+    propagatorNote: [test::goldenarboretum4::store::NurseryDatabase]NURSERY.PROPAGATION_RECORD.PROPAGATOR_NOTE
+  }
+
+  test::goldenarboretum4::domain::GrowthHabit: EnumerationMapping GrowthHabitMapping
+  {
+    TREE: ['TREE', 'STANDARD'],
+    SHRUB: ['SHRUB', 'MULTISTEM'],
+    CLIMBER: ['CLIMBER'],
+    HERB: ['HERB']
+  }
+
+  test::goldenarboretum4::domain::VigourBand: EnumerationMapping VigourBandMapping
+  {
+    STRONG: ['VIG_HIGH', 'STRONG'],
+    MODERATE: ['VIG_MED'],
+    WEAK: ['VIG_LOW']
+  }
+
+  test::goldenarboretum4::domain::RootingMethod: EnumerationMapping RootingMethodMapping
+  {
+    SOFTWOOD_CUTTING: ['SOFTWOOD'],
+    HARDWOOD_CUTTING: ['HARDWOOD'],
+    LAYERING: ['LAYER'],
+    SEED: ['SEED']
+  }
+
+  test::goldenarboretum4::domain::StockGrade: EnumerationMapping StockGradeMapping
+  {
+    SALEABLE: ['SALEABLE'],
+    GROW_ON: ['GROW_ON'],
+    CULL: ['CULL']
+  }
+
+  testSuites:
+  [
+    testSuite_PropagationBatch:
+    {
+      function: |test::goldenarboretum4::domain::PropagationBatch.all()->project(
+        [
+          x|$x.batchCode,
+          x|$x.taxonName,
+          x|$x.habit,
+          x|$x.vigour,
+          x|$x.rooting,
+          x|$x.grade
+        ],
+        [
+          'Batch',
+          'Taxon',
+          'Habit',
+          'Vigour',
+          'Rooting',
+          'Grade'
+        ]
+      );
+      tests:
+      [
+        test_translatedValues:
+        {
+          data:
+          [
+            test::goldenarboretum4::store::NurseryDatabase:
+              Relational
+              #{
+                NURSERY.PROPAGATION_RECORD:
+                  'BATCH_CODE,BED_CODE,BED_NAME,TAXON_NAME,FAMILY_NAME,HABIT_CODE,VIGOUR_CODE,ROOTING_CODE,GRADE_CODE,SHADE_CODE,SEASON_CODE,SOIL_CODE,CUTTINGS_STRUCK,BED_AREA_SQM,SOWN_ON,LOGGED_AT,PROPAGATOR_NOTE\n'+
+                  'PB-01,BED-A,Cold Frame A,Acer campestre,Sapindaceae,STANDARD,VIG_HIGH,SOFTWOOD,SALEABLE,FULL_SUN,SPRING,LOAM,120.0,24.0,2024-03-04,2024-03-04 09:15:00,Struck under mist\n'+
+                  'PB-02,BED-A,Cold Frame A,Cornus alba,Cornaceae,MULTISTEM,VIG_MED,HARDWOOD,GROW_ON,PART_SHADE,AUTUMN,PEAT_FREE,,24.0,2024-10-11,2024-10-11 14:02:00,\n'+
+                  'PB-03,BED-B,Cold Frame B,Clematis vitalba,Ranunculaceae,CLIMBER,VIG_LOW,LAYER,CULL,DEEP_SHADE,WINTER,CLAY,15.0,,2024-01-08,2024-01-08 08:40:00,Weak rooting\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Batch" : "PB-01",\n  "Taxon" : "Acer campestre",\n  "Habit" : "TREE",\n  "Vigour" : "STRONG",\n  "Rooting" : "SOFTWOOD_CUTTING",\n  "Grade" : "SALEABLE"\n}, {\n  "Batch" : "PB-02",\n  "Taxon" : "Cornus alba",\n  "Habit" : "SHRUB",\n  "Vigour" : "MODERATE",\n  "Rooting" : "HARDWOOD_CUTTING",\n  "Grade" : "GROW_ON"\n}, {\n  "Batch" : "PB-03",\n  "Taxon" : "Clematis vitalba",\n  "Habit" : "CLIMBER",\n  "Vigour" : "WEAK",\n  "Rooting" : "LAYERING",\n  "Grade" : "CULL"\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    testSuite_PropagationBatchRecord:
+    {
+      function: |test::goldenarboretum4::domain::PropagationBatch.all()->project(
+        [
+          x|$x.batchCode,
+          x|$x.familyName,
+          x|$x.cuttingsStruck
+        ],
+        [
+          'Batch',
+          'Family',
+          'Cuttings'
+        ]
+      );
+      tests:
+      [
+        test_unmatchedSourceValue:
+        {
+          data:
+          [
+            test::goldenarboretum4::store::NurseryDatabase:
+              Relational
+              #{
+                NURSERY.PROPAGATION_RECORD:
+                  'BATCH_CODE,BED_CODE,BED_NAME,TAXON_NAME,FAMILY_NAME,HABIT_CODE,VIGOUR_CODE,ROOTING_CODE,GRADE_CODE,SHADE_CODE,SEASON_CODE,SOIL_CODE,CUTTINGS_STRUCK,BED_AREA_SQM,SOWN_ON,LOGGED_AT,PROPAGATOR_NOTE\n'+
+                  'PB-10,BED-C,Cold Frame C,Salix alba,Salicaceae,STANDARD,VIG_HIGH,SOFTWOOD,SALEABLE,FULL_SUN,SPRING,LOAM,80.0,18.0,2024-04-02,2024-04-02 10:05:00,\n'+
+                  'PB-11,BED-C,Cold Frame C,Rubus fruticosus,,BIENNIAL_CANE,VIG_HIGH,SOFTWOOD,SALEABLE,FULL_SUN,SPRING,LOAM,,18.0,2024-04-03,2024-04-03 10:05:00,Habit code outside the declared translation table\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Batch" : "PB-10",\n  "Family" : "Salicaceae",\n  "Cuttings" : 80.0\n}, {\n  "Batch" : "PB-11",\n  "Family" : null,\n  "Cuttings" : null\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

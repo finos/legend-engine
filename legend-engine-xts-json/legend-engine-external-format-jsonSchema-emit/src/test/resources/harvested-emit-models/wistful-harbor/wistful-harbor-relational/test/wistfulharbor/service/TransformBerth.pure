@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfulharbor::service::TransformBerth
+{
+  pattern: '/harbor/v1/berth/transform';
+  title: 'Harbor - Transform Berth (M2M)';
+  owners:
+  [
+    'harbour-registry-platform',
+    'marine-eng'
+  ];
+  documentation: 'Single-execution model-to-model service that accepts an inbound berth feed record as JSON and returns the graph-fetched berth object tree.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::wistfulharbor::domain::Berth.all()->graphFetch(
+      #{
+        test::wistfulharbor::domain::Berth{
+          berthId,
+          label,
+          slots
+        }
+      }#
+    )->serialize(
+      #{
+        test::wistfulharbor::domain::Berth{
+          berthId,
+          label,
+          slots
+        }
+      }#
+    );
+    mapping: test::wistfulharbor::mapping::BerthM2M;
+    runtime: test::wistfulharbor::runtime::BerthRuntime;
+  }
+  testSuites:
+  [
+    transformBerthSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          berthFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"id":9,"lbl":"North Quay","n":21}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northQuay:
+        {
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"berthId":9,"label":"North Quay","slots":21}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

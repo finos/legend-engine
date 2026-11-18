@@ -1,0 +1,167 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberotter::mapping::OtterMapping
+(
+  *test::emberotter::domain::OtterSighting[sighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberotter::store::OtterDB]otter.otter_sighting.sighting_code
+    )
+    ~mainTable [test::emberotter::store::OtterDB]otter.otter_sighting
+    recordCode: [test::emberotter::store::OtterDB]otter.otter_sighting.sighting_code,
+    reachCode: [test::emberotter::store::OtterDB]otter.otter_sighting.reach_code,
+    observerName: [test::emberotter::store::OtterDB]otter.otter_sighting.observer_name,
+    otterCount: [test::emberotter::store::OtterDB]otter.otter_sighting.otter_count,
+    waterTemperatureCelsius: [test::emberotter::store::OtterDB]otter.otter_sighting.water_temp_c,
+    sightedOn: [test::emberotter::store::OtterDB]otter.otter_sighting.sighted_on,
+    loggedAt: [test::emberotter::store::OtterDB]otter.otter_sighting.logged_at,
+    pupPresenceFlag: [test::emberotter::store::OtterDB]otter.otter_sighting.pup_flag,
+    holtCode: [test::emberotter::store::OtterDB]otter.otter_sighting.holt_code
+  }
+
+  *test::emberotter::domain::HoltSurvey[holt]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberotter::store::OtterDB]otter.holt_survey.survey_code
+    )
+    ~mainTable [test::emberotter::store::OtterDB]otter.holt_survey
+    recordCode: [test::emberotter::store::OtterDB]otter.holt_survey.survey_code,
+    reachCode: [test::emberotter::store::OtterDB]otter.holt_survey.reach_code,
+    observerName: [test::emberotter::store::OtterDB]otter.holt_survey.observer_name,
+    holtCode: [test::emberotter::store::OtterDB]otter.holt_survey.holt_code,
+    chamberCount: [test::emberotter::store::OtterDB]otter.holt_survey.chamber_count,
+    shoreHeightMetres: [test::emberotter::store::OtterDB]otter.holt_survey.shore_height_m,
+    surveyedOn: [test::emberotter::store::OtterDB]otter.holt_survey.surveyed_on,
+    substrateLabel: [test::emberotter::store::OtterDB]otter.holt_survey.substrate_label
+  }
+
+  testSuites:
+  [
+    sightingBindingSuite:
+    {
+      function: |test::emberotter::domain::OtterSighting.all()->project(
+  [
+    s|$s.recordCode,
+    s|$s.reachCode,
+    s|$s.observerName,
+    s|$s.otterCount,
+    s|$s.waterTemperatureCelsius,
+    s|$s.pupPresenceFlag
+  ],
+  [
+    'RecordCode',
+    'ReachCode',
+    'ObserverName',
+    'OtterCount',
+    'WaterTemperatureCelsius',
+    'PupPresenceFlag'
+  ]
+)->sort(
+  [
+    asc('RecordCode')
+  ]
+);
+      tests:
+      [
+        populatedAndNullBearingRows:
+        {
+          doc: 'Every bound column is populated on the first two rows, while the third row leaves the optional observer, temperature and pup columns empty so null propagation through the projection is observable.';
+          data:
+          [
+            test::emberotter::store::OtterDB:
+              Relational
+              #{
+                otter.otter_sighting:
+                  'sighting_code,reach_code,observer_name,otter_count,water_temp_c,sighted_on,logged_at,pup_flag,holt_code\n'+
+                  'OS-001,RE-01,Wren Halloway,3,8.5,2026-02-03,2026-02-03 07:15:00,Y,HO-01\n'+
+                  'OS-002,RE-02,Ilse Barrow,1,11.25,2026-02-04,2026-02-04 06:40:00,N,HO-02\n'+
+                  'OS-003,RE-02,,,,2026-02-05,2026-02-05 05:55:00,,HO-02\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"OS-001","ReachCode":"RE-01","ObserverName":"Wren Halloway","OtterCount":3,"WaterTemperatureCelsius":8.5,"PupPresenceFlag":"Y"},{"RecordCode":"OS-002","ReachCode":"RE-02","ObserverName":"Ilse Barrow","OtterCount":1,"WaterTemperatureCelsius":11.25,"PupPresenceFlag":"N"},{"RecordCode":"OS-003","ReachCode":"RE-02","ObserverName":null,"OtterCount":null,"WaterTemperatureCelsius":null,"PupPresenceFlag":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    holtBindingSuite:
+    {
+      function: |test::emberotter::domain::HoltSurvey.all()->project(
+  [
+    h|$h.recordCode,
+    h|$h.holtCode,
+    h|$h.chamberCount,
+    h|$h.shoreHeightMetres,
+    h|$h.substrateLabel
+  ],
+  [
+    'RecordCode',
+    'HoltCode',
+    'ChamberCount',
+    'ShoreHeightMetres',
+    'SubstrateLabel'
+  ]
+)->sort(
+  [
+    asc('RecordCode')
+  ]
+);
+      tests:
+      [
+        twoRootsQueriedIndependently:
+        {
+          doc: 'The second root resolves through its own main table with no join declared between the two tables, so the holt register plan is a single select over the second table alone.';
+          data:
+          [
+            test::emberotter::store::OtterDB:
+              Relational
+              #{
+                otter.holt_survey:
+                  'survey_code,reach_code,observer_name,holt_code,chamber_count,shore_height_m,surveyed_on,substrate_label\n'+
+                  'HS-001,RE-01,Wren Halloway,HO-01,3,1.75,2026-01-20,ROOT MAT\n'+
+                  'HS-002,RE-02,,HO-02,,0.9,2026-01-21,SHINGLE\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"HS-001","HoltCode":"HO-01","ChamberCount":3,"ShoreHeightMetres":1.75,"SubstrateLabel":"ROOT MAT"},{"RecordCode":"HS-002","HoltCode":"HO-02","ChamberCount":null,"ShoreHeightMetres":0.9,"SubstrateLabel":"SHINGLE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

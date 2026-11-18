@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::meadowsummit::connection::SummitH2Connection
+{
+  store: test::meadowsummit::store::SummitStore;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists trail;',
+      'drop schema if exists terrain;',
+      'create schema trail;',
+      'create schema terrain;',
+      'create table trail.trail_segment (segment_id integer primary key, segment_code varchar(16) not null, segment_name varchar(64) not null, grade_code varchar(8) not null, surface_code varchar(8), length_m integer not null, waypoint_note varchar(128));',
+      'create table trail.maintenance_visit (visit_id integer primary key, segment_id integer not null, crew_id integer not null, visit_kind_code varchar(8) not null, work_hours double not null, visit_note varchar(128));',
+      'create table trail.crew_roster (crew_id integer primary key, crew_name varchar(64) not null, depot_code varchar(16) not null);',
+      'create table trail.depot_register (depot_code varchar(16) primary key, depot_name varchar(64) not null);',
+      'create table terrain.slope_grade (grade_code varchar(8) primary key, grade_label varchar(64) not null, terrain_kind varchar(16) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

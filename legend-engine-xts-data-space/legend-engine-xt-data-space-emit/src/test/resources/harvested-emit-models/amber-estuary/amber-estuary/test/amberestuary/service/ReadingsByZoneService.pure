@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::amberestuary::service::ReadingsByZoneService
+{
+  pattern: '/estuary/v1/readings/{zone}';
+  owners:
+  [
+    'estuary-survey-team'
+  ];
+  documentation: 'Publish the banded silt readings recorded for one surveyed tidal zone as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {zone: String[1]|test::amberestuary::domain::SedimentReading.all()->filter(
+      r|($r.tidalZone == $zone) && ($r.tidalZone->in(['upper-flat', 'mid-flat', 'lower-flat']) && ($r.siltMgPerL >= 20))
+    )->project(
+      [
+        x|$x.readingId,
+        x|$x.stationName->toUpper(),
+        x|if(
+          $x.siltMgPerL >= 60,
+          |'turbid',
+          |if(
+            $x.siltMgPerL >= 40,
+            |'murky',
+            |'clear'
+          )
+        )
+      ],
+      [
+        'Reading',
+        'Station',
+        'Band'
+      ]
+    )};
+    mapping: test::amberestuary::mapping::EstuaryMapping;
+    runtime: test::amberestuary::runtime::EstuaryRuntime;
+  }
+  testSuites:
+  [
+    zoneReadingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              tideflat.sediment_reading:
+                'reading_id,station_name,tidal_zone,silt_mg_per_l\n'+
+                'SR-01,Marsh Head,upper-flat,72\n'+
+                'SR-02,Marsh Head,upper-flat,45\n'+
+                'SR-03,Sand Bar,lower-flat,12\n'+
+                'SR-04,Sand Bar,lower-flat,38\n'+
+                'SR-05,Creek Mouth,tidal-creek,90\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        upperFlatReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zone = 'upper-flat'
+          ]
+          asserts:
+          [
+            turbidAndMurkyBands:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"SR-01","Station":"MARSH HEAD","Band":"turbid"},{"Reading":"SR-02","Station":"MARSH HEAD","Band":"murky"}]';
+                  }#;
+              }#
+          ]
+        },
+        lowerFlatReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zone = 'lower-flat'
+          ]
+          asserts:
+          [
+            faintReadingBelowThresholdDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"SR-04","Station":"SAND BAR","Band":"clear"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldhatchery3::service::SpeciesBatchPonds
+{
+  pattern: '/hatchery/v1/species/{speciesGroup}/ponds';
+  title: 'Hatchery - Ponds Stocked with a Species Group';
+  documentation: 'Collapses the batch register to the distinct ponds that have held a supplied species group, so repeated cohorts in the same pond report once.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {speciesGroup: String[1]|test::emeraldhatchery3::domain::RearingBatch.all()->filter(
+      b|$b.speciesGroup == $speciesGroup
+    )->project(
+      [
+        b|$b.speciesGroup,
+        b|$b.pondCode
+      ],
+      [
+        'SpeciesGroup',
+        'PondCode'
+      ]
+    )->distinct()->sort([asc('PondCode')])};
+    mapping: test::emeraldhatchery3::mapping::HatcheryMapping;
+    runtime: test::emeraldhatchery3::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    speciesPondSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              rearing.rearing_batch:
+                'batch_id,batch_code,pond_code,species_group,fry_count,stocked_on,released_on\n'+
+                '1,B-9001,P-101,trout,4000,2026-01-10,\n'+
+                '2,B-9002,P-101,trout,3500,2026-02-14,2026-05-01\n'+
+                '3,B-9003,P-103,char,2000,2026-01-20,\n'+
+                '4,B-9004,P-103,trout,1500,2026-03-05,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        troutPonds:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            speciesGroup = 'trout'
+          ]
+          asserts:
+          [
+            twoDistinctPonds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SpeciesGroup":"trout","PondCode":"P-101"},{"SpeciesGroup":"trout","PondCode":"P-103"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::umberlagoon::domain::*;
+import test::umberlagoon::profile::*;
+
+Class <<TrailProfile.inboundFeed>> {TrailProfile.tier = 'inbound'} test::umberlagoon::domain::PatrolLine
+{
+  {TrailProfile.externalName = 'LINE_REF'} lineRef: String[1];
+  {TrailProfile.externalName = 'SEGMENT_CODE'} segmentCode: String[1];
+  {TrailProfile.externalName = 'WARDEN_TEXT'} wardenText: String[1];
+  {TrailProfile.externalName = 'SURFACE_CODE'} surfaceCode: String[1];
+  {TrailProfile.externalName = 'NOTICE_TEXT'} noticeText: String[1];
+  {TrailProfile.externalName = 'SWEEP_COUNT'} sweepCount: Integer[1];
+  {TrailProfile.externalName = 'SWEEP_MINUTES'} sweepMinutes: Float[1];
+}
+
+Class <<TrailProfile.patrolFacing>> {TrailProfile.tier = 'summary'} test::umberlagoon::domain::PatrolSummary
+{
+  sweepRef: String[1];
+  segmentLabel: String[1];
+  wardenLabel: String[1];
+  surfaceLabel: String[1];
+  noticeLabel: String[1];
+  sweepRate: Float[1];
+  sweepTally: Integer[1];
+}
+
+Class <<TrailProfile.kioskFacing>> {TrailProfile.tier = 'kiosk'} test::umberlagoon::domain::KioskCard
+{
+  cardRef: String[1];
+  headline: String[1];
+  surfaceNote: String[1];
+  ratingText: String[1];
+  tallyValue: Float[1];
+  tallyRank: Integer[1];
+}

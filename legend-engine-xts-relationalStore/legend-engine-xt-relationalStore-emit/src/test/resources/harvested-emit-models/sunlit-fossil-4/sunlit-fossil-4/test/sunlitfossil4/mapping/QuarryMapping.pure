@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitfossil4::mapping::QuarryMapping
+(
+  *test::sunlitfossil4::domain::SpecimenFind[find]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.find_id
+    )
+    ~mainTable [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find
+    findId: [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.find_id,
+    findCode: [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.find_code,
+    quarryName: [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.quarry_name,
+    bedName: [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.bed_name,
+    specimenCount: [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.specimen_count,
+    matrixMassKg: [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.matrix_mass_kg,
+    collectorName: [test::sunlitfossil4::store::QuarryDatabase]dig.specimen_find.collector_name
+  }
+)

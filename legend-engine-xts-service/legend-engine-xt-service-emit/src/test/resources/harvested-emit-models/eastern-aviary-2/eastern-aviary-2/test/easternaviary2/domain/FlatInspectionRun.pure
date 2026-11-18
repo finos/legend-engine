@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::easternaviary2::profile::*;
+
+Class test::easternaviary2::domain::FlatInspectionRun
+{
+  {FieldMetaProfile.textLength = '40', FieldMetaProfile.textTyped = 'true'} runRef: String[1];
+  {FieldMetaProfile.documentValued = 'true'} header: test::easternaviary2::domain::FlatRunHeader[0..1];
+  {FieldMetaProfile.documentValued = 'true'} sectionRows: test::easternaviary2::domain::FlatSectionRow[*];
+  {FieldMetaProfile.documentValued = 'true'} defectRows: test::easternaviary2::domain::FlatDefectRow[*];
+  {FieldMetaProfile.documentValued = 'true'} defectCodeRows: test::easternaviary2::domain::FlatDefectCodeRow[*];
+  {FieldMetaProfile.documentValued = 'true'} sleeperRows: test::easternaviary2::domain::FlatSleeperRow[*];
+  {FieldMetaProfile.documentValued = 'true'} gaugeRows: test::easternaviary2::domain::FlatGaugeRow[*];
+  {FieldMetaProfile.documentValued = 'true'} ballastRows: test::easternaviary2::domain::FlatBallastRow[*];
+  {FieldMetaProfile.documentValued = 'true'} noteRows: test::easternaviary2::domain::FlatNoteRow[*];
+}
+
+Class test::easternaviary2::domain::FlatRunHeader
+{
+  {FieldMetaProfile.textLength = '40', FieldMetaProfile.textTyped = 'true'} notebookRef: String[1];
+  loggedAt: DateTime[1];
+  surveyedOn: StrictDate[0..1];
+  {FieldMetaProfile.textLength = '120', FieldMetaProfile.textTyped = 'true'} gangName: String[1];
+}
+
+Class test::easternaviary2::domain::FlatSectionRow
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} mileageChain: Integer[1];
+  {FieldMetaProfile.textLength = '64', FieldMetaProfile.textTyped = 'true'} sectionLabel: String[1];
+}
+
+Class test::easternaviary2::domain::FlatDefectRow
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.textLength = '16', FieldMetaProfile.textTyped = 'true'} defectCodes: String[*];
+  {FieldMetaProfile.textLength = '16', FieldMetaProfile.textTyped = 'true'} severityBands: String[*];
+  {FieldMetaProfile.numericPrecision = '18', FieldMetaProfile.wideInteger = 'true'} defectLengthsMm: Integer[*];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} defectTally: Integer[1];
+}
+
+Class test::easternaviary2::domain::FlatDefectCodeRow
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.textLength = '16', FieldMetaProfile.textTyped = 'true'} rawDefectCodes: String[*];
+  {FieldMetaProfile.textLength = '16', FieldMetaProfile.textTyped = 'true'} upperDefectCodes: String[*];
+  {FieldMetaProfile.textLength = '256', FieldMetaProfile.textTyped = 'true'} longDefectDigest: String[1];
+}
+
+Class test::easternaviary2::domain::FlatSleeperRow
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sleeperRefs: String[*];
+  {FieldMetaProfile.textLength = '8', FieldMetaProfile.textTyped = 'true'} conditionCodes: String[*];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} voidDepthsMm: Integer[*];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} replaceCount: Integer[1];
+}
+
+Class test::easternaviary2::domain::FlatGaugeRow
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} widenMm: Integer[0..1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} twistMm: Integer[0..1];
+  {FieldMetaProfile.numericPrecision = '18', FieldMetaProfile.wideInteger = 'true'} sampleCount: Integer[0..1];
+}
+
+Class test::easternaviary2::domain::FlatBallastRow
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.textLength = '8', FieldMetaProfile.textTyped = 'true'} ballastGrade: String[0..1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} shoulderMm: Integer[0..1];
+  fouledFlag: Boolean[0..1];
+}
+
+Class test::easternaviary2::domain::FlatNoteRow
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.textLength = '4000', FieldMetaProfile.textTyped = 'true'} sectionNote: String[0..1];
+}

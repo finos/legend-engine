@@ -1,0 +1,53 @@
+name: ember-wharf-3
+title: "Ember Wharf — Business-Temporal Berth Register Resolved At A Caller-Supplied Instant By A Point-In-Time Service"
+description: |
+  A coastal ferry wharf keeps its berth assignments effective over business time so that a
+  re-berthing closes the window of the assignment it supersedes. One relational store carries
+  the business-milestoned assignment table, one relational mapping binds the milestoned class
+  with an explicit primary key and main table alias, and a single-execution service resolves
+  the extent at a caller-supplied instant, keeps the named-vessel calls that reach a capacity
+  floor and that either sit within the draught limit or carry a berthed call status, and
+  projects five spaced display aliases. Assertion-backed coverage pins the extent both at a
+  current instant and inside a closed business window so the out-of-range rows are visible.
+modelSources:
+  model:
+    root: ember-wharf-3
+    files:
+      - test/emberwharf3/connection/WharfRegisterConnection.pure
+      - test/emberwharf3/domain/WharfDomain.pure
+      - test/emberwharf3/mapping/WharfRegisterMapping.pure
+      - test/emberwharf3/runtime/WharfRegisterRuntime.pure
+      - test/emberwharf3/service/BerthRegisterAsOf.pure
+      - test/emberwharf3/store/WharfRegisterDb.pure
+features:
+  - execution:graph-fetch
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - berth-register
+  - business-temporal
+  - ferry-wharf
+  - graph-fetch
+  - h2
+  - mapping-test
+  - milestoning
+  - point-in-time
+  - relational
+  - service-test
+  - tabular-data-set

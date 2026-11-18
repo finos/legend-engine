@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::copperwillow6::mapping::StewardshipEventMapping
+(
+  include mapping test::copperwillow6::mapping::StewardshipCoreMapping
+
+  *test::copperwillow6::domain::TrailDay[trailDay]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperwillow6::store::StewardshipEventDB]event.trail_day.day_code
+    )
+    ~mainTable [test::copperwillow6::store::StewardshipEventDB]event.trail_day
+    dayCode: [test::copperwillow6::store::StewardshipEventDB]event.trail_day.day_code,
+    directiveCode: [test::copperwillow6::store::StewardshipEventDB]event.trail_day.directive_code,
+    dayDate: [test::copperwillow6::store::StewardshipEventDB]event.trail_day.day_date,
+    directiveTitle: [test::copperwillow6::store::StewardshipEventDB]@TrailDayDirective | directive.work_directive.title_text
+  }
+
+  *test::copperwillow6::domain::TrailMeasure[trailMeasure]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperwillow6::store::StewardshipEventDB]measure.trail_measure.measure_code
+    )
+    ~mainTable [test::copperwillow6::store::StewardshipEventDB]measure.trail_measure
+    measureCode: [test::copperwillow6::store::StewardshipEventDB]measure.trail_measure.measure_code,
+    dayCode: [test::copperwillow6::store::StewardshipEventDB]measure.trail_measure.day_code,
+    erosionScore: [test::copperwillow6::store::StewardshipEventDB]measure.trail_measure.erosion_score
+  }
+
+  test::copperwillow6::domain::Day_Measures: Relational
+  {
+    AssociationMapping
+    (
+      measures[trailDay, trailMeasure]: [test::copperwillow6::store::StewardshipEventDB]@DayMeasure,
+      measureDay[trailMeasure, trailDay]: [test::copperwillow6::store::StewardshipEventDB]@DayMeasure
+    )
+  }
+
+  testSuites:
+  [
+    trailDaySuite:
+    {
+      function: |test::copperwillow6::domain::TrailDay.all()->project(~[dayCode: t|$t.dayCode, dayDate: t|$t.dayDate, directiveTitle: t|$t.directiveTitle])->sort(~dayCode->ascending());
+      tests:
+      [
+        openDirectiveTitleOnly:
+        {
+          doc: 'A trail day reaches the title of its directive through the included core store only while that directive sits in the open batch; a day on a closed directive keeps no title.';
+          data:
+          [
+            test::copperwillow6::store::StewardshipEventDB:
+              Relational
+              #{
+                event.trail_day:
+                  'day_code,directive_code,day_date\n'+
+                  'TD-1,D-01,2026-04-11\n'+
+                  'TD-2,D-02,2026-04-18\n';
+                directive.work_directive:
+                  'directive_code,title_text,region_code,effort_hours,lead_volunteer_id,batch_out_id\n'+
+                  'D-01,Clear fallen birch,northwood,6,V-1,999999999\n'+
+                  'D-02,Rebuild stile,southridge,3,V-2,7\n';
+              }#
+          ];
+          asserts:
+          [
+            trailDayRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dayCode":"TD-1","dayDate":"2026-04-11","directiveTitle":"Clear fallen birch"},{"dayCode":"TD-2","dayDate":"2026-04-18","directiveTitle":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

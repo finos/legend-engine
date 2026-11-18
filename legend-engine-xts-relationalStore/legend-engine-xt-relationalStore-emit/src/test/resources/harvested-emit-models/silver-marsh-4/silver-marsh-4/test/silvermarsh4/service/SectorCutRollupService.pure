@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silvermarsh4::service::SectorCutRollupService
+{
+  pattern: '/silvermarsh4/sectorCutRollup';
+  title: 'Sector Reed Cut Rollup';
+  ownership: DID { identifier: 'wetland-reserve-volunteering' };
+  documentation: 'Rolls the reed-cutting season up behind the sector-and-crew pair for one habitat, after dropping the sectors and the crews handed in as exclusion lists and everything cut before the season start, then deduplicates the rollup.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {seasonStart: StrictDate[1], habitat: String[1], excludedSectors: String[*], excludedCrews: String[*]|test::silvermarsh4::domain::ReedCut.all()->filter(
+      c|($c.sectorName->in($excludedSectors)->not()) && (($c.crewName->in($excludedCrews)->not()) && (($c.cutOn >= $seasonStart) && ($c.habitatType == $habitat)))
+    )->groupBy(
+      [
+        c|$c.sectorName,
+        c|$c.crewName
+      ],
+      [
+        agg(c|$c.metresCut, y|$y->sum()),
+        agg(c|$c.volunteerHours, y|$y->sum()),
+        agg(c|$c.sessionCode, y|$y->count())
+      ],
+      [
+        'Sector',
+        'Crew',
+        'Metres Cut',
+        'Volunteer Hours',
+        'Session Count'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Sector'),
+        asc('Crew')
+      ]
+    )};
+    mapping: test::silvermarsh4::mapping::ReserveMapping;
+    runtime: test::silvermarsh4::runtime::ReserveRuntime;
+  }
+  testSuites:
+  [
+    sectorCutRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reserveH2Connection:
+            Reference
+            #{
+              test::silvermarsh4::data::ReedCutSeasonData
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothExclusionListsApplied:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonStart = %2026-03-01,
+            habitat = 'REEDBED',
+            excludedSectors = ['EAST SCRAPE'],
+            excludedCrews = ['WILLOW TEAM']
+          ]
+          asserts:
+          [
+            onlyTheUnexcludedSectorSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector":"NORTH FEN","Crew":"MARSH TEAM","Metres Cut":200.75,"Volunteer Hours":14.0,"Session Count":2}]';
+                  }#;
+              }#
+          ]
+        },
+        exclusionsMatchingNothingLeaveThreeGroups:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonStart = %2026-03-01,
+            habitat = 'REEDBED',
+            excludedSectors = ['WEST SHORE'],
+            excludedCrews = ['HEATH TEAM']
+          ]
+          asserts:
+          [
+            threeSectorCrewGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector":"EAST SCRAPE","Crew":"OTTER TEAM","Metres Cut":10.0,"Volunteer Hours":1.5,"Session Count":1},{"Sector":"NORTH FEN","Crew":"MARSH TEAM","Metres Cut":200.75,"Volunteer Hours":14.0,"Session Count":2},{"Sector":"SOUTH CARR","Crew":"WILLOW TEAM","Metres Cut":45.75,"Volunteer Hours":4.5,"Session Count":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::umberaviary4::profile::AviaryPrivacyProfile.openRecord, test::umberaviary4::profile::AviaryVendorProfile.catalogued>> {test::umberaviary4::profile::AviaryVendorProfile.steward = 'aviary-keepers', test::umberaviary4::profile::AviaryVendorProfile.refreshCadence = 'nightly'} test::umberaviary4::dataspace::AviaryLogDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'current';
+      description: 'Latest processing versions of every ringing, nest, feeder, moult, hall, diet, health and roost log.';
+      mapping: test::umberaviary4::mapping::AviaryLogMapping;
+      defaultRuntime: test::umberaviary4::runtime::AviaryLogRuntime;
+    }
+  ];
+  defaultExecutionContext: 'current';
+  title: 'Umber Aviary Keeper Logs';
+  description: 'Eight keeper logs of a walk-through aviary, each published at its latest processing version.';
+  elements:
+  [
+    test::umberaviary4::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'RingingRecord extract';
+      description: 'Latest processing versions of the RingingRecord log.';
+      executable: test::umberaviary4::service::RingingRecordExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 2;
+      title: 'NestBoxCheck extract';
+      description: 'Latest processing versions of the NestBoxCheck log.';
+      executable: test::umberaviary4::service::NestBoxCheckExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 3;
+      title: 'FeederVisit extract';
+      description: 'Latest processing versions of the FeederVisit log.';
+      executable: test::umberaviary4::service::FeederVisitExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 4;
+      title: 'MoultScore extract';
+      description: 'Latest processing versions of the MoultScore log.';
+      executable: test::umberaviary4::service::MoultScoreExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 5;
+      title: 'FlightHallInspection extract';
+      description: 'Latest processing versions of the FlightHallInspection log.';
+      executable: test::umberaviary4::service::FlightHallInspectionExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 6;
+      title: 'DietRation extract';
+      description: 'Latest processing versions of the DietRation log.';
+      executable: test::umberaviary4::service::DietRationExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 7;
+      title: 'HealthCheck extract';
+      description: 'Latest processing versions of the HealthCheck log.';
+      executable: test::umberaviary4::service::HealthCheckExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 8;
+      title: 'PerchSurvey extract';
+      description: 'Latest processing versions of the PerchSurvey log.';
+      executable: test::umberaviary4::service::PerchSurveyExtract;
+      executionContextKey: 'current';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'aviary-keepers';
+  };
+}

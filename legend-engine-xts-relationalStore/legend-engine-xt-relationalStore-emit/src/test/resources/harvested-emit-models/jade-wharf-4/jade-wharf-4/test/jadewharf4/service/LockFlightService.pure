@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::jadewharf4::service::LockFlightService
+{
+  pattern: '/jadewharf4/v1/lock-flight/{canal}';
+  title: 'Jade Wharf - Lock Flight Board';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the lock chambers of one canal with an upper-cased board name, a canal-qualified tag and the rise in metres, keeping only the board columns of the projected relation.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {canal: String[1]|test::jadewharf4::domain::CanalLock.all()->filter(
+      l|$l.canalCode == $canal
+    )->project(
+      ~[
+        Lock: l|$l.lockCode,
+        Board: l|$l.lockName->toUpper(),
+        Tag: l|$l.canalCode + '/' + $l.lockCode,
+        RiseM: l|$l.riseCm / 100,
+        Chambers: l|$l.chamberCount,
+        Gate: l|$l.gateKind
+      ]
+    )->select(
+      ~[Lock, Board, Tag, RiseM, Chambers]
+    )->sort(
+      ~Lock->ascending()
+    )->from(
+      test::jadewharf4::mapping::CanalLockMapping,
+      test::jadewharf4::runtime::LockRegisterRuntime
+    )};
+  }
+  testSuites:
+  [
+    lockFlightSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lockRegister:
+            Relational
+            #{
+              waterway.canal_lock:
+                'lock_code,canal_code,lock_name,rise_cm,chamber_count,gate_kind,keeper_name\n'+
+                'LK-01,MILL,Upper Weir,250,1,mitre,Ada\n'+
+                'LK-02,MILL,Lower Weir,150,2,guillotine,\n'+
+                'LK-03,FEN,Reed Cut,200,1,mitre,Bo\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        millCanalFlight:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            canal = 'MILL'
+          ]
+          asserts:
+          [
+            twoMillLocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lock":"LK-01","Board":"UPPER WEIR","Tag":"MILL/LK-01","RiseM":2.5,"Chambers":1},{"Lock":"LK-02","Board":"LOWER WEIR","Tag":"MILL/LK-02","RiseM":1.5,"Chambers":2}]';
+                  }#;
+              }#
+          ]
+        },
+        unknownCanalIsEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            canal = 'MOOR'
+          ]
+          asserts:
+          [
+            noLocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

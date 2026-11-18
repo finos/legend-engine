@@ -1,0 +1,293 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyquokka2::mapping::NurseryMapping
+(
+  *test::duskyquokka2::domain::GrowerCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka2::store::NurseryDB]nursery.grower_crew.crew_code
+    )
+    ~mainTable [test::duskyquokka2::store::NurseryDB]nursery.grower_crew
+    crewCode: [test::duskyquokka2::store::NurseryDB]nursery.grower_crew.crew_code,
+    crewName: [test::duskyquokka2::store::NurseryDB]nursery.grower_crew.crew_name,
+    pottingShed: [test::duskyquokka2::store::NurseryDB]nursery.grower_crew.potting_shed
+  }
+
+  *test::duskyquokka2::domain::NurseryBlock[block]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka2::store::NurseryDB]nursery.propagation_block.block_code
+    )
+    ~mainTable [test::duskyquokka2::store::NurseryDB]nursery.propagation_block
+    blockCode: [test::duskyquokka2::store::NurseryDB]nursery.propagation_block.block_code,
+    blockName: [test::duskyquokka2::store::NurseryDB]nursery.propagation_block.block_name,
+    glasshouseZone: [test::duskyquokka2::store::NurseryDB]nursery.propagation_block.glasshouse_zone
+  }
+
+  *test::duskyquokka2::domain::SeedlingTray[tray]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka2::store::NurseryDB]nursery.seedling_tray.tray_code
+    )
+    ~mainTable [test::duskyquokka2::store::NurseryDB]nursery.seedling_tray
+    trayCode: [test::duskyquokka2::store::NurseryDB]nursery.seedling_tray.tray_code,
+    cultivar: [test::duskyquokka2::store::NurseryDB]nursery.seedling_tray.cultivar,
+    cellCount: [test::duskyquokka2::store::NurseryDB]nursery.seedling_tray.cell_count,
+    labelTag: concat(
+                concat(
+                  toUpper(trim([test::duskyquokka2::store::NurseryDB]nursery.seedling_tray.cultivar)),
+                  '-'
+                ),
+                [test::duskyquokka2::store::NurseryDB]nursery.seedling_tray.tray_code
+              )
+  }
+
+  *test::duskyquokka2::domain::ViabilityCheck[check]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka2::store::NurseryDB]nursery.viability_check.check_code
+    )
+    ~mainTable [test::duskyquokka2::store::NurseryDB]nursery.viability_check
+    checkCode: [test::duskyquokka2::store::NurseryDB]nursery.viability_check.check_code,
+    viabilityPercent: [test::duskyquokka2::store::NurseryDB]nursery.viability_check.viability_percent,
+    blockName: [test::duskyquokka2::store::NurseryDB]@Check_Block | [test::duskyquokka2::store::NurseryDB]nursery.propagation_block.block_name
+  }
+
+  *test::duskyquokka2::domain::SowingRound[round]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka2::store::NurseryDB]nursery.sowing_round.tray_code,
+      [test::duskyquokka2::store::NurseryDB]nursery.sowing_round.round_no
+    )
+    ~mainTable [test::duskyquokka2::store::NurseryDB]nursery.sowing_round
+    roundNumber: [test::duskyquokka2::store::NurseryDB]nursery.sowing_round.round_no,
+    sownCells: [test::duskyquokka2::store::NurseryDB]nursery.sowing_round.sown_cells,
+    germinatedCells: [test::duskyquokka2::store::NurseryDB]nursery.sowing_round.germinated_cells,
+    roundLabel: concat([test::duskyquokka2::store::NurseryDB]nursery.sowing_round.tray_code, '/R', toString([test::duskyquokka2::store::NurseryDB]nursery.sowing_round.round_no))
+  }
+
+  test::duskyquokka2::domain::BlockTrays: Relational
+  {
+    AssociationMapping
+    (
+      trays[block, tray]: [test::duskyquokka2::store::NurseryDB]@Block_Tray,
+      block[tray, block]: [test::duskyquokka2::store::NurseryDB]@Block_Tray
+    )
+  }
+
+  test::duskyquokka2::domain::CrewBlocks: Relational
+  {
+    AssociationMapping
+    (
+      blocks[crew, block]: [test::duskyquokka2::store::NurseryDB]@Block_Crew,
+      crew[block, crew]: [test::duskyquokka2::store::NurseryDB]@Block_Crew
+    )
+  }
+
+  test::duskyquokka2::domain::TrayRounds: Relational
+  {
+    AssociationMapping
+    (
+      rounds[tray, round]: [test::duskyquokka2::store::NurseryDB]@Tray_Round,
+      tray[round, tray]: [test::duskyquokka2::store::NurseryDB]@Tray_Round
+    )
+  }
+
+  testSuites:
+  [
+    blockTraySuite:
+    {
+      function: |test::duskyquokka2::domain::NurseryBlock.all()->project(
+  [
+    b|$b.blockCode,
+    b|$b.glasshouseZone,
+    b|$b.trays.labelTag,
+    b|$b.trays.cellCount
+  ],
+  [
+    'BlockCode',
+    'GlasshouseZone',
+    'TrayTag',
+    'CellCount'
+  ]
+)->sort(
+  [
+    asc('BlockCode'),
+    asc('TrayTag')
+  ]
+);
+      tests:
+      [
+        traysPerBlock:
+        {
+          doc: 'Each propagation block reaches its sown trays through the association implementation, with the label tag composed from the trimmed and upper-cased cultivar.';
+          data:
+          [
+            test::duskyquokka2::store::NurseryDB:
+              Relational
+              #{
+                nursery.propagation_block:
+                  'block_code,block_name,glasshouse_zone,crew_code\n'+
+                  'PB-01,Long Bench,EAST,GC-01\n'+
+                  'PB-02,Cold Frame,WEST,GC-02\n';
+
+                nursery.seedling_tray:
+                  'tray_code,block_code,cultivar,cell_count\n'+
+                  'ST-01,PB-01, lupin ,84\n'+
+                  'ST-02,PB-01,foxglove,120\n'+
+                  'ST-03,PB-02,cosmos,60\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLabelledTrays:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BlockCode":"PB-01","GlasshouseZone":"EAST","TrayTag":"FOXGLOVE-ST-02","CellCount":120},{"BlockCode":"PB-01","GlasshouseZone":"EAST","TrayTag":"LUPIN-ST-01","CellCount":84},{"BlockCode":"PB-02","GlasshouseZone":"WEST","TrayTag":"COSMOS-ST-03","CellCount":60}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    viabilityCheckSuite:
+    {
+      function: |test::duskyquokka2::domain::ViabilityCheck.all()->filter(
+  c|$c.viabilityPercent >= 70
+)->project(
+  [
+    c|$c.checkCode,
+    c|$c.viabilityPercent,
+    c|$c.blockName
+  ],
+  [
+    'CheckCode',
+    'ViabilityPercent',
+    'BlockName'
+  ]
+)->sort(
+  [
+    asc('CheckCode')
+  ]
+);
+      tests:
+      [
+        viableChecksOnly:
+        {
+          doc: 'Filters the viability readings down to the germinating ones and reaches the block name across the join-reached column.';
+          data:
+          [
+            test::duskyquokka2::store::NurseryDB:
+              Relational
+              #{
+                nursery.propagation_block:
+                  'block_code,block_name,glasshouse_zone,crew_code\n'+
+                  'PB-01,Long Bench,EAST,GC-01\n'+
+                  'PB-02,Cold Frame,WEST,GC-02\n';
+
+                nursery.viability_check:
+                  'check_code,block_code,viability_percent\n'+
+                  'VC-01,PB-01,88\n'+
+                  'VC-02,PB-02,41\n';
+              }#
+          ];
+          asserts:
+          [
+            oneViableCheck:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"VC-01","ViabilityPercent":88,"BlockName":"Long Bench"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sowingRoundSuite:
+    {
+      function: |test::duskyquokka2::domain::SowingRound.all()->filter(
+  r|$r.germinatedCells > 0
+)->project(
+  [
+    r|$r.roundLabel,
+    r|$r.roundNumber,
+    r|$r.germinatedCells,
+    r|$r.tray.cultivar
+  ],
+  [
+    'RoundLabel',
+    'RoundNumber',
+    'GerminatedCells',
+    'Cultivar'
+  ]
+)->sort(
+  [
+    asc('RoundLabel')
+  ]
+);
+      tests:
+      [
+        roundsPerTrayKey:
+        {
+          doc: 'Two sowing rounds share one tray code and are told apart only by the composite tray and round key; a round with no germination is filtered out.';
+          data:
+          [
+            test::duskyquokka2::store::NurseryDB:
+              Relational
+              #{
+                nursery.seedling_tray:
+                  'tray_code,block_code,cultivar,cell_count\n'+
+                  'ST-01,PB-01,lupin,84\n'+
+                  'ST-02,PB-01,foxglove,120\n';
+
+                nursery.sowing_round:
+                  'tray_code,round_no,sown_cells,germinated_cells\n'+
+                  'ST-01,1,84,61\n'+
+                  'ST-01,2,84,70\n'+
+                  'ST-02,1,120,0\n';
+              }#
+          ];
+          asserts:
+          [
+            twoGerminatedRounds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RoundLabel":"ST-01/R1","RoundNumber":1,"GerminatedCells":61,"Cultivar":"lupin"},{"RoundLabel":"ST-01/R2","RoundNumber":2,"GerminatedCells":70,"Cultivar":"lupin"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

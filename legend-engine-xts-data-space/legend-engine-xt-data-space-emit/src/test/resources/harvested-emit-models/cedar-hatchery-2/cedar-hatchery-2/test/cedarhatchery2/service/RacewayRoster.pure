@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarhatchery2::service::RacewayRoster
+{
+  pattern: '/cedarhatchery/v1/raceway-roster';
+  title: 'Cedar Hatchery - Raceway Roster';
+  documentation: 'Projects the raceway channels of the hatchery site from the same store as the lot board but through the rearing-tier runtime, with no processing instant involved because the raceway relation is not milestoned.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::cedarhatchery2::domain::Raceway.all()->project(
+      [
+        r|$r.racewayCode,
+        r|$r.racewayName,
+        r|$r.waterSource
+      ],
+      [
+        'Raceway Code',
+        'Raceway Name',
+        'Water Source'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Raceway Code')
+      ]
+    )->limit(10)};
+    mapping: test::cedarhatchery2::mapping::HatcheryCoreMapping;
+    runtime: test::cedarhatchery2::runtime::HatcheryCoreRearingRuntime;
+  }
+  testSuites:
+  [
+    racewayRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              hatchery.raceway:
+                'raceway_code,raceway_name,water_source\n'+
+                'RW-01,North Raceway,SPRING\n'+
+                'RW-02,South Raceway,WELL\n'+
+                'RW-03,Hatch House Trough,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyChannelIncludingOneWithoutAWaterSource:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeChannels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Raceway Code":"RW-01","Raceway Name":"North Raceway","Water Source":"SPRING"},{"Raceway Code":"RW-02","Raceway Name":"South Raceway","Water Source":"WELL"},{"Raceway Code":"RW-03","Raceway Name":"Hatch House Trough","Water Source":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

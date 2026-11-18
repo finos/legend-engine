@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadeisle2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A walked section of the isle trail network.'} test::jadeisle2::domain::TrailSegment
+{
+  segmentCode: String[1];
+  segmentName: String[1];
+  lengthM: Integer[1];
+  habitatName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A protected habitat zone the trail segments run through.'} test::jadeisle2::domain::HabitatZone
+{
+  habitatCode: String[1];
+  habitatName: String[1];
+  protectionLevel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A counted tally of walkers recorded on a trail segment.'} test::jadeisle2::domain::VisitorCount
+{
+  countCode: String[1];
+  visitors: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A warden patrol of a trail segment, corrected in place over processing time.'} test::jadeisle2::domain::TrailPatrol
+{
+  patrolCode: String[1];
+  segmentCode: String[1];
+  wardenName: String[1];
+  patrolGrade: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rostered warden shift carried out under a patrol.'} test::jadeisle2::domain::WardenShift
+{
+  shiftCode: String[1];
+  shiftName: String[1];
+  crewSize: Integer[1];
+  noteText: String[0..1];
+}
+
+Association test::jadeisle2::domain::Segment_Habitat
+{
+  habitatSegments: TrailSegment[*];
+  habitat: HabitatZone[0..1];
+}
+
+Association test::jadeisle2::domain::Segment_Visits
+{
+  visits: VisitorCount[*];
+  visitSegment: TrailSegment[0..1];
+}
+
+Association test::jadeisle2::domain::Patrol_Shift
+{
+  shifts: WardenShift[*];
+  patrol: TrailPatrol[0..1];
+}

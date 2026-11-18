@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A person or body accountable for a set of grassland regions, versioned along the processing timeline.'} test::gildedprairie2::domain::Steward
+{
+  stewardCode: String[1];
+  stewardName: String[1];
+  contactLocality: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A grassland region grouping survey plots, versioned along the processing timeline.'} test::gildedprairie2::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+  hectares: Float[0..1];
+  stewardName: String[0..1];
+  regionLabel()
+  {
+    $this.regionCode->toUpper() + ':' + $this.regionName->toUpper()
+  }: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A demarcated survey plot inside a grassland region, versioned along the processing timeline.'} test::gildedprairie2::domain::Plot
+{
+  plotCode: String[1];
+  plotName: String[1];
+  establishedOn: StrictDate[0..1];
+  plotAreaM2: Float[0..1];
+  regionName: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'The soil profile recorded for a survey plot, versioned along the processing timeline.'} test::gildedprairie2::domain::PlotSoil
+{
+  plotCode: String[1];
+  soilSeries: String[1];
+  organicPct: Float[0..1];
+  plotName: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A field survey visit recorded against a plot, versioned along the processing timeline.'} test::gildedprairie2::domain::Survey
+{
+  surveyCode: String[1];
+  surveyedOn: StrictDate[0..1];
+  observerName: String[0..1];
+  plotName: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A stem count for one species recorded by a survey, versioned along the processing timeline.'} test::gildedprairie2::domain::SpeciesCount
+{
+  countCode: String[1];
+  speciesName: String[1];
+  stemCount: Integer[0..1];
+  plotName: String[0..1];
+}
+
+Association test::gildedprairie2::domain::Steward_Regions
+{
+  steward: test::gildedprairie2::domain::Steward[0..1];
+  regions: test::gildedprairie2::domain::Region[*];
+}
+
+Association test::gildedprairie2::domain::Region_Plots
+{
+  region: test::gildedprairie2::domain::Region[0..1];
+  plots: test::gildedprairie2::domain::Plot[*];
+}
+
+Association test::gildedprairie2::domain::Plot_Surveys
+{
+  plot: test::gildedprairie2::domain::Plot[0..1];
+  surveys: test::gildedprairie2::domain::Survey[*];
+}
+
+Association test::gildedprairie2::domain::Survey_SpeciesCounts
+{
+  survey: test::gildedprairie2::domain::Survey[0..1];
+  speciesCounts: test::gildedprairie2::domain::SpeciesCount[*];
+}

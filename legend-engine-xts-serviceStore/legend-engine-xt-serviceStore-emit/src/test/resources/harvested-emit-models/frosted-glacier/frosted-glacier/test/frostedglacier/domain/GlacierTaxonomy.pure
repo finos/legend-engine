@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::frostedglacier::domain::*;
+
+Profile test::frostedglacier::domain::GlacierGovernance
+{
+  stereotypes: [monitored, provisional];
+  tags: [steward, cadence];
+}
+
+Profile test::frostedglacier::domain::CryoAudit
+{
+  stereotypes: [fieldVerified];
+  tags: [instrument];
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Morphological class of a monitored glacier.'} test::frostedglacier::domain::GlacierClass
+{
+  Valley,
+  Cirque,
+  Piedmont,
+  Tidewater
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Compass aspect of the surveyed glacier terrain.'} test::frostedglacier::domain::TerrainAspect
+{
+  North,
+  East,
+  South,
+  West
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Field technique used to capture a mass-balance survey.'} test::frostedglacier::domain::SurveyMethod
+{
+  StakeArray,
+  GroundPenetratingRadar,
+  AerialLidar
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared identity of anything the cryosphere network tracks against a station code.'} test::frostedglacier::domain::GlacierFeature
+{
+  stationCode: String[1];
+}
+
+Class <<GlacierGovernance.monitored>> {meta::pure::profiles::doc.doc = 'A permanently instrumented glacier monitoring station.', GlacierGovernance.steward = 'cryosphere-network', GlacierGovernance.cadence = 'seasonal'} test::frostedglacier::domain::MonitoringStation extends GlacierFeature
+{
+  stationName: String[1];
+  glacierClass: GlacierClass[1];
+  elevationMeters: Integer[1];
+  aspect: TerrainAspect[0..1];
+  elevationBand()
+  {
+    if($this.elevationMeters > 3000,
+       | 'High Alpine',
+       | if($this.elevationMeters > 1500,
+            | 'Mid Montane',
+            | 'Lowland'))
+  }: String[1];
+}
+
+Class <<GlacierGovernance.provisional>> {meta::pure::profiles::doc.doc = 'Intermediate survey layer shared by every dated observation taken at a station.'} test::frostedglacier::domain::SurveyRecord extends GlacierFeature
+{
+  observedOn: StrictDate[1];
+  observers: String[*];
+  method: SurveyMethod[1];
+}
+
+Class <<CryoAudit.fieldVerified>> {meta::pure::profiles::doc.doc = 'A seasonal mass-balance reading specialising the survey layer with ablation and accumulation depths and a derived regime label.', CryoAudit.instrument = 'ablation-stake'} test::frostedglacier::domain::MassBalanceReading extends SurveyRecord
+{
+  regime: String[0..1];
+  ablationDepthCm: Integer[1];
+  accumulationDepthCm: Integer[1];
+  netBalanceCm: Integer[1];
+  regimeLabel()
+  {
+    if($this.regime->isEmpty(),
+       | 'Unclassified',
+       | $this.regime->toOne())
+  }: String[1];
+  balanceQuality()
+  {
+    if($this.netBalanceCm > 0,
+       | 'Net Gain',
+       | if($this.netBalanceCm < 0,
+            | 'Net Loss',
+            | 'Balanced'))
+  }: String[1];
+  observerCount()
+  {
+    $this.observers->size()
+  }: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The staffing window of a survey visit, derived from the same inbound feed record as the reading.'} test::frostedglacier::domain::ObservationWindow extends GlacierFeature
+{
+  openedOn: StrictDate[1];
+  leadObserver: String[0..1];
+  windowLabel()
+  {
+    if($this.leadObserver->isEmpty(),
+       | 'Unattended',
+       | 'Attended')
+  }: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A free-text field note attached to a station visit.'} test::frostedglacier::domain::SiteNote extends GlacierFeature
+{
+  note: String[1];
+}

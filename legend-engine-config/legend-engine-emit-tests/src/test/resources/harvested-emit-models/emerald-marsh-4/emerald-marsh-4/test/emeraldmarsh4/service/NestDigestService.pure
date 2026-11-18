@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldmarsh4::service::NestDigestService
+{
+  pattern: '/emeraldmarsh4/v1/nests/{incomingEvent}';
+  title: 'Emerald Marsh 4 - Qualified Nest Digest';
+  ownership: UserList { users: ['marsh-survey-desk', 'reedbed-wardens', 'nest-recorders', 'wetland-ecology-team', 'heron-watch-group', 'raft-survey-crew', 'marsh-data-stewards'] };
+  documentation: 'Serves the qualified nest digest for the incoming nest report by delegating to a single entry function that serialises the fetched second-stage graph. The second stage reads the standardised first stage through a chaining connection fed by an inline document connection.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {incomingEvent: String[1]|test::emeraldmarsh4::function::nestDigest($incomingEvent)};
+    mapping: test::emeraldmarsh4::mapping::NestQualificationMapping;
+    runtime: test::emeraldmarsh4::runtime::NestDigestRuntime;
+  }
+  testSuites:
+  [
+    guardedReedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nestFeed:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"reportRef":"R-01","header":{"kindCode":"reed","seasonWeek":14},"site":{"marshCode":"m1","zone":{"label":" north reeds ","depthCm":120}},"clutch":{"eggs":[{"stageCode":"f","massGrams":21.5},{"stageCode":"i","massGrams":20.0}]},"leadObserver":{"alias":"ana"},"backupObserver":{"alias":"bo"}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        guardedFloodedReed:
+        {
+          parameters:
+          [
+            incomingEvent = 'R-01'
+          ]
+          serializationFormat: PURE;
+          asserts:
+          [
+            qualifiedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"reportRef":"R-01","kindLabel":"REED","tier":"GUARDED","guarded":true,"flooded":true,"zoneLabel":"NORTH REEDS","observerCount":2}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    crowdedRaftSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nestFeed:
+            Reference
+            #{
+              test::emeraldmarsh4::data::RaftNestReport
+            }#
+        ]
+      ]
+      tests:
+      [
+        crowdedUnguardedRaft:
+        {
+          parameters:
+          [
+            incomingEvent = 'R-11'
+          ]
+          serializationFormat: PURE;
+          asserts:
+          [
+            qualifiedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"reportRef":"R-11","kindLabel":"FLOATING","tier":"CROWDED","guarded":false,"flooded":true,"zoneLabel":"RAFT BAY","observerCount":1}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

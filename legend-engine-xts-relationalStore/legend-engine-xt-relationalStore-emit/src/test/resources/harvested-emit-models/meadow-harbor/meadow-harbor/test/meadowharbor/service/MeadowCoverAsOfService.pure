@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowharbor::service::MeadowCoverAsOfService
+{
+  pattern: '/meadowharbor/v1/meadow-cover/{businessDate}/{processingDate}';
+  title: 'Meadow Harbor - Berth Cover As Of';
+  owners:
+  [
+    'meadow-harbor-survey',
+    'seagrass-monitoring'
+  ];
+  documentation: 'Returns the mooring berths of the surveyed harbor zones that are effective on the requested business date, each with the meadow cover reading resolved at the requested processing and business dates, the placement age of the berth and the age of its review date computed from the requested business date. Retired readings are dropped after projection, so a berth kept in the register with nothing but a retired reading contributes no row.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], processingDate: StrictDate[1]|test::meadowharbor::domain::MooringBerth.all($businessDate)->filter(
+      b|$b.zoneCode->in(['HARBOR-NORTH', 'MEADOW-EAST', 'SHELTER-COVE'])
+    )->project(
+      [
+        b|$b.berthCode,
+        b|$b.zoneCode,
+        b|dateDiff($b.installedOn, $businessDate, meta::pure::functions::date::DurationUnit.DAYS),
+        b|dateDiff($b.installedOn->adjust(30, meta::pure::functions::date::DurationUnit.DAYS), $businessDate, meta::pure::functions::date::DurationUnit.DAYS),
+        b|$b.reading($processingDate, $businessDate).coverPct,
+        b|$b.reading($processingDate, $businessDate).grade
+      ],
+      [
+        'Berth/Code',
+        'Berth/Zone',
+        'Berth/DaysPlaced',
+        'Berth/DaysSinceReviewDue',
+        'Reading/CoverPct',
+        'Reading/Grade'
+      ]
+    )->filter(
+      r|$r.getString('Reading/Grade') != 'RETIRED'
+    )->distinct()->sort([asc('Berth/Code')])};
+    mapping: test::meadowharbor::mapping::HarborMapping;
+    runtime: test::meadowharbor::runtime::HarborH2Runtime;
+  }
+  testSuites:
+  [
+    meadowCoverSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              harbor.mooring_berth:
+                'berth_id,berth_code,zone_code,installed_on,from_z,thru_z\n'+
+                '1,MB-01,HARBOR-NORTH,2025-04-10,2026-01-01,9999-12-31\n'+
+                '2,MB-02,MEADOW-EAST,2023-05-20,2023-01-01,2025-12-31\n'+
+                '3,MB-03,OUTER-BAY,2025-06-01,2026-01-01,9999-12-31\n'+
+                '4,MB-04,SHELTER-COVE,2025-02-01,2026-01-01,9999-12-31\n';
+
+              harbor.plot_reading:
+                'reading_id,berth_id,cover_pct,grade,in_z,out_z,from_z,thru_z\n'+
+                '10,1,42.5,SETTLED,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '11,2,17.25,SPARSE,2023-01-01,9999-12-31,2023-01-01,2025-12-31\n'+
+                '12,4,3.5,RETIRED,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentBerthsResolveTheirCurrentReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-03-01,
+            processingDate = %2026-03-01
+          ]
+          asserts:
+          [
+            onlyTheInRangeSurveyedBerth:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Berth/Code":"MB-01","Berth/Zone":"HARBOR-NORTH","Berth/DaysPlaced":325,"Berth/DaysSinceReviewDue":295,"Reading/CoverPct":42.5,"Reading/Grade":"SETTLED"}]';
+                  }#;
+              }#
+          ]
+        },
+        anEarlierPointInTimeResolvesTheSupersededBerth:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-06-01,
+            processingDate = %2024-06-01
+          ]
+          asserts:
+          [
+            onlyTheSupersededBerth:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Berth/Code":"MB-02","Berth/Zone":"MEADOW-EAST","Berth/DaysPlaced":378,"Berth/DaysSinceReviewDue":348,"Reading/CoverPct":17.25,"Reading/Grade":"SPARSE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

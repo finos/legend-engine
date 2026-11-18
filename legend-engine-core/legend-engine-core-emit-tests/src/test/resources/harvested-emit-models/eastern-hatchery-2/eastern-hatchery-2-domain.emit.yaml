@@ -1,0 +1,38 @@
+name: eastern-hatchery-2-domain
+title: "Hatchery Telemetry Ingest — Diamond Event Hierarchy over Store-less Clusters"
+description: |
+  A store-less Pure domain for hatchery telemetry ingest built from three
+  cooperating clusters and a diamond event hierarchy. An abstract event root
+  carries the identifier, creation instant and origin; six concrete subtypes add
+  a readiness stage, a graded sample score, a mandatory delivery outcome plus an
+  optional back-reference to the event it was raised from, dataset coordinates
+  plus an optional batch label, a remote gateway request reference and an
+  inspection address respectively. The sample-quality subtype extends both the
+  root and the readiness event, so the three root properties are inherited along
+  two paths and must resolve once. A subscriber cluster and a watermark cluster
+  each root a mandatory one-or-more collection annotated set-like through a local
+  profile, so an instance with an empty collection is invalid, and a separate
+  metadata class describes one ingested batch with an optional business date, an
+  end-of-period flag and two instants.
+modelSources:
+  model:
+    root: eastern-hatchery-2-domain
+    files:
+      - test/easternhatchery2/domain/HatcheryClusters.pure
+      - test/easternhatchery2/domain/HatcheryEvents.pure
+features:
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - abstract-class
+  - class-composition
+  - diamond-inheritance
+  - enumeration
+  - mandatory-collection
+  - multiple-inheritance
+  - stereotype
+  - store-less

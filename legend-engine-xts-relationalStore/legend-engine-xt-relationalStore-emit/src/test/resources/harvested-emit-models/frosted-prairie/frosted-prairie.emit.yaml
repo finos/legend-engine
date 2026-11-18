@@ -1,0 +1,58 @@
+name: frosted-prairie
+title: "Frosted Prairie — Two-Level Embedded Windows and Enumerated Translations Over One Wide Mixed-Grain Relation"
+description: |
+  A prairie phenology calendar read model built on a single wide relation holding
+  one row per calendar grain. Its one class binding pins a main table alias and an
+  explicit numeric primary key, then binds every complex-typed property as an
+  inline embedded structure — six windows, three of which nest a second level for a
+  start-and-end interval and one of which nests a crew — so a denormalised row
+  materialises a calendar day plus its child objects with no join anywhere. Three
+  enumerated translations are declared and referenced from inside embedded property
+  lines, two from textual columns and one from a numeric column, so an undeclared
+  source value yields nothing; a fourth enumeration is typed on the season window
+  and deliberately left unmapped. An eight-armed conditional stage label falls
+  through to a null, a derived property divides a nested planned-day count by an
+  ordinal of the receiver into an optional fraction, and a family of parameterised
+  boolean properties answers week, month, quarter and year to-date and prior-period
+  questions about another calendar day, composing each other and resolving the
+  year wrap-around through a conditional. The store also declares a finest-grain
+  filter that the binding never applies, so coarser-grain rows stay visible.
+modelSources:
+  model:
+    root: frosted-prairie
+    files:
+      - test/frostedprairie/domain/PrairieCalendarDomain.pure
+      - test/frostedprairie/mapping/PrairieCalendarMapping.pure
+      - test/frostedprairie/store/PrairieCalendarStore.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-fallthrough
+  - declared-unapplied-filter
+  - derived-property
+  - duckdb
+  - embedded-nested
+  - enumeration-mapping
+  - main-table-alias
+  - mapping-test
+  - mixed-grain
+  - numeric-enumeration-source
+  - phenology
+  - primary-key
+  - qualified-property
+  - unmapped-enumeration

@@ -1,0 +1,34 @@
+name: boreal-vineyard
+title: "Boreal Vineyard — business-temporal aurora watch register with two associations onto closed condition vocabularies"
+description: |
+  An aurora observation network held as a business-temporal register. Observatory sites and
+  observing crews are plain, unversioned reference classes; the nightly sky log and the aurora
+  watch it feeds are both business-temporal, so a corrected clarity grade or alert band
+  supersedes the earlier reading over the same business period rather than overwriting it. Two
+  associations reach across the version boundary — a site to its sky logs and a watch to the
+  crew that raised it — so traversal from either end has to thread a business date through the
+  milestoned end while leaving the unversioned end alone. Two closed vocabularies, sky clarity
+  and alert band, are carried as required properties on the milestoned classes, so the
+  enumerations are reachable only by traversing an association into a versioned type.
+modelSources:
+  model:
+    root: boreal-vineyard
+    files:
+      - test/borealvineyard/domain/AuroraAssociations.pure
+      - test/borealvineyard/domain/AuroraDomain.pure
+      - test/borealvineyard/domain/AuroraVocabulary.pure
+features:
+  - grammar:association
+  - grammar:enumeration
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - aurora-watch
+  - business-temporal
+  - enumeration
+  - milestoning
+  - observatory

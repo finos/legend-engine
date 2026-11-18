@@ -1,0 +1,34 @@
+name: verdant-cove-2
+title: "Verdant Cove — paged shoreline survey envelopes with shared reference details and JSON schema generation"
+description: |
+  A shoreline survey catalogue whose page-envelope classes each own an unbounded
+  collection of one detail kind plus an optional bookkeeping marker, and whose
+  observer and location reference details are embedded once into several record
+  shapes. Two JSON schema file generations are sequenced by a generation
+  specification so the nested collections, shared components and enumerated
+  domains all surface in the generated document shapes.
+modelSources:
+  model:
+    root: verdant-cove-2
+    files:
+      - test/verdantcove2/domain/CoveDomain.pure
+      - test/verdantcove2/domain/CovePages.pure
+      - test/verdantcove2/generation/CoveGenerationSpecification.pure
+      - test/verdantcove2/generation/CoveJsonSchema.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:enumeration
+  - grammar:nested-collection-property
+  - grammar:shared-reference-class
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - enumeration
+  - json-schema
+  - page-envelope
+  - quadrat
+  - shared-reference
+  - shoreline
+  - survey

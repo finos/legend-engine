@@ -1,0 +1,204 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadelighthouse::mapping::LighthouseStructureMapping
+(
+  include mapping test::jadelighthouse::mapping::LighthouseEnumMappings
+
+  *test::jadelighthouse::domain::Region[region]: Relational
+  {
+    ~filter [test::jadelighthouse::store::LighthouseDB]NamedRegion
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.region.region_code
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.region
+    regionCode: [test::jadelighthouse::store::LighthouseDB]coast.region.region_code,
+    regionName: rtrim([test::jadelighthouse::store::LighthouseDB]coast.region.region_name),
+    coastSide: toUpper([test::jadelighthouse::store::LighthouseDB]coast.region.coast_side),
+    summary[regionSummary]: [test::jadelighthouse::store::LighthouseDB]@Region_Summary
+  }
+
+  *test::jadelighthouse::domain::RegionSummary[regionSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.region_summary_vw.region_code
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.region_summary_vw
+    regionCode: [test::jadelighthouse::store::LighthouseDB]coast.region_summary_vw.region_code,
+    stationCount: [test::jadelighthouse::store::LighthouseDB]coast.region_summary_vw.station_count,
+    maxTowerHeightM: [test::jadelighthouse::store::LighthouseDB]coast.region_summary_vw.max_tower_height_m
+  }
+
+  *test::jadelighthouse::domain::Lamp[lamp]: Relational
+  {
+    ~filter [test::jadelighthouse::store::LighthouseDB]ServiceableLamp
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.lamp.lamp_id
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.lamp
+    lampCode: [test::jadelighthouse::store::LighthouseDB]coast.lamp.lamp_code,
+    opticClass: EnumerationMapping OpticMapping: case(
+                  equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.optic_code, 'F'),
+                  'F',
+                  case(
+                    equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.optic_code, 'FR'),
+                    'FR',
+                    case(
+                      equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.optic_code, 'C'),
+                      'C',
+                      case(
+                        equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.optic_code, 'R'),
+                        'R',
+                        'Z'
+                      )
+                    )
+                  )
+                ),
+    powerSource: EnumerationMapping PowerMapping: case(
+                   equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.power_code, 'M'),
+                   'M',
+                   case(
+                     equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.power_code, 'S'),
+                     'S',
+                     case(
+                       equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.power_code, 'W'),
+                       'W',
+                       case(
+                         equal([test::jadelighthouse::store::LighthouseDB]coast.lamp.power_code, 'B'),
+                         'B',
+                         'U'
+                       )
+                     )
+                   )
+                 ),
+    powerLabel: [test::jadelighthouse::store::LighthouseDB]@Lamp_Optic | [test::jadelighthouse::store::LighthouseDB]coast.lamp_optic_vw.power_label
+  }
+
+  testSuites:
+  [
+    lampOpticSuite:
+    {
+      function: |test::jadelighthouse::domain::Lamp.all()->project(
+        [
+          l|$l.lampCode,
+          l|$l.opticClass,
+          l|$l.powerSource,
+          l|$l.powerLabel->toOne()
+        ],
+        [
+          'Lamp',
+          'Optic',
+          'Power',
+          'PowerLabel'
+        ]
+      )->sort([asc('Lamp')]);
+      tests:
+      [
+        opticVocabulary:
+        {
+          doc: 'Folds the stored optic and power vocabularies onto the shared enumerations through computed expressions, including a row whose stored codes are outside the mapped vocabulary and therefore land on the catch-all enumeration values; the withdrawn lamp is dropped by the store filter and the label column is read from a view.';
+          data:
+          [
+            test::jadelighthouse::store::LighthouseDB:
+              Relational
+              #{
+                coast.lamp:
+                  'lamp_id,lamp_code,optic_code,power_code,service_state\n'+
+                  '1,LMP-01,F,M,ACTIVE\n'+
+                  '2,LMP-02,FR,S,ACTIVE\n'+
+                  '3,LMP-03,C,W,ACTIVE\n'+
+                  '4,LMP-04,R,B,ACTIVE\n'+
+                  '5,LMP-05,QQ,ZZ,ACTIVE\n'+
+                  '6,LMP-06,F,M,WITHDRAWN\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lamp":"LMP-01","Optic":"Fresnel","Power":"Mains","PowerLabel":"POWER-M"},{"Lamp":"LMP-02","Optic":"Fresnel","Power":"Solar","PowerLabel":"POWER-S"},{"Lamp":"LMP-03","Optic":"Catadioptric","Power":"Wind","PowerLabel":"POWER-W"},{"Lamp":"LMP-04","Optic":"Reflector","Power":"Battery","PowerLabel":"POWER-B"},{"Lamp":"LMP-05","Optic":"Unclassed","Power":"Unknown","PowerLabel":"POWER-ZZ"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    regionSummarySuite:
+    {
+      function: |test::jadelighthouse::domain::Region.all()->project(
+        [
+          r|$r.regionCode,
+          r|$r.regionName,
+          r|$r.coastSide,
+          r|$r.summary.stationCount->toOne(),
+          r|$r.summary.maxTowerHeightM->toOne()
+        ],
+        [
+          'Region',
+          'Name',
+          'Side',
+          'Stations',
+          'MaxTower'
+        ]
+      )->sort([asc('Region')]);
+      tests:
+      [
+        regionRollup:
+        {
+          doc: 'Reads the grouped station view through the region-to-summary join; the unnamed region is dropped by the store filter.';
+          data:
+          [
+            test::jadelighthouse::store::LighthouseDB:
+              Relational
+              #{
+                coast.region:
+                  'region_code,region_name,coast_side\n'+
+                  'R-01,North Shore Coast,west\n'+
+                  'R-02,East Sands,east\n'+
+                  'R-03,,north\n';
+
+                coast.station:
+                  'station_id,station_code,station_name,region_code,station_type,status_code,tower_height_m,keeper_note,lamp_id\n'+
+                  '1,JL-101,Gull Point Light,R-01,MAJOR,A,38,routine visit,1\n'+
+                  '2,JL-102,Cobble Head Light,R-01,MINOR,B,21,routine visit,2\n'+
+                  '3,JL-103,Sand Bar Light,R-02,HARBOUR,C,14,routine visit,3\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"R-01","Name":"North Shore Coast","Side":"WEST","Stations":2,"MaxTower":38},{"Region":"R-02","Name":"East Sands","Side":"EAST","Stations":1,"MaxTower":14}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

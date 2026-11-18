@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::goldenarboretum3::dataspace::NurseryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'nurseryRegister';
+      description: 'Register tier - propagation lots, beds, stock plants and treatments with the reference store bound alongside for the cross-store joins.';
+      mapping: test::goldenarboretum3::mapping::NurseryCoreMapping;
+      defaultRuntime: test::goldenarboretum3::runtime::NurseryCoreRuntime;
+    },
+    {
+      name: 'referenceCuration';
+      description: 'Curation tier - the species, growing-medium and zone reference model on its own mapping and runtime.';
+      mapping: test::goldenarboretum3::mapping::NurseryReferenceMapping;
+      defaultRuntime: test::goldenarboretum3::runtime::NurseryReferenceRuntime;
+    }
+  ];
+  defaultExecutionContext: 'nurseryRegister';
+  title: 'Golden Arboretum Nursery';
+  description: 'A catalogued entry point over the nursery propagation register and its curated reference tier, grouping the two mappings, their runtimes and the featured register and occupancy endpoints so a consumer can execute the model without naming them individually.';
+  elements:
+  [
+    test::goldenarboretum3::domain::PropagationLot,
+    test::goldenarboretum3::domain::NurseryBed,
+    test::goldenarboretum3::domain::SpeciesReference
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Propagation lot register';
+      description: 'Featured endpoint returning the graded lots of one bed above a sown-count floor.';
+      executable: test::goldenarboretum3::service::LotRegister;
+    },
+    {
+      id: 2;
+      title: 'Bed occupancy';
+      description: 'Featured endpoint returning the distinct bed, species and growing-medium combinations of one shelter class.';
+      executable: test::goldenarboretum3::service::BedOccupancy;
+    }
+  ];
+}

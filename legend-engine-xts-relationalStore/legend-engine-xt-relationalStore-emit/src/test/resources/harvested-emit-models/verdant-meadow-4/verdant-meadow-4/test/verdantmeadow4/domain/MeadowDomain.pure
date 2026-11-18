@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::verdantmeadow4::domain::*;
+
+Enum demo::verdantmeadow4::domain::SwardClass
+{
+  HAY_MEADOW,
+  PASTURE,
+  FEN_MEADOW
+}
+
+Enum demo::verdantmeadow4::domain::GrazingRegime
+{
+  CATTLE,
+  SHEEP,
+  UNGRAZED
+}
+
+Enum demo::verdantmeadow4::domain::ConditionGrade
+{
+  FAVOURABLE,
+  RECOVERING,
+  UNFAVOURABLE
+}
+
+Class demo::verdantmeadow4::domain::SurveyRecord
+{
+  recordCode: String[1];
+}
+
+Class demo::verdantmeadow4::domain::HabitatRecord extends SurveyRecord
+{
+  statusCode: String[0..1];
+}
+
+Class demo::verdantmeadow4::domain::PlotSeedPlan
+{
+  bandLabel: String[1];
+  tagLabel: String[0..1];
+}
+
+Class demo::verdantmeadow4::domain::PlotContact
+{
+  wardenLabel: String[1];
+  contactLabel: String[0..1];
+}
+
+Class demo::verdantmeadow4::domain::PlotSummary extends SurveyRecord
+{
+  meadowCode: String[1];
+  plotCount: Integer[1];
+  maxSpecies: Integer[0..1];
+}
+
+Class demo::verdantmeadow4::domain::MeadowPlot extends HabitatRecord
+{
+  plotCode: String[1];
+  meadowCode: String[1];
+  speciesCount: Integer[1];
+  cutCount: Integer[1];
+  areaHa: Integer[1];
+  seedKg: Integer[1];
+  speciesBand: String[0..1];
+  cutLoad: Integer[0..1];
+  restIndex: Integer[0..1];
+  vigourScore: Integer[0..1];
+  seedRate: Float[0..1];
+  coverIndex: Float[0..1];
+  tagText: String[0..1];
+  regionName: String[0..1];
+  zoneName: String[0..1];
+  sward: SwardClass[0..1];
+  grazing: GrazingRegime[0..1];
+  condition: ConditionGrade[0..1];
+  seedPlan: PlotSeedPlan[1];
+  contact: PlotContact[1];
+  summary: PlotSummary[0..1];
+}
+
+Class demo::verdantmeadow4::domain::Meadow extends HabitatRecord
+{
+  meadowCode: String[1];
+  meadowName: String[1];
+  regionCode: String[0..1];
+  zoneName: String[0..1];
+  sectorLabel: String[0..1];
+}
+
+Class demo::verdantmeadow4::domain::Warden extends SurveyRecord
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+  contactLabel: String[0..1];
+}

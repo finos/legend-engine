@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solarcove2::domain::*;
+import test::solarcove2::domain::common::*;
+import test::solarcove2::profile::*;
+
+Class <<CivicMeta.versioned>> {meta::pure::profiles::doc.doc = 'First-generation signal timing observation. Extends the shared observation supertype and therefore inherits its processing timeline.', CivicMeta.schemaVersion = 'v1'} test::solarcove2::domain::v1::SignalPhaseReport extends CrossingReportEvent
+{
+  {meta::pure::profiles::doc.doc = 'Measured length of the pedestrian phase.'} phaseSeconds: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Fault class recorded against the head, duplicated on the first-generation schema.'} fault: SignalFault[0..1];
+}
+
+Class <<CivicMeta.versioned>> {meta::pure::profiles::doc.doc = 'First-generation kerb ramp observation.', CivicMeta.schemaVersion = 'v1'} test::solarcove2::domain::v1::KerbRampReport extends CrossingReportEvent
+{
+  {meta::pure::profiles::doc.doc = 'Measured ramp gradient as a whole percentage.'} rampGradientPct: Integer[0..1];
+}
+
+Class <<CivicMeta.provisional>> {meta::pure::profiles::doc.doc = 'Tactile paving observation, a further specialisation of the kerb ramp observation.', CivicMeta.schemaVersion = 'v1'} test::solarcove2::domain::v1::TactilePavingReport extends test::solarcove2::domain::v1::KerbRampReport
+{
+  {meta::pure::profiles::doc.doc = 'Number of tactile studs counted on the approach.'} studCount: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One stage of a published signal timing plan, keyed by stage code and sequence number.'} test::solarcove2::domain::v1::PhaseTiming
+{
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Code of the timing stage.'} stageCode: String[1];
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Position of the stage within the plan.'} sequenceNo: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Green time allotted to the stage.'} greenSeconds: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One access audit taken at a crossing, keyed by auditor, review stage and audit date.'} test::solarcove2::domain::v1::AccessAudit
+{
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Code of the auditor.'} auditorCode: String[1];
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Review stage the audit was taken at.'} stage: SurveyStage[1];
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Date the audit was taken.'} auditedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Mobility aid declared by the resident who walked the crossing.'} aidRequired: MobilityAid[0..1];
+  {meta::pure::profiles::doc.doc = 'Kerb grade the auditor recorded.'} kerbAccess: KerbAccessGrade[0..1];
+}
+
+Class <<CivicMeta.governed>> {meta::pure::profiles::doc.doc = 'First-generation aggregate root of a crossing survey return. Its constraint checks that no child collection repeats its own composite key, at three different key widths.', CivicMeta.retention = 'seven-years'} test::solarcove2::domain::v1::CrossingSurveyReturn
+[
+  childCompositeKeysUnique: ($this.phaseTimings->map(t | $t.stageCode + '~' + $t.sequenceNo->toString())->removeDuplicates()->size() == $this.phaseTimings->size()) && ($this.accessAudits->map(a | $a.auditorCode + '~' + $a.stage->toString() + '~' + $a.auditedOn->toString())->removeDuplicates()->size() == $this.accessAudits->size()) && ($this.phaseReports->map(r | $r.reportCode + '~' + $r.recordedOn->toString())->removeDuplicates()->size() == $this.phaseReports->size())
+]
+{
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Code of the survey return.'} returnCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Stage the return has reached.'} stage: SurveyStage[1];
+  {meta::pure::profiles::doc.doc = 'Timing stages published with the return.'} phaseTimings: test::solarcove2::domain::v1::PhaseTiming[*];
+  {meta::pure::profiles::doc.doc = 'Access audits collected under the return.'} accessAudits: test::solarcove2::domain::v1::AccessAudit[*];
+  {meta::pure::profiles::doc.doc = 'Signal timing observations collected under the return.'} phaseReports: test::solarcove2::domain::v1::SignalPhaseReport[*];
+}
+
+Class <<CivicMeta.governed>> {meta::pure::profiles::doc.doc = 'First-generation aggregate root of a ward-level inventory pack, checking the same composite-key uniqueness rule over its own children.', CivicMeta.retention = 'seven-years'} test::solarcove2::domain::v1::WardInventoryPack
+[
+  packChildKeysUnique: ($this.rampReports->map(r | $r.reportCode + '~' + $r.recordedOn->toString())->removeDuplicates()->size() == $this.rampReports->size()) && ($this.audits->map(a | $a.auditorCode + '~' + $a.auditedOn->toString())->removeDuplicates()->size() == $this.audits->size())
+]
+{
+  <<CivicMeta.identityKey>> {meta::pure::profiles::doc.doc = 'Code of the ward the pack covers.'} wardCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Kerb ramp observations packed for the ward.'} rampReports: test::solarcove2::domain::v1::KerbRampReport[*];
+  {meta::pure::profiles::doc.doc = 'Access audits packed for the ward.'} audits: test::solarcove2::domain::v1::AccessAudit[*];
+}

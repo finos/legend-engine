@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'Physical kind of a fenced holding on the sanctuary.'} test::kindlyquokka5::domain::EnclosureKind
+{
+  OPEN_RANGE,
+  WOODLAND_PEN,
+  NURSERY_PEN,
+  QUARANTINE_PEN,
+  SOFT_RELEASE_PEN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Habitat band a fenced holding sits in.'} test::kindlyquokka5::domain::HabitatZone
+{
+  COASTAL_HEATH,
+  RIVER_FLAT,
+  DRY_RIDGE,
+  SWAMP_MARGIN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Browse plant grown for the resident animals.'} test::kindlyquokka5::domain::BrowseSpecies
+{
+  SALT_BUSH,
+  PEPPER_SHRUB,
+  SEDGE_TUSSOCK,
+  WATTLE_SAPLING,
+  MYRTLE_SHRUB
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Outcome recorded at the end of a keeper round.'} test::kindlyquokka5::domain::RoundOutcome
+{
+  ALL_CLEAR,
+  FOLLOW_UP_NEEDED,
+  ANIMAL_MISSING,
+  FENCE_FAULT,
+  ROUND_ABANDONED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Headline finding of a welfare check.'} test::kindlyquokka5::domain::HealthFinding
+{
+  HEALTHY,
+  UNDERWEIGHT,
+  LAME,
+  PARASITE_LOAD,
+  REFERRED_TO_VET
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Coarse weight band a checked animal falls into.'} test::kindlyquokka5::domain::WeightBand
+{
+  UNDER_TWO_KG,
+  TWO_TO_THREE_KG,
+  THREE_TO_FOUR_KG,
+  OVER_FOUR_KG
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Standing of a permit held against the sanctuary.'} test::kindlyquokka5::domain::PermitStatus
+{
+  DRAFT,
+  ACTIVE,
+  SUSPENDED,
+  EXPIRED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Sex class recorded on an individual animal.'} test::kindlyquokka5::domain::SexClass
+{
+  FEMALE,
+  MALE,
+  UNRECORDED
+}

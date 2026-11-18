@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::olivecanyon::store::CanyonParksDB
+(
+  Schema parks
+  (
+    Table district
+    (
+      district_code VARCHAR(12) PRIMARY KEY,
+      district_name VARCHAR(120) NOT NULL,
+      population_estimate INTEGER NOT NULL
+    )
+    Table public_space
+    (
+      space_code VARCHAR(12) PRIMARY KEY,
+      space_name VARCHAR(160) NOT NULL,
+      area_hectares DOUBLE NOT NULL,
+      opened_on DATE NOT NULL,
+      space_kind VARCHAR(20) NOT NULL,
+      district_code VARCHAR(12) NOT NULL
+    )
+    Table park_detail
+    (
+      space_code VARCHAR(12) PRIMARY KEY,
+      has_drinking_water VARCHAR(1) NOT NULL,
+      canopy_cover_percent INTEGER NOT NULL
+    )
+    Table trail_segment
+    (
+      segment_code VARCHAR(12) PRIMARY KEY,
+      distance_metres DOUBLE NOT NULL,
+      grade_percent DOUBLE NOT NULL,
+      space_code VARCHAR(12) NOT NULL
+    )
+    Table bench
+    (
+      bench_code VARCHAR(12) PRIMARY KEY,
+      material VARCHAR(40) NOT NULL,
+      seats INTEGER NOT NULL,
+      segment_code VARCHAR(12)
+    )
+    Table steward
+    (
+      steward_code VARCHAR(12) PRIMARY KEY,
+      full_name VARCHAR(160) NOT NULL,
+      volunteer VARCHAR(1) NOT NULL,
+      district_code VARCHAR(12) NOT NULL
+    )
+    Table maintenance_log
+    (
+      log_code VARCHAR(12) PRIMARY KEY,
+      logged_on DATE NOT NULL,
+      activity VARCHAR(120) NOT NULL,
+      crew_size INTEGER NOT NULL,
+      space_code VARCHAR(12) NOT NULL
+    )
+  )
+
+  Join SpaceDistrict(parks.public_space.district_code = parks.district.district_code)
+  Join SpaceParkDetail(parks.public_space.space_code = parks.park_detail.space_code)
+  Join SpaceTrailSegment(parks.public_space.space_code = parks.trail_segment.space_code)
+  Join SegmentBench(parks.trail_segment.segment_code = parks.bench.segment_code)
+  Join StewardDistrict(parks.steward.district_code = parks.district.district_code)
+  Join SpaceMaintenanceLog(parks.public_space.space_code = parks.maintenance_log.space_code)
+)

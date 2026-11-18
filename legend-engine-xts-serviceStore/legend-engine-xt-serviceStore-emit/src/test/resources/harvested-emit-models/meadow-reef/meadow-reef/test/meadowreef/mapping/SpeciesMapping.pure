@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowreef::mapping::SpeciesMapping
+(
+  *test::meadowreef::domain::ReefSpecies[speciesSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowreef::store::ReefDatabase]reef.reef_species.species_code
+    )
+    ~mainTable [test::meadowreef::store::ReefDatabase]reef.reef_species
+    speciesCode: [test::meadowreef::store::ReefDatabase]reef.reef_species.species_code,
+    familyName: toUpper([test::meadowreef::store::ReefDatabase]reef.reef_species.family_name),
+    trailZone: concat(concat([test::meadowreef::store::ReefDatabase]reef.reef_species.zone_code, '-'),
+                      [test::meadowreef::store::ReefDatabase]reef.reef_species.family_name)
+  }
+
+  *test::meadowreef::domain::SpeciesSynonym[synonymSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowreef::store::ReefDatabase]reef.species_synonym.synonym_id
+    )
+    ~mainTable [test::meadowreef::store::ReefDatabase]reef.species_synonym
+    synonymText: [test::meadowreef::store::ReefDatabase]reef.species_synonym.synonym_text,
+    status: EnumerationMapping SynonymStatusMap: [test::meadowreef::store::ReefDatabase]@Synonym_Usage | [test::meadowreef::store::ReefDatabase]reef.usage_ref.usage_code,
+    registerLabel: [test::meadowreef::store::ReefDatabase]@Synonym_Usage | [test::meadowreef::store::ReefDatabase]reef.usage_ref.register_label
+  }
+
+  test::meadowreef::domain::SynonymStatus: EnumerationMapping SynonymStatusMap
+  {
+    ACCEPTED: ['accepted', 'Accepted', 'ACCEPTED'],
+    DEPRECATED: ['deprecated', 'Deprecated', 'DEPRECATED']
+  }
+
+  test::meadowreef::domain::Species_Synonym: Relational
+  {
+    AssociationMapping
+    (
+      synonyms[speciesSet, synonymSet]: [test::meadowreef::store::ReefDatabase]@Species_Synonym,
+      synonymSpecies[synonymSet, speciesSet]: [test::meadowreef::store::ReefDatabase]@Species_Synonym
+    )
+  }
+
+  testSuites:
+  [
+    synonymRegisterSuite:
+    {
+      function: |test::meadowreef::domain::SpeciesSynonym.all()->project(~[
+                  synonymText: s|$s.synonymText,
+                  statusLabel: s|$s.status->toString(),
+                  registerLabel: s|$s.registerLabel
+                ]);
+      tests:
+      [
+        joinReachedStandingAndRegister:
+        {
+          doc: 'Projects each recorded synonym with the join-reached standing code and the register label read over the same hop, so the projection carries the stored code the enumeration fold is defined over alongside the join-reached label.';
+          data:
+          [
+            test::meadowreef::store::ReefDatabase:
+              Relational
+              #{
+                reef.reef_species:
+                  'species_code,family_name,zone_code\n'+
+                  'SP-014,parrotfish,reef-flat\n'+
+                  'SP-021,wrasse,lagoon\n';
+                reef.species_synonym:
+                  'synonym_id,species_code,synonym_text,usage_id\n'+
+                  '1,SP-014,Banded rainbowfish,10\n'+
+                  '2,SP-014,Ribbon parrot,20\n'+
+                  '3,SP-021,Slender wrasse,10\n';
+                reef.usage_ref:
+                  'usage_id,usage_code,register_label\n'+
+                  '10,accepted,Trail Register\n'+
+                  '20,Deprecated,Retired Names\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSynonymRows:
+              Relation
+              #{
+                synonymText,statusLabel,registerLabel
+                Banded rainbowfish,accepted,Trail Register
+                Ribbon parrot,Deprecated,Retired Names
+                Slender wrasse,accepted,Trail Register;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

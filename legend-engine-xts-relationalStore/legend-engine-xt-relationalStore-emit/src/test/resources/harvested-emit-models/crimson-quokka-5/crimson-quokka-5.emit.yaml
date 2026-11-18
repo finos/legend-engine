@@ -1,0 +1,31 @@
+name: crimson-quokka-5
+title: "Crimson Quokka Coastal Wildlife Observation Register"
+description: |
+  A coastal wildlife register records business-dated quokka observations from
+  reef shelves, tide pools and seagrass coves. Two point-in-time services filter
+  observations by habitat or measured span and publish compact survey views.
+modelSources:
+  model:
+    root: crimson-quokka-5
+    files:
+      - test/crimsonquokka5/connection/CoastalConnection.pure
+      - test/crimsonquokka5/domain/QuokkaDomain.pure
+      - test/crimsonquokka5/mapping/CoastalMapping.pure
+      - test/crimsonquokka5/runtime/CoastalRuntime.pure
+      - test/crimsonquokka5/service/ObservationServices.pure
+      - test/crimsonquokka5/store/CoastalSurveyDB.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - coastal-wildlife
+  - h2
+  - habitat-filter
+  - point-in-time
+  - quokka-observations
+  - survey-register

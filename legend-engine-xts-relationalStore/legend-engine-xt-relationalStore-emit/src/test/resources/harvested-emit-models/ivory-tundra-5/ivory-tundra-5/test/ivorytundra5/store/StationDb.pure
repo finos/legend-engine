@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ivorytundra5::store::StationDb
+(
+  Schema tundra
+  (
+    Table station_custodian
+    (
+      custodian_code VARCHAR(32) PRIMARY KEY,
+      custodian_name VARCHAR(120) NOT NULL,
+      radio_note VARCHAR(120)
+    )
+    Table calibration_check
+    (
+      check_code VARCHAR(32) PRIMARY KEY,
+      station_code VARCHAR(32),
+      check_result VARCHAR(20) NOT NULL,
+      drift_percent FLOAT
+    )
+    Table observation_station
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      station_code VARCHAR(32) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      terrain_label VARCHAR(60) NOT NULL,
+      custodian_code VARCHAR(32),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table sensor_deployment
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      deploy_code VARCHAR(32) PRIMARY KEY,
+      station_code VARCHAR(32),
+      instrument_name VARCHAR(120) NOT NULL,
+      sample_interval INTEGER NOT NULL,
+      service_state VARCHAR(20) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+
+  Join Register_Deployment_Station(tundra.sensor_deployment.station_code = tundra.observation_station.station_code)
+  Join Register_Station_Custodian(tundra.observation_station.custodian_code = tundra.station_custodian.custodian_code)
+  Join Register_Station_Check(tundra.observation_station.station_code = tundra.calibration_check.station_code)
+)

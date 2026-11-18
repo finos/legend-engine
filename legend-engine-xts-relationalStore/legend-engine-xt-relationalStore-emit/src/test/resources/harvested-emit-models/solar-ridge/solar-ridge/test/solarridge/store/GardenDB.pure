@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarridge::store::GardenDB
+(
+  Schema garden
+  (
+    Table garden_zone
+    (
+      zone_code VARCHAR(24) PRIMARY KEY,
+      zone_name VARCHAR(120) NOT NULL,
+      parent_code VARCHAR(24)
+    )
+    Table allotment_plot
+    (
+      plot_code VARCHAR(24) PRIMARY KEY,
+      plot_name VARCHAR(120) NOT NULL,
+      zone_code VARCHAR(24) NOT NULL
+    )
+    Table harvest_entry
+    (
+      entry_code VARCHAR(24) PRIMARY KEY,
+      crop_name VARCHAR(80) NOT NULL,
+      harvested_on DATE NOT NULL,
+      weight_kg INTEGER NOT NULL,
+      plot_code VARCHAR(24) NOT NULL
+    )
+    Table plot_inspection
+    (
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      entry_code VARCHAR(24) NOT NULL,
+      inspected_on DATE NOT NULL
+    )
+  )
+
+  Join Entry_Plot(garden.harvest_entry.plot_code = garden.allotment_plot.plot_code)
+  Join Plot_Zone(garden.allotment_plot.zone_code = garden.garden_zone.zone_code)
+  Join Zone_Parent(garden.garden_zone.parent_code = {target}.zone_code)
+  Join Entry_Inspection(garden.harvest_entry.entry_code = garden.plot_inspection.entry_code)
+)

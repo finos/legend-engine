@@ -1,0 +1,279 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralcavern2::mapping::CavernMapping
+(
+  *test::coralcavern2::domain::CaveChamber[chamber]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcavern2::store::CavernDB]survey.cave_chamber.chamber_code
+    )
+    ~mainTable [test::coralcavern2::store::CavernDB]survey.cave_chamber
+    chamberCode: [test::coralcavern2::store::CavernDB]survey.cave_chamber.chamber_code,
+    chamberName: [test::coralcavern2::store::CavernDB]survey.cave_chamber.chamber_name,
+    cavernCode: [test::coralcavern2::store::CavernDB]survey.cave_chamber.cavern_code,
+    ceilingHeightCm: [test::coralcavern2::store::CavernDB]survey.cave_chamber.ceiling_height_cm,
+    openToVisitors: case(
+                      equal([test::coralcavern2::store::CavernDB]survey.cave_chamber.open_flag, 1),
+                      sqlTrue(),
+                      sqlFalse()
+                    ),
+    lampsInstalled: case(
+                      equal([test::coralcavern2::store::CavernDB]survey.cave_chamber.lamp_flag, 1),
+                      sqlTrue(),
+                      sqlFalse()
+                    ),
+    accessNote: case(
+                  equal([test::coralcavern2::store::CavernDB]survey.cave_chamber.open_flag, 1),
+                  concat(
+                    concat(
+                      'OPEN-',
+                      toUpper(trim([test::coralcavern2::store::CavernDB]survey.cave_chamber.chamber_name))
+                    ),
+                    '-TOUR'
+                  ),
+                  sqlNull()
+                )
+  }
+
+  *test::coralcavern2::domain::ChamberRevision[revision]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcavern2::store::CavernDB]survey.chamber_revision.chamber_code,
+      [test::coralcavern2::store::CavernDB]survey.chamber_revision.revision_seq
+    )
+    ~mainTable [test::coralcavern2::store::CavernDB]survey.chamber_revision
+    chamberCode: [test::coralcavern2::store::CavernDB]survey.chamber_revision.chamber_code,
+    revisionSeq: [test::coralcavern2::store::CavernDB]survey.chamber_revision.revision_seq,
+    chamberName: [test::coralcavern2::store::CavernDB]survey.chamber_revision.chamber_name,
+    openToVisitors: case(
+                      equal([test::coralcavern2::store::CavernDB]survey.chamber_revision.open_flag, 1),
+                      sqlTrue(),
+                      sqlFalse()
+                    ),
+    supersededRevision: case(
+                          equal([test::coralcavern2::store::CavernDB]survey.chamber_revision.superseded_flag, 1),
+                          sqlTrue(),
+                          sqlFalse()
+                        )
+  }
+
+  *test::coralcavern2::domain::FormationRecord[formation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcavern2::store::CavernDB]survey.formation_record.formation_code
+    )
+    ~mainTable [test::coralcavern2::store::CavernDB]survey.formation_record
+    formationCode: [test::coralcavern2::store::CavernDB]survey.formation_record.formation_code,
+    chamberCode: [test::coralcavern2::store::CavernDB]survey.formation_record.chamber_code,
+    formationType: [test::coralcavern2::store::CavernDB]survey.formation_record.formation_type,
+    growthMmPerCentury: [test::coralcavern2::store::CavernDB]survey.formation_record.growth_mm_per_century,
+    protectedFeature: case(
+                        equal([test::coralcavern2::store::CavernDB]survey.formation_record.protected_flag, 1),
+                        sqlTrue(),
+                        sqlFalse()
+                      ),
+    sizeBand: case(
+                greaterThan([test::coralcavern2::store::CavernDB]survey.formation_record.growth_mm_per_century, 20),
+                'FAST',
+                case(
+                  greaterThan([test::coralcavern2::store::CavernDB]survey.formation_record.growth_mm_per_century, 5),
+                  'STEADY',
+                  'SLOW'
+                )
+              )
+  }
+
+  testSuites:
+  [
+    chamberSuite:
+    {
+      function: |test::coralcavern2::domain::CaveChamber.all()->project(
+  [
+    c|$c.chamberCode,
+    c|$c.chamberName,
+    c|$c.cavernCode,
+    c|$c.ceilingHeightCm,
+    c|$c.openToVisitors,
+    c|$c.lampsInstalled,
+    c|$c.accessNote
+  ],
+  [
+    'ChamberCode',
+    'ChamberName',
+    'CavernCode',
+    'CeilingHeightCm',
+    'OpenToVisitors',
+    'LampsInstalled',
+    'AccessNote'
+  ]
+)->sort(
+  [
+    asc('ChamberCode')
+  ]
+);
+      tests:
+      [
+        bothFlagArms:
+        {
+          doc: 'Covers both arms of each integer-flag conditional independently, including the two rows where the visiting flag and the lamp flag disagree, and the null access-note fallback taken when the visiting flag is clear.';
+          data:
+          [
+            test::coralcavern2::store::CavernDB:
+              Relational
+              #{
+                survey.cave_chamber:
+                  'chamber_code,chamber_name,cavern_code,ceiling_height_cm,open_flag,lamp_flag\n'+
+                  'CH-01,Lantern Hall,CV-1,850,1,1\n'+
+                  'CH-02,Dripstone Gallery,CV-1,420,0,1\n'+
+                  'CH-03,Ribbon Crawl,CV-2,160,1,0\n'+
+                  'CH-04,Sump Chamber,CV-2,300,0,0\n';
+              }#
+          ];
+          asserts:
+          [
+            fourChambers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ChamberCode":"CH-01","ChamberName":"Lantern Hall","CavernCode":"CV-1","CeilingHeightCm":850,"OpenToVisitors":true,"LampsInstalled":true,"AccessNote":"OPEN-LANTERN HALL-TOUR"},{"ChamberCode":"CH-02","ChamberName":"Dripstone Gallery","CavernCode":"CV-1","CeilingHeightCm":420,"OpenToVisitors":false,"LampsInstalled":true,"AccessNote":null},{"ChamberCode":"CH-03","ChamberName":"Ribbon Crawl","CavernCode":"CV-2","CeilingHeightCm":160,"OpenToVisitors":true,"LampsInstalled":false,"AccessNote":"OPEN-RIBBON CRAWL-TOUR"},{"ChamberCode":"CH-04","ChamberName":"Sump Chamber","CavernCode":"CV-2","CeilingHeightCm":300,"OpenToVisitors":false,"LampsInstalled":false,"AccessNote":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    revisionSuite:
+    {
+      function: |test::coralcavern2::domain::ChamberRevision.all()->project(
+  [
+    r|$r.chamberCode,
+    r|$r.revisionSeq,
+    r|$r.chamberName,
+    r|$r.openToVisitors,
+    r|$r.supersededRevision
+  ],
+  [
+    'ChamberCode',
+    'RevisionSeq',
+    'ChamberName',
+    'OpenToVisitors',
+    'SupersededRevision'
+  ]
+)->sort(
+  [
+    asc('ChamberCode'),
+    asc('RevisionSeq')
+  ]
+);
+      tests:
+      [
+        twinConditionalOnHistory:
+        {
+          doc: 'Asserts the same visiting-flag conditional behaves identically on the history table, whose composite key admits several revisions of one chamber, and pins the superseded marker on the earlier revision only.';
+          data:
+          [
+            test::coralcavern2::store::CavernDB:
+              Relational
+              #{
+                survey.chamber_revision:
+                  'chamber_code,revision_seq,chamber_name,open_flag,superseded_flag\n'+
+                  'CH-01,1,Lantern Hall,0,1\n'+
+                  'CH-01,2,Lantern Hall,1,0\n'+
+                  'CH-03,1,Ribbon Crawl,1,0\n';
+              }#
+          ];
+          asserts:
+          [
+            threeRevisions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ChamberCode":"CH-01","RevisionSeq":1,"ChamberName":"Lantern Hall","OpenToVisitors":false,"SupersededRevision":true},{"ChamberCode":"CH-01","RevisionSeq":2,"ChamberName":"Lantern Hall","OpenToVisitors":true,"SupersededRevision":false},{"ChamberCode":"CH-03","RevisionSeq":1,"ChamberName":"Ribbon Crawl","OpenToVisitors":true,"SupersededRevision":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    formationSuite:
+    {
+      function: |test::coralcavern2::domain::FormationRecord.all()->project(
+  [
+    f|$f.formationCode,
+    f|$f.chamberCode,
+    f|$f.formationType,
+    f|$f.growthMmPerCentury,
+    f|$f.protectedFeature,
+    f|$f.sizeBand
+  ],
+  [
+    'FormationCode',
+    'ChamberCode',
+    'FormationType',
+    'GrowthMmPerCentury',
+    'ProtectedFeature',
+    'SizeBand'
+  ]
+)->sort(
+  [
+    asc('FormationCode')
+  ]
+);
+      tests:
+      [
+        everyGrowthBand:
+        {
+          doc: 'Reaches all three arms of the nested growth-band conditional including the boundary row that sits exactly on the lower threshold, alongside both arms of the protection flag.';
+          data:
+          [
+            test::coralcavern2::store::CavernDB:
+              Relational
+              #{
+                survey.formation_record:
+                  'formation_code,chamber_code,formation_type,growth_mm_per_century,protected_flag\n'+
+                  'FM-01,CH-01,Stalactite,35,1\n'+
+                  'FM-02,CH-01,Stalagmite,12,0\n'+
+                  'FM-03,CH-02,Flowstone,4,1\n'+
+                  'FM-04,CH-03,Helictite,5,0\n';
+              }#
+          ];
+          asserts:
+          [
+            fourFormations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"FormationCode":"FM-01","ChamberCode":"CH-01","FormationType":"Stalactite","GrowthMmPerCentury":35,"ProtectedFeature":true,"SizeBand":"FAST"},{"FormationCode":"FM-02","ChamberCode":"CH-01","FormationType":"Stalagmite","GrowthMmPerCentury":12,"ProtectedFeature":false,"SizeBand":"STEADY"},{"FormationCode":"FM-03","ChamberCode":"CH-02","FormationType":"Flowstone","GrowthMmPerCentury":4,"ProtectedFeature":true,"SizeBand":"SLOW"},{"FormationCode":"FM-04","ChamberCode":"CH-03","FormationType":"Helictite","GrowthMmPerCentury":5,"ProtectedFeature":false,"SizeBand":"SLOW"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,62 @@
+name: frosted-arboretum
+title: "Cableway Cabin Allotments — Keyed Multi-Execution Rollout over a Business-Temporal Extent"
+description: |
+  A seasonal cableway allotment register published as one keyed multi-execution service. The
+  allotment extent is business-temporal, so a read pinned at a single business date resolves one
+  validity window per table and an allotment whose window closed earlier is not counted, while the
+  winter-season narrowing sits in the store as a filter below the query so a summer allotment never
+  reaches the predicate at all. The service query is a four-operand conjunction — two request
+  parameters, a column-to-column comparison that holds only where a cabin runs the zone it was
+  planned for, and a literal state test — over which the surviving rows are grouped by the station
+  reached across the reference join and by cabin class, both measures summed, and two columns
+  extended onto the grouped table: a composed lift label and a doubled seat-move count. One query
+  and one mapping are planned under two execution keys that differ only in runtime and warehouse
+  connection, and a data space republishes the same two bindings as named execution contexts so
+  consumers see a described surface rather than raw elements. Service suites assert the keyed reads
+  separately, including an empty result for a station holding no allotment.
+modelSources:
+  model:
+    root: frosted-arboretum
+    files:
+      - test/frostedarboretum/connection/CablewayConnections.pure
+      - test/frostedarboretum/dataspace/CablewayDataSpace.pure
+      - test/frostedarboretum/domain/CablewayDomain.pure
+      - test/frostedarboretum/mapping/CablewayMapping.pure
+      - test/frostedarboretum/runtime/CablewayRuntimes.pure
+      - test/frostedarboretum/service/CabinAllotmentRollup.pure
+      - test/frostedarboretum/store/CablewayDb.pure
+features:
+  - execution:data-space
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - store:relational-join
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+complexity: advanced
+tags:
+  - business-temporal
+  - cableway-allotments
+  - data-space
+  - group-by
+  - keyed-execution
+  - multi-execution-service
+  - point-in-time-query
+  - snowflake
+  - store-filter
+stores:
+  - relational

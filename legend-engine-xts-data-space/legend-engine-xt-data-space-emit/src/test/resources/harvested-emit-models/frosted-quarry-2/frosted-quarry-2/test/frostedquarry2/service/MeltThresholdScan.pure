@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedquarry2::service::MeltThresholdScan
+{
+  pattern: '/frostedquarry2/v1/melt-threshold-scan';
+  title: 'Frosted Quarry - Melt Audit Threshold Scan';
+  documentation: 'Projects each block with the melt audits raised against it and then screens the projected rows on an exact floating-point threshold, de-duplicating the survivors. The threshold is a literal rather than a parameter, so the endpoint is the fixed watch-list of audits sitting exactly on the reference loss ratio.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::frostedquarry2::domain::IceBlock.all()->project(
+      [
+        r|$r.blockCode,
+        r|$r.audits.auditCode,
+        r|$r.audits.measuredLossRatio
+      ],
+      [
+        'Block',
+        'Audit',
+        'AuditLoss'
+      ]
+    )->filter(
+      x|$x.getFloat('AuditLoss') == 0.25
+    )->distinct()->sort([asc('Audit')])};
+    mapping: test::frostedquarry2::mapping::FrostQuarryMapping;
+    runtime: test::frostedquarry2::runtime::FrostQuarryRuntime;
+  }
+  testSuites:
+  [
+    meltThresholdSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          frostQuarryWarehouse:
+            Relational
+            #{
+              frostquarry.ice_block:
+                'block_id,cycle_id,block_code,mass_kg,melt_loss_ratio\n'+
+                'BLK-01,CYC-01,B-001,180,0.25\n'+
+                'BLK-02,CYC-01,B-002,220,0.4\n'+
+                'BLK-03,CYC-02,B-003,200,0.25\n';
+              frostquarry.melt_audit:
+                'audit_id,block_id,audit_code,measured_loss_ratio\n'+
+                'AUD-01,BLK-01,A-001,0.25\n'+
+                'AUD-02,BLK-02,A-002,0.4\n'+
+                'AUD-03,BLK-03,A-003,0.25\n'+
+                'AUD-04,BLK-03,A-004,0.25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyAuditsSittingExactlyOnTheReferenceRatioSurvive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            theAuditAboveTheRatioIsExcludedWhileTheBlockCarryingTwoQualifyingAuditsContributesBothOfThem:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"B-001","Audit":"A-001","AuditLoss":0.25},{"Block":"B-003","Audit":"A-003","AuditLoss":0.25},{"Block":"B-003","Audit":"A-004","AuditLoss":0.25}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

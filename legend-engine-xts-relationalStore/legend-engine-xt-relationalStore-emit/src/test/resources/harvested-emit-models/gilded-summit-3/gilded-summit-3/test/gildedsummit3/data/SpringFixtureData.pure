@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::gildedsummit3::data::SpringFixtureData
+{
+  Relational
+  #{
+    gauge.spring_source:
+      'source_code,in_z,out_z,spring_name\n'+
+      'SP-01,2025-01-01,2026-01-01,Gilded Tarn Seep\n'+
+      'SP-01,2026-01-01,9999-12-31,Gilded Tarn Spring\n'+
+      'SP-02,2026-01-01,9999-12-31,Scree Fan Spring\n'+
+      'SP-03,2026-01-01,9999-12-31,Col Notch Spring\n'+
+      'SP-04,2026-01-01,2026-03-01,Lapsed Moraine Spring\n'+
+      'SP-05,2026-07-01,9999-12-31,Late Thaw Spring\n'+
+      'SP-06,2026-01-01,9999-12-31,Nameless Rill\n';
+
+    gauge.spring_identity:
+      'source_code,catchment_code,cairn_code,survey_tag\n'+
+      'SP-01,CT-NORTH,CN-11,ST-A\n'+
+      'SP-02,CT-SOUTH,,ST-B\n'+
+      'SP-03,,CN-33,\n'+
+      'SP-04,CT-NORTH,CN-44,ST-D\n'+
+      'SP-05,CT-NORTH,CN-55,ST-E\n'+
+      'SP-06,,,\n';
+
+    gauge.spring_traits:
+      'source_code,aspect,elevation_m,window_code\n'+
+      'SP-01,N,2410,W-1\n'+
+      'SP-02,S,1980,W-2\n'+
+      'SP-03,E,2650,\n'+
+      'SP-06,W,1500,\n';
+
+    gauge.gauging_window:
+      'window_code,opened_on,closed_on\n'+
+      'W-1,2026-04-01,2026-10-31\n'+
+      'W-2,2026-05-15,\n';
+
+    gauge.flow_rate_change:
+      'change_code,source_code,changed_on,litres_per_minute\n'+
+      'FC-1,SP-01,2026-04-10,12.5\n'+
+      'FC-2,SP-01,2026-05-10,18.0\n'+
+      'FC-3,SP-02,2026-05-20,6.25\n';
+
+    gauge.seasonal_closure:
+      'closure_code,source_code,notice_code\n'+
+      'CL-1,SP-01,NT-1\n'+
+      'CL-2,SP-03,NT-2\n';
+
+    gauge.closure_notice:
+      'notice_code,reason_code\n'+
+      'NT-1,RS-1\n'+
+      'NT-2,\n';
+
+    gauge.closure_reason:
+      'reason_code,reason_text,hazard_level\n'+
+      'RS-1,Avalanche runout,3\n';
+  }#
+}

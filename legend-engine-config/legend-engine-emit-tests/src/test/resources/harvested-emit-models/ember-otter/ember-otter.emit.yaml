@@ -1,0 +1,65 @@
+name: ember-otter
+title: "Ember Otter — Catalogued Riverbank Survey With Bound Digests and Parameterised Registers"
+description: |
+  A riverbank otter survey. Two independent tables in one schema back two query
+  roots that share an inherited identity shape, and a relational mapping anchors
+  each root on its own main table with an explicit key, so every root is queried
+  alone and each plan is a single select. Three services publish the registers:
+  a parameterised reach-bounded filter with a pup-presence escape arm, a
+  collection-membership query whose empty operand widens the register to every
+  row, and a second-root query with a chamber floor. Two JSON bindings fix which
+  digest classes can be serialised and how their absent optional properties are
+  represented, and a data space catalogues the classes, the three published
+  queries and a support contact as one unit, so the mapping, runtime, classes and
+  services must all resolve together. Both mapping suites carry their fixtures
+  inline, including null-bearing rows, so branch and null coverage lives in the
+  model itself.
+
+modelSources:
+  model:
+    root: ember-otter
+    files:
+      - test/ember-otter/connection/OtterConnection.pure
+      - test/ember-otter/dataspace/OtterDataSpace.pure
+      - test/ember-otter/domain/OtterDigest.pure
+      - test/ember-otter/domain/OtterDomain.pure
+      - test/ember-otter/external/OtterBindings.pure
+      - test/ember-otter/mapping/OtterMapping.pure
+      - test/ember-otter/runtime/OtterRuntime.pure
+      - test/ember-otter/service/HoltRegister.pure
+      - test/ember-otter/service/PupPresence.pure
+      - test/ember-otter/service/SightingRegister.pure
+      - test/ember-otter/store/OtterDB.pure
+
+features:
+  - execution:data-space
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:service
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - collection-membership
+  - data-space
+  - external-format
+  - h2
+  - holt
+  - otter
+  - riverbank
+  - service
+  - snowflake
+  - survey

@@ -1,0 +1,35 @@
+name: amber-isle-2
+title: "Amber Isle 2 — annotated seabird-colony amendment and report hierarchies rendered by two file generations"
+description: |
+  A store-less seabird-colony register in two class families: amendment records
+  that all repeat one provenance block and add their own survey measures, and a
+  shallow report hierarchy over a shared published base whose amended variants
+  declare no attributes of their own and exist only to combine two supertypes.
+  A locally declared profile marks the identity attributes and pins text widths,
+  and two file generations of different kinds — one against a named open schema
+  specification version, one annotation-aware — render the same packages to a
+  shared output path under one generation specification.
+modelSources:
+  model:
+    root: amber-isle-2
+    files:
+      - test/amberisle2/domain/AmendmentDomain.pure
+      - test/amberisle2/domain/ReportDomain.pure
+      - test/amberisle2/generation/ColonyGeneration.pure
+      - test/amberisle2/profile/ColonyProfiles.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - avro
+  - colony
+  - file-generation
+  - inheritance
+  - json-schema
+  - profile
+  - seabird

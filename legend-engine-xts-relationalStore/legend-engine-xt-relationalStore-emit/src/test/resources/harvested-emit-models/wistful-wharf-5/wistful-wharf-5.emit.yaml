@@ -1,0 +1,45 @@
+name: wistful-wharf-5
+title: "Wistful Wharf 5 — Included Berth Mapping, Decoded Visit States And Two Join-Reached Contexts"
+description: |
+  A harbour wharf visit register assembled from two relational mappings. A base
+  mapping declares the mooring berth and the harbour watch, each with an explicit
+  primary key and main table, and upper-cases the pontoon name in the mapping
+  itself. The visit mapping pulls that base mapping in by inclusion, declares its
+  own primary key and main table, decodes the register state from a short stored
+  code through an enumeration mapping covering every member, and reaches the berth
+  name and pontoon name across one join and the watch lead and watch name across a
+  second. Two mapping test suites exercise the pair: the visit suite decodes all
+  three states, proves both join-reached contexts and keeps the row whose watch is
+  unassigned with both watch columns left without a value, while the berth suite
+  queries a class contributed entirely by the included mapping.
+modelSources:
+  model:
+    root: wistful-wharf-5
+    files:
+      - test/wistfulwharf5/connection/WharfConnection.pure
+      - test/wistfulwharf5/domain/WharfDomain.pure
+      - test/wistfulwharf5/mapping/BerthBaseMapping.pure
+      - test/wistfulwharf5/mapping/WharfVisitMapping.pure
+      - test/wistfulwharf5/runtime/WharfRuntime.pure
+      - test/wistfulwharf5/store/WharfDb.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - enumeration-mapping
+  - h2
+  - harbour-register
+  - mapping-include
+  - mapping-test
+  - primary-key
+  - relational

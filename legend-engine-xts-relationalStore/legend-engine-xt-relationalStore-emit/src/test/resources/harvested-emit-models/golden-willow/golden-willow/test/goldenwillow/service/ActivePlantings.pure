@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenwillow::service::ActivePlantings
+{
+  pattern: '/goldenwillow/v1/active-plantings/{env}/{zoneCode}';
+  title: 'Golden Willow - Active Plantings By Zone (keyed environments)';
+  owners:
+  [
+    'garden-registry',
+    'grounds-eng'
+  ];
+  documentation: 'Keyed execution returning currently-standing plantings for a requested zone: the query keeps plants planted on or before today, in an active or mature status, not yet retired or retired only at a far-future sentinel, and sited in the requested or an adjacent zone, then projects the plant, species, zone and name length. It is bound to a primary and a standby environment by an execution key, each pairing the shared mapping with its own runtime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {zoneCode: String[1], currentDate: StrictDate[1]|test::goldenwillow::domain::Plant.all()->filter(
+      p|((($p.plantedOn->dateDiff($currentDate, meta::pure::functions::date::DurationUnit.DAYS) >= 0) && ($p.statusCode->in(['ACTIVE', 'MATURE']))) && ((($p.retiredOn->isEmpty()) || ($p.retiredOn->toOne() > %9999-12-01)) && ($p.bed.gardenZone->in([$zoneCode, 'NORTH', 'SOUTH']))))
+    )->project(
+      [
+        p|$p.commonName,
+        p|$p.speciesCode->toUpper(),
+        p|$p.bed.gardenZone,
+        p|$p.commonName->length()
+      ],
+      [
+        'CommonName',
+        'Species',
+        'Zone',
+        'NameLen'
+      ]
+    )->distinct()->sort([asc('CommonName')])->take(100)};
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::goldenwillow::mapping::GardenMapping;
+      runtime: test::goldenwillow::runtime::GardenPrimaryRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::goldenwillow::mapping::GardenMapping;
+      runtime: test::goldenwillow::runtime::GardenStandbyRuntime;
+    }
+  }
+}

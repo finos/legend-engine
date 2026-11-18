@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::emberlantern2::dataspace::LanternWorkshopDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'workshop';
+      description: 'In-process workshop environment - the milestoned batch surface served through the local workshop connection.';
+      mapping: test::emberlantern2::mapping::LanternWorkshopMapping;
+      defaultRuntime: test::emberlantern2::runtime::LanternWorkshopRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Cloud-warehouse environment - the same mapping resolved through the key-pair authenticated warehouse connection.';
+      mapping: test::emberlantern2::mapping::LanternWorkshopMapping;
+      defaultRuntime: test::emberlantern2::runtime::LanternWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'workshop';
+  title: 'Ember Lantern Workshop Records';
+  description: 'Discovery surface over the lantern workshop production record - the milestoned batches, the sites that fired them, their kiln runs and the archived notes - wiring the workshop mapping to both the in-process and warehouse runtimes.';
+  elements:
+  [
+    test::emberlantern2::domain::LanternBatch,
+    test::emberlantern2::domain::WorkshopSite,
+    test::emberlantern2::domain::KilnRun,
+    test::emberlantern2::domain::BatchNote
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Batch Roster As Of';
+      description: 'The wide milestoned roster read over the whole batch property surface.';
+      executable: test::emberlantern2::service::BatchRosterAsOf;
+    },
+    {
+      id: 2;
+      title: 'Batch Site Roster As Of';
+      description: 'The filtered roster that reaches the owning site through the association join.';
+      executable: test::emberlantern2::service::BatchSiteRosterAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'lantern-workshop-records@lanternworkshop.invalid';
+  };
+}
+
+###DataSpace
+DataSpace test::emberlantern2::dataspace::GlazeCatalogueDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'catalogue';
+      description: 'Catalogue environment - the milestoned glaze recipe surface served through its own store and connection.';
+      mapping: test::emberlantern2::mapping::CatalogueGlazeMapping;
+      defaultRuntime: test::emberlantern2::runtime::CatalogueRuntime;
+    }
+  ];
+  defaultExecutionContext: 'catalogue';
+  title: 'Ember Lantern Glaze Catalogue';
+  description: 'Discovery surface over the glaze recipe catalogue held in the second relational store, published for consumers that only need the recipe blend surface.';
+  elements:
+  [
+    test::emberlantern2::domain::GlazeRecipe
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Glaze Recipe Catalogue As Of';
+      description: 'The blend-floor filtered catalogue read at a requested instant.';
+      executable: test::emberlantern2::service::GlazeRecipeCatalogueAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'glaze-catalogue-desk@lanternworkshop.invalid';
+  };
+}

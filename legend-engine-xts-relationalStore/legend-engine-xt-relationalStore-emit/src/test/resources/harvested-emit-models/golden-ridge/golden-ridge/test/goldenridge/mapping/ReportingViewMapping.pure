@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenridge::mapping::ReportingViewMapping
+(
+  *test::goldenridge::domain::ReportedCase[reportedCase]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenridge::store::RidgeDB]reference.permit_case_vw.case_id
+    )
+    ~mainTable [test::goldenridge::store::RidgeDB]reference.permit_case_vw
+    caseCode: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.case_code,
+    siteLabel: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.site_label,
+    storeys: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.storeys,
+    floorArea: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.floor_area,
+    filedOn: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.filed_on,
+    intakeOfficer: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.intake_officer,
+    inspector: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.inspector,
+    approver: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.approver,
+    wardName: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.ward_name,
+    districtLabel: [test::goldenridge::store::RidgeDB]reference.permit_case_vw.district_label
+  }
+
+  testSuites:
+  [
+    reportedCaseSuite:
+    {
+      function: |test::goldenridge::domain::ReportedCase.all()->project(
+  [
+    x|$x.caseLabel(),
+    x|$x.inspector,
+    x|$x.wardName,
+    x|$x.districtLabel
+  ],
+  [
+    'CaseLabel',
+    'Inspector',
+    'WardName',
+    'DistrictLabel'
+  ]
+)->sort(
+  [
+    asc('CaseLabel')
+  ]
+);
+      tests:
+      [
+        viewBackedProperties:
+        {
+          doc: 'Every property of the class resolves as a plain column of the pre-joined reporting view, so the reviewer names and the ward chain arrive without any join path in the mapping itself.';
+          data:
+          [
+            test::goldenridge::store::RidgeDB:
+              Relational
+              #{
+                intake.reviewer:
+                  'reviewer_id,reviewer_name,unit_label\n'+
+                  '1,Nadia Osei,Intake Desk\n'+
+                  '2,Roman Fisk,Site Inspection\n'+
+                  '3,Priya Vale,Approvals\n';
+                reference.parcel:
+                  'parcel_id,parcel_code\n'+
+                  '1,PCL-7781\n';
+                reference.ward:
+                  'ward_id,ward_name,district_label\n'+
+                  '1,Ridge Crest Ward,North Heights District\n'+
+                  '2,Fern Hollow Ward,South Flats District\n';
+                reference.ward_link:
+                  'link_id,parcel_id,ward_id,link_kind\n'+
+                  '1,1,1,PRIMARY_WARD\n'+
+                  '2,1,2,SECONDARY_WARD\n';
+                intake.permit_case:
+                  'case_id,case_code,site_label,storeys,floor_area,filed_on,intake_officer_id,inspector_id,approver_id,parcel_id\n'+
+                  '1,PMT-1001,Old Mill Terrace,3,420.5,2024-03-11,1,2,3,1\n'+
+                  '3,PMT-1003,Harbour Steps Lot,5,210.25,2024-05-20,1,2,3,1\n';
+              }#
+          ];
+          asserts:
+          [
+            twoViewRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CaseLabel":"PMT-1001 - Old Mill Terrace","Inspector":"Roman Fisk","WardName":"Ridge Crest Ward","DistrictLabel":"North Heights District"},{"CaseLabel":"PMT-1003 - Harbour Steps Lot","Inspector":"Roman Fisk","WardName":"Ridge Crest Ward","DistrictLabel":"North Heights District"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

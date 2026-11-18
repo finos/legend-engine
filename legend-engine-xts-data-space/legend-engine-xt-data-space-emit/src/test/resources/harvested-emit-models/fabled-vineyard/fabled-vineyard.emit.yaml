@@ -1,0 +1,63 @@
+name: fabled-vineyard
+title: "Fabled Vineyard — four independent trellis roots on one relational store, each projected by its own flat register service and catalogued through a data space, with unmapped associations and a diagram over the same domain"
+description: |
+  An estate trellis record whose store holds four independent tables in one schema with no join
+  declared between them, so the model has four query roots rather than one. Each domain class is a
+  flat set of optional scalar properties over string, integer, floating-point, date and date-time
+  types, camel-cased from the physical columns, so every projected column is nullable. The single
+  relational mapping pins each class implementation to its root table through an explicit main-table
+  alias and declares an explicit primary key over a mapped column, so the key tuple decides row
+  identity and the bindings resolve through the named alias at hop zero. Three associations relate
+  the class pairs bidirectionally and are deliberately left out of the mapping, so they shape the
+  domain without contributing a join to any plan, and a diagram lays out the four types and draws
+  the three association ends, breaking compilation if the domain it documents drifts. A Snowflake
+  packageable connection with quoted identifiers and a key-pair authentication strategy, bound
+  through one packageable runtime, closes the mapping-store-connection triangle the three register
+  services execute against; each service ends in a tabular projection with display aliases over its
+  own root. A data space catalogues the four classes, names the mapping and its default runtime in
+  one execution context, points at the three registers as executables and carries a support address.
+  Mapping suites cover the key tuple and null-bearing rows on two roots; each service suite covers
+  a null-bearing projected row.
+modelSources:
+  model:
+    root: fabled-vineyard
+    files:
+      - test/fabledvineyard/connection/VineyardWarehouseConnection.pure
+      - test/fabledvineyard/dataspace/VineyardDataSpace.pure
+      - test/fabledvineyard/diagram/VineyardDiagram.pure
+      - test/fabledvineyard/domain/VineyardDomain.pure
+      - test/fabledvineyard/mapping/VineyardMapping.pure
+      - test/fabledvineyard/runtime/VineyardWarehouseRuntime.pure
+      - test/fabledvineyard/service/BlockRegister.pure
+      - test/fabledvineyard/service/CanopyRegister.pure
+      - test/fabledvineyard/service/TrellisRegister.pure
+      - test/fabledvineyard/store/VineyardDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - data-space
+  - diagram
+  - h2
+  - main-table-alias
+  - multi-table-store
+  - primary-key
+  - service-test
+  - snowflake
+  - tabular-projection
+  - vineyard-trellis-record

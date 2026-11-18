@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletwillow2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A raw conservation feed record as received before any code is decoded, every coded attribute arriving as free text that may be absent or differently cased.'} test::scarletwillow2::domain::RawDossierFeed
+{
+  {meta::pure::profiles::doc.doc = 'Code of the dossier the feed record describes.'} dossierCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Custodian as written on the feed, possibly blank.'} custodianName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'State code as written on the feed.'} statusCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Memo code as written on the feed.'} memoCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Shelving code as written on the feed.'} shelvableCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Sheet count as written on the feed.'} sheetCount: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A decoded conservation digest: every coded feed attribute has been normalised to a declared state, and an absent code falls back to a declared default rather than removing the record.'} test::scarletwillow2::domain::DossierDigest
+{
+  {meta::pure::profiles::doc.doc = 'Code of the dossier.'} dossierCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Custodian, upper-cased, or a declared label when the feed left it blank.'} custodianLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Decoded state of the dossier.'} status: RecordStatus[1];
+  {meta::pure::profiles::doc.doc = 'Decoded memo classification.'} memoKind: MemoKind[1];
+  {meta::pure::profiles::doc.doc = 'Decoded shelving classification.'} shelvable: ShelvableKind[1];
+  {meta::pure::profiles::doc.doc = 'Band the sheet count falls into.'} sheetBand: String[1];
+}

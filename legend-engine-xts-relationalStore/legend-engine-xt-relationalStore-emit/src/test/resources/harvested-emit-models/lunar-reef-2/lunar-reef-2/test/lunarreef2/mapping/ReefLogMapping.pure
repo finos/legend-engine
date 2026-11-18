@@ -1,0 +1,198 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarreef2::mapping::ReefLogMapping
+(
+  test::lunarreef2::domain::HealthGrade: EnumerationMapping GradeColumnMapping
+  {
+    THRIVING: ['T'],
+    STABLE: ['S'],
+    BLEACHING: ['B'],
+    DEGRADED: ['D']
+  }
+
+  *test::lunarreef2::domain::ReefTransect[transect_log]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarreef2::store::ReefLogDb]reeflog.transect_log.log_id
+    )
+    ~mainTable [test::lunarreef2::store::ReefLogDb]reeflog.transect_log
+    transectCode: toUpper(trim([test::lunarreef2::store::ReefLogDb]reeflog.transect_log.transect_code)),
+    reefLabel: concat(
+                 toUpper(
+                   substring(
+                     trim([test::lunarreef2::store::ReefLogDb]reeflog.transect_log.reef_label),
+                     1,
+                     4
+                   )
+                 ),
+                 concat(
+                   ' / ',
+                   toLower(trim([test::lunarreef2::store::ReefLogDb]reeflog.transect_log.shore_zone))
+                 )
+               ),
+    shoreZone: toLower(trim([test::lunarreef2::store::ReefLogDb]reeflog.transect_log.shore_zone)),
+    depthTag: concat('D-', trim([test::lunarreef2::store::ReefLogDb]reeflog.transect_log.depth_text)),
+    surveyorRoster: trim([test::lunarreef2::store::ReefLogDb]reeflog.transect_log.surveyor_names),
+    colonyTotal: [test::lunarreef2::store::ReefLogDb]reeflog.transect_log.colony_tally,
+    healthGrade: EnumerationMapping GradeColumnMapping: [test::lunarreef2::store::ReefLogDb]reeflog.transect_log.grade_code
+  }
+
+  *test::lunarreef2::domain::ColonyDigest[sector_note]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarreef2::store::ReefLogDb]reeflog.sector_note.note_id
+    )
+    ~mainTable [test::lunarreef2::store::ReefLogDb]reeflog.sector_note
+    digestKey: concat(
+                 toUpper(trim([test::lunarreef2::store::ReefLogDb]reeflog.sector_note.transect_code)),
+                 concat(
+                   '/',
+                   toUpper(trim([test::lunarreef2::store::ReefLogDb]reeflog.sector_note.tally_text))
+                 )
+               ),
+    tallyBand: concat(
+                 'BAND-',
+                 toUpper(
+                   substring(
+                     trim([test::lunarreef2::store::ReefLogDb]reeflog.sector_note.tally_text),
+                     1,
+                     3
+                   )
+                 )
+               ),
+    rosterSize: [test::lunarreef2::store::ReefLogDb]reeflog.sector_note.roster_size
+  }
+
+  testSuites:
+  [
+    transectColumnSuite:
+    {
+      function: |test::lunarreef2::domain::ReefTransect.all()->graphFetch(
+        #{
+          test::lunarreef2::domain::ReefTransect
+          {
+            transectCode,
+            reefLabel,
+            shoreZone,
+            depthTag,
+            surveyorRoster,
+            colonyTotal,
+            healthGrade
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarreef2::domain::ReefTransect
+          {
+            transectCode,
+            reefLabel,
+            shoreZone,
+            depthTag,
+            surveyorRoster,
+            colonyTotal,
+            healthGrade
+          }
+        }#
+      );
+      tests:
+      [
+        stringFoldedColumns:
+        {
+          doc: 'Two padded log rows whose transect code is trimmed and upper-cased, whose reef label is abbreviated to four characters and concatenated with the lower-cased shore zone, whose depth tag is prefixed and whose grade letter resolves through the column enumeration mapping.';
+          data:
+          [
+            test::lunarreef2::store::ReefLogDb:
+              Relational
+              #{
+                reeflog.transect_log:
+                  'log_id,transect_code,reef_label,shore_zone,depth_text,surveyor_names,colony_tally,grade_code\n'+
+                  '1, lr-11 ,Coral Terrace,Outer Slope, 18.5 ,Ivo; Nadia,105,T\n'+
+                  '2, lr-12 ,Lagoon Bench,Inner Flat, 9.0 ,Rhea,12,S\n';
+              }#
+          ];
+          asserts:
+          [
+            twoFoldedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"transectCode":"LR-11","reefLabel":"CORA / outer slope","shoreZone":"outer slope","depthTag":"D-18.5","surveyorRoster":"Ivo; Nadia","colonyTotal":105,"healthGrade":"THRIVING"},{"transectCode":"LR-12","reefLabel":"LAGO / inner flat","shoreZone":"inner flat","depthTag":"D-9.0","surveyorRoster":"Rhea","colonyTotal":12,"healthGrade":"STABLE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    digestColumnSuite:
+    {
+      function: |test::lunarreef2::domain::ColonyDigest.all()->graphFetch(
+        #{
+          test::lunarreef2::domain::ColonyDigest
+          {
+            digestKey,
+            tallyBand,
+            rosterSize
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarreef2::domain::ColonyDigest
+          {
+            digestKey,
+            tallyBand,
+            rosterSize
+          }
+        }#
+      );
+      tests:
+      [
+        bandedSectorNotes:
+        {
+          doc: 'Two sector notes whose digest key concatenates the upper-cased transect code with the upper-cased tally text and whose band is abbreviated to the first three characters of that same padded text.';
+          data:
+          [
+            test::lunarreef2::store::ReefLogDb:
+              Relational
+              #{
+                reeflog.sector_note:
+                  'note_id,transect_code,sector_label,tally_text,roster_size\n'+
+                  '1,LR-11,North Sector, high ,2\n'+
+                  '2,LR-12,South Sector, low ,1\n';
+              }#
+          ];
+          asserts:
+          [
+            twoBandedNotes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestKey":"LR-11/HIGH","tallyBand":"BAND-HIG","rosterSize":2},{"digestKey":"LR-12/LOW","tallyBand":"BAND-LOW","rosterSize":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

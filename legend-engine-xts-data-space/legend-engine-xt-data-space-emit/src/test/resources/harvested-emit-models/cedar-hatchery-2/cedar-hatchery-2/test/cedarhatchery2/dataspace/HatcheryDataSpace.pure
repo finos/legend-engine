@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::cedarhatchery2::dataspace::HatcheryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'rearing';
+      description: 'Rearing context - the lot, species, raceway and feed plan bindings served through the hatchery core warehouse tier.';
+      mapping: test::cedarhatchery2::mapping::HatcheryCoreMapping;
+      defaultRuntime: test::cedarhatchery2::runtime::HatcheryCoreWarehouseRuntime;
+    },
+    {
+      name: 'health';
+      description: 'Health context - the inspection, veterinary roster and grade scale bindings served through the health tier.';
+      mapping: test::cedarhatchery2::mapping::HatcheryHealthMapping;
+      defaultRuntime: test::cedarhatchery2::runtime::HatcheryHealthRuntime;
+    }
+  ];
+  defaultExecutionContext: 'rearing';
+  title: 'Cedar Hatchery Rearing And Health Record';
+  description: 'One catalogued entry point over the hatchery record: the processing-temporal rearing lots with their species, raceway and feed plan lookups, and the processing-temporal health inspections with their veterinary roster and grade scale, wiring both mappings and their default runtime tiers so a consumer runs either context without naming them individually.';
+  elements:
+  [
+    test::cedarhatchery2::domain::StockLot,
+    test::cedarhatchery2::domain::Species,
+    test::cedarhatchery2::domain::Raceway,
+    test::cedarhatchery2::domain::FeedPlan,
+    test::cedarhatchery2::domain::HealthCheck,
+    test::cedarhatchery2::domain::VetRoster,
+    test::cedarhatchery2::domain::GradeScale
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Lot board as of a processing instant';
+      description: 'Featured endpoint returning the rearing lot board believed at a processing instant.';
+      executable: test::cedarhatchery2::service::LotBoardAsOf;
+    },
+    {
+      id: 2;
+      title: 'Health board as of a processing instant';
+      description: 'Featured endpoint returning the inspection board believed at a processing instant.';
+      executable: test::cedarhatchery2::service::HealthBoardAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'hatchery-record-desk@cedarhatchery.invalid';
+  };
+}

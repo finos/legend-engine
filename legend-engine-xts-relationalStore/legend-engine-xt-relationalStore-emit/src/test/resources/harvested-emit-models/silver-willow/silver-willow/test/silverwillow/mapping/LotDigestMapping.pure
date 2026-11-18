@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverwillow::mapping::LotDigestMapping
+(
+  *test::silverwillow::domain::LotDigest[digest]: Pure
+  {
+    ~src test::silverwillow::domain::SeedLot
+    reference: $src.taxonCode,
+    headline: $src.vaultName + ' / ' + $src.zoneLabel,
+    germinated: if($src.germinationCount->isEmpty(),
+                   | 0,
+                   | $src.germinationCount->toOne())
+  }
+
+  testSuites:
+  [
+    digestTransformSuite:
+    {
+      function: |test::silverwillow::domain::LotDigest.all()->graphFetch(
+        #{
+          test::silverwillow::domain::LotDigest{
+            reference,
+            headline,
+            germinated
+          }
+        }#
+      )->serialize(
+        #{
+          test::silverwillow::domain::LotDigest{
+            reference,
+            headline,
+            germinated
+          }
+        }#
+      );
+      tests:
+      [
+        germinationPresent:
+        {
+          doc: 'A seed lot carrying a germination count is folded into a digest headline that concatenates the vault name and the zone label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::silverwillow::domain::SeedLot:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"lotId":1,"taxonCode":"WILLOWSEED","vigourBand":"high","moistureLabel":"DRY","zoneLabel":"zone-detail","curatorTier":"senior","handoverNote":"assigned","germinationCount":12,"vaultName":"Willow Bay Vault"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digested:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"reference":"WILLOWSEED","headline":"Willow Bay Vault / zone-detail","germinated":12}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

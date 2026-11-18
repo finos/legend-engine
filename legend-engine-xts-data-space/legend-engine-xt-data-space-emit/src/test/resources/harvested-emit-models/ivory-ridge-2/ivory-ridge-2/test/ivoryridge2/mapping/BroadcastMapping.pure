@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryridge2::mapping::BroadcastMapping
+(
+  *test::ivoryridge2::domain::RadioStation[station_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryridge2::store::BroadcastDB]airtime.radio_station.station_code
+    )
+    ~mainTable [test::ivoryridge2::store::BroadcastDB]airtime.radio_station
+    stationCode: [test::ivoryridge2::store::BroadcastDB]airtime.radio_station.station_code,
+    stationName: [test::ivoryridge2::store::BroadcastDB]airtime.radio_station.station_name,
+    transmitterKw: [test::ivoryridge2::store::BroadcastDB]airtime.radio_station.transmitter_kw
+  }
+
+  *test::ivoryridge2::domain::Presenter[presenter_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryridge2::store::BroadcastDB]airtime.presenter.presenter_code
+    )
+    ~mainTable [test::ivoryridge2::store::BroadcastDB]airtime.presenter
+    presenterCode: [test::ivoryridge2::store::BroadcastDB]airtime.presenter.presenter_code,
+    presenterName: [test::ivoryridge2::store::BroadcastDB]airtime.presenter.presenter_name,
+    studioCity: [test::ivoryridge2::store::BroadcastDB]airtime.presenter.studio_city
+  }
+
+  *test::ivoryridge2::domain::Programme[programme_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryridge2::store::BroadcastDB]airtime.programme.programme_code,
+      [test::ivoryridge2::store::BroadcastDB]airtime.programme.station_code
+    )
+    ~mainTable [test::ivoryridge2::store::BroadcastDB]airtime.programme
+    programmeCode: [test::ivoryridge2::store::BroadcastDB]airtime.programme.programme_code,
+    programmeName: [test::ivoryridge2::store::BroadcastDB]airtime.programme.programme_name,
+    genreCode: [test::ivoryridge2::store::BroadcastDB]airtime.programme.genre_code,
+    station[station_set]: [test::ivoryridge2::store::BroadcastDB]@Programme_RadioStation
+  }
+
+  *test::ivoryridge2::domain::BroadcastSlot[slot_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.slot_code,
+      [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.aired_on,
+      [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.slot_seq
+    )
+    ~mainTable [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot
+    slotCode: [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.slot_code,
+    airedOn: [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.aired_on,
+    slotSeq: [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.slot_seq,
+    listeners: [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.listeners,
+    durationMinutes: [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.duration_minutes,
+    live: [test::ivoryridge2::store::BroadcastDB]airtime.broadcast_slot.live_flag,
+    programme[programme_set]: [test::ivoryridge2::store::BroadcastDB]@BroadcastSlot_Programme,
+    presenter[presenter_set]: [test::ivoryridge2::store::BroadcastDB]@BroadcastSlot_Presenter
+  }
+
+  testSuites:
+  [
+    slotRosterSuite:
+    {
+      function:
+        |test::ivoryridge2::domain::BroadcastSlot.all()->project(
+          [
+            s|$s.slotCode,
+            s|$s.airedOn,
+            s|$s.slotSeq,
+            s|$s.programme.programmeName,
+            s|$s.programme.station.stationName,
+            s|$s.presenter.presenterName,
+            s|$s.presenter.studioCity,
+            s|$s.listeners,
+            s|$s.live
+          ],
+          [
+            'Slot',
+            'AiredOn',
+            'Seq',
+            'Programme',
+            'Station',
+            'Presenter',
+            'StudioCity',
+            'Listeners',
+            'Live'
+          ]
+        )->sort([asc('Slot')]);
+      tests:
+      [
+        rosterAcrossTables:
+        {
+          data:
+          [
+            test::ivoryridge2::store::BroadcastDB:
+              Relational
+              #{
+                airtime.radio_station:
+                  'station_code,station_name,transmitter_kw\n'+
+                  'S-1,Ridgeway Community Radio,2.5\n'+
+                  'S-2,Harbour Voice FM,0.8\n'+
+                  'S-3,Fell Top Relay,1.2\n';
+                airtime.presenter:
+                  'presenter_code,presenter_name,studio_city\n'+
+                  'P-1,Marta Lindqvist,Ridgeway\n'+
+                  'P-2,Owen Baptiste,Harbour\n'+
+                  'P-3,Nadia Okonjo,\n'+
+                  'P-4,Tomas Ferreira,Fell Top\n';
+                airtime.programme:
+                  'programme_code,station_code,programme_name,genre_code\n'+
+                  'PG-1,S-1,Morning Ridge,TALK\n'+
+                  'PG-2,S-1,Ridge Folk Hour,MUSIC\n'+
+                  'PG-3,S-2,Harbour Notes,MUSIC\n'+
+                  'PG-4,,Late Static,MUSIC\n';
+                airtime.broadcast_slot:
+                  'slot_code,aired_on,slot_seq,programme_code,presenter_code,listeners,duration_minutes,live_flag\n'+
+                  'BS-1,2026-04-01,1,PG-1,P-1,1200,60,true\n'+
+                  'BS-2,2026-04-02,1,PG-2,P-2,1200,45,false\n'+
+                  'BS-3,2026-04-03,2,PG-1,P-1,900,60,true\n'+
+                  'BS-4,2026-04-01,1,PG-3,P-3,400,30,true\n'+
+                  'BS-5,2026-04-05,1,PG-4,,150,15,false\n';
+              }#
+          ];
+          asserts:
+          [
+            fiveSlotsWithAliasQualifiedColumns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot":"BS-1","AiredOn":"2026-04-01","Seq":1,"Programme":"Morning Ridge","Station":"Ridgeway Community Radio","Presenter":"Marta Lindqvist","StudioCity":"Ridgeway","Listeners":1200,"Live":true},{"Slot":"BS-2","AiredOn":"2026-04-02","Seq":1,"Programme":"Ridge Folk Hour","Station":"Ridgeway Community Radio","Presenter":"Owen Baptiste","StudioCity":"Harbour","Listeners":1200,"Live":false},{"Slot":"BS-3","AiredOn":"2026-04-03","Seq":2,"Programme":"Morning Ridge","Station":"Ridgeway Community Radio","Presenter":"Marta Lindqvist","StudioCity":"Ridgeway","Listeners":900,"Live":true},{"Slot":"BS-4","AiredOn":"2026-04-01","Seq":1,"Programme":"Harbour Notes","Station":"Harbour Voice FM","Presenter":"Nadia Okonjo","StudioCity":null,"Listeners":400,"Live":true},{"Slot":"BS-5","AiredOn":"2026-04-05","Seq":1,"Programme":"Late Static","Station":null,"Presenter":null,"StudioCity":null,"Listeners":150,"Live":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,39 @@
+name: cobalt-cove-services
+title: "Cobalt Cove - three point-in-time dock services with external-format response contracts"
+description: |
+  Three single-execution services over a milestoned cycle-dock extent, each one
+  opening the extent at a fixed date, selecting rows with a set-membership or an
+  equality predicate, projecting a deduplicated tabular result and asserting the
+  result as an external-format JSON document. Each response shape is declared as
+  its own binding so the projected column names are a published contract, and
+  one service re-resolves a bitemporal inspection edge inside the projection.
+modelSources:
+  model:
+    root: cobalt-cove-services
+    files:
+      - test/cobaltcove/binding/CovePayloads.pure
+      - test/cobaltcove/service/InspectionLogAsOf.pure
+      - test/cobaltcove/service/StationAuditAsOf.pure
+      - test/cobaltcove/service/StationDetailAsOf.pure
+  dependencies:
+    - source: cobalt-cove-network.emit.yaml
+features:
+  - execution:external-format-binding
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+stores: []
+complexity: intermediate
+tags:
+  - binding
+  - cycle-docks
+  - distinct
+  - h2
+  - point-in-time
+  - projection
+  - service-test
+  - set-membership
+  - urban-planning

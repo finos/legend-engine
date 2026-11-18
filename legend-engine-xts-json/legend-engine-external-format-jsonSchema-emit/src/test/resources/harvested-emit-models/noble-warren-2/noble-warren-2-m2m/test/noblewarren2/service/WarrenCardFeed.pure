@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblewarren2::service::WarrenCardFeed
+{
+  pattern: '/warren/v1/cards/feed';
+  title: 'Warren - Field Card Feed';
+  ownership: UserList { users: ['warren-survey-desk'] };
+  documentation: 'Fetches both card properties from the shared transform with the plain graph specification and serialises exactly the same property tree, taking its source payload from a referenced packageable runtime whose model-store connection binds the roster source class.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::noblewarren2::domain::SurveyorCard.all()->graphFetch(
+      #{
+        test::noblewarren2::domain::SurveyorCard{
+          displayName,
+          cardKind
+        }
+      }#
+    )->serialize(
+      #{
+        test::noblewarren2::domain::SurveyorCard{
+          displayName,
+          cardKind
+        }
+      }#
+    );
+    mapping: test::noblewarren2::mapping::SurveyorCardM2M;
+    runtime: test::noblewarren2::runtime::SurveyorRosterRuntime;
+  }
+  testSuites:
+  [
+    plainFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          surveyorRosterConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"givenName":"Ida","familyName":"Renwick","homeBurrow":{"siteCode":"BS-11","siteName":"Alder Rise"}},{"givenName":"Toft","familyName":"Merrow","homeBurrow":{"siteCode":"BS-12","siteName":"Hollow Furze"}}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        twoRosterRows:
+        {
+          asserts:
+          [
+            bothCardsAssembled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"displayName":"RENWICK, Ida","cardKind":"WARREN-FIELD-CARD"},{"displayName":"MERROW, Toft","cardKind":"WARREN-FIELD-CARD"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::emeraldlantern::connection::HarbourBoardConnection
+{
+  store: test::emeraldlantern::store::LanternDb;
+  type: Sybase;
+  timezone: +0000;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'LANTERN_BOARD_DB';
+    host: 'example-lantern-board-host';
+    port: 5000;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'lanternboardprincipal';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'keeper_visit'; to: 'keeper_visit_current'; schemaFrom: 'beacon'; schemaTo: 'beacon';},
+        table {from: 'district_office'; to: 'district_office_current'; schemaFrom: 'harbour'; schemaTo: 'harbour';},
+        table {from: 'coast_sector'; to: 'coast_sector_current'; schemaFrom: 'harbour'; schemaTo: 'harbour';}
+      ];
+    }
+  ];
+}
+
+###Connection
+RelationalDatabaseConnection test::emeraldlantern::connection::DistrictDepotConnection
+{
+  store: test::emeraldlantern::store::LanternDb;
+  type: Sybase;
+  timezone: +0000;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'LANTERN_DEPOT_DB';
+    host: 'example-lantern-depot-host';
+    port: 5100;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'lanterndepotprincipal';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'keeper_visit'; to: 'keeper_visit_current'; schemaFrom: 'beacon'; schemaTo: 'beacon';},
+        table {from: 'district_office'; to: 'district_office_current'; schemaFrom: 'harbour'; schemaTo: 'harbour';},
+        table {from: 'coast_sector'; to: 'coast_sector_current'; schemaFrom: 'harbour'; schemaTo: 'harbour';}
+      ];
+    }
+  ];
+}

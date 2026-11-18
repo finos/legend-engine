@@ -1,0 +1,38 @@
+name: dusky-thicket-3
+title: "Dusky Thicket 3 — annotated woodland monitoring register versioned on the processing timeline"
+description: |
+  A store-less woodland monitoring register in two class families. Reserve
+  features and field visits form an abstract, processing-temporal hierarchy
+  whose leaves add their own measures, and eight associations wire plots to
+  clumps, stretches to plots and visits, and clumps to browse lines through two
+  same-typed roles that only their end names tell apart. Register paperwork
+  forms a second, deliberately unversioned hierarchy so the same inheritance
+  shape appears on and off the timeline. A locally declared profile marks the
+  regulated declarations, hides a field-only remark and pins a steward and a
+  review cadence, and a closed layer enumeration types the properties both
+  families are scored against.
+
+modelSources:
+  model:
+    root: dusky-thicket-3
+    files:
+      - test/duskythicket3/domain/NoticeDomain.pure
+      - test/duskythicket3/domain/ThicketDomain.pure
+      - test/duskythicket3/profile/ThicketProfiles.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - inheritance
+  - processing-temporal
+  - profile
+  - reserve
+  - woodland

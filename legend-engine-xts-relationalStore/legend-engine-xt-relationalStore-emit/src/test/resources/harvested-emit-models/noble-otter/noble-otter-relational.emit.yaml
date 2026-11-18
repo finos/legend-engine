@@ -1,0 +1,61 @@
+name: noble-otter-relational
+title: Layered trial-plot staging estate with operation-composed mappings
+description: A field-trial staging estate whose source store carries pivoting grouped views,
+  a view over a view and a distinct join-derived view, while a leaf mapping assembles upstream
+  mappings through store-substituting includes. Plot observations resolve through two-hop join
+  paths and a deep banding conditional over the aggregated readings, and operation mappings serve
+  the same classes either polymorphically over subtype implementations or as a union of two
+  reporting forms.
+modelSources:
+  model:
+    root: noble-otter-relational
+    files:
+      - test/nobleotter/domain/TrialDomain.pure
+      - test/nobleotter/mapping/SampleDraftMapping.pure
+      - test/nobleotter/mapping/SampleFinalMapping.pure
+      - test/nobleotter/mapping/StationRefMapping.pure
+      - test/nobleotter/mapping/TrialEnumMapping.pure
+      - test/nobleotter/mapping/TrialMapping.pure
+      - test/nobleotter/store/RefBase.pure
+      - test/nobleotter/store/SampleBase.pure
+      - test/nobleotter/store/TrialStagingDB.pure
+features:
+  - execution:plan-generation
+  - grammar:enumeration
+  - mapping:cross-store
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-polymorphic-query
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - agronomy
+  - business-temporal
+  - conditional-transform
+  - cross-store-include
+  - h2
+  - inline-view
+  - operation-mapping
+  - pivoting-view
+  - polymorphic-query
+  - relational
+  - store-filter
+  - two-hop-join

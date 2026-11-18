@@ -1,0 +1,174 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::meadowwarren4::domain::*;
+
+Enum demo::meadowwarren4::domain::SwardCondition
+{
+  CLOSE_GRAZED,
+  TUSSOCK,
+  MIXED_SWARD,
+  RANK,
+  SCRUBBING_OVER,
+  BARE_GROUND,
+  FLOWER_RICH,
+  MOSS_DOMINANT,
+  UNSURVEYED
+}
+
+Enum demo::meadowwarren4::domain::WardenAction
+{
+  PATROL,
+  REPAIR,
+  MONITOR
+}
+
+Enum demo::meadowwarren4::domain::AccessKind
+{
+  GATE_KEY,
+  VEHICLE,
+  ON_FOOT
+}
+
+Enum demo::meadowwarren4::domain::BarrierKind
+{
+  STOCK_FENCE,
+  LAID_BRUSHWOOD
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::GrazingPlot
+{
+  plotRef: String[1];
+  plotName: String[1];
+  blockRef: String[0..1];
+  wardenCode: String[0..1];
+  indicatorLevel: Integer[0..1];
+  swardCode: String[0..1];
+  conditionIndex: Integer[0..1];
+  aspectNote: String[0..1];
+  swardCondition: SwardCondition[0..1];
+  patrolNote: String[0..1];
+  swardHeightMm: Integer[0..1];
+  wardenName: String[0..1];
+  pathNote: String[0..1];
+  gateCode: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::PlotMetrics
+{
+  metricRef: String[1];
+  plotRef: String[0..1];
+  grazingDays: Integer[0..1];
+  swardHeightMm: Integer[0..1];
+  browseIndex: Integer[0..1];
+  browseBand: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::BurrowCountEast
+{
+  entryRef: String[1];
+  plotRef: String[0..1];
+  levelOne: String[0..1];
+  levelTwo: String[0..1];
+  levelThree: String[0..1];
+  levelFour: String[0..1];
+  tally: Integer[0..1];
+  rolledPlotName: String[0..1];
+  metricBrowseIndex: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::BurrowCountWest
+{
+  entryRef: String[1];
+  plotRef: String[0..1];
+  levelOne: String[0..1];
+  levelTwo: String[0..1];
+  levelThree: String[0..1];
+  levelFour: String[0..1];
+  tally: Integer[0..1];
+  metricBrowseIndex: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::BurrowCountSouth
+{
+  entryRef: String[1];
+  plotRef: String[0..1];
+  levelOne: String[0..1];
+  levelTwo: String[0..1];
+  levelThree: String[0..1];
+  levelFour: String[0..1];
+  tally: Integer[0..1];
+  metricBrowseIndex: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::WardenRole
+{
+  roleRef: String[1];
+  wardenCode: String[0..1];
+  roleCode: String[0..1];
+  bandCode: String[0..1];
+  action: WardenAction[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::WardenAccess
+{
+  accessRef: String[1];
+  wardenCode: String[0..1];
+  gateCode: String[0..1];
+  accessKind: AccessKind[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::WardenPerson
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+  depotName: String[0..1];
+  contactNote: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::meadowwarren4::domain::HierarchyFlat
+{
+  flatRef: String[1];
+  plotRef: String[0..1];
+  pathNote: String[0..1];
+  depthLevel: Integer[0..1];
+}
+
+Class <<temporal.bitemporal>> demo::meadowwarren4::domain::BarrierRun
+{
+  barrierRef: String[1];
+  plotRef: String[0..1];
+  lengthMetres: Integer[0..1];
+  barrierKind: BarrierKind[0..1];
+  barrierNote: String[0..1];
+}
+
+Association demo::meadowwarren4::domain::Plot_Metrics
+{
+  plot: GrazingPlot[0..1];
+  metrics: PlotMetrics[*];
+}
+
+Association demo::meadowwarren4::domain::Plot_Role
+{
+  rolePlot: GrazingPlot[*];
+  role: WardenRole[*];
+}
+
+Association demo::meadowwarren4::domain::Plot_Warden
+{
+  wardenPlot: GrazingPlot[*];
+  warden: WardenPerson[0..1];
+}

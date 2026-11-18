@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::umbermeadow2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'The terrain family a grazing block belongs to.'} test::umbermeadow2::domain::TerrainClass
+{
+  UPLAND,
+  VALLEY,
+  RIDGE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where a herd allocation stands in the grazing rotation.'} test::umbermeadow2::domain::AllocationState
+{
+  ACTIVE,
+  RESTED,
+  SUSPENDED
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A herd allocated onto a grazing block for a stretch of the season, effective over business time.'} test::umbermeadow2::domain::HerdAllocation
+{
+  allocCode: String[1];
+  herdName: String[1];
+  headCount: Integer[1];
+  allocationState: AllocationState[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A fenced block of upland common land whose terrain classification is effective over business time.'} test::umbermeadow2::domain::GrazingBlock
+{
+  blockCode: String[1];
+  blockName: String[1];
+  terrainClass: TerrainClass[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The warden responsible for a set of grazing blocks.'} test::umbermeadow2::domain::CommonsWarden
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+  contactNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A walked patrol round booked against a grazing block.'} test::umbermeadow2::domain::PatrolRound
+{
+  roundCode: String[1];
+  patrolTeam: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a herd allocation to the grazing block it occupies; both ends are effective over business time, so the navigation carries a date.'} test::umbermeadow2::domain::Allocation_Block
+{
+  allocations: HerdAllocation[*];
+  block: GrazingBlock[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a grazing block to its warden, the second hop of the register navigation.'} test::umbermeadow2::domain::Block_Warden
+{
+  wardenBlocks: GrazingBlock[*];
+  warden: CommonsWarden[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a grazing block to the patrol rounds walked on it, the to-many end the emptiness test reaches through.'} test::umbermeadow2::domain::Block_Patrols
+{
+  patrolBlock: GrazingBlock[0..1];
+  patrols: PatrolRound[*];
+}

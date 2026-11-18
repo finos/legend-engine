@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietthicket::service::ReadingsByEnvironment
+{
+  pattern: '/thicket/v1/readings/keyed/{environment}';
+  title: 'Turbine Telemetry - Readings By Environment';
+  documentation: 'A keyed service taking no parameters and projecting the whole reading class, so the only thing the caller chooses is which warehouse resolves the plan. One plan is generated per key, each beginning with a key-resolution allocation before relational execution.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'turbine-telemetry',
+    'wind-fleet-ops'
+  ];
+  execution: Multi
+  {
+    query: {|test::quietthicket::domain::SensorReading.all()->project(
+      [
+        r|$r.readingCode,
+        r|$r.capturedAt,
+        r|$r.windSpeedMs,
+        r|$r.powerOutputKw,
+        r|$r.faultRaised,
+        r|$r.turbineName,
+        r|$r.siteName
+      ],
+      [
+        'Reading/Code',
+        'Reading/CapturedAt',
+        'Reading/WindSpeed',
+        'Reading/PowerOutput',
+        'Reading/FaultRaised',
+        'Fleet/TurbineName',
+        'Site/Name'
+      ]
+    )->sort(
+      [
+        asc('Reading/Code')
+      ]
+    )};
+    key: 'environment';
+    executions['prod']:
+    {
+      mapping: test::quietthicket::mapping::TurbineMapping;
+      runtime: test::quietthicket::runtime::ThicketProdRuntime;
+    }
+    executions['uat']:
+    {
+      mapping: test::quietthicket::mapping::TurbineMapping;
+      runtime: test::quietthicket::runtime::ThicketUatRuntime;
+    }
+  }
+}

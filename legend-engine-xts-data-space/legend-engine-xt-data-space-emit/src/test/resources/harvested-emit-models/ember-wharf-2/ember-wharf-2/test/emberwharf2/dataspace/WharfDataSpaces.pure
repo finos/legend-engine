@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::emberwharf2::dataspace::WharfOperationsDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Governed wharf-operations tier resolving every versioned record through the warehouse connection.';
+      mapping: test::emberwharf2::mapping::WharfMapping;
+      defaultRuntime: test::emberwharf2::runtime::WharfWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Wharf Operations';
+  description: 'A governed entry point over the berthing slots, gantry cranes, vessel visits and staged pallet lots of the wharf, each versioned by the processing window in which it was loaded.';
+  executables:
+  [
+    {
+      title: 'Slot Roster';
+      description: 'Berthing slots of one quay side at a caller-supplied processing instant.';
+      executable: test::emberwharf2::service::SlotRoster;
+    },
+    {
+      title: 'Crane Availability';
+      description: 'Gantry cranes at or above a threshold lift capacity.';
+      executable: test::emberwharf2::service::CraneAvailability;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'wharf-operations@localhost';
+  };
+}
+
+###DataSpace
+DataSpace test::emberwharf2::dataspace::WharfMovementsDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Governed movements tier sharing the mapping and runtime with the operations entry point.';
+      mapping: test::emberwharf2::mapping::WharfMapping;
+      defaultRuntime: test::emberwharf2::runtime::WharfWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Wharf Movements';
+  description: 'A narrower governed entry point over the vessel visits and the pallet lots they leave on the apron.';
+  executables:
+  [
+    {
+      title: 'Vessel Call Register';
+      description: 'Vessel visits recorded against one berthing slot.';
+      executable: test::emberwharf2::service::VesselCallRegister;
+    },
+    {
+      title: 'Pallet Lot Register';
+      description: 'Pallet lots of one commodity class staged on the apron.';
+      executable: test::emberwharf2::service::PalletLotRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'wharf-movements@localhost';
+  };
+}

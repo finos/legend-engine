@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobaltharbor::mapping::SpecimenCurationM2M
+(
+  *test::cobaltharbor::domain::CuratedSpecimen[curatedSpecimenSet]: Pure
+  {
+    ~src test::cobaltharbor::domain::SpecimenFieldRecord
+    specimenCode: $src.recordCode,
+    displayName: $src.specimenName->toUpper()->trim(),
+    cabinetCode: $src.cabinetCode->trim(),
+    conditionBand: test::cobaltharbor::function::conditionBand($src.conditionCode, $src.cabinetCode),
+    labelSummary: test::cobaltharbor::function::labelSummary($src.labelNotes),
+    freshnessBand: test::cobaltharbor::function::freshnessBand($src.collectedOn, 'RECENT-INTAKE'),
+    heightCm: $src.heightCm
+  }
+
+  testSuites:
+  [
+    curationArmsSuite:
+    {
+      function: |test::cobaltharbor::domain::CuratedSpecimen.all()->graphFetch(
+        #{
+          test::cobaltharbor::domain::CuratedSpecimen
+          {
+            specimenCode,
+            displayName,
+            cabinetCode,
+            conditionBand,
+            labelSummary,
+            freshnessBand,
+            heightCm
+          }
+        }#
+      )->serialize(
+        #{
+          test::cobaltharbor::domain::CuratedSpecimen
+          {
+            specimenCode,
+            displayName,
+            cabinetCode,
+            conditionBand,
+            labelSummary,
+            freshnessBand,
+            heightCm
+          }
+        }#
+      );
+      tests:
+      [
+        everyBandArmAndBothLabelFallbacks:
+        {
+          doc: 'Hits both condition arms including the untrimmed code that defeats the paired equality, the labelled and unlabelled summary arms including the note that is outside the allowed set, and both freshness arms including the boundary day that still counts as recent.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::cobaltharbor::domain::SpecimenFieldRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordCode":"FR-01","collectedOn":"2026-06-01","conditionCode":"fragile","specimenName":"carex ridgensis","cabinetCode":" CAB-DARK ","heightCm":12.5,"labelNotes":["draft"]},{"recordCode":"FR-02","collectedOn":"2026-05-15","conditionCode":"fragile","specimenName":"dryopteris hollowii","cabinetCode":"CAB-LIGHT","heightCm":8.25,"labelNotes":["final","draft"]},{"recordCode":"FR-03","collectedOn":"2026-01-05","conditionCode":"stable","specimenName":"sedum scarpense","cabinetCode":"CAB-DARK","heightCm":20.75,"labelNotes":["pending"]},{"recordCode":"FR-04","collectedOn":"2025-12-31","conditionCode":"stable","specimenName":"salix repens","cabinetCode":"CAB-LIGHT","heightCm":5.5,"labelNotes":[]},{"recordCode":"FR-05","collectedOn":"2026-03-02","conditionCode":" fragile ","specimenName":"betula nana","cabinetCode":"cab-dark","heightCm":30.5,"labelNotes":["FINAL"]},{"recordCode":"FR-06","collectedOn":"2026-03-01","conditionCode":"fragile","specimenName":"rubus saxatilis","cabinetCode":"CAB-DARK","heightCm":1.75,"labelNotes":["draft","pending"]},{"recordCode":"FR-07","collectedOn":"2026-06-30","conditionCode":"unknown","specimenName":"thymus polytrichus","cabinetCode":"CAB-COLD","heightCm":0.5,"labelNotes":["FINAL","final","Draft"]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            sevenCuratedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"specimenCode":"FR-01","displayName":"CAREX RIDGENSIS","cabinetCode":"CAB-DARK","conditionBand":"SEALED-CASE","labelSummary":"LABEL:DRAFT","freshnessBand":"RECENT-INTAKE","heightCm":12.5},{"specimenCode":"FR-02","displayName":"DRYOPTERIS HOLLOWII","cabinetCode":"CAB-LIGHT","conditionBand":"FRAGILE","labelSummary":"LABEL:FINAL; LABEL:DRAFT","freshnessBand":"RECENT-INTAKE","heightCm":8.25},{"specimenCode":"FR-03","displayName":"SEDUM SCARPENSE","cabinetCode":"CAB-DARK","conditionBand":"STABLE","labelSummary":"LABEL:OTHER","freshnessBand":"ARCHIVE-INTAKE","heightCm":20.75},{"specimenCode":"FR-04","displayName":"SALIX REPENS","cabinetCode":"CAB-LIGHT","conditionBand":"STABLE","labelSummary":"NO-LABEL","freshnessBand":"ARCHIVE-INTAKE","heightCm":5.5},{"specimenCode":"FR-05","displayName":"BETULA NANA","cabinetCode":"cab-dark","conditionBand":"FRAGILE","labelSummary":"LABEL:FINAL","freshnessBand":"RECENT-INTAKE","heightCm":30.5},{"specimenCode":"FR-06","displayName":"RUBUS SAXATILIS","cabinetCode":"CAB-DARK","conditionBand":"SEALED-CASE","labelSummary":"LABEL:DRAFT; LABEL:OTHER","freshnessBand":"ARCHIVE-INTAKE","heightCm":1.75},{"specimenCode":"FR-07","displayName":"THYMUS POLYTRICHUS","cabinetCode":"CAB-COLD","conditionBand":"UNKNOWN","labelSummary":"LABEL:FINAL; LABEL:FINAL; LABEL:DRAFT","freshnessBand":"RECENT-INTAKE","heightCm":0.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

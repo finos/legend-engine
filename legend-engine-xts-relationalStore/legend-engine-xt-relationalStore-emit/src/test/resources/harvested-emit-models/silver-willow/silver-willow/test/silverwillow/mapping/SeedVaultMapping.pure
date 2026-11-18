@@ -1,0 +1,173 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverwillow::mapping::SeedVaultMapping
+(
+  *test::silverwillow::domain::StorageVault[vault]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.VAULT.VAULT_ID
+    )
+    ~mainTable [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.VAULT
+    vaultId: [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.VAULT.VAULT_ID,
+    vaultName: [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.VAULT.VAULT_NAME,
+    climateZone: [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.VAULT.CLIMATE_ZONE,
+    storeTier: [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.VAULT.STORE_TIER
+  }
+
+  *test::silverwillow::domain::SeedLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.LOT_ID
+    )
+    ~mainTable [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT
+    lotId: [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.LOT_ID,
+    taxonCode: [test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.TAXON_CODE,
+    vigourBand: case(
+                  equal([test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.VIGOUR_CODE, 'H'),
+                  'high',
+                  case(
+                    equal([test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.VIGOUR_CODE, 'M'),
+                    'medium',
+                    case(
+                      equal([test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.VIGOUR_CODE, 'L'),
+                      'low',
+                      sqlNull()
+                    )
+                  )
+                ),
+    moistureLabel: case(
+                     equal([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial | SEEDVAULT.TRIAL.MOISTURE_CODE, 'dry'),
+                     toUpper([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial | SEEDVAULT.TRIAL.MOISTURE_CODE),
+                     'other-moisture'
+                   ),
+    zoneLabel: case(
+                 and(
+                   equal([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial > @Trial_VaultZone | SEEDVAULT.VAULT_ZONE_VW.climateZone, 'TEMPERATE'),
+                   greaterThan(length(trim([test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.TAXON_CODE)), 6)
+                 ),
+                 'zone-detail',
+                 case(
+                   equal([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial > @Trial_VaultZone | SEEDVAULT.VAULT_ZONE_VW.climateZone, 'ARID'),
+                   'arid-zone',
+                   'other-zone'
+                 )
+               ),
+    curatorTier: case(
+                   or(
+                     equal([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial > @Trial_Curator | SEEDVAULT.CURATOR.GRADE_CODE, 'A'),
+                     equal([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial > @Trial_Curator | SEEDVAULT.CURATOR.GRADE_CODE, 'B')
+                   ),
+                   'senior',
+                   case(
+                     equal([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial > @Trial_Curator | SEEDVAULT.CURATOR.GRADE_CODE, 'C'),
+                     'field',
+                     sqlNull()
+                   )
+                 ),
+    handoverNote: case(
+                   isEmpty([test::silverwillow::store::SeedVaultDatabase]@Lot_Trial > @Trial_Curator | SEEDVAULT.CURATOR.GRADE_CODE),
+                   'unassigned',
+                   'assigned'
+                 ),
+    germinationCount: parseInteger([test::silverwillow::store::SeedVaultDatabase]SEEDVAULT.LOT.GERMINATION_TEXT),
+    vaultName: [test::silverwillow::store::SeedVaultDatabase]@Lot_Trial > @Trial_VaultZone > @VaultZone_Vault | SEEDVAULT.VAULT.VAULT_NAME
+  }
+
+  testSuites:
+  [
+    lotBranchSuite:
+    {
+      function: test::silverwillow::domain::SeedLot.all()->project(
+        ~[
+          taxonCode: x|$x.taxonCode,
+          vigourBand: x|$x.vigourBand,
+          moistureLabel: x|$x.moistureLabel,
+          zoneLabel: x|$x.zoneLabel,
+          curatorTier: x|$x.curatorTier,
+          handoverNote: x|$x.handoverNote,
+          vaultName: x|$x.vaultName,
+          germinationCount: x|$x.germinationCount
+        ]
+      );
+      tests:
+      [
+        allBranches:
+        {
+          doc: 'Every conditional arm of the five seed-lot transforms is hit, including both null-sentinel fallbacks and the empty-grade handover arm, alongside the three-hop join path that resolves the vault name through the climate-zone view.';
+          data:
+          [
+            test::silverwillow::store::SeedVaultDatabase:
+              Relational
+              #{
+                SEEDVAULT.VAULT:
+                  'VAULT_ID,VAULT_NAME,CLIMATE_ZONE,STORE_TIER\n'+
+                  '1,Willow Bay Vault,TEMPERATE,PRIMARY\n'+
+                  '2,Dry Ridge Vault,ARID,SECONDARY\n'+
+                  '3,Fern Hollow Vault,COASTAL,PRIMARY\n';
+
+                SEEDVAULT.CURATOR:
+                  'CURATOR_ID,CURATOR_NAME,GRADE_CODE\n'+
+                  '1,Ilse Moraine,A\n'+
+                  '2,Tomas Fennel,C\n'+
+                  '3,Nadia Quill,D\n'+
+                  '4,Sorrel Pike,\n';
+
+                SEEDVAULT.TRIAL:
+                  'TRIAL_ID,VAULT_ID,CURATOR_ID,SEASON_LABEL,MOISTURE_CODE\n'+
+                  '1,1,1,SPRING,dry\n'+
+                  '2,2,2,SUMMER,damp\n'+
+                  '3,3,4,AUTUMN,humid\n'+
+                  '4,1,3,WINTER,dry\n';
+
+                SEEDVAULT.LOT:
+                  'LOT_ID,TRIAL_ID,TAXON_CODE,VIGOUR_CODE,GERMINATION_TEXT\n'+
+                  '1,1,WILLOWSEED,H,12\n'+
+                  '2,1,ELM,M,7\n'+
+                  '3,2,SEDGE,L,3\n'+
+                  '4,2,ANEMONESEED,X,5\n'+
+                  '5,3,LARKSPUR,H,9\n'+
+                  '6,3,CHICORY,M,4\n'+
+                  '7,4,ABELIASEED,L,6\n'+
+                  '8,4,GORSE,X,2\n'+
+                  '9,1,PRIMROSESEED,H,11\n'+
+                  '10,4,YARROWSEED,M,8\n';
+              }#
+          ];
+          asserts:
+          [
+            branchRows:
+              Relation
+              #{
+                taxonCode,vigourBand,moistureLabel,zoneLabel,curatorTier,handoverNote,vaultName,germinationCount
+                WILLOWSEED,high,DRY,zone-detail,senior,assigned,Willow Bay Vault,12
+                ELM,medium,DRY,other-zone,senior,assigned,Willow Bay Vault,7
+                SEDGE,low,other-moisture,arid-zone,field,assigned,Dry Ridge Vault,3
+                ANEMONESEED,,other-moisture,arid-zone,field,assigned,Dry Ridge Vault,5
+                LARKSPUR,high,other-moisture,other-zone,,unassigned,Fern Hollow Vault,9
+                CHICORY,medium,other-moisture,other-zone,,unassigned,Fern Hollow Vault,4
+                ABELIASEED,low,DRY,zone-detail,,assigned,Willow Bay Vault,6
+                GORSE,,DRY,other-zone,,assigned,Willow Bay Vault,2
+                PRIMROSESEED,high,DRY,zone-detail,senior,assigned,Willow Bay Vault,11
+                YARROWSEED,medium,DRY,zone-detail,,assigned,Willow Bay Vault,8;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

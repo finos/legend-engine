@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Text
+Text test::teallighthouse3::text::ProgrammeSchemaOverview
+{
+  type: markdown;
+  content: '# Digitisation Programme Configuration\n\nA programme owns one or more specimen collections, zero or more environment profiles and zero or more publication targets. Each collection declares its datasets; each dataset declares its columns, an optional retention policy and any validation rules asserted over those columns.\n\nEvery dataset and every publication target carries an access label from the closed label set, and a column may narrow the label it inherits by listing its own labels. The environment profile describes an environment purely by which capability variants it enables on the ingest, export and preview sides, and by which it explicitly withholds.\n\nThe documents in this package encode instances of that schema as opaque content. Nothing here is parsed by the compiler: the relationship between a document and the schema it encodes holds by convention only.\n';
+}
+
+Text test::teallighthouse3::text::CoastalProgrammeInstance
+{
+  type: plainText;
+  content: 'programmeCode: PRG-COASTAL\nprogrammeTitle: Coastal Herbaria Digitisation\naccessLabel: OPEN\nimagingSpec:\n  resolutionDpi: 600\n  colourProfile: AdobeRGB1998\n  derivativeFormats: [master-tiff, access-jpeg, thumb-jpeg]\ncollections:\n  - collectionCode: COL-DUNE\n    collectionTitle: Dune Flora\n    curator:\n      displayName: Wren Halloway\n      institution: Coastal Botanic Institute\n      roleTitle: Senior Curator\n    collectionNotes: [transferred 2019, partially remounted]\n    datasets:\n      - datasetName: dune_occurrence\n        schemaKind: TABULAR\n        accessLabel: OPEN\n        datasetTags: [occurrence, published]\n        retention:\n          horizonDays: 3650\n          archiveTarget: cold-store\n          sealedExempt: false\n        columns:\n          - columnName: occurrence_id\n            columnType: String\n            widthLimit: 24\n            requiredColumn: true\n            columnLabels: []\n          - columnName: taxon_name\n            columnType: String\n            widthLimit: 128\n            requiredColumn: true\n            columnLabels: []\n          - columnName: locality_text\n            columnType: String\n            requiredColumn: false\n            columnLabels: [RESTRICTED]\n        validationRules:\n          - ruleCode: VR-TAXON-PRESENT\n            ruleStatement: taxon_name must be non-empty\n            severity: error\n            appliesTo: [taxon_name]\n';
+}
+
+Text test::teallighthouse3::text::UplandProgrammeInstance
+{
+  type: plainText;
+  content: 'programmeCode: PRG-UPLAND\nprogrammeTitle: Upland Herbaria Digitisation\naccessLabel: RESTRICTED\ncollections:\n  - collectionCode: COL-SCREE\n    collectionTitle: Scree Flora\n    datasets:\n      - datasetName: scree_hierarchy\n        schemaKind: HIERARCHICAL\n        accessLabel: RESTRICTED\n        columns:\n          - columnName: node_path\n            columnType: String\n            widthLimit: 512\n            requiredColumn: true\n            columnLabels: [RESTRICTED, EMBARGOED]\n      - datasetName: scree_relation\n        schemaKind: RELATION\n        accessLabel: EMBARGOED\n        retention:\n          horizonDays: 180\n          sealedExempt: true\n        columns:\n          - columnName: left_node\n            columnType: String\n            requiredColumn: true\n            columnLabels: []\n          - columnName: right_node\n            columnType: String\n            requiredColumn: true\n            columnLabels: []\n';
+}
+
+Text test::teallighthouse3::text::EnvironmentProfileInstances
+{
+  type: plainText;
+  content: 'environments:\n  - environmentName: development\n    ingestCapabilities: [INGEST_SHEET_SCAN, INGEST_LABEL_TRANSCRIPTION, INGEST_BATCH_RESUME]\n    exportCapabilities: [EXPORT_TABULAR_EXTRACT]\n    previewCapabilities: [PREVIEW_SHEET_THUMBNAIL, PREVIEW_SCHEMA_SAMPLE, PREVIEW_VALIDATION_REPORT]\n    withheldCapabilities: [EXPORT_BULK_ARCHIVE, EXPORT_REDACTED_LOCALITY]\n  - environmentName: acceptance\n    ingestCapabilities: [INGEST_SHEET_SCAN, INGEST_LABEL_TRANSCRIPTION, INGEST_GEOREFERENCE_LOOKUP, INGEST_TAXON_RECONCILIATION, INGEST_DUPLICATE_DETECTION, INGEST_CHECKSUM_VERIFY]\n    exportCapabilities: [EXPORT_TABULAR_EXTRACT, EXPORT_IMAGE_DERIVATIVE, EXPORT_TAXON_TREE, EXPORT_OCCURRENCE_FEED]\n    previewCapabilities: [PREVIEW_VALIDATION_REPORT]\n    withheldCapabilities: [EXPORT_BULK_ARCHIVE]\n  - environmentName: production\n    ingestCapabilities: [INGEST_SHEET_SCAN, INGEST_LABEL_TRANSCRIPTION, INGEST_GEOREFERENCE_LOOKUP, INGEST_TAXON_RECONCILIATION, INGEST_DUPLICATE_DETECTION, INGEST_BATCH_RESUME, INGEST_CHECKSUM_VERIFY, INGEST_QUARANTINE_HOLD]\n    exportCapabilities: [EXPORT_TABULAR_EXTRACT, EXPORT_IMAGE_DERIVATIVE, EXPORT_TAXON_TREE, EXPORT_OCCURRENCE_FEED, EXPORT_LABEL_TRANSCRIPT, EXPORT_COLLECTOR_INDEX, EXPORT_REDACTED_LOCALITY, EXPORT_BULK_ARCHIVE]\n    previewCapabilities: []\n    withheldCapabilities: []\n';
+}
+
+Text test::teallighthouse3::text::PublicationTargetInstances
+{
+  type: plainText;
+  content: 'publicationTargets:\n  - targetName: public-portal\n    accessLabel: OPEN\n    operationalNote: rebuilt nightly from the open datasets only\n    apis:\n      - apiName: occurrence-search\n        servedKind: TABULAR\n        mountPath: /occurrences\n        exposedDatasets: [dune_occurrence]\n        quota:\n          maxRowsPerCall: 500\n          burstAllowance: 2000\n      - apiName: taxon-tree\n        servedKind: HIERARCHICAL\n        exposedDatasets: [scree_hierarchy]\n  - targetName: partner-exchange\n    accessLabel: RESTRICTED\n    apis:\n      - apiName: relation-feed\n        servedKind: RELATION\n        mountPath: /relations\n        exposedDatasets: [scree_relation, scree_hierarchy]\n        quota:\n          maxRowsPerCall: 50000\n  - targetName: embargo-holding\n    accessLabel: SEALED\n    operationalNote: serves nothing until the embargo horizon passes\n    apis:\n      - apiName: sealed-manifest\n        servedKind: TABULAR\n        exposedDatasets: []\n';
+}
+
+Text test::teallighthouse3::text::LabelHandlingRules
+{
+  type: markdown;
+  content: '## Label Handling\n\nA column with no labels of its own is published under the label of its dataset. A column that lists labels is published under the most restrictive of them, where the order of restriction runs OPEN, RESTRICTED, EMBARGOED, SEALED.\n\nA publication target may only expose a dataset whose label is no more restrictive than the label of the target itself, which is why the sealed holding target exposes an empty dataset list. A retention policy marked exempt keeps a sealed dataset beyond its horizon; every other dataset is either archived to its named target or discarded when the horizon passes.\n';
+}
+
+Text test::teallighthouse3::text::ValidationCatalogue
+{
+  type: plainText;
+  content: 'ruleCode,severity,appliesTo,ruleStatement\nVR-TAXON-PRESENT,error,taxon_name,taxon_name must be non-empty\nVR-ID-WIDTH,error,occurrence_id,occurrence_id must fit the declared width bound\nVR-LOCALITY-LABEL,warning,locality_text,locality_text must carry a label at least as restrictive as RESTRICTED\nVR-NODE-PATH,error,node_path,node_path must be a slash-delimited path\nVR-EDGE-PAIR,error,left_node|right_node,both edge endpoints must be present on every row\n';
+}

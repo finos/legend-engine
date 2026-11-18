@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emeraldthistle3::store::HerbariumDB
+(
+  Schema herbarium
+  (
+    Table accession_record
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      accession_code VARCHAR(32) PRIMARY KEY,
+      source_label VARCHAR(120) NOT NULL,
+      gather_region VARCHAR(120) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table garden_plot
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      plot_code VARCHAR(32) PRIMARY KEY,
+      plot_label VARCHAR(120) NOT NULL,
+      section_code VARCHAR(32),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table garden_section
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      section_code VARCHAR(32) PRIMARY KEY,
+      section_label VARCHAR(120) NOT NULL,
+      reserve_code VARCHAR(32),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table growing_bed
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      bed_code VARCHAR(32) PRIMARY KEY,
+      bed_label VARCHAR(120) NOT NULL,
+      plot_code VARCHAR(32),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table nature_reserve
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      reserve_code VARCHAR(32) PRIMARY KEY,
+      reserve_label VARCHAR(120) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table reserve_steward
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      steward_code VARCHAR(32) PRIMARY KEY,
+      steward_name VARCHAR(120) NOT NULL,
+      rota_label VARCHAR(60) NOT NULL,
+      reserve_code VARCHAR(32) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table specimen
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      specimen_code VARCHAR(32) PRIMARY KEY,
+      tag_code VARCHAR(60),
+      species_label VARCHAR(120) NOT NULL,
+      habit_label VARCHAR(60) NOT NULL,
+      collect_code VARCHAR(40) NOT NULL,
+      form_label VARCHAR(60) NOT NULL,
+      status_label VARCHAR(40) NOT NULL,
+      note_label VARCHAR(120) NOT NULL,
+      accession_code VARCHAR(32),
+      bed_code VARCHAR(32),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+
+  Join Bed_Plot(herbarium.growing_bed.plot_code = herbarium.garden_plot.plot_code)
+  Join Plot_Section(herbarium.garden_plot.section_code = herbarium.garden_section.section_code)
+  Join Reserve_Steward(herbarium.nature_reserve.reserve_code = herbarium.reserve_steward.reserve_code)
+  Join Section_Reserve(herbarium.garden_section.reserve_code = herbarium.nature_reserve.reserve_code)
+  Join Specimen_Accession(herbarium.specimen.accession_code = herbarium.accession_record.accession_code)
+  Join Specimen_Bed(herbarium.specimen.bed_code = herbarium.growing_bed.bed_code)
+)

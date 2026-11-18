@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelorchard5::mapping::PollinationLedgerMapping
+(
+  test::hazelorchard5::domain::PollinationVisit[pollinationVisitLedgerSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.visit_id
+    )
+    ~mainTable [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit
+    visitId: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.visit_id,
+    orchardCode: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.orchard_code,
+    seasonLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.season_label,
+    hiveCode: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.hive_code,
+    blockCode: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.block_code,
+    rowCode: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.row_code,
+    colonyCode: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.colony_code,
+    inspectorCode: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.inspector_code,
+    observedOnDate: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.observed_on_date,
+    startedAtTime: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.started_at_time,
+    endedAtTime: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.ended_at_time,
+    weatherLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.weather_label,
+    cloudCoverLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.cloud_cover_label,
+    windLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.wind_label,
+    temperatureCelsius: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.temperature_celsius,
+    humidityPercent: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.humidity_percent,
+    visitDurationMinutes: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.visit_duration_minutes,
+    frameCount: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.frame_count,
+    broodFrameCount: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.brood_frame_count,
+    foragerCountPerMinute: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.forager_count_per_minute,
+    blossomOpenPercent: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.blossom_open_percent,
+    blossomStageLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.blossom_stage_label,
+    nectarFlowLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.nectar_flow_label,
+    pollenTrapGrams: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.pollen_trap_grams,
+    hiveWeightKilograms: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.hive_weight_kilograms,
+    queenSeenFlag: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.queen_seen_flag,
+    varroaCountPerHundred: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.varroa_count_per_hundred,
+    diseaseSignLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.disease_sign_label,
+    feedGivenLitres: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.feed_given_litres,
+    equipmentLabel: [test::hazelorchard5::store::HiveVisitLedgerDatabase]orchard.hive_visit.equipment_label
+  }
+)

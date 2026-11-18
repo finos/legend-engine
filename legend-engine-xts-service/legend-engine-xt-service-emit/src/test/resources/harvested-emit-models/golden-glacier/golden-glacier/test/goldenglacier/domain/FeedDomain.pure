@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::goldenglacier::feed::*;
+
+Class {meta::pure::profiles::doc.doc = 'Root of the nested specimen document published by the upstream conservatory registry.'} test::goldenglacier::feed::SpecimenFeed
+{
+  accessionRef: String[0..1];
+  revision: Integer[0..1];
+  record: SpecimenRecordNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The curation record node of a published specimen document.'} test::goldenglacier::feed::SpecimenRecordNode
+{
+  curatorCode: String[0..1];
+  gradeCode: String[0..1];
+  moisturePct: Integer[0..1];
+  collectedOn: StrictDate[0..1];
+  cabinet: CabinetNode[0..1];
+  cuttings: CuttingNode[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The storage cabinet a published specimen record is filed in.'} test::goldenglacier::feed::CabinetNode
+{
+  cabinetCode: String[0..1];
+  wing: String[0..1];
+  tag: TagNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The nested identifier structure stamped on a cabinet.'} test::goldenglacier::feed::TagNode
+{
+  tagSeries: String[0..1];
+  tagNumber: Integer[0..1];
+  issuer: String[0..1];
+  season: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A propagation cutting taken from a published specimen.'} test::goldenglacier::feed::CuttingNode
+{
+  cuttingRef: String[0..1];
+  heightCm: Integer[0..1];
+  sizeClass: String[0..1];
+}

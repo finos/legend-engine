@@ -1,0 +1,48 @@
+name: wistful-lantern
+title: "Coastal Light Station Timeline — Business-Temporal Class over a Profiled Domain with an Association Mapping"
+description: |
+  A coastal navigation-aid corpus whose light-station class lives on a business
+  timeline while the sector, optic, vessel and visit sets around it are static.
+  A locally declared profile carries the stereotypes and tagged values applied
+  to the milestoned class, the decommissioned fog signal and the rotating optic
+  subtype, and an association binds maintenance visits to their tender vessel
+  through a named inner join. A mapping test suite seeds every table and asserts
+  the relation projected as of a fixed business date, so the superseded version
+  and the version whose validity window has not opened are both absent.
+modelSources:
+  model:
+    root: wistful-lantern
+    files:
+      - test/wistfullantern/domain/LanternDomain.pure
+      - test/wistfullantern/mapping/LanternMapping.pure
+      - test/wistfullantern/store/LanternDB.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:profile
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - business-temporal
+  - coastal-navigation
+  - duckdb
+  - inner-join
+  - mapping-test
+  - milestoning
+  - profile
+  - relational
+  - subtype

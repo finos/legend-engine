@@ -1,0 +1,43 @@
+name: lunar-reef-2
+title: "Lunar Reef 2 — a reef-transect feed folded twice: once model-to-model out of a delimited string with a cast and a floored tally band, once out of padded columns with relational string functions"
+description: |
+  A reef-transect survey model that derives the same two curated types from two different source
+  shapes. A model-to-model mapping reads a single delimited feed string, splits it and indexes the
+  tokens for the transect code, the abbreviated reef label and the shore zone, casts the optional
+  numeric depth reading through a collection step so an absent reading stays empty, sorts and joins
+  the surveyor collection into one roster string, sums the tally collection and resolves a padded
+  grade letter through an enumeration mapping onto a closed health grade; a second class mapping in
+  the same file reduces the feed to a digest key built from the leading token and the tally count
+  and to a tally band floored onto twenty-five-unit steps. A relational mapping over a two-table
+  log store derives the identical types from padded columns instead, trimming and upper-casing the
+  code, abbreviating the label with a substring and concatenating it with the lower-cased zone,
+  prefixing the depth tag and resolving the grade letter through a column enumeration mapping.
+  Four mapping suites assert both derivations, covering a fully populated source, an absent
+  optional step, a multi-element collection and every grade literal.
+modelSources:
+  model:
+    root: lunar-reef-2
+    files:
+      - test/lunarreef2/domain/ReefDomain.pure
+      - test/lunarreef2/mapping/ReefLogMapping.pure
+      - test/lunarreef2/mapping/ReefMirrorM2M.pure
+      - test/lunarreef2/store/ReefLogDb.pure
+features:
+  - grammar:enumeration
+  - mapping:m2m-transform
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+stores:
+  - model-store
+  - relational
+complexity: basic
+tags:
+  - collection-reduce
+  - enumeration-mapping
+  - graph-fetch-serialize
+  - h2
+  - m2m-transform
+  - mapping-test
+  - reef-transect-survey
+  - string-function-transform
+  - type-cast

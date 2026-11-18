@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivorytundra5::service::StationRegisterAsOf
+{
+  pattern: '/ivorytundra/v1/station-register/{asOf}/{intervalFloor}';
+  title: 'Tundra Field Office - Instrument Register As Of A Business Date';
+  documentation: 'Resolves the sensor deployments of the tundra instrument register at a single business date, threading that same date through every navigation to the milestoned observation station and on to its custodian, keeping only serviced deployments that sample at least as often as the supplied floor and whose station carries at least one passed calibration check, then returning the deduplicated register rows ordered by deployment code and station code.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], intervalFloor: Integer[1]|test::ivorytundra5::domain::SensorDeployment.all($asOf)->filter(
+      d|(($d.serviceState == 'SERVICED') && ($d.sampleInterval >= $intervalFloor)) && ($d.station($asOf).checks->exists(c|$c.checkResult == 'PASS') && !$d.station($asOf).terrainLabel->isEmpty())
+    )->project(
+      [
+        d|$d.deployCode,
+        d|$d.instrumentName,
+        d|$d.sampleInterval,
+        d|$d.serviceState,
+        d|$d.station($asOf).stationCode,
+        d|$d.station($asOf).stationName,
+        d|$d.station($asOf).terrainLabel,
+        d|$d.station($asOf).custodian.custodianName,
+        d|$d.station($asOf).custodian.radioNote,
+        d|$d.instrumentName->length(),
+        d|$d.station($asOf).stationName->toOne()->trim()->toUpper(),
+        d|if($d.sampleInterval >= 60, |'HOURLY', |'SUB-HOURLY')
+      ],
+      [
+        'Deployment Code',
+        'Instrument Name',
+        'Sample Interval',
+        'Service State',
+        'Station Code',
+        'Station Name',
+        'Terrain Label',
+        'Custodian Name',
+        'Radio Note',
+        'Instrument Name Width',
+        'Station Tag',
+        'Cadence Band'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Deployment Code'),
+        asc('Station Code')
+      ]
+    )};
+    mapping: test::ivorytundra5::mapping::StationRegisterMapping;
+    runtime: test::ivorytundra5::runtime::StationRegisterRuntime;
+  }
+  testSuites:
+  [
+    stationRegisterAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          stationRegisterConnection:
+            Relational
+            #{
+              tundra.station_custodian:
+                'custodian_code,custodian_name,radio_note\n'+
+                'CU-01,Wren Halvard,radio channel two\n'+
+                'CU-02,Iver Snowdon,\n';
+
+              tundra.calibration_check:
+                'check_code,station_code,check_result,drift_percent\n'+
+                'CC-01,OS-01,PASS,0.4\n'+
+                'CC-02,OS-01,HOLD,1.9\n'+
+                'CC-03,OS-02,HOLD,2.6\n'+
+                'CC-04,OS-03,PASS,0.7\n';
+
+              tundra.observation_station:
+                'station_code,station_name,terrain_label,custodian_code,from_z,thru_z\n'+
+                'OS-01, Ivory Plateau Station ,ICE PLATEAU,CU-01,2026-01-01,9999-12-31\n'+
+                'OS-02,Hollow Basin Station,MOSS BASIN,CU-02,2026-01-01,9999-12-31\n'+
+                'OS-03,Ridge Crown Station,SCREE RIDGE,CU-01,2026-01-01,9999-12-31\n'+
+                'OS-04,Closed Cairn Station,ICE PLATEAU,CU-01,2026-01-01,2026-02-01\n';
+
+              tundra.sensor_deployment:
+                'deploy_code,station_code,instrument_name,sample_interval,service_state,from_z,thru_z\n'+
+                'SD-01,OS-01,plateau anemometer,90,SERVICED,2026-02-20,9999-12-31\n'+
+                'SD-02,OS-02,basin hygrometer,120,SERVICED,2026-02-01,9999-12-31\n'+
+                'SD-03,OS-03,ridge radiometer,30,SERVICED,2026-02-01,9999-12-31\n'+
+                'SD-04,OS-01,plateau snow gauge,15,SERVICED,2026-02-01,9999-12-31\n'+
+                'SD-05,OS-01,stored thermistor,90,STORED,2026-02-01,9999-12-31\n'+
+                'SD-06,OS-04,retired barometer,90,SERVICED,2026-02-01,9999-12-31\n'+
+                'SD-07,OS-01,lapsed pyranometer,90,SERVICED,2026-01-01,2026-02-15\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        servicedDeploymentsAtTheBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01,
+            intervalFloor = 60
+          ]
+          asserts:
+          [
+            onlyTheCheckedPlateauDeployment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Deployment Code":"SD-01","Instrument Name":"plateau anemometer","Sample Interval":90,"Service State":"SERVICED","Station Code":"OS-01","Station Name":" Ivory Plateau Station ","Terrain Label":"ICE PLATEAU","Custodian Name":"Wren Halvard","Radio Note":"radio channel two","Instrument Name Width":18,"Station Tag":"IVORY PLATEAU STATION","Cadence Band":"HOURLY"}]';
+                  }#;
+              }#
+          ]
+        },
+        outOfWindowDeploymentAtTheEarlierDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-02-10,
+            intervalFloor = 60
+          ]
+          asserts:
+          [
+            onlyTheWindowedVersion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Deployment Code":"SD-07","Instrument Name":"lapsed pyranometer","Sample Interval":90,"Service State":"SERVICED","Station Code":"OS-01","Station Name":" Ivory Plateau Station ","Terrain Label":"ICE PLATEAU","Custodian Name":"Wren Halvard","Radio Note":"radio channel two","Instrument Name Width":18,"Station Tag":"IVORY PLATEAU STATION","Cadence Band":"HOURLY"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

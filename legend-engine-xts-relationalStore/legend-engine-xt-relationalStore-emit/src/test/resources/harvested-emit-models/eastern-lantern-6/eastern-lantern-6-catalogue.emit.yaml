@@ -1,0 +1,60 @@
+name: eastern-lantern-6-catalogue
+title: "Eastern Lantern 6 — Branch Catalogue Register (processing-temporal reads resolved at an explicit instant with a derived date bound)"
+description: |
+  A municipal lending catalogue whose registers are processing-temporal: shelf copies and titles are recorded
+  through a processing window, so every read carries an explicit instant and the generated statement adds the
+  recorded-through predicate, while the branch register is untimed and restated in place. A declared profile
+  supplies the curation and audit stereotypes and the ownership and retention tags carried by those classes
+  alongside the temporal stereotypes. One relational store holds the two milestoned relations and the untimed
+  one, and one mapping roots each class on its own relation under an explicit main table with an explicit
+  primary key, deriving a per-unit cost by division and a catalogue label by concatenation and defaulting a
+  register label to a literal, so the projection carries derived columns rather than only stored ones. Three
+  single-execution services expose the tabular reads: the copy register admits a copy only if it was acquired
+  before a bound computed by adjusting a date by an offset, if the optional branch parameter was supplied and
+  matches, if the format is one of the lent formats and if the copy has not been withdrawn; the title register
+  admits the catalogued subjects by literal membership and strikes the untranslated language by a negated
+  comparison; and the branch register reads the untimed relation. Service tests drive each register at an
+  instant where the in-window rows resolve and the withdrawn, unlisted, late-acquired, other-branch and
+  processing-closed rows are each struck, and drive the two milestoned registers again at an earlier instant
+  where only the row whose processing window covers that instant survives.
+
+modelSources:
+  model:
+    root: eastern-lantern-6-catalogue
+    files:
+      - test/easternlantern6/connection/CatalogueConnection.pure
+      - test/easternlantern6/domain/CatalogueDomain.pure
+      - test/easternlantern6/mapping/CatalogueMapping.pure
+      - test/easternlantern6/runtime/CatalogueRuntime.pure
+      - test/easternlantern6/service/BranchRegionRegister.pure
+      - test/easternlantern6/service/ShelfCopyRegister.pure
+      - test/easternlantern6/service/TitleSubjectRegister.pure
+      - test/easternlantern6/store/CatalogueDb.pure
+
+features:
+  - execution:service
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - date-arithmetic
+  - h2
+  - lending-catalogue
+  - point-in-time
+  - processing-temporal
+  - profile
+  - relational
+  - service

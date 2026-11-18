@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::jadeisle2::dataspace::IsleTrailDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'trail';
+      description: 'Trail environment - the segment and habitat layer served through the core reserve warehouse.';
+      mapping: test::jadeisle2::mapping::IsleCoreMapping;
+      defaultRuntime: test::jadeisle2::runtime::IsleCoreRuntime;
+    }
+  ];
+  defaultExecutionContext: 'trail';
+  title: 'Jade Isle Trail Network';
+  description: 'Discovery surface over the isle trail network: the walked segments, the protected habitats they cross and the walker tallies recorded on them.';
+  elements:
+  [
+    test::jadeisle2::domain::HabitatZone,
+    test::jadeisle2::domain::TrailSegment,
+    test::jadeisle2::domain::VisitorCount
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Trail Segment Board';
+      description: 'The caller-named segments with their habitat reached across the schema boundary.';
+      executable: test::jadeisle2::service::SegmentBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'isle-trail-desk@jadeisle.invalid';
+  };
+}
+
+###DataSpace
+DataSpace test::jadeisle2::dataspace::IslePatrolDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'patrol';
+      description: 'Patrol environment - the including mapping served across both the core and the visit warehouses.';
+      mapping: test::jadeisle2::mapping::IsleVisitMapping;
+      defaultRuntime: test::jadeisle2::runtime::IsleVisitRuntime;
+    }
+  ];
+  defaultExecutionContext: 'patrol';
+  title: 'Jade Isle Warden Patrols';
+  description: 'Discovery surface over the warden patrol record, whose corrections are kept on a processing timeline and whose shifts carry roster notes from a second schema.';
+  elements:
+  [
+    test::jadeisle2::domain::TrailPatrol,
+    test::jadeisle2::domain::WardenShift
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Patrol Window';
+      description: 'The named patrols open at a requested processing date.';
+      executable: test::jadeisle2::service::PatrolWindow;
+    },
+    {
+      id: 2;
+      title: 'Patrol Register';
+      description: 'The whole register as it stood at a requested processing date.';
+      executable: test::jadeisle2::service::PatrolRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'isle-warden-desk@jadeisle.invalid';
+  };
+}

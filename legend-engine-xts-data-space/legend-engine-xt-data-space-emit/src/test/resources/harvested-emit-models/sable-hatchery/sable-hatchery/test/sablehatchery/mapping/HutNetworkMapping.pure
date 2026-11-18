@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablehatchery::mapping::HutNetworkMapping
+(
+  test::sablehatchery::domain::TrailHut: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.hut_code
+    )
+    ~mainTable [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut
+    hutCode: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.hut_code,
+    hutName: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.hut_name,
+    valleyName: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.valley_name,
+    accessGrade: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.access_grade,
+    seasonLabel: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.season_label,
+    custodianName: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.custodian_name,
+    surfaceType: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.surface_type,
+    waterSource: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.water_source,
+    bunkCount: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.bunk_count,
+    walkInHours: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.walk_in_hours,
+    waterTankKl: [test::sablehatchery::store::HutNetworkDatabase]hutnet.trail_hut.water_tank_kl
+  }
+
+  test::sablehatchery::domain::StayRecord: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.stay_id
+    )
+    ~mainTable [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record
+    stayId: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.stay_id,
+    hutName: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.hut_name,
+    valleyName: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.valley_name,
+    accessGrade: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.access_grade,
+    seasonLabel: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.season_label,
+    partySize: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.party_size,
+    checkInTime: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.check_in_time,
+    mealsServed: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.meals_served,
+    loadFactor: [test::sablehatchery::store::HutNetworkDatabase]hutnet.stay_record.load_factor
+  }
+)

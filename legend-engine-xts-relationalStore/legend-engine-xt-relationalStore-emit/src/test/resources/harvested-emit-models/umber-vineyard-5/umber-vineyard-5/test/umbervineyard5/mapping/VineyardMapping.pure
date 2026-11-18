@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umbervineyard5::mapping::VineyardMapping
+(
+  *test::umbervineyard5::domain::Vineyard: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbervineyard5::store::VineyardDB]vines.vineyard.vineyard_code
+    )
+    ~mainTable [test::umbervineyard5::store::VineyardDB]vines.vineyard
+    vineyardCode: [test::umbervineyard5::store::VineyardDB]vines.vineyard.vineyard_code,
+    vineyardName: rtrim([test::umbervineyard5::store::VineyardDB]vines.vineyard.vineyard_name),
+    regionName: rtrim([test::umbervineyard5::store::VineyardDB]vines.vineyard.region_name)
+  }
+
+  *test::umbervineyard5::domain::Trellis: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbervineyard5::store::VineyardDB]vines.trellis.trellis_code
+    )
+    ~mainTable [test::umbervineyard5::store::VineyardDB]vines.trellis
+    trellisCode: [test::umbervineyard5::store::VineyardDB]vines.trellis.trellis_code,
+    trellisStyle: toUpper([test::umbervineyard5::store::VineyardDB]vines.trellis.trellis_style),
+    wireCount: [test::umbervineyard5::store::VineyardDB]vines.trellis.wire_count
+  }
+
+  *test::umbervineyard5::domain::PruningCrew: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbervineyard5::store::VineyardDB]vines.crew.crew_code
+    )
+    ~mainTable [test::umbervineyard5::store::VineyardDB]vines.crew
+    crewCode: [test::umbervineyard5::store::VineyardDB]vines.crew.crew_code,
+    crewName: rtrim([test::umbervineyard5::store::VineyardDB]vines.crew.crew_name)
+  }
+
+  *test::umbervineyard5::domain::NoteReviewer: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbervineyard5::store::VineyardDB]vines.reviewer.reviewer_code
+    )
+    ~mainTable [test::umbervineyard5::store::VineyardDB]vines.reviewer
+    reviewerCode: [test::umbervineyard5::store::VineyardDB]vines.reviewer.reviewer_code,
+    reviewerName: rtrim([test::umbervineyard5::store::VineyardDB]vines.reviewer.reviewer_name)
+  }
+
+  *test::umbervineyard5::domain::VineBlock: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbervineyard5::store::VineyardDB]vines.vine_block.block_code
+    )
+    ~mainTable [test::umbervineyard5::store::VineyardDB]vines.vine_block
+    blockCode: [test::umbervineyard5::store::VineyardDB]vines.vine_block.block_code,
+    blockName: rtrim([test::umbervineyard5::store::VineyardDB]vines.vine_block.block_name),
+    vineCount: [test::umbervineyard5::store::VineyardDB]vines.vine_block.vine_count,
+    rowLengthMetres: [test::umbervineyard5::store::VineyardDB]vines.vine_block.row_length_m,
+    plantedVineMetres: times(
+                         [test::umbervineyard5::store::VineyardDB]vines.vine_block.vine_count,
+                         [test::umbervineyard5::store::VineyardDB]vines.vine_block.row_length_m
+                       ),
+    vineyardLabel: concat(
+                     'HOLDING-',
+                     toUpper([test::umbervineyard5::store::VineyardDB]@Block_Vineyard | [test::umbervineyard5::store::VineyardDB]vines.vineyard.vineyard_name)
+                   ),
+    regionName: [test::umbervineyard5::store::VineyardDB]@Block_Vineyard | [test::umbervineyard5::store::VineyardDB]vines.vineyard.region_name,
+    trellisStyle: toUpper([test::umbervineyard5::store::VineyardDB]@Block_Trellis | [test::umbervineyard5::store::VineyardDB]vines.trellis.trellis_style),
+    wireCount: [test::umbervineyard5::store::VineyardDB]@Block_Trellis | [test::umbervineyard5::store::VineyardDB]vines.trellis.wire_count,
+    crewName: rtrim([test::umbervineyard5::store::VineyardDB]@Block_Crew | [test::umbervineyard5::store::VineyardDB]vines.crew.crew_name),
+    noteText: [test::umbervineyard5::store::VineyardDB]@Block_Note | [test::umbervineyard5::store::VineyardDB]vines.block_note.note_text,
+    reviewerName: [test::umbervineyard5::store::VineyardDB]@Block_Note > (OUTER) [test::umbervineyard5::store::VineyardDB]@Note_Reviewer | [test::umbervineyard5::store::VineyardDB]vines.reviewer.reviewer_name,
+    reviewerTag: concat(
+                   'REVIEWED-',
+                   toUpper([test::umbervineyard5::store::VineyardDB]@Block_Note > (INNER) [test::umbervineyard5::store::VineyardDB]@Note_Reviewer | [test::umbervineyard5::store::VineyardDB]vines.reviewer.reviewer_code)
+                 )
+  }
+)

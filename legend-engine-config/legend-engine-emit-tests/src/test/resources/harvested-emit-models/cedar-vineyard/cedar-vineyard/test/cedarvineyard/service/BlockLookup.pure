@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarvineyard::service::BlockLookup
+{
+  pattern: '/cedarvineyard/v1/blocks/{trellisKind}';
+  owners:
+  [
+    'example-vineyard-team'
+  ];
+  documentation: 'Looks up vine blocks of one trellis kind, restricted to a surveyed block-code collection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {trellisKind: String[1]|test::cedarvineyard::domain::VineBlock.all()->filter(
+      b|(($b.trellisKind->toUpper()->trim()) == ($trellisKind->toUpper()->trim())) && ($b.blockCode->in(['VB-01', 'VB-02', 'VB-03', 'VB-04', 'VB-05', 'VB-06']))
+    )->project(
+      ~[
+        block: x|$x.blockCode,
+        parcel: x|$x.parcelName,
+        spacing: x|$x.rowSpacingCm
+      ]
+    )->sort(~block->ascending())};
+    mapping: test::cedarvineyard::mapping::VineyardMapping;
+    runtime: test::cedarvineyard::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    blockLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardConnection:
+            Relational
+            #{
+              vineyard.vine_block:
+                'block_code,parcel_name,trellis_kind,row_spacing_cm\n'+
+                'VB-01,Upper Terrace,VSP,180\n'+
+                'VB-02,Lower Terrace,PERGOLA,220\n'+
+                'VB-03,Hollow Bench,vsp,200\n'+
+                'VB-09,Outlying Strip,VSP,190\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        verticalShootBlocks:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            trellisKind = 'vsp'
+          ]
+          asserts:
+          [
+            twoBlocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"block":"VB-01","parcel":"Upper Terrace","spacing":180},{"block":"VB-03","parcel":"Hollow Bench","spacing":200}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::wistfulcove::store::CoveDB
+(
+  Schema cove
+  (
+    Table mooring_record
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      record_id INTEGER PRIMARY KEY,
+      mooring_code VARCHAR(24) NOT NULL,
+      cove_code VARCHAR(24) NOT NULL,
+      grade_code VARCHAR(8) NOT NULL,
+      hull_length_m DOUBLE NOT NULL,
+      beam_width_m DOUBLE NOT NULL,
+      line_count INTEGER NOT NULL,
+      surveyed_on DATE NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table cove_site
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      site_id INTEGER PRIMARY KEY,
+      cove_code VARCHAR(24) NOT NULL,
+      cove_name VARCHAR(120) NOT NULL,
+      shore_code VARCHAR(24) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table shore_zone
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      zone_id INTEGER PRIMARY KEY,
+      shore_code VARCHAR(24) NOT NULL,
+      zone_name VARCHAR(120) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Schema archive
+  (
+    Table survey_note
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      note_id INTEGER PRIMARY KEY,
+      mooring_code VARCHAR(24) NOT NULL,
+      cove_code VARCHAR(24) NOT NULL,
+      note_text VARCHAR(200) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table tender_run
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      run_id INTEGER PRIMARY KEY,
+      mooring_code VARCHAR(24) NOT NULL,
+      cove_code VARCHAR(24) NOT NULL,
+      tender_code VARCHAR(24) NOT NULL,
+      trip_count INTEGER NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Join Mooring_Site_J(cove.mooring_record.cove_code = cove.cove_site.cove_code)
+  Join Site_Shore_J(cove.cove_site.shore_code = cove.shore_zone.shore_code)
+  Join Mooring_Note_J(cove.mooring_record.mooring_code = archive.survey_note.mooring_code)
+  Join Mooring_Tender_J(cove.mooring_record.mooring_code = archive.tender_run.mooring_code)
+  Join Site_Tender_J(cove.cove_site.cove_code = archive.tender_run.cove_code)
+  Join Site_Note_J(cove.cove_site.cove_code = archive.survey_note.cove_code)
+)
+
+###Relational
+Database test::wistfulcove::store::ReferenceDB
+(
+  Schema reference
+  (
+    Table grade_band
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      band_id INTEGER PRIMARY KEY,
+      grade_code VARCHAR(8) NOT NULL,
+      band_name VARCHAR(120) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+)
+
+###Relational
+Database test::wistfulcove::store::PatrolDB
+(
+  Schema patrol
+  (
+    Table patrol_log
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      log_id INTEGER PRIMARY KEY,
+      shore_code VARCHAR(24) NOT NULL,
+      patrol_code VARCHAR(24) NOT NULL,
+      sweep_count INTEGER NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+)

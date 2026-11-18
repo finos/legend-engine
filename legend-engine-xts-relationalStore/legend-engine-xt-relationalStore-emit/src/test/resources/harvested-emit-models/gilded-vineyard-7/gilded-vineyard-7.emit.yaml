@@ -1,0 +1,61 @@
+name: gilded-vineyard-7
+title: "Gilded Vineyard 7 — anchored harvest and pruning extracts served as environment-keyed and single-execution read paths"
+description: |
+  A hillside-vineyard operations extract over two anchored tables in one
+  relational store: a harvest record and a pruning pass, each bound by a
+  relational class mapping that pins its primary key and the main table it
+  reads from. Four services expose the same two query bodies twice — once as an
+  environment-keyed multi-execution binding that resolves its mapping and
+  runtime from the execution key, once as the single-execution counterpart that
+  carries the tested suite. The register body keeps the passes whose state is in
+  a caller-independent literal set, projects a parcel row set, de-duplicates and
+  caps it; the roll-up body conjoins a parameter equality, a numeric floor, a
+  set-membership test and a non-empty check before aggregating the picked
+  weight, the cluster extremes and the block count through a grouped
+  projection, so the plan carries the whole predicate and the aggregation into
+  a single rewritten statement.
+modelSources:
+  model:
+    root: gilded-vineyard-7
+    files:
+      - test/gildedvineyard7/connection/VineyardConnection.pure
+      - test/gildedvineyard7/domain/VineyardDomain.pure
+      - test/gildedvineyard7/mapping/VineyardMapping.pure
+      - test/gildedvineyard7/runtime/VineyardRuntime.pure
+      - test/gildedvineyard7/service/ParcelYieldRollup.pure
+      - test/gildedvineyard7/service/PruningPassRegister.pure
+      - test/gildedvineyard7/store/VineyardDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - aggregation
+  - collection-membership
+  - grouped-projection
+  - h2
+  - hillside-vineyard
+  - main-table-alias
+  - multi-execution
+  - multi-table
+  - primary-key
+  - relational
+  - sort-limit
+  - tabular-data-set

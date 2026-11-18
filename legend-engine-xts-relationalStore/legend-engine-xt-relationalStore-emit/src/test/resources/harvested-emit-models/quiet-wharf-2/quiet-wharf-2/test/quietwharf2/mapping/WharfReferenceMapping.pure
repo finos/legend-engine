@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietwharf2::mapping::WharfReferenceMapping
+(
+  *test::quietwharf2::domain::Wharf[wharf]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwharf2::store::MooringStore]reference.wharf.wharf_code
+    )
+    ~mainTable [test::quietwharf2::store::MooringStore]reference.wharf
+    wharfCode: [test::quietwharf2::store::MooringStore]reference.wharf.wharf_code,
+    wharfName: [test::quietwharf2::store::MooringStore]reference.wharf.wharf_name,
+    wardenName: [test::quietwharf2::store::MooringStore]reference.wharf.warden_name,
+    harbourCode: [test::quietwharf2::store::MooringStore]reference.wharf.harbour_code
+  }
+
+  testSuites:
+  [
+    wharfRegisterSuite:
+    {
+      function: |test::quietwharf2::domain::Wharf.all()->project(
+  [
+    w|$w.wharfCode,
+    w|$w.wharfName,
+    w|$w.wardenName,
+    w|$w.harbourCode
+  ],
+  [
+    'WharfCode',
+    'WharfName',
+    'WardenName',
+    'HarbourCode'
+  ]
+)->sort(
+  [
+    asc('WharfCode')
+  ]
+);
+      tests:
+      [
+        bothQuaysOfTheHarbour:
+        {
+          doc: 'Both quays surface with the warden who keeps their berth register, so the reference table reached through the including database is shown to bind one row per wharf code with no milestoning of its own.';
+          data:
+          [
+            test::quietwharf2::store::MooringStore: Reference
+              #{
+                test::quietwharf2::data::WharfTestData
+              }#
+          ];
+          asserts:
+          [
+            wharfRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WharfCode":"WH-1","WharfName":"Quiet Wharf North","WardenName":"Iris Calder","HarbourCode":"HB-1"},{"WharfCode":"WH-2","WharfName":"Slipway Basin","WardenName":"Owen Tarrant","HarbourCode":"HB-2"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::verdantfossil::store::DigDb
+(
+  Schema dig
+  (
+    Table site
+    (
+      site_code VARCHAR(8) PRIMARY KEY,
+      site_name VARCHAR(80),
+      region_name VARCHAR(40),
+      opened_year INTEGER
+    )
+    Table trench
+    (
+      trench_code VARCHAR(8) PRIMARY KEY,
+      site_code VARCHAR(8),
+      trench_label VARCHAR(40),
+      depth_cm INTEGER
+    )
+    Table stratum
+    (
+      stratum_code VARCHAR(8) PRIMARY KEY,
+      stratum_name VARCHAR(60),
+      period_name VARCHAR(40)
+    )
+    Table find
+    (
+      find_id VARCHAR(12) PRIMARY KEY,
+      trench_code VARCHAR(8),
+      stratum_code VARCHAR(8),
+      specimen_label VARCHAR(80),
+      mass_g INTEGER,
+      condition_code VARCHAR(4),
+      crate_code VARCHAR(8)
+    )
+    Table preparator
+    (
+      preparator_code VARCHAR(8) PRIMARY KEY,
+      preparator_name VARCHAR(60)
+    )
+    Table crate
+    (
+      crate_code VARCHAR(8) PRIMARY KEY,
+      crate_label VARCHAR(40),
+      preparator_code VARCHAR(8)
+    )
+    Table season
+    (
+      season_code VARCHAR(8) PRIMARY KEY,
+      site_code VARCHAR(8),
+      season_year INTEGER,
+      field_lead VARCHAR(60)
+    )
+  )
+
+  Join Find_Trench(dig.find.trench_code = dig.trench.trench_code)
+  Join Trench_Site(dig.trench.site_code = dig.site.site_code)
+  Join Find_Stratum(dig.find.stratum_code = dig.stratum.stratum_code)
+  Join Crate_Preparator(dig.crate.preparator_code = dig.preparator.preparator_code)
+  Join Season_Site(dig.season.site_code = dig.site.site_code)
+)

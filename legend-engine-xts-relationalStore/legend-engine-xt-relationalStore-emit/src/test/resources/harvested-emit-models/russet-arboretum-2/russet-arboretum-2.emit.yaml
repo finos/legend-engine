@@ -1,0 +1,54 @@
+name: russet-arboretum-2
+title: "Russet Arboretum 2 — a business-temporal trail inspection register read through a four-hop stewardship path, derived bands and a two-arm priority conditional"
+description: |
+  An upland trail maintenance register whose inspections are versioned along a business
+  timeline, so a query asking for one day sees only the versions open on that day and
+  never the version closed before it. Each inspection reads a terrain classification from
+  a stored two-letter code, composes an erosion index arithmetically from its severity and
+  wash counts, resolves a repair priority through a two-arm conditional whose fall-through
+  leaves the priority unrecorded, names the calendar year of the day it was logged, carries
+  a fixed register tag and reaches the publishing region by walking segment, steward,
+  district and region. Segments and stewards live in an included reference mapping and are
+  navigable in both directions through a stewardship association, while stewards and
+  segments both inherit their shared identity and label properties from supertypes.
+  Derived bands over severity, erosion and the possibly-unrecorded priority are computed by
+  expression rather than stored, and a second query narrows the same timeline by day
+  arithmetic against the queried day.
+modelSources:
+  model:
+    root: russet-arboretum-2
+    files:
+      - test/russetarboretum2/domain/TrailDomain.pure
+      - test/russetarboretum2/mapping/TrailInspectionMapping.pure
+      - test/russetarboretum2/mapping/TrailReferenceMapping.pure
+      - test/russetarboretum2/store/TrailDatabase.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - query:date-arithmetic
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - class-inheritance
+  - derived-property
+  - four-hop-join-path
+  - h2
+  - trail-maintenance

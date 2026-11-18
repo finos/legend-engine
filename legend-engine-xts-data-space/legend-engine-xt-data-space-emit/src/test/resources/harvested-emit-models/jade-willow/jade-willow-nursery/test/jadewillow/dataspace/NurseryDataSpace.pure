@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'A curated entry point over the hardy-plant propagation model.'} demo::jadewillow::dataspace::NurseryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'dev';
+      description: 'Development tier over the propagation store.';
+      mapping: demo::jadewillow::mapping::NurseryMapping;
+      defaultRuntime: demo::jadewillow::runtime::NurseryRuntime;
+    }
+  ];
+  defaultExecutionContext: 'dev';
+  title: 'Hardy Plant Propagation';
+  description: 'Publishes the propagation record of a hardy-plant nursery: bed labels, substrates, establishment dates and bed areas alongside the cutting batches struck in them, with batch references, cultivars, cutting counts, rooted fractions and potting timestamps. Every non-key attribute is optional, so consumers must tolerate missing values in each projected column. The substrate endpoint is the featured executable and the layout element is the consumer-facing overview.';
+  diagrams:
+  [
+    {
+      title: 'Propagation Bed Overview';
+      diagram: demo::jadewillow::diagram::NurseryDiagram;
+    }
+  ];
+  elements:
+  [
+    demo::jadewillow::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Batches by substrate';
+      description: 'The substrate-parameterised batch projection published as an executable of this entry point.';
+      executable: demo::jadewillow::service::BatchesBySubstrateService;
+      executionContextKey: 'dev';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'nursery-propagation@example.com';
+  };
+}

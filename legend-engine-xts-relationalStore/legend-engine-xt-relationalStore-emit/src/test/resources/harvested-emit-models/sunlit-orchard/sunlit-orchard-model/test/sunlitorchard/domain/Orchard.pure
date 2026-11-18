@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::sunlitorchard::domain::*;
+
+Class test::sunlitorchard::domain::Orchard
+{
+  orchardCode: String[1];
+  orchardName: String[1];
+  region: String[1];
+  hectares: Float[1];
+}
+
+Class test::sunlitorchard::domain::Block
+{
+  blockCode: String[1];
+  blockName: String[1];
+  rowCount: Integer[1];
+}
+
+Class test::sunlitorchard::domain::Variety
+{
+  varietyCode: String[1];
+  commonName: String[1];
+  rootstock: String[1];
+}
+
+Class test::sunlitorchard::domain::HarvestBatch
+{
+  batchCode: String[1];
+  pickedOn: StrictDate[1];
+  crateCount: Integer[1];
+}
+
+Association test::sunlitorchard::domain::Orchard_Block
+{
+  orchard: Orchard[1];
+  blocks: Block[*];
+}
+
+Association test::sunlitorchard::domain::Block_Variety
+{
+  variety: Variety[1];
+  plantedBlocks: Block[*];
+}
+
+Association test::sunlitorchard::domain::Block_HarvestBatch
+{
+  block: Block[1];
+  harvestBatches: HarvestBatch[*];
+}

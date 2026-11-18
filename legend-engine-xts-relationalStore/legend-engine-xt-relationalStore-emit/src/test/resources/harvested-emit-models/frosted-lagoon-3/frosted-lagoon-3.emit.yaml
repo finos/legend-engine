@@ -1,0 +1,48 @@
+name: frosted-lagoon-3
+title: "Frosted Lagoon 3 - a nested eight-arm shell-size conditional and three-hop join paths over an oyster-tray store, with two aggregating group-by class mappings"
+description: |
+  A tidal lagoon oyster-cultivation register. One relational mapping anchors the tray extent on an
+  explicit main table with its own declared key, derives the size band through an eight-arm nested
+  conditional that falls back to no band at all, resolves the grade enumeration from an expression
+  over the source code column, and reaches the trestle, the bed and the lagoon zone through one,
+  two and three chained join hops so that a miss at any hop leaves the remaining hops empty. Two
+  further class mappings aggregate rather than describe: basket entries are grouped per tray into a
+  tally, a heaviest basket and a summed weight, while the trays themselves are grouped per trestle
+  into a tally and a longest shell. The enumeration mappings live in a separate mapping that the
+  base mapping includes rather than restates.
+
+modelSources:
+  model:
+    root: frosted-lagoon-3
+    files:
+      - test/frostedlagoon3/domain/LagoonDomain.pure
+      - test/frostedlagoon3/mapping/LagoonBaseMapping.pure
+      - test/frostedlagoon3/mapping/LagoonGradeMappings.pure
+      - test/frostedlagoon3/store/LagoonDb.pure
+
+features:
+  - execution:mapping-test
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-group-by
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - aggregation
+  - conditional-transform
+  - enumeration-mapping
+  - group-by
+  - h2
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - primary-key

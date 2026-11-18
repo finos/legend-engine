@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetotter::service::HoltSurveyRegister
+{
+  pattern: '/russetotter/v1/holt-survey-register';
+  title: 'Russet Otter - Holt Survey Register As Of';
+  owners:
+  [
+    'river-habitat-survey',
+    'otter-watch-volunteers'
+  ];
+  documentation: 'Pins the bi-temporal holt-survey extent at a processing date and a business date, keeps only the visits that recorded both an observer and a habitat note, and publishes the five-column register de-duplicated and ordered by survey id. Visits whose business window has closed and visits whose processing window has been superseded are both out of range at the pinned dates.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::russetotter::domain::HoltSurvey.all(%2026-06-01, %2026-06-01)->filter(
+      s|(($s.observerName->isEmpty()->not()) && ($s.habitatNote->isEmpty()->not()))
+    )->project(
+      [
+        s|$s.surveyId,
+        s|$s.reachCode + '-' + $s.surveyId->toString(),
+        s|$s.reachName,
+        s|$s.observerName->toOne()->toUpper(),
+        s|$s.spraintTally
+      ],
+      [
+        'SurveyId',
+        'SurveyRef',
+        'ReachName',
+        'Observer',
+        'SpraintTally'
+      ]
+    )->distinct()->sort(
+      [
+        asc('SurveyId')
+      ]
+    );
+    mapping: test::russetotter::mapping::HoltMapping;
+    runtime: test::russetotter::runtime::HoltH2Runtime;
+  }
+  testSuites:
+  [
+    holtRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              river.holt_survey:
+                'survey_id,reach_code,reach_name,observer_name,habitat_note,spraint_tally,in_z,out_z,from_z,thru_z\n'+
+                '1,RR-01,Willow Bend,mara linden,holt entrance intact,4,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,RR-01,Willow Bend,dev orrel,,2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,RR-02,Alder Riffle,fen ashby,slide worn down to the water,7,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '4,RR-02,Alder Riffle,fen ashby,couch under a root plate,1,2026-01-01,9999-12-31,2024-01-01,2025-01-01\n'+
+                '5,RR-03,Sedge Cut,ilse rand,spraint left on a ledge,3,2024-01-01,2025-01-01,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAsOfJune:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            onlyTheInRangeNotedVisits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SurveyId":1,"SurveyRef":"RR-01-1","ReachName":"Willow Bend","Observer":"MARA LINDEN","SpraintTally":4},{"SurveyId":3,"SurveyRef":"RR-02-3","ReachName":"Alder Riffle","Observer":"FEN ASHBY","SpraintTally":7}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+name: kindly-quokka-3
+title: "Quokka Sanctuary Browse Log — Aliased Wide Relational Mapping behind Four Single-Execution Projection Services"
+description: |
+  A wildlife-sanctuary browse-observation log: one wide class carrying a required
+  observation reference plus a long tail of optional scalar readings is bound by a
+  single relational mapping that declares its primary key and addresses every
+  renamed physical column through one explicitly aliased main table. The store
+  holds two tables in one schema, only one of which is mapped. Four
+  single-execution services project overlapping flat column sets of decreasing
+  width — fourteen, seven, four and two columns — de-duplicating, ordering and
+  truncating the tabular result so that every mapped column, including its null
+  case, is observable and every stored query is plan-generable end to end.
+modelSources:
+  model:
+    root: kindly-quokka-3
+    files:
+      - test/kindlyquokka3/connection/SanctuaryH2Connection.pure
+      - test/kindlyquokka3/domain/BrowseObservationDomain.pure
+      - test/kindlyquokka3/mapping/BrowseObservationMapping.pure
+      - test/kindlyquokka3/runtime/SanctuaryFieldRuntime.pure
+      - test/kindlyquokka3/service/BrowseObservationSliceServices.pure
+      - test/kindlyquokka3/service/BrowseObservationWideServices.pure
+      - test/kindlyquokka3/store/SanctuaryFieldStore.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:distinct
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - browse-log
+  - column-renaming
+  - h2
+  - main-table-alias
+  - null-tail
+  - relational
+  - sanctuary
+  - tabular-data-set
+  - wide-class
+  - wide-projection

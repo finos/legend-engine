@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::oliveharbor4::store::HarborYardDb
+(
+  Schema yard
+  (
+    Table haul_out
+    (
+      haul_ref VARCHAR(24) PRIMARY KEY,
+      cradle_code VARCHAR(24) NOT NULL,
+      craft_name VARCHAR(80) NOT NULL,
+      craft_kind VARCHAR(24) NOT NULL,
+      haul_state VARCHAR(16) NOT NULL,
+      keel_metres DOUBLE NOT NULL,
+      tonnage DOUBLE,
+      dock_days INTEGER NOT NULL
+    )
+
+    Table lift_cradle
+    (
+      cradle_code VARCHAR(24) PRIMARY KEY,
+      cradle_name VARCHAR(80) NOT NULL,
+      slip_code VARCHAR(24) NOT NULL,
+      cradle_tonnes_t DOUBLE NOT NULL
+    )
+
+    Table slipway
+    (
+      slip_code VARCHAR(24) PRIMARY KEY,
+      slip_name VARCHAR(80) NOT NULL,
+      winch_rating_t DOUBLE NOT NULL
+    )
+  )
+
+  Join haulToCradle(yard.haul_out.cradle_code = yard.lift_cradle.cradle_code)
+  Join cradleToSlip(yard.lift_cradle.slip_code = yard.slipway.slip_code)
+)

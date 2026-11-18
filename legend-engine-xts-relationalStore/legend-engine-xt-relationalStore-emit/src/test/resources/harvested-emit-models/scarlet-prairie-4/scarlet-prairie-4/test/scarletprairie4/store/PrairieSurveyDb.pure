@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::scarletprairie4::store::PrairieSurveyDb
+(
+  Schema survey
+  (
+    Table plot
+    (
+      plot_code VARCHAR(16) PRIMARY KEY,
+      plot_name VARCHAR(64),
+      parent_code VARCHAR(16),
+      plot_state VARCHAR(12),
+      soil_code VARCHAR(8),
+      grazing_code VARCHAR(12),
+      habitat_code VARCHAR(8),
+      width_m DOUBLE,
+      length_m DOUBLE,
+      buffer_m2 DOUBLE,
+      stem_count DOUBLE,
+      burn_cycle INTEGER
+    )
+    Table transect
+    (
+      transect_code VARCHAR(16) PRIMARY KEY,
+      plot_code VARCHAR(16) PRIMARY KEY,
+      bearing_deg INTEGER
+    )
+    Table species_obs
+    (
+      obs_code VARCHAR(16) PRIMARY KEY,
+      transect_code VARCHAR(16),
+      plot_code VARCHAR(16),
+      species_code VARCHAR(16),
+      stem_tally INTEGER
+    )
+    View transect_species_view
+    (
+      ~distinct
+      transect_tag: concat(toUpper(rtrim(survey.transect.transect_code)), '-', survey.transect.plot_code) PRIMARY KEY,
+      species_code: @Transect_Obs | survey.species_obs.species_code PRIMARY KEY,
+      common_label: @Transect_Obs > (INNER) @Obs_Species | ref.species_ref.common_name
+    )
+  )
+  Schema ref
+  (
+    Table species_ref
+    (
+      species_code VARCHAR(16) PRIMARY KEY,
+      common_name VARCHAR(64),
+      family_code VARCHAR(16),
+      ref_state VARCHAR(12)
+    )
+  )
+
+  Join Plot_Parent(survey.plot.parent_code = {target}.plot_code)
+  Join Plot_Transect(survey.plot.plot_code = survey.transect.plot_code)
+  Join Transect_Obs(survey.transect.transect_code = survey.species_obs.transect_code and survey.transect.plot_code = survey.species_obs.plot_code)
+  Join Obs_Species(survey.species_obs.species_code = ref.species_ref.species_code and (ref.species_ref.ref_state = 'LIVE' or ref.species_ref.ref_state = 'PROVISIONAL'))
+
+  Filter OpenPlots(survey.plot.plot_state != 'RETIRED' and survey.plot.plot_state != 'MERGED' and (survey.plot.burn_cycle is null or survey.plot.burn_cycle != 0))
+)

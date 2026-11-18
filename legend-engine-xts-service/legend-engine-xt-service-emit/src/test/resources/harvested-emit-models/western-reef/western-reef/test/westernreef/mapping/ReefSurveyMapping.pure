@@ -1,0 +1,425 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernreef::mapping::ReefSurveyMapping
+(
+  *test::westernreef::domain::ReefSurvey[reefSurvey]: Pure
+  {
+    ~src test::westernreef::source::SurveyFeed
+    surveyRef: $src.feedRef,
+    healthBand: if($src.bleachedFraction->isEmpty(),
+                   | 'UNSURVEYED',
+                   | if($src.bleachedFraction->toOne() >= 0.9,
+                        | 'COLLAPSED',
+                        | if($src.bleachedFraction->toOne() >= 0.75,
+                             | 'SEVERE',
+                             | if($src.bleachedFraction->toOne() >= 0.6,
+                                  | 'HIGH',
+                                  | if($src.bleachedFraction->toOne() >= 0.45,
+                                       | 'ELEVATED',
+                                       | if($src.bleachedFraction->toOne() >= 0.3,
+                                            | 'MODERATE',
+                                            | if($src.bleachedFraction->toOne() >= 0.15,
+                                                 | 'MILD',
+                                                 | if($src.bleachedFraction->toOne() > 0.0,
+                                                      | 'TRACE',
+                                                      | 'PRISTINE')))))))),
+    zoneLabel: if($src.zone->isNotEmpty(),
+                  | $src.zone->toOne()->toString(),
+                  | []),
+    site[reefSite]: $src.site,
+    observer[surveyObserver]: $src.observer
+  }
+
+  test::westernreef::domain::ReefSite[reefSite]: Pure
+  {
+    ~src test::westernreef::source::SiteFeed
+    siteCode: $src.code,
+    region[reefRegion]: $src.region
+  }
+
+  test::westernreef::domain::ReefRegion[reefRegion]: Pure
+  {
+    ~src test::westernreef::source::RegionFeed
+    regionCode: $src.code,
+    oceanBasin: $src.basin->toUpper()->trim()
+  }
+
+  test::westernreef::domain::SurveyObserver[surveyObserver]: Pure
+  {
+    ~src test::westernreef::source::ObserverFeed
+    observerCode: $src.code,
+    team[observerTeam]: $src.team
+  }
+
+  test::westernreef::domain::ObserverTeam[observerTeam]: Pure
+  {
+    ~src test::westernreef::source::TeamFeed
+    teamCode: $src.code
+  }
+
+  testSuites:
+  [
+    reefSurveyBandSuite:
+    {
+      function: |test::westernreef::domain::ReefSurvey.all()->graphFetch(
+        #{
+          test::westernreef::domain::ReefSurvey{
+            surveyRef,
+            healthBand,
+            zoneLabel,
+            site{
+              siteCode,
+              region{
+                regionCode,
+                oceanBasin
+              }
+            },
+            observer{
+              observerCode,
+              team{
+                teamCode
+              }
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::westernreef::domain::ReefSurvey{
+            surveyRef,
+            healthBand,
+            zoneLabel,
+            site{
+              siteCode,
+              region{
+                regionCode,
+                oceanBasin
+              }
+            },
+            observer{
+              observerCode,
+              team{
+                teamCode
+              }
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        collapsedBand:
+        {
+          doc: 'Exercises the top bleaching band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0001","bleachedFraction":0.94,"zone":"FORE_REEF","site":{"code":"ST-A","region":{"code":"RG-01","basin":"coral sea"}},"observer":{"code":"OB-01","team":{"code":"TM-01"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0001","healthBand":"COLLAPSED","zoneLabel":"FORE_REEF","site":{"siteCode":"ST-A","region":{"regionCode":"RG-01","oceanBasin":"CORAL SEA"}},"observer":{"observerCode":"OB-01","team":{"teamCode":"TM-01"}}}';
+                  }#;
+              }#
+          ];
+        },
+        severeBand:
+        {
+          doc: 'Exercises the second bleaching band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0002","bleachedFraction":0.8,"zone":"REEF_CREST","site":{"code":"ST-B","region":{"code":"RG-02","basin":"banda sea"}},"observer":{"code":"OB-02","team":{"code":"TM-02"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0002","healthBand":"SEVERE","zoneLabel":"REEF_CREST","site":{"siteCode":"ST-B","region":{"regionCode":"RG-02","oceanBasin":"BANDA SEA"}},"observer":{"observerCode":"OB-02","team":{"teamCode":"TM-02"}}}';
+                  }#;
+              }#
+          ];
+        },
+        highBand:
+        {
+          doc: 'Exercises the third bleaching band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0003","bleachedFraction":0.65,"zone":"BACK_REEF","site":{"code":"ST-C","region":{"code":"RG-03","basin":"timor sea"}},"observer":{"code":"OB-03","team":{"code":"TM-01"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0003","healthBand":"HIGH","zoneLabel":"BACK_REEF","site":{"siteCode":"ST-C","region":{"regionCode":"RG-03","oceanBasin":"TIMOR SEA"}},"observer":{"observerCode":"OB-03","team":{"teamCode":"TM-01"}}}';
+                  }#;
+              }#
+          ];
+        },
+        elevatedBand:
+        {
+          doc: 'Exercises the fourth bleaching band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0004","bleachedFraction":0.5,"zone":"LAGOON","site":{"code":"ST-D","region":{"code":"RG-01","basin":"coral sea"}},"observer":{"code":"OB-04","team":{"code":"TM-02"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0004","healthBand":"ELEVATED","zoneLabel":"LAGOON","site":{"siteCode":"ST-D","region":{"regionCode":"RG-01","oceanBasin":"CORAL SEA"}},"observer":{"observerCode":"OB-04","team":{"teamCode":"TM-02"}}}';
+                  }#;
+              }#
+          ];
+        },
+        moderateBand:
+        {
+          doc: 'Exercises the fifth bleaching band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0005","bleachedFraction":0.35,"zone":"FORE_REEF","site":{"code":"ST-A","region":{"code":"RG-02","basin":"banda sea"}},"observer":{"code":"OB-05","team":{"code":"TM-01"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0005","healthBand":"MODERATE","zoneLabel":"FORE_REEF","site":{"siteCode":"ST-A","region":{"regionCode":"RG-02","oceanBasin":"BANDA SEA"}},"observer":{"observerCode":"OB-05","team":{"teamCode":"TM-01"}}}';
+                  }#;
+              }#
+          ];
+        },
+        mildBand:
+        {
+          doc: 'Exercises the sixth bleaching band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0006","bleachedFraction":0.2,"zone":"REEF_CREST","site":{"code":"ST-B","region":{"code":"RG-03","basin":"timor sea"}},"observer":{"code":"OB-06","team":{"code":"TM-02"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0006","healthBand":"MILD","zoneLabel":"REEF_CREST","site":{"siteCode":"ST-B","region":{"regionCode":"RG-03","oceanBasin":"TIMOR SEA"}},"observer":{"observerCode":"OB-06","team":{"teamCode":"TM-02"}}}';
+                  }#;
+              }#
+          ];
+        },
+        traceBand:
+        {
+          doc: 'Exercises the seventh bleaching band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0007","bleachedFraction":0.05,"zone":"BACK_REEF","site":{"code":"ST-C","region":{"code":"RG-01","basin":"coral sea"}},"observer":{"code":"OB-07","team":{"code":"TM-01"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0007","healthBand":"TRACE","zoneLabel":"BACK_REEF","site":{"siteCode":"ST-C","region":{"regionCode":"RG-01","oceanBasin":"CORAL SEA"}},"observer":{"observerCode":"OB-07","team":{"teamCode":"TM-01"}}}';
+                  }#;
+              }#
+          ];
+        },
+        pristineBand:
+        {
+          doc: 'Exercises the closing bleaching band, reached when nothing was bleached.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0008","bleachedFraction":0.0,"zone":"LAGOON","site":{"code":"ST-D","region":{"code":"RG-02","basin":"banda sea"}},"observer":{"code":"OB-08","team":{"code":"TM-02"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0008","healthBand":"PRISTINE","zoneLabel":"LAGOON","site":{"siteCode":"ST-D","region":{"regionCode":"RG-02","oceanBasin":"BANDA SEA"}},"observer":{"observerCode":"OB-08","team":{"teamCode":"TM-02"}}}';
+                  }#;
+              }#
+          ];
+        },
+        unsurveyedFallback:
+        {
+          doc: 'Exercises the fallback arm, reached when no bleached fraction was submitted at all.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0009","zone":"FORE_REEF","site":{"code":"ST-A","region":{"code":"RG-03","basin":"timor sea"}},"observer":{"code":"OB-09","team":{"code":"TM-01"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0009","healthBand":"UNSURVEYED","zoneLabel":"FORE_REEF","site":{"siteCode":"ST-A","region":{"regionCode":"RG-03","oceanBasin":"TIMOR SEA"}},"observer":{"observerCode":"OB-09","team":{"teamCode":"TM-01"}}}';
+                  }#;
+              }#
+          ];
+        },
+        zoneAbsent:
+        {
+          doc: 'Exercises the guarded enumeration coercion, whose alternative arm yields an empty label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::westernreef::source::SurveyFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"feedRef":"SV-0010","bleachedFraction":0.5,"site":{"code":"ST-B","region":{"code":"RG-01","basin":"coral sea"}},"observer":{"code":"OB-10","team":{"code":"TM-02"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedSurvey:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0010","healthBand":"ELEVATED","zoneLabel":null,"site":{"siteCode":"ST-B","region":{"regionCode":"RG-01","oceanBasin":"CORAL SEA"}},"observer":{"observerCode":"OB-10","team":{"teamCode":"TM-02"}}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

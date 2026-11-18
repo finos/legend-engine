@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernthistle::service::CountStationTally
+{
+  pattern: '/westernthistle/countstation';
+  title: 'Count Station Tally';
+  owners:
+  [
+    'cycle-network-monitoring'
+  ];
+  documentation: 'Publishes every automatic count station with its daily average movements grouped into a usage band.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::westernthistle::domain::CountStation.all()->project(
+      [
+        s|$s.stationCode,
+        s|$s.corridorCode,
+        s|$s.dailyAverage,
+        s|if($s.dailyAverage >= 400, |'BUSY', |if($s.dailyAverage >= 120, |'STEADY', |'QUIET'))
+      ],
+      [
+        'StationCode',
+        'CorridorCode',
+        'DailyAverage',
+        'UsageBand'
+      ]
+    )->sort([asc('StationCode')]);
+    mapping: test::westernthistle::mapping::CorridorMapping;
+    runtime: test::westernthistle::runtime::CorridorRuntime;
+  }
+  testSuites:
+  [
+    countStationTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          corridorH2Connection:
+            Relational
+            #{
+                network.count_station:
+                  'station_code,corridor_code,daily_average,last_reading_at\n'+
+                  'CS-01,CC-01,512,2024-05-01 23:00:00\n'+
+                  'CS-02,CC-02,180,2024-05-01 23:00:00\n'+
+                  'CS-03,CC-03,40,2024-05-01 23:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyUsageBand:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            bandedStations:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"CS-01","CorridorCode":"CC-01","DailyAverage":512,"UsageBand":"BUSY"},{"StationCode":"CS-02","CorridorCode":"CC-02","DailyAverage":180,"UsageBand":"STEADY"},{"StationCode":"CS-03","CorridorCode":"CC-03","DailyAverage":40,"UsageBand":"QUIET"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

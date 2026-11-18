@@ -1,0 +1,33 @@
+name: gilded-warren
+title: "Gilded Warren — Wildlife Warren Survey Domain & JSON-Schema Generation"
+description: |
+  A non-production wildlife-monitoring domain for a rabbit-and-badger warren
+  survey programme. Exercises a class-inheritance hierarchy of tracked
+  animals, three closed enumerations, a network of nested associations
+  linking warrens, chambers, colonies, territories and survey sessions, and a
+  JSON-schema file generation collected into a generation specification. Its
+  EMIT run exercises parse, compile and file/artifact generation only.
+
+modelSources:
+  model:
+    root: gilded-warren
+    files:
+      - test/gilded-warren/domain/WarrenDomain.pure
+      - test/gilded-warren/generation/WarrenGenerationSpec.pure
+      - test/gilded-warren/generation/WarrenJsonSchema.pure
+
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:nested-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - burrow
+  - colony
+  - json-schema
+  - warren
+  - wildlife

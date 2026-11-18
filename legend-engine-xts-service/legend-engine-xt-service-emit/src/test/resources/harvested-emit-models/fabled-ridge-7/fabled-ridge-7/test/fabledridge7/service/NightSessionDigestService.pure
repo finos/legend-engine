@@ -1,0 +1,164 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledridge7::service::NightSessionDigestService
+{
+  pattern: '/fabledridge7/v1/night-session-digest';
+  title: 'Fabled Ridge - Observing Night Session Digest';
+  owners:
+  [
+    'observatory-logbook',
+    'night-assistants'
+  ];
+  documentation: 'Digests the raw observing-night logs of a public observatory into the published night-session report, every column of which is derived by one of the shared night-log rules over the model-to-model transform: the stamped log key, the observer attribution, the seeing and cloud bands, the filter and target summaries, the instrument and aperture classes, the composed night grade and the usability the grade and filter count together allow.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::fabledridge7::domain::NightSessionReport.all()->graphFetch(
+      #{
+        test::fabledridge7::domain::NightSessionReport
+        {
+          logStamp,
+          observerLabel,
+          seeingBand,
+          cloudBand,
+          filterSummary,
+          targetSummary,
+          instrumentLabel,
+          apertureBand,
+          gradeLabel,
+          usabilityLabel
+        }
+      }#
+    )->serialize(
+      #{
+        test::fabledridge7::domain::NightSessionReport
+        {
+          logStamp,
+          observerLabel,
+          seeingBand,
+          cloudBand,
+          filterSummary,
+          targetSummary,
+          instrumentLabel,
+          apertureBand,
+          gradeLabel,
+          usabilityLabel
+        }
+      }#
+    );
+    mapping: test::fabledridge7::mapping::NightSessionM2M;
+    runtime: test::fabledridge7::runtime::NightLogRuntime;
+  }
+  testSuites:
+  [
+    seeingArmSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nightLogConnection: Reference
+            #{
+              test::fabledridge7::data::SeeingArmFeedData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everySeeingStep:
+        {
+          asserts:
+          [
+            everySeeingStepAndTheUnreadSky:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"logStamp":"LOG/NL-01/R1","observerLabel":"OBS/AV-1","seeingBand":"SEEING/1","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/CALIBRATION"},{"logStamp":"LOG/NL-02/R2","observerLabel":"OBS/AV-1","seeingBand":"SEEING/2","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/CALIBRATION"},{"logStamp":"LOG/NL-03/R3","observerLabel":"OBS/AV-1","seeingBand":"SEEING/3","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/CALIBRATION"},{"logStamp":"LOG/NL-04/R4","observerLabel":"OBS/AV-1","seeingBand":"SEEING/4","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-CLEAR","usabilityLabel":"USE/OUTREACH"},{"logStamp":"LOG/NL-05/R5","observerLabel":"OBS/AV-1","seeingBand":"SEEING/5","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-CLEAR","usabilityLabel":"USE/OUTREACH"},{"logStamp":"LOG/NL-06/R6","observerLabel":"OBS/AV-1","seeingBand":"SEEING/6","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-CLEAR","usabilityLabel":"USE/OUTREACH"},{"logStamp":"LOG/NL-07/R7","observerLabel":"OBS/AV-1","seeingBand":"SEEING/7","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-CLEAR","usabilityLabel":"USE/OUTREACH"},{"logStamp":"LOG/NL-08/R8","observerLabel":"OBS/AV-1","seeingBand":"SEEING/8","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-CLEAR","usabilityLabel":"USE/OUTREACH"},{"logStamp":"LOG/NL-09/R9","observerLabel":"OBS/AV-1","seeingBand":"SEEING/UNREAD","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/3","targetSummary":"TARGETS/2/M31>M33","instrumentLabel":"INSTR/DOME/DOME-1","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/CLOUD-ONLY-FAIR","usabilityLabel":"USE/LOG-ONLY"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    gradeArmSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nightLogConnection: Reference
+            #{
+              test::fabledridge7::data::GradeArmFeedData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyGradeArm:
+        {
+          asserts:
+          [
+            everyGradeArmInFeedOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"logStamp":"LOG/GR-01/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/2","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/NARROW/3","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/CALIBRATION"},{"logStamp":"LOG/GR-02/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/2","cloudBand":"CLOUD/PARTIAL","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/STEADY-PARTIAL","usabilityLabel":"USE/OUTREACH"},{"logStamp":"LOG/GR-03/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/2","cloudBand":"CLOUD/BROKEN","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/STEADY-CLOUDED","usabilityLabel":"USE/LOG-ONLY"},{"logStamp":"LOG/GR-04/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/2","cloudBand":"CLOUD/UNRECORDED","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/STEADY-UNRECORDED","usabilityLabel":"USE/LOG-ONLY"},{"logStamp":"LOG/GR-05/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/6","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-CLEAR","usabilityLabel":"USE/OUTREACH"},{"logStamp":"LOG/GR-06/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/6","cloudBand":"CLOUD/BROKEN","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-CLOUDED","usabilityLabel":"USE/LOG-ONLY"},{"logStamp":"LOG/GR-07/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/6","cloudBand":"CLOUD/UNRECORDED","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNSTEADY-UNRECORDED","usabilityLabel":"USE/LOG-ONLY"},{"logStamp":"LOG/GR-08/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/UNREAD","cloudBand":"CLOUD/PARTIAL","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/CLOUD-ONLY-FAIR","usabilityLabel":"USE/LOG-ONLY"},{"logStamp":"LOG/GR-09/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/UNREAD","cloudBand":"CLOUD/OVERCAST","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/CLOUD-ONLY-POOR","usabilityLabel":"USE/LOG-ONLY"},{"logStamp":"LOG/GR-10/R1","observerLabel":"OBS/AV-2","seeingBand":"SEEING/UNREAD","cloudBand":"CLOUD/UNRECORDED","filterSummary":"FILTERS/NONE","targetSummary":"TARGETS/ONE/M27","instrumentLabel":"INSTR/DOME/DOME-2","apertureBand":"APERTURE/LARGE","gradeLabel":"GRADE/UNGRADED","usabilityLabel":"USE/LOG-ONLY"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    logbookGapSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nightLogConnection: Reference
+            #{
+              test::fabledridge7::data::LogbookGapFeedData
+            }#
+        ]
+      ]
+      tests:
+      [
+        gapsAndSummaryArms:
+        {
+          asserts:
+          [
+            everyGapAndSummaryArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"logStamp":"LOG/GP-01/R2","observerLabel":"OBS/UNATTRIBUTED","seeingBand":"SEEING/2","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/NONE","targetSummary":"TARGETS/IDLE","instrumentLabel":"INSTR/PORTABLE/RC-8","apertureBand":"APERTURE/SMALL","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/SCIENCE-UNFILTERED"},{"logStamp":"LOG/GP-02/R2","observerLabel":"OBS/AV-3","seeingBand":"SEEING/2","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/SINGLE/HA","targetSummary":"TARGETS/ONE/M13","instrumentLabel":"INSTR/VISITOR-SCOPE","apertureBand":"APERTURE/MEDIUM","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/SCIENCE"},{"logStamp":"LOG/GP-03/R2","observerLabel":"OBS/AV-3","seeingBand":"SEEING/2","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/NARROW/2","targetSummary":"TARGETS/3/M13>M5","instrumentLabel":"INSTR/DOME/DOME-3","apertureBand":"APERTURE/UNKNOWN","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/SCIENCE"},{"logStamp":"LOG/GP-04/R2","observerLabel":"OBS/AV-3","seeingBand":"SEEING/2","cloudBand":"CLOUD/CLEAR","filterSummary":"FILTERS/BROAD/4","targetSummary":"TARGETS/2/M13>M92","instrumentLabel":"INSTR/PORTABLE/RC-8","apertureBand":"APERTURE/RICHFIELD","gradeLabel":"GRADE/PHOTOMETRIC","usabilityLabel":"USE/CALIBRATION"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

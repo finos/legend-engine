@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarridge5::service::SegmentConditionRegister
+{
+  pattern: '/lunarridge5/v1/segment-condition-register/{minLength}';
+  title: 'Lunar Ridge 5 - Segment Condition Register';
+  ownership: UserList { users: ['ridge-trail-survey-desk'] };
+  documentation: 'Publishes every actively surveyed trail segment with the band decided by the eight-arm ascent cascade, the arithmetic grade, the enumeration-mapped surface and the crew label, reaching the region name across two chained join hops. One keyed execution set per estate, so the same query is planned twice.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {minLength: Float[1]|test::lunarridge5::domain::SurveyedSegment.all()->filter(
+      s|($s.lengthMetres >= $minLength) && (($s.ascentMetres >= 0.0) && ($s.surveyState == 'ACTIVE'))
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.segmentName,
+        s|$s.headName,
+        s|$s.regionName,
+        s|$s.surface,
+        s|$s.conditionBand,
+        s|$s.gradePercent,
+        s|$s.crewLabel,
+        s|test::lunarridge5::function::gradeLabel($s.gradePercent),
+        s|test::lunarridge5::function::crewTag($s.crewLabel)
+      ],
+      [
+        'Segment',
+        'Name',
+        'Head',
+        'Region',
+        'Surface',
+        'Band',
+        'Grade',
+        'Crew',
+        'Label',
+        'CrewTag'
+      ]
+    )->sort(
+      [
+        asc('Segment')
+      ]
+    )};
+    key: 'estate';
+    executions['primary']:
+    {
+      mapping: test::lunarridge5::mapping::TrailMapping;
+      runtime: test::lunarridge5::runtime::TrailPrimaryRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::lunarridge5::mapping::TrailMapping;
+      runtime: test::lunarridge5::runtime::TrailArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    conditionRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailPrimary:
+            Relational
+            #{
+              registry.trail_region:
+                'region_code,region_name\n'+
+                'RG-1,North Corrie\n'+
+                'RG-2,South Glen\n';
+
+              registry.trail_head:
+                'head_code,head_name,region_code\n'+
+                'HD-1,Larch Gate,RG-1\n'+
+                'HD-2,Boulder Steps,RG-2\n';
+
+              field.trail_segment:
+                'segment_code,segment_name,head_code,surface_code,survey_state,crew_note,length_metres,ascent_metres\n'+
+                'S-01,north spur,HD-1,SC,ACTIVE,alpha crew,1000.0,450.0\n'+
+                'S-02,corrie link,HD-1,GR,ACTIVE,alpha crew,1000.0,350.0\n'+
+                'S-03,larch steps,HD-1,BW,ACTIVE,bravo crew,1000.0,250.0\n'+
+                'S-04,boulder bench,HD-1,TF,ACTIVE,bravo crew,1000.0,180.0\n'+
+                'S-05,moss traverse,HD-1,GR,ACTIVE,charlie crew,1000.0,130.0\n'+
+                'S-06,glen approach,HD-2,SC,ACTIVE,charlie crew,1000.0,90.0\n'+
+                'S-07,burn crossing,HD-2,BW,ACTIVE,delta crew,1000.0,50.0\n'+
+                'S-08,meadow loop,HD-2,TF,ACTIVE,delta crew,1000.0,10.0\n'+
+                'S-09,level causeway,HD-2,GR,ACTIVE,echo crew,1000.0,0.0\n'+
+                'S-10,old drove road,HD-2,GR,ARCHIVED,echo crew,1000.0,300.0\n';
+
+              field.maintenance_visit:
+                'visit_code,segment_code,visit_on,hours_logged\n'+
+                'V-1,S-01,2026-03-02,6.5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        primaryKeyEveryBandArm:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['primary'];
+          parameters:
+          [
+            minLength = 500.0
+          ]
+          asserts:
+          [
+            allArmsNullFallThroughAndRetiredSegmentExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"S-01","Name":"NORTH SPUR","Head":"Larch Gate","Region":"North Corrie","Surface":"SCREE","Band":"ALPINE-STEEP","Grade":45.0,"Crew":"CREW-ALPHA CREW","Label":"HAUL","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-02","Name":"CORRIE LINK","Head":"Larch Gate","Region":"North Corrie","Surface":"GRAVEL","Band":"STEEP","Grade":35.0,"Crew":"CREW-ALPHA CREW","Label":"HAUL","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-03","Name":"LARCH STEPS","Head":"Larch Gate","Region":"North Corrie","Surface":"BOARDWALK","Band":"FIRM-CLIMB","Grade":25.0,"Crew":"CREW-BRAVO CREW","Label":"CLIMB","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-04","Name":"BOULDER BENCH","Head":"Larch Gate","Region":"North Corrie","Surface":"TURF","Band":"ROLLING","Grade":18.0,"Crew":"CREW-BRAVO CREW","Label":"CLIMB","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-05","Name":"MOSS TRAVERSE","Head":"Larch Gate","Region":"North Corrie","Surface":"GRAVEL","Band":"GENTLE","Grade":13.0,"Crew":"CREW-CHARLIE CREW","Label":"CLIMB","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-06","Name":"GLEN APPROACH","Head":"Boulder Steps","Region":"South Glen","Surface":"SCREE","Band":"EASY","Grade":9.0,"Crew":"CREW-CHARLIE CREW","Label":"STROLL","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-07","Name":"BURN CROSSING","Head":"Boulder Steps","Region":"South Glen","Surface":"BOARDWALK","Band":"FLAT-RUN","Grade":5.0,"Crew":"CREW-DELTA CREW","Label":"STROLL","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-08","Name":"MEADOW LOOP","Head":"Boulder Steps","Region":"South Glen","Surface":"TURF","Band":"TRACE-RISE","Grade":1.0,"Crew":"CREW-DELTA CREW","Label":"STROLL","CrewTag":"LONG-CREW-TAG"},{"Segment":"S-09","Name":"LEVEL CAUSEWAY","Head":"Boulder Steps","Region":"South Glen","Surface":"GRAVEL","Band":null,"Grade":0.0,"Crew":"CREW-ECHO CREW","Label":"STROLL","CrewTag":"SHORT-CREW-TAG"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

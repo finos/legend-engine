@@ -1,0 +1,31 @@
+name: emerald-thicket-domain
+title: "Emerald Thicket — Woodland Species Registry Domain (Classes, Enum, Association)"
+description: |
+  A small non-financial wildlife-tracking domain that exercises core Pure
+  grammar end-to-end through the EMIT pipeline. Defines a `Species` class
+  with a derived `isThreatened()` property, a `Habitat` class, a closed
+  `ConservationStatus` enumeration referenced by `Species`, and a
+  bidirectional `Species_Habitat` association linking the two classes with
+  differing multiplicities. Its EMIT run exercises parse + compile of a
+  single `###Pure` section.
+
+modelSources:
+  model:
+    root: emerald-thicket-domain
+    files:
+      - test/emeraldthicket/domain/ConservationStatus.pure
+      - test/emeraldthicket/domain/Habitat.pure
+      - test/emeraldthicket/domain/Species.pure
+      - test/emeraldthicket/domain/Species_Habitat.pure
+
+features:
+  - grammar:association
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - enumeration
+  - wildlife
+  - woodland

@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::tealprairie::data::StewardFixtureData
+{
+  Relational
+  #{
+    taxonomy.family:
+      'family_id,family_label,order_id\n'+
+      'F-1,Grass Family,O-1\n';
+    taxonomy.genus:
+      'genus_id,genus_label,family_id\n'+
+      'G-1,Bluestem,F-1\n';
+    taxonomy.taxon_name:
+      'taxon_id,taxon_label,genus_id\n'+
+      'T-1,Little Bluestem,G-1\n';
+    seedvault.seed_collection:
+      'collection_id,collection_ref,feed_name,event_date,seed_weight_g,taxon_id\n'+
+      'C-01,ACC-0001,PRAIRIE_FEED,2026-03-14,120.5,T-1\n'+
+      'C-09,ACC-0009,PRAIRIE_FEED,2026-03-18,44.0,\n';
+    seedvault.seed_custodian:
+      'custodian_id,custodian_name,custodian_desk,from_z,thru_z,in_z,out_z\n'+
+      'CU-1,Rowan Fescue,Prairie Curation Desk,2020-01-02,9999-12-31,2020-01-02,9999-12-31\n'+
+      'CU-2,Ivy Sedge,Seed Intake Desk,2020-01-02,9999-12-31,2020-01-02,2026-05-01\n'+
+      'CU-2,Ivy Sedge,Seed Return Desk,2020-01-02,9999-12-31,2026-05-01,9999-12-31\n'+
+      'CU-3,Moss Brome,Cold Store Desk,2026-07-01,9999-12-31,2020-01-02,9999-12-31\n';
+    steward.steward_transfer:
+      'transfer_id,collection_id,transfer_kind,crate_count,holding_temp_c,in_z,out_z\n'+
+      'X-01,C-01,FIELD,5,4.0,2026-01-01,9999-12-31\n'+
+      'X-02,C-01,VISIT,5,4.0,2026-01-01,9999-12-31\n'+
+      'X-03,C-01,STORE,60,4.0,2026-01-01,9999-12-31\n'+
+      'X-04,C-01,STORE,30,4.0,2026-01-01,9999-12-31\n'+
+      'X-05,C-01,STORE,10,-20.0,2026-01-01,9999-12-31\n'+
+      'X-06,C-01,STORE,10,-5.0,2026-01-01,9999-12-31\n'+
+      'X-07,C-01,STORE,,2.0,2026-01-01,9999-12-31\n'+
+      'X-08,C-01,RETURN,10,3.0,2026-01-01,9999-12-31\n'+
+      'X-09,C-09,STORE,10,3.0,2026-01-01,9999-12-31\n'+
+      'X-10,C-01,FIELD,15,3.0,2026-05-01,9999-12-31\n'+
+      'X-11,C-01,STORE,70,3.0,2026-01-01,2026-05-01\n'+
+      'X-12,C-01,STORE,70,3.0,2026-06-01,9999-12-31\n';
+  }#
+}

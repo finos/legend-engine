@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantisle3::mapping::NurseryDigestM2M
+(
+  *test::verdantisle3::domain::NurseryDigest[nurseryDigest]: Pure
+  {
+    ~src test::verdantisle3::domain::NurseryRow
+    bedKey: $src.bedRef->trim()->toUpper(),
+    rowLabel: 'community orchard nursery register',
+    payloadVersionLabel: if($src.payload->isEmpty(),
+                            | 'NO PAYLOAD',
+                            | 'PAYLOAD ' + $src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).payloadVersion->trim()->toUpper()),
+    slotSummary: if($src.beds->isEmpty(),
+                    | [],
+                    | $src.beds->filter(b|$b.slotCount->isNotEmpty())->map(b|$b.bedCode->trim()->toUpper() + '=' + $b.slotCount->toOne()->toString())->joinStrings(', ')),
+    litresPerWeek: if($src.rawLitres->isEmpty(),
+                      | [],
+                      | $src.rawLitres->toOne()->trim()->parseInteger()),
+    tray[nurseryTray]: $src,
+    probe[nurseryProbe]: $src
+  }
+
+  test::verdantisle3::domain::TrayRef[nurseryTray]: Pure
+  {
+    ~src test::verdantisle3::domain::NurseryRow
+    trayCode: if($src.rawTray->isEmpty(),
+                 | 'UNTRAYED',
+                 | 'TRAY-' + $src.rawTray->toOne()->trim()->toUpper())
+  }
+
+  test::verdantisle3::domain::SoilProbe[nurseryProbe]: Pure
+  {
+    ~src test::verdantisle3::domain::NurseryRow
+    phLabel: if($src.rawPh->isEmpty(),
+                | 'UNPROBED',
+                | if($src.rawPh->toOne()->trim()->parseFloat() >= 7.0,
+                     | 'ALKALINE ' + $src.rawPh->toOne()->trim(),
+                     | 'ACID ' + $src.rawPh->toOne()->trim()))
+  }
+
+  testSuites:
+  [
+    nurseryDigestSuite:
+    {
+      function: |test::verdantisle3::domain::NurseryDigest.all()->graphFetch(
+        #{
+          test::verdantisle3::domain::NurseryDigest{
+            bedKey,
+            rowLabel,
+            payloadVersionLabel,
+            slotSummary,
+            litresPerWeek,
+            tray{
+              trayCode
+            },
+            probe{
+              phLabel
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantisle3::domain::NurseryDigest{
+            bedKey,
+            rowLabel,
+            payloadVersionLabel,
+            slotSummary,
+            litresPerWeek,
+            tray{
+              trayCode
+            },
+            probe{
+              phLabel
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        bedRowsHitBothProbeArmsAndBothSlotArms:
+        {
+          doc: 'An alkaline row summarises only the beds that declare a slot count, an empty row falls back to every default, and an acid row summarises two beds.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantisle3::domain::NurseryRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"bedRef":" nb-1 ","rawTray":" t-04 ","rawLitres":" 24 ","rawPh":" 7.4 ","beds":[{"bedCode":"nb-1a","slotCount":40},{"bedCode":"nb-1b"}],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v2","takeCount":9,"failCount":1}},{"bedRef":"nb-2","beds":[]},{"bedRef":"nb-3","rawTray":"t-11","rawLitres":"6","rawPh":"5.9","beds":[{"bedCode":"nb-3a","slotCount":12},{"bedCode":"nb-3b","slotCount":8}],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v1","takeCount":3,"failCount":3}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeBedDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"bedKey":"NB-1","rowLabel":"community orchard nursery register","payloadVersionLabel":"PAYLOAD V2","slotSummary":"NB-1A=40","litresPerWeek":24,"tray":{"trayCode":"TRAY-T-04"},"probe":{"phLabel":"ALKALINE 7.4"}},{"bedKey":"NB-2","rowLabel":"community orchard nursery register","payloadVersionLabel":"NO PAYLOAD","slotSummary":null,"litresPerWeek":null,"tray":{"trayCode":"UNTRAYED"},"probe":{"phLabel":"UNPROBED"}},{"bedKey":"NB-3","rowLabel":"community orchard nursery register","payloadVersionLabel":"PAYLOAD V1","slotSummary":"NB-3A=12, NB-3B=8","litresPerWeek":6,"tray":{"trayCode":"TRAY-T-11"},"probe":{"phLabel":"ACID 5.9"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

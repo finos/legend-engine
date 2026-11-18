@@ -1,0 +1,161 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cobaltreef3::store::ReefLiveDb
+(
+  Schema reef_live
+  (
+    Table reef_site
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      site_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      site_name VARCHAR(48),
+      status_code VARCHAR(4),
+      depth_m INTEGER,
+      probe_code VARCHAR(12)
+    )
+    Table monitor_probe
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      probe_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      health_code VARCHAR(4),
+      region_code VARCHAR(12)
+    )
+    Table reef_region
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      region_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      region_name VARCHAR(48)
+    )
+    Table survey_dive
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      dive_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      site_code VARCHAR(12),
+      dive_label VARCHAR(48),
+      crew_code VARCHAR(12)
+    )
+    Table dive_crew
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      crew_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      crew_name VARCHAR(48)
+    )
+  )
+
+  Join Site_Probe(reef_live.reef_site.probe_code = reef_live.monitor_probe.probe_code)
+  Join Probe_Region(reef_live.monitor_probe.region_code = reef_live.reef_region.region_code)
+  Join Site_Dive(reef_live.reef_site.site_code = reef_live.survey_dive.site_code)
+  Join Dive_Crew(reef_live.survey_dive.crew_code = reef_live.dive_crew.crew_code)
+)
+
+###Relational
+Database test::cobaltreef3::store::ReefMirrorDb
+(
+  Schema reef_mirror
+  (
+    Table reef_site
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      site_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      site_name VARCHAR(48),
+      status_code VARCHAR(4),
+      depth_m INTEGER,
+      probe_code VARCHAR(12)
+    )
+    Table monitor_probe
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      probe_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      health_code VARCHAR(4),
+      region_code VARCHAR(12)
+    )
+    Table reef_region
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      region_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      region_name VARCHAR(48)
+    )
+    Table survey_dive
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      dive_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      site_code VARCHAR(12),
+      dive_label VARCHAR(48),
+      crew_code VARCHAR(12)
+    )
+    Table dive_crew
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      crew_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      crew_name VARCHAR(48)
+    )
+  )
+
+  Join Site_Probe(reef_mirror.reef_site.probe_code = reef_mirror.monitor_probe.probe_code)
+  Join Probe_Region(reef_mirror.monitor_probe.region_code = reef_mirror.reef_region.region_code)
+  Join Site_Dive(reef_mirror.reef_site.site_code = reef_mirror.survey_dive.site_code)
+  Join Dive_Crew(reef_mirror.survey_dive.crew_code = reef_mirror.dive_crew.crew_code)
+)

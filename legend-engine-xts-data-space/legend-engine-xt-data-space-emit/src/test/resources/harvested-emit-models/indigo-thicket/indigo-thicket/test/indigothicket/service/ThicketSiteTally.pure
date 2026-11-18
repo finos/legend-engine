@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigothicket::service::ThicketSiteTally
+{
+  pattern: '/indigothicket/v1/site-tally/{environment}';
+  title: 'Indigo Thicket - Site Tally By Environment';
+  documentation: 'Aggregates every ringing record into one row per ringing site reached through the site join, summing the recorded masses and taking the widest wing measurement of the site, so the grouping key is a joined column rather than a stored one and the aggregation is pushed into the generated SQL. The environment path segment selects the runtime the identical aggregation runs against.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Multi
+  {
+    query: {|test::indigothicket::domain::RingingRecord.all()->groupBy(
+      [
+        r|$r.site.siteName
+      ],
+      [
+        agg(r|$r.massG, y|$y->sum()),
+        agg(r|$r.wingMm, y|$y->max())
+      ],
+      [
+        'Site',
+        'TotalMassG',
+        'WidestWingMm'
+      ]
+    )->sort([asc('Site')])};
+    key: 'environment';
+    executions['survey']:
+    {
+      mapping: test::indigothicket::mapping::ThicketMapping;
+      runtime: test::indigothicket::runtime::ThicketSurveyRuntime;
+    }
+    executions['audit']:
+    {
+      mapping: test::indigothicket::mapping::ThicketMapping;
+      runtime: test::indigothicket::runtime::ThicketAuditRuntime;
+    }
+  }
+  testSuites:
+  [
+    siteTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse:
+            Relational
+            #{
+              thicket.ringing_site:
+                'site_code,site_name,habitat_code\n'+
+                'ST-1,Ridge Thicket,scrub\n'+
+                'ST-2,Hollow Coppice,coppice\n';
+
+              thicket.record_sighting:
+                'sighting_code,record_code,observer_role,sighting_note\n'+
+                'SI-01,RR-02,ringer_trainee,ring read at the feeder\n';
+
+              thicket.ringing_record:
+                'record_code,site_code,species_code,wing_mm,mass_g,ringed_at,checked_at,retrap,adult\n'+
+                'RR-01,ST-1,wa-blackcap,72,18,2026-02-10 08:00:00.000,2026-02-11 08:00:00.000,false,true\n'+
+                'RR-02,ST-1,ti-bluetit,64,11,2026-02-12 08:00:00.000,2026-02-13 08:00:00.000,true,true\n'+
+                'RR-03,ST-2,fi-chaffinch,92,24,2026-02-14 08:00:00.000,2026-02-15 08:00:00.000,false,false\n'+
+                'RR-04,ST-2,wa-whitethroat,70,16,2026-01-05 08:00:00.000,2026-01-06 08:00:00.000,false,true\n'+
+                'RR-05,ST-1,wa-chiffchaff,68,8,2026-02-16 08:00:00.000,2026-02-17 08:00:00.000,true,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everySiteTalliesTheMassesAndTheWidestWingOfItsRecords:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['survey'];
+          asserts:
+          [
+            theJoinedSiteNameGroupsTheRecordsAndTheOrderedTallyIsAsserted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"Hollow Coppice","TotalMassG":40,"WidestWingMm":92},{"Site":"Ridge Thicket","TotalMassG":37,"WidestWingMm":72}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

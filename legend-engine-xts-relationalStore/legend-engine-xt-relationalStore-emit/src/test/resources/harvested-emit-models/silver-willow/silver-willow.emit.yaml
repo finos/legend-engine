@@ -1,0 +1,45 @@
+name: silver-willow
+title: "Community Seed Vault - Eight-Armed Conditional Grades, a Three-Hop Join Path onto an Inline View and a Model-to-Model Digest Layer"
+description: |
+  A community seed-vault germination register whose relational mapping derives graded
+  seed-lot attributes from nested conditional transforms with null-sentinel fallbacks,
+  resolves the storage vault through a three-hop join path that lands on an inline
+  climate-zone view, and parses a numeric germination count out of a text column. A
+  model-to-model layer folds each register row into a digest with its own conditional
+  transform, and both layers carry test suites whose fixtures hit every conditional arm.
+
+modelSources:
+  model:
+    root: silver-willow
+    files:
+      - test/silverwillow/connection/SeedVaultConnection.pure
+      - test/silverwillow/domain/Domain.pure
+      - test/silverwillow/mapping/LotDigestMapping.pure
+      - test/silverwillow/mapping/SeedVaultMapping.pure
+      - test/silverwillow/runtime/SeedVaultRuntime.pure
+      - test/silverwillow/store/SeedVaultDatabase.pure
+
+features:
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - conditional-transform
+  - duckdb
+  - germination-register
+  - h2
+  - inline-view
+  - mapping-test
+  - model-to-model
+  - multi-hop-join
+  - null-sentinel
+  - relational
+  - seed-vault

@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantprairie3::mapping::PrairieSowingMapping
+(
+  *test::verdantprairie3::domain::SowingPlot[sowingPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.plot_id
+    )
+    ~mainTable [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot
+    plotCode: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.plot_code,
+    gridCode: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.grid_code,
+    seedMix: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.seed_mix,
+    stewardName: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.steward_name,
+    soilClass: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.soil_class,
+    drillKind: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.drill_kind,
+    noteText: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.note_text,
+    sownAt: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.sown_at,
+    checkedAt: [test::verdantprairie3::store::PrairieSowingDb]prairie.sowing_plot.checked_at
+  }
+
+  testSuites:
+  [
+    sowingPlotSuite:
+    {
+      function: |test::verdantprairie3::domain::SowingPlot.all()->project(
+  [
+    p|$p.plotCode,
+    p|$p.gridCode,
+    p|$p.seedMix,
+    p|$p.stewardName,
+    p|$p.soilClass,
+    p|$p.drillKind,
+    p|$p.noteText
+  ],
+  [
+    'Plot/Code',
+    'Plot/Grid',
+    'Plot/Mix',
+    'Plot/Steward',
+    'Plot/Soil',
+    'Plot/Drill',
+    'Plot/Note'
+  ]
+)->sort(
+  [
+    asc('Plot/Code')
+  ]
+);
+      tests:
+      [
+        everyColumnIsBoundToItsOwnPrimaryKeyedRow:
+        {
+          doc: 'Asserts that every named column of the primary-keyed sowing plot is bound straight onto its own main-table column, including the two timestamp columns that are mapped but not published.';
+          data:
+          [
+            test::verdantprairie3::store::PrairieSowingDb:
+              Relational
+              #{
+                prairie.sowing_plot:
+                  'plot_id,plot_code,grid_code,seed_mix,steward_name,soil_class,drill_kind,note_text,sown_at,checked_at\n'+
+                  '1,SP-01,GR-01,Tallgrass Mix,Ada Meadow,LOAM,BROADCAST,First drilling of the north strip,2026-04-02 09:15:00,2026-04-30 08:00:00\n'+
+                  '2,SP-02,GR-02,Shortgrass Mix,Bram Furrow,CLAY,SLOT DRILL,Reseeded after the spring washout,2026-04-03 07:45:00,2026-05-01 08:30:00\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSowingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"SP-01","Plot/Grid":"GR-01","Plot/Mix":"Tallgrass Mix","Plot/Steward":"Ada Meadow","Plot/Soil":"LOAM","Plot/Drill":"BROADCAST","Plot/Note":"First drilling of the north strip"},{"Plot/Code":"SP-02","Plot/Grid":"GR-02","Plot/Mix":"Shortgrass Mix","Plot/Steward":"Bram Furrow","Plot/Soil":"CLAY","Plot/Drill":"SLOT DRILL","Plot/Note":"Reseeded after the spring washout"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberthistle3::mapping::StudioMapping
+(
+  *test::umberthistle3::domain::KilnBooking[booking]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberthistle3::store::StudioDB]studio.kiln_booking.booking_ref
+    )
+    ~mainTable [test::umberthistle3::store::StudioDB]studio.kiln_booking
+    bookingRef: [test::umberthistle3::store::StudioDB]studio.kiln_booking.booking_ref,
+    memberRef: [test::umberthistle3::store::StudioDB]studio.kiln_booking.member_ref,
+    kilnRef: [test::umberthistle3::store::StudioDB]studio.kiln_booking.kiln_ref,
+    slotRef: [test::umberthistle3::store::StudioDB]studio.kiln_booking.slot_ref,
+    glazeRef: [test::umberthistle3::store::StudioDB]studio.kiln_booking.glaze_ref,
+    bookedOn: [test::umberthistle3::store::StudioDB]studio.kiln_booking.booked_on,
+    firingHours: [test::umberthistle3::store::StudioDB]studio.kiln_booking.firing_hours,
+    pieceCount: [test::umberthistle3::store::StudioDB]studio.kiln_booking.piece_count,
+    statusRef: [test::umberthistle3::store::StudioDB]studio.kiln_booking.status_ref,
+    noteText: [test::umberthistle3::store::StudioDB]studio.kiln_booking.note_text
+  }
+
+  *test::umberthistle3::domain::StudioMember[member]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberthistle3::store::StudioDB]studio.studio_member.member_ref
+    )
+    ~mainTable [test::umberthistle3::store::StudioDB]studio.studio_member
+    memberRef: [test::umberthistle3::store::StudioDB]studio.studio_member.member_ref,
+    memberName: [test::umberthistle3::store::StudioDB]studio.studio_member.member_name,
+    tierRef: [test::umberthistle3::store::StudioDB]studio.studio_member.tier_ref,
+    regionName: [test::umberthistle3::store::StudioDB]studio.studio_member.region_name
+  }
+
+  test::umberthistle3::domain::BookingMember: XStore
+  {
+    member[booking, member]: $this.memberRef == $that.memberRef,
+    bookings[member, booking]: $this.memberRef == $that.memberRef
+  }
+
+  testSuites:
+  [
+    bookingMemberSuite:
+    {
+      function: |test::umberthistle3::domain::KilnBooking.all()->project(
+        [
+          b|$b.bookingRef,
+          b|$b.member.memberName,
+          b|$b.member.tierRef,
+          b|$b.member.regionName
+        ],
+        [
+          'Booking',
+          'Member',
+          'Tier',
+          'Region'
+        ]
+      )->sort([asc('Booking')]);
+      tests:
+      [
+        mappedMemberDetails:
+        {
+          doc: 'Reads booking rows and reaches the member details through the declared cross-store mapping.';
+          data:
+          [
+            test::umberthistle3::store::StudioDB:
+              Relational
+              #{
+                studio.kiln_booking:
+                  'booking_ref,member_ref,kiln_ref,slot_ref,glaze_ref,booked_on,firing_hours,piece_count,status_ref,note_text\n'+
+                  'KB-01,MB-01,KL-01,SLOT-01,GLZ-01,2026-04-02,4,4,CONFIRMED,evening load\n'+
+                  'KB-02,MB-01,KL-02,SLOT-02,GLZ-02,2026-04-09,3,2,HELD,weekend load\n'+
+                  'KB-03,MB-02,KL-03,SLOT-03,GLZ-01,2026-04-16,5,4,CONFIRMED,shared studio\n';
+                studio.studio_member:
+                  'member_ref,member_name,tier_ref,region_name\n'+
+                  'MB-01,Ada Clay,LEAD,NORTH\n'+
+                  'MB-02,Ben Kiln,NEW,SOUTH\n';
+              }#
+          ];
+          asserts:
+          [
+            memberRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Booking":"KB-01","Member":"Ada Clay","Tier":"LEAD","Region":"NORTH"},{"Booking":"KB-02","Member":"Ada Clay","Tier":"LEAD","Region":"NORTH"},{"Booking":"KB-03","Member":"Ben Kiln","Tier":"NEW","Region":"SOUTH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

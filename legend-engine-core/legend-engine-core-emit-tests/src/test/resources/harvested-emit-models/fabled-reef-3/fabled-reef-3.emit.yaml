@@ -1,0 +1,40 @@
+name: fabled-reef-3
+title: "Kelp Canopy Survey Register — Annotated Business-Temporal Station Hierarchies"
+description: |
+  A store-less domain model over a kelp-forest canopy survey register. Two
+  locally declared profiles supply the classification metadata the register is
+  annotated with: one for register bookkeeping (stereotypes for the station key,
+  the published fields and the derived roll-up, tagged values for the custodian
+  and the field width) and one for serialisation nullability. Two independent
+  generalization hierarchies each root an abstract business-temporal station
+  record and specialise it two levels deep, so the leaf types inherit both the
+  register identity and the single business timeline the register is published
+  against, and every stereotype and tagged value applied above has to resolve
+  through the hierarchy for the model to compile.
+modelSources:
+  model:
+    root: fabled-reef-3
+    files:
+      - test/fabledreef3/annotation/CanopyAnnotations.pure
+      - test/fabledreef3/canopy/CanopyStationRegister.pure
+      - test/fabledreef3/drift/DriftPatchRegister.pure
+features:
+  - grammar:class-inheritance
+  - grammar:profile
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - annotated-classes
+  - business-temporal
+  - canopy-survey
+  - class-inheritance
+  - inherited-properties
+  - kelp-forest
+  - marine-ecology
+  - milestoning
+  - model-only
+  - profile
+  - stereotypes
+  - tagged-values

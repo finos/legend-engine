@@ -1,0 +1,57 @@
+name: sunlit-otter
+title: "Sunlit Otter — River Otter Raft Census (Relational Mapping, Windowed Service, Data Space)"
+description: |
+  A river otter census published as a curated relational corpus. Two domain
+  classes are bound to a two-table store through a mapping that anchors each
+  class on its own named main-table alias and declares a composite primary key
+  of mixed column types over that alias, while the raft-to-reach property is
+  resolved across a two-column equality join. A threshold-parameterised
+  single-execution service projects eight mixed-type columns — including a
+  derived group-size expression — and appends a partitioned ranking over the
+  ordered group size, so the plan evaluates a window rather than a plain
+  aggregate; its fixtures cover a partition with tied ordering values, a
+  single-row partition and several partitions, and the threshold is bound both
+  to a value that selects rows and to one that selects none. The mapping carries
+  its own suites: one exercising rows that agree on part of the composite key
+  and a row whose date key column is empty, one aggregating the derived
+  expression across the join. The data space gathers the mapping, runtime and
+  the ranking service as a featured executable and carries an e-mail support
+  contact.
+
+modelSources:
+  model:
+    root: sunlit-otter
+    files:
+      - test/sunlitotter/connection/OtterConnection.pure
+      - test/sunlitotter/dataspace/OtterDataSpace.pure
+      - test/sunlitotter/domain/OtterDomain.pure
+      - test/sunlitotter/mapping/OtterMapping.pure
+      - test/sunlitotter/runtime/OtterRuntime.pure
+      - test/sunlitotter/service/RaftRankService.pure
+      - test/sunlitotter/store/OtterDatabase.pure
+
+features:
+  - execution:data-space
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - query:window
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - composite-primary-key
+  - data-space
+  - h2
+  - main-table-alias
+  - project
+  - relational
+  - service-test
+  - snowflake
+  - wildlife-monitoring
+  - window-function

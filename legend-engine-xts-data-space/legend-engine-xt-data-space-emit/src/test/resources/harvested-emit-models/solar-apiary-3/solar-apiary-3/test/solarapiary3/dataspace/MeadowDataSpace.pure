@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::solarapiary3::dataspace::MeadowDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'survey';
+      description: 'Survey tier - the transect counts served through the in-process survey store.';
+      mapping: test::solarapiary3::mapping::MeadowMapping;
+      defaultRuntime: test::solarapiary3::runtime::MeadowH2Runtime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier - the same curated binding planned against the vault-authenticated warehouse connection.';
+      mapping: test::solarapiary3::mapping::MeadowMapping;
+      defaultRuntime: test::solarapiary3::runtime::MeadowWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'survey';
+  title: 'Solar Apiary Pollinator Meadow Survey';
+  description: 'Discovery surface over the pollinator meadow transect counts: the banded station records and the two execution tiers they are served through.';
+  elements:
+  [
+    test::solarapiary3::domain::PollinatorCount
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Counts above a visit floor';
+      description: 'Featured endpoint returning the banded transect counts that reach the supplied visit floor.';
+      executable: test::solarapiary3::service::PollinatorCountsByVisitFloor;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'pollinator-meadow-desk@meadowsurvey.invalid';
+  };
+}

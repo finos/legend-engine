@@ -1,0 +1,60 @@
+name: gilded-summit-3
+title: "Gilded Summit Spring Gauging — Keyed Multi-Execution Services Over A Processing-Milestoned Spring Register"
+description: |
+  A mountain spring gauging register whose processing-milestoned spring record
+  reaches an identifier record, a trait record with its gauging window and
+  flow-rate changes, and a seasonal closure schedule whose notices name a
+  closure reason four hops from the root. Four parameterised services keyed by
+  gauge region share one query body across an upland and a lowland runtime and
+  narrow the springs at a processing date with a three-arm identifier
+  disjunction, each arm pairing an optional-parameter equality with a presence
+  check on the same nested identifier; three project nested paths and one
+  fetches a checked graph with serialization. A single-execution service reads
+  every processing version of one spring through the all-versions accessor.
+  Every service is owned by a list of named users, and the fixture keeps a
+  lapsed and a not-yet-processed version that the date-scoped reads must skip.
+
+modelSources:
+  model:
+    root: gilded-summit-3
+    files:
+      - test/gildedsummit3/connection/SpringConnections.pure
+      - test/gildedsummit3/data/SpringFixtureData.pure
+      - test/gildedsummit3/domain/SpringDomain.pure
+      - test/gildedsummit3/mapping/SpringMapping.pure
+      - test/gildedsummit3/runtime/SpringRuntimes.pure
+      - test/gildedsummit3/service/SpringServices.pure
+      - test/gildedsummit3/store/SpringDB.pure
+
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:service-user-ownership
+  - milestoning:all-versions-query
+  - milestoning:processing-temporal
+  - query:deep-property-path
+  - query:filter
+  - execution:checked-graph-fetch
+  - execution:service-parameter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - all-versions
+  - deep-property-path
+  - graph-fetch-checked
+  - h2
+  - multi-execution-service
+  - optional-parameters
+  - processing-temporal
+  - relational
+  - service-test
+  - spring-gauging
+  - user-list-ownership

@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietlagoon::service::LaunchTrailRegister
+{
+  pattern: '/quietlagoon/v1/launch-trail';
+  title: 'Quiet Lagoon - Launch Trail Excluding A Named Craft';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the whole launch trail with a badge derived from the craft kind and the time on the water, then strikes from the published column every row whose craft kind carries a caller-named fragment, so the exclusion is applied after the trail is built rather than in the store.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {excludedFragment: String[1]|test::quietlagoon::domain::LaunchLog.all()->project(
+      [
+        l|$l.launchCode,
+        l|$l.craftKind,
+        l|test::quietlagoon::function::craftBadge($l.craftKind, $l.paddlerMinutes)
+      ],
+      [
+        'Launch',
+        'Craft',
+        'Badge'
+      ]
+    )->filter(
+      r|$r.getString('Craft')->contains($excludedFragment)->not()
+    )->sort([asc('Launch')])};
+    mapping: test::quietlagoon::mapping::LagoonMapping;
+    runtime: test::quietlagoon::runtime::LagoonRuntime;
+  }
+  testSuites:
+  [
+    launchTrailSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lagoonConnection:
+            Relational
+            #{
+              lagoon.launch_log:
+                'launch_code,paddler_name,craft_kind,hull_material,lagoon_name,dock_code,paddler_minutes,crew_size\n'+
+                'LG-01,Ada Wren,SEA KAYAK,FIBREGLASS,Quiet Lagoon,D-101,45,2\n'+
+                'LG-02,Bo Finch,SEA KAYAK,FIBREGLASS,Quiet Lagoon,D-102,20,1\n'+
+                'LG-03,Cy Heron,CANOE,CEDAR,Quiet Lagoon,D-201,60,3\n'+
+                'LG-04,Di Egret,PACKRAFT,VINYL,Still Lagoon,D-101,50,2\n'+
+                'LG-05,El Rail,CANOE,CEDAR,Quiet Lagoon,D-201,35,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theTrailWithoutTheNamedCraft:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            excludedFragment = 'KAYAK'
+          ]
+          asserts:
+          [
+            threeBadgedPaddlesRemain:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Launch":"LG-03","Craft":"CANOE","Badge":"CANO/120"},{"Launch":"LG-04","Craft":"PACKRAFT","Badge":"PACK/100"},{"Launch":"LG-05","Craft":"CANOE","Badge":"CANO/70"}]';
+                  }#;
+              }#
+          ]
+        },
+        theFragmentEveryCraftCarries:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            excludedFragment = 'A'
+          ]
+          asserts:
+          [
+            nothingSurvivesTheExclusion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

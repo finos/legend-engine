@@ -1,0 +1,90 @@
+name: kindly-canyon
+title: "Kindly Canyon — A Two-Store Canyon Patrol And Visitor Register Whose Published Boards Union, Rank And Test Collections Across An Inheritance Hierarchy"
+description: |
+  A canyon trail register held in two independent relational stores. The trail store carries the
+  walked patrols, the posts that staff the trail and the segments they stand on, and publishes the
+  rostered warden out of a second schema; the visitor store carries the staffed stations and their
+  counted tallies, and publishes the rostered guide out of its own second schema. Neither store
+  reaches into the other, so both halves prove the cross-schema hop, the multi-table hop and the
+  inner-join hop independently.
+
+  One shared post relation resolves three ways. The common post surface is bound to the whole
+  relation, and the rim, floor and vehicle posts are each bound as a subtype extending that binding
+  and narrowed by its own store filter, so the hierarchy is told apart by filters rather than by
+  tables and a query over the supertype still sees every post through inherited properties alone.
+  Three associations bind the register together — the patrols of a post, the posts of a segment and
+  the tallies of a station — each one a collection on one side and an optional single hop on the
+  other, so a patrol naming an unknown post and a tally naming an unknown station both keep the hop
+  absent rather than dropping the row.
+
+  The published patrol board is one relation built from two structurally identical branches of the
+  same extent, the long walks and the wet-trail reports, each stamped with the stream it came from,
+  so the patrol answering both predicates is published once per stream. Both branches keep only the
+  patrols walked inside a window computed from the supplied instant, publish the elapsed day count
+  measured against that instant, and the concatenated board is then ranked by walked duration
+  inside each segment before being ordered and trimmed. The visitor board instead tests the tally
+  collection of each station for a count clearing a supplied floor inside its own computed window.
+
+  The suites read the two fixtures nine ways. Every effort band, the still-open marker, both absent
+  association hops, both elevation subtypes read through their own filtered extents, the existence
+  test against posts with several, one and no patrols, the coerced single segment hop, both stream
+  branches with their shared row, the empty collection guard, the window boundary and a floor above
+  every counted tally are all proven.
+modelSources:
+  model:
+    root: kindly-canyon
+    files:
+      - test/kindlycanyon/connection/CanyonConnections.pure
+      - test/kindlycanyon/data/PatrolFixture.pure
+      - test/kindlycanyon/data/VisitFixture.pure
+      - test/kindlycanyon/dataspace/CanyonDataSpaces.pure
+      - test/kindlycanyon/domain/PatrolDomain.pure
+      - test/kindlycanyon/domain/VisitDomain.pure
+      - test/kindlycanyon/mapping/PatrolMapping.pure
+      - test/kindlycanyon/mapping/VisitMapping.pure
+      - test/kindlycanyon/runtime/CanyonRuntimes.pure
+      - test/kindlycanyon/service/PatrolConditionBoard.pure
+      - test/kindlycanyon/service/VisitTallyBoard.pure
+      - test/kindlycanyon/store/CanyonTrailStore.pure
+      - test/kindlycanyon/store/CanyonVisitStore.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:class-inheritance
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:union
+  - query:window
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-collection-hop
+  - canyon-patrol-register
+  - class-inheritance-hierarchy
+  - collection-existence-test
+  - cross-schema-roster-hop
+  - date-window-arithmetic
+  - filtered-subtype-extent
+  - h2
+  - mapping-test
+  - service-test
+  - single-element-coercion
+  - snowflake
+  - two-store-register
+  - union-of-branches
+  - window-ranking

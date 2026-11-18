@@ -1,0 +1,44 @@
+name: indigo-glacier
+title: "Indigo Glacier - Multi-Environment Observatory Aggregations"
+description: |
+  A sky-observatory model whose telescope observations are exposed through two
+  services: a single-execution service that filters observations by magnitude,
+  spectral band membership and target prefix and projects the sorted result, and
+  a site-keyed multi-execution service that aggregates total and count of
+  observations grouped by spectral band.
+modelSources:
+  model:
+    root: indigo-glacier
+    files:
+      - test/indigoglacier/connection/SkyConnection.pure
+      - test/indigoglacier/domain/SkyDomain.pure
+      - test/indigoglacier/mapping/SkyMapping.pure
+      - test/indigoglacier/runtime/SkyRuntime.pure
+      - test/indigoglacier/service/BandCounts.pure
+      - test/indigoglacier/service/BrightTargets.pure
+      - test/indigoglacier/store/SkyDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - aggregation
+  - astronomy
+  - collection-op
+  - group-by
+  - h2
+  - multi-execution
+  - observatory
+  - relational
+  - service
+  - sort-limit

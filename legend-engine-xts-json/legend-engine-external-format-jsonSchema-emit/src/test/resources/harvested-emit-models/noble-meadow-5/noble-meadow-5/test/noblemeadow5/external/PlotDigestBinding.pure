@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ExternalFormat
+Binding test::noblemeadow5::external::PlotDigestJsonBinding
+{
+  schemaSet: test::noblemeadow5::external::PlotDigestJsonSchemas;
+  schemaId: plotDigest;
+  contentType: 'application/json';
+  modelIncludes:
+  [
+    test::noblemeadow5::domain::PlotDigest
+  ];
+}
+
+SchemaSet test::noblemeadow5::external::PlotDigestJsonSchemas
+{
+  format: JSON;
+  schemas:
+  [
+    {
+      id: plotDigest;
+      location: 'PlotDigest.json';
+      content: '{\n  "title": "test::noblemeadow5::domain::PlotDigest",\n  "type": "object",\n  "required": ["digestKey", "digestName", "habitatText", "visitText", "feedLabel"],\n  "properties": {\n    "digestKey":   { "type": "integer" },\n    "digestName":  { "type": "string" },\n    "habitatText": { "type": "string" },\n    "visitText":   { "type": "string" },\n    "wardenText":  { "type": "string" },\n    "feedLabel":   { "type": "string" }\n  }\n}';
+    }
+  ];
+}

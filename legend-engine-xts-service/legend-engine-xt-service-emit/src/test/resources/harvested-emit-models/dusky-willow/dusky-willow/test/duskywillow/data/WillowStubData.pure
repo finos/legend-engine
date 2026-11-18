@@ -1,0 +1,23 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::duskywillow::data::WillowCounterSlips
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"noteRef":"ln-1001","borrowerName":"A Reed","toolName":"hand plane","stateText":"issued","classText":"hand bench","daysOut":20,"depositPence":1500},{"noteRef":"ln-1002","borrowerName":"B Nolan","toolName":"thicket trimmer","stateText":"returned","classText":"power bench","daysOut":7,"depositPence":0},{"noteRef":"ln-1003","borrowerName":"C Ojo","toolName":"garden fork","stateText":"overdue","classText":"garden bench","daysOut":14},{"noteRef":"ln-1004","borrowerName":"D Silva","toolName":"unlisted gadget","stateText":"not stated","classText":"loose kit","daysOut":3,"depositPence":250}]';
+  }#
+}

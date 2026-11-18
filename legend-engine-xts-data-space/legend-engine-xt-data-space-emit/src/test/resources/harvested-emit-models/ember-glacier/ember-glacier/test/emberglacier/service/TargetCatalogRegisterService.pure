@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberglacier::service::TargetCatalogRegisterService
+{
+  pattern: '/emberglacier/v1/target-catalog-register';
+  title: 'Ember Glacier - Target Catalogue Register';
+  ownership: UserList { users: ['skywatch-night-desk'] };
+  documentation: 'Targets whose catalogue is one the network reports on, admitted by a membership test over a literal set that is case-exact, so a differently spelled catalogue is left out.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::emberglacier::domain::SkyTarget.all()->filter(
+      t|$t.catalogCode->in(['NGC', 'IC'])
+    )->project(
+      [
+        t|$t.targetCode,
+        t|$t.targetName,
+        t|$t.catalogCode,
+        t|$t.magnitude
+      ],
+      [
+        'Target',
+        'Name',
+        'Catalog',
+        'Magnitude'
+      ]
+    )->sort([asc('Target')]);
+    mapping: test::emberglacier::mapping::SkywatchMapping;
+    runtime: test::emberglacier::runtime::SkywatchRuntime;
+  }
+  testSuites:
+  [
+    targetCatalogRegisterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skywatchConnection:
+            Relational
+            #{
+              skywatch.sky_target:
+                'target_id,target_code,target_name,catalog_code,magnitude\n'+
+                '1,TG-01,Kite Nebula,NGC,8.4\n'+
+                '2,TG-02,Anvil Cluster,ngc,6.1\n'+
+                '3,TG-03,Ribbon Galaxy,IC,11.2\n'+
+                '4,TG-900,Drift Comet,NGC,9.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTheReportedCatalogues:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeTargets:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Target":"TG-01","Name":"Kite Nebula","Catalog":"NGC","Magnitude":8.4},{"Target":"TG-03","Name":"Ribbon Galaxy","Catalog":"IC","Magnitude":11.2},{"Target":"TG-900","Name":"Drift Comet","Catalog":"NGC","Magnitude":9.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

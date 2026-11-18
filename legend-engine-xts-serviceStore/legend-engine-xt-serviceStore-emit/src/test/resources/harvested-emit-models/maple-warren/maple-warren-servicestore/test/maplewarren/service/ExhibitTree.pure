@@ -1,0 +1,184 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::maplewarren::service::ExhibitTree
+{
+  pattern: '/catalogue/v1/exhibit-tree';
+  title: 'Museum Catalogue - Flattened Exhibit Tree';
+  owners:
+  [
+    'catalogue-curation',
+    'collection-records'
+  ];
+  documentation: 'Graph-fetches and serialises the three-level flattened exhibit tree assembled from a remote catalogue read through chained model-to-model class mappings.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::maplewarren::domain::ExhibitSummary.all()->graphFetch(
+      #{
+        test::maplewarren::domain::ExhibitSummary
+        {
+          recordId,
+          exhibitTitle,
+          versionLabel,
+          provenanceOrigin,
+          donorLabel,
+          galleryLabel
+          {
+            galleryName,
+            wingCode,
+            curator
+            {
+              curatorName
+            }
+          },
+          custodian
+          {
+            curatorName
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::maplewarren::domain::ExhibitSummary
+        {
+          recordId,
+          exhibitTitle,
+          versionLabel,
+          provenanceOrigin,
+          donorLabel,
+          galleryLabel
+          {
+            galleryName,
+            wingCode,
+            curator
+            {
+              curatorName
+            }
+          },
+          custodian
+          {
+            curatorName
+          }
+        }
+      }#
+    );
+    mapping: test::maplewarren::mapping::CatalogMapping;
+    runtime: test::maplewarren::runtime::CatalogRuntime;
+  }
+  testSuites:
+  [
+    completeGraphSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/catalogue/exhibits';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"recordId":"REC-4001","versionNumber":7,"auditUser":"catalogue-loader","window":{"fromLabel":"2024-01-01","toLabel":"2024-12-31"},"exhibit":{"title":"Glazed Water Jar","medium":{"mediumName":"ceramic"},"gallery":{"galleryName":"East Gallery","wing":{"wingCode":"EW","curator":{"curatorName":"Ines Ferrand"}}},"provenance":{"origin":"Highland Dig","donor":{"donorName":"Marsh Foundation"}}}}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        deepestNodePresent:
+        {
+          asserts:
+          [
+            fullTreeSerialized:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"recordId":"REC-4001","exhibitTitle":"Glazed Water Jar","versionLabel":"V7.2024","provenanceOrigin":"Highland Dig","donorLabel":"Marsh Foundation","galleryLabel":{"galleryName":"East Gallery","wingCode":"EW","curator":{"curatorName":"Ines Ferrand"}},"custodian":{"curatorName":"Ines Ferrand"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    sparseGraphSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/catalogue/exhibits';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"recordId":"REC-4002","versionNumber":2,"auditUser":"catalogue-loader","window":{"fromLabel":"2024-01-01","toLabel":"2024-12-31"},"exhibit":{"title":"Woven Reed Basket","medium":{"mediumName":"reed"},"gallery":{"galleryName":"West Gallery","wing":{"wingCode":"WW"}},"provenance":{"origin":"Riverside Survey"}}}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        deepestNodeAbsent:
+        {
+          asserts:
+          [
+            sparseTreeSerialized:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"recordId":"REC-4002","exhibitTitle":"Woven Reed Basket","versionLabel":"V2.2024","provenanceOrigin":"Riverside Survey","donorLabel":null,"galleryLabel":{"galleryName":"West Gallery","wingCode":"WW","curator":{"curatorName":null}},"custodian":{"curatorName":null}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

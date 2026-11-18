@@ -1,0 +1,184 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletmarsh::mapping::OrchardMapping
+(
+  include mapping test::scarletmarsh::mapping::KeeperRefMapping[test::scarletmarsh::store::KeeperRefDB->test::scarletmarsh::store::OrchardCoreDB]
+
+  test::scarletmarsh::domain::GraftGrade: EnumerationMapping GraftGradeMapping
+  {
+    PRIME: ['PRIME'],
+    STANDARD: ['STANDARD'],
+    WATCH: ['WATCH']
+  }
+
+  *test::scarletmarsh::domain::GraftLog[graftLog]: Relational
+  {
+    ~filter [test::scarletmarsh::store::OrchardCoreDB]@Graft_Plot | [test::scarletmarsh::store::OrchardCoreDB]LivePlots
+    ~primaryKey
+    (
+      [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.graft_code
+    )
+    ~mainTable [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log
+    graftCode: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.graft_code,
+    plotCode: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.plot_code,
+    varietyCode: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.variety_code,
+    rootstock: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.rootstock,
+    graftedOn: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.grafted_on,
+    survivalScore: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.survival_score,
+    graftStatus: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.graft_status,
+    grade: EnumerationMapping GraftGradeMapping: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.grade_code,
+    varietyName: [test::scarletmarsh::store::OrchardCoreDB]@Graft_Variety | [test::scarletmarsh::store::OrchardCoreDB]reference.variety.variety_name,
+    plotLabel: [test::scarletmarsh::store::OrchardCoreDB]@Graft_Plot | [test::scarletmarsh::store::OrchardCoreDB]orchard.plot.plot_label,
+    keeper[rotaKeeper]: [test::scarletmarsh::store::OrchardCoreDB]@Graft_Keeper
+  }
+
+  *test::scarletmarsh::domain::OrchardPlot[orchardPlot]: Relational
+  {
+    ~filter [test::scarletmarsh::store::OrchardCoreDB]LivePlots
+    ~primaryKey
+    (
+      [test::scarletmarsh::store::OrchardCoreDB]orchard.plot.plot_code
+    )
+    ~mainTable [test::scarletmarsh::store::OrchardCoreDB]orchard.plot
+    plotCode: [test::scarletmarsh::store::OrchardCoreDB]orchard.plot.plot_code,
+    plotLabel: [test::scarletmarsh::store::OrchardCoreDB]orchard.plot.plot_label,
+    district: [test::scarletmarsh::store::OrchardCoreDB]orchard.plot.district,
+    plotState: [test::scarletmarsh::store::OrchardCoreDB]orchard.plot.plot_state,
+    parentPlotLabel: [test::scarletmarsh::store::OrchardCoreDB]@Plot_Parent | [test::scarletmarsh::store::OrchardCoreDB]orchard.plot.plot_label
+  }
+
+  testSuites:
+  [
+    graftLogSuite:
+    {
+      function: |test::scarletmarsh::domain::GraftLog.all()->project(
+  [
+    x|$x.graftCode,
+    x|$x.plotLabel,
+    x|$x.varietyName,
+    x|$x.grade,
+    x|$x.keeper.keeperName,
+    x|$x.vigour()
+  ],
+  [
+    'Graft',
+    'Plot',
+    'Variety',
+    'Grade',
+    'Keeper',
+    'Vigour'
+  ]
+)->sort([asc('Graft')]);
+      tests:
+      [
+        liveGraftsWithBorrowedKeeperSets:
+        {
+          doc: 'Graft projection over the cross-table filter reached through the plot join, the variety and plot joins and the keeper set borrowed through the store-substituting mapping include, with a guild keeper that the rota-keeper set excludes and a graft whose plot the joined filter rejects.';
+          data:
+          [
+            test::scarletmarsh::store::OrchardCoreDB:
+              Relational
+              #{
+                keeper.keeper_record:
+                  'keeper_code,keeper_name,keeper_kind,rota_code,badge_expiry,guild_name\n'+
+                  'K-1,Ada Fern,ROTA,R-1001,2027-04-30,\n'+
+                  'K-2,Bram Holt,GUILD,,,Hollow Lane Growers\n'+
+                  'K-3,Cleo Rand,ROTA,R-1002,2026-11-30,\n';
+                orchard.plot:
+                  'plot_code,plot_label,district,plot_state,parent_plot_code\n'+
+                  'P-1,Riverbend Row,North,LIVE,\n'+
+                  'P-2,Kiln Lane Row,East,LIVE,P-1\n'+
+                  'P-3,Fallow Corner,East,RETIRED,\n';
+                reference.variety:
+                  'variety_code,variety_name,ripening\n'+
+                  'V-1,Warren Russet,LATE\n'+
+                  'V-2,Marsh Pippin,EARLY\n';
+                orchard.graft_log:
+                  'graft_code,plot_code,variety_code,rootstock,keeper_code,grade_code,graft_status,grafted_on,survival_score\n'+
+                  'G-1,P-1,V-1,STOCK-A,K-1,PRIME,ACTIVE,2026-02-01,40\n'+
+                  'G-2,P-1,V-2,STOCK-B,K-3,STANDARD,ACTIVE,2026-02-03,24\n'+
+                  'G-3,P-2,V-1,STOCK-A,K-2,WATCH,ACTIVE,2026-02-05,12\n'+
+                  'G-4,P-3,V-2,STOCK-B,K-1,PRIME,ACTIVE,2026-02-07,30\n'+
+                  'G-5,P-1,V-1,STOCK-B,K-1,PRIME,LIFTED,2026-02-09,18\n';
+              }#
+          ];
+          asserts:
+          [
+            fourLivePlotGrafts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Graft":"G-1","Plot":"Riverbend Row","Variety":"Warren Russet","Grade":"PRIME","Keeper":"Ada Fern","Vigour":80},{"Graft":"G-2","Plot":"Riverbend Row","Variety":"Marsh Pippin","Grade":"STANDARD","Keeper":"Cleo Rand","Vigour":48},{"Graft":"G-3","Plot":"Kiln Lane Row","Variety":"Warren Russet","Grade":"WATCH","Keeper":null,"Vigour":24},{"Graft":"G-5","Plot":"Riverbend Row","Variety":"Warren Russet","Grade":"PRIME","Keeper":"Ada Fern","Vigour":36}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    orchardPlotSuite:
+    {
+      function: |test::scarletmarsh::domain::OrchardPlot.all()->project(
+  [
+    x|$x.plotCode,
+    x|$x.plotLabel,
+    x|$x.district,
+    x|$x.parentPlotLabel
+  ],
+  [
+    'Plot',
+    'Label',
+    'District',
+    'Parent'
+  ]
+)->sort([asc('Plot')]);
+      tests:
+      [
+        livePlotsResolveTheirParentThroughTheTargetJoin:
+        {
+          doc: 'Plot projection resolving the parent label through the join whose far side is bound to the join target, with a subdivided plot, an unsubdivided one and a retired plot excluded by the plot-state filter.';
+          data:
+          [
+            test::scarletmarsh::store::OrchardCoreDB:
+              Relational
+              #{
+                orchard.plot:
+                  'plot_code,plot_label,district,plot_state,parent_plot_code\n'+
+                  'P-1,Riverbend Row,North,LIVE,\n'+
+                  'P-2,Kiln Lane Row,East,LIVE,P-1\n'+
+                  'P-3,Fallow Corner,East,RETIRED,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLivePlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-1","Label":"Riverbend Row","District":"North","Parent":null},{"Plot":"P-2","Label":"Kiln Lane Row","District":"East","Parent":"Riverbend Row"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

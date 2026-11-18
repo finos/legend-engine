@@ -1,0 +1,350 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azureisle::service::ColonyCountLog
+{
+  pattern: '/azureisle/colonies/{colonyName}/counts';
+  documentation: 'Nest counts of one colony open on the requested processing day, leaving out the counts whose weather went unrecorded.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], colonyName: String[1]|test::azureisle::domain::NestCount.all($asOf)->filter(c|($c.colonyName == $colonyName) && !($c.weatherLabel == 'WX-UNRECORDED'))->project([c|$c.countId, c|$c.countedOn, c|$c.nestTotal, c|$c.weatherLabel, c|$c.observerName], ['Count', 'Counted On', 'Nests', 'Weather', 'Observer'])->sort('Count')};
+    mapping: test::azureisle::mapping::IsleMapping;
+    runtime: test::azureisle::runtime::IsleFieldRuntime;
+  }
+  testSuites:
+  [
+    colonyCountLogSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          isleField: Reference
+            #{
+              test::azureisle::data::IsleSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        lateSeasonEastStack:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-09-01,
+            colonyName = 'East Stack'
+          ]
+          asserts:
+          [
+            theUnrecordedWeatherCountIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":4,"Counted On":"2026-07-03","Nests":60,"Weather":"WX-FOG","Observer":"Bo Tern"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlyMayNorthLedge:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-05,
+            colonyName = 'North Ledge'
+          ]
+          asserts:
+          [
+            onlyTheCountOpenInEarlyMay:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":1,"Counted On":"2026-05-02","Nests":120,"Weather":"WX-CALM","Observer":"Ada Wren"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::azureisle::service::ReserveCountLog
+{
+  pattern: '/azureisle/reserves/{reserveName}/counts';
+  documentation: 'Large nest counts of the colonies of one reserve, reached through the plot, colony and island joins, with the colony, island, species and counting method of each count.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], reserveName: String[1]|test::azureisle::domain::NestCount.all($asOf)->filter(c|($c.reserveName == $reserveName) && ($c.nestTotal >= 90))->project([c|$c.countId, c|$c.colonyName, c|$c.islandName, c|$c.speciesName, c|$c.methodLabel], ['Count', 'Colony', 'Island', 'Species', 'Method'])->sort('Count')};
+    mapping: test::azureisle::mapping::IsleMapping;
+    runtime: test::azureisle::runtime::IsleFieldRuntime;
+  }
+  testSuites:
+  [
+    reserveCountLogSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          isleField: Reference
+            #{
+              test::azureisle::data::IsleSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        azureSoundLargeCounts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-09-01,
+            reserveName = 'Azure Sound Reserve'
+          ]
+          asserts:
+          [
+            theFourHopChainResolvesTheReserve:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":1,"Colony":"North Ledge","Island":"Gull Rock","Species":"Atlantic Puffin","Method":"DRONE"},{"Count":3,"Colony":"North Ledge","Island":"Gull Rock","Species":"Atlantic Puffin","Method":"BOAT"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::azureisle::service::ColonyNestTotals
+{
+  pattern: '/azureisle/colonies/totals';
+  documentation: 'Total nests and number of counts per colony over the counts open on the requested processing day, leaving out counts whose plot does not resolve to a colony.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::azureisle::domain::NestCount.all($asOf)->filter(c|!$c.colonyName->isEmpty())->groupBy([c|$c.colonyName], [agg(c|$c.nestTotal, y|$y->sum()), agg(c|$c.countId, y|$y->count())], ['Colony', 'Nests', 'Counts'])->sort('Colony')};
+    mapping: test::azureisle::mapping::IsleMapping;
+    runtime: test::azureisle::runtime::IsleReviewRuntime;
+  }
+  testSuites:
+  [
+    colonyNestTotalsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          isleReview: Reference
+            #{
+              test::azureisle::data::IsleSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        seasonTotals:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-09-01
+          ]
+          asserts:
+          [
+            twoCountsAndThreeCountsPerColony:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Colony":"East Stack","Nests":210,"Counts":2},{"Colony":"North Ledge","Nests":295,"Counts":3}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::azureisle::service::ColonyVisitDigest
+{
+  pattern: '/azureisle/visits/{minHeadcount}';
+  documentation: 'Latest completed census visit of every colony whose peak headcount reaches the requested minimum.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {minHeadcount: Integer[1]|test::azureisle::domain::ColonyVisitSummary.all()->filter(v|$v.peakHeadcount >= $minHeadcount)->project([v|$v.colonyCode, v|$v.latestVisitAt, v|$v.peakHeadcount, v|$v.colonyName], ['Colony', 'Latest Visit', 'Peak', 'Name'])->sort('Colony')};
+    mapping: test::azureisle::mapping::IsleMapping;
+    runtime: test::azureisle::runtime::IsleReviewRuntime;
+  }
+  testSuites:
+  [
+    colonyVisitDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          isleReview: Reference
+            #{
+              test::azureisle::data::IsleSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        lowThreshold:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minHeadcount = 100
+          ]
+          asserts:
+          [
+            bothColoniesReachTheThreshold:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Colony":"C1","Latest Visit":"2026-06-01T08:00:00.000000000+0000","Peak":450,"Name":"North Ledge"},{"Colony":"C2","Latest Visit":"2026-06-05T09:00:00.000000000+0000","Peak":120,"Name":"East Stack"}]';
+                  }#;
+              }#
+          ]
+        },
+        highThreshold:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minHeadcount = 200
+          ]
+          asserts:
+          [
+            onlyTheLargerColonyRemains:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Colony":"C1","Latest Visit":"2026-06-01T08:00:00.000000000+0000","Peak":450,"Name":"North Ledge"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::azureisle::service::TeamRoster
+{
+  pattern: '/azureisle/teams/{teamCode}';
+  documentation: 'Active observers of one counting team, one row per observer.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {teamCode: String[1]|test::azureisle::domain::ObserverRosterEntry.all()->filter(o|$o.teamCode == $teamCode)->project([o|$o.observerCode, o|$o.observerName], ['Observer', 'Name'])->sort('Observer')};
+    mapping: test::azureisle::mapping::IsleMapping;
+    runtime: test::azureisle::runtime::IsleReviewRuntime;
+  }
+  testSuites:
+  [
+    teamRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          isleReview: Reference
+            #{
+              test::azureisle::data::IsleSurveyData
+            }#
+        ]
+      ]
+      tests:
+      [
+        teamWithARepeatedRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            teamCode = 'TEAM-A'
+          ]
+          asserts:
+          [
+            theRepeatedRowIsCollapsed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observer":"O1","Name":"Ada Wren"}]';
+                  }#;
+              }#
+          ]
+        },
+        retiredTeam:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            teamCode = 'RETIRED'
+          ]
+          asserts:
+          [
+            retiredObserversAreNotOnTheRoster:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

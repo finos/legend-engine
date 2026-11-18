@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonthistle3::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'The curation stage an accession dossier has reached.'} test::crimsonthistle3::domain::DossierStage
+{
+  {meta::pure::profiles::doc.doc = 'Opened by a curator but not yet reviewed.'} DRAFT,
+  {meta::pure::profiles::doc.doc = 'Reviewed and published to the garden catalogue.'} PUBLISHED,
+  {meta::pure::profiles::doc.doc = 'Closed because every holding it describes has left the collection.'} WITHDRAWN
+}
+
+Class {meta::pure::profiles::doc.doc = 'A curated dossier that gathers the labelled specimens, beds and curator notes describing one accession, and may nest sub-dossiers for divisions of the accession.'} test::crimsonthistle3::domain::AccessionDossier
+{
+  {meta::pure::profiles::doc.doc = 'Catalogue code of the dossier.'} dossierCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Curation stage of the dossier.'} stage: DossierStage[1];
+  {meta::pure::profiles::doc.doc = 'Accession holdings the dossier describes; a dossier always describes at least one holding.'} holdings: AccessionHolding[1..*];
+  {meta::pure::profiles::doc.doc = 'Labelled herbarium specimens filed with the dossier; there may be none yet.'} specimens: LabelledSpecimen[0..*];
+  {meta::pure::profiles::doc.doc = 'Garden beds the accession is planted in, at most three per dossier.'} beds: GardenBed[0..3];
+  {meta::pure::profiles::doc.doc = 'Irrigation zones serving those beds, at least one and at most two.'} irrigationZones: IrrigationZone[1..2];
+  {meta::pure::profiles::doc.doc = 'Curator notes attached to the dossier.'} notes: CuratorNote[*];
+  {meta::pure::profiles::doc.doc = 'Free-text keywords used by the catalogue search.'} keywords: String[0..*];
+  {meta::pure::profiles::doc.doc = 'Sub-dossiers for divisions of the accession; nesting is optional.'} subDossiers: AccessionDossier[0..*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A seasonal review that inspects several dossiers and records which ones need follow-up.'} test::crimsonthistle3::domain::DossierReview
+{
+  {meta::pure::profiles::doc.doc = 'Code of the review round.'} reviewCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Date the review closed.'} reviewedOn: StrictDate[0..1];
+  {meta::pure::profiles::doc.doc = 'Dossiers inspected during the review; a review covers at least one dossier.'} inspected: AccessionDossier[1..*];
+  {meta::pure::profiles::doc.doc = 'Dossiers flagged for follow-up; usually none.'} flagged: AccessionDossier[0..*];
+}

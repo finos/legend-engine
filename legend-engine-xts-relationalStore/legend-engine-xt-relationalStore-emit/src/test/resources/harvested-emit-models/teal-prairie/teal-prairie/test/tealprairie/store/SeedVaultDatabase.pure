@@ -1,0 +1,154 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealprairie::store::SeedVaultDatabase
+(
+  Schema seedvault
+  (
+    Table seed_collection
+    (
+      collection_id VARCHAR(20) PRIMARY KEY,
+      collection_ref VARCHAR(20) NOT NULL,
+      feed_name VARCHAR(30) NOT NULL,
+      event_date DATE NOT NULL,
+      seed_weight_g DOUBLE NOT NULL,
+      taxon_id VARCHAR(20),
+      patch_id VARCHAR(20),
+      room_id VARCHAR(20),
+      programme_id VARCHAR(20),
+      check_id VARCHAR(20),
+      custodian_id VARCHAR(20)
+    )
+    Table habitat_patch
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      patch_id VARCHAR(20) PRIMARY KEY,
+      patch_name VARCHAR(60) NOT NULL,
+      patch_zone VARCHAR(30) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table store_room
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      room_id VARCHAR(20) PRIMARY KEY,
+      room_code VARCHAR(30) NOT NULL,
+      room_wing VARCHAR(30) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table conservation_programme
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      programme_id VARCHAR(20) PRIMARY KEY,
+      programme_name VARCHAR(60) NOT NULL,
+      programme_tier VARCHAR(20) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table viability_check
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      check_id VARCHAR(20) PRIMARY KEY,
+      grade_code VARCHAR(20) NOT NULL,
+      method_code VARCHAR(20) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table seed_custodian
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z),
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      custodian_id VARCHAR(20) PRIMARY KEY,
+      custodian_name VARCHAR(60) NOT NULL,
+      custodian_desk VARCHAR(40) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Schema steward
+  (
+    Table steward_transfer
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      transfer_id VARCHAR(20) PRIMARY KEY,
+      collection_id VARCHAR(20),
+      transfer_kind VARCHAR(12) NOT NULL,
+      crate_count INTEGER,
+      holding_temp_c DOUBLE NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Schema taxonomy
+  (
+    Table taxon_name
+    (
+      taxon_id VARCHAR(20) PRIMARY KEY,
+      taxon_label VARCHAR(60) NOT NULL,
+      genus_id VARCHAR(20)
+    )
+    Table genus
+    (
+      genus_id VARCHAR(20) PRIMARY KEY,
+      genus_label VARCHAR(60) NOT NULL,
+      family_id VARCHAR(20)
+    )
+    Table family
+    (
+      family_id VARCHAR(20) PRIMARY KEY,
+      family_label VARCHAR(60) NOT NULL,
+      order_id VARCHAR(20)
+    )
+    Table taxon_order
+    (
+      order_id VARCHAR(20) PRIMARY KEY,
+      order_label VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join Collection_Taxon(seedvault.seed_collection.taxon_id = taxonomy.taxon_name.taxon_id)
+  Join Taxon_Genus(taxonomy.taxon_name.genus_id = taxonomy.genus.genus_id)
+  Join Genus_Family(taxonomy.genus.family_id = taxonomy.family.family_id)
+  Join Family_Order(taxonomy.family.order_id = taxonomy.taxon_order.order_id)
+  Join Collection_Patch(seedvault.seed_collection.patch_id = seedvault.habitat_patch.patch_id)
+  Join Collection_Room(seedvault.seed_collection.room_id = seedvault.store_room.room_id)
+  Join Collection_Programme(seedvault.seed_collection.programme_id = seedvault.conservation_programme.programme_id)
+  Join Collection_Check(seedvault.seed_collection.check_id = seedvault.viability_check.check_id)
+  Join Collection_Custodian(seedvault.seed_collection.custodian_id = seedvault.seed_custodian.custodian_id)
+  Join Transfer_Collection(steward.steward_transfer.collection_id = seedvault.seed_collection.collection_id)
+)

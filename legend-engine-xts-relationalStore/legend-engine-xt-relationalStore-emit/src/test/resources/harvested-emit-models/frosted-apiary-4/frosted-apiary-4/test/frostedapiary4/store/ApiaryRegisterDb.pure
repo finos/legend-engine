@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedapiary4::store::ApiaryRegisterDb
+(
+  Schema apiary
+  (
+    Table hive
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      hive_id INTEGER PRIMARY KEY,
+      hive_name VARCHAR(120) NOT NULL,
+      forage_zone VARCHAR(32) NOT NULL,
+      frame_count INTEGER NOT NULL,
+      queen_tag VARCHAR(32),
+      audit_note VARCHAR(200),
+      in_z TIMESTAMP NOT NULL,
+      out_z TIMESTAMP NOT NULL
+    )
+
+    Table hive_visit
+    (
+      visit_id INTEGER PRIMARY KEY,
+      hive_id INTEGER NOT NULL,
+      visit_kind VARCHAR(32) NOT NULL,
+      visit_date DATE NOT NULL
+    )
+  )
+
+  Join Hive_Visit
+  (
+    apiary.hive.hive_id = apiary.hive_visit.hive_id
+  )
+)

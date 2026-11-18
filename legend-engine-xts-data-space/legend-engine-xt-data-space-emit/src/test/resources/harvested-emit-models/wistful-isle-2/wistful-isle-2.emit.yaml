@@ -1,0 +1,51 @@
+name: wistful-isle-2
+title: "Wistful Isle Nest Reserve — Data Space over an Association Estate with Two-Hop Inner Joins"
+description: |
+  A tidal-isle nest reserve in which nest sites, cliff ledge sections and named
+  isles are mapped onto three relational tables joined in a chain. Two
+  bidirectional associations are implemented as relational association mappings
+  over the same join definitions the nest class mapping walks, the nest's isle
+  attributes resolve through a forced two-hop inner join path anchored on a
+  pinned main-table alias, and a string-function transform composes the access
+  note from both hops. A data space publishes the in-process survey tier and the
+  warehouse review tier over the one curated mapping.
+
+modelSources:
+  model:
+    root: wistful-isle-2
+    files:
+      - test/wistfulisle2/connection/IsleConnection.pure
+      - test/wistfulisle2/connection/IsleReviewConnection.pure
+      - test/wistfulisle2/dataspace/IsleDataSpace.pure
+      - test/wistfulisle2/domain/IsleDomain.pure
+      - test/wistfulisle2/mapping/IsleMapping.pure
+      - test/wistfulisle2/runtime/IsleReviewRuntime.pure
+      - test/wistfulisle2/runtime/IsleRuntime.pure
+      - test/wistfulisle2/store/IsleDB.pure
+
+features:
+  - execution:data-space
+  - grammar:association
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-mapping
+  - data-space
+  - dyna-function
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - multi-table
+  - nest-reserve
+  - relational

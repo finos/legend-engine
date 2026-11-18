@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'Governed entry point over the harbour navigation lamp register.'} test::opallantern3::dataspace::LanternRegisterDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'register';
+      description: 'Register tier - the lamp units and their district keepers resolved against the harbour store.';
+      mapping: test::opallantern3::mapping::LanternStructureMapping;
+      defaultRuntime: test::opallantern3::runtime::LanternStructureRuntime;
+    },
+    {
+      name: 'servicing';
+      description: 'Servicing tier - the register assembled together with the visit mappings included from the structure mapping.';
+      mapping: test::opallantern3::mapping::LanternServicingMapping;
+      defaultRuntime: test::opallantern3::runtime::LanternServicingRuntime;
+    }
+  ];
+  defaultExecutionContext: 'register';
+  title: 'Harbour Navigation Lamp Register';
+  description: 'A discoverable entry point over the harbour navigation lamp domain - lamp units versioned on the processing timeline, the district keepers accountable for them and the register endpoint consumers should start from.';
+  elements:
+  [
+    test::opallantern3::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Lamp unit register';
+      description: 'Featured endpoint returning the lamp register resolved at one processing instant.';
+      executable: test::opallantern3::service::LampUnitRegisterAsOf;
+    }
+  ];
+  supportInfo: Email {
+    address: 'harbour-lights-office@example.invalid';
+  };
+}
+
+DataSpace {meta::pure::profiles::doc.doc = 'Governed entry point over the harbour navigation lamp servicing history.'} test::opallantern3::dataspace::LanternServicingDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'servicing';
+      description: 'Servicing tier - every stored version of the servicing visits together with the included register mappings.';
+      mapping: test::opallantern3::mapping::LanternServicingMapping;
+      defaultRuntime: test::opallantern3::runtime::LanternServicingRuntime;
+    }
+  ];
+  defaultExecutionContext: 'servicing';
+  title: 'Harbour Navigation Lamp Servicing';
+  description: 'A discoverable entry point over the servicing history of the harbour navigation lamps, exposing every stored version of a visit with its processing window columns and the serviced unit it hangs from.';
+  elements:
+  [
+    test::opallantern3::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Lamp visit history';
+      description: 'Featured endpoint returning every recognised stored version of the servicing visits.';
+      executable: test::opallantern3::service::LampVisitHistory;
+    }
+  ];
+  supportInfo: Email {
+    address: 'harbour-lights-office@example.invalid';
+  };
+}

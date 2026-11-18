@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyhatchery5::store::HatcheryDB
+(
+  Schema hatchery
+  (
+    Table rearing_pond
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      pond_code VARCHAR(24) PRIMARY KEY,
+      site_name VARCHAR(96) NOT NULL,
+      water_temp_c DOUBLE NOT NULL,
+      volume_litres DECIMAL(12,3) NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table fry_batch
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      batch_code VARCHAR(24) PRIMARY KEY,
+      pond_code VARCHAR(24) NOT NULL,
+      species_name VARCHAR(96) NOT NULL,
+      fry_tally INTEGER NOT NULL,
+      hatched_on DATE NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table feed_run
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      feed_code VARCHAR(24) PRIMARY KEY,
+      batch_code VARCHAR(24) NOT NULL,
+      feed_kind VARCHAR(48) NOT NULL,
+      ration_grams INTEGER NOT NULL,
+      logged_at TIMESTAMP NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Join Batch_Pond(hatchery.fry_batch.pond_code = hatchery.rearing_pond.pond_code)
+)

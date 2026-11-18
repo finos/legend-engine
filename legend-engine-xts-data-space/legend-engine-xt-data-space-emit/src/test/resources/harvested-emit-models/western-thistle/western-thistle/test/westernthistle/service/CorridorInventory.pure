@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernthistle::service::CorridorInventory
+{
+  pattern: '/westernthistle/corridor/{minLengthKm}';
+  title: 'Cycle Corridor Inventory';
+  owners:
+  [
+    'cycle-network-planning'
+  ];
+  documentation: 'Lists the signed cycling corridors at or above a requested running length, banding each one by length and labelling it with its surface grade.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minLengthKm: Float[1]|test::westernthistle::domain::CycleCorridor.all()->filter(
+      c|$c.lengthKm >= $minLengthKm
+    )->project(
+      [
+        c|$c.corridorCode,
+        c|$c.corridorName,
+        c|if($c.lengthKm >= 6.0, |'LONG', |if($c.lengthKm >= 3.0, |'MEDIUM', |'SHORT')),
+        c|$c.gradeLabel(),
+        c|if($c.lit, |'LIT', |'UNLIT')
+      ],
+      [
+        'CorridorCode',
+        'CorridorName',
+        'LengthBand',
+        'GradeLabel',
+        'Lighting'
+      ]
+    )->sort([asc('CorridorCode')])};
+    mapping: test::westernthistle::mapping::CorridorMapping;
+    runtime: test::westernthistle::runtime::CorridorRuntime;
+  }
+  testSuites:
+  [
+    corridorInventorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          corridorH2Connection:
+            Relational
+            #{
+                network.cycle_corridor:
+                  'corridor_code,corridor_name,surface_grade,length_km,lit_flag,opened_on,last_audited_at\n'+
+                  'CC-01,Thistle Greenway,ASPHALT,4.2,true,2021-03-15,2024-05-02 08:30:00\n'+
+                  'CC-02,Western Towpath,GRAVEL,7.5,false,2019-07-01,2024-04-11 06:15:00\n'+
+                  'CC-03,Orchard Link,SETT,1.8,true,2022-10-05,2024-04-30 09:45:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        longCorridorsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minLengthKm = 5.0
+          ]
+          asserts:
+          [
+            singleLongCorridor:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CorridorCode":"CC-02","CorridorName":"Western Towpath","LengthBand":"LONG","GradeLabel":"GRAVEL/CC-02","Lighting":"UNLIT"}]';
+                  }#;
+              }#
+          ]
+        },
+        allBands:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minLengthKm = 1.0
+          ]
+          asserts:
+          [
+            everyLengthBand:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CorridorCode":"CC-01","CorridorName":"Thistle Greenway","LengthBand":"MEDIUM","GradeLabel":"ASPHALT/CC-01","Lighting":"LIT"},{"CorridorCode":"CC-02","CorridorName":"Western Towpath","LengthBand":"LONG","GradeLabel":"GRAVEL/CC-02","Lighting":"UNLIT"},{"CorridorCode":"CC-03","CorridorName":"Orchard Link","LengthBand":"SHORT","GradeLabel":"SETT/CC-03","Lighting":"LIT"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

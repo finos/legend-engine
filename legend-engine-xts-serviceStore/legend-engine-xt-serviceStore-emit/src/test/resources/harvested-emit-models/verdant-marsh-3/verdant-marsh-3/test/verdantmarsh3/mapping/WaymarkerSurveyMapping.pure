@@ -1,0 +1,288 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantmarsh3::mapping::WaymarkerSurveyMapping
+(
+  *test::verdantmarsh3::domain::WaymarkerDetailResponse[detailResponseSet]: ServiceStore
+  {
+    ~service [test::verdantmarsh3::store::WaymarkerDetailApi] WaymarkerDetailServices.WaymarkerDetailFeed
+    (
+      ~request
+      (
+        parameters
+        (
+          zoneFilter = 'north-ward'
+        )
+      )
+    )
+  }
+
+  *test::verdantmarsh3::domain::WaymarkerDetailResult[detailResultSet]: ServiceStore
+  {
+    ~service [test::verdantmarsh3::store::WaymarkerDetailApi] WaymarkerDetailServices.WaymarkerDetailFeed
+    (
+      ~path $service.response.results
+      ~request
+      (
+        parameters
+        (
+          zoneFilter = 'north-ward'
+        )
+      )
+    )
+  }
+
+  *test::verdantmarsh3::domain::RamblerSurveyResult[ramblerResultSet]: ServiceStore
+  {
+    ~service [test::verdantmarsh3::store::RamblerSurveyApi] RamblerSurveyServices.RamblerSurveyFeed
+    (
+      ~path $service.response.results
+      ~request
+      (
+        parameters
+        (
+          zoneFilter = 'north-ward'
+        )
+      )
+    )
+  }
+
+  *test::verdantmarsh3::domain::WardenSurveyResult[wardenResultSet]: ServiceStore
+  {
+    ~service [test::verdantmarsh3::store::WardenSurveyApi] WardenSurveyServices.WardenSurveyFeed
+    (
+      ~path $service.response.results
+      ~request
+      (
+        parameters
+        (
+          zoneFilter = 'north-ward'
+        )
+      )
+    )
+  }
+
+  *test::verdantmarsh3::domain::VolunteerSurveyResult[volunteerResultSet]: ServiceStore
+  {
+    ~service [test::verdantmarsh3::store::VolunteerSurveyApi] VolunteerSurveyServices.VolunteerSurveyFeed
+    (
+      ~path $service.response.results
+      ~request
+      (
+        parameters
+        (
+          zoneFilter = 'north-ward'
+        )
+      )
+    )
+  }
+
+  *test::verdantmarsh3::domain::ContractorSurveyResult[contractorResultSet]: ServiceStore
+  {
+    ~service [test::verdantmarsh3::store::ContractorSurveyApi] ContractorSurveyServices.ContractorSurveyFeed
+    (
+      ~path $service.response.results
+      ~request
+      (
+        parameters
+        (
+          zoneFilter = 'north-ward'
+        )
+      )
+    )
+  }
+
+  *test::verdantmarsh3::domain::RefinedWaymarkerRecord[refinedRecordSet]: Pure
+  {
+    ~src test::verdantmarsh3::domain::WaymarkerDetailResult
+    +cycleGraceEnd: Date[0..1]: meta::pure::functions::date::date(2026, 1, 15, 0, 0, 0)->adjust($src.expiration->toOne().graceDays->toOne(), DurationUnit.DAYS),
+    +cycleReviewEnd: Date[0..1]: meta::pure::functions::date::date(2026, 1, 15, 0, 0, 0)->adjust($src.expiration->toOne().reviewDays->toOne(), DurationUnit.DAYS),
+    waymarkerRef: $src.waymarkerRef,
+    waymarkerName: $src.waymarkerName->toOne(),
+    districtName: $src.location->toOne().districtName->toOne(),
+    promptText: $src.question->toOne().promptText->toOne(),
+    scaleCode: $src.question->toOne().scale->toOne().scaleCode->toOne(),
+    leadOptionText: $src.question->toOne().options->first()->toOne().optionText->toOne(),
+    revisedBy: $src.question->toOne().revision->toOne().revisedBy->toOne(),
+    validationStatus: $src.validation->toOne().statusCode->toOne(),
+    typeLabel: $src.entryType->toOne().typeLabel->toOne(),
+    expiresOnShifted: $src.expiration->toOne().expiresOn->toOne()->adjust(21, DurationUnit.DAYS),
+    checkedOnShifted: $src.validation->toOne().checkedOn->toOne()->adjust(14, DurationUnit.DAYS)
+  }
+
+  testSuites:
+  [
+    remoteDetailReadSuite:
+    {
+      function: |test::verdantmarsh3::domain::WaymarkerDetailResult.all()->graphFetch(
+        #{
+          test::verdantmarsh3::domain::WaymarkerDetailResult
+          {
+            waymarkerRef,
+            waymarkerName,
+            location{zoneCode, districtName},
+            question
+            {
+              questionCode,
+              promptText,
+              answerText,
+              scale{scaleCode, upperBound},
+              options{optionCode, optionText},
+              revision{revisionCount, revisedBy}
+            },
+            validation{statusCode, message, checkedOn},
+            entryType{typeCode, typeLabel},
+            expiration{graceDays, reviewDays, expiresOn}
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantmarsh3::domain::WaymarkerDetailResult
+          {
+            waymarkerRef,
+            waymarkerName,
+            location{zoneCode, districtName},
+            question
+            {
+              questionCode,
+              promptText,
+              answerText,
+              scale{scaleCode, upperBound},
+              options{optionCode, optionText},
+              revision{revisionCount, revisedBy}
+            },
+            validation{statusCode, message, checkedOn},
+            entryType{typeCode, typeLabel},
+            expiration{graceDays, reviewDays, expiresOn}
+          }
+        }#
+      );
+      tests:
+      [
+        thePinnedResultNodeSurfacesTheWholeNestedTree:
+        {
+          data:
+          [
+            test::verdantmarsh3::store::WaymarkerDetailApi:
+              ServiceStore
+              #{
+                [
+                  {
+                    request:
+                    {
+                      method: GET;
+                      url: '/waymarkers/detail?zoneFilter=north-ward';
+                    };
+                    response:
+                    {
+                      body:
+                        ExternalFormat
+                        #{
+                          contentType: 'application/json';
+                          data: '{"metadata":{"pageCount":1,"sourcePath":"/waymarkers/detail","page":{"pageIndex":0,"pageSize":50}},"results":[{"waymarkerRef":"WM-01","waymarkerName":"sluice gate post","location":{"zoneCode":"Z-NORTH","districtName":"north ward"},"question":{"questionCode":"Q-14","promptText":"is the arrow plate legible","answerText":"yes","scale":{"scaleCode":"FIVE-STEP","upperBound":5},"options":[{"optionCode":"O-1","optionText":"legible"},{"optionCode":"O-2","optionText":"faded"}],"revision":{"revisionCount":3,"revisedBy":"north warden"}},"validation":{"statusCode":"PASSED","message":"plate checked in daylight","checkedOn":"2026-02-10"},"entryType":{"typeCode":"T-POST","typeLabel":"timber post"},"expiration":{"graceDays":30,"reviewDays":90,"expiresOn":"2026-06-30"}}]}';
+                        }#;
+                    };
+                  }
+                ]
+              }#
+          ];
+          asserts:
+          [
+            theSingleAuditedWaymarker:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"waymarkerRef":"WM-01","waymarkerName":"sluice gate post","location":{"zoneCode":"Z-NORTH","districtName":"north ward"},"question":{"questionCode":"Q-14","promptText":"is the arrow plate legible","answerText":"yes","scale":{"scaleCode":"FIVE-STEP","upperBound":5},"options":[{"optionCode":"O-1","optionText":"legible"},{"optionCode":"O-2","optionText":"faded"}],"revision":{"revisionCount":3,"revisedBy":"north warden"}},"validation":{"statusCode":"PASSED","message":"plate checked in daylight","checkedOn":"2026-02-10"},"entryType":{"typeCode":"T-POST","typeLabel":"timber post"},"expiration":{"graceDays":30,"reviewDays":90,"expiresOn":"2026-06-30"}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    refinedRecordSuite:
+    {
+      function: |test::verdantmarsh3::domain::RefinedWaymarkerRecord.all()->graphFetch(
+        #{
+          test::verdantmarsh3::domain::RefinedWaymarkerRecord
+          {
+            waymarkerRef,
+            waymarkerName,
+            districtName,
+            promptText,
+            scaleCode,
+            leadOptionText,
+            revisedBy,
+            validationStatus,
+            typeLabel,
+            expiresOnShifted,
+            checkedOnShifted
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantmarsh3::domain::RefinedWaymarkerRecord
+          {
+            waymarkerRef,
+            waymarkerName,
+            districtName,
+            promptText,
+            scaleCode,
+            leadOptionText,
+            revisedBy,
+            validationStatus,
+            typeLabel,
+            expiresOnShifted,
+            checkedOnShifted
+          }
+        }#
+      );
+      tests:
+      [
+        theRemoteDocumentIsFlattenedIntoOneRefinedRecord:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantmarsh3::domain::WaymarkerDetailResult:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"waymarkerRef":"WM-01","waymarkerName":"sluice gate post","location":{"zoneCode":"Z-NORTH","districtName":"north ward"},"question":{"questionCode":"Q-14","promptText":"is the arrow plate legible","answerText":"yes","scale":{"scaleCode":"FIVE-STEP","upperBound":5},"options":[{"optionCode":"O-1","optionText":"legible"},{"optionCode":"O-2","optionText":"faded"}],"revision":{"revisionCount":3,"revisedBy":"north warden"}},"validation":{"statusCode":"PASSED","message":"plate checked in daylight","checkedOn":"2026-02-10"},"entryType":{"typeCode":"T-POST","typeLabel":"timber post"},"expiration":{"graceDays":30,"reviewDays":90,"expiresOn":"2026-06-30"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            theFlattenedAuditRecord:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"waymarkerRef":"WM-01","waymarkerName":"sluice gate post","districtName":"north ward","promptText":"is the arrow plate legible","scaleCode":"FIVE-STEP","leadOptionText":"legible","revisedBy":"north warden","validationStatus":"PASSED","typeLabel":"timber post","expiresOnShifted":"2026-07-21","checkedOnShifted":"2026-02-24"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

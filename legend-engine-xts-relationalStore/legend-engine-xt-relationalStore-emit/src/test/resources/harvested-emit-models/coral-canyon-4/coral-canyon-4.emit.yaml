@@ -1,0 +1,69 @@
+name: coral-canyon-4
+title: "Coral Canyon 4 — A Canyon Core-Sample Register With An Eight-Armed Stratum Cascade, Three Expression Enumerations And A Two-Hop Ridge Reach"
+description: |
+  A canyon geology survey registering the sediment cores it draws from the canyon walls. The core
+  store includes a separate reference store of outcrops and ridges and defines a grouped view
+  keeping the latest visit number and visit time per sample by maximum. An active-sample filter
+  keeps cores never retired or retiring after today and drops voided cores. One relational class
+  mapping applies that filter, bands the core depth through an eight-armed stratum cascade falling
+  through to an explicit null, translates an upper-cased grain code, a three-armed weathering band
+  and a two-armed hazard flag onto closed enumerations through computed source expressions,
+  extracts the logged year, concatenates an outcrop-and-sample key, reaches the outcrop one hop
+  out, the ridge two hops out and the latest visit through a join onto the grouped view. A
+  model-to-model mapping digests nested reading bundles, counting filtered gamma readings and
+  grading how completely each bundle is dated. A static in-memory database connection with
+  delegated Kerberos is bound by an engine runtime.
+modelSources:
+  model:
+    root: coral-canyon-4
+    files:
+      - test/coralcanyon4/connection/CanyonConnections.pure
+      - test/coralcanyon4/domain/CanyonCoreDomain.pure
+      - test/coralcanyon4/mapping/CanyonEnumMapping.pure
+      - test/coralcanyon4/mapping/CoreSampleMapping.pure
+      - test/coralcanyon4/mapping/OutcropDigestMapping.pure
+      - test/coralcanyon4/runtime/CanyonRuntimes.pure
+      - test/coralcanyon4/store/CanyonCoreDb.pure
+      - test/coralcanyon4/store/CanyonRefDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-source-filter
+  - mapping:mapping-include
+  - store:relational-filter
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-join-path
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - execution:graph-fetch
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-join
+  - store:relational-store-include
+  - store:relational-view-aggregate
+  - store:relational-view-group-by
+complexity: advanced
+tags:
+  - canyon-geology
+  - conditional-transform
+  - duckdb
+  - enumeration-mapping
+  - grouped-view
+  - m2m-mapping
+  - multi-hop-join
+  - null-sentinel
+  - relational
+  - store-include
+stores:
+  - relational

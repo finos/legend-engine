@@ -1,0 +1,31 @@
+name: golden-harbor
+title: Golden Harbor tide-pool survey
+description: Documented tide pools and their creature sightings mapped over composite keys, published through owned services and an executable data space.
+modelSources:
+  model:
+    root: golden-harbor
+    files:
+      - test/goldenharbor/TidePools.pure
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - grammar:tagged-value
+  - mapping:relational-association-implementation
+  - scaffolding:relational-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - shoreline
+  - snowflake
+  - tide-pool

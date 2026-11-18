@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfullantern3::service::CanopySpreadRankingAsOf
+{
+  pattern: '/wistfullantern3/canopySpreadRankingAsOf/{asOf}';
+  ownership: UserList { users: ['estate-survey-desk'] };
+  documentation: 'Ranks the trees on record at a processing date by canopy spread inside each park partition, so the plan materialises an ordered intermediate result the ranking is numbered over, with ties sharing a rank and a single-tree park ranking on its own.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfullantern3::domain::ParkTree.all($asOf)->project(
+      [
+        t|$t.treeRef,
+        t|$t.parkName,
+        t|$t.canopyClass,
+        t|$t.spreadM
+      ],
+      [
+        'Tree',
+        'Park',
+        'Class',
+        'SpreadM'
+      ]
+    )->olapGroupBy(
+      [
+        'Park'
+      ],
+      desc('SpreadM'),
+      w|$w->rank(),
+      'ParkRank'
+    )->sort(
+      [
+        asc('Park'),
+        desc('SpreadM'),
+        asc('Tree')
+      ]
+    )};
+    mapping: test::wistfullantern3::mapping::EstateMapping;
+    runtime: test::wistfullantern3::runtime::EstateReviewRuntime;
+  }
+  testSuites:
+  [
+    canopyRankingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateConnection: Reference
+            #{
+              test::wistfullantern3::data::EstateTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        rankedSpreadsPerPark:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            tiedSpreadsShareARankAndTheSingleTreeParkRanksOnItsOwn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tree":"TR-5","Park":"Hollow Meadow","Class":"SLENDER","SpreadM":3.2,"ParkRank":1},{"Tree":"TR-1","Park":"Northgate Green","Class":"BROAD","SpreadM":9.5,"ParkRank":1},{"Tree":"TR-2","Park":"Northgate Green","Class":"BROAD","SpreadM":6.0,"ParkRank":2},{"Tree":"TR-6","Park":"Northgate Green","Class":"BROAD","SpreadM":6.0,"ParkRank":2},{"Tree":"TR-4","Park":"Riverside Walk","Class":"BROAD","SpreadM":12.25,"ParkRank":1},{"Tree":"TR-3","Park":"Riverside Walk","Class":"SLENDER","SpreadM":4.8,"ParkRank":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

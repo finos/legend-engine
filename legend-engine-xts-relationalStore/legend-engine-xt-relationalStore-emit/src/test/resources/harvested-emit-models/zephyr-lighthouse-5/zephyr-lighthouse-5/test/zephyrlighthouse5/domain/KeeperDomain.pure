@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::zephyrlighthouse5::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A coastal district a lighthouse station belongs to; districts are never restated so they sit off both timelines.'} test::zephyrlighthouse5::domain::CoastDistrict
+{
+  districtCode: String[1];
+  districtName: String[1];
+  coastName: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'The service level a station is graded at, corrected over processing time and effective over business time.'} test::zephyrlighthouse5::domain::StationGrade
+{
+  gradeCode: String[1];
+  gradeDescription: String[1];
+  gradeBandLabel: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A lighthouse station a keeper is posted to, reached at one bitemporal coordinate.'} test::zephyrlighthouse5::domain::LightStation
+{
+  stationCode: String[1];
+  stationLabel: String[1];
+  watchWindow: String[1];
+  lampType: String[1];
+  grade: StationGrade[0..1];
+  district: CoastDistrict[0..1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'The primary registered name of a keeper, held in parts so a projection can read each part separately.'} test::zephyrlighthouse5::domain::KeeperName
+{
+  nameCode: String[1];
+  salutationPart: String[0..1];
+  givenPart: String[1];
+  middlePart: String[0..1];
+  familyPart: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'One tenure a keeper has served, held as a to-many sub-collection so an existence test can qualify the keeper.'} test::zephyrlighthouse5::domain::TenureEntry
+{
+  tenureCode: String[1];
+  tenureYears: Integer[1];
+  dutyCode: String[0..1];
+  rotationCode: String[1];
+  postLabel: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A lighthouse keeper reference record read at one processing and one business instant, reaching its name parts, its station level and its tenure sub-collection through instant-parameterized properties.'} test::zephyrlighthouse5::domain::Keeper
+{
+  keeperCode: String[1];
+  contactCode: String[0..1];
+  rosterCode: String[1];
+  certCode: String[1];
+  primaryName: KeeperName[0..1];
+  station: LightStation[0..1];
+  tenures: TenureEntry[*];
+}

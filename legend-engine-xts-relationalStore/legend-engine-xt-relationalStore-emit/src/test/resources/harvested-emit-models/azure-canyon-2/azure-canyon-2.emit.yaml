@@ -1,0 +1,58 @@
+name: azure-canyon-2
+title: "Sky Survey Observatory - Bitemporal and Processing-Temporal Point-in-Time Services with a Subtype Narrowing"
+description: |
+  An observatory corpus in which observing campaigns are tracked bitemporally
+  and instrument captures on the processing timeline. Three single-execution
+  services query as-of a supplied date: a banded collection filter over
+  campaigns, a magnitude filter over captures whose fixture carries a row
+  outside the processing range, and a narrowing of observing sites to the
+  ridge-sited subtype. A mapping test suite asserts the bitemporal projection
+  and its derived coverage tier.
+modelSources:
+  model:
+    root: azure-canyon-2
+    files:
+      - test/azurecanyon2/connection/SkyH2Connection.pure
+      - test/azurecanyon2/domain/SkyDomain.pure
+      - test/azurecanyon2/mapping/SkyMapping.pure
+      - test/azurecanyon2/runtime/SkyRuntime.pure
+      - test/azurecanyon2/service/ReadingsAsOf.pure
+      - test/azurecanyon2/service/RidgeStationsAbove.pure
+      - test/azurecanyon2/service/SurveysAsOf.pure
+      - test/azurecanyon2/store/SkyDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - astronomy
+  - bitemporal
+  - collection-op
+  - h2
+  - inheritance
+  - mapping-test
+  - milestoning
+  - plan-generation
+  - point-in-time
+  - processing-temporal
+  - service-test
+  - subtype-cast

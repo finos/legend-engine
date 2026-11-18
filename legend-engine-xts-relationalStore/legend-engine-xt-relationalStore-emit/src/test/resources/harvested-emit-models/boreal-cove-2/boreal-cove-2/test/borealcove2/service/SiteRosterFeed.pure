@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealcove2::service::SiteRosterFeed
+{
+  pattern: '/borealcove/v1/site-roster/{wardCode}';
+  title: 'Compost Network - Site Roster Feed';
+  documentation: 'Projects the open sites of one ward with their view-sourced tag and their ward detail, keeping only the site states the roster publishes.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {wardCode: String[1]|test::borealcove2::domain::Site.all()->filter(
+      s|($s.ward.wardCode->toOne() == $wardCode) &&
+        ($s.statusLabel->in(['ACCEPTING FEEDSTOCK', 'BULKING ONLY', 'CURING ONLY']))
+    )->project(
+      [
+        s|$s.siteCode,
+        s|$s.siteName,
+        s|$s.siteKind,
+        s|$s.statusLabel,
+        s|$s.noteText,
+        s|$s.siteTag->toOne(),
+        s|$s.ward.boroughName->toOne()
+      ],
+      [
+        'Site/Code',
+        'Site/Name',
+        'Site/Kind',
+        'Site/Status',
+        'Site/Note',
+        'Site/Tag',
+        'Ward/Borough'
+      ]
+    )->sort([asc('Site/Code')])};
+    mapping: test::borealcove2::mapping::CompostMapping;
+    runtime: test::borealcove2::runtime::CompostServiceRuntime;
+  }
+  testSuites:
+  [
+    siteRosterFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          compostConnection:
+            Relational
+            #{
+              compost.site:
+                'site_code,site_name,ward_code,site_kind,status_code,bin_count,note_text\n'+
+                'ST-01,Alder Yard,W-1,windrow bay,A,12,  turned weekly  \n'+
+                'ST-02,Bramble Walk,W-1,tumbler drum,B,4,\n'+
+                'ST-03,Cedar Verge,W-1,static pile,Q,7,seasonal only\n'+
+                'ST-04,Dock Lane,W-1,windrow bay,X,9,closed for works\n'+
+                'ST-05,Elm Rise,W-2,tumbler drum,A,6,other ward\n';
+
+              compost.ward:
+                'ward_code,ward_name,borough_name\n'+
+                'W-1,Riverbend,upper vale\n'+
+                'W-2,Kiln Fields,lower vale\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosterForOneWard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            wardCode = 'W-1'
+          ]
+          asserts:
+          [
+            unlistedStatesAndOtherWardsAreDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site/Code":"ST-01","Site/Name":"Alder Yard","Site/Kind":"WINDROW BAY","Site/Status":"ACCEPTING FEEDSTOCK","Site/Note":"turned weekly","Site/Tag":"SITE-W-1","Ward/Borough":"UPPER VALE"},{"Site/Code":"ST-02","Site/Name":"Bramble Walk","Site/Kind":"TUMBLER DRUM","Site/Status":"BULKING ONLY","Site/Note":"NO SITE NOTE","Site/Tag":"SITE-W-1","Ward/Borough":"UPPER VALE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

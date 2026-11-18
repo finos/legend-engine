@@ -1,0 +1,39 @@
+name: lunar-lagoon
+title: "Lunar Lagoon - a store-less model-to-model branch circulation digest service with date-arithmetic spans and collection-op aggregation"
+description: |
+  A public-library circulation model whose nested checkout payload is bound through an inline
+  runtime model store JSON connection and flattened by a model-to-model mapping into one
+  digest per branch. Collection operations over the nested checkouts compute a checkout span by date
+  arithmetic and roll up a distinct-title count, a longest and total span, a catalogued-category
+  count and a reference-present flag, exposed and asserted through a single-execution service.
+modelSources:
+  model:
+    root: lunar-lagoon
+    files:
+      - test/lunarlagoon/domain/CirculationDomain.pure
+      - test/lunarlagoon/mapping/CheckoutDigestM2M.pure
+      - test/lunarlagoon/service/BranchCirculation.pure
+      - test/lunarlagoon/source/CirculationPayload.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property-collection-op
+  - mapping:m2m-transform
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - circulation
+  - date-arithmetic
+  - group-by
+  - library
+  - m2m
+  - model-store
+  - service-test
+  - tds

@@ -1,0 +1,45 @@
+name: umber-thistle-3
+title: "Kiln Booking Windows and Studio Rosters"
+description: |
+  A non-financial pottery studio model that maps kiln bookings and member
+  details from one relational table. The model exposes filtered booking feeds,
+  a bounded studio roster, a JSON binding, and a cross-store association
+  between bookings and their member records.
+modelSources:
+  model:
+    root: umber-thistle-3
+    files:
+      - test/umberthistle3/connection/StudioConnections.pure
+      - test/umberthistle3/domain/StudioDomain.pure
+      - test/umberthistle3/external/StudioBinding.pure
+      - test/umberthistle3/mapping/StudioMapping.pure
+      - test/umberthistle3/runtime/StudioRuntimes.pure
+      - test/umberthistle3/service/StudioServices.pure
+      - test/umberthistle3/store/StudioDB.pure
+features:
+  - execution:external-format-binding
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:profile
+  - mapping:cross-store
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - kiln-booking
+  - pottery-studio
+  - relational
+  - service
+  - tabular-data-set

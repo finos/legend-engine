@@ -1,0 +1,302 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyhatchery3::service::BatchTreeService
+{
+  pattern: '/duskyhatchery3/batch/tree/{batchCode}';
+  title: 'Brood Batch Tree';
+  owners:
+  [
+    'hatchery-rearing-team'
+  ];
+  documentation: 'Single-execution service that filters to one brood batch and serializes the fetched object tree down through its rearing tank into the facility site reached across the cross-schema join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {batchCode: String[1]|test::duskyhatchery3::domain::BroodBatch.all()->filter(
+      b|$b.batchCode == $batchCode
+    )->graphFetch(
+      #{
+        test::duskyhatchery3::domain::BroodBatch{
+          batchCode,
+          batchLabel,
+          fryCount,
+          tank{
+            tankCode,
+            tankLabel,
+            site{
+              siteCode,
+              regionLabel
+            }
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::duskyhatchery3::domain::BroodBatch{
+          batchCode,
+          batchLabel,
+          fryCount,
+          tank{
+            tankCode,
+            tankLabel,
+            site{
+              siteCode,
+              regionLabel
+            }
+          }
+        }
+      }#
+    )};
+    mapping: test::duskyhatchery3::mapping::HatcheryMapping;
+    runtime: test::duskyhatchery3::runtime::HatcheryH2Runtime;
+  }
+  testSuites:
+  [
+    batchTreeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryH2Connection:
+            Relational
+            #{
+              rearing.brood_batch:
+                'batch_id,batch_code,species_code,health_code,fry_count,tank_id\n'+
+                '1,bb-101,salmo-example,H1,9600,10\n'+
+                '2,bb-102,trutta-example,H2,1800,11\n';
+              rearing.rearing_tank:
+                'tank_id,tank_code,tank_label,volume_litres,site_id\n'+
+                '10,tk-010, upper raceway ,6000,100\n'+
+                '11,tk-011, lower raceway ,3000,101\n';
+              facility.hatchery_site:
+                'site_id,site_code,site_name,region_label\n'+
+                '100,ST-100,Upland Hatchery, NORTHERN COAST \n'+
+                '101,ST-101,Lowland Hatchery, SOUTHERN COAST \n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        denseBatchTree:
+        {
+          parameters:
+          [
+            batchCode = 'bb-101'
+          ]
+          asserts:
+          [
+            treeForDenseBatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"batchCode":"bb-101","batchLabel":"SALMO-EXAMPLE-bb-101-DENSE","fryCount":9600,"tank":{"tankCode":"tk-010","tankLabel":"UPPER RACEWAY","site":{"siteCode":"ST-100","regionLabel":"northern coast"}}}}';
+                  }#;
+              }#
+          ]
+        },
+        sparseBatchTree:
+        {
+          parameters:
+          [
+            batchCode = 'bb-102'
+          ]
+          asserts:
+          [
+            treeForSparseBatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"batchCode":"bb-102","batchLabel":"TRUTTA-EXAMPLE-bb-102-SPARSE","fryCount":1800,"tank":{"tankCode":"tk-011","tankLabel":"LOWER RACEWAY","site":{"siteCode":"ST-101","regionLabel":"southern coast"}}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::duskyhatchery3::service::BatchPageService
+{
+  pattern: '/duskyhatchery3/batch/page';
+  title: 'Brood Batch Page';
+  owners:
+  [
+    'hatchery-rearing-team'
+  ];
+  documentation: 'Single-execution service paginating the ordered brood batch register by returning only the window of rows between two indices.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::duskyhatchery3::domain::BroodBatch.all()->project(
+      [
+        b|$b.batchCode,
+        b|$b.batchLabel,
+        b|$b.fryCount
+      ],
+      [
+        'Batch',
+        'Label',
+        'Fry'
+      ]
+    )->sort([asc('Batch')])->slice(1, 3);
+    mapping: test::duskyhatchery3::mapping::HatcheryMapping;
+    runtime: test::duskyhatchery3::runtime::HatcheryH2Runtime;
+  }
+  testSuites:
+  [
+    batchPageSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryH2Connection:
+            Relational
+            #{
+              rearing.brood_batch:
+                'batch_id,batch_code,species_code,health_code,fry_count,tank_id\n'+
+                '1,bb-201,salmo-example,H1,9600,10\n'+
+                '2,bb-202,trutta-example,H2,1800,10\n'+
+                '3,bb-203,salvelinus-example,H1,4200,10\n'+
+                '4,bb-204,thymallus-example,H2,900,10\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondAndThirdRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            pageWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"bb-202","Label":"TRUTTA-EXAMPLE-bb-202-SPARSE","Fry":1800},{"Batch":"bb-203","Label":"SALVELINUS-EXAMPLE-bb-203-SPARSE","Fry":4200}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::duskyhatchery3::service::SiteRegisterService
+{
+  pattern: '/duskyhatchery3/site/register/{siteCode}';
+  title: 'Hatchery Site Register';
+  owners:
+  [
+    'hatchery-facility-team'
+  ];
+  documentation: 'Single-execution service serializing one facility site together with the nested collection of rearing tanks it operates.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {siteCode: String[1]|test::duskyhatchery3::domain::HatcherySite.all()->filter(
+      s|$s.siteCode == $siteCode
+    )->graphFetch(
+      #{
+        test::duskyhatchery3::domain::HatcherySite{
+          siteCode,
+          siteName,
+          regionLabel,
+          tanks{
+            tankCode,
+            volumeLitres
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::duskyhatchery3::domain::HatcherySite{
+          siteCode,
+          siteName,
+          regionLabel,
+          tanks{
+            tankCode,
+            volumeLitres
+          }
+        }
+      }#
+    )};
+    mapping: test::duskyhatchery3::mapping::HatcheryMapping;
+    runtime: test::duskyhatchery3::runtime::HatcheryH2Runtime;
+  }
+  testSuites:
+  [
+    siteRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryH2Connection:
+            Relational
+            #{
+              rearing.rearing_tank:
+                'tank_id,tank_code,tank_label,volume_litres,site_id\n'+
+                '10,tk-010, upper raceway ,6000,100\n'+
+                '11,tk-011, lower raceway ,3000,100\n'+
+                '12,tk-012, holding pond ,9000,101\n';
+              facility.hatchery_site:
+                'site_id,site_code,site_name,region_label\n'+
+                '100,ST-100,Upland Hatchery, NORTHERN COAST \n'+
+                '101,ST-101,Lowland Hatchery, SOUTHERN COAST \n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        siteWithTwoTanks:
+        {
+          parameters:
+          [
+            siteCode = 'ST-100'
+          ]
+          asserts:
+          [
+            nestedTanks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"siteCode":"ST-100","siteName":"Upland Hatchery","regionLabel":"northern coast","tanks":[{"tankCode":"tk-010","volumeLitres":6000},{"tankCode":"tk-011","volumeLitres":3000}]}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+name: maple-delta-relational
+title: "Maple Delta — multi-execution basin roll-up service"
+description: |
+  A river-delta hydrology model whose relational channel store feeds a
+  multi-execution service that selects an environment-keyed mapping/runtime
+  binding at execution time. Its single-execution counterpart carries the tested
+  suite, filtering open flowing channels in a basin and aggregating sediment and
+  flow readings through a grouped projection with collection operations.
+modelSources:
+  model:
+    root: maple-delta-relational
+    files:
+      - test/mapledelta/connection/DeltaH2Connection.pure
+      - test/mapledelta/domain/DeltaDomain.pure
+      - test/mapledelta/mapping/DeltaMapping.pure
+      - test/mapledelta/runtime/DeltaRuntime.pure
+      - test/mapledelta/service/ChannelsByBasin.pure
+      - test/mapledelta/store/DeltaDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:runtime
+stores:
+  - test::mapledelta::store::DeltaDB
+complexity: basic
+tags:
+  - group-by
+  - h2
+  - hydrology
+  - multi-execution
+  - relational
+  - river-delta
+  - service-test

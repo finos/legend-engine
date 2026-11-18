@@ -1,0 +1,228 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::crimsonprairie2::mapping::PrairieMapping
+(
+  include demo::crimsonprairie2::mapping::PrairieEnumMapping
+
+  *demo::crimsonprairie2::domain::BurnUnit[burnUnit]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.in_z,
+      [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.unit_id
+    )
+    ~mainTable [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit
+    unitCode: [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.unit_code,
+    unitName: toUpper(trim([demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.unit_name)),
+    coverBand: EnumerationMapping CoverBandMapping: toUpper([demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.cover_code),
+    moistureIndex: case(
+                     isNull([demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.moisture_pct),
+                     0,
+                     ceiling([demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.moisture_pct)
+                   ),
+    moistureNote: case(
+                    isNull([demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.moisture_pct),
+                    'UNREAD',
+                    'READ'
+                  ),
+    breakFlag: case(
+                 equal([demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.burn_unit.break_flag, 'B'),
+                 'BREAK',
+                 'OPEN'
+               ),
+    gradeFlag: case(
+                 equal([demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Marker > @Marker_Ref | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.marker_ref.marker_code, 7),
+                 'Y',
+                 'N'
+               ),
+    tierFlag: case(
+                equal([demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Marker > @Marker_Ref | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.marker_ref.marker_code, 9),
+                'Y',
+                'N'
+              ),
+    seedFlag: case(
+                equal([demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Marker > @Marker_Ref | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.marker_ref.marker_code, 11),
+                'Y',
+                'N'
+              ),
+    grazeFlag: case(
+                 equal([demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Marker > @Marker_Ref | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.marker_ref.marker_code, 13),
+                 'Y',
+                 'N'
+               ),
+    markerLabel: [demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Marker > @Marker_Ref | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_survey.marker_ref.marker_label,
+    regionName: [demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Node | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_tree.unit_node.region_name,
+    parentName: [demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Node > @Node_Parent | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_tree.node_parent.parent_name,
+    ancestorName: [demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Node > @Node_Parent > @Parent_Ancestor | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_tree.node_ancestor.ancestor_name,
+    ancestorSteward: [demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Node > @Node_Parent > @Parent_Ancestor | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_tree.node_ancestor.steward_name,
+    ancestorOffice: [demo::crimsonprairie2::store::PrairieRangeDatabase]@Unit_Node > @Node_Parent > @Parent_Ancestor > @Ancestor_Office | [demo::crimsonprairie2::store::PrairieRangeDatabase]range_tree.node_office.office_name
+  }
+
+  testSuites:
+  [
+    burnUnitTransformSuite:
+    {
+      function: |demo::crimsonprairie2::domain::BurnUnit.all(%2026-05-01, %2026-05-01)->project(
+  [
+    x|$x.unitCode,
+    x|$x.unitName,
+    x|$x.coverBand,
+    x|$x.moistureIndex,
+    x|$x.moistureNote,
+    x|$x.breakFlag,
+    x|$x.gradeFlag,
+    x|$x.tierFlag,
+    x|$x.seedFlag,
+    x|$x.grazeFlag,
+    x|$x.markerLabel
+  ],
+  [
+    'Unit',
+    'Name',
+    'Cover',
+    'Moisture',
+    'MoistureNote',
+    'Break',
+    'Grade',
+    'Tier',
+    'Seed',
+    'Graze',
+    'Marker'
+  ]
+)->distinct()->sort(
+  [
+    asc('Unit')
+  ]
+);
+      tests:
+      [
+        burnUnitTransforms:
+        {
+          doc: 'Resolves the bi-temporal extent at one instant and exercises both arms of every conditional transform, including the null-sentinel arms, the rounded numeric arm and the four marker-code branches reached over the forced inner join.';
+          data:
+          [
+            demo::crimsonprairie2::store::PrairieRangeDatabase:
+              Relational
+              #{
+                range_survey.burn_unit:
+                  'unit_id,unit_code,unit_name,cover_code,moisture_pct,break_flag,in_z,out_z,from_z,thru_z\n'+
+                  '1,BU-1, north swale ,tall,12.4,B,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '2,BU-2, south swale ,mixed,,O,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '3,BU-3, east ridge ,short,40.0,B,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '4,BU-4, west ridge ,tall,7.2,O,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '5,BU-5, retired flat ,mixed,3.0,B,2026-01-01,9999-12-31,2026-01-01,2026-02-01\n';
+                range_survey.unit_marker:
+                  'unit_id,marker_id,marker_status\n'+
+                  '1,7,ACTIVE\n'+
+                  '2,9,ACTIVE\n'+
+                  '3,11,ACTIVE\n'+
+                  '4,13,ACTIVE\n'+
+                  '5,7,ACTIVE\n';
+                range_survey.marker_ref:
+                  'marker_id,marker_code,marker_label,active_flag\n'+
+                  '7,7,Grade Marker,Y\n'+
+                  '9,9,Tier Marker,Y\n'+
+                  '11,11,Seed Marker,Y\n'+
+                  '13,13,Graze Marker,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            fourEffectiveUnits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Unit":"BU-1","Name":"NORTH SWALE","Cover":"TALLGRASS","Moisture":13,"MoistureNote":"READ","Break":"BREAK","Grade":"Y","Tier":"N","Seed":"N","Graze":"N","Marker":"Grade Marker"},{"Unit":"BU-2","Name":"SOUTH SWALE","Cover":"MIXEDGRASS","Moisture":0,"MoistureNote":"UNREAD","Break":"OPEN","Grade":"N","Tier":"Y","Seed":"N","Graze":"N","Marker":"Tier Marker"},{"Unit":"BU-3","Name":"EAST RIDGE","Cover":"SHORTGRASS","Moisture":40,"MoistureNote":"READ","Break":"BREAK","Grade":"N","Tier":"N","Seed":"Y","Graze":"N","Marker":"Seed Marker"},{"Unit":"BU-4","Name":"WEST RIDGE","Cover":"TALLGRASS","Moisture":8,"MoistureNote":"READ","Break":"OPEN","Grade":"N","Tier":"N","Seed":"N","Graze":"Y","Marker":"Graze Marker"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    burnUnitAncestrySuite:
+    {
+      function: |demo::crimsonprairie2::domain::BurnUnit.all(%2026-05-01, %2026-05-01)->project(
+  [
+    x|$x.unitCode,
+    x|$x.regionName,
+    x|$x.parentName,
+    x|$x.ancestorName,
+    x|$x.ancestorSteward,
+    x|$x.ancestorOffice
+  ],
+  [
+    'Unit',
+    'Region',
+    'Parent',
+    'Ancestor',
+    'Steward',
+    'Office'
+  ]
+)->distinct()->sort(
+  [
+    asc('Unit')
+  ]
+);
+      tests:
+      [
+        burnUnitAncestry:
+        {
+          doc: 'Walks the denormalised tree one, two, three and four hops out of the anchored main table, and keeps a unit whose path resolves at the first hop but misses at the second so every deeper column comes back absent.';
+          data:
+          [
+            demo::crimsonprairie2::store::PrairieRangeDatabase:
+              Relational
+              #{
+                range_survey.burn_unit:
+                  'unit_id,unit_code,unit_name,cover_code,moisture_pct,break_flag,in_z,out_z,from_z,thru_z\n'+
+                  '1,BU-1, north swale ,tall,12.4,B,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '2,BU-2, south swale ,mixed,5.0,O,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+                range_tree.unit_node:
+                  'unit_id,parent_code,region_name\n'+
+                  '1,PC-1,North Range\n'+
+                  '2,PC-9,South Range\n';
+                range_tree.node_parent:
+                  'parent_code,ancestor_code,parent_name\n'+
+                  'PC-1,AC-1,Upper Watershed\n';
+                range_tree.node_ancestor:
+                  'ancestor_code,office_code,ancestor_name,steward_name\n'+
+                  'AC-1,OF-1,Prairie Trust,Meadow Warden\n';
+                range_tree.node_office:
+                  'office_code,office_name\n'+
+                  'OF-1,Upland Field Office\n';
+              }#
+          ];
+          asserts:
+          [
+            oneFullPathOneMiss:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Unit":"BU-1","Region":"North Range","Parent":"Upper Watershed","Ancestor":"Prairie Trust","Steward":"Meadow Warden","Office":"Upland Field Office"},{"Unit":"BU-2","Region":"South Range","Parent":null,"Ancestor":null,"Steward":null,"Office":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

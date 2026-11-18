@@ -1,0 +1,59 @@
+name: frosted-lantern
+title: "Frosted Lantern — heritage lantern catalogue with ranked pane windows and a discovery data space"
+description: |
+  A heritage glass-lantern museum catalogue over three tables: catalogued
+  lantern items, the workshops that made them and the finish lots the items were
+  finished in. Three structurally different single-execution services read the
+  mapped model: a register extract that qualifies items through two
+  parameterized qualified-property calls, a workshop-guild equality and a town
+  set membership before projecting aliased columns and sorting them; a ranked
+  window that projects the filtered items and assigns a per-town rank over
+  descending pane counts before sorting and limiting; and a parameterless glass
+  and finish catalogue reduced with distinct. A data space packages the model,
+  naming one execution context, the register extract as its executable and a
+  support mailbox. Mapping test suites cover both main tables and an item whose
+  workshop reference resolves to nothing.
+modelSources:
+  model:
+    root: frosted-lantern
+    files:
+      - test/frostedlantern/connection/LanternConnection.pure
+      - test/frostedlantern/dataspace/LanternDataSpace.pure
+      - test/frostedlantern/domain/LanternDomain.pure
+      - test/frostedlantern/mapping/LanternMapping.pure
+      - test/frostedlantern/runtime/LanternRuntime.pure
+      - test/frostedlantern/service/LanternGlassCatalogue.pure
+      - test/frostedlantern/service/LanternPaneRank.pure
+      - test/frostedlantern/service/LanternRegisterExtract.pure
+      - test/frostedlantern/store/LanternDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:qualified-property
+  - mapping:relational-join-reached-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - h2
+  - lantern-catalogue
+  - qualified-property
+  - relational
+  - service-test
+  - sort-limit
+  - window

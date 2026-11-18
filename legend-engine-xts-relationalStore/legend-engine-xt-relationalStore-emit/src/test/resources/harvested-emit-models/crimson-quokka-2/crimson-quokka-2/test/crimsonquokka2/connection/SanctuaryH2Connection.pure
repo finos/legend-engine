@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::crimsonquokka2::connection::SanctuaryH2Connection
+{
+  store: test::crimsonquokka2::store::SanctuaryDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists sanctuary;',
+      'create schema sanctuary;',
+      'create table sanctuary.burrow_colony (colony_id integer not null, colony_code varchar(20) not null, habitat_zone varchar(20) not null, steward_id integer, from_z date, thru_z date);',
+      'create table sanctuary.field_steward (steward_id integer primary key, steward_code varchar(20) not null, radio_tag varchar(20));'
+      ];
+  };
+  auth: DefaultH2;
+}

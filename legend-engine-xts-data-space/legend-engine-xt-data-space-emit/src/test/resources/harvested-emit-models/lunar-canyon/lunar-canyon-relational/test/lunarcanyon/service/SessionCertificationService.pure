@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarcanyon::service::SessionCertificationService
+{
+  pattern: '/lunarcanyon/v1/session-certification/{certFragment}/{minExposures}';
+  title: 'Lunar Canyon - Sessions By Observer Certification';
+  documentation: 'Keeps the sessions whose rostered observer holds a certification whose recorded list contains the requested fragment and whose exposure count clears the requested floor, orders the projected rows by exposure count and caps the result so the ordering and the cap are both observable.';
+  ownership: UserList { users: ['hill-observatory-roster', 'sky-log-stewards'] };
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {certFragment: String[1], minExposures: Integer[1]|test::lunarcanyon::domain::SkySession.all()->filter(
+      s|($s.observer.certifications->exists(c|$c->contains($certFragment))) && ($s.exposureCount >= $minExposures)
+    )->project(
+      [
+        col(
+          s|$s.sessionCode,
+          'Session/Code'
+        ),
+        col(
+          s|$s.exposureCount,
+          'Session/Exposures'
+        ),
+        col(
+          s|$s.seeingIndex,
+          'Session/Seeing'
+        ),
+        col(
+          s|$s.observer.observerName,
+          'Observer/Name'
+        ),
+        col(
+          s|$s.observer.certifications,
+          'Observer/Certifications'
+        ),
+        col(
+          s|$s.telescope.mountKind,
+          'Telescope/Mount'
+        )
+      ]
+    )->sort(
+      [
+        desc('Session/Exposures')
+      ]
+    )->take(2)};
+    mapping: test::lunarcanyon::mapping::SkyMapping;
+    runtime: test::lunarcanyon::runtime::SkyRuntime;
+  }
+  testSuites:
+  [
+    sessionCertificationSuite:
+    {
+      data:
+      [
+          connections:
+          [
+            skyConnection:
+              Relational
+              #{
+                sky.sky_session:
+                  'session_code,telescope_code,observer_code,observed_on,started_at,catalogue_code,seeing_index,exposure_count,filter_code,log_note\n'+
+                  'SS01,TL1,OB1,2025-09-01,2025-09-01 21:30:00,NGC,2.5,40,V,clear night\n'+
+                  'SS02,TL2,OB2,2025-09-02,2025-09-02 22:15:00,IC,3.25,25,R,thin cirrus\n'+
+                  'SS03,TL1,OB2,2025-09-03,2025-09-03 20:45:00,NGC,,60,,no filter wheel\n'+
+                  'SS04,TLX,OB1,2025-09-04,2025-09-04 23:05:00,MESSIER,1.75,15,B,instrument retired\n'+
+                  'SS05,,OB3,2025-09-05,,SHARPLESS,4.5,5,V,visual only\n'+
+                  'SS06,TL2,OB1,2025-10-01,2025-10-01 20:05:00,NGC,2.0,55,V,autumn run\n';
+
+                sky.telescope:
+                  'telescope_code,telescope_name,mirror_cm,mount_kind,dome_code\n'+
+                  'TL1,Ridge Reflector,60.0,EQUATORIAL,DOME-A\n'+
+                  'TL2,Vale Refractor,20.0,ALTAZIMUTH,DOME-B\n';
+
+                sky.observer:
+                  'observer_code,observer_name,certifications,home_site\n'+
+                  'OB1,Mira Halden,DEEP_SKY;ASTROMETRY,Ridge Camp\n'+
+                  'OB2,Tomas Rell,PHOTOMETRY,Vale Cottage\n'+
+                  'OB3,Yuki Sorne,,Hill Gate\n';
+              }#
+          ]
+      ]
+      tests:
+      [
+        deepSkyCertifiedObservers:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            certFragment = 'DEEP_SKY',
+            minExposures = 10
+          ]
+          asserts:
+          [
+            theTwoLargestQualifyingRunsSurviveTheCap:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session/Code":"SS06","Session/Exposures":55,"Session/Seeing":2.0,"Observer/Name":"Mira Halden","Observer/Certifications":"DEEP_SKY;ASTROMETRY","Telescope/Mount":"ALTAZIMUTH"},{"Session/Code":"SS01","Session/Exposures":40,"Session/Seeing":2.5,"Observer/Name":"Mira Halden","Observer/Certifications":"DEEP_SKY;ASTROMETRY","Telescope/Mount":"EQUATORIAL"}]';
+                  }#;
+              }#
+          ]
+        },
+        aCertificationNobodyHolds:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            certFragment = 'SPECTROSCOPY',
+            minExposures = 1
+          ]
+          asserts:
+          [
+            theExistenceTestOverTheRosterDropsEveryRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

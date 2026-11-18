@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalotter2::mapping::TrialNumericMapping
+(
+  *test::opalotter2::domain::TrialScenario[tn]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.trial_ref
+    )
+    ~mainTable [test::opalotter2::store::TrialNumericDB]reach.trial_scenario
+    trialCode: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.trial_code,
+    trialName: toUpper([test::opalotter2::store::TrialNumericDB]reach.trial_scenario.trial_name),
+    habitatCode: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.habitat_code,
+    surveyorCode: toLower([test::opalotter2::store::TrialNumericDB]reach.trial_scenario.surveyor_code),
+    reachLabel: trim([test::opalotter2::store::TrialNumericDB]reach.trial_scenario.reach_label),
+    activeFlag: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.active_flag,
+    sampleCount: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.sample_count,
+    collectionName: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.collection_name,
+    baseScenarioRef: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.base_scenario_ref,
+    baseScenarioName: [test::opalotter2::store::TrialNumericDB]@Trial_BaseScenario | [test::opalotter2::store::TrialNumericDB]reach.base_scenario.base_label,
+    waterTempC: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.water_temp_c,
+    flowRate: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.flow_rate,
+    turbidityNtu: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.turbidity_ntu,
+    bankCoverPct: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.bank_cover_pct,
+    spraintCount: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.spraint_count,
+    noteText: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.note_text,
+    seasonCode: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.season_code,
+    weatherCode: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.weather_code,
+    verifiedCode: [test::opalotter2::store::TrialNumericDB]reach.trial_scenario.verified_code
+  }
+
+  *test::opalotter2::domain::BaseScenario[bs]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalotter2::store::TrialNumericDB]reach.base_scenario.base_ref
+    )
+    ~mainTable [test::opalotter2::store::TrialNumericDB]reach.base_scenario
+    baseRef: [test::opalotter2::store::TrialNumericDB]reach.base_scenario.base_ref,
+    baseName: [test::opalotter2::store::TrialNumericDB]reach.base_scenario.base_label
+  }
+
+  test::opalotter2::domain::Scenario_BaseScenario: Relational
+  {
+    AssociationMapping
+    (
+      baseScenario[tn, bs]: [test::opalotter2::store::TrialNumericDB]@Trial_BaseScenario,
+      scenario[bs, tn]: [test::opalotter2::store::TrialNumericDB]@Trial_BaseScenario
+    )
+  }
+
+  testSuites:
+  [
+    trialNumericSuite:
+    {
+      function: |test::opalotter2::domain::TrialScenario.all()->project(
+  [
+    t|$t.trialCode,
+    t|$t.sampleCount,
+    t|$t.baseScenarioName
+  ],
+  [
+    'Trial',
+    'Samples',
+    'Base'
+  ]
+)->sort(
+  [
+    asc('Trial')
+  ]
+);
+      tests:
+      [
+        seededNumericTrials:
+        {
+          doc: 'The whole-number-keyed near copy of the same class resolves its base scenario label across the inner join of the second store.';
+          data:
+          [
+            test::opalotter2::store::TrialNumericDB:
+              Relational
+              #{
+                reach.base_scenario:
+                  'base_ref,base_label\n'+
+                  '41,Riffle Baseline\n'+
+                  '42,Pool Baseline\n';
+
+                reach.trial_scenario:
+                  'trial_ref,trial_code,trial_name,habitat_code,surveyor_code,reach_label,active_flag,sample_count,collection_name,base_scenario_ref,base_scenario_name,water_temp_c,flow_rate,turbidity_ntu,bank_cover_pct,spraint_count,note_text,season_code,weather_code,verified_code\n'+
+                  '1,TR-01,riffle sweep,HB-01,SV-Alpha, Alder Riffle ,Y,12,Upper Reach Set,41,Riffle Baseline,9.5,0.8,3.5,62.0,4,first pass,spr,dry,Y\n'+
+                  '2,TR-02,pool sweep,HB-02,SV-Beta, Willow Pool ,Y,8,Lower Reach Set,42,Pool Baseline,11.0,0.4,6.0,48.0,2,second pass,sum,wet,N\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedNumericRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trial":"TR-01","Samples":12,"Base":"Riffle Baseline"},{"Trial":"TR-02","Samples":8,"Base":"Pool Baseline"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

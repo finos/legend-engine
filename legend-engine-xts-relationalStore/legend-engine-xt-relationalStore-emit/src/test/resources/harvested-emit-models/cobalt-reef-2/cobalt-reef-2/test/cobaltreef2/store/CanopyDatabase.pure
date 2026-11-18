@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cobaltreef2::store::CanopyDatabase
+(
+  Schema survey
+  (
+    Table canopy_plot
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      plot_id INTEGER PRIMARY KEY,
+      plot_code VARCHAR(24) NOT NULL,
+      avenue_name VARCHAR(80) NOT NULL,
+      survey_note VARCHAR(160),
+      inspection_id INTEGER NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table plot_inspection
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      inspection_id INTEGER PRIMARY KEY,
+      inspection_code VARCHAR(24) NOT NULL,
+      plot_id INTEGER NOT NULL,
+      crew_id INTEGER NOT NULL,
+      inspection_note VARCHAR(160),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table inspection_crew
+    (
+      crew_id INTEGER PRIMARY KEY,
+      crew_code VARCHAR(24) NOT NULL,
+      crew_name VARCHAR(80) NOT NULL,
+      depot_id INTEGER NOT NULL
+    )
+    Table maintenance_depot
+    (
+      depot_id INTEGER PRIMARY KEY,
+      depot_code VARCHAR(24) NOT NULL,
+      region_code VARCHAR(24) NOT NULL
+    )
+    Table depot_region
+    (
+      region_code VARCHAR(24) PRIMARY KEY,
+      region_name VARCHAR(80) NOT NULL
+    )
+  )
+
+  Filter CurrentCanopy(survey.canopy_plot.out_z > '2026-06-01')
+
+  Join Plot_Inspection(survey.canopy_plot.inspection_id = survey.plot_inspection.inspection_id)
+  Join Inspection_Crew(survey.plot_inspection.crew_id = survey.inspection_crew.crew_id)
+  Join Crew_Depot(survey.inspection_crew.depot_id = survey.maintenance_depot.depot_id)
+  Join Depot_Region(survey.maintenance_depot.region_code = survey.depot_region.region_code)
+)

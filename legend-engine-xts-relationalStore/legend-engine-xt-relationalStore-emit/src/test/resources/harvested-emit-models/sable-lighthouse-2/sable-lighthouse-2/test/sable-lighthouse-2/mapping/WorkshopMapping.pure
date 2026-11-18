@@ -1,0 +1,222 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablelighthouse2::mapping::WorkshopMapping
+(
+  *test::sablelighthouse2::domain::TreatmentCase: Relational
+  {
+    ~filter [test::sablelighthouse2::store::WorkshopDB]TreatmentCaseFilter
+    ~primaryKey
+    (
+      [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.case_id
+    )
+    ~mainTable [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case
+    caseId: [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.case_id,
+    objectLabel: [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.object_label,
+    priorityLevel: [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.priority_level,
+    conservatorName: [test::sablelighthouse2::store::WorkshopDB]@CaseToConservator | [test::sablelighthouse2::store::ConservatorStore]staff.conservator.full_name,
+    kindLabel: [test::sablelighthouse2::store::WorkshopDB]@CaseToKind | ticketing.record_kind_ref.kind_label
+  }
+  *test::sablelighthouse2::domain::SurveyCase: Relational
+  {
+    ~filter [test::sablelighthouse2::store::WorkshopDB]SurveyCaseFilter
+    ~primaryKey
+    (
+      [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.case_id
+    )
+    ~mainTable [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case
+    caseId: [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.case_id,
+    objectLabel: [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.object_label,
+    priorityLevel: [test::sablelighthouse2::store::WorkshopDB]ticketing.conservation_case.priority_level
+  }
+  *test::sablelighthouse2::domain::CaseNote: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablelighthouse2::store::WorkshopDB]ticketing.case_note.note_id
+    )
+    ~mainTable [test::sablelighthouse2::store::WorkshopDB]ticketing.case_note
+    noteId: [test::sablelighthouse2::store::WorkshopDB]ticketing.case_note.note_id,
+    noteText: [test::sablelighthouse2::store::WorkshopDB]ticketing.case_note.note_text,
+    caseConservatorName: [test::sablelighthouse2::store::WorkshopDB]@NoteToCase > @CaseToConservator | [test::sablelighthouse2::store::ConservatorStore]staff.conservator.full_name
+  }
+
+  testSuites:
+  [
+    treatmentCaseSuite:
+    {
+      function: |test::sablelighthouse2::domain::TreatmentCase.all()->filter(c|($c.priorityLevel >= 2) || $c.objectLabel->toLower()->trim()->substring(0, 4)->startsWith('gilt'))->project(
+        [
+          c|$c.caseId,
+          c|$c.objectLabel->toUpper(),
+          c|$c.conservatorName,
+          c|$c.kindLabel
+        ],
+        [
+          'Case',
+          'Object',
+          'Conservator',
+          'Kind'
+        ]
+      )->sort([asc('Case')]);
+      tests:
+      [
+        filteredTreatmentsWithJoinedNames:
+        {
+          doc: 'The store filter keeps only live treatment rows, so survey and cancelled rows drop out; the conservator is reached through the cross-store join, which leaves an unmatched conservator key empty, and the kind label comes through the reference join.';
+          data:
+          [
+            test::sablelighthouse2::store::WorkshopDB:
+              Relational
+              #{
+                ticketing.conservation_case:
+                  'case_id,record_kind,case_status,object_label,priority_level,conservator_id\n' +
+                  'CC-01,TREATMENT,OPEN,Gilt frame,1,CN-1\n' +
+                  'CC-02,TREATMENT,OPEN,Tapestry panel,3,CN-2\n' +
+                  'CC-03,TREATMENT,CANCELLED,Bronze bust,4,CN-1\n' +
+                  'CC-04,SURVEY,OPEN,Lacquer box,5,CN-2\n' +
+                  'CC-05,TREATMENT,OPEN,Clay vessel,2,CN-9\n' +
+                  'CC-06,TREATMENT,OPEN,Silk fan,1,CN-1\n';
+                ticketing.record_kind_ref:
+                  'kind_code,kind_label\n' +
+                  'TREATMENT,Hands-on treatment\n' +
+                  'SURVEY,Condition survey\n';
+                staff.conservator:
+                  'conservator_id,full_name,studio_code\n' +
+                  'CN-1,Ivo Marlowe,ST-A\n' +
+                  'CN-2,Rhea Quillon,ST-B\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLiveTreatments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Case":"CC-01","Object":"GILT FRAME","Conservator":"Ivo Marlowe","Kind":"Hands-on treatment"},{"Case":"CC-02","Object":"TAPESTRY PANEL","Conservator":"Rhea Quillon","Kind":"Hands-on treatment"},{"Case":"CC-05","Object":"CLAY VESSEL","Conservator":null,"Kind":"Hands-on treatment"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveyCaseSuite:
+    {
+      function: |test::sablelighthouse2::domain::SurveyCase.all()->project(
+        [
+          s|$s.caseId,
+          s|$s.priorityLevel
+        ],
+        [
+          'Case',
+          'Priority'
+        ]
+      )->sort([asc('Case')]);
+      tests:
+      [
+        surveyRowsSplitFromCaseTable:
+        {
+          doc: 'The survey filter selects survey rows with a priority of at least one out of the shared case table, so treatment rows and an unprioritised survey are excluded.';
+          data:
+          [
+            test::sablelighthouse2::store::WorkshopDB:
+              Relational
+              #{
+                ticketing.conservation_case:
+                  'case_id,record_kind,case_status,object_label,priority_level,conservator_id\n' +
+                  'CC-04,SURVEY,OPEN,Lacquer box,5,CN-2\n' +
+                  'CC-07,SURVEY,OPEN,Ivory comb,0,CN-1\n' +
+                  'CC-08,SURVEY,OPEN,Enamel brooch,1,CN-1\n' +
+                  'CC-02,TREATMENT,OPEN,Tapestry panel,3,CN-2\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Case":"CC-04","Priority":5},{"Case":"CC-08","Priority":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    noteChainSuite:
+    {
+      function: |test::sablelighthouse2::domain::CaseNote.all()->project(
+        [
+          n|$n.noteId,
+          n|$n.caseConservatorName,
+          n|$n.noteText->length()
+        ],
+        [
+          'Note',
+          'Conservator',
+          'TextLength'
+        ]
+      )->sort([asc('Note')]);
+      tests:
+      [
+        multiHopConservatorResolution:
+        {
+          doc: 'The conservator of a note is reached by chaining the note-to-case join, which also rejects voided notes by a literal condition, with the case-to-conservator join: a complete chain resolves the name, while a voided note, a note on a missing case and a case with an unknown conservator all break the chain.';
+          data:
+          [
+            test::sablelighthouse2::store::WorkshopDB:
+              Relational
+              #{
+                ticketing.case_note:
+                  'note_id,case_id,note_text,note_state\n' +
+                  'NT-1,CC-01,Consolidated flaking,LIVE\n' +
+                  'NT-2,CC-02,Humidity check,VOID\n' +
+                  'NT-3,CC-99,Orphan entry,LIVE\n' +
+                  'NT-4,CC-05,Kiln residue,LIVE\n';
+                ticketing.conservation_case:
+                  'case_id,record_kind,case_status,object_label,priority_level,conservator_id\n' +
+                  'CC-01,TREATMENT,OPEN,Gilt frame,1,CN-1\n' +
+                  'CC-02,TREATMENT,OPEN,Tapestry panel,3,CN-2\n' +
+                  'CC-05,TREATMENT,OPEN,Clay vessel,2,CN-9\n';
+                staff.conservator:
+                  'conservator_id,full_name,studio_code\n' +
+                  'CN-1,Ivo Marlowe,ST-A\n' +
+                  'CN-2,Rhea Quillon,ST-B\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyCompleteChainResolves:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Note":"NT-1","Conservator":"Ivo Marlowe","TextLength":20},{"Note":"NT-2","Conservator":null,"TextLength":14},{"Note":"NT-3","Conservator":null,"TextLength":12},{"Note":"NT-4","Conservator":null,"TextLength":12}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

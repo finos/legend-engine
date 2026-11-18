@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyfjord8::store::SurveyDb
+(
+  Schema survey
+  (
+    Table plankton_tow
+    (
+      tow_id INTEGER PRIMARY KEY,
+      tow_code VARCHAR(24) NOT NULL,
+      vessel_id INTEGER,
+      station_id INTEGER,
+      net_count INTEGER,
+      depth_metres DECIMAL(9, 2),
+      tow_date DATE,
+      void_flag_int INTEGER,
+      review_flag_int INTEGER,
+      stage_int INTEGER
+    )
+
+    Table survey_vessel
+    (
+      vessel_id INTEGER PRIMARY KEY,
+      vessel_code VARCHAR(24) NOT NULL,
+      vessel_name VARCHAR(120) NOT NULL,
+      vessel_grade VARCHAR(16),
+      rated_hours DOUBLE
+    )
+
+    Table mooring_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(24) NOT NULL,
+      station_name VARCHAR(120) NOT NULL,
+      region_name VARCHAR(60)
+    )
+
+    Table tow_catch
+    (
+      catch_id INTEGER PRIMARY KEY,
+      tow_id INTEGER,
+      taxon_code VARCHAR(24),
+      individuals INTEGER
+    )
+
+    Table fjord_region
+    (
+      region_name VARCHAR(60) PRIMARY KEY,
+      programme_code VARCHAR(24)
+    )
+
+    Table survey_programme
+    (
+      programme_code VARCHAR(24) PRIMARY KEY,
+      programme_name VARCHAR(120)
+    )
+
+    View tow_catch_totals
+    (
+      ~groupBy
+      (
+        survey.tow_catch.tow_id
+      )
+      tow_id: survey.tow_catch.tow_id PRIMARY KEY,
+      taxon_count: count(survey.tow_catch.taxon_code),
+      total_individuals: sum(survey.tow_catch.individuals),
+      peak_individuals: max(survey.tow_catch.individuals),
+      low_individuals: min(survey.tow_catch.individuals)
+    )
+  )
+
+  Filter LoggedTowFilter(equal(survey.plankton_tow.void_flag_int, 0) and (equal(survey.plankton_tow.review_flag_int, 1) or equal(survey.plankton_tow.stage_int, 2)))
+
+  Join Tow_Vessel(survey.plankton_tow.vessel_id = survey.survey_vessel.vessel_id)
+  Join Tow_Station(survey.plankton_tow.station_id = survey.mooring_station.station_id)
+  Join CatchTotal_Tow(survey.tow_catch_totals.tow_id = survey.plankton_tow.tow_id)
+  Join Station_Region(survey.mooring_station.region_name = survey.fjord_region.region_name)
+  Join Region_Programme(survey.fjord_region.programme_code = survey.survey_programme.programme_code)
+)

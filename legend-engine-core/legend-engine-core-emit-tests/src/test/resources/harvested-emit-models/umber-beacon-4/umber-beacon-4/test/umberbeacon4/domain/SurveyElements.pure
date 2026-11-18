@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::umberbeacon4::domain::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract, test::umberbeacon4::domain::SurveyGovernance.curatedRecord>> {meta::pure::profiles::doc.doc = 'Shared shape of every element of the coastal survey network; annotations placed here are visible to every subtype.', test::umberbeacon4::domain::SurveyGovernance.custodianRole = 'network-steward', test::umberbeacon4::domain::SurveyGovernance.retentionBand = 'long'} test::umberbeacon4::domain::SurveyElement
+{
+  elementCode: String[1];
+  displayLabel: String[1];
+  commentary: String[0..1];
+}
+
+Class <<test::umberbeacon4::domain::SurveyGovernance.fieldCollected>> {meta::pure::profiles::doc.doc = 'A fixed monitoring position on the shore or seabed; retrieved without a business date.'} test::umberbeacon4::domain::MonitoringStation extends SurveyElement
+{
+  zone: HabitatZone[1];
+  depthMetres: Float[0..1];
+  serviceableYear: Integer[1];
+}
+
+Class <<test::umberbeacon4::domain::SurveyGovernance.fieldCollected>> {meta::pure::profiles::doc.doc = 'A level-two subtype: a monitoring station walked as a shoreline transect, so its effective property set is the union of two ancestors.'} test::umberbeacon4::domain::ShorelineTransect extends MonitoringStation
+{
+  transectLengthMetres: Float[1];
+  substrateNote: String[0..1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, meta::pure::profiles::temporal.businesstemporal, test::umberbeacon4::domain::SurveyGovernance.provisionalRecord>> {meta::pure::profiles::doc.doc = 'Abstract supertype of every tracked organism, versioned along business time and used as an association-end type so traversals are polymorphic.'} test::umberbeacon4::domain::TrackedOrganism
+{
+  organismCode: String[1];
+  lifeStage: SpecimenLifeStage[1];
+  vernacularName: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A tagged fish, reached through the abstract organism end.'} test::umberbeacon4::domain::TaggedFish extends TrackedOrganism
+{
+  attachment: TagAttachmentMethod[1];
+  forkLengthMillimetres: Integer[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A ringed seabird, reached through the abstract organism end.'} test::umberbeacon4::domain::TaggedSeabird extends TrackedOrganism
+{
+  ringCode: String[1];
+  moultStage: SpecimenLifeStage[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A sensor placed at a station for a bounded period of business time.'} test::umberbeacon4::domain::SensorDeployment
+{
+  deploymentCode: String[1];
+  health: SensorHealth[1];
+  calibrationNote: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'One recorded sighting, versioned along business time so a correction supersedes an earlier version.'} test::umberbeacon4::domain::ObservationRecord
+{
+  observationCode: String[1];
+  confidence: ObservationConfidence[1];
+  countedIndividuals: Integer[1];
+  observerNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A vessel-borne collection campaign; not versioned, so a traversal from an observation alternates grain.'} test::umberbeacon4::domain::SurveyCruise
+{
+  cruiseCode: String[1];
+  vesselLabel: String[1];
+  zone: HabitatZone[1];
+  berthCount: Integer[0..1];
+}
+
+Class <<test::umberbeacon4::domain::SurveyGovernance.curatedRecord>> {meta::pure::profiles::doc.doc = 'A team accountable for a set of monitoring stations.'} test::umberbeacon4::domain::CustodianTeam
+{
+  teamCode: String[1];
+  teamName: String[1];
+  scope: StewardshipScope[1];
+  contactNote: String[0..1];
+}

@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::westernthistle::dataspace::RegistryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'reference';
+      description: 'Reference tier reading the crew and surface grade registry through the local test connection.';
+      mapping: test::westernthistle::mapping::RegistryMapping;
+      defaultRuntime: test::westernthistle::runtime::RegistryRuntime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier reading the same registry tables through the governed analytics warehouse.';
+      mapping: test::westernthistle::mapping::RegistryMapping;
+      defaultRuntime: test::westernthistle::runtime::RegistryWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'reference';
+  title: 'Cycle Network Maintenance Registry';
+  description: 'A governed entry point over the maintenance crews of the cycle network and the surface grade catalogue they resurface to.';
+  elements:
+  [
+    test::westernthistle::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Depot crew roster';
+      description: 'Featured endpoint rostering the crews of one depot.';
+      executable: test::westernthistle::service::CrewRoster;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'cycle-network-maintenance@example.invalid';
+  };
+}

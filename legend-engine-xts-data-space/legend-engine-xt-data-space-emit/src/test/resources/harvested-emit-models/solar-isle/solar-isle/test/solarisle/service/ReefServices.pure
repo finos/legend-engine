@@ -1,0 +1,266 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarisle::service::OpenStationsService
+{
+  pattern: '/solarisle/v1/open-stations/{minimumDepth}';
+  title: 'Solar Isle - Open Survey Stations';
+  owners: ['reef-survey-team'];
+  documentation: 'Returns open stations above a requested depth.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minimumDepth: Float[1]|test::solarisle::domain::SurveyStation.all()->filter(
+  s|($s.openForSurvey == true) && ($s.depthMetres >= $minimumDepth)
+)->project(
+  [
+    col(s|$s.stationCode, 'StationCode'),
+    col(s|$s.stationName->toUpper(), 'StationName'),
+    col(s|$s.depthMetres + 2.5, 'SurveyDepth')
+  ]
+)->sort([asc('StationCode')])};
+    mapping: test::solarisle::mapping::ReefMapping;
+    runtime: test::solarisle::runtime::ReefRuntime;
+  }
+  testSuites:
+  [
+    openStationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reef.survey_station:
+                'station_code,station_name,zone_code,depth_metres,open_for_survey\nST-01,Blue Shelf,Z-1,12.5,true\nST-02,Quiet Ledge,Z-2,8.0,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        openStations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters: [minimumDepth = 10.0]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"ST-01","StationName":"BLUE SHELF","SurveyDepth":15.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::solarisle::service::RecentRunsService
+{
+  pattern: '/solarisle/v1/recent-runs/{asOf}';
+  title: 'Solar Isle - Recent Transect Runs';
+  owners: ['reef-survey-team'];
+  documentation: 'Returns transect runs recorded in the trailing date window.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::solarisle::domain::TransectRun.all()->filter(
+  r|$r.runOn >= $asOf->adjust(-14, meta::pure::functions::date::DurationUnit.DAYS)
+)->project(
+  [
+    col(r|$r.runCode, 'RunCode'),
+    col(r|$r.runOn, 'RunOn'),
+    col(r|dateDiff($r.runOn, $asOf, meta::pure::functions::date::DurationUnit.DAYS), 'DaysOld')
+  ]
+)->sort([asc('RunCode')])};
+    mapping: test::solarisle::mapping::ReefMapping;
+    runtime: test::solarisle::runtime::ReefRuntime;
+  }
+  testSuites:
+  [
+    recentRunSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reef.transect_run:
+                'run_code,station_code,run_on,duration_minutes,diver_code\nTR-01,ST-01,2026-06-10,55,DV-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        recentRuns:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters: [asOf = %2026-06-20]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RunCode":"TR-01","RunOn":"2026-06-10","DaysOld":10}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::solarisle::service::SpeciesTotalsService
+{
+  pattern: '/solarisle/v1/species-totals';
+  title: 'Solar Isle - Species Totals';
+  owners: ['reef-survey-team'];
+  documentation: 'Groups species sightings by species name and totals specimen counts.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: test::solarisle::domain::SpeciesSighting.all()->project(
+      [
+        col(x|$x.speciesName, 'speciesName'),
+        col(x|$x.specimenCount, 'specimenCount')
+      ]
+    )->groupBy(
+      ['speciesName'],
+      [agg('totalCount', x|$x.getInteger('specimenCount'), y|$y->sum())]
+    )->sort([asc('speciesName')]);
+    mapping: test::solarisle::mapping::ReefMapping;
+    runtime: test::solarisle::runtime::ReefRuntime;
+  }
+  testSuites:
+  [
+    speciesTotalSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reef.species_sighting:
+                'sighting_code,run_code,species_name,sighted_on,specimen_count,diver_code\nSG-01,TR-01,Parrotfish,2026-06-10,4,DV-01\nSG-02,TR-01,Parrotfish,2026-06-10,3,DV-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        totals:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"speciesName":"Parrotfish","totalCount":7}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::solarisle::service::AssociationDigestService
+{
+  pattern: '/solarisle/v1/association-digest/{minimumCount}';
+  title: 'Solar Isle - Association Digest';
+  owners: ['reef-survey-team'];
+  documentation: 'Traverses station runs and their sightings, retaining stations with at least one qualifying sighting and projecting deeply nested marine observation labels.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minimumCount: Integer[1]|test::solarisle::domain::SurveyStation.all()->filter(
+  s|$s.runs->exists(r|$r.sightings->exists(g|$g.specimenCount >= $minimumCount))
+)->project(
+  [
+    col(s|$s.stationCode, 'StationCode'),
+    col(s|$s.runs->filter(r|$r.sightings->exists(g|$g.specimenCount >= $minimumCount))->map(r|$r.runCode)->joinStrings(','), 'RunCodes'),
+    col(s|if($s.openForSurvey, |if($s.depthMetres > 20.0, |'OPEN_DEEP', |'OPEN_SHALLOW'), |'CLOSED'), 'SurveyBand'),
+    col(s|$s.stationName->toUpper()->trim()->substring(0, 8), 'ShortName')
+  ]
+)->sort([asc('StationCode')])};
+    mapping: test::solarisle::mapping::ReefMapping;
+    runtime: test::solarisle::runtime::ReefRuntime;
+  }
+  testSuites:
+  [
+    associationDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefConnection:
+            Relational
+            #{
+              reef.survey_station:
+                'station_code,station_name,zone_code,depth_metres,open_for_survey\nST-01,Blue Shelf,Z-1,22.0,true\n';
+              reef.transect_run:
+                'run_code,station_code,run_on,duration_minutes,diver_code\nTR-01,ST-01,2026-06-10,55,DV-01\n';
+              reef.species_sighting:
+                'sighting_code,run_code,species_name,sighted_on,specimen_count,diver_code\nSG-01,TR-01,Parrotfish,2026-06-10,4,DV-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        digest:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters: [minimumCount = 3]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"ST-01","RunCodes":"TR-01","SurveyBand":"OPEN_DEEP","ShortName":"BLUE SHE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

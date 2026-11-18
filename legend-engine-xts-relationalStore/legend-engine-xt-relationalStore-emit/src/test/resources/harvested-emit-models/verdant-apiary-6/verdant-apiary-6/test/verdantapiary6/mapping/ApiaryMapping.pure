@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantapiary6::mapping::ApiaryMapping
+(
+  *test::verdantapiary6::domain::HiveColony[colony]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantapiary6::store::ApiaryDb]apiary.hive_colony.colony_id
+    )
+    ~mainTable [test::verdantapiary6::store::ApiaryDb]apiary.hive_colony
+    colonyCode: [test::verdantapiary6::store::ApiaryDb]apiary.hive_colony.colony_code,
+    apiaryName: [test::verdantapiary6::store::ApiaryDb]apiary.hive_colony.apiary_name,
+    frameCount: [test::verdantapiary6::store::ApiaryDb]apiary.hive_colony.frame_count,
+    queenLine: [test::verdantapiary6::store::ApiaryDb]apiary.hive_colony.queen_line
+  }
+)

@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::sableaviary::dataspace::AviaryRegisterDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'register';
+      description: 'Register environment - the milestoned aviary binding served through the register warehouse, so a consumer can execute the featured services without naming a mapping or a runtime.';
+      mapping: test::sableaviary::mapping::AviaryRegisterMapping;
+      defaultRuntime: test::sableaviary::runtime::AviaryRegisterRuntime;
+    }
+  ];
+  defaultExecutionContext: 'register';
+  title: 'Sable Aviary Ringing Register';
+  description: 'Discovery surface over the aviary ringing register: the processing-milestoned bird, enclosure and feed extents, the species guide and keeper shift they reach across single join hops, and the register services published on top of them.';
+  executables:
+  [
+    {
+      title: 'Banded bird register';
+      executable: test::sableaviary::service::BirdRegisterService;
+    },
+    {
+      title: 'Recently ringed birds';
+      executable: test::sableaviary::service::RecentRingingService;
+    },
+    {
+      title: 'Feed tally by enclosure';
+      executable: test::sableaviary::service::FeedTallyService;
+    }
+  ];
+  elements:
+  [
+    test::sableaviary::domain::RingedBird,
+    test::sableaviary::domain::Enclosure,
+    test::sableaviary::domain::FeedBatch,
+    test::sableaviary::domain::SpeciesGuide,
+    test::sableaviary::domain::KeeperShift
+  ];
+}

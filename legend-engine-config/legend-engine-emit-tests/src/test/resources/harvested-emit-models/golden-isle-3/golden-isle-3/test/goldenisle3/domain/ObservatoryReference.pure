@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::goldenisle3::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of wavelength regimes an observing programme may request.'} test::goldenisle3::domain::ObservingBand
+{
+  OPTICAL,
+  NEAR_INFRARED,
+  MID_INFRARED,
+  SUBMILLIMETRE,
+  RADIO,
+  ULTRAVIOLET
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of review states a submitted observing programme moves through.'} test::goldenisle3::domain::ProposalStatus
+{
+  DRAFT,
+  SUBMITTED,
+  UNDER_REVIEW,
+  ACCEPTED,
+  DEFERRED,
+  WITHDRAWN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of sky-quality grades the night assistant records against a scheduled block.'} test::goldenisle3::domain::WeatherGrade
+{
+  PHOTOMETRIC,
+  CLEAR,
+  THIN_CIRRUS,
+  THICK_CIRRUS,
+  UNUSABLE
+}
+
+Class {meta::pure::profiles::doc.doc = 'The mountain site a record belongs to, with its elevation.'} test::goldenisle3::domain::SiteRef
+{
+  siteCode: String[1];
+  siteName: String[1];
+  elevationMetres: Integer[1];
+  timeZoneName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A telescope on a site, identified by its aperture and mount style.'} test::goldenisle3::domain::TelescopeRef
+{
+  telescopeCode: String[1];
+  telescopeName: String[1];
+  apertureMetres: Float[1];
+  mountStyle: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An instrument mounted at a telescope focus.'} test::goldenisle3::domain::InstrumentRef
+{
+  instrumentCode: String[1];
+  instrumentName: String[1];
+  focusStation: String[1];
+  pixelScaleArcsec: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named investigator on an observing programme.'} test::goldenisle3::domain::InvestigatorRef
+{
+  investigatorCode: String[1];
+  investigatorName: String[1];
+  institutionName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A catalogued sky target with its equatorial coordinates.'} test::goldenisle3::domain::TargetRef
+{
+  targetCode: String[1];
+  targetName: String[1];
+  rightAscensionDegrees: Float[1];
+  declinationDegrees: Float[1];
+  catalogueName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A filter in an instrument wheel, with the band it belongs to.'} test::goldenisle3::domain::FilterRef
+{
+  filterCode: String[1];
+  filterName: String[1];
+  band: ObservingBand[1];
+  centralWavelengthNm: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A flat seeing-monitor row as the site monitor supplies it, before it is folded into a night summary.'} test::goldenisle3::domain::SeeingLogRow
+{
+  siteCode: String[1];
+  measuredAt: DateTime[1];
+  seeingArcsec: Float[1];
+  grade: WeatherGrade[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A flat weather-station row as the site station supplies it.'} test::goldenisle3::domain::WeatherLogRow
+{
+  siteCode: String[1];
+  measuredAt: DateTime[1];
+  humidityPercent: Float[1];
+  windSpeedKph: Float[1];
+  ambientTemperatureCelsius: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rolled-up night summary of flat counts and hours, as the morning report publishes it.'} test::goldenisle3::domain::NightSummary
+{
+  siteCode: String[1];
+  nightOfObservation: StrictDate[1];
+  scienceBlockCount: Integer[1];
+  calibrationBlockCount: Integer[1];
+  openShutterHours: Float[1];
+  lostToWeatherHours: Float[1];
+  dominantGrade: WeatherGrade[1];
+}

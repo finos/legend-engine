@@ -1,0 +1,61 @@
+name: ember-canyon-3
+title: "Ember Canyon — Accession Yields and Germination Trials"
+description: |
+  A seed-vault and herbarium registry combines primary and archive accessions,
+  grouped vault yields, inline registry views, polymorphic wild accessions,
+  and germination-trial summaries. Relational transforms expose literal,
+  arithmetic, string-function, embedded, and grouped properties while a
+  model-chain refinement publishes trial digests.
+modelSources:
+  model:
+    root: ember-canyon-3
+    files:
+      - test/embercanyon3/connection/VaultConnections.pure
+      - test/embercanyon3/data/VaultTestData.pure
+      - test/embercanyon3/domain/VaultDomain.pure
+      - test/embercanyon3/generation/VaultGeneration.pure
+      - test/embercanyon3/mapping/TrialDigestMapping.pure
+      - test/embercanyon3/mapping/VaultMapping.pure
+      - test/embercanyon3/runtime/VaultRuntimes.pure
+      - test/embercanyon3/service/VaultServices.pure
+      - test/embercanyon3/store/VaultDatabase.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:m2m-transform
+  - mapping:operation-mapping
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-embedded
+  - mapping:relational-group-by
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-polymorphic-query
+  - mapping:relational-primary-key
+  - mapping:store-union
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-inline-view
+  - store:relational-multi-table
+tags:
+  - accession
+  - archive
+  - germination
+  - grouping
+  - h2
+  - herbarium
+  - polymorphism
+  - registry
+  - seed-vault
+  - trials
+stores:
+  - relational
+complexity: advanced

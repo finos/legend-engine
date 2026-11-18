@@ -1,0 +1,33 @@
+name: coral-isle
+title: "Coral Isle — Alias-Qualified Main Tables Across Four Reef Survey Stores"
+description: |
+  An intertidal reef monitoring corpus: seven survey classes are backed by four
+  separate relational stores, and three mappings each pin their own aliased main
+  table and resolve every property through an alias-qualified column of that
+  table. Each mapping carries its own test suite over inline relational rows, so
+  the alias binding of every mapped column is exercised independently per store.
+modelSources:
+  model:
+    root: coral-isle
+    files:
+      - test/coralisle/domain/ReefDomain.pure
+      - test/coralisle/mapping/EquipmentMapping.pure
+      - test/coralisle/mapping/StationMapping.pure
+      - test/coralisle/mapping/VisitMapping.pure
+      - test/coralisle/store/ReefStores.pure
+features:
+  - mapping:relational-main-table-alias
+  - mapping:relational-table-alias-column
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - alias-column
+  - h2
+  - main-table-alias
+  - multi-store
+  - reef-survey
+  - relational-mapping

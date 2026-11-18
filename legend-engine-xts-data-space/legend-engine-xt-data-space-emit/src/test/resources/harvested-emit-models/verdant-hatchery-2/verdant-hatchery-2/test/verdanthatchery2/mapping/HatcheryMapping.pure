@@ -1,0 +1,185 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdanthatchery2::mapping::HatcheryMapping
+(
+  *test::verdanthatchery2::domain::FryBatch[fryBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.batch_code
+    )
+    ~mainTable [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch
+    batchCode: [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.batch_code,
+    pondCode: [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.pond_code,
+    speciesCode: [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.species_code,
+    stockedOn: [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.stocked_on,
+    fryCount: [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.fry_count,
+    meanLengthMm: [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm,
+    healthScore: [test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.health_score,
+    graderName: case(
+                  isEmpty([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.grader_name),
+                  sqlNull(),
+                  toUpper(trim([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.grader_name))
+                ),
+    vigourBand: case(
+    lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 15.0),
+    'PINHEAD',
+    case(
+      lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 25.0),
+      'SWIM_UP',
+      case(
+        lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 35.0),
+        'FIRST_FEED',
+        case(
+          lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 50.0),
+          'FINGERLING_EARLY',
+          case(
+            lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 70.0),
+            'FINGERLING_LATE',
+            case(
+              lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 95.0),
+              'PARR',
+              case(
+                lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 130.0),
+                'SMOLT_READY',
+                case(
+                  lessThanEqual([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.mean_length_mm, 180.0),
+                  'GRADE_OUT',
+                  sqlNull()
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  ),
+    tagNote: case(
+               equal([test::verdanthatchery2::store::HatcheryDb]hatchery.fry_batch.tagged_flag, 'Y'),
+               'TAGGED',
+               'UNTAGGED'
+             ),
+    pondName: [test::verdanthatchery2::store::HatcheryDb]@Pond_Batch | [test::verdanthatchery2::store::HatcheryDb]hatchery.rearing_pond.pond_name,
+    siteName: [test::verdanthatchery2::store::HatcheryDb]@Pond_Batch > @Site_Pond | [test::verdanthatchery2::store::HatcheryDb]hatchery.hatchery_site.site_name
+  }
+
+  *test::verdanthatchery2::domain::RearingPond[rearingPond]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdanthatchery2::store::HatcheryDb]hatchery.rearing_pond.pond_code
+    )
+    ~mainTable [test::verdanthatchery2::store::HatcheryDb]hatchery.rearing_pond
+    pondCode: [test::verdanthatchery2::store::HatcheryDb]hatchery.rearing_pond.pond_code,
+    pondName: [test::verdanthatchery2::store::HatcheryDb]hatchery.rearing_pond.pond_name,
+    siteCode: [test::verdanthatchery2::store::HatcheryDb]hatchery.rearing_pond.site_code,
+    volumeM3: [test::verdanthatchery2::store::HatcheryDb]hatchery.rearing_pond.volume_m3
+  }
+
+  *test::verdanthatchery2::domain::HatcherySite[hatcherySite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdanthatchery2::store::HatcheryDb]hatchery.hatchery_site.site_code
+    )
+    ~mainTable [test::verdanthatchery2::store::HatcheryDb]hatchery.hatchery_site
+    siteCode: [test::verdanthatchery2::store::HatcheryDb]hatchery.hatchery_site.site_code,
+    siteName: [test::verdanthatchery2::store::HatcheryDb]hatchery.hatchery_site.site_name,
+    catchmentName: [test::verdanthatchery2::store::HatcheryDb]hatchery.hatchery_site.catchment_name
+  }
+
+  testSuites:
+  [
+    fryGradingSuite:
+    {
+      function: |test::verdanthatchery2::domain::FryBatch.all()->project(
+  [
+    b|$b.batchCode,
+    b|$b.vigourBand,
+    b|$b.graderName,
+    b|$b.gradedBy(),
+    b|$b.tagNote,
+    b|$b.pondName,
+    b|$b.siteName,
+    b|$b.stockedYear(),
+    b|$b.fryCount
+  ],
+  [
+    'Batch',
+    'Vigour',
+    'Grader',
+    'GradedBy',
+    'Tag',
+    'Pond',
+    'Site',
+    'StockedYear',
+    'Fry'
+  ]
+)->sort(
+  [
+    asc('Batch')
+  ]
+);
+      tests:
+      [
+        everyVigourArm:
+        {
+          doc: 'Places one batch on each of the eight mean-length arms of the vigour conditional and one past the last boundary so the fallback yields null, together with the blank grader that falls back to null and is defaulted by the derived property, both arms of the tag conditional, the stocked-year derivation, and the one-hop pond and two-hop site join paths.';
+          data:
+          [
+            test::verdanthatchery2::store::HatcheryDb:
+              Relational
+              #{
+                hatchery.fry_batch:
+                  'batch_code,pond_code,species_code,stocked_on,fry_count,mean_length_mm,health_score,grader_name,tagged_flag\n'+
+                  'FB-01,PD-01,BROWN_TROUT,2026-03-02,12000,12.0,88,ada wren,Y\n'+
+                  'FB-02,PD-01,BROWN_TROUT,2026-03-04,9500,20.0,81,ada wren,N\n'+
+                  'FB-03,PD-01,GRAYLING,2026-03-06,8100,30.0,76,,Y\n'+
+                  'FB-04,PD-02,BROWN_TROUT,2026-03-08,7400,45.0,72,bram kell,Y\n'+
+                  'FB-05,PD-02,GRAYLING,2026-03-10,6600,65.0,69,bram kell,N\n'+
+                  'FB-06,PD-02,ARCTIC_CHARR,2026-04-01,5200,90.0,64,bram kell,Y\n'+
+                  'FB-07,PD-03,ARCTIC_CHARR,2026-04-03,4100,120.0,58,cleo tarn,N\n'+
+                  'FB-08,PD-03,BROWN_TROUT,2026-04-05,3300,160.0,55,cleo tarn,Y\n'+
+                  'FB-09,PD-03,GRAYLING,2026-04-07,2500,220.0,51,cleo tarn,N\n';
+                hatchery.rearing_pond:
+                  'pond_code,pond_name,site_code,volume_m3\n'+
+                  'PD-01,Alder Race,ST-01,120.0\n'+
+                  'PD-02,Willow Race,ST-01,140.0\n'+
+                  'PD-03,Rowan Race,ST-02,95.0\n';
+                hatchery.hatchery_site:
+                  'site_code,site_name,catchment_name\n'+
+                  'ST-01,Upper Weir Hatchery,Fell Beck\n'+
+                  'ST-02,Lower Weir Hatchery,Mill Beck\n';
+              }#
+          ];
+          asserts:
+          [
+            nineGradedBatches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"FB-01","Vigour":"PINHEAD","Grader":"ADA WREN","GradedBy":"ADA WREN","Tag":"TAGGED","Pond":"Alder Race","Site":"Upper Weir Hatchery","StockedYear":2026,"Fry":12000},{"Batch":"FB-02","Vigour":"SWIM_UP","Grader":"ADA WREN","GradedBy":"ADA WREN","Tag":"UNTAGGED","Pond":"Alder Race","Site":"Upper Weir Hatchery","StockedYear":2026,"Fry":9500},{"Batch":"FB-03","Vigour":"FIRST_FEED","Grader":null,"GradedBy":"UNATTRIBUTED","Tag":"TAGGED","Pond":"Alder Race","Site":"Upper Weir Hatchery","StockedYear":2026,"Fry":8100},{"Batch":"FB-04","Vigour":"FINGERLING_EARLY","Grader":"BRAM KELL","GradedBy":"BRAM KELL","Tag":"TAGGED","Pond":"Willow Race","Site":"Upper Weir Hatchery","StockedYear":2026,"Fry":7400},{"Batch":"FB-05","Vigour":"FINGERLING_LATE","Grader":"BRAM KELL","GradedBy":"BRAM KELL","Tag":"UNTAGGED","Pond":"Willow Race","Site":"Upper Weir Hatchery","StockedYear":2026,"Fry":6600},{"Batch":"FB-06","Vigour":"PARR","Grader":"BRAM KELL","GradedBy":"BRAM KELL","Tag":"TAGGED","Pond":"Willow Race","Site":"Upper Weir Hatchery","StockedYear":2026,"Fry":5200},{"Batch":"FB-07","Vigour":"SMOLT_READY","Grader":"CLEO TARN","GradedBy":"CLEO TARN","Tag":"UNTAGGED","Pond":"Rowan Race","Site":"Lower Weir Hatchery","StockedYear":2026,"Fry":4100},{"Batch":"FB-08","Vigour":"GRADE_OUT","Grader":"CLEO TARN","GradedBy":"CLEO TARN","Tag":"TAGGED","Pond":"Rowan Race","Site":"Lower Weir Hatchery","StockedYear":2026,"Fry":3300},{"Batch":"FB-09","Vigour":null,"Grader":"CLEO TARN","GradedBy":"CLEO TARN","Tag":"UNTAGGED","Pond":"Rowan Race","Site":"Lower Weir Hatchery","StockedYear":2026,"Fry":2500}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,32 @@
+name: azure-wharf-model
+title: "Coastal Survey Reporting — Request/Response Contract with an Orphaned Store"
+description: |
+  A coastal-survey reporting contract: paired request and response classes for
+  querying, rendering, storing and delivering survey reports, an error-info
+  class with an enumerated category, transfer objects for datasets, templates
+  and files, and four abstract bases with their concrete subtypes so the runtime
+  subtype is chosen through a base-typed property. A single relational store with
+  six tables and five joins (including a two-half bridge relationship) is declared
+  but deliberately left orphaned — no mapping, runtime or connection references it.
+modelSources:
+  model:
+    root: azure-wharf-model
+    files:
+      - test/azurewharf/domain/ReportContract.pure
+      - test/azurewharf/store/SurveyReportDb.pure
+features:
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - scaffolding:class
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - coastal-survey
+  - inheritance
+  - orphaned-store
+  - relational
+  - reporting

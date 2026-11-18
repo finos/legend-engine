@@ -1,0 +1,34 @@
+name: quiet-otter-3
+title: "Quiet Otter Trail Signage Inventory"
+description: |
+  A trailhead signage inventory with a relational store for marker records and a
+  second upkeep store for inspection rounds. A lit marker subtype inherits three
+  properties from its trail marker supertype, and a distinct aliased relational
+  mapping projects the inherited and local columns. Separate mapping tests cover
+  duplicate marker rows and a straightforward upkeep projection.
+modelSources:
+  model:
+    root: quiet-otter-3
+    files:
+      - test/quietotter3/domain/TrailDomain.pure
+      - test/quietotter3/mapping/SignageMapping.pure
+      - test/quietotter3/store/SignageDatabase.pure
+      - test/quietotter3/store/UpkeepDatabase.pure
+features:
+  - execution:mapping-test
+  - grammar:class-inheritance
+  - mapping:relational-distinct
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - inheritance
+  - mapping-test
+  - relational
+  - signage

@@ -1,0 +1,45 @@
+name: lunar-vineyard
+title: "Lunar Vineyard - business-temporal irrigation timeline read by windowed and as-of grouping services"
+description: |
+  An irrigation-scheduling model whose cycle records are business-temporal. Two single-execution
+  services read the same milestoned timeline: one takes the extent as of a business date, narrows
+  it with an inclusive two-sided application window plus schedule-membership and excluded-valve
+  tests and groups the survivors by schedule, valve and the sector reached through the block
+  reference; the other reads strictly as of a business date so a version whose validity window
+  has not opened is absent and a superseded version is replaced. A relational store carries the
+  business milestoning columns, and a mapping over an H2 connection and engine runtime binds the
+  cycle and block classes onto it.
+modelSources:
+  model:
+    root: lunar-vineyard
+    files:
+      - test/lunarvineyard/connection/VineyardH2Connection.pure
+      - test/lunarvineyard/domain/VineyardDomain.pure
+      - test/lunarvineyard/mapping/VineyardMapping.pure
+      - test/lunarvineyard/runtime/VineyardRuntime.pure
+      - test/lunarvineyard/service/VineyardCycleAsOf.pure
+      - test/lunarvineyard/service/VineyardCycleTally.pure
+      - test/lunarvineyard/store/VineyardDB.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:group-by
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - as-of-query
+  - business-temporal
+  - group-by
+  - h2
+  - irrigation-scheduling
+  - service-test

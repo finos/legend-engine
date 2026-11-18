@@ -1,0 +1,52 @@
+name: silver-thistle-2
+title: "Silver Thistle 2 — Alpine Trail Network (three association implementations over inner joins, three enumerations resolved through reused enumeration mappings and a two-hop join-reached property)"
+description: |
+  An alpine trail-network registry. Segments, ranger stations, trail regions and
+  patrol logs are bound column-for-column onto one warehouse schema with explicit
+  primary keys and main tables, three associations are realised in both traversal
+  directions over three inner joins, three enumerations are resolved from text
+  columns through enumeration mappings that are reused across relations, and one
+  segment property is reached through a two-hop join path. A data space exposes the
+  mapping and runtime through a single default execution context, and the mapping
+  carries assertion-backed test suites covering forward traversal, reverse
+  traversal and enumeration reuse.
+
+modelSources:
+  model:
+    root: silver-thistle-2
+    files:
+      - test/silverthistle2/connection/TrailNetworkConnections.pure
+      - test/silverthistle2/dataspace/TrailNetworkDataSpace.pure
+      - test/silverthistle2/domain/TrailNetworkDomain.pure
+      - test/silverthistle2/mapping/TrailNetworkMapping.pure
+      - test/silverthistle2/runtime/TrailNetworkRuntimes.pure
+      - test/silverthistle2/store/TrailNetworkDb.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+
+stores:
+  - relational
+
+complexity: intermediate
+
+tags:
+  - association-mapping
+  - data-space
+  - duckdb
+  - enumeration-mapping
+  - multi-hop-join-path
+  - relational

@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralcanyon4::store::CanyonCoreDb
+(
+  include test::coralcanyon4::store::CanyonRefDb
+
+  Schema core
+  (
+    Table core_sample
+    (
+      sample_code VARCHAR(16) PRIMARY KEY,
+      outcrop_code VARCHAR(16),
+      depth_m INTEGER,
+      grain_code VARCHAR(8),
+      weather_score INTEGER,
+      hazard_flag VARCHAR(1),
+      retired_on DATE,
+      logged_on DATE,
+      status_code VARCHAR(8)
+    )
+    Table survey_visit
+    (
+      visit_code VARCHAR(16) PRIMARY KEY,
+      sample_code VARCHAR(16),
+      visit_no INTEGER,
+      visited_at TIMESTAMP
+    )
+
+    View sample_latest_visit_vw
+    (
+      ~groupBy
+      (
+        core.survey_visit.sample_code
+      )
+      sample_code: core.survey_visit.sample_code PRIMARY KEY,
+      last_visit_no: max(core.survey_visit.visit_no),
+      last_visited_at: max(core.survey_visit.visited_at)
+    )
+  )
+
+  Filter ActiveSampleFilter((isNull(core.core_sample.retired_on) or (core.core_sample.retired_on > today())) and (core.core_sample.status_code != 'VOID'))
+
+  Join SampleToOutcrop(core.core_sample.outcrop_code = ref.outcrop.outcrop_code)
+  Join SampleToLatestVisit(core.core_sample.sample_code = core.sample_latest_visit_vw.sample_code)
+)

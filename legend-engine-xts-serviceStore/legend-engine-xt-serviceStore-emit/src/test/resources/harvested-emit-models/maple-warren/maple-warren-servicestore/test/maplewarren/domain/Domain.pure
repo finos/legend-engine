@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::maplewarren::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'The narrow request payload sent to the remote catalogue read.'} test::maplewarren::domain::CatalogRequest
+{
+  exhibitFilter: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Root of the remote catalogue response graph.'} test::maplewarren::domain::CatalogPayload
+{
+  recordId: String[0..1];
+  versionNumber: Integer[0..1];
+  auditUser: String[0..1];
+  window: ProcessingWindow[0..1];
+  exhibit: ExhibitNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Processing window carried alongside the catalogue record.'} test::maplewarren::domain::ProcessingWindow
+{
+  fromLabel: String[0..1];
+  toLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An exhibit node of the catalogue response graph.'} test::maplewarren::domain::ExhibitNode
+{
+  title: String[0..1];
+  medium: MediumNode[0..1];
+  gallery: GalleryNode[0..1];
+  provenance: ProvenanceNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The medium an exhibit is made of.'} test::maplewarren::domain::MediumNode
+{
+  mediumName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The gallery an exhibit is displayed in.'} test::maplewarren::domain::GalleryNode
+{
+  galleryName: String[0..1];
+  wing: WingNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The wing a gallery belongs to.'} test::maplewarren::domain::WingNode
+{
+  wingCode: String[0..1];
+  curator: CuratorNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The curator responsible for a wing.'} test::maplewarren::domain::CuratorNode
+{
+  curatorName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Where an exhibit came from.'} test::maplewarren::domain::ProvenanceNode
+{
+  origin: String[0..1];
+  donor: DonorNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The donor recorded on an exhibit provenance.'} test::maplewarren::domain::DonorNode
+{
+  donorName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened exhibit view assembled from the remote catalogue graph.'} test::maplewarren::domain::ExhibitSummary
+{
+  recordId: String[1];
+  exhibitTitle: String[1];
+  versionLabel: String[1];
+  provenanceOrigin: String[0..1];
+  donorLabel: String[0..1];
+  galleryLabel: GallerySummary[0..1];
+  custodian: CustodianSummary[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened gallery view assembled from the remote catalogue graph.'} test::maplewarren::domain::GallerySummary
+{
+  galleryName: String[1];
+  wingCode: String[0..1];
+  curator: CustodianSummary[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Flattened curator view assembled from the remote catalogue graph.'} test::maplewarren::domain::CustodianSummary
+{
+  curatorName: String[0..1];
+}

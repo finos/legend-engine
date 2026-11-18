@@ -1,0 +1,51 @@
+name: silver-reef-2
+title: "Silver Reef 2 — Reef Survey Hub With Satellite Joins, A Category-Restricted Shared Code List And Enumeration-Decoded Condition Columns"
+description: |
+  A reef survey hub table joined out to two per-survey satellite tables and to a single
+  shared code list that is reused for several unrelated code families, so every lookup join
+  carries a literal category restriction and a bare key equality would return the wrong
+  label. Two short code columns on the hub are decoded into enumerations through a
+  trim-and-upper transform rather than read literally, and a derived label and a two-branch
+  cover band are computed in the mapping. The suites graph-fetch and serialize the hub with
+  its satellites nested, covering a survey that resolves everything, a survey whose code
+  columns and satellites are all absent so the nested trees and labels serialize as null,
+  and a survey whose code value exists only under a different category, and separately
+  read the code list alone to show the composite category-and-value key keeping one code
+  value distinct across two families.
+modelSources:
+  model:
+    root: silver-reef-2
+    files:
+      - test/silverreef2/domain/ReefDomain.pure
+      - test/silverreef2/mapping/ReefMapping.pure
+      - test/silverreef2/store/ReefDB.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - code-list
+  - composite-primary-key
+  - enumeration-mapping
+  - graph-fetch
+  - h2
+  - hub-and-satellite
+  - join-restriction
+  - mapping-test
+  - reef-survey
+  - relational
+  - serialize

@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverapiary3::mapping::ApiaryMapping
+(
+  test::silverapiary3::domain::Condition: EnumerationMapping ConditionMapping
+  {
+    CLEAR: ['C'],
+    REVIEW: ['R'],
+    WATCH: ['W']
+  }
+
+  *test::silverapiary3::domain::PollinatorSample[sample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverapiary3::store::ApiaryDatabase]apiary.sample.sample_code
+    )
+    ~mainTable [test::silverapiary3::store::ApiaryDatabase]apiary.sample
+    sampleCode: [test::silverapiary3::store::ApiaryDatabase]apiary.sample.sample_code,
+    zoneCode: [test::silverapiary3::store::ApiaryDatabase]apiary.sample.zone_code,
+    zoneLabel: [test::silverapiary3::store::ApiaryDatabase]@Sample_Zone | [test::silverapiary3::store::ApiaryDatabase]apiary.zone.zone_label,
+    condition: EnumerationMapping ConditionMapping: [test::silverapiary3::store::ApiaryDatabase]apiary.sample.condition_code,
+    bandLabel: case(
+      equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 1), 'BAND-ONE',
+      case(
+        equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 2), 'BAND-TWO',
+        case(
+          equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 3), 'BAND-THREE',
+          case(
+            equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 4), 'BAND-FOUR',
+            case(
+              equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 5), 'BAND-FIVE',
+              case(
+                equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 6), 'BAND-SIX',
+                case(
+                  equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 7), 'BAND-SEVEN',
+                  case(
+                    equal([test::silverapiary3::store::ApiaryDatabase]apiary.sample.inspection_level, 8), 'BAND-EIGHT',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  }
+
+  testSuites:
+  [
+    pollinatorMappingSuite:
+    {
+      function: |test::silverapiary3::domain::PollinatorSample.all()->project([x|$x.sampleCode, x|$x.zoneLabel, x|$x.condition, x|$x.bandLabel], ['Sample', 'Zone', 'Condition', 'Band'])->sort([asc('Sample')]);
+      tests:
+      [
+        allConditionalArms:
+        {
+          data:
+          [
+            test::silverapiary3::store::ApiaryDatabase:
+              Relational
+              #{
+                apiary.zone:
+                  'zone_code,zone_label\n'+
+                  'Z-1,North Garden\n'+
+                  'Z-2,South Garden\n';
+                apiary.sample:
+                  'sample_code,zone_code,condition_code,inspection_level\n'+
+                  'PS-01,Z-1,C,1\n'+
+                  'PS-02,Z-1,W,2\n'+
+                  'PS-03,Z-1,R,3\n'+
+                  'PS-04,Z-1,C,4\n'+
+                  'PS-05,Z-2,W,5\n'+
+                  'PS-06,Z-2,R,6\n'+
+                  'PS-07,Z-2,C,7\n'+
+                  'PS-08,Z-2,W,8\n'+
+                  'PS-09,Z-2,R,99\n';
+              }#
+          ];
+          asserts:
+          [
+            nineSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"PS-01","Zone":"North Garden","Condition":"CLEAR","Band":"BAND-ONE"},{"Sample":"PS-02","Zone":"North Garden","Condition":"WATCH","Band":"BAND-TWO"},{"Sample":"PS-03","Zone":"North Garden","Condition":"REVIEW","Band":"BAND-THREE"},{"Sample":"PS-04","Zone":"North Garden","Condition":"CLEAR","Band":"BAND-FOUR"},{"Sample":"PS-05","Zone":"South Garden","Condition":"WATCH","Band":"BAND-FIVE"},{"Sample":"PS-06","Zone":"South Garden","Condition":"REVIEW","Band":"BAND-SIX"},{"Sample":"PS-07","Zone":"South Garden","Condition":"CLEAR","Band":"BAND-SEVEN"},{"Sample":"PS-08","Zone":"South Garden","Condition":"WATCH","Band":"BAND-EIGHT"},{"Sample":"PS-09","Zone":"South Garden","Condition":"REVIEW","Band":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

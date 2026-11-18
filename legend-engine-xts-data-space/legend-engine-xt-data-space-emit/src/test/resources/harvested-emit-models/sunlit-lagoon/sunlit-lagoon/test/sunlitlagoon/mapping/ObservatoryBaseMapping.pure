@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitlagoon::mapping::ObservatoryBaseMapping
+(
+  test::sunlitlagoon::domain::Site[site]: Relational
+  {
+    ~filter [test::sunlitlagoon::store::ObservatoryDb]ActiveSite
+    ~primaryKey
+    (
+      [test::sunlitlagoon::store::ObservatoryDb]ops.site.site_code
+    )
+    ~mainTable [test::sunlitlagoon::store::ObservatoryDb]ops.site
+    siteCode: [test::sunlitlagoon::store::ObservatoryDb]ops.site.site_code,
+    siteName: toUpper(trim([test::sunlitlagoon::store::ObservatoryDb]ops.site.site_name)),
+    altitudeM: [test::sunlitlagoon::store::ObservatoryDb]ops.site.altitude_m,
+    statusCode: toUpper([test::sunlitlagoon::store::ObservatoryDb]ops.site.status_code)
+  }
+
+  test::sunlitlagoon::domain::Steward[steward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitlagoon::store::ObservatoryDb]ops.steward.steward_id
+    )
+    ~mainTable [test::sunlitlagoon::store::ObservatoryDb]ops.steward
+    stewardId: [test::sunlitlagoon::store::ObservatoryDb]ops.steward.steward_id,
+    stewardName: toUpper(trim([test::sunlitlagoon::store::ObservatoryDb]ops.steward.steward_name)),
+    contactCode: concat('C-', toUpper([test::sunlitlagoon::store::ObservatoryDb]ops.steward.contact_code))
+  }
+
+  test::sunlitlagoon::domain::Site_Steward: Relational
+  {
+    AssociationMapping
+    (
+      sitesOfSteward[steward, site]: [test::sunlitlagoon::store::ObservatoryDb]@Site_Steward,
+      stewardOfSite[site, steward]: [test::sunlitlagoon::store::ObservatoryDb]@Site_Steward
+    )
+  }
+)

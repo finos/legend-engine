@@ -1,0 +1,51 @@
+name: zephyr-beacon
+title: "Wetland Observation Register — Keyed Multi-Execution Endpoints over One Milestoned Extent"
+description: |
+  A wildlife-survey observation register whose entire executable surface is a set
+  of endpoints over a single business-temporal class: three of them declare keyed
+  multi-executions that bind one query body to two environment-keyed runtimes,
+  and three single-execution counterparts carry the assertions. The query bodies
+  pin the extent to a caller-supplied survey date and then filter by equality, by
+  membership in a supplied species list, or by a conjunction of two equalities
+  before projecting a column list and, in one case, de-duplicating it.
+modelSources:
+  model:
+    root: zephyr-beacon
+    files:
+      - test/zephyrbeacon/connection/AuxiliarySurveyConnection.pure
+      - test/zephyrbeacon/connection/PrimarySurveyConnection.pure
+      - test/zephyrbeacon/data/SurveyFixture.pure
+      - test/zephyrbeacon/domain/SurveyDomain.pure
+      - test/zephyrbeacon/mapping/SurveyMapping.pure
+      - test/zephyrbeacon/runtime/AuxiliarySurveyRuntime.pure
+      - test/zephyrbeacon/runtime/PrimarySurveyRuntime.pure
+      - test/zephyrbeacon/service/ObservationServices.pure
+      - test/zephyrbeacon/store/SurveyDatabase.pure
+features:
+  - execution:data-element
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-op
+  - h2
+  - multi-execution
+  - relational
+  - service-test
+  - tabular-data-set
+  - wildlife-survey

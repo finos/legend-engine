@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigoglacier2::store::IceArchiveDb
+(
+  Schema archive
+  (
+    Table reading_history
+    (
+      reading_code VARCHAR(12) PRIMARY KEY,
+      archived_at TIMESTAMP PRIMARY KEY,
+      stake_code VARCHAR(12),
+      exposed_cm INTEGER,
+      history_state VARCHAR(8)
+    )
+    Table core_history
+    (
+      core_code VARCHAR(12) PRIMARY KEY,
+      archived_on DATE PRIMARY KEY,
+      core_length_m DOUBLE,
+      shelf_label VARCHAR(24)
+    )
+  )
+
+  Filter CurrentReadingFilter(archive.reading_history.history_state = 'CURRENT')
+  Filter ShelvedCoreFilter(archive.core_history.shelf_label is not null and archive.core_history.core_length_m >= 1.0)
+)

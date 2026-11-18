@@ -1,0 +1,292 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarbeacon6::mapping::StationMapping
+(
+  *test::cedarbeacon6::domain::BeaconStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon6::store::BeaconDb]network.beacon_station.station_id
+    )
+    ~mainTable [test::cedarbeacon6::store::BeaconDb]network.beacon_station
+    stationCode: [test::cedarbeacon6::store::BeaconDb]network.beacon_station.station_code,
+    stationName: [test::cedarbeacon6::store::BeaconDb]network.beacon_station.station_name,
+    massifCode: [test::cedarbeacon6::store::BeaconDb]network.beacon_station.massif_code,
+    altitudeM: [test::cedarbeacon6::store::BeaconDb]network.beacon_station.altitude_m,
+    commissionedOn: [test::cedarbeacon6::store::BeaconDb]network.beacon_station.commissioned_on
+  }
+
+  testSuites:
+  [
+    stationRegisterSuite:
+    {
+      function: |test::cedarbeacon6::domain::BeaconStation.all()->project(
+  [
+    s|$s.stationCode,
+    s|$s.massifCode,
+    s|$s.altitudeM
+  ],
+  [
+    'StationCode',
+    'MassifCode',
+    'AltitudeM'
+  ]
+);
+      tests:
+      [
+        everyCommissionedStation:
+        {
+          doc: 'Reads the whole station relation so the root-table alias and the primary key of the station mapping are both proven, and so the two massifs are distinguishable in one register.';
+          data:
+          [
+            test::cedarbeacon6::store::BeaconDb:
+              Relational
+              #{
+                network.beacon_station:
+                  'station_id,station_code,station_name,massif_code,altitude_m,commissioned_on\n'+
+                  '1,ST-101,North Col Beacon,MS-NORTH,2140,2024-05-14\n'+
+                  '2,ST-102,South Saddle Beacon,MS-SOUTH,1870,2025-03-02\n'+
+                  '3,ST-103,East Ridge Beacon,MS-NORTH,2405,2025-11-21\n';
+              }#
+          ];
+          asserts:
+          [
+            threeStationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"ST-101","MassifCode":"MS-NORTH","AltitudeM":2140},{"StationCode":"ST-102","MassifCode":"MS-SOUTH","AltitudeM":1870},{"StationCode":"ST-103","MassifCode":"MS-NORTH","AltitudeM":2405}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping test::cedarbeacon6::mapping::BatteryMapping
+(
+  *test::cedarbeacon6::domain::BatteryCheck[batteryCheck]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon6::store::BeaconDb]power.battery_check.check_id
+    )
+    ~mainTable [test::cedarbeacon6::store::BeaconDb]power.battery_check
+    checkCode: [test::cedarbeacon6::store::BeaconDb]power.battery_check.check_code,
+    stationCode: [test::cedarbeacon6::store::BeaconDb]power.battery_check.station_code,
+    checkedOn: [test::cedarbeacon6::store::BeaconDb]power.battery_check.checked_on,
+    chargePercent: [test::cedarbeacon6::store::BeaconDb]power.battery_check.charge_percent,
+    cellKind: [test::cedarbeacon6::store::BeaconDb]power.battery_check.cell_kind
+  }
+
+  testSuites:
+  [
+    batteryChargeSuite:
+    {
+      function: |test::cedarbeacon6::domain::BatteryCheck.all()->filter(
+  c|$c.chargePercent < 40.0
+)->project(
+  [
+    c|$c.checkCode,
+    c|$c.chargePercent
+  ],
+  [
+    'CheckCode',
+    'ChargePercent'
+  ]
+);
+      tests:
+      [
+        onlyTheDepletedPacks:
+        {
+          doc: 'Only the packs below the replacement floor survive the predicate, so a mapping that pointed the charge property at the wrong column would publish the full relation instead of the two depleted packs.';
+          data:
+          [
+            test::cedarbeacon6::store::BeaconDb:
+              Relational
+              #{
+                power.battery_check:
+                  'check_id,check_code,station_code,checked_on,charge_percent,cell_kind\n'+
+                  '1,BC-501,ST-101,2026-05-04,82.5,LITHIUM\n'+
+                  '2,BC-502,ST-102,2026-05-18,31.0,LITHIUM\n'+
+                  '3,BC-503,ST-103,2026-04-27,18.25,NICKEL\n'+
+                  '4,BC-504,ST-101,2026-03-11,64.75,NICKEL\n';
+              }#
+          ];
+          asserts:
+          [
+            twoDepletedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"BC-502","ChargePercent":31.0},{"CheckCode":"BC-503","ChargePercent":18.25}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping test::cedarbeacon6::mapping::RouteMapping
+(
+  *test::cedarbeacon6::domain::PatrolRoute[patrolRoute]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon6::store::SignalDb]terrain.patrol_route.route_id
+    )
+    ~mainTable [test::cedarbeacon6::store::SignalDb]terrain.patrol_route
+    routeCode: [test::cedarbeacon6::store::SignalDb]terrain.patrol_route.route_code,
+    routeName: [test::cedarbeacon6::store::SignalDb]terrain.patrol_route.route_name,
+    massifCode: [test::cedarbeacon6::store::SignalDb]terrain.patrol_route.massif_code,
+    distanceKm: [test::cedarbeacon6::store::SignalDb]terrain.patrol_route.distance_km,
+    waypointCount: [test::cedarbeacon6::store::SignalDb]terrain.patrol_route.waypoint_count
+  }
+
+  testSuites:
+  [
+    routeReachSuite:
+    {
+      function: |test::cedarbeacon6::domain::PatrolRoute.all()->filter(
+  r|$r.waypointCount >= 6
+)->project(
+  [
+    r|$r.routeCode,
+    r|$r.massifCode,
+    r|$r.waypointCount
+  ],
+  [
+    'RouteCode',
+    'MassifCode',
+    'WaypointCount'
+  ]
+);
+      tests:
+      [
+        onlyTheLongWalkedRoutes:
+        {
+          doc: 'The waypoint predicate admits two of the three routes, which separates a route relation read from the terrain schema of the telemetry store from one read from the wrong schema.';
+          data:
+          [
+            test::cedarbeacon6::store::SignalDb:
+              Relational
+              #{
+                terrain.patrol_route:
+                  'route_id,route_code,route_name,massif_code,distance_km,waypoint_count\n'+
+                  '1,RT-201,North Col Traverse,MS-NORTH,12.5,8\n'+
+                  '2,RT-202,South Saddle Loop,MS-SOUTH,6.25,4\n'+
+                  '3,RT-203,East Ridge Line,MS-NORTH,9.0,6\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLongRoutes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RouteCode":"RT-201","MassifCode":"MS-NORTH","WaypointCount":8},{"RouteCode":"RT-203","MassifCode":"MS-NORTH","WaypointCount":6}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping test::cedarbeacon6::mapping::ReadingMapping
+(
+  *test::cedarbeacon6::domain::SignalReading[signalReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon6::store::SignalDb]telemetry.signal_reading.reading_id
+    )
+    ~mainTable [test::cedarbeacon6::store::SignalDb]telemetry.signal_reading
+    readingCode: [test::cedarbeacon6::store::SignalDb]telemetry.signal_reading.reading_code,
+    stationCode: [test::cedarbeacon6::store::SignalDb]telemetry.signal_reading.station_code,
+    recordedOn: [test::cedarbeacon6::store::SignalDb]telemetry.signal_reading.recorded_on,
+    signalStrengthDb: [test::cedarbeacon6::store::SignalDb]telemetry.signal_reading.signal_strength_db,
+    receiverCode: [test::cedarbeacon6::store::SignalDb]telemetry.signal_reading.receiver_code
+  }
+
+  testSuites:
+  [
+    readingRegisterSuite:
+    {
+      function: |test::cedarbeacon6::domain::SignalReading.all()->filter(
+  r|$r.receiverCode == 'RX-VALLEY'
+)->project(
+  [
+    r|$r.readingCode,
+    r|$r.recordedOn,
+    r|$r.signalStrengthDb
+  ],
+  [
+    'ReadingCode',
+    'RecordedOn',
+    'SignalStrengthDb'
+  ]
+);
+      tests:
+      [
+        onlyTheValleyReceiver:
+        {
+          doc: 'Two of the four samples were heard by the valley receiver, so the receiver column and the strength column must both be mapped to the columns they name rather than to each other.';
+          data:
+          [
+            test::cedarbeacon6::store::SignalDb:
+              Relational
+              #{
+                telemetry.signal_reading:
+                  'reading_id,reading_code,station_code,recorded_on,signal_strength_db,receiver_code\n'+
+                  '1,SR-301,ST-101,2026-05-04,51.5,RX-VALLEY\n'+
+                  '2,SR-302,ST-102,2026-05-18,38.25,RX-PASS\n'+
+                  '3,SR-303,ST-103,2026-06-02,44.0,RX-VALLEY\n'+
+                  '4,SR-304,ST-101,2026-06-19,29.75,RX-PASS\n';
+              }#
+          ];
+          asserts:
+          [
+            twoValleyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"SR-301","RecordedOn":"2026-05-04","SignalStrengthDb":51.5},{"ReadingCode":"SR-303","RecordedOn":"2026-06-02","SignalStrengthDb":44.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

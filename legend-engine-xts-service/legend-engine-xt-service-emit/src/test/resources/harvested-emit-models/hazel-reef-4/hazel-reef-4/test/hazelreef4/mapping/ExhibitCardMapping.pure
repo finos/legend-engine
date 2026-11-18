@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelreef4::mapping::ExhibitCardMapping
+(
+  *test::hazelreef4::domain::ExhibitCard[card]: Pure
+  {
+    ~src test::hazelreef4::domain::ExhibitRequest
+    cardCode:
+      'CARD-' + $src.requestCode->trim()->toUpper(),
+    exhibitLabel:
+      $src.exhibitCode->toUpper() + ' / ' + $src.exhibitTitle->trim(),
+    priorityLabel:
+      if(
+        $src.urgencyCode == 'U1',
+        | 'IMMEDIATE',
+        | if(
+            $src.urgencyCode == 'U2',
+            | 'EXPEDITED',
+            | if(
+                $src.urgencyCode == 'U3',
+                | 'SCHEDULED',
+                | if(
+                    $src.urgencyCode == 'U4',
+                    | 'ROUTINE',
+                    | if(
+                        $src.urgencyCode == 'U5',
+                        | 'DEFERRED',
+                        | if(
+                            $src.urgencyCode == 'U6',
+                            | 'RESEARCH',
+                            | if(
+                                $src.urgencyCode == 'U7',
+                                | 'EDUCATION',
+                                | if(
+                                    $src.urgencyCode == 'U8',
+                                    | 'CONSERVATION',
+                                    | []
+                                  )
+                              )
+                          )
+                      )
+                  )
+              )
+          )
+      ),
+    noteLabel: $src.curatorNote,
+    displayLabel: 'MUSEUM EXHIBIT CARD',
+    audienceTags: ['PUBLIC', 'CURATORIAL']
+  }
+  testSuites:
+  [
+    cardSuite:
+    {
+      function:
+        |test::hazelreef4::domain::ExhibitCard.all()->graphFetch(
+          #{
+            test::hazelreef4::domain::ExhibitCard{
+              cardCode,
+              exhibitLabel,
+              priorityLabel,
+              noteLabel,
+              displayLabel,
+              audienceTags
+            }
+          }#
+        )->serialize(
+          #{
+            test::hazelreef4::domain::ExhibitCard{
+              cardCode,
+              exhibitLabel,
+              priorityLabel,
+              noteLabel,
+              displayLabel,
+              audienceTags
+            }
+          }#
+        );
+      tests:
+      [
+        allPriorityArms:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::hazelreef4::domain::ExhibitRequest:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"requestCode":"R-1","exhibitCode":"EX-1","exhibitTitle":" Tide Pool ","urgencyCode":"U1","curatorNote":"watch glass"},{"requestCode":"R-2","exhibitCode":"EX-2","exhibitTitle":"Moss Room","urgencyCode":"U2","curatorNote":null},{"requestCode":"R-3","exhibitCode":"EX-3","exhibitTitle":"Night Garden","urgencyCode":"U3","curatorNote":"low light"},{"requestCode":"R-4","exhibitCode":"EX-4","exhibitTitle":"Clay Birds","urgencyCode":"U4","curatorNote":null},{"requestCode":"R-5","exhibitCode":"EX-5","exhibitTitle":"River Maps","urgencyCode":"U5","curatorNote":null},{"requestCode":"R-6","exhibitCode":"EX-6","exhibitTitle":"Stone Tools","urgencyCode":"U6","curatorNote":null},{"requestCode":"R-7","exhibitCode":"EX-7","exhibitTitle":"Fossil Wall","urgencyCode":"U7","curatorNote":null},{"requestCode":"R-8","exhibitCode":"EX-8","exhibitTitle":"Seed Cases","urgencyCode":"U8","curatorNote":null},{"requestCode":"R-9","exhibitCode":"EX-9","exhibitTitle":"Quiet Hall","urgencyCode":"UX","curatorNote":null}]';
+                  }#
+              }#
+          ];
+              asserts:
+              [
+                priorityAndLiterals:
+                  EqualToJson
+                  #{
+                    expected:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[{"cardCode":"CARD-R-1","exhibitLabel":"EX-1 / Tide Pool","priorityLabel":"IMMEDIATE","noteLabel":"watch glass","displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-2","exhibitLabel":"EX-2 / Moss Room","priorityLabel":"EXPEDITED","noteLabel":null,"displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-3","exhibitLabel":"EX-3 / Night Garden","priorityLabel":"SCHEDULED","noteLabel":"low light","displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-4","exhibitLabel":"EX-4 / Clay Birds","priorityLabel":"ROUTINE","noteLabel":null,"displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-5","exhibitLabel":"EX-5 / River Maps","priorityLabel":"DEFERRED","noteLabel":null,"displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-6","exhibitLabel":"EX-6 / Stone Tools","priorityLabel":"RESEARCH","noteLabel":null,"displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-7","exhibitLabel":"EX-7 / Fossil Wall","priorityLabel":"EDUCATION","noteLabel":null,"displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-8","exhibitLabel":"EX-8 / Seed Cases","priorityLabel":"CONSERVATION","noteLabel":null,"displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]},{"cardCode":"CARD-R-9","exhibitLabel":"EX-9 / Quiet Hall","priorityLabel":null,"noteLabel":null,"displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]}]';
+                      }#;
+                  }#
+              ];
+        }
+      ];
+    }
+  ]
+)

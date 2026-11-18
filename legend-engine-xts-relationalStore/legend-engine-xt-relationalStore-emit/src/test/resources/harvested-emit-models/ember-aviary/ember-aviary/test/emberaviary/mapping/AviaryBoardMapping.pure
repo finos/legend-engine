@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberaviary::mapping::AviaryBoardMapping
+(
+  include mapping test::emberaviary::mapping::AviaryBaseMapping
+
+  *test::emberaviary::domain::VisitBoardRow[boardRow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberaviary::store::AviaryDB]field.box_visit.visit_code
+    )
+    ~mainTable [test::emberaviary::store::AviaryDB]field.box_visit
+    visitCode: [test::emberaviary::store::AviaryDB]field.box_visit.visit_code,
+    boxName: [test::emberaviary::store::AviaryDB]@Visit_Box | [test::emberaviary::store::AviaryDB]field.nest_box.box_name,
+    observerName: [test::emberaviary::store::AviaryDB]@Visit_Observer | [test::emberaviary::store::AviaryDB]reference.observer.observer_name,
+    broodSize: plus
+               (
+                 [test::emberaviary::store::AviaryDB]field.box_visit.chick_count,
+                 [test::emberaviary::store::AviaryDB]field.box_visit.egg_count
+               ),
+    boardLabel: case
+                (
+                  greaterThanEqual
+                  (
+                    plus
+                    (
+                      [test::emberaviary::store::AviaryDB]field.box_visit.chick_count,
+                      [test::emberaviary::store::AviaryDB]field.box_visit.egg_count
+                    ),
+                    5
+                  ),
+                  concat('FULL BROOD AT ', toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.box_code))),
+                  case
+                  (
+                    greaterThan([test::emberaviary::store::AviaryDB]field.box_visit.chick_count, 0),
+                    concat('CHICKS AT ', toUpper(trim([test::emberaviary::store::AviaryDB]field.box_visit.box_code))),
+                    case
+                    (
+                      greaterThan([test::emberaviary::store::AviaryDB]field.box_visit.egg_count, 0),
+                      concat('CLUTCH AT ', toLower(trim([test::emberaviary::store::AviaryDB]field.box_visit.box_code))),
+                      'NOTHING FOUND'
+                    )
+                  )
+                )
+  }
+
+  testSuites:
+  [
+    boardRowSuite:
+    {
+      function: |test::emberaviary::domain::VisitBoardRow.all()->project(
+  [
+    r|$r.visitCode,
+    r|$r.boxName,
+    r|$r.observerName,
+    r|$r.broodSize,
+    r|$r.boardLabel
+  ],
+  [
+    'VisitCode',
+    'BoxName',
+    'ObserverName',
+    'BroodSize',
+    'BoardLabel'
+  ]
+)->sort(
+  [
+    asc('VisitCode')
+  ]
+);
+      tests:
+      [
+        boardRowsFromTheIncludedReach:
+        {
+          doc: 'The board row transform is declared in the mapping that includes the base mapping, so the joins and the enumeration decodings the base mapping already declares are reused rather than restated; the rows hit the full-brood, chicks, clutch and nothing-found arms of the board label.';
+          data:
+          [
+            test::emberaviary::store::AviaryDB:
+              Relational
+              #{
+                reference.observer:
+                  'observer_code,observer_name,role_code,retired_flag\n'+
+                  'OB-01,Rowan Field,WARDEN,N\n'+
+                  'OB-02,Sage Lane,VOLUNTEER,N\n';
+                field.nest_box:
+                  'box_code,box_name,habitat_code,mount_height_cm,installed_on,last_repaired_on\n'+
+                  'BX-01,Alder Box One,HB-01,420,2022-02-01,2025-03-01\n'+
+                  'BX-02,Birch Box Two,HB-02,240,2023-03-02,2025-04-02\n';
+                field.box_visit:
+                  'visit_code,box_code,observer_code,visited_on,chick_count,egg_count,condition_code,ring_mode_code,visit_note\n'+
+                  'VS-01,BX-01,OB-01,2026-04-01,4,2,DAMAGED,NR,brood ringed\n'+
+                  'VS-02,BX-01,OB-01,2026-04-08,2,0,WEATHERED,RC,second brood\n'+
+                  'VS-03,BX-02,OB-02,2026-04-09,0,4,SOUND,NN,clutch counted\n'+
+                  'VS-04,BX-02,OB-02,2026-04-16,0,0,SOUND,NN,box empty\n';
+              }#
+          ];
+          asserts:
+          [
+            everyBoardLabelArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"VS-01","BoxName":"Alder Box One","ObserverName":"Rowan Field","BroodSize":6,"BoardLabel":"FULL BROOD AT BX-01"},{"VisitCode":"VS-02","BoxName":"Alder Box One","ObserverName":"Rowan Field","BroodSize":2,"BoardLabel":"CHICKS AT BX-01"},{"VisitCode":"VS-03","BoxName":"Birch Box Two","ObserverName":"Sage Lane","BroodSize":4,"BoardLabel":"CLUTCH AT bx-02"},{"VisitCode":"VS-04","BoxName":"Birch Box Two","ObserverName":"Sage Lane","BroodSize":0,"BoardLabel":"NOTHING FOUND"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

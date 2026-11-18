@@ -1,0 +1,71 @@
+name: golden-ridge-2-relational
+title: "Herbarium Ridge Reconciliation — Duplicate-Detection Views, Cross-Store Findings and a Keyed Service"
+description: |
+  An advanced relational corpus reconciling herbarium sheets against their
+  intake rollup. Two stores spread relations over three schemas; grouped
+  inline views expose a synthetic duplicate key that set implementations map
+  onto with distinct and group-by modifiers, a null-tolerant store filter
+  trims sheets whose validity window never opened, and an eight-arm vigour
+  conditional falls through to a SQL null sentinel. Findings reach the field
+  station store through cross-store associations, and single- and
+  multi-execution services project the verdicts for a requested voucher
+  collection.
+modelSources:
+  model:
+    root: golden-ridge-2-relational
+    files:
+      - test/goldenridge2/connection/HerbariumH2Connection.pure
+      - test/goldenridge2/connection/StationH2Connection.pure
+      - test/goldenridge2/domain/HerbariumDomain.pure
+      - test/goldenridge2/domain/StationDomain.pure
+      - test/goldenridge2/mapping/RidgeBaseMapping.pure
+      - test/goldenridge2/mapping/RidgeCrossMapping.pure
+      - test/goldenridge2/mapping/RidgeFindingMapping.pure
+      - test/goldenridge2/runtime/RidgeCurationRuntime.pure
+      - test/goldenridge2/runtime/RidgeSurveyRuntime.pure
+      - test/goldenridge2/service/DuplicateFindings.pure
+      - test/goldenridge2/service/FindingsByEnvironment.pure
+      - test/goldenridge2/service/IntakeMismatches.pure
+      - test/goldenridge2/store/FieldStationDB.pure
+      - test/goldenridge2/store/HerbariumDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:cross-store
+  - mapping:mapping-include
+  - mapping:relational-distinct
+  - mapping:relational-group-by
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-outer-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - cross-store
+  - duckdb
+  - duplicate-detection
+  - h2
+  - herbarium
+  - inline-view
+  - multi-execution
+  - null-sentinel
+  - relational
+  - service-test
+  - store-filter

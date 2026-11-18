@@ -1,0 +1,44 @@
+name: russet-lantern
+title: "Russet Lantern — Point-In-Time Membership Filter De-Duplicated Behind One Multi-Execution Service"
+description: |
+  A heritage street-lantern register whose lantern state is effective over business time. One
+  multi-execution service keyed by ward band opens the register at a literal business date, keeps
+  only the wards named in a literal membership set together with the tall mantles or the gas lamps,
+  projects four columns, de-duplicates the projection and orders it, and answers the same query from
+  an inner and an outer runtime, each over its own in-process relational connection. The service test
+  data holds a state whose business window closed before the surveyed date, so the point-in-time
+  resolution is asserted rather than assumed.
+modelSources:
+  model:
+    root: russet-lantern
+    files:
+      - test/russetlantern/connection/LanternConnections.pure
+      - test/russetlantern/domain/LanternDomain.pure
+      - test/russetlantern/mapping/LanternMapping.pure
+      - test/russetlantern/runtime/LanternRuntimes.pure
+      - test/russetlantern/service/LanternsByWardBand.pure
+      - test/russetlantern/store/LanternDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:distinct
+  - query:filter
+  - query:membership-test
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - distinct
+  - h2
+  - heritage-street-lighting
+  - membership-test
+  - milestoning
+  - multi-execution
+  - point-in-time
+  - tabular-data-set

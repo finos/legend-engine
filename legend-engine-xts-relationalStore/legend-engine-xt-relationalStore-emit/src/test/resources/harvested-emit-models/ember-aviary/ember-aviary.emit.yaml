@@ -1,0 +1,89 @@
+name: ember-aviary
+title: "Ember Aviary - A Nest Box Sanctuary Read Through Aliased Tables, Grouped Views, A Three Hop Warden Reach And Decoded Visit Enumerations"
+description: |
+  A bird sanctuary whose nest boxes are monitored by wardens and volunteers, with one relational
+  store split into a reference schema of habitats, warden teams and observers and a field schema of
+  the boxes themselves and the visits recorded against them, closed by two grouped views that
+  pre-total the visits per box and the boxes per habitat.
+
+  Every mapped class pins its main table alias explicitly and declares its own key, so columns,
+  keys and join origins resolve against one aliased table among the similarly shaped ones. Reads
+  are direct column reads, single-hop join reads, view-backed reads of the pre-totalled visit and
+  box columns, and a three-hop read that walks a visit to the box it was recorded against, the box
+  to the habitat it hangs in and the habitat on to the region its warden team covers. A set filter
+  keeps the retired observers out of the extent. Nested conditional transforms decode a mount
+  label, a condition note and a role label from comparison, arithmetic, text and null-test
+  operators, so a row lands in exactly one arm and the arm that leaves the note unset is
+  reachable, and four enumerations are decoded from stored codes through inline enumeration
+  mappings, two of them driven by a conditional cascade rather than a plain column read.
+
+  The class layer carries derived properties that band a mount height, average a brood over the
+  visit count read back from the grouped view, total a brood and name the stage the counts imply. A
+  second mapping includes the first and declares the warden board row against the joins and
+  enumeration decodings the included mapping already holds, so the reach is reused rather than
+  restated.
+
+  Mapping tests replay the three-hop reach, the view-backed totals, the filtered observer extent
+  and the board row against inline relational test data, one row per conditional arm. The consumer
+  surface is three single-execution services with their own test data: a rollup that groups the
+  occupied visits by habitat and region under a requested canopy, a windowed board that ages each
+  visit by date arithmetic against a supplied reference date and caps the ranked rows, and a warden
+  board restricted by a brood threshold and a collection membership test over the recording
+  observers.
+
+modelSources:
+  model:
+    root: ember-aviary
+    files:
+      - test/emberaviary/connection/AviaryConnections.pure
+      - test/emberaviary/domain/AviaryDomain.pure
+      - test/emberaviary/mapping/AviaryBaseMapping.pure
+      - test/emberaviary/mapping/AviaryBoardMapping.pure
+      - test/emberaviary/mapping/AviaryEnumMappings.pure
+      - test/emberaviary/runtime/AviaryRuntimes.pure
+      - test/emberaviary/service/AviaryServices.pure
+      - test/emberaviary/store/AviaryDatabase.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - derived-property
+  - enumeration-mapping
+  - grouped-view
+  - h2
+  - mapping-include
+  - mapping-test
+  - multi-hop-join-path
+  - nest-box-monitoring
+  - service-test

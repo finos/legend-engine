@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A daily record of one upland wind turbine: its placement in the park, the feeder, access track, met mast and blade set it is read against, its rating and geometry, the production and availability figures logged for the day, and the operating labels the curtailment, yaw-fault, de-icing and service-lock states of the machine resolve to.'} test::azurethistle::domain::TurbineRecord
+{
+  readingDate: StrictDate[1];
+  assetCode: String[1];
+  turbineName: String[1];
+  parkCode: String[1];
+  feederCode: String[1];
+  trackCode: String[1];
+  mastCode: String[1];
+  bladeSetCode: String[1];
+  modelCode: String[1];
+  hubHeightM: Float[0..1];
+  rotorDiameterM: Float[0..1];
+  ratedOutputKw: Float[0..1];
+  generatedKwh: Float[0..1];
+  availableHours: Float[0..1];
+  downtimeHours: Float[0..1];
+  rotorSpeedRpm: Float[0..1];
+  pitchAngleDeg: Float[0..1];
+  nacelleBearingDeg: Float[0..1];
+  windSpeedMs: Float[0..1];
+  ambientTempC: Float[0..1];
+  commissionedOn: StrictDate[0..1];
+  lastServiceOn: StrictDate[0..1];
+  loggedAt: DateTime[0..1];
+  serviceCrew: String[0..1];
+  terrainClass: String[1];
+  curtailmentLabel: String[0..1];
+  yawFaultLabel: String[0..1];
+  deiceLabel: String[0..1];
+  serviceLockLabel: String[0..1];
+}
+
+Class {doc.doc = 'One nacelle telemetry reading taken on a turbine, carrying gearbox and generator temperatures, drive-train vibration and lubrication pressure, the met mast the reading is compared against and the label the alarm state resolves to.'} test::azurethistle::domain::NacelleReading
+{
+  readingDate: StrictDate[1];
+  assetCode: String[1];
+  readingSeq: Integer[1];
+  gearboxTempC: Float[0..1];
+  generatorTempC: Float[0..1];
+  vibrationMms: Float[0..1];
+  oilPressureBar: Float[0..1];
+  mastCode: String[1];
+  alarmLabel: String[0..1];
+  loggedAt: DateTime[0..1];
+}
+
+Class {doc.doc = 'A rope-access inspection of one blade set, carrying the inspector, the defect tally, the leading-edge grade, the root bolt torque recorded and the label the repair state resolves to.'} test::azurethistle::domain::BladeInspection
+{
+  inspectionDate: StrictDate[1];
+  bladeSetCode: String[1];
+  assetCode: String[1];
+  inspectorName: String[1];
+  defectCount: Integer[0..1];
+  leadingEdgeGrade: String[0..1];
+  rootBoltTorqueNm: Float[0..1];
+  repairLabel: String[0..1];
+  loggedAt: DateTime[0..1];
+}
+
+Class {doc.doc = 'A daily reading of one substation feeder the park exports through, carrying the substation it belongs to, its export capacity and voltage, the access track it runs beside and the label the islanding state resolves to.'} test::azurethistle::domain::SubstationFeeder
+{
+  readingDate: StrictDate[1];
+  feederCode: String[1];
+  substationName: String[1];
+  exportCapacityKw: Float[0..1];
+  voltageKv: Float[0..1];
+  trackCode: String[1];
+  islandingLabel: String[0..1];
+  loggedAt: DateTime[0..1];
+}
+
+Class {doc.doc = 'A survey of one hill access track, carrying its length and gradient, the met mast it passes and the label the passability state resolves to.'} test::azurethistle::domain::AccessTrack
+{
+  surveyDate: StrictDate[1];
+  trackCode: String[1];
+  trackName: String[1];
+  lengthKm: Float[0..1];
+  gradientPct: Float[0..1];
+  mastCode: String[1];
+  passabilityLabel: String[0..1];
+  loggedAt: DateTime[0..1];
+}
+
+Class {doc.doc = 'A daily reading from one meteorological mast on the hill, carrying its height, the mean wind speed and turbulence intensity recorded and the label the icing state resolves to.'} test::azurethistle::domain::MetMast
+{
+  readingDate: StrictDate[1];
+  mastCode: String[1];
+  mastName: String[1];
+  heightM: Float[0..1];
+  meanWindMs: Float[0..1];
+  turbulencePct: Float[0..1];
+  icingLabel: String[0..1];
+  loggedAt: DateTime[0..1];
+}

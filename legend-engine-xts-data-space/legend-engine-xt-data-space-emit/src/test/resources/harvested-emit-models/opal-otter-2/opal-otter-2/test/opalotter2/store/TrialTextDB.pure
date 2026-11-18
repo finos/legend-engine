@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::opalotter2::store::TrialTextDB
+(
+  Schema reach
+  (
+    Table trial_scenario
+    (
+      trial_code VARCHAR(32) PRIMARY KEY,
+      trial_name VARCHAR(120),
+      habitat_code VARCHAR(32),
+      surveyor_code VARCHAR(32),
+      reach_label VARCHAR(120),
+      active_flag VARCHAR(1),
+      sample_count INTEGER,
+      collection_code VARCHAR(32),
+      base_scenario_ref INTEGER,
+      base_scenario_name VARCHAR(120),
+      water_temp_c DOUBLE,
+      flow_rate DOUBLE,
+      turbidity_ntu DOUBLE,
+      bank_cover_pct DOUBLE,
+      spraint_count INTEGER,
+      note_text VARCHAR(240),
+      season_code VARCHAR(16),
+      weather_code VARCHAR(16),
+      verified_code VARCHAR(1)
+    )
+
+    Table scenario_collection
+    (
+      collection_code VARCHAR(32) PRIMARY KEY,
+      collection_label VARCHAR(120)
+    )
+  )
+
+  Join Trial_Collection(reach.trial_scenario.collection_code = reach.scenario_collection.collection_code)
+)

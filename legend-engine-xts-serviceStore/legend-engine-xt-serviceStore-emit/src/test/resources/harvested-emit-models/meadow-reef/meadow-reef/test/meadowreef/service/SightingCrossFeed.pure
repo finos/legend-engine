@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowreef::service::SightingCrossFeed
+{
+  pattern: '/meadowreef/v1/sighting-cross-feed';
+  title: 'Meadow Reef - Sighting To Species Cross Feed';
+  owners:
+  [
+    'reef-trail-office'
+  ];
+  documentation: 'Graph-fetches submitted sightings unpacked in memory together with the stored register species they resolve against, so the cross-store hop and the unpacked observer and depth values are observable in one payload.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::meadowreef::domain::SnorkelSighting.all()->graphFetch(
+      #{
+        test::meadowreef::domain::SnorkelSighting
+        {
+          sightingRef,
+          speciesCode,
+          observerLabel,
+          depthMetres,
+          species
+          {
+            familyName,
+            trailZone
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::meadowreef::domain::SnorkelSighting
+        {
+          sightingRef,
+          speciesCode,
+          observerLabel,
+          depthMetres,
+          species
+          {
+            familyName,
+            trailZone
+          }
+        }
+      }#
+    );
+    mapping: test::meadowreef::mapping::ReefCrossMapping;
+    runtime: test::meadowreef::runtime::ReefCrossRuntime;
+  }
+  testSuites:
+  [
+    crossFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          submissionConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"entryRef":"MR-1","speciesTag":"SP-014|reef-flat","depthTags":["depth: 12"],"observer":{"code":"obs-7","trailName":"North Trail"}},{"entryRef":"MR-2","speciesTag":"SP-021|lagoon","depthTags":[],"observer":null}]';
+            }#,
+          reefConnection:
+            Relational
+            #{
+              reef.reef_species:
+                'species_code,family_name,zone_code\n'+
+                'SP-014,parrotfish,reef-flat\n'+
+                'SP-021,wrasse,lagoon\n';
+              reef.species_synonym:
+                'synonym_id,species_code,synonym_text,usage_id\n';
+              reef.usage_ref:
+                'usage_id,usage_code,register_label\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothSightingsResolveTheirSpecies:
+        {
+          asserts:
+          [
+            crossedRowsCarryFamilyAndZone:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"sightingRef":"MR-1","speciesCode":"SP-014","observerLabel":"OBS-7 / North Trail","depthMetres":12,"species":{"familyName":"PARROTFISH","trailZone":"reef-flat-parrotfish"}},{"sightingRef":"MR-2","speciesCode":"SP-021","observerLabel":"UNATTRIBUTED","depthMetres":null,"species":{"familyName":"WRASSE","trailZone":"lagoon-wrasse"}}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

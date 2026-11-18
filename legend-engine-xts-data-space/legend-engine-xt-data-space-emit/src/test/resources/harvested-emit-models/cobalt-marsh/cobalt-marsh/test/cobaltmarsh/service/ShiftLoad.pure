@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltmarsh::service::ShiftLoad
+{
+  pattern: '/cobaltmarsh/shiftLoad';
+  owners:
+  [
+    'wetland-monitoring'
+  ];
+  documentation: 'Projects ranger patrol shifts with the arithmetic conditional workload band derived from shift hours.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::cobaltmarsh::domain::RangerShift.all()->project(
+      [
+        x|$x.shiftId,
+        x|$x.rangerName,
+        x|$x.shiftHours,
+        x|$x.workloadBand
+      ],
+      [
+        'ShiftId',
+        'Ranger',
+        'Hours',
+        'WorkloadBand'
+      ]
+    )->sort(
+      [
+        asc('ShiftId')
+      ]
+    );
+    mapping: test::cobaltmarsh::mapping::MarshMapping;
+    runtime: test::cobaltmarsh::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    shiftLoadSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+                marsh.ranger_shift:
+                  'shift_id,station_id,ranger_name,shift_hours,is_night\n'+
+                  'RS-01,ST-01,Wren Halloway,9.5,false\n'+
+                  'RS-02,ST-02,Osier Pike,3.25,true\n'+
+                  'RS-03,ST-03,Marram Quill,7.0,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        projectedRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ShiftId":"RS-01","Ranger":"Wren Halloway","Hours":9.5,"WorkloadBand":"Extended"},{"ShiftId":"RS-02","Ranger":"Osier Pike","Hours":3.25,"WorkloadBand":"Short"},{"ShiftId":"RS-03","Ranger":"Marram Quill","Hours":7.0,"WorkloadBand":"Standard"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

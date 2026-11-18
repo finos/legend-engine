@@ -1,0 +1,51 @@
+name: ivory-summit
+title: "Ivory Summit — Trail-Counter Usage Digest with Conditional Grouping Keys and Conditional Aggregates"
+description: |
+  A single-execution service over a park trail-counter table restricts the
+  readings to a closed date window taken from two URL parameters and then groups
+  the survivors by trail and by a surfaced-or-not flag that a two-armed
+  conditional derives from a set-membership test over the surface vocabulary.
+  Three aggregates are summed over each group: one bare tally, one selecting the
+  cyclist tally only on dry readings, and one selecting the walker tally only on
+  the fair-weather vocabulary; the non-matching arm of both conditional
+  aggregates is an empty collection, so it accumulates nothing. The embedded
+  relational fixture carries rows on both sides of each window bound, a reading
+  with no recorded surface, a reading with no cyclist tally and repeated
+  grouping-key combinations so the aggregation actually collapses rows.
+modelSources:
+  model:
+    root: ivory-summit
+    files:
+      - test/ivorysummit/connection/TrailConnections.pure
+      - test/ivorysummit/domain/TrailDomain.pure
+      - test/ivorysummit/mapping/TrailMapping.pure
+      - test/ivorysummit/runtime/TrailRuntimes.pure
+      - test/ivorysummit/service/TrailUsageDigest.pure
+      - test/ivorysummit/store/TrailCountDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - query:collection-op
+  - query:conditional-expression
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - conditional-aggregate
+  - conditional-grouping-key
+  - date-window
+  - group-by
+  - h2
+  - service-test
+  - set-membership
+  - tabular-data-set
+  - trail-counter

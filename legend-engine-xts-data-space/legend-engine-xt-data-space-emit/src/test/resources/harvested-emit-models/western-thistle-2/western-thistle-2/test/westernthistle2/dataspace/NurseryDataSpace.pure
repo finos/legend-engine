@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::westernthistle2::dataspace::NurseryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'propagation';
+      description: 'Propagation environment - the nursery mapping served through the propagation warehouse runtime.';
+      mapping: test::westernthistle2::mapping::NurseryMapping;
+      defaultRuntime: test::westernthistle2::runtime::NurseryWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'propagation';
+  title: 'Propagation Nursery Bench Estate';
+  description: 'Discovery surface over the propagation nursery: the sown seed lots, the houses they occupy and the cultivar reference behind them, with the keyed register and the grouped tally published as executables.';
+  elements:
+  [
+    test::westernthistle2::domain::SeedLot,
+    test::westernthistle2::domain::PropagationHouse,
+    test::westernthistle2::domain::Cultivar
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'House Bench Register';
+      description: 'The keyed register of seed lots sown in one propagation house.';
+      executable: test::westernthistle2::service::HouseBenchRegister;
+    },
+    {
+      id: 2;
+      title: 'Cultivar Seed Tally';
+      description: 'The grouped seed tally per cultivar and glazing type.';
+      executable: test::westernthistle2::service::CultivarSeedTally;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'propagation-bench-desk@nurserypropagation.invalid';
+  };
+}

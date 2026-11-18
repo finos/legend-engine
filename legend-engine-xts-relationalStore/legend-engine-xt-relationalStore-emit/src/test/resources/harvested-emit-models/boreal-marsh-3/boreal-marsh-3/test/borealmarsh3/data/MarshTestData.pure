@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::borealmarsh3::data::MarshTestData
+{
+  Relational
+  #{
+    marsh.basin_block:
+      'basin_id,basin_code,basin_name\n'+
+      '1,BS-01,Upper Fen Basin\n'+
+      '2,BS-02,\n';
+    marsh.monitor_point:
+      'point_id,point_code,point_name,basin_id,point_kind,stake_count\n'+
+      '1,MP-01,Sphagnum Hollow,1,PEAT,4\n'+
+      '2,MP-02,,1,PEAT,2\n'+
+      '3,MP-03,Sedge Margin,2,MINERAL,6\n';
+    marsh.peat_point_detail:
+      'point_id,peat_depth_cm,probe_kind\n'+
+      '1,120.5,collar\n'+
+      '2,88.0,auger\n';
+    marsh.surveyor_roster:
+      'surveyor_code,surveyor_name\n'+
+      'SV-01,j.rowan\n'+
+      'SV-02,k.aspen\n';
+    marsh.plot_reading:
+      'reading_id,reading_code,point_id,surveyor_code,moisture_code,water_table_cm,peat_temp_c,probe_count,reading_on,from_z,thru_z\n'+
+      '1,PR-01,1,SV-01,S,45.0,6.0,3,2026-04-02,2026-01-01,9999-12-31\n'+
+      '2,PR-02,1,SV-01,D,30.0,9.0,7,2026-04-03,2026-01-01,9999-12-31\n'+
+      '3,PR-03,2,SV-02,Y,15.0,5.0,3,2026-04-04,2026-01-01,9999-12-31\n'+
+      '4,PR-04,3,SV-02,D,5.0,13.0,3,2026-04-05,2026-01-01,9999-12-31\n'+
+      '5,PR-05,2,SV-01,Y,2.0,4.0,7,2026-04-06,2026-01-01,9999-12-31\n'+
+      '6,PR-06,1,SV-02,S,50.0,7.5,3,2024-05-01,2024-01-01,2024-12-31\n';
+  }#
+}

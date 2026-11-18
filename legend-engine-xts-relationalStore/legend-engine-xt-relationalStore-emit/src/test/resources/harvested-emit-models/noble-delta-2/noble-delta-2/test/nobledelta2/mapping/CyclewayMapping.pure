@@ -1,0 +1,244 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::nobledelta2::mapping::CyclewayMapping
+(
+  *demo::nobledelta2::domain::CountSession[sessionSet]: Relational
+  {
+    ~filter [demo::nobledelta2::store::CyclewayDB]LiveSessions
+    ~primaryKey
+    (
+      [demo::nobledelta2::store::CyclewayDB]network.count_session.session_ref
+    )
+    ~mainTable [demo::nobledelta2::store::CyclewayDB]network.count_session
+    sessionRef: [demo::nobledelta2::store::CyclewayDB]network.count_session.session_ref,
+    riderTotal: [demo::nobledelta2::store::CyclewayDB]network.count_session.rider_total,
+    weatherBand: case(
+                   equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W1'),
+                   'clear',
+                   case(
+                     equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W2'),
+                     'high-cloud',
+                     case(
+                       equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W3'),
+                       'overcast',
+                       case(
+                         equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W4'),
+                         'drizzle',
+                         case(
+                           equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W5'),
+                           'rain',
+                           case(
+                             equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W6'),
+                             'squall',
+                             case(
+                               equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W7'),
+                               'fog',
+                               case(
+                                 equal([demo::nobledelta2::store::CyclewayDB]network.count_session.weather_code, 'W8'),
+                                 'frost',
+                                 sqlNull()
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    crowdTier: case(
+                 and(
+                   isNotEmpty([demo::nobledelta2::store::CyclewayDB]network.count_session.rider_total),
+                   greaterThan([demo::nobledelta2::store::CyclewayDB]network.count_session.rider_total, 100)
+                 ),
+                 'busy',
+                 'quiet'
+               ),
+    surfaceState: case(
+                    or(
+                      or(
+                        equal([demo::nobledelta2::store::CyclewayDB]network.count_session.surface_code, 'S1'),
+                        equal([demo::nobledelta2::store::CyclewayDB]network.count_session.surface_code, 'S2')
+                      ),
+                      not(isNotEmpty([demo::nobledelta2::store::CyclewayDB]network.count_session.surface_code))
+                    ),
+                    'sealed',
+                    'loose'
+                  ),
+    noteLabel: toUpper(trim([demo::nobledelta2::store::CyclewayDB]network.count_session.note_text)),
+    codeLength: length([demo::nobledelta2::store::CyclewayDB]network.count_session.session_ref),
+    codePrefix: substring([demo::nobledelta2::store::CyclewayDB]network.count_session.session_ref, 1, 2),
+    programme: 'kerbside-cycle-count',
+    surfaceSetTier: case(
+                      in([demo::nobledelta2::store::CyclewayDB]network.count_session.surface_code, ['S1', 'S2', 'S3']),
+                      'listed-surface',
+                      'unlisted-surface'
+                    ),
+    unitLabel: [demo::nobledelta2::store::CyclewayDB]@Session_Counter | [demo::nobledelta2::store::CyclewayDB]network.counter_unit.unit_label,
+    segmentLabel: [demo::nobledelta2::store::CyclewayDB]@Session_Counter > @Counter_Segment | [demo::nobledelta2::store::CyclewayDB]network.path_segment.segment_label,
+    districtLabel: [demo::nobledelta2::store::CyclewayDB]@Session_Counter > @Counter_Segment > @Segment_District | [demo::nobledelta2::store::CyclewayDB]network.planning_district.district_label
+  }
+
+  *demo::nobledelta2::domain::CounterUnit[counterSet]: Relational
+  {
+    ~filter [demo::nobledelta2::store::CyclewayDB]ActiveCounters
+    ~primaryKey
+    (
+      [demo::nobledelta2::store::CyclewayDB]network.counter_unit.counter_ref
+    )
+    ~mainTable [demo::nobledelta2::store::CyclewayDB]network.counter_unit
+    counterRef: [demo::nobledelta2::store::CyclewayDB]network.counter_unit.counter_ref,
+    unitLabel: [demo::nobledelta2::store::CyclewayDB]network.counter_unit.unit_label,
+    mountCode: [demo::nobledelta2::store::CyclewayDB]network.counter_unit.mount_code
+  }
+
+  *demo::nobledelta2::domain::PathSegment[segmentSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::nobledelta2::store::CyclewayDB]network.path_segment.segment_ref
+    )
+    ~mainTable [demo::nobledelta2::store::CyclewayDB]network.path_segment
+    segmentRef: [demo::nobledelta2::store::CyclewayDB]network.path_segment.segment_ref,
+    segmentLabel: [demo::nobledelta2::store::CyclewayDB]network.path_segment.segment_label
+  }
+
+  demo::nobledelta2::domain::Session_Unit: Relational
+  {
+    AssociationMapping
+    (
+      countedBy[sessionSet,counterSet]: [demo::nobledelta2::store::CyclewayDB]@Session_Counter,
+      sessions[counterSet,sessionSet]: [demo::nobledelta2::store::CyclewayDB]@Session_Counter
+    )
+  }
+
+  testSuites:
+  [
+    sessionClassificationSuite:
+    {
+      function: |demo::nobledelta2::domain::CountSession.all()->filter(
+  s|$s.riderTotal->toOne() > 0
+)->project(
+  [
+    s|$s.sessionRef,
+    s|$s.weatherBand,
+    s|$s.crowdTier,
+    s|$s.surfaceState,
+    s|$s.noteLabel,
+    s|$s.codeLength,
+    s|$s.busyWindow(),
+    s|$s.programme,
+    s|$s.countedBy.mountCode,
+    s|$s.unitLabel,
+    s|$s.segmentLabel,
+    s|$s.districtLabel
+  ],
+  [
+    'SessionRef',
+    'WeatherBand',
+    'CrowdTier',
+    'SurfaceState',
+    'NoteLabel',
+    'CodeLength',
+    'BusyWindow',
+    'Programme',
+    'Mount',
+    'Unit',
+    'Segment',
+    'District'
+  ]
+)->sort(
+  [
+    asc('SessionRef')
+  ]
+);
+      tests:
+      [
+        everyWeatherArm:
+        {
+          doc: 'One fixture row hits each of the eight weather arms and one carries an unrecognised code so the conditional falls through to its null sentinel; the withdrawn session is removed by the store filter and the empty session by the query filter, and the last surviving row resolves the three-hop unit to segment to district chain onto the second corridor.';
+          data:
+          [
+            demo::nobledelta2::store::CyclewayDB: Reference
+              #{
+                demo::nobledelta2::data::CyclewayTestData
+              }#
+          ];
+          asserts:
+          [
+            tenClassifiedSessions:
+              Relation
+              #{
+                SessionRef,WeatherBand,CrowdTier,SurfaceState,NoteLabel,CodeLength,BusyWindow,Programme,Mount,Unit,Segment,District
+                CS-01,clear,busy,sealed,CLEAR RUN,5,busy-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-02,high-cloud,quiet,sealed,THIN CLOUD,5,quiet-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-03,overcast,quiet,loose,GREY SKY,5,quiet-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-04,drizzle,busy,sealed,LIGHT DRIZZLE,5,busy-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-05,rain,quiet,loose,STEADY RAIN,5,quiet-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-06,squall,busy,sealed,GUSTING,5,busy-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-07,fog,quiet,loose,THICK FOG,5,quiet-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-08,frost,quiet,sealed,HARD FROST,5,quiet-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-09,,busy,loose,CODE NOT RECOGNISED,5,busy-window,kerbside-cycle-count,POST,North Quay Counter,Riverside Path,Northgate District
+                CS-10,clear,busy,sealed,SECOND CORRIDOR,5,busy-window,kerbside-cycle-count,RAIL,Mill Lane Counter,Mill Lane Link,Eastfield District;
+              }#
+          ];
+        }
+      ];
+    },
+    counterExtentSuite:
+    {
+      function: |demo::nobledelta2::domain::CounterUnit.all()->project(
+  [
+    c|$c.counterRef,
+    c|$c.unitLabel,
+    c|$c.mountCode
+  ],
+  [
+    'CounterRef',
+    'Unit',
+    'Mount'
+  ]
+)->sort(
+  [
+    asc('CounterRef')
+  ]
+);
+      tests:
+      [
+        retiredCounterIsExcluded:
+        {
+          doc: 'The counter extent carries the second store filter, so the decommissioned unit never surfaces even though the fixture holds three units.';
+          data:
+          [
+            demo::nobledelta2::store::CyclewayDB: Reference
+              #{
+                demo::nobledelta2::data::CyclewayTestData
+              }#
+          ];
+          asserts:
+          [
+            twoActiveCounters:
+              Relation
+              #{
+                CounterRef,Unit,Mount
+                CU-1,North Quay Counter,POST
+                CU-2,Mill Lane Counter,RAIL;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

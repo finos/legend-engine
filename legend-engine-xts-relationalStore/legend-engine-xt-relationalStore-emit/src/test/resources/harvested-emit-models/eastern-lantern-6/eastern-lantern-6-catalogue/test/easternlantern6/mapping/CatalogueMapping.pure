@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternlantern6::mapping::CatalogueMapping
+(
+  *test::easternlantern6::domain::ShelfCopy[shelf_copy]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternlantern6::store::CatalogueDb]library.shelf_copy.copy_code
+    )
+    ~mainTable [test::easternlantern6::store::CatalogueDb]library.shelf_copy
+    copyCode: [test::easternlantern6::store::CatalogueDb]library.shelf_copy.copy_code,
+    titleCode: [test::easternlantern6::store::CatalogueDb]library.shelf_copy.title_code,
+    branchCode: [test::easternlantern6::store::CatalogueDb]library.shelf_copy.branch_code,
+    formatCode: [test::easternlantern6::store::CatalogueDb]library.shelf_copy.format_code,
+    conditionCode: [test::easternlantern6::store::CatalogueDb]library.shelf_copy.condition_code,
+    acquiredOn: [test::easternlantern6::store::CatalogueDb]library.shelf_copy.acquired_on,
+    unitCost: divide(
+      [test::easternlantern6::store::CatalogueDb]library.shelf_copy.replacement_cost,
+      [test::easternlantern6::store::CatalogueDb]library.shelf_copy.copy_units
+    ),
+    catalogueLabel: concat(
+      concat(
+        [test::easternlantern6::store::CatalogueDb]library.shelf_copy.format_code,
+        '/'
+      ),
+      [test::easternlantern6::store::CatalogueDb]library.shelf_copy.condition_code
+    ),
+    registerLabel: 'EASTERN-CATALOGUE'
+  }
+
+  *test::easternlantern6::domain::TitleRecord[title_record]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternlantern6::store::CatalogueDb]library.title_record.title_code
+    )
+    ~mainTable [test::easternlantern6::store::CatalogueDb]library.title_record
+    titleCode: [test::easternlantern6::store::CatalogueDb]library.title_record.title_code,
+    titleName: [test::easternlantern6::store::CatalogueDb]library.title_record.title_name,
+    subjectCode: [test::easternlantern6::store::CatalogueDb]library.title_record.subject_code,
+    languageCode: [test::easternlantern6::store::CatalogueDb]library.title_record.language_code
+  }
+
+  *test::easternlantern6::domain::Branch[branch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternlantern6::store::CatalogueDb]library.branch.branch_code
+    )
+    ~mainTable [test::easternlantern6::store::CatalogueDb]library.branch
+    branchCode: [test::easternlantern6::store::CatalogueDb]library.branch.branch_code,
+    branchName: [test::easternlantern6::store::CatalogueDb]library.branch.branch_name,
+    regionCode: [test::easternlantern6::store::CatalogueDb]library.branch.region_code
+  }
+)

@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::russetsummit2::store::SummitDB
+(
+  Schema path
+  (
+    Table footpath_section
+    (
+      section_code VARCHAR(16) PRIMARY KEY,
+      section_name VARCHAR(120) NOT NULL,
+      surface_code VARCHAR(16) NOT NULL,
+      estate_code VARCHAR(16) NOT NULL,
+      length_m INTEGER NOT NULL,
+      exposed_flag CHAR(1) NOT NULL
+    )
+
+    Table repair_task
+    (
+      task_id INTEGER PRIMARY KEY,
+      section_code VARCHAR(16) NOT NULL,
+      crew_code VARCHAR(16) NOT NULL,
+      stage_code VARCHAR(16) NOT NULL,
+      raised_on DATE NOT NULL,
+      spoil_load_kg FLOAT NOT NULL,
+      stone_count INTEGER NOT NULL,
+      priority_score INTEGER NOT NULL,
+      note_text VARCHAR(240)
+    )
+
+    Table work_crew
+    (
+      crew_code VARCHAR(16) PRIMARY KEY,
+      crew_name VARCHAR(120) NOT NULL,
+      crew_kind VARCHAR(4) NOT NULL,
+      depot_code VARCHAR(16) NOT NULL
+    )
+
+    Table supply_depot
+    (
+      depot_code VARCHAR(16) PRIMARY KEY,
+      depot_name VARCHAR(120) NOT NULL,
+      warden_code VARCHAR(16) NOT NULL
+    )
+
+    Table path_warden
+    (
+      warden_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Filter SurveyedSectionFilter(path.footpath_section.estate_code = 'EST-1' and path.footpath_section.exposed_flag = 'Y')
+  Filter StaffedCrewFilter(path.work_crew.crew_kind != 'RET' and path.work_crew.depot_code != '')
+
+  Join Task_Section(path.repair_task.section_code = path.footpath_section.section_code)
+  Join Task_Crew(path.repair_task.crew_code = path.work_crew.crew_code)
+  Join Crew_Depot(path.work_crew.depot_code = path.supply_depot.depot_code)
+  Join Depot_Warden(path.supply_depot.warden_code = path.path_warden.warden_code)
+)

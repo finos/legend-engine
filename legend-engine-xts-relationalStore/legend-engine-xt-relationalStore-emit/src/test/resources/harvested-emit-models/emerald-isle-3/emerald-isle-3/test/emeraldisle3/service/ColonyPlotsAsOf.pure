@@ -1,0 +1,150 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldisle3::service::ColonyPlotsAsOf
+{
+  pattern: '/emeraldisle3/v1/colonyPlots';
+  title: 'Emerald Isle - Colony Plots As Of A Pinned Instant';
+  owners:
+  [
+    'isle-census',
+    'seabird-observatory'
+  ];
+  documentation: 'Returns the seabird colony census plots resolved at a literal instant pinned far in the future, so only the plot versions whose business window contains that instant survive. The predicate branches on nest occupancy or habitat membership, gates the plot code and status on multi-valued parameters and normalises the warden note by trimming it before measuring its length, so the text comparison runs on a derived string.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {plotCodes: String[*], statuses: String[*]|test::emeraldisle3::domain::ColonyPlot.all(%2035-06-01T00:00:00)->filter(
+      p|(($p.nestCount != 0) || ($p.habitatCode->in(['CLIFF', 'BURROW', 'STACK']))) && ($p.surveyStatus->in($statuses)) && (!$p.wardenNote->isEmpty()) && (($p.wardenNote->trim()->length()) > 3) && ($p.plotCode->in($plotCodes))
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.habitatCode,
+        p|$p.nestBand(),
+        p|if($p.habitatCode->startsWith('B'), | 'BURROW-TYPE', | 'SURFACE-TYPE'),
+        p|$p.nestCount
+      ],
+      [
+        'PlotCode',
+        'HabitatCode',
+        'NestBand',
+        'NestingStyle',
+        'NestCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('PlotCode')
+      ]
+    )};
+    mapping: test::emeraldisle3::mapping::IsleCensusMapping;
+    runtime: test::emeraldisle3::runtime::IsleCensusRuntime;
+  }
+  testSuites:
+  [
+    colonyPlotsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          isleCensusConnection:
+            Relational
+            #{
+              isle.colony_plot:
+                'plot_id,plot_code,habitat_code,warden_note,nest_count,survey_status,bus_from_z,bus_thru_z\n'+
+                '1,PL-01,CLIFF,ledge boardwalk clear,120,OPEN,2020-01-01 00:00:00,2030-01-01 00:00:00\n'+
+                '2,PL-02,BURROW,burrow ledge stable,64,OPEN,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '3,PL-03,STACK,stack ledge slipped,15,WATCH,2040-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '4,PL-04,MEADOW,ab,0,OPEN,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        pinnedInstantAndNormalisedNote:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            plotCodes = ['PL-01', 'PL-02', 'PL-03', 'PL-04'],
+            statuses = ['OPEN', 'WATCH']
+          ]
+          asserts:
+          [
+            onlyTheSurvivingPlot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-02","HabitatCode":"BURROW","NestBand":"MEDIUM","NestingStyle":"BURROW-TYPE","NestCount":64}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::emeraldisle3::service::ColonyPlotsAsOfByEnv
+{
+  pattern: '/emeraldisle3/v1/colonyPlots/{env}';
+  title: 'Emerald Isle - Colony Plots As Of, Keyed By Environment';
+  owners:
+  [
+    'isle-census',
+    'seabird-observatory'
+  ];
+  documentation: 'Environment-keyed counterpart of the pinned-instant colony plot query. The key selects a whole execution stack, each binding naming its own runtime over the same mapping.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {plotCodes: String[*], statuses: String[*]|test::emeraldisle3::domain::ColonyPlot.all(%2035-06-01T00:00:00)->filter(
+      p|(($p.nestCount != 0) || ($p.habitatCode->in(['CLIFF', 'BURROW', 'STACK']))) && ($p.surveyStatus->in($statuses)) && (!$p.wardenNote->isEmpty()) && (($p.wardenNote->trim()->length()) > 3) && ($p.plotCode->in($plotCodes))
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.habitatCode,
+        p|$p.nestBand(),
+        p|if($p.habitatCode->startsWith('B'), | 'BURROW-TYPE', | 'SURFACE-TYPE'),
+        p|$p.nestCount
+      ],
+      [
+        'PlotCode',
+        'HabitatCode',
+        'NestBand',
+        'NestingStyle',
+        'NestCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('PlotCode')
+      ]
+    )};
+    key: 'env';
+    executions['isle']:
+    {
+      mapping: test::emeraldisle3::mapping::IsleCensusMapping;
+      runtime: test::emeraldisle3::runtime::IsleCensusRuntime;
+    }
+    executions['replica']:
+    {
+      mapping: test::emeraldisle3::mapping::IsleCensusMapping;
+      runtime: test::emeraldisle3::runtime::IsleReplicaRuntime;
+    }
+  }
+}

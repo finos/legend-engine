@@ -1,0 +1,428 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberarboretum::mapping::GroveSurveyMapping
+(
+  include mapping test::umberarboretum::mapping::GroveCoreMapping
+
+  test::umberarboretum::domain::HealthGrade: EnumerationMapping HealthGradeMapping
+  {
+    VIGOROUS: ['V', 'VIG'],
+    STABLE: ['S', 'STB'],
+    DECLINING: ['D', 'DEC']
+  }
+
+  test::umberarboretum::domain::CanopyStatus: EnumerationMapping CanopyStatusMapping
+  {
+    FULL: 'F',
+    THINNING: 'T',
+    BARE: 'B'
+  }
+
+  test::umberarboretum::domain::VisitOutcome: EnumerationMapping GradingOutcomeMapping
+  {
+    COMPLETED: 'DONE',
+    DEFERRED: 'WAIT'
+  }
+
+  *test::umberarboretum::domain::Specimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberarboretum::store::GroveSurveyDb]arb.specimen.specimen_id
+    )
+    ~mainTable [test::umberarboretum::store::GroveSurveyDb]arb.specimen
+    label: [test::umberarboretum::store::GroveSurveyDb]arb.specimen.label,
+    pruningNote: case(
+                   equal([test::umberarboretum::store::GroveSurveyDb]arb.specimen.status_code, 'PRUNE'),
+                   'schedule pruning',
+                   case(
+                     equal([test::umberarboretum::store::GroveSurveyDb]arb.specimen.status_code, 'WATCH'),
+                     'monitor canopy',
+                     'no action'
+                   )
+                 ),
+    canopyNote: if(
+                  equal([test::umberarboretum::store::GroveSurveyDb]arb.specimen.canopy_pct, 0),
+                  sqlNull(),
+                  concat(
+                    'canopy-',
+                    toLower(
+                      concat(
+                        toString([test::umberarboretum::store::GroveSurveyDb]arb.specimen.canopy_pct),
+                        '-PCT'
+                      )
+                    )
+                  )
+                ),
+    surveyStamp: case(
+                   and(
+                     equal(year([test::umberarboretum::store::GroveSurveyDb]arb.specimen.surveyed_at), 1900),
+                     equal([test::umberarboretum::store::GroveSurveyDb]arb.specimen.status_code, 'ARCHIVE')
+                   ),
+                   sqlNull(),
+                   [test::umberarboretum::store::GroveSurveyDb]arb.specimen.surveyed_at
+                 ),
+    canopyBand: [test::umberarboretum::store::GroveSurveyDb]@Specimen_Health | [test::umberarboretum::store::GroveSurveyDb]arb.specimen_health_vw.canopy_band,
+    custodianLabel: case(
+                      equal(
+                        [test::umberarboretum::store::GroveSurveyDb]@Specimen_Grove > @Grove_Team | [test::umberarboretum::store::GroveSurveyDb]svy.custodian_team.team_code,
+                        'UNASSIGNED'
+                      ),
+                      'awaiting custodian',
+                      [test::umberarboretum::store::GroveSurveyDb]@Specimen_Grove > @Grove_Team | [test::umberarboretum::store::GroveSurveyDb]svy.custodian_team.team_code
+                    ),
+    taxonName: [test::umberarboretum::store::GroveSurveyDb]@Specimen_Taxon | [test::umberarboretum::store::GroveSurveyDb]tax.taxon.taxon_name,
+    wardProgramme: [test::umberarboretum::store::GroveSurveyDb]@Specimen_Grove > @Grove_Team > @Team_Ward > @Ward_Region > @Region_Programme | [test::umberarboretum::store::GroveSurveyDb]svy.stewardship_programme.programme_name,
+    healthGrade: EnumerationMapping HealthGradeMapping: case(
+                                                          equal([test::umberarboretum::store::GroveSurveyDb]arb.specimen.health_code, 'ZZ'),
+                                                          sqlNull(),
+                                                          [test::umberarboretum::store::GroveSurveyDb]arb.specimen.health_code
+                                                        )
+  }
+
+  *test::umberarboretum::domain::Taxon[taxon]: Relational
+  {
+    ~distinct
+    ~primaryKey
+    (
+      [test::umberarboretum::store::GroveSurveyDb]tax.taxon.taxon_id
+    )
+    ~mainTable [test::umberarboretum::store::GroveSurveyDb]tax.taxon
+    taxonName: [test::umberarboretum::store::GroveSurveyDb]tax.taxon.taxon_name,
+    familyName: [test::umberarboretum::store::GroveSurveyDb]@Taxon_Family | [test::umberarboretum::store::GroveSurveyDb]tax.taxon_family.family_name,
+    cladeName: [test::umberarboretum::store::GroveSurveyDb]@Taxon_Family > @Family_Clade | [test::umberarboretum::store::GroveSurveyDb]tax.taxon_clade.clade_name
+  }
+
+  *test::umberarboretum::domain::SpecimenGrading[specimenGrading]: Pure
+  {
+    ~src test::umberarboretum::domain::SpecimenTagReading
+    tagCode: $src.tagCode,
+    healthGrade: EnumerationMapping HealthGradeMapping: [if($src.vigourScore > 6, |'VIG', |if($src.vigourScore > 3, |'STB', |'DEC'))],
+    canopyStatus: EnumerationMapping CanopyStatusMapping: [if($src.canopyPercent > 60, |'F', |if($src.canopyPercent > 20, |'T', |'B'))],
+    outcome: EnumerationMapping GradingOutcomeMapping: [$src.visitFlag->toUpper()]
+  }
+
+  testSuites:
+  [
+    specimenSurveySuite:
+    {
+      function: |test::umberarboretum::domain::Specimen.all()->filter(
+  s|$s.label == 'SPEC-A'
+)->project(
+  ~[
+    label: s|$s.label,
+    pruning_note: s|$s.pruningNote,
+    canopy_note: s|if($s.canopyNote->isEmpty(), |'no-canopy', |$s.canopyNote->toOne()),
+    survey_year: s|if($s.surveyStamp->isEmpty(), |'unstamped', |$s.surveyStamp->toOne()->year()->toString()),
+    health_source: s|if($s.healthGrade->isEmpty(), |'unmapped', |$s.healthGrade->toOne()->toString()),
+    canopy_band: s|if($s.canopyBand->isEmpty(), |'no-band', |$s.canopyBand->toOne()),
+    custodian_label: s|if($s.custodianLabel->isEmpty(), |'no-custodian', |$s.custodianLabel->toOne()),
+    ward_programme: s|if($s.wardProgramme->isEmpty(), |'no-programme', |$s.wardProgramme->toOne()),
+    taxon_name: s|if($s.taxonName->isEmpty(), |'no-taxon', |$s.taxonName->toOne())
+  ]
+);
+      tests:
+      [
+        prunedSpecimenMultiHopHit:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveSurveyDb:
+              Relational
+              #{
+                arb.specimen:
+                  'specimen_id,label,grove_id,taxon_id,health_code,canopy_pct,status_code,surveyed_at\n'+
+                  '1,SPEC-A,1,50,V,80,PRUNE,2024-05-01 00:00:00\n'+
+                  '2,SPEC-Z,1,50,S,40,WATCH,2024-05-02 00:00:00\n';
+                arb.grove:
+                  'grove_id,grove_code,grove_name,team_id\n'+
+                  '1,GROVE-A,Upper Terrace,10\n';
+                svy.custodian_team:
+                  'team_id,team_code,ward_id\n'+
+                  '10,CANOPY-01,20\n';
+                svy.ward:
+                  'ward_id,ward_name,region_id\n'+
+                  '20,Northern Ward,30\n';
+                svy.region:
+                  'region_id,region_name,programme_id\n'+
+                  '30,Highland Region,40\n';
+                svy.stewardship_programme:
+                  'programme_id,programme_name\n'+
+                  '40,Heritage Grove Watch\n';
+                tax.taxon:
+                  'taxon_id,taxon_name,family_id\n'+
+                  '50,Quercus robur,60\n';
+              }#
+          ];
+          asserts:
+          [
+            prunedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"label":"SPEC-A","pruning_note":"schedule pruning","canopy_note":"canopy-80-pct","survey_year":"2024","health_source":"V","canopy_band":"broad","custodian_label":"CANOPY-01","ward_programme":"Heritage Grove Watch","taxon_name":"Quercus robur"}]';
+                  }#;
+              }#
+          ];
+        },
+        watchedSpecimenNarrowBand:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveSurveyDb:
+              Relational
+              #{
+                arb.specimen:
+                  'specimen_id,label,grove_id,taxon_id,health_code,canopy_pct,status_code,surveyed_at\n'+
+                  '3,SPEC-A,2,51,S,30,WATCH,2023-04-11 00:00:00\n';
+                arb.grove:
+                  'grove_id,grove_code,grove_name,team_id\n'+
+                  '2,GROVE-B,Lower Terrace,11\n';
+                svy.custodian_team:
+                  'team_id,team_code,ward_id\n'+
+                  '11,CANOPY-02,21\n';
+                svy.ward:
+                  'ward_id,ward_name,region_id\n'+
+                  '21,Southern Ward,31\n';
+                svy.region:
+                  'region_id,region_name,programme_id\n'+
+                  '31,Coastal Region,41\n';
+                svy.stewardship_programme:
+                  'programme_id,programme_name\n'+
+                  '41,Shoreline Grove Watch\n';
+                tax.taxon:
+                  'taxon_id,taxon_name,family_id\n'+
+                  '51,Fagus sylvatica,60\n';
+              }#
+          ];
+          asserts:
+          [
+            watchedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"label":"SPEC-A","pruning_note":"monitor canopy","canopy_note":"canopy-30-pct","survey_year":"2023","health_source":"S","canopy_band":"narrow","custodian_label":"CANOPY-02","ward_programme":"Shoreline Grove Watch","taxon_name":"Fagus sylvatica"}]';
+                  }#;
+              }#
+          ];
+        },
+        archivedSpecimenFallbackArms:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveSurveyDb:
+              Relational
+              #{
+                arb.specimen:
+                  'specimen_id,label,grove_id,taxon_id,health_code,canopy_pct,status_code,surveyed_at\n'+
+                  '4,SPEC-A,3,52,ZZ,0,ARCHIVE,1900-01-01 00:00:00\n';
+                arb.grove:
+                  'grove_id,grove_code,grove_name,team_id\n'+
+                  '3,GROVE-C,Walled Terrace,12\n';
+                svy.custodian_team:
+                  'team_id,team_code,ward_id\n'+
+                  '12,UNASSIGNED,22\n';
+                svy.ward:
+                  'ward_id,ward_name,region_id\n'+
+                  '22,Western Ward,32\n';
+                svy.region:
+                  'region_id,region_name,programme_id\n'+
+                  '32,Upland Region,42\n';
+                svy.stewardship_programme:
+                  'programme_id,programme_name\n'+
+                  '42,Upland Grove Watch\n';
+                tax.taxon:
+                  'taxon_id,taxon_name,family_id\n'+
+                  '52,Tilia cordata,61\n';
+              }#
+          ];
+          asserts:
+          [
+            archivedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"label":"SPEC-A","pruning_note":"no action","canopy_note":"no-canopy","survey_year":"unstamped","health_source":"unmapped","canopy_band":"narrow","custodian_label":"awaiting custodian","ward_programme":"Upland Grove Watch","taxon_name":"Tilia cordata"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    specimenEnumSuite:
+    {
+      function: |test::umberarboretum::domain::Specimen.all()->graphFetch(
+  #{
+    test::umberarboretum::domain::Specimen
+    {
+      label,
+      healthGrade
+    }
+  }#
+)->serialize(
+  #{
+    test::umberarboretum::domain::Specimen
+    {
+      label,
+      healthGrade
+    }
+  }#
+);
+      tests:
+      [
+        computedEnumResolution:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveSurveyDb:
+              Relational
+              #{
+                arb.specimen:
+                  'specimen_id,label,grove_id,taxon_id,health_code,canopy_pct,status_code,surveyed_at\n'+
+                  '9,SPEC-E,1,50,DEC,55,WATCH,2024-08-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            decliningEnumRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"label":"SPEC-E","healthGrade":"DECLINING"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    taxonLineageSuite:
+    {
+      function: |test::umberarboretum::domain::Taxon.all()->filter(
+  t|$t.taxonName == 'Quercus robur'
+)->project(
+  ~[
+    taxon_name: t|$t.taxonName,
+    family_name: t|if($t.familyName->isEmpty(), |'no-family', |$t.familyName->toOne()),
+    clade_name: t|if($t.cladeName->isEmpty(), |'no-clade', |$t.cladeName->toOne())
+  ]
+);
+      tests:
+      [
+        lineageJoinHit:
+        {
+          data:
+          [
+            test::umberarboretum::store::GroveSurveyDb:
+              Relational
+              #{
+                tax.taxon:
+                  'taxon_id,taxon_name,family_id\n'+
+                  '50,Quercus robur,60\n'+
+                  '51,Fagus sylvatica,60\n';
+                tax.taxon_family:
+                  'family_id,family_name,clade_id\n'+
+                  '60,Fagaceae,70\n';
+                tax.taxon_clade:
+                  'clade_id,clade_name\n'+
+                  '70,Rosids\n';
+              }#
+          ];
+          asserts:
+          [
+            lineageRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"taxon_name":"Quercus robur","family_name":"Fagaceae","clade_name":"Rosids"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    tagReadingGradingSuite:
+    {
+      function: |test::umberarboretum::domain::SpecimenGrading.all()->graphFetch(
+  #{
+    test::umberarboretum::domain::SpecimenGrading
+    {
+      tagCode,
+      healthGrade,
+      canopyStatus,
+      outcome
+    }
+  }#
+)->serialize(
+  #{
+    test::umberarboretum::domain::SpecimenGrading
+    {
+      tagCode,
+      healthGrade,
+      canopyStatus,
+      outcome
+    }
+  }#
+);
+      tests:
+      [
+        computedGradeArms:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::umberarboretum::domain::SpecimenTagReading:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tagCode":"TAG-1","vigourScore":9,"canopyPercent":80,"visitFlag":"done"},{"tagCode":"TAG-2","vigourScore":5,"canopyPercent":40,"visitFlag":"wait"},{"tagCode":"TAG-3","vigourScore":1,"canopyPercent":5,"visitFlag":"done"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            gradedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tagCode":"TAG-1","healthGrade":"VIGOROUS","canopyStatus":"FULL","outcome":"COMPLETED"},{"tagCode":"TAG-2","healthGrade":"STABLE","canopyStatus":"THINNING","outcome":"DEFERRED"},{"tagCode":"TAG-3","healthGrade":"DECLINING","canopyStatus":"BARE","outcome":"COMPLETED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

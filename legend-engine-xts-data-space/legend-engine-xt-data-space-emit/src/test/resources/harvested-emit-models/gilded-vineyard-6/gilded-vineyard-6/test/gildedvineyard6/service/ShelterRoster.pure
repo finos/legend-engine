@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedvineyard6::service::ShelterRoster
+{
+  pattern: '/gildedvineyard6/v1/shelters';
+  title: 'Shelter Roster';
+  owners:
+  [
+    'ridge-survey',
+    'trail-maintenance'
+  ];
+  documentation: 'Returns the shelter roster with the segment code reached through the shelter-to-segment join, so bunk capacity from the main table is reported beside a join-reached label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::gildedvineyard6::domain::Shelter.all()->project(
+      [
+        h|$h.code,
+        h|$h.name,
+        h|$h.bunkCount,
+        h|$h.segmentCode
+      ],
+      [
+        'Shelter',
+        'ShelterName',
+        'Bunks',
+        'Segment'
+      ]
+    )->sort([asc('Shelter')]);
+    mapping: test::gildedvineyard6::mapping::TrailMapping;
+    runtime: test::gildedvineyard6::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    shelterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailWarehouseConnection:
+            Relational
+            #{
+              trails.trail_segment:
+                'segment_id,segment_code,trailhead_id,length_km,difficulty_code\n'+
+                '1,SEG-01,1,4.5,HARD\n'+
+                '3,SEG-03,2,7.0,\n';
+
+              trails.shelter:
+                'shelter_id,shelter_code,shelter_name,segment_id,bunk_count\n'+
+                '1,SH-01,Larch Hut,1,6\n'+
+                '2,SH-02,Fern Hut,3,4\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sheltersWithSegmentCode:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            segmentCodesResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shelter":"SH-01","ShelterName":"Larch Hut","Bunks":6,"Segment":"SEG-01"},{"Shelter":"SH-02","ShelterName":"Fern Hut","Bunks":4,"Segment":"SEG-03"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

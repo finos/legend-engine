@@ -1,0 +1,43 @@
+name: quiet-lighthouse
+title: "Lighthouse Estate — Two Relational Stores, Nine Class Mappings And One Join-Reached Column Pair"
+description: |
+  A coastal lighthouse estate held in two relational stores. The estate store
+  carries the station, its fitted lamp and optic, the fog signal, the keeper
+  cottage, the landing jetty and the painting cycle; the survey store carries the
+  structural inspections and the survey office station register. Nine class
+  mappings across two mappings each declare their own main-table alias and
+  primary key. The inspection row holds only a station code, so its station name
+  and district are bound one hop away through a named inner join onto the
+  register, and the mapping tests read both the direct extents and the
+  join-reached pair, including one inspection written up against a station that
+  never made it onto the register, whose two joined columns come back unresolved.
+modelSources:
+  model:
+    root: quiet-lighthouse
+    files:
+      - test/quietlighthouse/domain/EstateDomain.pure
+      - test/quietlighthouse/domain/SurveyDomain.pure
+      - test/quietlighthouse/mapping/EstateMapping.pure
+      - test/quietlighthouse/mapping/SurveyMapping.pure
+      - test/quietlighthouse/store/EstateDB.pure
+      - test/quietlighthouse/store/SurveyDB.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - inner-join
+  - join-reached-column
+  - lighthouse-estate
+  - mapping-test
+  - relational
+  - two-stores

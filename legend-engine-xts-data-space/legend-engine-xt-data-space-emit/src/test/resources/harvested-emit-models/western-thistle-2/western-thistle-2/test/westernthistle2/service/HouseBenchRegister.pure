@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernthistle2::service::HouseBenchRegister
+{
+  pattern: '/nursery/v1/house-bench-register/{houseCode}';
+  title: 'Propagation Nursery - House bench register';
+  documentation: 'Lists every seed lot sown in one propagation house with its cultivar, its sowing details and a derived vigour band, so the projection carries both joined columns and an expression-derived column.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {houseCode: String[1]|test::westernthistle2::domain::SeedLot.all()->filter(
+      l|$l.house.houseCode == $houseCode
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.sownOn,
+        l|$l.seedCount,
+        l|$l.germinationRate,
+        l|$l.treated,
+        l|$l.house.houseName,
+        l|$l.cultivar.cultivarName,
+        l|if($l.treated && ($l.germinationRate >= 0.75), |'treated-strong', |if($l.germinationRate >= 0.75, |'strong', |'watch'))
+      ],
+      [
+        'Lot',
+        'Sown',
+        'Seeds',
+        'Rate',
+        'Treated',
+        'House',
+        'Cultivar',
+        'Vigour'
+      ]
+    )->sort(
+      [
+        asc('Lot')
+      ]
+    )};
+    mapping: test::westernthistle2::mapping::NurseryMapping;
+    runtime: test::westernthistle2::runtime::NurseryWarehouseRuntime;
+  }
+  testSuites:
+  [
+    houseBenchRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryWarehouse:
+            Reference
+              #{
+                test::westernthistle2::data::NurseryFixture
+              }#
+        ]
+      ]
+      tests:
+      [
+        houseWithTwoLots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            houseCode = 'PH-1'
+          ]
+          asserts:
+          [
+            bothLotsCarryJoinedAndDerivedColumns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"SL-1","Sown":"2026-02-03","Seeds":400,"Rate":0.92,"Treated":true,"House":"Ridge Glasshouse","Cultivar":"Sunrise Cosmos","Vigour":"treated-strong"},{"Lot":"SL-2","Sown":"2026-02-10","Seeds":250,"Rate":0.68,"Treated":false,"House":"Ridge Glasshouse","Cultivar":"Frost Kale","Vigour":"watch"}]';
+                  }#;
+              }#
+          ]
+        },
+        houseWithOneUntreatedLot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            houseCode = 'PH-3'
+          ]
+          asserts:
+          [
+            theResidualVigourBandIsTaken:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"SL-4","Sown":"2026-03-01","Seeds":300,"Rate":0.55,"Treated":false,"House":"Orchard Frame House","Cultivar":"Sunrise Cosmos","Vigour":"watch"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

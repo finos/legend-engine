@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::russetarboretum::connection::ArboretumH2Connection
+{
+  store: test::russetarboretum::store::ArboretumDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists arb;',
+      'create schema arb;',
+      'create table arb.collection_site (site_id integer, site_name varchar(200) not null, region_code varchar(20) not null, from_z date, thru_z date);',
+      'create table arb.planting_bed (bed_id integer, bed_code varchar(40) not null, habitat varchar(20) not null, site_id integer not null, from_z date, thru_z date);',
+      'create table arb.specimen (specimen_id integer, accession_code varchar(40) not null, species_name varchar(120) not null, lifecycle_stage varchar(20) not null, planting_year integer not null, bed_id integer, parent_specimen_id integer, from_z date, thru_z date);',
+      'create table arb.care_event (event_id integer, specimen_id integer not null, event_kind varchar(20) not null, event_code varchar(40) not null, performed_on date not null, crown_reduction_pct integer, height_cm integer, from_z date, thru_z date);'
+      ];
+  };
+  auth: DefaultH2;
+}

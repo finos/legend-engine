@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azureestuary3::service::SectorCoverageByDialect
+{
+  pattern: '/azureestuary3/v1/sector-coverage-by-dialect/{dialect}';
+  title: 'Estuary Roost Census - Sector Coverage By Dialect';
+  ownership: UserList { users: ['estuary-census-desk'] };
+  documentation: 'Reports the roost sectors above a capacity floor whose tidal zone still holds a sector with usable mudflat, planning the same mapping against either the host dialect or the in-memory dialect selected by the dialect key.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {minCapacity: Integer[1]|test::azureestuary3::domain::RoostSector.all()->filter(
+      s|($s.capacityBirds >= $minCapacity) && ($s.zone->toOne().zoneSectors->exists(x|$x.mudflatHectares >= 10))
+    )->project(
+      [
+        s|$s.featureCode,
+        s|$s.featureName,
+        s|$s.shelter,
+        s|$s.zoneLabel,
+        s|$s.zone.featureName,
+        s|$s.location.gridReference
+      ],
+      [
+        'Sector',
+        'Name',
+        'Shelter',
+        'Zone',
+        'ZoneName',
+        'Grid'
+      ]
+    )->sort([asc('Sector')])};
+    key: 'dialect';
+    executions['host']:
+    {
+      mapping: test::azureestuary3::mapping::EstuaryMapping;
+      runtime: test::azureestuary3::runtime::EstuaryHostRuntime;
+    }
+    executions['memory']:
+    {
+      mapping: test::azureestuary3::mapping::EstuaryMapping;
+      runtime: test::azureestuary3::runtime::EstuaryMemoryRuntime;
+    }
+  }
+  testSuites:
+  [
+    sectorCoverageSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estuaryMemory: Reference
+            #{
+              test::azureestuary3::data::EstuaryData
+            }#
+        ]
+      ]
+      tests:
+      [
+        memoryDialectKeepsInnerZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['memory'];
+          parameters:
+          [
+            minCapacity = 400
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector":"AE-01","Name":"Willow Spit Roost","Shelter":"Sheltered","Zone":"ZONE-TZ-1","ZoneName":"Inner Mudflat Zone","Grid":"NS 4821"},{"Sector":"AE-02","Name":"Reed Bed Roost","Shelter":"Partial","Zone":"ZONE-TZ-1","ZoneName":"Inner Mudflat Zone","Grid":"NS 4930"}]';
+                  }#;
+              }#
+          ]
+        },
+        memoryDialectFloorAboveEveryCapacity:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['memory'];
+          parameters:
+          [
+            minCapacity = 1000
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyvineyard2::service::CorridorPlanningBoard
+{
+  pattern: '/transit/v1/corridor-board/{corridorCode}';
+  title: 'Transit Corridor Planning Board';
+  ownership: DID { identifier: 'city-transit-planning' };
+  documentation: 'Projects stops with their joined district and groups them by corridor and district before ordering the planning board.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {corridorCode: String[1]|test::kindlyvineyard2::domain::StopPoint.all()->filter(
+    s|equal($s.corridorCode, $corridorCode)
+    )->project(
+      [
+        s|$s.corridorId,
+        s|$s.stopCode,
+        s|$s.corridorCode,
+        s|$s.districtCode,
+        s|$s.stopLabel
+      ],
+      [
+        'CorridorId',
+        'StopCode',
+        'CorridorCode',
+        'DistrictCode',
+        'StopLabel'
+      ]
+    )->groupBy(
+      [
+        'CorridorId',
+        'DistrictCode'
+      ],
+      [
+        agg(
+          'LabelLengthTotal',
+          x|$x.getString('StopLabel')->trim()->length(),
+          y|$y->sum()
+        )
+      ]
+    )->filter(
+      r|$r.getString('DistrictCode') == 'D-CENTER'
+    )->sort(
+      [
+        asc('CorridorId'),
+        asc('DistrictCode')
+      ]
+    )->take(5)};
+    mapping: test::kindlyvineyard2::mapping::TransitMapping;
+    runtime: test::kindlyvineyard2::runtime::TransitH2Runtime;
+  }
+  testSuites:
+  [
+    corridorBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          transitH2Connection:
+            Relational
+            #{
+              transit.stop_point:
+                'stop_id,stop_code,corridor_id,stop_label\n'+
+                '1,ST-ALPHA,10,Market Gate\n'+
+                '2,ST-BETA,10,Library Walk\n';
+              transit.corridor:
+                'corridor_id,corridor_code,hub_id,corridor_label\n'+
+                '10,C-RED,100,Red Corridor\n';
+              transit.vehicle_run:
+                'run_id,corridor_id,run_code,rider_count\n'+
+                '1000,10,R-1,40\n'+
+                '1001,10,R-2,35\n';
+              support.hub:
+                'hub_id,hub_code,district_code\n'+
+                '100,HUB-CENTRAL,D-CENTER\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        exactCodeBuildsOneBoard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            corridorCode = 'C-RED'
+          ]
+          asserts:
+          [
+            oneGroupedCorridor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CorridorId":10,"DistrictCode":"D-CENTER","LabelLengthTotal":23}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::gildedwillow2::store::LendingDb
+(
+  Schema lending
+  (
+    Table instrument_checkout
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      checkout_id INTEGER PRIMARY KEY,
+      checkout_code VARCHAR(24) NOT NULL,
+      instrument_id INTEGER,
+      room_id INTEGER,
+      borrower_kind VARCHAR(4),
+      condition_code VARCHAR(4),
+      active_flag VARCHAR(1),
+      checked_out_on DATE,
+      due_date DATE,
+      returned_date DATE,
+      overdue_days INTEGER,
+      service_hours DOUBLE,
+      case_code VARCHAR(24),
+      case_label VARCHAR(60),
+      case_grade VARCHAR(4),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    Table instrument_model
+    (
+      instrument_id INTEGER PRIMARY KEY,
+      model_code VARCHAR(24) NOT NULL,
+      model_label VARCHAR(120) NOT NULL,
+      family_code VARCHAR(16),
+      list_hours DOUBLE
+    )
+
+    Table rehearsal_room
+    (
+      room_id INTEGER PRIMARY KEY,
+      room_code VARCHAR(24) NOT NULL,
+      room_name VARCHAR(120) NOT NULL,
+      wing_name VARCHAR(60)
+    )
+  )
+
+  Filter LentOutFilter(toUpper(lending.instrument_checkout.active_flag) = 'Y')
+
+  Join Checkout_Instrument(lending.instrument_checkout.instrument_id = lending.instrument_model.instrument_id)
+  Join Checkout_Room(lending.instrument_checkout.room_id = lending.rehearsal_room.room_id)
+)

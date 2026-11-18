@@ -1,0 +1,39 @@
+name: frosted-fjord-2
+title: "Frosted Fjord — Store-less Model-to-Model Sky Catalogue Transforms with Inline Mapping Tests"
+description: |
+  Two model-to-model mappings populate one target sky-catalogue class from two
+  different source classes, so the same target carries a passthrough transform
+  with a literal-defaulted label and a composed transform that builds its label
+  from two properties reached through a nested complex-typed source reference.
+  Every execution is an in-memory graph transformation over model-typed JSON
+  fixtures: the model declares no store, connection or runtime, and each mapping
+  asserts its output through inline test suites, one of them under a narrower
+  property tree that omits the catalogue identifier.
+
+modelSources:
+  model:
+    root: frosted-fjord-2
+    files:
+      - test/frostedfjord2/domain/SkyObject.pure
+      - test/frostedfjord2/mapping/PatchToSkyObject.pure
+      - test/frostedfjord2/mapping/SurveyToSkyObject.pure
+      - test/frostedfjord2/source/PatchRow.pure
+      - test/frostedfjord2/source/SurveyRow.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - graph-fetch
+  - literal-defaulted
+  - mapping-test
+  - model-to-model
+  - nested-source-property
+  - sky-catalogue
+  - store-less
+  - string-composition

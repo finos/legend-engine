@@ -1,0 +1,47 @@
+name: kindly-wharf
+title: "Kindly Wharf — Container Wharf Movements Serialized Through Per-Class Graph-Fetch Mapping Tests"
+description: |
+  A container-wharf model whose four independent tables each back one class through an
+  explicit main-table alias and a restated composite or single-column primary key, with no
+  join declared anywhere so every class is queried alone. Two of the classes carry an
+  ordinary validity interval pair rather than declared milestoning, so a superseded and a
+  current version of the same key are simply two instances. The mapping carries one test
+  per class, each reading the class extent, fetching an explicitly enumerated flat property
+  tree and serializing the identical tree, so the assertion pins the whole document
+  including decimal scale, date and timestamp rendering, the far-future validity sentinel
+  and every absent optional property of the wide gate-move class.
+modelSources:
+  model:
+    root: kindly-wharf
+    files:
+      - test/kindlywharf/domain/WharfDomain.pure
+      - test/kindlywharf/mapping/WharfMapping.pure
+      - test/kindlywharf/store/WharfDB.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - composite-primary-key
+  - container-wharf
+  - graph-fetch
+  - h2
+  - mapping-test
+  - multi-table
+  - optional-properties
+  - relational
+  - serialize
+  - validity-interval
+  - wide-class

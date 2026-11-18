@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::borealvineyard::domain::*;
+
+Class {doc.doc = 'An observatory site the network collects night logs from; reference data, so it is not versioned.'} test::borealvineyard::domain::ObservatorySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  latitudeBand: String[1];
+  elevationMetres: Integer[0..1];
+}
+
+Class {doc.doc = 'An observing crew entitled to raise an aurora watch; reference data, so it is not versioned.'} test::borealvineyard::domain::ObserverCrew
+{
+  crewCode: String[1];
+  displayName: String[1];
+  shiftPattern: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'One night of sky conditions logged at a site, effective over business time so a re-graded night supersedes the grade first filed for it.'} test::borealvineyard::domain::SkyLog
+{
+  logCode: String[1];
+  clarity: SkyClarity[1];
+  cloudCoverPercent: Integer[1];
+  seeingArcSeconds: Float[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'An aurora watch raised from the night logs, effective over business time so an upgraded alert band supersedes the band first published for the same period.'} test::borealvineyard::domain::AuroraWatch
+{
+  watchCode: String[1];
+  band: AlertBand[1];
+  disturbanceIndex: Float[1];
+  issuedNote: String[0..1];
+}

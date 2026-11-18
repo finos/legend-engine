@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedlighthouse2::service::WatchRegisterService
+{
+  pattern: '/gildedlighthouse2/v1/watch-register';
+  title: 'Gilded Lighthouse 2 - Watch Register';
+  ownership: UserList { users: ['harbour-watch-desk'] };
+  documentation: 'The register of watches kept at the stations in a caller-supplied collection, resolved at a business date and published with the standing origin label the mapping supplies as a literal rather than reading it from a column, so a watch whose validity window closed before the requested date is absent from the register.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], stationSet: String[*]|test::gildedlighthouse2::domain::LampWatch.all($asOf)->filter(
+      w|$w.stationCode->in($stationSet)
+    )->project(
+      [
+        w|$w.watchRef,
+        w|$w.stationCode,
+        w|$w.keeperCode,
+        w|$w.hoursLit,
+        w|$w.loggedOn,
+        w|$w.watchOrigin
+      ],
+      [
+        'Watch',
+        'Station',
+        'Keeper',
+        'Hours',
+        'Logged',
+        'Origin'
+      ]
+    )->distinct()->sort([asc('Watch')])};
+    mapping: test::gildedlighthouse2::mapping::HarbourMapping;
+    runtime: test::gildedlighthouse2::runtime::HarbourPrimaryRuntime;
+  }
+  testSuites:
+  [
+    watchRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harbourConnection:
+            Reference
+            #{
+              test::gildedlighthouse2::data::HarbourTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAtTheCurrentBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-15,
+            stationSet = ['ST-N', 'ST-S']
+          ]
+          asserts:
+          [
+            everyOpenWatchAtTheRequestedStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Watch":"LW-001","Station":"ST-N","Keeper":"KP-1","Hours":9,"Logged":"2026-05-04","Origin":"KEEPER LOG"},{"Watch":"LW-002","Station":"ST-N","Keeper":"KP-1","Hours":7,"Logged":"2026-05-05","Origin":"KEEPER LOG"},{"Watch":"LW-003","Station":"ST-S","Keeper":"KP-2","Hours":11,"Logged":"2026-05-06","Origin":"KEEPER LOG"},{"Watch":"LW-004","Station":"ST-S","Keeper":"KP-3","Hours":14,"Logged":"2026-05-07","Origin":"KEEPER LOG"}]';
+                  }#;
+              }#
+          ]
+        },
+        registerAtAnEarlierBusinessDateSeesTheOutOfRangeWatchInstead:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2025-01-15,
+            stationSet = ['ST-N', 'ST-S']
+          ]
+          asserts:
+          [
+            onlyTheWatchWhoseWindowWasOpenThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Watch":"LW-009","Station":"ST-N","Keeper":"KP-1","Hours":30,"Logged":"2024-03-15","Origin":"KEEPER LOG"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

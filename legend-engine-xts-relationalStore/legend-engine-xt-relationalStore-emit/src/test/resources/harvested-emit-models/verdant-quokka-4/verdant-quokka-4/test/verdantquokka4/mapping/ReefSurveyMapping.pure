@@ -1,0 +1,346 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantquokka4::mapping::ReefSurveyMapping
+(
+  include test::verdantquokka4::mapping::ReefConditionMapping
+
+  *test::verdantquokka4::domain::ReefSite[reefSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefSurveyDb]site.reef_site.region_code,
+      [test::verdantquokka4::store::ReefSurveyDb]site.reef_site.site_code
+    )
+    ~mainTable [test::verdantquokka4::store::ReefSurveyDb]site.reef_site
+    regionCode: [test::verdantquokka4::store::ReefSurveyDb]site.reef_site.region_code,
+    siteCode: [test::verdantquokka4::store::ReefSurveyDb]site.reef_site.site_code,
+    siteLabel: toUpper(trim([test::verdantquokka4::store::ReefSurveyDb]site.reef_site.site_name)),
+    depthFeet: times([test::verdantquokka4::store::ReefSurveyDb]site.reef_site.depth_m, 3.25),
+    programme: 'REEF WATCH'
+  }
+
+  *test::verdantquokka4::domain::Transect[transect]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefSurveyDb]dive.transect.region_code,
+      [test::verdantquokka4::store::ReefSurveyDb]dive.transect.site_code,
+      [test::verdantquokka4::store::ReefSurveyDb]dive.transect.transect_no
+    )
+    ~mainTable [test::verdantquokka4::store::ReefSurveyDb]dive.transect
+    regionCode: [test::verdantquokka4::store::ReefSurveyDb]dive.transect.region_code,
+    siteCode: [test::verdantquokka4::store::ReefSurveyDb]dive.transect.site_code,
+    transectNo: [test::verdantquokka4::store::ReefSurveyDb]dive.transect.transect_no,
+    lengthMetres: [test::verdantquokka4::store::ReefSurveyDb]dive.transect.length_m,
+    widthMetres: [test::verdantquokka4::store::ReefSurveyDb]dive.transect.width_m,
+    areaSquareMetres: times([test::verdantquokka4::store::ReefSurveyDb]dive.transect.length_m, [test::verdantquokka4::store::ReefSurveyDb]dive.transect.width_m),
+    siteName: [test::verdantquokka4::store::ReefSurveyDb]@Transect_Site | [test::verdantquokka4::store::ReefSurveyDb]site.reef_site.site_name
+  }
+
+  *test::verdantquokka4::domain::Sighting[sighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefSurveyDb]dive.sighting.sighting_id
+    )
+    ~mainTable [test::verdantquokka4::store::ReefSurveyDb]dive.sighting
+    sightingId: [test::verdantquokka4::store::ReefSurveyDb]dive.sighting.sighting_id,
+    taxonName: [test::verdantquokka4::store::ReefSurveyDb]dive.sighting.taxon_name,
+    countSeen: [test::verdantquokka4::store::ReefSurveyDb]dive.sighting.count_seen,
+    organismGroup: 'UNSORTED'
+  }
+
+  *test::verdantquokka4::domain::CoralSighting[coralSighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefSurveyDb]dive.coral_sighting.sighting_id
+    )
+    ~mainTable [test::verdantquokka4::store::ReefSurveyDb]dive.coral_sighting
+    sightingId: [test::verdantquokka4::store::ReefSurveyDb]dive.coral_sighting.sighting_id,
+    taxonName: [test::verdantquokka4::store::ReefSurveyDb]dive.coral_sighting.taxon_name,
+    countSeen: [test::verdantquokka4::store::ReefSurveyDb]dive.coral_sighting.count_seen,
+    organismGroup: 'CORAL',
+    coverPercent: [test::verdantquokka4::store::ReefSurveyDb]dive.coral_sighting.cover_pct,
+    siteName: [test::verdantquokka4::store::ReefSurveyDb]@Coral_Transect > (INNER) [test::verdantquokka4::store::ReefSurveyDb]@Transect_Site | [test::verdantquokka4::store::ReefSurveyDb]site.reef_site.site_name
+  }
+
+  *test::verdantquokka4::domain::FishSighting[fishSighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefSurveyDb]dive.fish_sighting.sighting_id
+    )
+    ~mainTable [test::verdantquokka4::store::ReefSurveyDb]dive.fish_sighting
+    sightingId: [test::verdantquokka4::store::ReefSurveyDb]dive.fish_sighting.sighting_id,
+    taxonName: [test::verdantquokka4::store::ReefSurveyDb]dive.fish_sighting.taxon_name,
+    countSeen: [test::verdantquokka4::store::ReefSurveyDb]dive.fish_sighting.count_seen,
+    organismGroup: 'FISH',
+    meanLengthCm: [test::verdantquokka4::store::ReefSurveyDb]dive.fish_sighting.mean_length_cm
+  }
+
+  test::verdantquokka4::domain::TransectOnSite: Relational
+  {
+    AssociationMapping
+    (
+      site[transect, reefSite]: [test::verdantquokka4::store::ReefSurveyDb]@Transect_Site,
+      transects[reefSite, transect]: [test::verdantquokka4::store::ReefSurveyDb]@Transect_Site
+    )
+  }
+
+  test::verdantquokka4::domain::CoralOnTransect: Relational
+  {
+    AssociationMapping
+    (
+      transect[coralSighting, transect]: [test::verdantquokka4::store::ReefSurveyDb]@Coral_Transect,
+      corals[transect, coralSighting]: [test::verdantquokka4::store::ReefSurveyDb]@Coral_Transect
+    )
+  }
+
+  test::verdantquokka4::domain::FishOnSite: Relational
+  {
+    AssociationMapping
+    (
+      fishSite[fishSighting, reefSite]: [test::verdantquokka4::store::ReefSurveyDb]@Fish_Site,
+      fishSightings[reefSite, fishSighting]: [test::verdantquokka4::store::ReefSurveyDb]@Fish_Site
+    )
+  }
+
+  testSuites:
+  [
+    reefSiteSuite:
+    {
+      function: |test::verdantquokka4::domain::ReefSite.all()->project(~[
+        Region: s|$s.regionCode,
+        Site: s|$s.siteCode,
+        Label: s|$s.siteLabel,
+        DepthFeet: s|$s.depthFeet,
+        Programme: s|$s.programme
+      ])->sort([~Site->ascending()]);
+      tests:
+      [
+        labelledSitesWithDepth:
+        {
+          doc: 'Upper-cases each site name into its label, converts the depth from metres to feet and stamps the constant programme literal on every site.';
+          data:
+          [
+            test::verdantquokka4::store::ReefSurveyDb:
+              Relational
+              #{
+                site.reef_site:
+                  'region_code,site_code,site_name,depth_m\n'+
+                  'NR,NR-01,coral garden,4.0\n'+
+                  'NR,NR-02,blue hole,10.0\n';
+              }#
+          ];
+          asserts:
+          [
+            labelledSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"NR","Site":"NR-01","Label":"CORAL GARDEN","DepthFeet":13.0,"Programme":"REEF WATCH"},{"Region":"NR","Site":"NR-02","Label":"BLUE HOLE","DepthFeet":32.5,"Programme":"REEF WATCH"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    transectSuite:
+    {
+      function: |test::verdantquokka4::domain::Transect.all()->project(~[
+        Site: t|$t.siteCode,
+        No: t|$t.transectNo,
+        Area: t|$t.areaSquareMetres,
+        SiteName: t|$t.siteName,
+        SiteLabel: t|$t.site.siteLabel
+      ])->sort([~Site->ascending(), ~No->ascending()]);
+      tests:
+      [
+        transectsWithAndWithoutSite:
+        {
+          doc: 'Multiplies tape length by width into a surveyed area and reaches the site name both through the join-mapped property and the association; the transect laid at an unregistered site keeps its area but has no site partner.';
+          data:
+          [
+            test::verdantquokka4::store::ReefSurveyDb:
+              Relational
+              #{
+                dive.transect:
+                  'region_code,site_code,transect_no,length_m,width_m\n'+
+                  'NR,NR-01,1,20.0,2.0\n'+
+                  'NR,NR-01,2,30.0,2.0\n'+
+                  'SR,SR-09,1,10.0,1.5\n';
+                site.reef_site:
+                  'region_code,site_code,site_name,depth_m\n'+
+                  'NR,NR-01,coral garden,4.0\n'+
+                  'NR,NR-02,blue hole,10.0\n';
+              }#
+          ];
+          asserts:
+          [
+            transectAreas:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"NR-01","No":1,"Area":40.0,"SiteName":"coral garden","SiteLabel":"CORAL GARDEN"},{"Site":"NR-01","No":2,"Area":60.0,"SiteName":"coral garden","SiteLabel":"CORAL GARDEN"},{"Site":"SR-09","No":1,"Area":15.0,"SiteName":null,"SiteLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    coralSightingSuite:
+    {
+      function: |test::verdantquokka4::domain::CoralSighting.all()->project(~[
+        Id: c|$c.sightingId,
+        Taxon: c|$c.taxonName,
+        Group: c|$c.organismGroup,
+        Cover: c|$c.coverPercent,
+        SiteName: c|$c.siteName,
+        TransectArea: c|$c.transect.areaSquareMetres
+      ])->sort([~Id->ascending()]);
+      tests:
+      [
+        compositeTransectMatch:
+        {
+          doc: 'The first coral sighting matches its transect on region, site and transect number and reaches the site name over the inner second hop; the second shares region and site but names a transect that was never laid, so the composite join finds no partner.';
+          data:
+          [
+            test::verdantquokka4::store::ReefSurveyDb:
+              Relational
+              #{
+                dive.coral_sighting:
+                  'sighting_id,region_code,site_code,transect_no,taxon_name,count_seen,cover_pct\n'+
+                  '101,NR,NR-01,1,brain coral,3,25.0\n'+
+                  '102,NR,NR-01,7,staghorn coral,5,10.0\n';
+                dive.transect:
+                  'region_code,site_code,transect_no,length_m,width_m\n'+
+                  'NR,NR-01,1,20.0,2.0\n'+
+                  'NR,NR-01,2,30.0,2.0\n';
+                site.reef_site:
+                  'region_code,site_code,site_name,depth_m\n'+
+                  'NR,NR-01,coral garden,4.0\n';
+              }#
+          ];
+          asserts:
+          [
+            coralPartners:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":101,"Taxon":"brain coral","Group":"CORAL","Cover":25.0,"SiteName":"coral garden","TransectArea":40.0},{"Id":102,"Taxon":"staghorn coral","Group":"CORAL","Cover":10.0,"SiteName":null,"TransectArea":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    fishSightingSuite:
+    {
+      function: |test::verdantquokka4::domain::FishSighting.all()->project(~[
+        Id: f|$f.sightingId,
+        Taxon: f|$f.taxonName,
+        Group: f|$f.organismGroup,
+        Count: f|$f.countSeen,
+        MeanLength: f|$f.meanLengthCm,
+        SiteLabel: f|$f.fishSite.siteLabel
+      ])->sort([~Id->ascending()]);
+      tests:
+      [
+        fishWithAndWithoutSite:
+        {
+          doc: 'Fish sightings inherit the sighting identity and count from their own table, carry the constant fish group, and reach their site label through the association; a school seen at an unregistered site has no site partner.';
+          data:
+          [
+            test::verdantquokka4::store::ReefSurveyDb:
+              Relational
+              #{
+                dive.fish_sighting:
+                  'sighting_id,site_code,taxon_name,count_seen,mean_length_cm\n'+
+                  '201,NR-02,parrotfish,12,18.5\n'+
+                  '202,SR-09,surgeonfish,4,22.0\n';
+                site.reef_site:
+                  'region_code,site_code,site_name,depth_m\n'+
+                  'NR,NR-02,blue hole,10.0\n';
+              }#
+          ];
+          asserts:
+          [
+            fishSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":201,"Taxon":"parrotfish","Group":"FISH","Count":12,"MeanLength":18.5,"SiteLabel":"BLUE HOLE"},{"Id":202,"Taxon":"surgeonfish","Group":"FISH","Count":4,"MeanLength":22.0,"SiteLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sightingSuite:
+    {
+      function: |test::verdantquokka4::domain::Sighting.all()->project(~[
+        Id: s|$s.sightingId,
+        Taxon: s|$s.taxonName,
+        Count: s|$s.countSeen,
+        Group: s|$s.organismGroup
+      ])->sort([~Id->ascending()]);
+      tests:
+      [
+        unsortedSightings:
+        {
+          doc: 'General sightings recorded before classification read from the superclass table and carry the unsorted group literal.';
+          data:
+          [
+            test::verdantquokka4::store::ReefSurveyDb:
+              Relational
+              #{
+                dive.sighting:
+                  'sighting_id,taxon_name,count_seen\n'+
+                  '1,sea star,2\n'+
+                  '2,sea cucumber,6\n';
+              }#
+          ];
+          asserts:
+          [
+            unsortedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Taxon":"sea star","Count":2,"Group":"UNSORTED"},{"Id":2,"Taxon":"sea cucumber","Count":6,"Group":"UNSORTED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

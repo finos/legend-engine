@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitquarry2::mapping::SolarBaseMapping
+(
+  include mapping test::sunlitquarry2::mapping::SolarEnumMappings
+
+  *test::sunlitquarry2::domain::SolarSite[site]: Relational
+  {
+    ~filter [test::sunlitquarry2::store::SolarEstateDb]CommissionedSite
+    ~primaryKey
+    (
+      [test::sunlitquarry2::store::SolarEstateDb]estate.site.site_code
+    )
+    ~mainTable [test::sunlitquarry2::store::SolarEstateDb]estate.site
+    siteCode: [test::sunlitquarry2::store::SolarEstateDb]estate.site.site_code,
+    siteName: case(
+                isNotEmpty([test::sunlitquarry2::store::SolarEstateDb]estate.site.site_name),
+                toUpper(rtrim([test::sunlitquarry2::store::SolarEstateDb]estate.site.site_name)),
+                concat('UNNAMED ROOF ', [test::sunlitquarry2::store::SolarEstateDb]estate.site.site_code)
+              )
+  }
+
+  *test::sunlitquarry2::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitquarry2::store::SolarEstateDb]estate.district.district_code
+    )
+    ~mainTable [test::sunlitquarry2::store::SolarEstateDb]estate.district
+    districtCode: [test::sunlitquarry2::store::SolarEstateDb]estate.district.district_code,
+    districtName: rtrim([test::sunlitquarry2::store::SolarEstateDb]estate.district.district_name),
+    wardenName: toUpper(rtrim([test::sunlitquarry2::store::SolarEstateDb]estate.district.warden_name))
+  }
+
+  *test::sunlitquarry2::domain::Inverter[inverter]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitquarry2::store::SolarEstateDb]solar.inverter.inverter_code
+    )
+    ~mainTable [test::sunlitquarry2::store::SolarEstateDb]solar.inverter
+    inverterCode: [test::sunlitquarry2::store::SolarEstateDb]solar.inverter.inverter_code,
+    kind: EnumerationMapping InverterKindMapping: toUpper(trim([test::sunlitquarry2::store::SolarEstateDb]solar.inverter.kind_code)),
+    ratingKw: [test::sunlitquarry2::store::SolarEstateDb]solar.inverter.rating_kw
+  }
+
+  *test::sunlitquarry2::domain::ReadingVersion[reading]: Relational
+  {
+    ~filter [test::sunlitquarry2::store::SolarEstateDb]CurrentReading
+    ~primaryKey
+    (
+      [test::sunlitquarry2::store::SolarEstateDb]solar.reading_version.version_id
+    )
+    ~mainTable [test::sunlitquarry2::store::SolarEstateDb]solar.reading_version
+    versionId: [test::sunlitquarry2::store::SolarEstateDb]solar.reading_version.version_id,
+    stringCode: [test::sunlitquarry2::store::SolarEstateDb]solar.reading_version.string_code,
+    yieldKwh: [test::sunlitquarry2::store::SolarEstateDb]solar.reading_version.yield_kwh
+  }
+)

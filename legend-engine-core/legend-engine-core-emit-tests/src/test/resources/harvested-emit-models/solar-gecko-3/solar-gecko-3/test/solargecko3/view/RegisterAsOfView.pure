@@ -1,0 +1,37 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solargecko3::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'One line of the register as an upstream extract publishes it, carrying the window the line was effective over so the as-of reading can be resolved without the business-temporal machinery.'} test::solargecko3::view::RegisterLinePayload
+{
+  {doc.doc = 'Register identifier of the stretch the line was filed for.'} featureCode: String[0..1];
+  {doc.doc = 'Name the stretch was walked under when the line was filed.'} transectName: String[0..1];
+  {doc.doc = 'Ground the stretch was laid over when the line was filed.'} substrateCode: String[0..1];
+  {doc.doc = 'First day of the window the line was effective over, as eight digits.'} effectiveFrom: Integer[0..1];
+  {doc.doc = 'Last day of the window the line was effective over, as eight digits, absent while the line is still open.'} effectiveThru: Integer[0..1];
+  {doc.doc = 'Day the reading is being resolved for, as eight digits.'} asOfDay: Integer[0..1];
+  {doc.doc = 'Burrows held on the stretch when the line was filed.'} heldBurrowCount: Integer[0..1];
+}
+
+Class {doc.doc = 'The register line resolved for one as-of day: the label states whether the requested day falls inside the window the line was effective over, before it opened or after it closed, and the held count is only published for a day the window covers.'} test::solargecko3::view::RegisterAsOfView
+{
+  {doc.doc = 'Register identifier of the stretch.'} featureCode: String[1];
+  {doc.doc = 'Name the stretch is walked under.'} transectName: String[1];
+  {doc.doc = 'Standing of the requested day against the effective window of the line.'} asOfStanding: String[1];
+  {doc.doc = 'Burrows published for the requested day, none when the day falls outside the window.'} publishedBurrowCount: Integer[1];
+  {doc.doc = 'Ground the stretch is laid over, folded to the register vocabulary.'} substrate: SubstrateKind[1];
+}

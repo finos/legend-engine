@@ -1,0 +1,66 @@
+name: western-delta
+title: "Western Delta - milestoned lineage reporting with fallback reasons and a keyed export"
+description: |
+  A delta bird-ringing exception register whose records and their whole observer-to-region
+  lineage are business-temporal, so one business-date parameter pins five independent
+  milestoning resolutions in a single expression. The register endpoint resolves the reported
+  reason through a three-way fallback over an optional sub-reason, truncates instants to their
+  date component and appends a right-nested audit column; a governance endpoint aggregates the
+  same extent over a seven-key lineage with typed and untyped views of the sighting link; and an
+  environment-keyed export serialises the fetched links through an external-format binding.
+modelSources:
+  model:
+    root: western-delta
+    files:
+      - test/westerndelta/connection/DeltaConnections.pure
+      - test/westerndelta/data/DeltaSeedData.pure
+      - test/westerndelta/domain/RingDomain.pure
+      - test/westerndelta/external/DeltaLinkBinding.pure
+      - test/westerndelta/mapping/RingMapping.pure
+      - test/westerndelta/runtime/DeltaRuntimes.pure
+      - test/westerndelta/service/RingExceptionReport.pure
+      - test/westerndelta/service/RingLineageDigest.pure
+      - test/westerndelta/service/RingLinkExportByEnvironment.pure
+      - test/westerndelta/store/DeltaRingDB.pure
+features:
+  - execution:external-format-binding
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:conditional-expression
+  - query:date-arithmetic
+  - execution:external-format-serialization
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:string-function
+  - query:subtype-cast
+  - query:tds-extend
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - audit-column
+  - conditional-fallback
+  - date-truncation
+  - environment-keyed-export
+  - external-format
+  - group-by
+  - h2
+  - lineage-traversal
+  - milestoned-hops
+  - point-in-time
+  - subtype-cast

@@ -1,0 +1,32 @@
+name: amber-otter-3
+title: "Amber Otter 3 - store-less packaged fixture corpus of embedded test-data payloads annotated by classification profiles"
+description: |
+  A store-less corpus of packaged data elements that carry embedded fixture payloads for reuse by
+  downstream test runners. Six data elements hold JSON and CSV payloads covering a register of
+  collected specimens, rows awaiting review, deliberately sparse rows with absent and null members,
+  trial results, a nested batch payload and a flat delimited reading sheet. Every data element is
+  annotated with stereotypes and tagged values drawn from two classification profiles, one scoping
+  the fixture role and refresh window and one recording the collection round and payload shape, so
+  the profile declarations, the data-element declarations and the embedded test-data payloads form a
+  single wired unit rather than three independent constructs.
+modelSources:
+  model:
+    root: amber-otter-3
+    files:
+      - test/amberotter3/data/AccessionFixtures.pure
+      - test/amberotter3/data/GerminationFixtures.pure
+      - test/amberotter3/domain/CorpusClassification.pure
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:profile
+stores: []
+complexity: basic
+tags:
+  - csv-payload
+  - data-element
+  - embedded-test-data
+  - json-payload
+  - profile-stereotype
+  - profile-tagged-value
+  - store-less

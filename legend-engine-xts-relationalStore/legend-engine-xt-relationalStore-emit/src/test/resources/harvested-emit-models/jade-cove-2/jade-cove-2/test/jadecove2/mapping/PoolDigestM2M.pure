@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadecove2::mapping::PoolDigestM2M
+(
+  *test::jadecove2::domain::PoolDigest[poolDigest]: Pure
+  {
+    ~src test::jadecove2::domain::PoolIntake
+    digestCode: $src.intakeCode->toUpper()->trim(),
+    poolCode: $src.poolCode->toUpper()->trim(),
+    gradeBand: test::jadecove2::function::gradeBand($src.sampleGrade),
+    noteSummary: test::jadecove2::function::noteSummary($src.sampleNote),
+    technicianLabel: test::jadecove2::function::technicianLabel($src.technicianCode)
+  }
+
+  testSuites:
+  [
+    digestBandSuite:
+    {
+      function: |test::jadecove2::domain::PoolDigest.all()->graphFetch(#{test::jadecove2::domain::PoolDigest{digestCode, poolCode, gradeBand, noteSummary, technicianLabel}}#)->serialize(#{test::jadecove2::domain::PoolDigest{digestCode, poolCode, gradeBand, noteSummary, technicianLabel}}#);
+      tests:
+      [
+        everyGradeBandAndBothNoteArms:
+        {
+          doc: 'Handed-in records cover the clean and silted grades, an unrecognised grade that falls onto the review band, and both arms of the note summary including the record with nothing written down.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::jadecove2::domain::PoolIntake:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"intakeCode":"pi-0001","poolCode":"tp-0001","sampleGrade":"clean","sampleNote":"low swell","technicianCode":"tc-01"},{"intakeCode":"pi-0002","poolCode":"tp-0002","sampleGrade":"SILTED","sampleNote":"  ","technicianCode":" tc-02 "},{"intakeCode":"pi-0003","poolCode":"tp-0003","sampleGrade":"unlogged","sampleNote":"resample asked","technicianCode":"tc-03"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeBandedDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestCode":"PI-0001","poolCode":"TP-0001","gradeBand":"CLEAN-SAMPLE","noteSummary":"NOTE:LOW SWELL","technicianLabel":"TECH/TC-01"},{"digestCode":"PI-0002","poolCode":"TP-0002","gradeBand":"SILTED-SAMPLE","noteSummary":"NO-NOTE","technicianLabel":"TECH/TC-02"},{"digestCode":"PI-0003","poolCode":"TP-0003","gradeBand":"REVIEW-SAMPLE","noteSummary":"NOTE:RESAMPLE ASKED","technicianLabel":"TECH/TC-03"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

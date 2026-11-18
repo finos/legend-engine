@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::amberquokka3::mapping::RefugeMapping
+(
+  *test::amberquokka3::domain::ValleyZone[valleyZone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberquokka3::store::RefugeRegisterDB]refuges.valley_zone.zone_code
+    )
+    ~mainTable [test::amberquokka3::store::RefugeRegisterDB]refuges.valley_zone
+    zoneCode: [test::amberquokka3::store::RefugeRegisterDB]refuges.valley_zone.zone_code,
+    zoneName: [test::amberquokka3::store::RefugeRegisterDB]refuges.valley_zone.zone_name,
+    terrainKind: toLower([test::amberquokka3::store::RefugeRegisterDB]refuges.valley_zone.terrain_kind)
+  }
+
+  *test::amberquokka3::domain::OccupancySpell[occupancySpell]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.spell_code
+    )
+    ~mainTable [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell
+    spellCode: [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.spell_code,
+    stayKind: toLower([test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.stay_kind),
+    guestParty: [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.guest_party,
+    arrivalDate: [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.arrival_date,
+    departureDate: [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.departure_date,
+    guestCount: [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.guest_count,
+    permitCode: [test::amberquokka3::store::RefugeRegisterDB]refuges.occupancy_spell.permit_code
+  }
+
+  *test::amberquokka3::domain::DormRoom[dormRoom]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberquokka3::store::RefugeRegisterDB]refuges.dorm_room.room_code
+    )
+    ~mainTable [test::amberquokka3::store::RefugeRegisterDB]refuges.dorm_room
+    roomCode: [test::amberquokka3::store::RefugeRegisterDB]refuges.dorm_room.room_code,
+    roomLabel: [test::amberquokka3::store::RefugeRegisterDB]refuges.dorm_room.room_label,
+    heatingKind: toUpper([test::amberquokka3::store::RefugeRegisterDB]refuges.dorm_room.heating_kind),
+    bunkCount: [test::amberquokka3::store::RefugeRegisterDB]refuges.dorm_room.bunk_count,
+    spells[occupancySpell]: [test::amberquokka3::store::RefugeRegisterDB]@Room_Spells
+  }
+
+  *test::amberquokka3::domain::MountainRefuge[mountainRefuge]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberquokka3::store::RefugeRegisterDB]refuges.mountain_refuge.refuge_code
+    )
+    ~mainTable [test::amberquokka3::store::RefugeRegisterDB]refuges.mountain_refuge
+    refugeCode: [test::amberquokka3::store::RefugeRegisterDB]refuges.mountain_refuge.refuge_code,
+    refugeName: [test::amberquokka3::store::RefugeRegisterDB]refuges.mountain_refuge.refuge_name,
+    wardenCode: trim([test::amberquokka3::store::RefugeRegisterDB]refuges.mountain_refuge.warden_code),
+    altitudeM: [test::amberquokka3::store::RefugeRegisterDB]refuges.mountain_refuge.altitude_m,
+    zone[valleyZone]: [test::amberquokka3::store::RefugeRegisterDB]@Refuge_Zone,
+    rooms[dormRoom]: [test::amberquokka3::store::RefugeRegisterDB]@Refuge_Rooms
+  }
+)

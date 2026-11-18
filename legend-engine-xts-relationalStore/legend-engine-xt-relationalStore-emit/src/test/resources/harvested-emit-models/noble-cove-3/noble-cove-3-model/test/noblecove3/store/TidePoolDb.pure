@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::noblecove3::store::TidePoolDb
+(
+  Schema shoreline
+  (
+    Table survey_station
+    (
+      station_code VARCHAR(12) PRIMARY KEY,
+      station_name VARCHAR(160) NOT NULL,
+      shore_aspect VARCHAR(24) NOT NULL,
+      established_on DATE NOT NULL,
+      tidal_range_metres DOUBLE NOT NULL
+    )
+    Table quadrat
+    (
+      station_code VARCHAR(12) PRIMARY KEY,
+      quadrat_code VARCHAR(12) PRIMARY KEY,
+      side_length_centimetres INTEGER NOT NULL,
+      height_above_chart_datum_metres DOUBLE NOT NULL,
+      permanently_marked VARCHAR(1) NOT NULL
+    )
+    Table organism
+    (
+      organism_code VARCHAR(12) PRIMARY KEY,
+      scientific_name VARCHAR(200) NOT NULL,
+      common_name VARCHAR(120),
+      first_recorded_on DATE NOT NULL,
+      taxon_kind VARCHAR(20) NOT NULL
+    )
+    Table invertebrate_detail
+    (
+      organism_code VARCHAR(12) PRIMARY KEY,
+      shell_present VARCHAR(1) NOT NULL,
+      mobility_class VARCHAR(24) NOT NULL,
+      shell_whorls INTEGER,
+      max_length_millimetres DOUBLE
+    )
+    Table alga_detail
+    (
+      organism_code VARCHAR(12) PRIMARY KEY,
+      holdfast_type VARCHAR(40) NOT NULL,
+      frond_length_centimetres DOUBLE NOT NULL
+    )
+    Table observation
+    (
+      observation_code VARCHAR(16) PRIMARY KEY,
+      observed_on DATE NOT NULL,
+      individuals_counted INTEGER NOT NULL,
+      percent_cover DOUBLE,
+      recorder_note VARCHAR(400),
+      station_code VARCHAR(12) NOT NULL,
+      quadrat_code VARCHAR(12) NOT NULL,
+      organism_code VARCHAR(12) NOT NULL,
+      surveyor_code VARCHAR(12)
+    )
+    Table surveyor
+    (
+      surveyor_code VARCHAR(12) PRIMARY KEY,
+      full_name VARCHAR(160) NOT NULL,
+      volunteer VARCHAR(1) NOT NULL,
+      accredited_on DATE
+    )
+    Table tidal_window
+    (
+      window_code VARCHAR(16) PRIMARY KEY,
+      low_water_at TIMESTAMP NOT NULL,
+      predicted_height_metres DOUBLE NOT NULL,
+      spring_tide VARCHAR(1) NOT NULL,
+      station_code VARCHAR(12) NOT NULL
+    )
+    Table substrate
+    (
+      substrate_code VARCHAR(12) PRIMARY KEY,
+      description VARCHAR(200) NOT NULL,
+      rugosity_index DOUBLE NOT NULL
+    )
+  )
+
+  Join StationQuadrat(shoreline.survey_station.station_code = shoreline.quadrat.station_code)
+  Join QuadratObservation(shoreline.quadrat.station_code = shoreline.observation.station_code
+    and shoreline.quadrat.quadrat_code = shoreline.observation.quadrat_code)
+  Join ObservationOrganism(shoreline.observation.organism_code = shoreline.organism.organism_code)
+  Join OrganismInvertebrateDetail(shoreline.organism.organism_code = shoreline.invertebrate_detail.organism_code)
+  Join OrganismAlgaDetail(shoreline.organism.organism_code = shoreline.alga_detail.organism_code)
+  Join ObservationSurveyor(shoreline.observation.surveyor_code = shoreline.surveyor.surveyor_code)
+  Join StationTidalWindow(shoreline.survey_station.station_code = shoreline.tidal_window.station_code)
+)

@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::tealotter5::domain::*;
+
+Association {doc.doc = 'A street tree owns its canopy inspections, crossing from a business-temporal planting into a bi-temporal inspection record.'} test::tealotter5::domain::StreetTree_InspectionEntry
+{
+  inspectedTree: StreetTree[1];
+  inspectionEntries: InspectionEntry[*];
+}
+
+Association {doc.doc = 'A street tree accumulates maintenance visits, crossing from a business-temporal planting into a processing-temporal visit log.'} test::tealotter5::domain::StreetTree_MaintenanceVisit
+{
+  maintainedTree: StreetTree[0..1];
+  maintenanceVisits: MaintenanceVisit[*];
+}
+
+Association {doc.doc = 'An arborist crew carries out maintenance visits, with both ends recorded on the processing timeline.'} test::tealotter5::domain::ArboristCrew_MaintenanceVisit
+{
+  assignedCrew: ArboristCrew[1];
+  performedVisits: MaintenanceVisit[*];
+}
+
+Association {doc.doc = 'A ward canopy zone groups planter beds, joining an unversioned zone to business-temporal beds.'} test::tealotter5::domain::CanopyZone_PlanterBed
+{
+  canopyZone: CanopyZone[1];
+  planterBeds: PlanterBed[*];
+}
+
+Association {doc.doc = 'A ward canopy zone also groups heritage trees so the heritage register can be reported per ward.'} test::tealotter5::domain::CanopyZone_HeritageTree
+{
+  heritageZone: CanopyZone[0..1];
+  heritageTrees: HeritageTree[*];
+}

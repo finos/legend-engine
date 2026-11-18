@@ -1,0 +1,57 @@
+name: opal-fossil-2
+title: "Opal Fossil 2 — A Bitemporal Fossil Determination Register Planned Under Two Keyed Execution Environments"
+description: >-
+  A palaeontological catalogue whose determinations are corrected over processing time and effective
+  over business time. A multi-execution service resolves the determinations believed on one date and
+  effective on another, then publishes a fifteen-column contract whose derivations all sit above the
+  temporal cut: case-folded and measured codes, a label built by a model function, arithmetic over the
+  confidence score, a conditional review state and the determined taxon reached through an association.
+  The same query and mapping are planned under two keyed environments that differ only in runtime and
+  connection, and a single-execution companion asserts the business-temporal cut over specimens. Suites
+  cover the in-range hit, the retired row inside its own window, and the date on which nothing is
+  effective at all.
+modelSources:
+  model:
+    root: opal-fossil-2
+    files:
+      - test/opalfossil2/connection/FossilConnections.pure
+      - test/opalfossil2/domain/FossilDomain.pure
+      - test/opalfossil2/mapping/FossilCatalogMapping.pure
+      - test/opalfossil2/runtime/FossilRuntimes.pure
+      - test/opalfossil2/service/DeterminationRegister.pure
+      - test/opalfossil2/service/SpecimenRegister.pure
+      - test/opalfossil2/store/FossilCatalogDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:conditional-expression
+  - query:project
+  - grammar:association
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - bitemporal
+  - business-temporal
+  - fossil-catalogue
+  - h2
+  - keyed-execution
+  - multi-execution-service
+  - plan-generation
+  - point-in-time
+  - projection
+  - service-test
+  - tabular-data-set

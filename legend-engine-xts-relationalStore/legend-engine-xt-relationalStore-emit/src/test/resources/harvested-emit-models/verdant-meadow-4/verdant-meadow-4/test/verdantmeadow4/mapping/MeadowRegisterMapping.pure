@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::verdantmeadow4::mapping::MeadowRegisterMapping
+(
+  include mapping demo::verdantmeadow4::mapping::MeadowBaseMapping
+
+  *demo::verdantmeadow4::domain::Meadow[meadow]: Relational
+  {
+    ~filter [demo::verdantmeadow4::store::MeadowDatabase]ListedMeadows
+    ~primaryKey
+    (
+      [demo::verdantmeadow4::store::MeadowDatabase]register.meadow.meadow_code
+    )
+    ~mainTable [demo::verdantmeadow4::store::MeadowDatabase]register.meadow
+    recordCode: [demo::verdantmeadow4::store::MeadowDatabase]register.meadow.meadow_code,
+    statusCode: [demo::verdantmeadow4::store::MeadowDatabase]register.meadow.status_code,
+    meadowCode: [demo::verdantmeadow4::store::MeadowDatabase]register.meadow.meadow_code,
+    meadowName: toUpper(trim([demo::verdantmeadow4::store::MeadowDatabase]register.meadow.meadow_name)),
+    regionCode: [demo::verdantmeadow4::store::MeadowDatabase]register.meadow.region_code,
+    zoneName: [demo::verdantmeadow4::store::MeadowDatabase]@Meadow_Region > (INNER) @Region_Zone | [demo::verdantmeadow4::store::MeadowDatabase]register.zone.zone_name,
+    sectorLabel: [demo::verdantmeadow4::store::MeadowDatabase]@Meadow_Region > (INNER) @Region_Zone | concat('SECTOR-', toUpper(substring([demo::verdantmeadow4::store::MeadowDatabase]register.zone.sector_label, 1, 4)))
+  }
+
+  *demo::verdantmeadow4::domain::Warden[warden]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::verdantmeadow4::store::MeadowDatabase]register.warden.warden_code
+    )
+    ~mainTable [demo::verdantmeadow4::store::MeadowDatabase]register.warden
+    recordCode: [demo::verdantmeadow4::store::MeadowDatabase]register.warden.warden_code,
+    wardenCode: [demo::verdantmeadow4::store::MeadowDatabase]register.warden.warden_code,
+    wardenName: [demo::verdantmeadow4::store::MeadowDatabase]register.warden.warden_name,
+    contactLabel: case(
+                    isNotEmpty([demo::verdantmeadow4::store::MeadowDatabase]register.warden.contact_text),
+                    toUpper([demo::verdantmeadow4::store::MeadowDatabase]register.warden.contact_text),
+                    sqlNull()
+                  )
+  }
+
+  testSuites:
+  [
+    registerSuite:
+    {
+      function: |demo::verdantmeadow4::domain::Meadow.all()->project(
+        [
+          col(m|$m.meadowCode, 'Meadow'),
+          col(m|$m.meadowName, 'Name'),
+          col(m|$m.regionCode, 'Region'),
+          col(m|$m.zoneName, 'Zone'),
+          col(m|$m.sectorLabel, 'Sector'),
+          col(m|$m.statusCode, 'Status')
+        ]
+      )->sort([asc('Meadow')]);
+      tests:
+      [
+        theClosedMeadowIsWithheldAndTheUnzonedRegionYieldsNoZone:
+        {
+          doc: 'The meadow class mapping in the including mapping carries its own store filter, so the closed meadow never appears; the listed meadow whose region carries no zone code resolves no zone name and its composed sector label degrades to the literal prefix alone, while the remaining meadows resolve both across the two-hop path.';
+          data:
+          [
+            demo::verdantmeadow4::store::MeadowDatabase:
+              Relational
+              #{
+                register.meadow:
+                  'meadow_code,meadow_name,region_code,status_code\n'+
+                  'M-01,lower hay meadow,R-01,LISTED\n'+
+                  'M-02,upper hay meadow,R-01,LISTED\n'+
+                  'M-03,fen meadow,R-02,LISTED\n'+
+                  'M-05,ridge meadow,R-03,LISTED\n'+
+                  'M-06,closed meadow,R-01,CLOSED\n';
+
+                register.region:
+                  'region_code,region_name,zone_code\n'+
+                  'R-01,Valley Region,Z-01\n'+
+                  'R-02,Fenland Region,Z-02\n'+
+                  'R-03,Ridge Region,\n';
+
+                register.zone:
+                  'zone_code,zone_name,sector_label\n'+
+                  'Z-01,Valley Zone,west sector\n'+
+                  'Z-02,Fenland Zone,east sector\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Meadow":"M-01","Name":"LOWER HAY MEADOW","Region":"R-01","Zone":"Valley Zone","Sector":"SECTOR-WEST","Status":"LISTED"},{"Meadow":"M-02","Name":"UPPER HAY MEADOW","Region":"R-01","Zone":"Valley Zone","Sector":"SECTOR-WEST","Status":"LISTED"},{"Meadow":"M-03","Name":"FEN MEADOW","Region":"R-02","Zone":"Fenland Zone","Sector":"SECTOR-EAST","Status":"LISTED"},{"Meadow":"M-05","Name":"RIDGE MEADOW","Region":"R-03","Zone":null,"Sector":"SECTOR-","Status":"LISTED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

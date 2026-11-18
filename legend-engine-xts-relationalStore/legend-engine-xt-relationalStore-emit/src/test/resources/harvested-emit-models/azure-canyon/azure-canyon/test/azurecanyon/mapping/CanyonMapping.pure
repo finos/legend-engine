@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azurecanyon::mapping::CanyonMapping
+(
+  include test::azurecanyon::mapping::FormationMapping
+
+  *test::azurecanyon::domain::RockLayer[layer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurecanyon::store::CanyonDB]canyon.rock_layer.layer_id
+    )
+    ~mainTable [test::azurecanyon::store::CanyonDB]canyon.rock_layer
+    name: [test::azurecanyon::store::CanyonDB]canyon.rock_layer.layer_name,
+    thicknessM: [test::azurecanyon::store::CanyonDB]canyon.rock_layer.thickness_m
+  }
+
+  test::azurecanyon::domain::Formation_Layer: Relational
+  {
+    AssociationMapping
+    (
+      formation[layer, formation]: [test::azurecanyon::store::CanyonDB]@Layer_Formation,
+      layers[formation, layer]: [test::azurecanyon::store::CanyonDB]@Layer_Formation
+    )
+  }
+
+  testSuites:
+  [
+    layerAsOfSuite:
+    {
+      function: |test::azurecanyon::domain::RockLayer.all(%2023-06-01, %2023-06-01)->project(
+  [
+    x|$x.name,
+    x|$x.thicknessM,
+    x|$x.formation.name
+  ],
+  [
+    'Layer',
+    'ThicknessM',
+    'Formation'
+  ]
+);
+      tests:
+      [
+        layersAsOfMidYear:
+        {
+          doc: 'Bitemporal point-in-time projection of a rock layer with its formation, exercising the relational association mapping across the Layer_Formation join.';
+          data:
+          [
+            test::azurecanyon::store::CanyonDB:
+              Relational
+              #{
+                canyon.formation:
+                  'formation_id,formation_name\n'+
+                  '1,Sunset Sandstone\n';
+                canyon.rock_layer:
+                  'layer_id,layer_name,thickness_m,formation_id,in_z,out_z,from_z,thru_z\n'+
+                  '1,Ochre Band,12.5,1,2023-01-01,9999-12-31,2023-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            oneRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Layer":"Ochre Band","ThicknessM":12.5,"Formation":"Sunset Sandstone"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

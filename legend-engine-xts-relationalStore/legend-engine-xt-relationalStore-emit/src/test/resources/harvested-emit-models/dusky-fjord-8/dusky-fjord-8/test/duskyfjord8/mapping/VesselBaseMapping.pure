@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyfjord8::mapping::VesselBaseMapping
+(
+  *test::duskyfjord8::domain::SurveyVessel[vessel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyfjord8::store::SurveyDb]survey.survey_vessel.vessel_id
+    )
+    ~mainTable [test::duskyfjord8::store::SurveyDb]survey.survey_vessel
+    vesselCode: [test::duskyfjord8::store::SurveyDb]survey.survey_vessel.vessel_code,
+    vesselName: [test::duskyfjord8::store::SurveyDb]survey.survey_vessel.vessel_name,
+    vesselGrade: [test::duskyfjord8::store::SurveyDb]survey.survey_vessel.vessel_grade,
+    ratedHours: [test::duskyfjord8::store::SurveyDb]survey.survey_vessel.rated_hours
+  }
+)

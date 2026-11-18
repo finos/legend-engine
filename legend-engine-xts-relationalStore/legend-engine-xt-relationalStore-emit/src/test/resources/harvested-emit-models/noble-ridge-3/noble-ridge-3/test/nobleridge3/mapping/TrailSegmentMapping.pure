@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::nobleridge3::mapping::TrailSegmentMapping
+(
+  include mapping test::nobleridge3::mapping::TerrainReferenceMapping
+
+  *test::nobleridge3::domain::TrailSegment[trailSegment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::nobleridge3::store::TrailNetworkDB]terrain.trail_segment.segment_code
+    )
+    ~mainTable [test::nobleridge3::store::TrailNetworkDB]terrain.trail_segment
+    segmentCode: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_segment.segment_code,
+    headCode: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_segment.head_code,
+    surfaceCode: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_segment.surface_code,
+    difficultyCode: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_segment.difficulty_code,
+    lengthMetres: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_segment.length_metres,
+    regionName: [test::nobleridge3::store::TrailNetworkDB]@Segment_Head > @Head_Region | [test::nobleridge3::store::TrailNetworkDB]terrain.region.region_name,
+    stewardCrewName: [test::nobleridge3::store::TrailNetworkDB]@Segment_Head > @Head_Region > @Region_Steward | [test::nobleridge3::store::TrailNetworkDB]terrain.steward_crew.crew_name
+  }
+
+  *test::nobleridge3::domain::TrailHead[trailHead]: Relational
+  {
+    ~primaryKey
+    (
+      [test::nobleridge3::store::TrailNetworkDB]terrain.trail_head.head_code
+    )
+    ~mainTable [test::nobleridge3::store::TrailNetworkDB]terrain.trail_head
+    headCode: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_head.head_code,
+    headName: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_head.head_name,
+    regionCode: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_head.region_code,
+    accessState: [test::nobleridge3::store::TrailNetworkDB]terrain.trail_head.access_state
+  }
+
+  test::nobleridge3::domain::SegmentHeadLink: Relational
+  {
+    AssociationMapping
+    (
+      trailHead[trailSegment, trailHead]: [test::nobleridge3::store::TrailNetworkDB]@Segment_Head,
+      trailSegments[trailHead, trailSegment]: [test::nobleridge3::store::TrailNetworkDB]@Segment_Head
+    )
+  }
+
+  test::nobleridge3::domain::HeadRegionLink: Relational
+  {
+    AssociationMapping
+    (
+      region[trailHead, region]: [test::nobleridge3::store::TrailNetworkDB]@Head_Region,
+      trailHeads[region, trailHead]: [test::nobleridge3::store::TrailNetworkDB]@Head_Region
+    )
+  }
+
+  test::nobleridge3::domain::RegionStewardLink: Relational
+  {
+    AssociationMapping
+    (
+      stewardCrew[region, stewardCrew]: [test::nobleridge3::store::TrailNetworkDB]@Region_Steward,
+      stewardedRegions[stewardCrew, region]: [test::nobleridge3::store::TrailNetworkDB]@Region_Steward
+    )
+  }
+
+  testSuites:
+  [
+    trailSegmentSuite:
+    {
+      function: |test::nobleridge3::domain::TrailSegment.all()->filter(s|($s.surfaceCode == 'SRF-GRAVEL') && ($s.regionName->isNotEmpty()))->project([s|$s.segmentCode, s|$s.regionName->toOne(), s|$s.stewardCrewName->toOne(), s|$s.lengthMetres], ['SegmentCode', 'RegionName', 'StewardCrew', 'LengthMetres'])->sort([asc('SegmentCode')]);
+      tests:
+      [
+        multiHopJoinHit:
+        {
+          doc: 'A gravel segment whose head is open reaches its region name across two hops and its steward crew across three, while a gravel segment behind a closed head drops out because the first hop misses.';
+          data:
+          [
+            test::nobleridge3::store::TrailNetworkDB:
+              Relational
+              #{
+                terrain.trail_segment:
+                  'segment_code,head_code,surface_code,difficulty_code,length_metres\n'+
+                  'SEG-001,HD-NORTH,SRF-GRAVEL,DIF-EASY,1800\n'+
+                  'SEG-002,HD-SOUTH,SRF-GRAVEL,DIF-MODERATE,2400\n'+
+                  'SEG-003,HD-NORTH,SRF-BOARDWALK,DIF-EASY,600\n';
+                terrain.trail_head:
+                  'head_code,head_name,region_code,access_state\n'+
+                  'HD-NORTH,Upper Ridge Trailhead,REG-RIDGE,ACCESS-OPEN\n'+
+                  'HD-SOUTH,Lower Marsh Trailhead,REG-MARSH,ACCESS-CLOSED\n';
+                terrain.region:
+                  'region_code,region_name,region_state\n'+
+                  'REG-RIDGE,Upper Ridge Reserve,REGION-ACTIVE\n'+
+                  'REG-MARSH,Lower Marsh Reserve,REGION-ACTIVE\n';
+                terrain.steward_crew:
+                  'steward_code,crew_name,region_code,crew_state\n'+
+                  'STW-01,Ridge Trail Crew,REG-RIDGE,CREW-ON-ROSTER\n'+
+                  'STW-02,Marsh Trail Crew,REG-MARSH,CREW-ON-ROSTER\n';
+              }#
+          ];
+          asserts:
+          [
+            oneMultiHopRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SegmentCode":"SEG-001","RegionName":"Upper Ridge Reserve","StewardCrew":"Ridge Trail Crew","LengthMetres":1800}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

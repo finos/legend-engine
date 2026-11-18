@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::gildedprairie::domain::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract, meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'Shape shared by every tracked prairie plot; asserted on a business timeline and recorded on a processing timeline, so a point read must pin both.'} test::gildedprairie::domain::PrairiePlotRecord
+{
+  plotCode: String[1];
+  plotName: String[1];
+  status: PlotStatus[1];
+  areaHectares: Float[1];
+  surveyorNote: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A plot grown to bulk up a seed supply rather than to be restored in place.'} test::gildedprairie::domain::SeedIncreasePlot extends PrairiePlotRecord
+{
+  nurseryBedLabel: String[1];
+  harvestKilos: Float[0..1];
+  rowSpacingCentimetres: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A plot being restored to prairie, carrying its burn rotation and soil description.'} test::gildedprairie::domain::RestorationPlot extends PrairiePlotRecord
+{
+  burnRegime: BurnRegime[1];
+  soilTexture: SoilTexture[1];
+  seedMixLabel: String[1];
+  lastBurnYear: Integer[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A collected or purchased seed lot, valid over the season it may be sown in.'} test::gildedprairie::domain::SeedLot
+{
+  lotCode: String[1];
+  speciesName: String[1];
+  sourceKind: SeedSourceKind[1];
+  collectedYear: Integer[1];
+  germinationPercent: Integer[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A species presence record made on a plot during one walkover.'} test::gildedprairie::domain::SpeciesObservation
+{
+  observationCode: String[1];
+  speciesName: String[1];
+  stemCount: Integer[0..1];
+  coverPercent: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A crew accountable for the fieldwork on a set of plots; not milestoned, so it is readable without a date.'} test::gildedprairie::domain::StewardCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  memberCount: Integer[1];
+  radioChannel: String[0..1];
+}

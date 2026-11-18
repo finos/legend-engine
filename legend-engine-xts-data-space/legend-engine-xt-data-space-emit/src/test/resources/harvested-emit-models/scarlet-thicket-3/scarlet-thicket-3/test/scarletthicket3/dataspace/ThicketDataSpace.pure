@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::scarletthicket3::dataspace::ThicketDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'nurseryWarehouse';
+      description: 'The single tier - the curated propagation mapping bound to the nursery warehouse connection.';
+      mapping: test::scarletthicket3::mapping::ThicketMapping;
+      defaultRuntime: test::scarletthicket3::runtime::ThicketWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'nurseryWarehouse';
+  title: 'Scarlet Thicket Propagation Nursery';
+  description: 'A catalogued entry point over the propagation nursery: seed lots with their inline origin and handling details, the beds and cultivars they are associated with, the crews that steward them, and the audit and rollup endpoints published over that model. Naming this element is enough to run the featured endpoints without naming the mapping or the runtime, which makes it a consistency check over every executable it lists.';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Grafted lot audit';
+      description: 'The featured endpoint whose deep predicate and subtype narrowing report the rootstock behind each surviving lot.';
+      executable: test::scarletthicket3::service::GraftedLotAudit;
+    },
+    {
+      id: 2;
+      title: 'Season grade rollup';
+      description: 'The endpoint that folds collected mass into season, grade and bed groups.';
+      executable: test::scarletthicket3::service::SeasonGradeRollup;
+    },
+    {
+      id: 3;
+      title: 'Habitat count board';
+      description: 'The endpoint that counts lots by the habitat carried on the inline origin detail.';
+      executable: test::scarletthicket3::service::HabitatCountBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'thicket-nursery-support@thicket-nursery.invalid';
+    documentationUrl: 'https://thicket-nursery.invalid/docs/propagation';
+  };
+}

@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarlagoon::service::BranchCirculation
+{
+  pattern: '/lunarlagoon/v1/branch/circulation/{minCheckouts}';
+  title: 'Lunar Lagoon - Branch Circulation Digest';
+  owners:
+  [
+    'lagoon-library-network',
+    'circulation-analytics'
+  ];
+  documentation: 'Flattens a nested branch checkout payload bound through the inline runtime model store connection into one digest per branch, computing the checkout span by date arithmetic and rolling up a distinct-title count, a longest span, a total span, a catalogued-category count and a reference-present flag. Only branches whose checkout count reaches the requested minimum are serialised.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minCheckouts: Integer[1]|test::lunarlagoon::domain::BranchDigest.all()->filter(
+        d|($d.checkoutCount >= $minCheckouts) && !$d.branch->isEmpty()
+      )->graphFetch(
+        #{
+          test::lunarlagoon::domain::BranchDigest{
+            branch,
+            checkoutCount,
+            distinctTitleCount,
+            longestCheckoutDays,
+            totalCheckoutDays,
+            cataloguedCount,
+            hasReference,
+            firstTitle
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarlagoon::domain::BranchDigest{
+            branch,
+            checkoutCount,
+            distinctTitleCount,
+            longestCheckoutDays,
+            totalCheckoutDays,
+            cataloguedCount,
+            hasReference,
+            firstTitle
+          }
+        }#
+      )};
+    mapping: test::lunarlagoon::mapping::CheckoutDigestM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::lunarlagoon::mapping::CheckoutDigestM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          checkoutFeed:
+          #{
+            JsonModelConnection
+            {
+              class: test::lunarlagoon::source::BranchLog;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    branchCirculationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          checkoutFeed:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"branchName":"MAPLE","checkouts":[{"title":"Tidewater","category":"FICTION","borrowedOn":"2026-01-05","returnBy":"2026-01-26"},{"title":"Harbor Song","category":"FICTION","borrowedOn":"2026-02-01","returnBy":"2026-02-15"},{"title":"Coastal Atlas","category":"REFERENCE","borrowedOn":"2026-03-01","returnBy":"2026-03-08"}]},{"branchName":"CEDAR","checkouts":[{"title":"Little Fern","category":"CHILDREN","borrowedOn":"2026-01-10","returnBy":"2026-02-01"},{"title":"Tidewater","category":"FICTION","borrowedOn":"2026-02-10","returnBy":"2026-02-20"}]},{"branchName":"BIRCH","checkouts":[{"title":"Chords","category":"MUSIC","borrowedOn":"2026-01-01","returnBy":"2026-01-30"}]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        branchRollup:
+        {
+          parameters:
+          [
+            minCheckouts = 2
+          ]
+          asserts:
+          [
+            digestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"branch":"MAPLE","checkoutCount":3,"distinctTitleCount":3,"longestCheckoutDays":21,"totalCheckoutDays":42,"cataloguedCount":2,"hasReference":true,"firstTitle":"Coastal Atlas"},{"branch":"CEDAR","checkoutCount":2,"distinctTitleCount":2,"longestCheckoutDays":22,"totalCheckoutDays":32,"cataloguedCount":2,"hasReference":false,"firstTitle":"Little Fern"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

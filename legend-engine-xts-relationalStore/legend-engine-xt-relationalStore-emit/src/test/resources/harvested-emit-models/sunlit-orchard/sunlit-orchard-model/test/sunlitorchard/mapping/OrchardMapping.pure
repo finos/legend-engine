@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitorchard::mapping::OrchardMapping
+(
+  include mapping test::sunlitorchard::mapping::OrchardBaseMapping
+
+  *test::sunlitorchard::domain::Block[block]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitorchard::store::OrchardDB]grove.block.block_code
+    )
+    ~mainTable [test::sunlitorchard::store::OrchardDB]grove.block
+    blockCode: [test::sunlitorchard::store::OrchardDB]grove.block.block_code,
+    blockName: [test::sunlitorchard::store::OrchardDB]grove.block.block_name,
+    rowCount: [test::sunlitorchard::store::OrchardDB]grove.block.row_count
+  }
+
+  *test::sunlitorchard::domain::HarvestBatch[harvestBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitorchard::store::OrchardDB]grove.harvest_batch.batch_code
+    )
+    ~mainTable [test::sunlitorchard::store::OrchardDB]grove.harvest_batch
+    batchCode: [test::sunlitorchard::store::OrchardDB]grove.harvest_batch.batch_code,
+    pickedOn: [test::sunlitorchard::store::OrchardDB]grove.harvest_batch.picked_on,
+    crateCount: [test::sunlitorchard::store::OrchardDB]grove.harvest_batch.crate_count
+  }
+
+  test::sunlitorchard::domain::Orchard_Block: Relational
+  {
+    AssociationMapping
+    (
+      orchard[block,orchard]: [test::sunlitorchard::store::OrchardDB]@BlockOrchard,
+      blocks[orchard,block]: [test::sunlitorchard::store::OrchardDB]@BlockOrchard
+    )
+  }
+
+  test::sunlitorchard::domain::Block_Variety: Relational
+  {
+    AssociationMapping
+    (
+      variety[block,variety]: [test::sunlitorchard::store::OrchardDB]@BlockVariety,
+      plantedBlocks[variety,block]: [test::sunlitorchard::store::OrchardDB]@BlockVariety
+    )
+  }
+
+  test::sunlitorchard::domain::Block_HarvestBatch: Relational
+  {
+    AssociationMapping
+    (
+      block[harvestBatch,block]: [test::sunlitorchard::store::OrchardDB]@BlockHarvestBatch,
+      harvestBatches[block,harvestBatch]: [test::sunlitorchard::store::OrchardDB]@BlockHarvestBatch
+    )
+  }
+
+  testSuites:
+  [
+    blockAcrossJoinSuite:
+    {
+      function: |test::sunlitorchard::domain::Block.all()->project(
+  [
+    b|$b.blockName,
+    b|$b.orchard.orchardName,
+    b|$b.variety.commonName
+  ],
+  [
+    'Block',
+    'Orchard',
+    'Variety'
+  ]
+);
+      tests:
+      [
+        blockJoinRows:
+        {
+          doc: 'Projects a block together with the orchard and variety reached over the declared association joins.';
+          data:
+          [
+            test::sunlitorchard::store::OrchardDB:
+              Relational
+              #{
+                grove.orchard:
+                  'orchard_code,orchard_name,region,hectares\n'+
+                  'ORC1,North Terrace Grove,Coastal Ridge,12.5\n';
+
+                grove.variety:
+                  'variety_code,common_name,rootstock\n'+
+                  'VAR1,Amber Crisp,Dwarfing\n';
+
+                grove.block:
+                  'block_code,block_name,row_count,orchard_code,variety_code\n'+
+                  'BLK1,Upper Rows,18,ORC1,VAR1\n';
+              }#
+          ];
+          asserts:
+          [
+            oneJoinedBlock:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"Upper Rows","Orchard":"North Terrace Grove","Variety":"Amber Crisp"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

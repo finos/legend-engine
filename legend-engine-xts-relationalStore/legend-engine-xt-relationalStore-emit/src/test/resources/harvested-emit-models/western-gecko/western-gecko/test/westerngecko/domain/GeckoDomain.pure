@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::westerngecko::domain::*;
+
+Enum {doc.doc = 'Broad habit group a gecko species belongs to.'} test::westerngecko::domain::SpeciesGroup
+{
+  rockDwelling,
+  arboreal,
+  terrestrial
+}
+
+Class {doc.doc = 'A monitored survey site with its habitat and protection status.'} test::westerngecko::domain::SurveySite
+{
+  siteName: String[1];
+  habitatKind: String[1];
+  protectionFlag: String[1];
+  protectedSite()
+  {
+    $this.protectionFlag == 'Y'
+  }: Boolean[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A gecko sighting as the survey register described it on a given day.'} test::westerngecko::domain::GeckoRecord
+{
+  recordCode: String[1];
+  species: SpeciesGroup[1];
+  observerName: String[1];
+  tailFlag: String[1];
+  site: SurveySite[1];
+  tags: ObservationTag[*];
+  tailIntact()
+  {
+    $this.tailFlag == 'Y'
+  }: Boolean[1];
+}
+
+Class {doc.doc = 'A free-text tag attached to a gecko sighting by the field observer.'} test::westerngecko::domain::ObservationTag
+{
+  tagLabel: String[1];
+}

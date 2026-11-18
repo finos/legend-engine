@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarhatchery::service::LakeReleaseRollup
+{
+  pattern: '/cedarhatchery/lakeReleaseRollup';
+  ownership: UserList { users: ['hatchery-lake-desk'] };
+  documentation: 'Aggregates the legacy register through the lake organisation runtime, keeping only the two lake rearing units and summing the release measure per unit, so a unit present in the register but outside the lake estate contributes nothing and a unit whose releases are all zero still reports a key.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::cedarhatchery::domain::RegisterRow.all()->filter(r|$r.unitCode->in(['LAKE-A', 'LAKE-B']))->groupBy([r|$r.unitCode], [agg(r|$r.releaseCount, y|$y->sum())], ['UnitCode', 'TotalReleased'])->sort([asc('UnitCode')]);
+    mapping: test::cedarhatchery::mapping::RegisterMapping;
+    runtime: test::cedarhatchery::runtime::LakeUnitRuntime;
+  }
+  testSuites:
+  [
+    lakeRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lakeRegisterFeed:
+            Relational
+            #{
+              register.register_row:
+                'register_code,period_month,unit_code,keeper_name,stock_count,release_count,loss_count\n'+
+                'RG-11,2026-01,LAKE-A,Elsa Ward,90,9,15\n'+
+                'RG-12,2026-01,LAKE-A,Finn Aro,40,1,150\n'+
+                'RG-13,2026-02,LAKE-B,Gus Lien,10,0,25\n'+
+                'RG-14,2026-02,OTHER-C,Nia Coop,8,6,\n';
+            }#,
+          lakePondFeed:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"pondRef":"pd-90","cycleMonth":"2026-01","unitRef":"lake-a","species":"Stickleback","wardenName":"Kai Ost","fingerlingCount":40,"releasedCount":9,"lossCount":15}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyLakeUnitsContribute:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoLakeUnits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"UnitCode":"LAKE-A","TotalReleased":10},{"UnitCode":"LAKE-B","TotalReleased":0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

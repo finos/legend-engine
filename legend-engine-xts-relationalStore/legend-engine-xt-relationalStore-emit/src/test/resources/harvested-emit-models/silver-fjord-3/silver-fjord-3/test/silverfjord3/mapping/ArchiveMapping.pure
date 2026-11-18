@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverfjord3::mapping::ArchiveMapping
+(
+  *test::silverfjord3::domain::RetiredStation[retiredStation]: Relational
+  {
+    ~filter [test::silverfjord3::store::ArchiveDb]RetiredSinceSurvey
+    ~primaryKey
+    (
+      [test::silverfjord3::store::ArchiveDb]archive.retired_station.station_code,
+      [test::silverfjord3::store::ArchiveDb]archive.retired_station.network_code,
+      [test::silverfjord3::store::ArchiveDb]archive.retired_station.region_code
+    )
+    ~mainTable [test::silverfjord3::store::ArchiveDb]archive.retired_station
+    stationCode: [test::silverfjord3::store::ArchiveDb]archive.retired_station.station_code,
+    networkCode: [test::silverfjord3::store::ArchiveDb]archive.retired_station.network_code,
+    regionCode: [test::silverfjord3::store::ArchiveDb]archive.retired_station.region_code,
+    stationName: [test::silverfjord3::store::ArchiveDb]archive.retired_station.station_name
+  }
+
+  testSuites:
+  [
+    retiredAsOfSuite:
+    {
+      function: |test::silverfjord3::domain::RetiredStation.all(%2026-06-01)->project(~[
+        Station: s|$s.stationCode,
+        Region: s|$s.regionCode,
+        Name: s|$s.stationName
+      ])->sort([~Station->ascending(), ~Region->ascending()]);
+      tests:
+      [
+        retiredStationsAsTheArchiveNowStands:
+        {
+          doc: 'Processing-temporal archive: a superseded version is out of range, a station retired before the survey is dropped by the store filter, one without a retirement time is dropped too, and two current rows differ only on the region key column.';
+          data:
+          [
+            test::silverfjord3::store::ArchiveDb:
+              Relational
+              #{
+                archive.retired_station:
+                  'station_code,network_code,region_code,station_name,retired_at,in_z,out_z\n'+
+                  'RS-01,NW-1,RG-1,Kelp Ledge,2021-03-01 00:00:00,2026-01-01,9999-12-31\n'+
+                  'RS-01,NW-1,RG-2,Kelp Ledge East,2022-03-01 00:00:00,2026-01-01,9999-12-31\n'+
+                  'RS-02,NW-1,RG-1,Draft Name,2021-04-01 00:00:00,2020-01-01,2025-12-31\n'+
+                  'RS-03,NW-1,RG-1,Lantern Rock,2015-06-01 00:00:00,2026-01-01,9999-12-31\n'+
+                  'RS-04,NW-2,RG-2,Silt Bar,,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            currentRetirements:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"RS-01","Region":"RG-1","Name":"Kelp Ledge"},{"Station":"RS-01","Region":"RG-2","Name":"Kelp Ledge East"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

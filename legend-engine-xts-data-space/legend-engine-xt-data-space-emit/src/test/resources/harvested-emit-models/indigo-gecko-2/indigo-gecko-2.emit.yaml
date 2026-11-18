@@ -1,0 +1,64 @@
+name: indigo-gecko-2
+title: "Indigo Gecko 2 - Maker-space tool toolshare tallies, rosters and overdue watch"
+description: >
+  A maker-space shares tools to members attached to workshop benches.
+  Checkouts reach the member, the bench and its steward over up to three to-one
+  hops, and the tool and its supplier over two; usage readings are embedded on
+  the checkout row, status codes translate to a toolshare state enumeration and a
+  case label, and a derived property sums wear and setup points. Period services take
+  year-month and bench codes from the URL, filter with negated contains,
+  starts-with and ends-with code tests and literal-list membership, then group
+  by bench, a conditional tool class and supplier summing wear and all points with
+  a non-zero total filter, or project navigated columns and deduplicate. An
+  overdue watch uses day differences, date adjustment and the current date over
+  empty and populated tag collections. Two data spaces expose the services and
+  template projections with a class diagram.
+modelSources:
+  model:
+    root: indigo-gecko-2
+    files:
+      - test/indigogecko2/connection/ToolshareConnections.pure
+      - test/indigogecko2/data/ToolshareFixture.pure
+      - test/indigogecko2/dataspace/ToolshareDataSpaces.pure
+      - test/indigogecko2/diagram/ToolshareDiagram.pure
+      - test/indigogecko2/domain/ToolshareDomain.pure
+      - test/indigogecko2/mapping/ToolshareMapping.pure
+      - test/indigogecko2/runtime/ToolshareRuntimes.pure
+      - test/indigogecko2/service/ToolshareServices.pure
+      - test/indigogecko2/store/ToolshareStore.pure
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:data-space-template-executable
+  - execution:service
+  - execution:service-mcp-server
+  - execution:service-ownership-did
+  - execution:service-path-parameter
+  - execution:service-user-ownership
+  - grammar:diagram
+  - query:collection-op
+  - query:conditional-expression
+  - query:date-arithmetic
+  - query:date-today
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - query:sort-limit
+  - query:string-function
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - h2
+  - maker-space
+  - service-test
+  - tool-sharing

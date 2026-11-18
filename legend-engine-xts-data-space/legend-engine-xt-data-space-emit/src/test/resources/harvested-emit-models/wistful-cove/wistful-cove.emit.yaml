@@ -1,0 +1,68 @@
+name: wistful-cove
+title: "Cove Mooring Survey — Assembled Mapping Set With Conditional And Arithmetic Transforms Over Processing-Temporal Stores"
+description: |
+  An advanced, deep processing-temporal model over a coastal cove mooring survey.
+  A base mapping binds the cove sites, shore zones, berth-class catalogue and shore
+  patrol log across three relational stores; the survey mapping includes it and adds
+  the mooring records, notes and tender runs, so the resolved mapping set is
+  assembled from two elements before plan generation. The mooring record carries an
+  eight-armed conditional transform with a null fallback, an arithmetic transform
+  over two numeric columns and a two-hop inner-join lookup, all attached to the same
+  aliased main table the milestoning rewrite windows. Six associations backed by
+  named joins let the queries traverse in both directions and fan out on the
+  collection ends, and the services combine date-parameterised retrieval with
+  membership, existential and element-wise collection operations. Two data spaces
+  publish the survey and reference surfaces as named execution contexts over the
+  in-process and cloud-warehouse runtimes.
+modelSources:
+  model:
+    root: wistful-cove
+    files:
+      - test/wistfulcove/connection/CoveConnections.pure
+      - test/wistfulcove/dataspace/CoveDataSpaces.pure
+      - test/wistfulcove/domain/CoveDomain.pure
+      - test/wistfulcove/mapping/CoveBaseMapping.pure
+      - test/wistfulcove/mapping/CoveSurveyMapping.pure
+      - test/wistfulcove/runtime/CoveRuntimes.pure
+      - test/wistfulcove/service/CoveReferenceServices.pure
+      - test/wistfulcove/service/MooringServices.pure
+      - test/wistfulcove/store/CoveStores.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - arithmetic-transform
+  - association
+  - collection-op
+  - conditional-transform
+  - data-space
+  - h2
+  - inner-join
+  - mapping-include
+  - mapping-test
+  - point-in-time
+  - processing-temporal
+  - relational
+  - service
+  - snowflake

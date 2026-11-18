@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverdelta::service::UnworkedBirds
+{
+  pattern: '/delta/v1/ringed-birds/unworked/{observationDate}';
+  title: 'Delta - Ringed Birds Without A Capture As Of';
+  owners:
+  [
+    'delta-ringing-scheme',
+    'wetland-monitoring'
+  ];
+  documentation: 'Negative collection shape: birds in force at the observation instant that carry no capture at all, so the quantifier is an emptiness test rather than an existence test.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {observationDate: StrictDate[1]|test::silverdelta::domain::RingedBird.all($observationDate)->filter(
+      b|$b.captures->isEmpty()
+    )->project(
+      [
+        b|$b.ringCode,
+        b|$b.station.stationName,
+        b|$b.ageClass
+      ],
+      [
+        'Bird/Ring',
+        'Station/Name',
+        'Bird/AgeClass'
+      ]
+    )->distinct();};
+    mapping: test::silverdelta::mapping::DeltaMapping;
+    runtime: test::silverdelta::runtime::DeltaRuntime;
+  }
+}
+
+###Service
+Service test::silverdelta::service::WarblerRingings
+{
+  pattern: '/delta/v1/ringed-birds/warblers/{observationDate}';
+  title: 'Delta - Warbler Ringings As Of';
+  owners:
+  [
+    'delta-ringing-scheme',
+    'wetland-monitoring'
+  ];
+  documentation: 'String-shaped narrowing over the traversed species name: the vernacular name is folded to lower case and tested for the requested substring before projection, so the fold and the substring test are rendered into the emitted predicate.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {observationDate: StrictDate[1], nameFragment: String[1]|test::silverdelta::domain::RingedBird.all($observationDate)->filter(
+      b|$b.species.commonName->toLower()->contains($nameFragment)
+    )->project(
+      [
+        b|$b.ringCode,
+        b|$b.species.commonName,
+        b|$b.species.migrationStrategy
+      ],
+      [
+        'Bird/Ring',
+        'Species/Common',
+        'Species/Strategy'
+      ]
+    )->sort(
+      [
+        asc('Bird/Ring')
+      ]
+    );};
+    mapping: test::silverdelta::mapping::DeltaMapping;
+    runtime: test::silverdelta::runtime::DeltaRuntime;
+  }
+}

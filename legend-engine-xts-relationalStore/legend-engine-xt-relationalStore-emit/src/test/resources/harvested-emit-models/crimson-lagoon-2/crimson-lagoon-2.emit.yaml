@@ -1,0 +1,45 @@
+name: crimson-lagoon-2
+title: "Crimson Lagoon 2 — Processing-Temporal Wetland Readings As-Of Service"
+description: |
+  A wetland water-quality corpus over a processing-temporally milestoned H2
+  store. `WaterReading` records turbidity samples versioned on the processing
+  timeline, so a query resolves them at an explicit as-of processing date and
+  superseded rows drop out of range. A single-execution service projects the
+  station, turbidity, sample year and a rendered turbidity value with a
+  distinct-and-sorted tabular result, driving EMIT test execution and
+  execution-plan generation over the point-in-time query.
+modelSources:
+  model:
+    root: crimson-lagoon-2
+    files:
+      - test/crimsonlagoon2/connection/WetlandConnection.pure
+      - test/crimsonlagoon2/domain/WetlandDomain.pure
+      - test/crimsonlagoon2/mapping/WetlandMapping.pure
+      - test/crimsonlagoon2/runtime/WetlandRuntime.pure
+      - test/crimsonlagoon2/service/ReadingsAsOf.pure
+      - test/crimsonlagoon2/store/WetlandDatabase.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - milestoning
+  - plan-generation
+  - point-in-time
+  - processing-temporal
+  - relational
+  - service-test
+  - wetland

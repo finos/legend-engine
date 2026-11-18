@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedthistle3::store::TrailNetworkDb
+(
+  Schema trail
+  (
+    Table trail_segment
+    (
+      segment_code VARCHAR(20) PRIMARY KEY,
+      path_code VARCHAR(40) NOT NULL,
+      crew_code VARCHAR(20) NOT NULL,
+      surface_code VARCHAR(20),
+      gradient_pct INTEGER NOT NULL,
+      span_metres INTEGER NOT NULL,
+      last_inspected_on DATE NOT NULL,
+      waymark_label VARCHAR(40),
+      ridge_flag VARCHAR(1),
+      ridge_exposure INTEGER
+    )
+  )
+
+  Filter RidgeSegments(trail.trail_segment.ridge_flag = 'Y')
+)

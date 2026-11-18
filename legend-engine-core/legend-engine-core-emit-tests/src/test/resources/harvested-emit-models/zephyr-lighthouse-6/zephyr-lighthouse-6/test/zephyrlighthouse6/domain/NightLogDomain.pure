@@ -1,0 +1,219 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::zephyrlighthouse6::domain::*;
+import test::zephyrlighthouse6::profile::*;
+
+Enum {doc.doc = 'The recording medium an exposure was captured onto during a night on the mountain.'} test::zephyrlighthouse6::domain::ExposureMedium
+{
+  GlassPlate,
+  NitrateFilm,
+  SpectralStrip,
+  SiliconDetector,
+  DriftScanTape
+}
+
+Enum {doc.doc = 'The physical condition a plate or strip was found in at the last archive sweep.'} test::zephyrlighthouse6::domain::PlateCondition
+{
+  Sound,
+  Fogged,
+  Cracked,
+  EmulsionLifting
+}
+
+Enum {doc.doc = 'The confidence a designator attached to the catalogue name given to an exposure.'} test::zephyrlighthouse6::domain::DesignationConfidence
+{
+  Confirmed,
+  Probable,
+  Blended,
+  Unresolved
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Anything the observatory logs, numbers and files into the plate archive; the root of the property hierarchy.'} test::zephyrlighthouse6::domain::LoggedRecord
+{
+  recordRef: String[1];
+  loggedOn: StrictDate[1];
+  archiveBoxCode: String[0..1];
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'A logged record produced by pointing an instrument at the sky, so it also carries where and when it was exposed.'} test::zephyrlighthouse6::domain::SkyExposure extends LoggedRecord
+{
+  exposedOn: StrictDate[0..1];
+  siteName: String[0..1];
+  siteAltitudeMetres: Integer[0..1];
+  medium: ExposureMedium[0..1];
+}
+
+Class <<NightLogCuration.reviewed>> {doc.doc = 'One developed photographic plate, the commonest thing the archive holds.', NightLogCuration.logSteward = 'archive-row-west', NightLogCuration.reductionCadence = 'seasonal'} test::zephyrlighthouse6::domain::PhotographicPlate extends SkyExposure
+{
+  plateFormat: String[0..1];
+  emulsionNote: String[0..1];
+  developedOn: StrictDate[0..1];
+  plateState: PlateCondition[0..1];
+}
+
+Class <<NightLogCuration.calibrationGrade>> {doc.doc = 'A dispersed spectrum strip kept alongside the direct plates.', NightLogCuration.archiveWindow = 'indefinite'} test::zephyrlighthouse6::domain::SpectrogramStrip extends SkyExposure
+{
+  gratingNote: String[0..1];
+  comparisonLampUsed: Boolean[0..1];
+  plateState: PlateCondition[0..1];
+}
+
+Class <<NightLogCuration.awaitingReduction>> {doc.doc = 'A digital detector frame written to the nightly archive rather than developed on glass.'} test::zephyrlighthouse6::domain::DetectorFrame extends SkyExposure
+{
+  integrationSeconds: Float[0..1];
+  readNoiseElectrons: Integer[0..1];
+  cooledDetector: Boolean[0..1];
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Anyone the observatory credits on an exposure or a catalogue designation.'} test::zephyrlighthouse6::domain::Observer
+{
+  observerRef: String[1];
+  displayName: String[1];
+}
+
+Class {doc.doc = 'An observatory staff astronomer on the night rota.'} test::zephyrlighthouse6::domain::StaffAstronomer extends Observer
+{
+  rotaSection: String[0..1];
+  specialityGroup: String[0..1];
+}
+
+Class {doc.doc = 'A visiting astronomer granted dome and archive access for an observing visit.'} test::zephyrlighthouse6::domain::GuestAstronomer extends Observer
+{
+  homeInstitute: String[0..1];
+  visitEndsOn: StrictDate[0..1];
+}
+
+Class {doc.doc = 'A block of allocated nights during which a run of exposures was taken.'} test::zephyrlighthouse6::domain::ObservingRun
+{
+  runRef: String[1];
+  runName: String[0..1];
+  openedOn: StrictDate[0..1];
+  closedOn: StrictDate[0..1];
+  skyRegionName: String[0..1];
+}
+
+Class {doc.doc = 'A catalogue name applied to an exposure on a given day, with the confidence the designator attached to it.'} test::zephyrlighthouse6::domain::TargetDesignation
+{
+  designationRef: String[1];
+  designatedOn: StrictDate[1];
+  catalogueName: String[0..1];
+  objectName: String[0..1];
+  confidence: DesignationConfidence[0..1];
+  designationNote: String[0..1];
+}
+
+Class <<NightLogCuration.reviewed>> {doc.doc = 'A physical cabinet, or a drawer within one, that logged records are filed into.', NightLogCuration.logSteward = 'archive-row-east'} test::zephyrlighthouse6::domain::ArchiveCabinet
+{
+  cabinetCode: String[1];
+  roomName: String[0..1];
+  drawerCount: Integer[0..1];
+  climateControlled: Boolean[0..1];
+}
+
+Class {doc.doc = 'A telescope, with the mount and aperture the observatory allocates nights against.'} test::zephyrlighthouse6::domain::Telescope
+{
+  telescopeRef: String[1];
+  telescopeName: String[0..1];
+  apertureMillimetres: Integer[0..1];
+  mountKind: String[0..1];
+}
+
+Class {doc.doc = 'An outbound study-handoff request raised against a logged record and closed when it comes home.'} test::zephyrlighthouse6::domain::StudyHandoff
+{
+  handoffRef: String[1];
+  raisedOn: StrictDate[1];
+  closedOn: StrictDate[0..1];
+  purposeNote: String[0..1];
+}
+
+Association {doc.doc = 'The catalogue designations applied to an exposure, resolved through the exposure supertype.'} test::zephyrlighthouse6::domain::Exposure_Designation
+{
+  designatedExposure: SkyExposure[0..1];
+  exposureDesignations: TargetDesignation[*];
+}
+
+Association {doc.doc = 'The designations credited to an astronomer, resolved through the observer supertype.'} test::zephyrlighthouse6::domain::Designation_Observer
+{
+  designator: Observer[0..1];
+  designationsMade: TargetDesignation[*];
+}
+
+Association {doc.doc = 'The exposures taken during an observing run, and the run an exposure came from.'} test::zephyrlighthouse6::domain::Run_Exposure
+{
+  sourceRun: ObservingRun[0..1];
+  runExposures: SkyExposure[*];
+}
+
+Association {doc.doc = 'The cabinet a developed plate is filed into, and the plates a cabinet holds.'} test::zephyrlighthouse6::domain::Plate_Cabinet
+{
+  plateCabinet: ArchiveCabinet[0..1];
+  filedPlates: PhotographicPlate[*];
+}
+
+Association {doc.doc = 'The cabinet a spectrum strip is filed into, and the strips a cabinet holds.'} test::zephyrlighthouse6::domain::Strip_Cabinet
+{
+  stripCabinet: ArchiveCabinet[0..1];
+  filedStrips: SpectrogramStrip[*];
+}
+
+Association {doc.doc = 'The study handoffs raised against a logged record, resolved through the logging supertype.'} test::zephyrlighthouse6::domain::Record_Handoff
+{
+  handedRecord: LoggedRecord[0..1];
+  recordHandoffs: StudyHandoff[*];
+}
+
+Association {doc.doc = 'The astronomers who took part in an observing run, and the runs an astronomer joined.'} test::zephyrlighthouse6::domain::Run_Observer
+{
+  runParty: Observer[*];
+  runsJoined: ObservingRun[*];
+}
+
+Association {doc.doc = 'The telescope an observing run was allocated on, and the runs a telescope carried.'} test::zephyrlighthouse6::domain::Run_Telescope
+{
+  runTelescope: Telescope[0..1];
+  telescopeRuns: ObservingRun[*];
+}
+
+Association {doc.doc = 'The staff astronomer who captured a detector frame, and the frames they captured.'} test::zephyrlighthouse6::domain::Frame_Observer
+{
+  capturedBy: StaffAstronomer[0..1];
+  capturedFrames: DetectorFrame[*];
+}
+
+Association {doc.doc = 'The astronomer who raised a study handoff, resolved through the observer supertype.'} test::zephyrlighthouse6::domain::Handoff_Observer
+{
+  handoffRequester: Observer[0..1];
+  handoffsRequested: StudyHandoff[*];
+}
+
+Association {doc.doc = 'The observing run a catalogue designation was raised during, and the designations from that run.'} test::zephyrlighthouse6::domain::Designation_Run
+{
+  designationRun: ObservingRun[0..1];
+  runDesignations: TargetDesignation[*];
+}
+
+Association {doc.doc = 'The staff astronomer who stewards a telescope, and the telescopes they steward.'} test::zephyrlighthouse6::domain::Telescope_Steward
+{
+  telescopeSteward: StaffAstronomer[0..1];
+  stewardedTelescopes: Telescope[*];
+}
+
+Association {doc.doc = 'The cabinets a visiting astronomer may open, and the visitors granted access to a cabinet.'} test::zephyrlighthouse6::domain::Guest_Cabinet
+{
+  cabinetVisitors: GuestAstronomer[*];
+  accessibleCabinets: ArchiveCabinet[*];
+}

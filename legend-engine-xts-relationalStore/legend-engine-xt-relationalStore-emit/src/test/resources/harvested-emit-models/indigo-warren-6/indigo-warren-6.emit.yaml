@@ -1,0 +1,57 @@
+name: indigo-warren-6
+title: "Windmill Millstone Dressing Register Read at a Business Point in Time"
+description: |
+  A windmill millstone register whose stones are business temporal, so every query
+  names a business date and the stone retired at the end of the previous year
+  surfaces no row. Each stone decides its grit label and its dressing note through
+  nested conditionals over the dressing grit and the furrow count, reaches its site
+  through one inner join and its county through a second hop onto the parish
+  relation, and totals its grinding load through an inline view that groups the runs
+  and admits only the dry ones. The site relation is restricted by a filter whose
+  sail kinds are a literal list, so the derelict mill is never read.
+modelSources:
+  model:
+    root: indigo-warren-6
+    files:
+      - test/indigowarren6/connection/MillConnections.pure
+      - test/indigowarren6/data/MillTestData.pure
+      - test/indigowarren6/domain/MillDomain.pure
+      - test/indigowarren6/mapping/MillMapping.pure
+      - test/indigowarren6/runtime/MillRuntimes.pure
+      - test/indigowarren6/store/MillDb.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal-list
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - conditional-transform
+  - inline-view
+  - literal-list-filter
+  - milling
+  - multi-hop-join
+  - windmill

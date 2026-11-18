@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::embercanyon3::domain::*;
+
+Class demo::embercanyon3::domain::Vault
+{
+  vaultCode: String[1];
+  accessionTotal: Integer[1];
+  seedTotal: Integer[1];
+  viewLabel: String[1];
+}
+
+Class demo::embercanyon3::domain::VaultYield
+{
+  vaultCode: String[1];
+  accessionTotal: Integer[1];
+  seedTotal: Integer[1];
+}
+
+Class demo::embercanyon3::domain::TrialSummary
+{
+  accessionCode: String[1];
+  emergedTotal: Integer[1];
+}
+
+Class demo::embercanyon3::domain::Accession
+{
+  accessionCode: String[1];
+  taxonName: String[1];
+  vaultCode: String[1];
+  collectedOn: StrictDate[1];
+  seedCount: Integer[1];
+  viabilityRate: Float[1];
+  provenance: ProvenanceStamp[1];
+  registrySource: String[1];
+  taxonLabel: String[1];
+  adjustedSeedCount: Integer[1];
+}
+
+Class demo::embercanyon3::domain::WildAccession extends Accession
+{
+  habitatCode: String[1];
+}
+
+Class demo::embercanyon3::domain::GerminationTrial
+{
+  trialCode: String[1];
+  accessionCode: String[1];
+  emergedCount: Integer[1];
+  trayLabel: String[1];
+}
+
+Class demo::embercanyon3::domain::TrialDigest
+{
+  trialCode: String[1];
+  accessionCode: String[1];
+  viabilityPercent: Float[1];
+  sourceLabel: String[1];
+}
+
+Class demo::embercanyon3::domain::ProvenanceStamp
+{
+  collector: String[1];
+  region: String[1];
+}

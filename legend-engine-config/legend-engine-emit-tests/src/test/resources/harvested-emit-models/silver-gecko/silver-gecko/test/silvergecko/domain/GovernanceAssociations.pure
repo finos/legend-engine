@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::silvergecko::domain::*;
+
+Association test::silvergecko::domain::Plot_Station
+{
+  plot: CollectionPlot[1];
+  station: FieldStation[1];
+}
+
+Association test::silvergecko::domain::Sheet_Plot
+{
+  sheet: SpecimenSheet[1];
+  collectionPlot: CollectionPlot[1];
+}
+
+Association test::silvergecko::domain::Assignment_Sheet
+{
+  assignment: StewardshipAssignment[1];
+  assignedSheet: SpecimenSheet[1];
+}
+
+Association test::silvergecko::domain::Assignment_Curator
+{
+  curatorAssignment: StewardshipAssignment[1];
+  curator: Curator[1];
+}
+
+Association test::silvergecko::domain::Transfer_Sheet
+{
+  transfer: SpecimenTransfer[1];
+  transferredSheet: SpecimenSheet[1];
+}
+
+Association test::silvergecko::domain::Entry_AccessionKey
+{
+  entry: AccessionEntry[1];
+  accessionKey: AccessionKey[1];
+}
+
+Association test::silvergecko::domain::Transfer_TransferKey
+{
+  keyedTransfer: SpecimenTransfer[1];
+  transferKey: TransferKey[1];
+}
+
+Association test::silvergecko::domain::Rule_Zone
+{
+  rule: StewardshipRule[1];
+  zone: HabitatZone[1];
+}
+
+Association test::silvergecko::domain::Cycle_Curator
+{
+  cycle: ReviewCycle[1];
+  reviewer: Curator[1];
+}
+
+Association test::silvergecko::domain::Task_Sheet
+{
+  task: DigitisationTask[1];
+  digitisedSheet: SpecimenSheet[1];
+}
+
+Association test::silvergecko::domain::Schedule_Rule
+{
+  schedule: RetentionSchedule[1];
+  scheduledRule: StewardshipRule[1];
+}
+
+Association test::silvergecko::domain::Treatment_Sheet
+{
+  treatment: ConservationTreatment[*];
+  treatedSheet: SpecimenSheet[1];
+}

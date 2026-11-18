@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum test::goldenarboretum4::domain::GrowthHabit
+{
+  TREE,
+  SHRUB,
+  CLIMBER,
+  HERB
+}
+
+Enum test::goldenarboretum4::domain::VigourBand
+{
+  STRONG,
+  MODERATE,
+  WEAK
+}
+
+Enum test::goldenarboretum4::domain::RootingMethod
+{
+  SOFTWOOD_CUTTING,
+  HARDWOOD_CUTTING,
+  LAYERING,
+  SEED
+}
+
+Enum test::goldenarboretum4::domain::StockGrade
+{
+  SALEABLE,
+  GROW_ON,
+  CULL
+}
+
+Enum test::goldenarboretum4::domain::ShadeTolerance
+{
+  FULL_SUN,
+  PART_SHADE,
+  DEEP_SHADE
+}
+
+Enum test::goldenarboretum4::domain::PropagationSeason
+{
+  SPRING,
+  SUMMER,
+  AUTUMN,
+  WINTER
+}
+
+Enum test::goldenarboretum4::domain::SoilPreference
+{
+  LOAM,
+  SAND,
+  CLAY,
+  PEAT_FREE
+}
+
+Class test::goldenarboretum4::domain::PropagationBatch
+{
+  batchCode: String[1];
+  taxonName: String[1];
+  familyName: String[0..1];
+  habit: test::goldenarboretum4::domain::GrowthHabit[1];
+  vigour: test::goldenarboretum4::domain::VigourBand[1];
+  rooting: test::goldenarboretum4::domain::RootingMethod[1];
+  grade: test::goldenarboretum4::domain::StockGrade[1];
+  cuttingsStruck: Float[0..1];
+  sownOn: StrictDate[0..1];
+  loggedAt: DateTime[0..1];
+  propagatorNote: String[0..1];
+}
+
+Class test::goldenarboretum4::domain::NurseryBed
+{
+  bedCode: String[1];
+  bedName: String[1];
+  shade: test::goldenarboretum4::domain::ShadeTolerance[1];
+  season: test::goldenarboretum4::domain::PropagationSeason[1];
+  soil: test::goldenarboretum4::domain::SoilPreference[1];
+  bedAreaSqm: Float[0..1];
+}

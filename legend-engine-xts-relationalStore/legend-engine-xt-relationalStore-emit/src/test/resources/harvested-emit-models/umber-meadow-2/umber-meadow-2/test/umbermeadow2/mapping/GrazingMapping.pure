@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umbermeadow2::mapping::GrazingMapping
+(
+  *test::umbermeadow2::domain::HerdAllocation[allocation_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbermeadow2::store::CommonsDb]grazing.herd_allocation.alloc_code,
+      [test::umbermeadow2::store::CommonsDb]grazing.herd_allocation.from_z
+    )
+    ~mainTable [test::umbermeadow2::store::CommonsDb]grazing.herd_allocation
+    allocCode: [test::umbermeadow2::store::CommonsDb]grazing.herd_allocation.alloc_code,
+    herdName: [test::umbermeadow2::store::CommonsDb]grazing.herd_allocation.herd_name,
+    headCount: [test::umbermeadow2::store::CommonsDb]grazing.herd_allocation.head_count,
+    allocationState: EnumerationMapping AllocationStateRegister: [test::umbermeadow2::store::CommonsDb]grazing.herd_allocation.state_code
+  }
+
+  *test::umbermeadow2::domain::GrazingBlock[block_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbermeadow2::store::CommonsDb]grazing.grazing_block.block_code,
+      [test::umbermeadow2::store::CommonsDb]grazing.grazing_block.from_z
+    )
+    ~mainTable [test::umbermeadow2::store::CommonsDb]grazing.grazing_block
+    blockCode: [test::umbermeadow2::store::CommonsDb]grazing.grazing_block.block_code,
+    blockName: [test::umbermeadow2::store::CommonsDb]grazing.grazing_block.block_name,
+    terrainClass: EnumerationMapping TerrainClassRegister: [test::umbermeadow2::store::CommonsDb]grazing.grazing_block.terrain_code
+  }
+
+  *test::umbermeadow2::domain::CommonsWarden[warden_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbermeadow2::store::CommonsDb]grazing.commons_warden.warden_code
+    )
+    ~mainTable [test::umbermeadow2::store::CommonsDb]grazing.commons_warden
+    wardenCode: [test::umbermeadow2::store::CommonsDb]grazing.commons_warden.warden_code,
+    wardenName: [test::umbermeadow2::store::CommonsDb]grazing.commons_warden.warden_name,
+    contactNote: [test::umbermeadow2::store::CommonsDb]grazing.commons_warden.contact_note
+  }
+
+  *test::umbermeadow2::domain::PatrolRound[patrol_register]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umbermeadow2::store::CommonsDb]grazing.patrol_round.round_code
+    )
+    ~mainTable [test::umbermeadow2::store::CommonsDb]grazing.patrol_round
+    roundCode: [test::umbermeadow2::store::CommonsDb]grazing.patrol_round.round_code,
+    patrolTeam: [test::umbermeadow2::store::CommonsDb]grazing.patrol_round.patrol_team
+  }
+
+  test::umbermeadow2::domain::AllocationState: EnumerationMapping AllocationStateRegister
+  {
+    ACTIVE: ['AC'],
+    RESTED: ['RE'],
+    SUSPENDED: ['SU']
+  }
+
+  test::umbermeadow2::domain::TerrainClass: EnumerationMapping TerrainClassRegister
+  {
+    UPLAND: ['UP'],
+    VALLEY: ['VA'],
+    RIDGE: ['RI']
+  }
+
+  test::umbermeadow2::domain::Allocation_Block: Relational
+  {
+    AssociationMapping
+    (
+      block[allocation_register, block_register]: [test::umbermeadow2::store::CommonsDb]@Register_Allocation_Block,
+      allocations[block_register, allocation_register]: [test::umbermeadow2::store::CommonsDb]@Register_Allocation_Block
+    )
+  }
+
+  test::umbermeadow2::domain::Block_Warden: Relational
+  {
+    AssociationMapping
+    (
+      warden[block_register, warden_register]: [test::umbermeadow2::store::CommonsDb]@Register_Block_Warden,
+      wardenBlocks[warden_register, block_register]: [test::umbermeadow2::store::CommonsDb]@Register_Block_Warden
+    )
+  }
+
+  test::umbermeadow2::domain::Block_Patrols: Relational
+  {
+    AssociationMapping
+    (
+      patrols[block_register, patrol_register]: [test::umbermeadow2::store::CommonsDb]@Register_Block_Patrol,
+      patrolBlock[patrol_register, block_register]: [test::umbermeadow2::store::CommonsDb]@Register_Block_Patrol
+    )
+  }
+)

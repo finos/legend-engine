@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::hazelthistle2::mapping::ReferenceMapping
+(
+  *demo::hazelthistle2::domain::Catchment[catchment]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::hazelthistle2::store::BogDB]peatland.catchment.catchment_code
+    )
+    ~mainTable [demo::hazelthistle2::store::BogDB]peatland.catchment
+    catchmentCode: [demo::hazelthistle2::store::BogDB]peatland.catchment.catchment_code,
+    catchmentName: [demo::hazelthistle2::store::BogDB]peatland.catchment.catchment_name
+  }
+
+  *demo::hazelthistle2::domain::BogPlot[bogPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::hazelthistle2::store::BogDB]peatland.bog_plot.plot_code
+    )
+    ~mainTable [demo::hazelthistle2::store::BogDB]peatland.bog_plot
+    plotCode: [demo::hazelthistle2::store::BogDB]peatland.bog_plot.plot_code,
+    plotLabel: [demo::hazelthistle2::store::BogDB]peatland.bog_plot.plot_label,
+    catchment[catchment]: [demo::hazelthistle2::store::BogDB]@Plot_Catchment
+  }
+)

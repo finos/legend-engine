@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::nobleotter::store::TrialStagingDB
+(
+  include test::nobleotter::store::SampleBase
+  include test::nobleotter::store::RefBase
+
+  Schema stage
+  (
+    View plot_nutrient_view
+    (
+      ~groupBy
+      (
+        field.sample_value.plot_code
+      )
+      plot_code: field.sample_value.plot_code PRIMARY KEY,
+      nitrate_total: sum(case(equal(field.sample_value.value_name, 'NITRATE'), plus(field.sample_value.amount_a, field.sample_value.amount_b), 0)),
+      phosphate_total: sum(case(equal(field.sample_value.value_name, 'PHOSPHATE'), plus(field.sample_value.amount_a, field.sample_value.amount_b), 0)),
+      potash_total: sum(case(or(equal(field.sample_value.value_name, 'POTASH'), equal(field.sample_value.value_name, 'POTASSIUM')), plus(field.sample_value.amount_a, field.sample_value.amount_b), 0))
+    )
+
+    View plot_load_view
+    (
+      plot_code: stage.plot_nutrient_view.plot_code PRIMARY KEY,
+      load_total: plus(stage.plot_nutrient_view.nitrate_total, stage.plot_nutrient_view.phosphate_total)
+    )
+
+    View trial_region_view
+    (
+      ~distinct
+      trial_code: ref.trial_block.trial_code PRIMARY KEY,
+      region_flag: case(equal([test::nobleotter::store::TrialStagingDB]@Trial_Station | ref.station.region_name, 'Northern Uplands'), 'UPLAND', 'LOWLAND')
+    )
+  )
+
+  Filter CerealPlots(field.plot_record.crop_code = 'CER')
+  Filter LegumePlots(field.plot_record.crop_code = 'LEG')
+
+  Join Plot_Trial(field.plot_record.trial_code = ref.trial_block.trial_code)
+  Join Trial_Station(ref.trial_block.station_code = ref.station.station_code)
+  Join Plot_Nutrient(field.plot_record.plot_code = stage.plot_nutrient_view.plot_code)
+  Join Plot_Load(field.plot_record.plot_code = stage.plot_load_view.plot_code)
+  Join Trial_Region(ref.trial_block.trial_code = stage.trial_region_view.trial_code)
+)

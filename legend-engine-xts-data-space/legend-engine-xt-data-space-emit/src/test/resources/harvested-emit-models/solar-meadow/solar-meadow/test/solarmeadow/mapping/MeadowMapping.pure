@@ -1,0 +1,334 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarmeadow::mapping::MeadowMapping
+(
+  *test::solarmeadow::domain::MeadowPlot[plot]: Relational
+  {
+    ~filter [test::solarmeadow::store::MeadowDatabase]LivePlot
+    ~primaryKey
+    (
+      [test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.plot_code
+    )
+    ~mainTable [test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot
+    plotCode: [test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.plot_code,
+    plotName: case(
+                isNotEmpty([test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.plot_name),
+                rtrim([test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.plot_name),
+                concat('UNNAMED PLOT ', [test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.plot_code)
+              ),
+    swardName: toUpper([test::solarmeadow::store::MeadowDatabase]@Plot_Sward | [test::solarmeadow::store::MeadowDatabase]habitat.sward_type.sward_name),
+    canopyTier: case(
+                  equal([test::solarmeadow::store::MeadowDatabase]@Plot_Sward | [test::solarmeadow::store::MeadowDatabase]habitat.sward_type.canopy_tier, 'T1'),
+                  'GROUND TIER',
+                  case(
+                    equal([test::solarmeadow::store::MeadowDatabase]@Plot_Sward | [test::solarmeadow::store::MeadowDatabase]habitat.sward_type.canopy_tier, 'T2'),
+                    'MID TIER',
+                    'UPPER TIER'
+                  )
+                ),
+    sownYear: [test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.sown_year,
+    areaM2: [test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.area_m2,
+    firstSurveyDate: [test::solarmeadow::store::MeadowDatabase]habitat.meadow_plot.first_survey_date,
+    summary[bloomSummary]: [test::solarmeadow::store::MeadowDatabase]@Plot_BloomView
+  }
+
+  *test::solarmeadow::domain::PlotBloomSummary[bloomSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarmeadow::store::MeadowDatabase]habitat.plot_bloom_view.plot_code
+    )
+    ~mainTable [test::solarmeadow::store::MeadowDatabase]habitat.plot_bloom_view
+    plotCode: [test::solarmeadow::store::MeadowDatabase]habitat.plot_bloom_view.plot_code,
+    countTally: [test::solarmeadow::store::MeadowDatabase]habitat.plot_bloom_view.count_tally,
+    totalStems: [test::solarmeadow::store::MeadowDatabase]habitat.plot_bloom_view.total_stems,
+    peakCover: [test::solarmeadow::store::MeadowDatabase]habitat.plot_bloom_view.peak_cover
+  }
+
+  *test::solarmeadow::domain::SwardType[sward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarmeadow::store::MeadowDatabase]habitat.sward_type.sward_code
+    )
+    ~mainTable [test::solarmeadow::store::MeadowDatabase]habitat.sward_type
+    swardCode: [test::solarmeadow::store::MeadowDatabase]habitat.sward_type.sward_code,
+    swardName: rtrim([test::solarmeadow::store::MeadowDatabase]habitat.sward_type.sward_name),
+    canopyTier: toUpper([test::solarmeadow::store::MeadowDatabase]habitat.sward_type.canopy_tier)
+  }
+
+  *test::solarmeadow::domain::BloomCount[count]: Relational
+  {
+    ~filter [test::solarmeadow::store::MeadowDatabase]TalliedCount
+    ~primaryKey
+    (
+      [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.count_id
+    )
+    ~mainTable [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count
+    countId: [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.count_id,
+    plotCode: [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.plot_code,
+    taxonCode: [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.taxon_code,
+    countedOn: [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.counted_on,
+    stemTally: [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.stem_tally,
+    coverPct: [test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct,
+    swardName: toUpper([test::solarmeadow::store::MeadowDatabase]@Count_Plot > (INNER) [test::solarmeadow::store::MeadowDatabase]@Plot_Sward | [test::solarmeadow::store::MeadowDatabase]habitat.sward_type.sward_name),
+    coverBand: case(
+                 isNotEmpty([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct),
+                 case(
+                   lessThan([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct, 1.0),
+                   'TRACE',
+                   case(
+                     lessThan([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct, 5.0),
+                     'SPARSE',
+                     case(
+                       lessThan([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct, 15.0),
+                       'PATCHY',
+                       case(
+                         lessThan([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct, 30.0),
+                         'MODEST',
+                         case(
+                           lessThan([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct, 50.0),
+                           'BROAD',
+                           case(
+                             lessThan([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct, 70.0),
+                             'DENSE',
+                             case(
+                               lessThan([test::solarmeadow::store::MeadowDatabase]habitat.bloom_count.cover_pct, 90.0),
+                               'CARPET',
+                               'CLOSED'
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+                 'UNSCORED'
+               )
+  }
+
+  *test::solarmeadow::domain::PollinatorTaxon[taxon]: Relational
+  {
+    ~filter [test::solarmeadow::store::MeadowDatabase]@Count_Taxon | [test::solarmeadow::store::MeadowDatabase]TalliedCount
+    ~primaryKey
+    (
+      [test::solarmeadow::store::MeadowDatabase]habitat.pollinator_taxon.taxon_code
+    )
+    ~mainTable [test::solarmeadow::store::MeadowDatabase]habitat.pollinator_taxon
+    taxonCode: [test::solarmeadow::store::MeadowDatabase]habitat.pollinator_taxon.taxon_code,
+    taxonName: rtrim([test::solarmeadow::store::MeadowDatabase]habitat.pollinator_taxon.taxon_name),
+    guildCode: case(
+                 isNotEmpty([test::solarmeadow::store::MeadowDatabase]habitat.pollinator_taxon.guild_code),
+                 toUpper([test::solarmeadow::store::MeadowDatabase]habitat.pollinator_taxon.guild_code),
+                 'UNGUILDED'
+               ),
+    forageSpan: [test::solarmeadow::store::MeadowDatabase]habitat.pollinator_taxon.forage_span
+  }
+
+  testSuites:
+  [
+    coverBandSuite:
+    {
+      function: |test::solarmeadow::domain::BloomCount.all()->project(
+        [
+          c|$c.countId,
+          c|$c.coverBand,
+          c|$c.swardName,
+          c|$c.countSeason()
+        ],
+        [
+          'Count',
+          'Band',
+          'Sward',
+          'Season'
+        ]
+      )->sort([asc('Count')]);
+      tests:
+      [
+        coverBands:
+        {
+          doc: 'Every arm of the eight-arm relational cover case is hit by one seeded row, the unrecorded cover falls through to the unscored sentinel, the zero-stem row is removed by the class-mapping filter, and each row resolves its sward through the two-hop count-to-plot-to-sward join path.';
+          data:
+          [
+            test::solarmeadow::store::MeadowDatabase:
+              Relational
+              #{
+                habitat.bloom_count:
+                  'count_id,plot_code,taxon_code,counted_on,stem_tally,cover_pct\n'+
+                  '1,P-01,T-BEE,2026-05-04,40,0.5\n'+
+                  '2,P-01,T-HOV,2026-05-11,25,3.0\n'+
+                  '3,P-01,T-BUT,2026-05-18,18,9.0\n'+
+                  '4,P-01,T-MOT,2026-06-25,12,22.0\n'+
+                  '5,P-02,T-BEE,2026-06-01,60,41.0\n'+
+                  '6,P-02,T-HOV,2026-06-08,35,64.0\n'+
+                  '7,P-02,T-BUT,2026-08-15,22,80.0\n'+
+                  '8,P-02,T-MOT,2026-08-22,15,96.0\n'+
+                  '9,P-02,T-BEE,2026-09-29,9,\n'+
+                  '10,P-02,T-HOV,2026-07-06,0,12.0\n';
+
+                habitat.meadow_plot:
+                  'plot_code,plot_name,sward_code,sown_year,area_m2,first_survey_date,retire_code,keeper_note\n'+
+                  'P-01,Chalk Ridge,S-CH,2018,4200.0,2019-06-01,LIVE,mown late\n'+
+                  'P-02,Mesic Terrace,S-MG,2020,3100.0,2021-06-01,LIVE,grazed\n';
+
+                habitat.sward_type:
+                  'sward_code,sward_name,canopy_tier\n'+
+                  'S-CH,Chalk Sward,T1\n'+
+                  'S-MG,Mesic Grass Sward,T2\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":1,"Band":"TRACE","Sward":"CHALK SWARD","Season":"EARLY"},{"Count":2,"Band":"SPARSE","Sward":"CHALK SWARD","Season":"EARLY"},{"Count":3,"Band":"PATCHY","Sward":"CHALK SWARD","Season":"EARLY"},{"Count":4,"Band":"MODEST","Sward":"CHALK SWARD","Season":"PEAK"},{"Count":5,"Band":"BROAD","Sward":"MESIC GRASS SWARD","Season":"PEAK"},{"Count":6,"Band":"DENSE","Sward":"MESIC GRASS SWARD","Season":"PEAK"},{"Count":7,"Band":"CARPET","Sward":"MESIC GRASS SWARD","Season":"LATE"},{"Count":8,"Band":"CLOSED","Sward":"MESIC GRASS SWARD","Season":"LATE"},{"Count":9,"Band":"UNSCORED","Sward":"MESIC GRASS SWARD","Season":"LATE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    plotSummarySuite:
+    {
+      function: |test::solarmeadow::domain::MeadowPlot.all()->project(
+        [
+          p|$p.plotCode,
+          p|$p.plotName,
+          p|$p.canopyTier,
+          p|$p.summary.countTally->toOne(),
+          p|$p.summary.totalStems->toOne(),
+          p|$p.summary.peakCover->toOne()
+        ],
+        [
+          'Plot',
+          'Name',
+          'Tier',
+          'Counts',
+          'Stems',
+          'PeakCover'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        plotSummary:
+        {
+          doc: 'Live plots reach the grouped inline view over the plot-to-view join, so the count tally, stem total and peak cover per plot come from the view; the unnamed plot takes the generated fallback name, the two canopy-tier arms and the upper-tier fallback are distinguished, and the retired and zero-area plots are removed by the class-mapping filter.';
+          data:
+          [
+            test::solarmeadow::store::MeadowDatabase:
+              Relational
+              #{
+                habitat.meadow_plot:
+                  'plot_code,plot_name,sward_code,sown_year,area_m2,first_survey_date,retire_code,keeper_note\n'+
+                  'P-01,Chalk Ridge,S-CH,2018,4200.0,2019-06-01,LIVE,mown late\n'+
+                  'P-02,,S-MG,2020,3100.0,2021-06-01,LIVE,grazed\n'+
+                  'P-03,Wet Flush,S-WF,2022,1800.0,2023-06-01,LIVE,scythed\n'+
+                  'P-04,Old Verge,S-CH,2011,900.0,2012-06-01,RETIRED,handed back\n'+
+                  'P-05,Empty Strip,S-MG,2024,0.0,2024-06-01,LIVE,not yet sown\n';
+
+                habitat.sward_type:
+                  'sward_code,sward_name,canopy_tier\n'+
+                  'S-CH,Chalk Sward,T1\n'+
+                  'S-MG,Mesic Grass Sward,T2\n'+
+                  'S-WF,Wet Flush Sward,T4\n';
+
+                habitat.bloom_count:
+                  'count_id,plot_code,taxon_code,counted_on,stem_tally,cover_pct\n'+
+                  '1,P-01,T-BEE,2026-05-04,40,0.5\n'+
+                  '2,P-01,T-HOV,2026-05-11,25,3.0\n'+
+                  '3,P-02,T-BEE,2026-06-01,60,41.0\n'+
+                  '4,P-03,T-BUT,2026-06-15,12,9.0\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Name":"Chalk Ridge","Tier":"GROUND TIER","Counts":2,"Stems":65,"PeakCover":3.0},{"Plot":"P-02","Name":"UNNAMED PLOT P-02","Tier":"MID TIER","Counts":1,"Stems":60,"PeakCover":41.0},{"Plot":"P-03","Name":"Wet Flush","Tier":"UPPER TIER","Counts":1,"Stems":12,"PeakCover":9.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    taxonSuite:
+    {
+      function: |test::solarmeadow::domain::PollinatorTaxon.all()->project(
+        [
+          t|$t.taxonCode,
+          t|$t.taxonName,
+          t|$t.guildCode,
+          t|$t.forageSpan
+        ],
+        [
+          'Taxon',
+          'Name',
+          'Guild',
+          'Span'
+        ]
+      )->sort([asc('Taxon')]);
+      tests:
+      [
+        foragingTaxa:
+        {
+          doc: 'The cross-table class-mapping filter keeps only taxa that appear on a bloom count carrying stems, so the never-counted taxon and the taxon seen only on a zero-stem count are both dropped; the blank guild code falls through to the unguilded sentinel.';
+          data:
+          [
+            test::solarmeadow::store::MeadowDatabase:
+              Relational
+              #{
+                habitat.pollinator_taxon:
+                  'taxon_code,taxon_name,guild_code,forage_span\n'+
+                  'T-BEE,Long Tongued Bee,LONG,45\n'+
+                  'T-BUT,Meadow Butterfly,,60\n'+
+                  'T-HOV,Hover Fly,SHORT,30\n'+
+                  'T-MOT,Night Moth,NIGHT,25\n';
+
+                habitat.bloom_count:
+                  'count_id,plot_code,taxon_code,counted_on,stem_tally,cover_pct\n'+
+                  '1,P-01,T-BEE,2026-05-04,40,0.5\n'+
+                  '2,P-01,T-BUT,2026-05-11,25,3.0\n'+
+                  '3,P-01,T-HOV,2026-05-18,0,9.0\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Taxon":"T-BEE","Name":"Long Tongued Bee","Guild":"LONG","Span":45},{"Taxon":"T-BUT","Name":"Meadow Butterfly","Guild":"UNGUILDED","Span":60}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

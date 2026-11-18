@@ -1,0 +1,82 @@
+name: scarlet-arboretum-4
+title: "Scarlet Arboretum - a store-free specimen register assembled from two filtered slices of one document extent under an operation union"
+description: |
+  A specimen measurement register that never touches a database: every published record is computed
+  from inbound measurement documents alone. The inbound shape is a supertype carrying the measured
+  values and three derivations - a normalised vigour key, a bed label and a note count - which the
+  transforms read instead of the stored values, and two subtypes add the walked-survey identity and
+  the review identity respectively. Two class implementations of one published type take disjoint
+  source-side slices of that extent through their own predicates on the routing attribute, and an
+  operation implementation unions them, so a document reaches exactly one slice and neither slice can
+  see the other's rows. The published values are all derived: a specimen label and a three-arm bed
+  provenance chain with an unzoned arm, a canopy band selecting among four thresholds plus an
+  unmeasured fallback, a care digest folded out of a collection of notes, and a vigour band resolved
+  through an enumeration mapping whose input is itself a nested selection - a pruning note overrides
+  the stored code, and one stored code declares no translation at all so the band resolves to
+  nothing. Both steward subtypes are mapped from the same documents, one of them under an
+  enumeration-mapped tier, and the published type constrains its reference, label, ring count, digest
+  and steward identities. One mapping test suite drives every alternative arm, the all-absent
+  fallbacks and the disjointness of the two slices; two services read the union through a reusable
+  document fixture, one narrowing by a requested collection of care tags and a review window measured
+  back from a supplied date, the other narrowing the stewards to the walked-survey subtype so the
+  request reaches a property the queried supertype does not declare.
+modelSources:
+  model:
+    root: scarlet-arboretum-4
+    files:
+      - test/scarletarboretum4/connection/ArboretumConnections.pure
+      - test/scarletarboretum4/data/SubmissionFixtures.pure
+      - test/scarletarboretum4/domain/ArboretumDomain.pure
+      - test/scarletarboretum4/domain/SubmissionDomain.pure
+      - test/scarletarboretum4/function/ArboretumFunctions.pure
+      - test/scarletarboretum4/mapping/ArboretumDigestM2M.pure
+      - test/scarletarboretum4/mapping/ArboretumEnumMappings.pure
+      - test/scarletarboretum4/profile/ArboretumProfile.pure
+      - test/scarletarboretum4/runtime/ArboretumRuntimes.pure
+      - test/scarletarboretum4/service/ArboretumRecordRegister.pure
+      - test/scarletarboretum4/service/StewardedRecordRegister.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:constraint
+  - grammar:enumeration
+  - grammar:class-inheritance
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-derived-source-property
+  - mapping:m2m-source-filter
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:router-union
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores:
+  - none
+complexity: intermediate
+tags:
+  - arboretum
+  - class-constraint
+  - conditional-transform
+  - derived-property
+  - enumeration-mapping
+  - graph-fetch
+  - inheritance
+  - mapping-include
+  - mapping-test
+  - model-to-model
+  - operation-mapping
+  - profile
+  - reusable-test-data
+  - service-test
+  - source-filter
+  - subtype-cast
+  - union

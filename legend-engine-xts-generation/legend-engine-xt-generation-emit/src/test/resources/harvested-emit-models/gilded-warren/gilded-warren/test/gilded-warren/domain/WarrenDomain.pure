@@ -1,0 +1,195 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::gildedwarren::domain::*;
+
+Enum test::gildedwarren::domain::AnimalSex
+{
+  MALE,
+  FEMALE,
+  UNKNOWN
+}
+
+Enum test::gildedwarren::domain::HealthStatus
+{
+  HEALTHY,
+  INJURED,
+  UNDERWEIGHT,
+  DECEASED
+}
+
+Enum test::gildedwarren::domain::SurveyMethod
+{
+  DIRECT_COUNT,
+  CAMERA_TRAP,
+  BURROW_TAG,
+  SCAT_TRANSECT
+}
+
+Class {meta::pure::profiles::doc.doc = 'Shared identity for any animal tracked across the warren survey programme.'} test::gildedwarren::domain::TrackedAnimal
+{
+  tagId: String[1];
+  weightGrams: Integer[0..1];
+  sex: AnimalSex[1];
+  health: HealthStatus[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rabbit resident of a warren colony.'} test::gildedwarren::domain::Rabbit extends TrackedAnimal
+{
+  earNotchCode: String[1];
+  litterCount: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A badger tracked to its sett within the warren system.'} test::gildedwarren::domain::Badger extends TrackedAnimal
+{
+  clanName: String[1];
+  strideCentimetres: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fox observed foraging around the warren.'} test::gildedwarren::domain::Fox extends TrackedAnimal
+{
+  coatPattern: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stoat recorded near the burrow entrances.'} test::gildedwarren::domain::Stoat extends TrackedAnimal
+{
+  seasonalCoat: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A hare grazing on the surrounding forage areas.'} test::gildedwarren::domain::Hare extends TrackedAnimal
+{
+  formLocation: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The whole burrow system observed as one monitored unit.'} test::gildedwarren::domain::Warren
+{
+  warrenCode: String[1];
+  gridReference: String[1];
+  establishedYear: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single underground chamber within a warren.'} test::gildedwarren::domain::BurrowChamber
+{
+  chamberLabel: String[1];
+  depthCentimetres: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tunnel connecting two chambers of the warren.'} test::gildedwarren::domain::Tunnel
+{
+  tunnelLabel: String[1];
+  lengthCentimetres: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A social group of animals sharing one warren.'} test::gildedwarren::domain::Colony
+{
+  colonyName: String[1];
+  headcount: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The land area a colony ranges over.'} test::gildedwarren::domain::Territory
+{
+  territoryName: String[1];
+  areaHectares: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A patch of vegetation the colony forages on.'} test::gildedwarren::domain::ForageArea
+{
+  patchLabel: String[1];
+  dominantPlant: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field observer running the survey.'} test::gildedwarren::domain::Observer
+{
+  observerName: String[1];
+  permitCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single field survey visit.'} test::gildedwarren::domain::SurveySession
+{
+  sessionCode: String[1];
+  method: SurveyMethod[1];
+  sessionYear: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A trail camera deployed at a burrow entrance.'} test::gildedwarren::domain::TrailCamera
+{
+  cameraSerial: String[1];
+  resolutionLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A weather reading recorded during a survey session.'} test::gildedwarren::domain::WeatherReading
+{
+  readingLabel: String[1];
+  temperatureCelsius: Integer[0..1];
+}
+
+Association test::gildedwarren::domain::Warren_Chamber
+{
+  warren: Warren[1];
+  chambers: BurrowChamber[*];
+}
+
+Association test::gildedwarren::domain::Chamber_Tunnel
+{
+  chamber: BurrowChamber[1];
+  tunnels: Tunnel[*];
+}
+
+Association test::gildedwarren::domain::Warren_Colony
+{
+  homeWarren: Warren[1];
+  colonies: Colony[*];
+}
+
+Association test::gildedwarren::domain::Colony_Animal
+{
+  colony: Colony[1];
+  members: TrackedAnimal[*];
+}
+
+Association test::gildedwarren::domain::Colony_Territory
+{
+  rangingColony: Colony[1];
+  territory: Territory[1];
+}
+
+Association test::gildedwarren::domain::Territory_Forage
+{
+  territory: Territory[1];
+  foragePatches: ForageArea[*];
+}
+
+Association test::gildedwarren::domain::Session_Observer
+{
+  session: SurveySession[1];
+  observers: Observer[*];
+}
+
+Association test::gildedwarren::domain::Session_Warren
+{
+  surveyedWarren: Warren[1];
+  sessions: SurveySession[*];
+}
+
+Association test::gildedwarren::domain::Session_Camera
+{
+  cameraSession: SurveySession[1];
+  cameras: TrailCamera[*];
+}
+
+Association test::gildedwarren::domain::Session_Weather
+{
+  weatherSession: SurveySession[1];
+  readings: WeatherReading[*];
+}

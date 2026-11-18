@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+
+Class <<temporal.businesstemporal>> test::coppertundra3::domain::EnclosureCensus
+{
+  enclosureCode: String[1];
+  censusStatus: String[1];
+  habitatTier: String[1];
+  zoneName: String[1];
+  zoneDescription: String[1];
+  sectorName: String[1];
+  sectorDescription: String[1];
+  reserveName: String[1];
+  reserveDescription: String[1];
+  keeperTeam: String[1];
+  stewardName: String[1];
+  surveyMethod: String[1];
+  accessLevel: String[1];
+  substrateClass: String[1];
+  regionCode: String[1];
+  observedOn: DateTime[1];
+  certifiedThrough: StrictDate[1];
+  patrolDays: Integer[1];
+  dayCount: Integer[1];
+  fencedFlag: String[1];
+  shadedFlag: String[1];
+  wateredFlag: String[1];
+  signedFlag: String[1];
+  gatedFlag: String[1];
+  pavedFlag: String[1];
+  lockedFlag: String[1];
+  mappedFlag: String[1];
+  headcount: Integer[1];
+  forageKg: Float[1];
+}

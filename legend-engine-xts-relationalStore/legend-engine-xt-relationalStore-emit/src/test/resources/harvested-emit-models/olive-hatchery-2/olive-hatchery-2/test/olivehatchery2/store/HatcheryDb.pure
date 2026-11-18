@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::olivehatchery2::store::HatcheryDb
+(
+  Schema hatchery
+  (
+    Table broodstock_lot
+    (
+      lot_id INTEGER PRIMARY KEY,
+      lot_code VARCHAR(16),
+      origin_bay VARCHAR(64),
+      conditioned_on DATE,
+      record_code VARCHAR(16),
+      lot_note VARCHAR(256)
+    )
+    Table spawning_run
+    (
+      run_id INTEGER PRIMARY KEY,
+      lot_id INTEGER,
+      run_code VARCHAR(16),
+      spawned_on DATE,
+      water_temp_c FLOAT,
+      record_code VARCHAR(16),
+      run_note VARCHAR(256)
+    )
+    Table larval_batch
+    (
+      batch_id INTEGER PRIMARY KEY,
+      run_id INTEGER,
+      batch_code VARCHAR(16),
+      tank_code VARCHAR(16),
+      stocked_count INTEGER,
+      stocked_on DATE,
+      vigour_code VARCHAR(8),
+      record_code VARCHAR(16),
+      batch_note VARCHAR(256)
+    )
+    Table tank_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      batch_id INTEGER,
+      read_on DATE,
+      larval_density INTEGER,
+      survival_pct INTEGER,
+      feed_grams FLOAT
+    )
+    Table grading_event
+    (
+      event_id INTEGER PRIMARY KEY,
+      batch_id INTEGER,
+      graded_on DATE,
+      retained_count INTEGER,
+      mesh_micron INTEGER
+    )
+  )
+
+  Schema facility
+  (
+    Table rearing_tank
+    (
+      tank_code VARCHAR(16) PRIMARY KEY,
+      hall_code VARCHAR(16),
+      volume_litres INTEGER
+    )
+    Table hatchery_hall
+    (
+      hall_code VARCHAR(16) PRIMARY KEY,
+      site_code VARCHAR(16),
+      hall_name VARCHAR(64)
+    )
+    Table hatchery_site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(64),
+      shoreline VARCHAR(64)
+    )
+    Table water_source
+    (
+      source_code VARCHAR(16) PRIMARY KEY,
+      site_code VARCHAR(16),
+      source_kind VARCHAR(16)
+    )
+  )
+
+  Join Run_Lot(hatchery.spawning_run.lot_id = hatchery.broodstock_lot.lot_id)
+  Join Batch_Run(hatchery.larval_batch.run_id = hatchery.spawning_run.run_id)
+  Join Batch_Tank(hatchery.larval_batch.tank_code = facility.rearing_tank.tank_code)
+  Join Tank_Hall(facility.rearing_tank.hall_code = facility.hatchery_hall.hall_code)
+  Join Hall_Site(facility.hatchery_hall.site_code = facility.hatchery_site.site_code)
+  Join Site_Water(facility.hatchery_site.site_code = facility.water_source.site_code)
+  Join Reading_Batch(hatchery.tank_reading.batch_id = hatchery.larval_batch.batch_id)
+  Join Grading_Batch(hatchery.grading_event.batch_id = hatchery.larval_batch.batch_id)
+)

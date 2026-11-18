@@ -1,0 +1,230 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberlantern2::service::KilnRunTallyAsOf
+{
+  pattern: '/emberlantern2/v1/kilnRuns/{processingDate}';
+  title: 'Ember Lantern - Kiln Run Tally As Of';
+  ownership: UserList { users: ['lantern-workshop-records', 'glassworks-operations'] };
+  documentation: 'Reads the kiln runs through the single-class mapping at the requested instant and keeps the runs meeting a peak-temperature floor, so a run whose processing window has closed is excluded by the rewrite rather than by the predicate.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], minTemp: Integer[1]|test::emberlantern2::domain::KilnRun.all($processingDate)->filter(
+      k|$k.peakTempC >= $minTemp
+    )->project(
+      [
+        k|$k.batchCode,
+        k|$k.kilnCode,
+        k|$k.peakTempC
+      ],
+      [
+        'Batch Code',
+        'Kiln Code',
+        'Peak Temp C'
+      ]
+    )->sort(
+      [
+        asc('Batch Code'),
+        asc('Kiln Code')
+      ]
+    )};
+    mapping: test::emberlantern2::mapping::KilnRunMapping;
+    runtime: test::emberlantern2::runtime::LanternWorkshopRuntime;
+  }
+  testSuites:
+  [
+    kilnRunTallyAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          workshopH2:
+            Relational
+            #{
+      workshop.lantern_batch:
+        'batch_id,batch_code,workshop_code,unit_count,glaze_ratio,wick_grade,fired_on,in_z,out_z\n'+
+        '1,B-100,WS-1,120,0.45,G1,2026-01-10,2026-01-01,2026-03-01\n'+
+        '1,B-100,WS-1,150,0.55,G1,2026-02-10,2026-03-01,9999-12-31\n'+
+        '2,B-200,WS-2,80,0.3,G2,2026-02-20,2026-02-01,9999-12-31\n'+
+        '3,B-300,WS-1,40,0.1,G3,2026-01-05,2026-01-01,2026-02-01\n'+
+        '4,B-400,WS-2,200,0.75,G2,2026-05-01,2026-06-01,9999-12-31\n';
+
+      workshop.workshop_site:
+        'site_id,workshop_code,site_name,region_code,in_z,out_z\n'+
+        '1,WS-1,Ember Lane Workshop,R-N,2026-01-01,9999-12-31\n'+
+        '2,WS-2,Harbour Glassworks,R-S,2026-01-01,9999-12-31\n';
+
+      workshop.kiln_run:
+        'run_id,batch_code,kiln_code,peak_temp_c,in_z,out_z\n'+
+        '1,B-100,K-1,980,2026-01-01,9999-12-31\n'+
+        '2,B-100,K-2,1040,2026-01-01,9999-12-31\n'+
+        '3,B-200,K-1,760,2026-01-01,2026-03-01\n'+
+        '4,B-300,K-3,880,2026-01-01,9999-12-31\n';
+
+      archive.batch_note:
+        'note_id,batch_code,note_text,noted_on,in_z,out_z\n'+
+        '1,B-100,Second firing recorded,2026-02-11,2026-01-01,9999-12-31\n'+
+        '2,B-200,Wick grade re-checked,2026-02-21,2026-01-01,9999-12-31\n'+
+        '3,B-300,Batch withdrawn from run,2026-01-06,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        closedRunExcluded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-04-01,
+            minTemp = 800
+          ]
+          asserts:
+          [
+            tallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch Code":"B-100","Kiln Code":"K-1","Peak Temp C":980},{"Batch Code":"B-100","Kiln Code":"K-2","Peak Temp C":1040},{"Batch Code":"B-300","Kiln Code":"K-3","Peak Temp C":880}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstantSeesClosedRun:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-15,
+            minTemp = 700
+          ]
+          asserts:
+          [
+            earlierTallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch Code":"B-100","Kiln Code":"K-1","Peak Temp C":980},{"Batch Code":"B-100","Kiln Code":"K-2","Peak Temp C":1040},{"Batch Code":"B-200","Kiln Code":"K-1","Peak Temp C":760},{"Batch Code":"B-300","Kiln Code":"K-3","Peak Temp C":880}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::emberlantern2::service::BatchNotesAsOf
+{
+  pattern: '/emberlantern2/v1/batchNotes/{processingDate}';
+  title: 'Ember Lantern - Batch Notes As Of';
+  ownership: UserList { users: ['lantern-workshop-records', 'glassworks-operations'] };
+  documentation: 'Reads the archived notes through the archive-schema mapping at the requested instant, so schema qualification and the temporal window both appear in the generated statement.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::emberlantern2::domain::BatchNote.all($processingDate)->project(
+      [
+        n|$n.batchCode,
+        n|$n.noteText,
+        n|$n.notedOn
+      ],
+      [
+        'Batch Code',
+        'Note Text',
+        'Noted On'
+      ]
+    )->sort(
+      [
+        asc('Batch Code')
+      ]
+    )};
+    mapping: test::emberlantern2::mapping::ArchiveNoteMapping;
+    runtime: test::emberlantern2::runtime::LanternWorkshopRuntime;
+  }
+  testSuites:
+  [
+    batchNotesAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          workshopH2:
+            Relational
+            #{
+      workshop.lantern_batch:
+        'batch_id,batch_code,workshop_code,unit_count,glaze_ratio,wick_grade,fired_on,in_z,out_z\n'+
+        '1,B-100,WS-1,120,0.45,G1,2026-01-10,2026-01-01,2026-03-01\n'+
+        '1,B-100,WS-1,150,0.55,G1,2026-02-10,2026-03-01,9999-12-31\n'+
+        '2,B-200,WS-2,80,0.3,G2,2026-02-20,2026-02-01,9999-12-31\n'+
+        '3,B-300,WS-1,40,0.1,G3,2026-01-05,2026-01-01,2026-02-01\n'+
+        '4,B-400,WS-2,200,0.75,G2,2026-05-01,2026-06-01,9999-12-31\n';
+
+      workshop.workshop_site:
+        'site_id,workshop_code,site_name,region_code,in_z,out_z\n'+
+        '1,WS-1,Ember Lane Workshop,R-N,2026-01-01,9999-12-31\n'+
+        '2,WS-2,Harbour Glassworks,R-S,2026-01-01,9999-12-31\n';
+
+      workshop.kiln_run:
+        'run_id,batch_code,kiln_code,peak_temp_c,in_z,out_z\n'+
+        '1,B-100,K-1,980,2026-01-01,9999-12-31\n'+
+        '2,B-100,K-2,1040,2026-01-01,9999-12-31\n'+
+        '3,B-200,K-1,760,2026-01-01,2026-03-01\n'+
+        '4,B-300,K-3,880,2026-01-01,9999-12-31\n';
+
+      archive.batch_note:
+        'note_id,batch_code,note_text,noted_on,in_z,out_z\n'+
+        '1,B-100,Second firing recorded,2026-02-11,2026-01-01,9999-12-31\n'+
+        '2,B-200,Wick grade re-checked,2026-02-21,2026-01-01,9999-12-31\n'+
+        '3,B-300,Batch withdrawn from run,2026-01-06,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        withdrawnNoteExcluded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-04-01
+          ]
+          asserts:
+          [
+            noteRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch Code":"B-100","Note Text":"Second firing recorded","Noted On":"2026-02-11"},{"Batch Code":"B-200","Note Text":"Wick grade re-checked","Noted On":"2026-02-21"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::goldenridge2::service::IntakeMismatches
+{
+  pattern: '/goldenridge/v1/mismatches';
+  title: 'Intake Mismatch Findings';
+  owners:
+  [
+    'herbarium-curation'
+  ];
+  documentation: 'Lists the vouchers whose intake rollup disagrees with the herbarium sheet count, keeping only the findings whose verdict is not a clean match.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::goldenridge2::domain::IntakeMismatch.all()->filter(
+      m|$m.mismatchVerdict != 'MATCHED'
+    )->project(
+      ~[
+        Voucher: m|$m.voucherCode,
+        Verdict: m|$m.mismatchVerdict,
+        Sheets: m|$m.sheetCount,
+        Intake: m|$m.intakeTotal->toOne()
+      ]
+    )->sort(
+      [
+        ~Voucher->ascending()
+      ]
+    );
+    mapping: demo::goldenridge2::mapping::RidgeCrossMapping;
+    runtime: demo::goldenridge2::runtime::RidgeSurveyRuntime;
+  }
+  testSuites:
+  [
+    intakeMismatchesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herbariumConnection:
+            Relational
+            #{
+              herbarium.sheet_record:
+                'sheet_id,voucher_code,taxon_code,collector_code,mount_count,vigour_score,handling_code,valid_from,valid_thru\n'+
+                'S01,V01,T1,C1,1,5,,2026-01-01,9999-12-31\n'+
+                'S11,V01,T1,C1,3,8,,2026-01-01,9999-12-31\n'+
+                'S02,V02,T1,C1,1,15,,2026-01-01,9999-12-31\n'+
+                'S03,V03,T2,C2,2,25,,2026-01-01,9999-12-31\n';
+
+              accession.accession_lot:
+                'batch_id,voucher_code,lot_count,batch_state\n'+
+                'B1,V01,4,S\n'+
+                'B2,V02,1,S\n'+
+                'B3,V03,2,\n';
+            }#,
+          stationConnection:
+            Relational
+            #{
+              station.station_ref:
+                'station_code,station_name\n'+
+                'ST1,Upper Ridge Hut\n';
+
+              station.field_log:
+                'log_code,voucher_code,station_code,observer_name,tally\n'+
+                'L01,V01,ST1,Rowan Ash,2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        unmatchedVouchers:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            overRecordedOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Voucher":"V01","Verdict":"OVER_RECORDED","Sheets":2,"Intake":4}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

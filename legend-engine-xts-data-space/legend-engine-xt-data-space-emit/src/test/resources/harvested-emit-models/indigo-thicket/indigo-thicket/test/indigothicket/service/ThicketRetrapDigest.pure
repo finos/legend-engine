@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigothicket::service::ThicketRetrapDigest
+{
+  pattern: '/indigothicket/v1/retrap-digest';
+  title: 'Indigo Thicket - Retrap Digest';
+  documentation: 'Keeps the retrapped records that carry at least one sighting recorded by one of the requested observer roles, so the collection reached through the sighting join decides membership rather than a column of the record itself, projects the site name and the derived guild, narrows the projected rows to the two guilds of interest and collapses the result, so retraps that agree on site and guild digest to one row.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {observerRoles: String[*]|test::indigothicket::domain::RingingRecord.all()->filter(
+      r|($r.retrap == true) && $r.sightings->exists(s|$s.observerRole->in($observerRoles))
+    )->project(
+      [
+        r|$r.site.siteName,
+        r|test::indigothicket::function::guildOf($r.speciesCode)
+      ],
+      [
+        'Site',
+        'Guild'
+      ]
+    )->filter(
+      r|$r.getString('Guild')->in(['WARBLER_GUILD', 'TIT_GUILD'])
+    )->distinct()};
+    mapping: test::indigothicket::mapping::ThicketMapping;
+    runtime: test::indigothicket::runtime::ThicketSurveyRuntime;
+  }
+  testSuites:
+  [
+    retrapDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse:
+            Relational
+            #{
+              thicket.ringing_site:
+                'site_code,site_name,habitat_code\n'+
+                'ST-1,Ridge Thicket,scrub\n'+
+                'ST-2,Hollow Coppice,coppice\n';
+
+              thicket.record_sighting:
+                'sighting_code,record_code,observer_role,sighting_note\n'+
+                'SI-01,RR-02,ringer_trainee,ring read at the feeder\n'+
+                'SI-02,RR-05,ringer_lead,ring read in the hand\n'+
+                'SI-03,RR-05,ringer_trainee,\n'+
+                'SI-04,RR-01,ringer_lead,first capture only\n'+
+                'SI-05,RR-03,ringer_lead,colour ring read\n'+
+                'SI-06,RR-06,ringer_lead,second retrap of the season\n';
+
+              thicket.ringing_record:
+                'record_code,site_code,species_code,wing_mm,mass_g,ringed_at,checked_at,retrap,adult\n'+
+                'RR-01,ST-1,wa-blackcap,72,18,2026-02-10 08:00:00.000,2026-02-11 08:00:00.000,false,true\n'+
+                'RR-02,ST-1,ti-bluetit,64,11,2026-02-12 08:00:00.000,2026-02-13 08:00:00.000,true,true\n'+
+                'RR-03,ST-2,fi-chaffinch,92,24,2026-02-14 08:00:00.000,2026-02-15 08:00:00.000,true,false\n'+
+                'RR-05,ST-1,wa-chiffchaff,68,8,2026-02-16 08:00:00.000,2026-02-17 08:00:00.000,true,true\n'+
+                'RR-06,ST-1,wa-willowwarbler,70,9,2026-02-18 08:00:00.000,2026-02-19 08:00:00.000,true,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        twoRetrapsOfOneGuildAtOneSiteDigestAsOneRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observerRoles = ['RINGER_LEAD']
+          ]
+          asserts:
+          [
+            theFinchGuildIsExcludedByTheProjectedFilterAndTheTwoWarblerRetrapsCollapse:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"Ridge Thicket","Guild":"WARBLER_GUILD"}]';
+                  }#;
+              }#
+          ]
+        },
+        aRoleNoSightingCarriesLeavesTheDigestEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observerRoles = ['RINGER_WARDEN']
+          ]
+          asserts:
+          [
+            theCollectionTestOverTheSightingJoinRejectsEveryRetrap:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

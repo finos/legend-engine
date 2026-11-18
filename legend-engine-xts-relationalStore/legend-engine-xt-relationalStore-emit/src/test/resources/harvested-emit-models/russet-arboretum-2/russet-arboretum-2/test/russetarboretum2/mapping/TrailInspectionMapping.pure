@@ -1,0 +1,235 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetarboretum2::mapping::TrailInspectionMapping
+(
+  include mapping test::russetarboretum2::mapping::TrailReferenceMapping
+
+  *test::russetarboretum2::domain::TrailInspection[trailInspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetarboretum2::store::TrailDatabase]field.trail_inspection.inspection_code
+    )
+    ~mainTable [test::russetarboretum2::store::TrailDatabase]field.trail_inspection
+    inspectionCode: [test::russetarboretum2::store::TrailDatabase]field.trail_inspection.inspection_code,
+    loggedOn: [test::russetarboretum2::store::TrailDatabase]field.trail_inspection.logged_on,
+    terrain: EnumerationMapping TerrainMapping: [test::russetarboretum2::store::TrailDatabase]field.trail_inspection.terrain_code,
+    severityIndex: [test::russetarboretum2::store::TrailDatabase]field.trail_inspection.severity_index,
+    washCount: [test::russetarboretum2::store::TrailDatabase]field.trail_inspection.wash_count,
+    erosionIndex: plus(
+      times([test::russetarboretum2::store::TrailDatabase]field.trail_inspection.severity_index, 10),
+      [test::russetarboretum2::store::TrailDatabase]field.trail_inspection.wash_count
+    ),
+    repairPriority: case(
+      equal([test::russetarboretum2::store::TrailDatabase]field.trail_inspection.terrain_code, 'SC'),
+      'STABILISE',
+      case(
+        equal([test::russetarboretum2::store::TrailDatabase]field.trail_inspection.terrain_code, 'LO'),
+        'REGRADE',
+        sqlNull()
+      )
+    ),
+    inspectionYear: year([test::russetarboretum2::store::TrailDatabase]field.trail_inspection.logged_on),
+    registerTag: 'TRAIL REGISTER',
+    regionName: [test::russetarboretum2::store::TrailDatabase]@Inspection_Segment > @Segment_Steward > @Steward_District > @District_Region | [test::russetarboretum2::store::TrailDatabase]geo.region.region_name,
+    segment[trailSegment]: [test::russetarboretum2::store::TrailDatabase]@Inspection_Segment
+  }
+
+  testSuites:
+  [
+    inspectionTimelineSuite:
+    {
+      function: |test::russetarboretum2::domain::TrailInspection.all(%2026-03-01)->graphFetch(
+        #{
+          test::russetarboretum2::domain::TrailInspection{
+            inspectionCode,
+            loggedOn,
+            terrain,
+            severityIndex,
+            washCount,
+            erosionIndex,
+            repairPriority,
+            inspectionYear,
+            registerTag,
+            regionName,
+            segment{
+              segmentCode,
+              segmentName,
+              steward{
+                partyCode,
+                partyName,
+                radioCall
+              }
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::russetarboretum2::domain::TrailInspection{
+            inspectionCode,
+            loggedOn,
+            terrain,
+            severityIndex,
+            washCount,
+            erosionIndex,
+            repairPriority,
+            inspectionYear,
+            registerTag,
+            regionName,
+            segment{
+              segmentCode,
+              segmentName,
+              steward{
+                partyCode,
+                partyName,
+                radioCall
+              }
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        openVersionsWithDerivations:
+        {
+          doc: 'Graph-fetches the inspection versions open on the queried business date, so the two priority arms and the unresolved fall-through are asserted alongside the arithmetic erosion index, the calendar year of the logged day, the mapped register tag and the four-hop path that walks segment, steward, district and region. One version closed before the queried date and is out of range, and the segment whose steward the roster does not publish reaches no region.';
+          data:
+          [
+            test::russetarboretum2::store::TrailDatabase:
+              Relational
+              #{
+                field.trail_segment:
+                  'segment_code,segment_name,steward_code\n'+
+                  'SG-1,Ridge Traverse,ST-1\n'+
+                  'SG-2,Fen Boardwalk,ST-9\n';
+
+                roster.steward:
+                  'steward_code,steward_name,radio_call,district_code\n'+
+                  'ST-1,Ada Steward,ALPHA-1,DS-1\n'+
+                  'ST-9,Ben Steward,BRAVO-9,DS-9\n';
+
+                geo.district:
+                  'district_code,district_name,region_code\n'+
+                  'DS-1,Upper Valley,RG-1\n';
+
+                geo.region:
+                  'region_code,region_name\n'+
+                  'RG-1,Northern Uplands\n';
+
+                field.trail_inspection:
+                  'inspection_code,logged_on,terrain_code,severity_index,wash_count,segment_code,inspection_note,from_z,thru_z\n'+
+                  'TI-01,2026-01-05,SC,9,3,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-02,2026-02-20,LO,7,1,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-03,2026-01-10,BW,5,0,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-04,2026-02-25,LO,4,2,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-05,2026-01-20,SC,2,6,SG-2,,2026-01-01,9999-12-31\n'+
+                  'TI-06,2025-12-01,LO,8,4,SG-1,,2025-11-01,2026-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            fiveOpenVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"inspectionCode":"TI-01","loggedOn":"2026-01-05","terrain":"SCREE","severityIndex":9,"washCount":3,"erosionIndex":93,"repairPriority":"STABILISE","inspectionYear":2026,"registerTag":"TRAIL REGISTER","regionName":"Northern Uplands","segment":{"segmentCode":"SG-1","segmentName":"Ridge Traverse","steward":{"partyCode":"ST-1","partyName":"Ada Steward","radioCall":"ALPHA-1"}}},{"inspectionCode":"TI-02","loggedOn":"2026-02-20","terrain":"LOAM","severityIndex":7,"washCount":1,"erosionIndex":71,"repairPriority":"REGRADE","inspectionYear":2026,"registerTag":"TRAIL REGISTER","regionName":"Northern Uplands","segment":{"segmentCode":"SG-1","segmentName":"Ridge Traverse","steward":{"partyCode":"ST-1","partyName":"Ada Steward","radioCall":"ALPHA-1"}}},{"inspectionCode":"TI-03","loggedOn":"2026-01-10","terrain":"BOARDWALK","severityIndex":5,"washCount":0,"erosionIndex":50,"repairPriority":null,"inspectionYear":2026,"registerTag":"TRAIL REGISTER","regionName":"Northern Uplands","segment":{"segmentCode":"SG-1","segmentName":"Ridge Traverse","steward":{"partyCode":"ST-1","partyName":"Ada Steward","radioCall":"ALPHA-1"}}},{"inspectionCode":"TI-04","loggedOn":"2026-02-25","terrain":"LOAM","severityIndex":4,"washCount":2,"erosionIndex":42,"repairPriority":"REGRADE","inspectionYear":2026,"registerTag":"TRAIL REGISTER","regionName":"Northern Uplands","segment":{"segmentCode":"SG-1","segmentName":"Ridge Traverse","steward":{"partyCode":"ST-1","partyName":"Ada Steward","radioCall":"ALPHA-1"}}},{"inspectionCode":"TI-05","loggedOn":"2026-01-20","terrain":"SCREE","severityIndex":2,"washCount":6,"erosionIndex":26,"repairPriority":"STABILISE","inspectionYear":2026,"registerTag":"TRAIL REGISTER","regionName":null,"segment":{"segmentCode":"SG-2","segmentName":"Fen Boardwalk","steward":{"partyCode":"ST-9","partyName":"Ben Steward","radioCall":"BRAVO-9"}}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inspectionAgeSuite:
+    {
+      function: |test::russetarboretum2::domain::TrailInspection.all(%2026-03-01)->filter(
+        i|$i.loggedOn->dateDiff(%2026-03-01, meta::pure::functions::date::DurationUnit.DAYS) > 30
+      )->graphFetch(
+        #{
+          test::russetarboretum2::domain::TrailInspection{
+            inspectionCode,
+            inspectionYear,
+            severityBand,
+            regionName
+          }
+        }#
+      )->serialize(
+        #{
+          test::russetarboretum2::domain::TrailInspection{
+            inspectionCode,
+            inspectionYear,
+            severityBand,
+            regionName
+          }
+        }#
+      );
+      tests:
+      [
+        agedVersionsOnly:
+        {
+          doc: 'Narrows the same timeline to the versions logged more than thirty days before the queried business date, so the day arithmetic decides membership, and reads the derived severity band over the surviving versions.';
+          data:
+          [
+            test::russetarboretum2::store::TrailDatabase:
+              Relational
+              #{
+                field.trail_segment:
+                  'segment_code,segment_name,steward_code\n'+
+                  'SG-1,Ridge Traverse,ST-1\n'+
+                  'SG-2,Fen Boardwalk,ST-9\n';
+
+                roster.steward:
+                  'steward_code,steward_name,radio_call,district_code\n'+
+                  'ST-1,Ada Steward,ALPHA-1,DS-1\n'+
+                  'ST-9,Ben Steward,BRAVO-9,DS-9\n';
+
+                geo.district:
+                  'district_code,district_name,region_code\n'+
+                  'DS-1,Upper Valley,RG-1\n';
+
+                geo.region:
+                  'region_code,region_name\n'+
+                  'RG-1,Northern Uplands\n';
+
+                field.trail_inspection:
+                  'inspection_code,logged_on,terrain_code,severity_index,wash_count,segment_code,inspection_note,from_z,thru_z\n'+
+                  'TI-01,2026-01-05,SC,9,3,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-02,2026-02-20,LO,7,1,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-03,2026-01-10,BW,5,0,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-04,2026-02-25,LO,4,2,SG-1,,2026-01-01,9999-12-31\n'+
+                  'TI-05,2026-01-20,SC,2,6,SG-2,,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            threeAgedVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"inspectionCode":"TI-01","inspectionYear":2026,"severityBand()":"HIGH","regionName":"Northern Uplands"},{"inspectionCode":"TI-03","inspectionYear":2026,"severityBand()":"MEDIUM","regionName":"Northern Uplands"},{"inspectionCode":"TI-05","inspectionYear":2026,"severityBand()":"LOW","regionName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

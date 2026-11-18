@@ -1,0 +1,57 @@
+name: kindly-lighthouse-2
+title: "Kindly Lighthouse 2 — Mountain Observatory Telescope Scheduling"
+description: |
+  A relational EMIT model for mountain observatory telescope scheduling. The model
+  combines inherited temporal schedule entries with a cross-schema observatory path,
+  a computed inline view label, and mapping assertions for active and expired slots.
+modelSources:
+  model:
+    root: kindly-lighthouse-2
+    files:
+      - test/kindlylighthouse2/connection/ObservatoryConnection.pure
+      - test/kindlylighthouse2/domain/ObservatoryDomain.pure
+      - test/kindlylighthouse2/mapping/ObservatoryBaseMapping.pure
+      - test/kindlylighthouse2/mapping/ObservatoryMapping.pure
+      - test/kindlylighthouse2/profile/ObservatoryProfile.pure
+      - test/kindlylighthouse2/runtime/ObservatoryRuntime.pure
+      - test/kindlylighthouse2/store/ObservatoryStore.pure
+tags:
+  - business-temporal
+  - cross-schema
+  - four-hop-join
+  - h2
+  - inheritance
+  - inline-view
+  - mapping-include
+  - profile
+  - relational
+  - relational-association
+  - relational-filter
+  - string-transform
+  - view-backed-property
+features:
+  - grammar:class-inheritance
+  - grammar:profile
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate

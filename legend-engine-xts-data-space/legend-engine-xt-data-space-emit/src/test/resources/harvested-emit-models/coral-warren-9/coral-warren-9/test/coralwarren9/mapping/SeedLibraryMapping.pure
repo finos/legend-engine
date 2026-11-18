@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralwarren9::mapping::SeedLibraryMapping
+(
+  *test::coralwarren9::domain::PlantFamily[family]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralwarren9::store::SeedLibraryDb]catalog.family_vw.family_code
+    )
+    ~mainTable [test::coralwarren9::store::SeedLibraryDb]catalog.family_vw
+    familyCode: [test::coralwarren9::store::SeedLibraryDb]catalog.family_vw.family_code,
+    familyLabel: [test::coralwarren9::store::SeedLibraryDb]catalog.family_vw.family_label,
+    habitCode: [test::coralwarren9::store::SeedLibraryDb]catalog.family_vw.habit_code
+  }
+
+  *test::coralwarren9::domain::SeedVariety[variety]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralwarren9::store::SeedLibraryDb]catalog.variety_vw.variety_code
+    )
+    ~mainTable [test::coralwarren9::store::SeedLibraryDb]catalog.variety_vw
+    varietyCode: [test::coralwarren9::store::SeedLibraryDb]catalog.variety_vw.variety_code,
+    varietyLabel: [test::coralwarren9::store::SeedLibraryDb]catalog.variety_vw.variety_label,
+    sowSeason: [test::coralwarren9::store::SeedLibraryDb]catalog.variety_vw.sow_season,
+    daysToHarvest: [test::coralwarren9::store::SeedLibraryDb]catalog.variety_vw.days_to_harvest
+  }
+
+  *test::coralwarren9::domain::LibraryBranch[branch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralwarren9::store::SeedLibraryDb]lending.branch_vw.branch_code
+    )
+    ~mainTable [test::coralwarren9::store::SeedLibraryDb]lending.branch_vw
+    branchCode: [test::coralwarren9::store::SeedLibraryDb]lending.branch_vw.branch_code,
+    branchLabel: [test::coralwarren9::store::SeedLibraryDb]lending.branch_vw.branch_label,
+    townLabel: [test::coralwarren9::store::SeedLibraryDb]lending.branch_vw.town_label,
+    branchTag: [test::coralwarren9::store::SeedLibraryDb]lending.branch_vw.branch_tag
+  }
+
+  *test::coralwarren9::domain::Gardener[gardener]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralwarren9::store::SeedLibraryDb]members.gardener_vw.gardener_code
+    )
+    ~mainTable [test::coralwarren9::store::SeedLibraryDb]members.gardener_vw
+    gardenerCode: [test::coralwarren9::store::SeedLibraryDb]members.gardener_vw.gardener_code,
+    gardenerName: [test::coralwarren9::store::SeedLibraryDb]members.gardener_vw.gardener_name,
+    plotCode: [test::coralwarren9::store::SeedLibraryDb]members.gardener_vw.plot_code
+  }
+
+  *test::coralwarren9::domain::SeedPacket[packet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralwarren9::store::SeedLibraryDb]lending.packet_vw.packet_code
+    )
+    ~mainTable [test::coralwarren9::store::SeedLibraryDb]lending.packet_vw
+    packetCode: [test::coralwarren9::store::SeedLibraryDb]lending.packet_vw.packet_code,
+    branchCode: [test::coralwarren9::store::SeedLibraryDb]lending.packet_vw.branch_code,
+    harvestYear: [test::coralwarren9::store::SeedLibraryDb]lending.packet_vw.harvest_year,
+    gramWeight: [test::coralwarren9::store::SeedLibraryDb]lending.packet_vw.gram_weight
+  }
+
+  test::coralwarren9::domain::VarietyFamily: Relational
+  {
+    AssociationMapping
+    (
+      family[variety, family]: [test::coralwarren9::store::SeedLibraryDb]@Variety_Family,
+      varieties[family, variety]: [test::coralwarren9::store::SeedLibraryDb]@Variety_Family
+    )
+  }
+
+  test::coralwarren9::domain::PacketVariety: Relational
+  {
+    AssociationMapping
+    (
+      variety[packet, variety]: [test::coralwarren9::store::SeedLibraryDb]@Packet_Variety,
+      packets[variety, packet]: [test::coralwarren9::store::SeedLibraryDb]@Packet_Variety
+    )
+  }
+
+  test::coralwarren9::domain::PacketBranch: Relational
+  {
+    AssociationMapping
+    (
+      branch[packet, branch]: [test::coralwarren9::store::SeedLibraryDb]@Packet_Branch,
+      shelvedPackets[branch, packet]: [test::coralwarren9::store::SeedLibraryDb]@Packet_Branch
+    )
+  }
+
+  test::coralwarren9::domain::PacketDonor: Relational
+  {
+    AssociationMapping
+    (
+      donor[packet, gardener]: [test::coralwarren9::store::SeedLibraryDb]@Packet_Donor,
+      donatedPackets[gardener, packet]: [test::coralwarren9::store::SeedLibraryDb]@Packet_Donor
+    )
+  }
+)

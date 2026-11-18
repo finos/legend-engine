@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::fabledlighthouse::service::StationBeamProfile
+{
+  pattern: '/fabledlighthouse/v1/stationBeamProfile';
+  owners:
+  [
+    'beacon-signal-team'
+  ];
+  documentation: 'Projects each staffed lighthouse station with the summed active hours of its beam-watch logs, collapsing the to-many log collection and keeping only stations that have at least one active log.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::fabledlighthouse::domain::Station.all()->filter(
+      s | $s.logs->exists(l | $l.activeHours > 0) && ($s.commissionedDate->dateDiff(%1990-01-01, DurationUnit.DAYS) != 0)
+    )->project(
+      [
+        col(s | $s.code, 'Code'),
+        col(s | $s.name, 'Name'),
+        col(s | $s.logs->map(l | $l.activeHours)->sum(), 'TotalActiveHours')
+      ]
+    )->sort([asc('Code')]);
+    mapping: demo::fabledlighthouse::mapping::BeaconMapping;
+    runtime: demo::fabledlighthouse::runtime::BeaconRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconConnection:
+            Relational
+            #{
+              signal.station:
+                'code,name,region,commissioned_date,focal_height_m\n'+
+                'ST1,Pharos North,North,1998-05-01,45\n'+
+                'ST2,Cape South,South,2005-09-01,30\n'+
+                'ST3,Isle West,West,2012-03-01,22\n';
+              signal.beam_log:
+                'log_id,station_code,region,log_date,visibility_dm,active_hours,rotations\n'+
+                'BL1,ST1,North,2024-02-01,55,3,100\n'+
+                'BL2,ST1,North,2024-03-01,60,5,90\n'+
+                'BL3,ST2,South,2024-02-15,45,6,80\n'+
+                'BL5,ST3,West,2024-04-01,30,4,60\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {"Code": "ST1", "Name": "Pharos North", "TotalActiveHours": 8}, {"Code": "ST2", "Name": "Cape South", "TotalActiveHours": 6}, {"Code": "ST3", "Name": "Isle West", "TotalActiveHours": 4} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

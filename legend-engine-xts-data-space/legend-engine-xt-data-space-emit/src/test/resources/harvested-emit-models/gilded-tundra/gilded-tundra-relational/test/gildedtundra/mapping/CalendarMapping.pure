@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedtundra::mapping::CalendarMapping
+(
+  *test::gildedtundra::domain::ObservationCalendarWindow[calendarWindow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.year_window_start
+    )
+    ~mainTable [test::gildedtundra::store::CalendarDatabase]tundra.observation_window
+    yearWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.year_window_start,
+    yearWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.year_window_end,
+    priorYearWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_year_window_start,
+    priorYearWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_year_window_end,
+    seasonWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.season_window_start,
+    seasonWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.season_window_end,
+    priorSeasonWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_season_window_start,
+    priorSeasonWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_season_window_end,
+    quarterWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.quarter_window_start,
+    quarterWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.quarter_window_end,
+    priorQuarterWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_quarter_window_start,
+    priorQuarterWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_quarter_window_end,
+    monthWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.month_window_start,
+    monthWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.month_window_end,
+    priorMonthWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_month_window_start,
+    priorMonthWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.prior_month_window_end,
+    twoMonthsBackWindowStart: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.two_months_back_window_start,
+    twoMonthsBackWindowEnd: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.two_months_back_window_end,
+    compiledForDate: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.compiled_for_date,
+    periodCloseFlag: [test::gildedtundra::store::CalendarDatabase]tundra.observation_window.period_close_flag
+  }
+
+  testSuites:
+  [
+    calendarWindowSuite:
+    {
+      function: |test::gildedtundra::domain::ObservationCalendarWindow.all()->project(
+  [
+    w|$w.yearWindowStart,
+    w|$w.yearWindowEnd,
+    w|$w.priorYearWindowStart,
+    w|$w.priorYearWindowEnd,
+    w|$w.seasonWindowStart,
+    w|$w.seasonWindowEnd,
+    w|$w.priorSeasonWindowStart,
+    w|$w.priorSeasonWindowEnd,
+    w|$w.quarterWindowStart,
+    w|$w.quarterWindowEnd,
+    w|$w.priorQuarterWindowStart,
+    w|$w.priorQuarterWindowEnd,
+    w|$w.monthWindowStart,
+    w|$w.monthWindowEnd,
+    w|$w.priorMonthWindowStart,
+    w|$w.priorMonthWindowEnd,
+    w|$w.twoMonthsBackWindowStart,
+    w|$w.twoMonthsBackWindowEnd,
+    w|$w.compiledForDate->toOne(),
+    w|$w.periodCloseFlag
+  ],
+  [
+    'Year Start',
+    'Year End',
+    'Prior Year Start',
+    'Prior Year End',
+    'Season Start',
+    'Season End',
+    'Prior Season Start',
+    'Prior Season End',
+    'Quarter Start',
+    'Quarter End',
+    'Prior Quarter Start',
+    'Prior Quarter End',
+    'Month Start',
+    'Month End',
+    'Prior Month Start',
+    'Prior Month End',
+    'Two Months Back Start',
+    'Two Months Back End',
+    'Compiled For',
+    'Close Flag'
+  ]
+)->sort([asc('Year Start')]);
+      tests:
+      [
+        everyWindowBoundaryRead:
+        {
+          doc: 'Reads all twenty bound columns of the wide calendar row through the store-qualified main-table alias; the primary key is the mandatory year window boundary, so row identity comes from a temporal attribute rather than a surrogate.';
+          data:
+          [
+            test::gildedtundra::store::CalendarDatabase:
+              Relational
+              #{
+                tundra.observation_window:
+                  'year_window_start,year_window_end,prior_year_window_start,prior_year_window_end,season_window_start,season_window_end,prior_season_window_start,prior_season_window_end,quarter_window_start,quarter_window_end,prior_quarter_window_start,prior_quarter_window_end,month_window_start,month_window_end,prior_month_window_start,prior_month_window_end,two_months_back_window_start,two_months_back_window_end,compiled_for_date,period_close_flag,lake_window_low,lake_window_high\n'+
+                  '2026-01-01 00:00:00,2026-12-31 00:00:00,2025-01-01 00:00:00,2025-12-31 00:00:00,2026-06-01 00:00:00,2026-08-31 00:00:00,2026-03-01 00:00:00,2026-05-31 00:00:00,2026-04-01 00:00:00,2026-06-30 00:00:00,2026-01-01 00:00:00,2026-03-31 00:00:00,2026-06-01 00:00:00,2026-06-30 00:00:00,2026-05-01 00:00:00,2026-05-31 00:00:00,2026-04-01 00:00:00,2026-04-30 00:00:00,2026-06-15,Y,10,42\n';
+              }#
+          ];
+          asserts:
+          [
+            allBoundariesRead:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Year Start":"2026-01-01T00:00:00.000000000+0000","Year End":"2026-12-31T00:00:00.000000000+0000","Prior Year Start":"2025-01-01T00:00:00.000000000+0000","Prior Year End":"2025-12-31T00:00:00.000000000+0000","Season Start":"2026-06-01T00:00:00.000000000+0000","Season End":"2026-08-31T00:00:00.000000000+0000","Prior Season Start":"2026-03-01T00:00:00.000000000+0000","Prior Season End":"2026-05-31T00:00:00.000000000+0000","Quarter Start":"2026-04-01T00:00:00.000000000+0000","Quarter End":"2026-06-30T00:00:00.000000000+0000","Prior Quarter Start":"2026-01-01T00:00:00.000000000+0000","Prior Quarter End":"2026-03-31T00:00:00.000000000+0000","Month Start":"2026-06-01T00:00:00.000000000+0000","Month End":"2026-06-30T00:00:00.000000000+0000","Prior Month Start":"2026-05-01T00:00:00.000000000+0000","Prior Month End":"2026-05-31T00:00:00.000000000+0000","Two Months Back Start":"2026-04-01T00:00:00.000000000+0000","Two Months Back End":"2026-04-30T00:00:00.000000000+0000","Compiled For":"2026-06-15","Close Flag":"Y"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

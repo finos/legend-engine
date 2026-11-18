@@ -1,0 +1,65 @@
+name: cedar-aviary-4
+title: "Cedar Aviary 4 - Heritage Tramway Fleet Labels Derived Across Shed, Line And Region Joins"
+description: |
+  A heritage tramway fleet register modelled over one relational store. Five tables
+  hold the regions, the running lines, the stabling sheds, the tram cars and the
+  shed log, wired together by four inner joins and a running-cars filter that pairs
+  a status test with a null retirement stamp. The fleet mapping binds the cars
+  through an explicit main table, a single-column primary key and that filter, then
+  derives every reported label conditionally: an upper-cased trimmed car tag, a
+  livery label and a four-armed livery class fed into an enumeration mapping, a
+  shelter state read one join out through a second enumeration mapping, a shed name
+  that falls back to a literal when the shed is covered, a gauge label, a
+  three-armed route tag that concatenates the line name, the car reference and the
+  region name three joins out and falls back to an unrouted literal when the line
+  carries no name, an alignment verdict comparing two pairs of join-reached keys and
+  a region label two hops beyond the shed. An association mapping walks the fifth
+  join onto the shed log. One mapping test projects the derived fleet in relation
+  syntax and asserts every arm over a single fixture that also proves the filter
+  drops both the retired car and the car still flagged active but already stamped
+  with a retirement time.
+modelSources:
+  model:
+    root: cedar-aviary-4
+    files:
+      - test/cedaraviary4/domain/TramwayDomain.pure
+      - test/cedaraviary4/mapping/TramwayMapping.pure
+      - test/cedaraviary4/store/TramwayDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-mapping
+  - branch-coverage
+  - conditional-transform
+  - duckdb
+  - dyna-function
+  - enumeration-mapping
+  - heritage-tramway
+  - main-table-alias
+  - mapping-test
+  - multi-hop-join
+  - relation-projection
+  - string-function-transform

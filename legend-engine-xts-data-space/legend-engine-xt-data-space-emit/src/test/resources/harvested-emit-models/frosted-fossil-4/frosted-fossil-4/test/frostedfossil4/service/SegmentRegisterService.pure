@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedfossil4::service::SegmentRegisterService
+{
+  pattern: '/frostedfossil4/v1/segment-register/{processingDate}';
+  title: 'Ice Archive - Core Segment Register';
+  documentation: 'Lists the cut segments of the archived cores as they stood at the requested processing instant, so a segment logged into a later batch is absent until the instant reaches it.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::frostedfossil4::domain::CoreSegment.all($processingDate)->project(
+      [
+        s|$s.segmentCode,
+        s|$s.coreCode,
+        s|$s.segmentLengthCm,
+        s|$s.densityGcm3
+      ],
+      [
+        'Segment Code',
+        'Core Code',
+        'Length Cm',
+        'Density'
+      ]
+    )->sort(
+      [
+        asc('Segment Code')
+      ]
+    )};
+    mapping: test::frostedfossil4::mapping::IceArchiveMapping;
+    runtime: test::frostedfossil4::runtime::IceArchiveRuntime;
+  }
+  testSuites:
+  [
+    segmentRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          iceArchiveWarehouseConnection: Reference
+            #{
+              test::frostedfossil4::data::IceArchiveData
+            }#
+        ]
+      ]
+      tests:
+      [
+        instantBeforeLatestBatch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          asserts:
+          [
+            earlyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment Code":"SG-1","Core Code":"IC-1","Length Cm":50,"Density":0.92},{"Segment Code":"SG-2","Core Code":"IC-1","Length Cm":45,"Density":0.88},{"Segment Code":"SG-3","Core Code":"IC-2","Length Cm":30,"Density":0.91}]';
+                  }#;
+              }#
+          ]
+        },
+        instantAfterLatestBatch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-07-15
+          ]
+          asserts:
+          [
+            lateRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment Code":"SG-1","Core Code":"IC-1","Length Cm":50,"Density":0.92},{"Segment Code":"SG-2","Core Code":"IC-1","Length Cm":45,"Density":0.88},{"Segment Code":"SG-3","Core Code":"IC-2","Length Cm":30,"Density":0.91},{"Segment Code":"SG-4","Core Code":"IC-3","Length Cm":60,"Density":0.85}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

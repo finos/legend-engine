@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantmeadow5::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'One hay cut taken off a meadow parcel in a named season week.'} test::verdantmeadow5::domain::HayCut
+{
+  {doc.doc = 'Code the cut register holds the cut under.'} cutCode: String[1];
+  {doc.doc = 'Parcel the cut was taken off.'} parcelCode: String[1];
+  {doc.doc = 'Season the cut belongs to.'} seasonLabel: String[1];
+  {doc.doc = 'Week of the year the cut was taken in.'} cutWeek: Integer[1];
+  {doc.doc = 'Bales lifted off the parcel.'} yieldBales: Integer[1];
+}
+
+Class {doc.doc = 'A pollinator transect walked across a meadow parcel, counted by group.'} test::verdantmeadow5::domain::PollinatorTransect
+{
+  {doc.doc = 'Code the transect register holds the walk under.'} transectCode: String[1];
+  {doc.doc = 'Parcel the transect crosses.'} parcelCode: String[1];
+  {doc.doc = 'Bees counted along the transect.'} beeCount: Integer[1];
+  {doc.doc = 'Butterflies counted along the transect.'} butterflyCount: Integer[1];
+}
+
+Class {doc.doc = 'A meadow parcel as the full-history register keeps it.'} test::verdantmeadow5::domain::MeadowParcel
+{
+  {doc.doc = 'Code the register holds the parcel under.'} parcelCode: String[1];
+  {doc.doc = 'Name the parcel is signposted under.'} parcelName: String[1];
+  {doc.doc = 'Part of the holding the parcel lies in.'} quarterName: String[1];
+  {doc.doc = 'Area of the parcel in hectares.'} areaHectares: Float[1];
+}
+
+Class {doc.doc = 'The latest-snapshot view of a meadow parcel: one row per parcel, tagged with the snapshot it came off.'} test::verdantmeadow5::domain::MeadowParcelLatest
+{
+  {doc.doc = 'Code the register holds the parcel under.'} parcelCode: String[1];
+  {doc.doc = 'Name the parcel is signposted under.'} parcelName: String[1];
+  {doc.doc = 'Part of the holding the parcel lies in.'} quarterName: String[1];
+  {doc.doc = 'Area of the parcel in hectares.'} areaHectares: Float[1];
+  {doc.doc = 'Tag of the snapshot the row was taken from.'} snapshotTag: String[1];
+}
+
+Class {doc.doc = 'A sward sample lifted from a parcel, recording how the cover splits between herbs and grasses.'} test::verdantmeadow5::domain::SwardSample
+{
+  {doc.doc = 'Code the sample register holds the sample under.'} sampleCode: String[1];
+  {doc.doc = 'Parcel the sample was lifted from.'} parcelCode: String[1];
+  {doc.doc = 'Percentage of the sample covered by herbs.'} herbCoverPct: Integer[1];
+  {doc.doc = 'Percentage of the sample covered by grasses.'} grassCoverPct: Integer[1];
+  {doc.doc = 'Alias of whoever lifted the sample.'} samplerAlias: String[1];
+}

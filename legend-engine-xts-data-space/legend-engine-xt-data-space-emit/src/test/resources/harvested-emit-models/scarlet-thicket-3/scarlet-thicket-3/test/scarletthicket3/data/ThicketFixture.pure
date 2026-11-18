@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::scarletthicket3::data::ThicketFixture
+{
+  Relational
+  #{
+    nursery.seed_lot:
+      'lot_code,cultivar_code,bed_code,site_code,treatment_code,season_code,grade_code,status_code,habitat_code,storage_band_code,quantity_grams,viability_pct,collected_on\n'+
+      'SL-01,CV-1,BD-1,CS-1,TR-1,S-2026A,G-A,ACTIVE,HB-HEATH,SB-COOL,420.5,88,2026-03-04\n'+
+      'SL-02,CV-2,BD-1,CS-2,TR-2,S-2026A,G-A,ACTIVE,HB-FEN,SB-COOL,310.25,74,2026-03-11\n'+
+      'SL-03,CV-3,BD-2,CS-1,TR-1,S-2026B,G-B,ACTIVE,HB-HEATH,SB-DRY,150.0,61,2026-04-02\n'+
+      'SL-04,CV-1,BD-2,CS-3,TR-3,S-2026B,G-A,VOID,HB-SCRUB,SB-DRY,95.75,52,2026-04-09\n'+
+      'X-05,CV-2,BD-3,CS-2,TR-2,S-2026B,G-A,ACTIVE,HB-FEN,SB-WARM,220.0,90,1990-05-01\n';
+
+    nursery.collection_site:
+      'site_code,site_name,region_code\n'+
+      'CS-1,Heath Ridge Verge,RG-N\n'+
+      'CS-2,Fen Margin Strip,RG-E\n'+
+      'CS-3,Scrub Edge Ridge,RG-S\n';
+
+    nursery.seed_treatment:
+      'treatment_code,treatment_name,treatment_kind\n'+
+      'TR-1,Cold Stratification,COLD\n'+
+      'TR-2,Scarification,MECH\n'+
+      'TR-3,Smoke Priming,HEAT\n';
+
+    nursery.nursery_bed:
+      'bed_code,bed_label,block_code,team_code,capacity_units\n'+
+      'BD-1,Bench One,BL-1,TM-1,240\n'+
+      'BD-2,Bench Two,BL-1,TM-2,180\n'+
+      'BD-3,Frame Three,BL-2,TM-2,120\n';
+
+    nursery.bed_block:
+      'block_code,block_label,glasshouse_code\n'+
+      'BL-1,North Glasshouse Block,GH-1\n'+
+      'BL-2,Cold Frame Block,GH-2\n';
+
+    nursery.cultivar:
+      'cultivar_code,cultivar_name,family_code,habit_code,steward_team_code,graft_flag,rootstock_code\n'+
+      'CV-1,Ember Hazel,FM-1,SHRUB,TM-1,Y,RS-STANDARD\n'+
+      'CV-2,Willow Sedge,FM-2,GRASS,TM-2,N,\n'+
+      'CV-3,Copper Broom,FM-1,SHRUB,TM-2,Y,RS-DWARF\n';
+
+    nursery.cultivar_family:
+      'family_code,family_name\n'+
+      'FM-1,Legume Thicket\n'+
+      'FM-2,Sedge Family\n';
+
+    nursery.grower_team:
+      'team_code,team_name,depot_code\n'+
+      'TM-1,Bench Crew,DP-1\n'+
+      'TM-2,Frame Crew,DP-2\n';
+
+    nursery.team_depot:
+      'depot_code,depot_name\n'+
+      'DP-1,North Depot\n'+
+      'DP-2,South Depot\n';
+  }#
+}

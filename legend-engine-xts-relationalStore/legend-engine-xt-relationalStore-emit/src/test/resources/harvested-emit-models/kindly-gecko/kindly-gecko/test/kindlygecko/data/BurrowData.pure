@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::kindlygecko::data::BurrowData
+{
+  Relational
+  #{
+    survey.gecko_sighting:
+      'sighting_id,enclosure_code,gecko_tag,clutch_count,vigour_code,length_mm,mass_g,from_z,thru_z\n'+
+      'S-1,E-1,G-01,3,A,88,12.5,2026-01-01,9999-12-31\n'+
+      'S-2,E-1,G-02,2,T,74,10.0,2026-01-01,9999-12-31\n'+
+      'S-3,E-2,G-03,1,,,,2026-01-01,9999-12-31\n'+
+      'S-4,E-9,G-04,0,B,60,8.5,2026-01-01,9999-12-31\n'+
+      'S-5,E-2,G-05,1,A,50,6.0,2026-01-01,2026-03-01\n'+
+      'S-5,E-2,G-05,4,B,95,14.0,2026-03-01,9999-12-31\n';
+    survey.field_log:
+      'sighting_id,recorded_by\n'+
+      'S-1,ana rivers\n'+
+      'S-2,bo mesa\n'+
+      'S-5,cy dunes\n';
+    reference.enclosure:
+      'enclosure_code,enclosure_name,zone_code\n'+
+      'E-1,Fern Terrace Enclosure,Z1\n'+
+      'E-2,Dune Ledge Enclosure,Z9\n'+
+      'E-3,Mist Gallery Enclosure,Z1\n';
+    reference.habitat_zone:
+      'zone_code,zone_name\n'+
+      'Z1,Lowland Scrub Zone\n'+
+      'Z2,Upland Heath Zone\n';
+  }#
+}

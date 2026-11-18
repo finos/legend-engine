@@ -1,0 +1,25 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class <<test::hazellighthouse::profile::LighthouseMeta.heritageListed>> {meta::pure::profiles::doc.doc = 'A coastal lighthouse structure, its identifying beacon colour and nominal light range.', test::hazellighthouse::profile::LighthouseMeta.owningAuthority = 'Coastal Navigation Board'} test::hazellighthouse::domain::Lighthouse
+[
+  rangeIsPositive: $this.nominalRangeNm > 0
+]
+{
+  name: String[1];
+  beaconColor: test::hazellighthouse::domain::BeaconColor[1];
+  nominalRangeNm: Integer[1];
+  focalHeightM: Integer[0..1];
+  isActive() {$this.nominalRangeNm > 0}: Boolean[1];
+}

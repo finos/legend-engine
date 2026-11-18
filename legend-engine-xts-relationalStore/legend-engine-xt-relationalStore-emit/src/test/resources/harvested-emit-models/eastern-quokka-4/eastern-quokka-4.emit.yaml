@@ -1,0 +1,39 @@
+name: eastern-quokka-4
+title: "Eastern Quokka 4 — District Shuttle Roster"
+description: >-
+  A school-district shuttle roster with processing-temporal route assignments, a relational
+  source mapping, a flattened model-to-model roster, reusable route derivations, and a
+  single-execution service for the active assignment window.
+modelSources:
+  model:
+    root: eastern-quokka-4
+    files:
+      - test/easternquokka4/domain/RouteDomain.pure
+      - test/easternquokka4/function/RouteFunctions.pure
+      - test/easternquokka4/mapping/RouteMappings.pure
+      - test/easternquokka4/runtime/RouteConnections.pure
+      - test/easternquokka4/runtime/RouteRuntimes.pure
+      - test/easternquokka4/service/RouteRosterService.pure
+      - test/easternquokka4/store/RouteDb.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - mapping:m2m-transform
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - district-transport
+  - duckdb
+  - h2
+  - m2m-mapping
+  - processing-temporal
+  - relational-mapping
+  - route-roster
+  - service

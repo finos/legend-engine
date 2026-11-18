@@ -1,0 +1,212 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldapiary::mapping::GraftMapping
+(
+  *test::emeraldapiary::domain::Rootstock[rootstock_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary::store::GraftDatabase]nursery.rootstock.rootstock_code,
+      [test::emeraldapiary::store::GraftDatabase]nursery.rootstock.lot_year
+    )
+    ~mainTable [test::emeraldapiary::store::GraftDatabase]nursery.rootstock
+    rootstockCode: [test::emeraldapiary::store::GraftDatabase]nursery.rootstock.rootstock_code,
+    lotYear: [test::emeraldapiary::store::GraftDatabase]nursery.rootstock.lot_year,
+    vigourGrade: [test::emeraldapiary::store::GraftDatabase]nursery.rootstock.vigour_grade,
+    chillHours: [test::emeraldapiary::store::GraftDatabase]nursery.rootstock.chill_hours
+  }
+
+  *test::emeraldapiary::domain::Scion[scion_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary::store::GraftDatabase]nursery.scion.scion_code,
+      [test::emeraldapiary::store::GraftDatabase]nursery.scion.collected_on
+    )
+    ~mainTable [test::emeraldapiary::store::GraftDatabase]nursery.scion
+    scionCode: [test::emeraldapiary::store::GraftDatabase]nursery.scion.scion_code,
+    collectedOn: [test::emeraldapiary::store::GraftDatabase]nursery.scion.collected_on,
+    cultivar: [test::emeraldapiary::store::GraftDatabase]nursery.scion.cultivar
+  }
+
+  *test::emeraldapiary::domain::GraftBlock[graft_block_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary::store::GraftDatabase]orchard.graft_block.block_code,
+      [test::emeraldapiary::store::GraftDatabase]orchard.graft_block.planted_on
+    )
+    ~mainTable [test::emeraldapiary::store::GraftDatabase]orchard.graft_block
+    blockCode: [test::emeraldapiary::store::GraftDatabase]orchard.graft_block.block_code,
+    plantedOn: [test::emeraldapiary::store::GraftDatabase]orchard.graft_block.planted_on,
+    rootstockVigour: [test::emeraldapiary::store::GraftDatabase]@Block_Rootstock | nursery.rootstock.vigour_grade,
+    scionCultivar: [test::emeraldapiary::store::GraftDatabase]@Block_Scion | nursery.scion.cultivar
+  }
+
+  *test::emeraldapiary::domain::BlockSurvey[block_survey_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary::store::GraftDatabase]orchard.block_survey.survey_id
+    )
+    ~mainTable [test::emeraldapiary::store::GraftDatabase]orchard.block_survey
+    surveyId: [test::emeraldapiary::store::GraftDatabase]orchard.block_survey.survey_id,
+    blockCode: [test::emeraldapiary::store::GraftDatabase]orchard.block_survey.block_code,
+    surveyedAt: [test::emeraldapiary::store::GraftDatabase]orchard.block_survey.surveyed_at,
+    canopySpreadM: [test::emeraldapiary::store::GraftDatabase]orchard.block_survey.canopy_spread_m
+  }
+
+  testSuites:
+  [
+    crossSchemaSuite:
+    {
+      function: |test::emeraldapiary::domain::GraftBlock.all()->project(
+        [
+          col(b|$b.blockCode, 'BlockCode'),
+          col(b|$b.plantedOn, 'PlantedOn'),
+          col(b|$b.rootstockVigour, 'RootstockVigour'),
+          col(b|$b.scionCultivar, 'ScionCultivar')
+        ]
+      )->sort([asc('BlockCode')]);
+      tests:
+      [
+        joinedAcrossSchemas:
+        {
+          doc: 'Projects blocks with their nursery attributes reached across the schema boundary, including a block whose rootstock row is absent.';
+          data:
+          [
+            test::emeraldapiary::store::GraftDatabase:
+              Relational
+              #{
+                orchard.graft_block:
+                  'block_code,planted_on,rootstock_code,scion_code\n'+
+                  'BLK-1,2026-03-01,RS-1,SC-1\n'+
+                  'BLK-2,2026-03-04,RS-2,SC-2\n'+
+                  'BLK-3,2026-03-09,RS-9,SC-1\n';
+
+                nursery.rootstock:
+                  'rootstock_code,lot_year,vigour_grade,chill_hours\n'+
+                  'RS-1,2024,dwarfing,820\n'+
+                  'RS-2,2024,semi-dwarfing,910\n';
+
+                nursery.scion:
+                  'scion_code,collected_on,cultivar\n'+
+                  'SC-1,2025-11-02,ruby-crisp\n'+
+                  'SC-2,2025-11-06,amber-russet\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BlockCode":"BLK-1","PlantedOn":"2026-03-01","RootstockVigour":"dwarfing","ScionCultivar":"ruby-crisp"},{"BlockCode":"BLK-2","PlantedOn":"2026-03-04","RootstockVigour":"semi-dwarfing","ScionCultivar":"amber-russet"},{"BlockCode":"BLK-3","PlantedOn":"2026-03-09","RootstockVigour":null,"ScionCultivar":"ruby-crisp"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    compositeKeySuite:
+    {
+      function: |test::emeraldapiary::domain::Rootstock.all()->project(
+        [
+          col(r|$r.rootstockCode, 'RootstockCode'),
+          col(r|$r.lotYear, 'LotYear'),
+          col(r|$r.vigourGrade, 'VigourGrade'),
+          col(r|$r.chillHours, 'ChillHours')
+        ]
+      )->sort([asc('RootstockCode'), asc('LotYear')]);
+      tests:
+      [
+        lotsShareCode:
+        {
+          doc: 'Projects rootstock lots where two rows agree on the leading key column and differ on the rest.';
+          data:
+          [
+            test::emeraldapiary::store::GraftDatabase:
+              Relational
+              #{
+                nursery.rootstock:
+                  'rootstock_code,lot_year,vigour_grade,chill_hours\n'+
+                  'RS-1,2024,dwarfing,820\n'+
+                  'RS-1,2025,dwarfing,845\n'+
+                  'RS-2,2024,semi-dwarfing,910\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RootstockCode":"RS-1","LotYear":2024,"VigourGrade":"dwarfing","ChillHours":820},{"RootstockCode":"RS-1","LotYear":2025,"VigourGrade":"dwarfing","ChillHours":845},{"RootstockCode":"RS-2","LotYear":2024,"VigourGrade":"semi-dwarfing","ChillHours":910}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveySuite:
+    {
+      function: |test::emeraldapiary::domain::BlockSurvey.all()->project(
+        [
+          col(s|$s.surveyId, 'SurveyId'),
+          col(s|$s.blockCode, 'BlockCode'),
+          col(s|$s.canopySpreadM, 'CanopySpreadM')
+        ]
+      )->sort([asc('SurveyId')]);
+      tests:
+      [
+        surveyRows:
+        {
+          doc: 'Projects canopy survey measurements taken against orchard blocks.';
+          data:
+          [
+            test::emeraldapiary::store::GraftDatabase:
+              Relational
+              #{
+                orchard.block_survey:
+                  'survey_id,block_code,surveyed_at,canopy_spread_m\n'+
+                  '1,BLK-1,2026-06-01 09:15:00,2.4\n'+
+                  '2,BLK-2,2026-06-01 10:05:00,3.1\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SurveyId":1,"BlockCode":"BLK-1","CanopySpreadM":2.4},{"SurveyId":2,"BlockCode":"BLK-2","CanopySpreadM":3.1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

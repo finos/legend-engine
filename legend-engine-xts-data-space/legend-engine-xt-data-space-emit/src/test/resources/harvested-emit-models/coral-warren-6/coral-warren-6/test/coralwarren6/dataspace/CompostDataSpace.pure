@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::coralwarren6::dataspace::CompostYardDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'yard';
+      description: 'Yard environment - the windrow binding served through the composting yard register.';
+      mapping: test::coralwarren6::mapping::CompostYardMapping;
+      defaultRuntime: test::coralwarren6::runtime::CompostYardRuntime;
+    }
+  ];
+  defaultExecutionContext: 'yard';
+  title: 'Coral Warren 6 Composting Yard Register';
+  description: 'Discovery surface over the municipal composting yard: the sites that operate the windrows, the windrows restated over business time and the temperature probes graded by reading depth.';
+  elements:
+  [
+    test::coralwarren6::domain::CompostSite,
+    test::coralwarren6::domain::TemperatureProbe,
+    test::coralwarren6::domain::Windrow
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Windrow Tonnage Tally';
+      description: 'The keyed tonnage tally over the actively turned, core-probed windrows standing at a business date.';
+      executable: test::coralwarren6::service::WindrowTonnageTally;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'compost-yard-desk@compostyard.invalid';
+  };
+}

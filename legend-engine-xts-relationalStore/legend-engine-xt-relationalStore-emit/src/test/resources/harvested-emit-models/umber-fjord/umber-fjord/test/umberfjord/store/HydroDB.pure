@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberfjord::store::HydroDB
+(
+  Schema hydro
+  (
+    Table reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      station_id INTEGER NOT NULL,
+      flow_rate INTEGER NOT NULL,
+      temperature_c INTEGER NOT NULL,
+      recorded_on DATE NOT NULL
+    )
+    Table station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(20) NOT NULL,
+      catchment_id INTEGER NOT NULL
+    )
+    Table catchment
+    (
+      catchment_id INTEGER PRIMARY KEY,
+      catchment_name VARCHAR(120) NOT NULL,
+      basin_id INTEGER NOT NULL
+    )
+    Table basin
+    (
+      basin_id INTEGER PRIMARY KEY,
+      basin_name VARCHAR(120) NOT NULL
+    )
+    Table sample
+    (
+      sample_id INTEGER PRIMARY KEY,
+      reading_id INTEGER NOT NULL,
+      status VARCHAR(20) NOT NULL
+    )
+  )
+
+  Join Reading_Station(hydro.reading.station_id = hydro.station.station_id)
+  Join Station_Catchment(hydro.station.catchment_id = hydro.catchment.catchment_id)
+  Join Catchment_Basin(hydro.catchment.basin_id = hydro.basin.basin_id)
+  Join Reading_Sample(hydro.reading.reading_id = hydro.sample.reading_id)
+)

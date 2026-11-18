@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::wistfulorchard2::store::GraftRegisterStore
+(
+  include test::wistfulorchard2::store::GroveReferenceStore
+
+  Schema graft
+  (
+    Table graft_run
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      run_id INTEGER PRIMARY KEY,
+      run_name VARCHAR(64) NOT NULL,
+      scion_count INTEGER NOT NULL,
+      canopy_span_cm FLOAT NOT NULL,
+      band_code VARCHAR(8),
+      hardiness_code VARCHAR(16),
+      vigour_code VARCHAR(16),
+      grade_code VARCHAR(16) NOT NULL,
+      journal_id INTEGER NOT NULL,
+      note_text VARCHAR(128),
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Schema journal
+  (
+    Table graft_journal
+    (
+      journal_id INTEGER PRIMARY KEY,
+      journal_code VARCHAR(32) NOT NULL,
+      journal_hours FLOAT NOT NULL,
+      journal_kind VARCHAR(16) NOT NULL,
+      journal_date DATE NOT NULL
+    )
+
+    Table tray_load
+    (
+      load_id INTEGER PRIMARY KEY,
+      journal_id INTEGER NOT NULL,
+      tray_kind VARCHAR(16) NOT NULL,
+      tray_mass_kg FLOAT NOT NULL
+    )
+
+    View tray_load_vw
+    (
+      ~filter LoadedTrayFilter
+      ~groupBy
+      (
+        journal.tray_load.journal_id
+      )
+      journalId: journal.tray_load.journal_id PRIMARY KEY,
+      massTotal: sum(journal.tray_load.tray_mass_kg),
+      loadTally: count(journal.tray_load.tray_kind),
+      heaviestTray: max(journal.tray_load.tray_mass_kg)
+    )
+
+    View journal_tag_vw
+    (
+      journalId: journal.graft_journal.journal_id PRIMARY KEY,
+      journalTag: substring(
+                    concat(
+                      toString(
+                        case(
+                          equal(journal.graft_journal.journal_kind, 'GRAFTING'),
+                          'G',
+                          'A'
+                        )
+                      ),
+                      '/',
+                      journal.graft_journal.journal_code
+                    ),
+                    1,
+                    12
+                  ),
+      seasonFlag: case(
+                    and(
+                      equal(journal.graft_journal.journal_kind, 'GRAFTING'),
+                      equal(year(journal.graft_journal.journal_date), 2031)
+                    ),
+                    'IN_SEASON',
+                    'OFF_SEASON'
+                  ),
+      tendedFlag: case(
+                    and(
+                      equal(journal.graft_journal.journal_kind, 'GRAFTING'),
+                      notEqual(journal.graft_journal.journal_code, '')
+                    ),
+                    'TENDED',
+                    'UNTENDED'
+                  ),
+      journalNote: concat(
+                     'kind=',
+                     journal.graft_journal.journal_kind,
+                     '; code=',
+                     journal.graft_journal.journal_code,
+                     '; hours=',
+                     toString(journal.graft_journal.journal_hours),
+                     '; day=',
+                     toString(journal.graft_journal.journal_date)
+                   ),
+      graftingFlag: case(
+                      equal(journal.graft_journal.journal_kind, 'GRAFTING'),
+                      'Y',
+                      'N'
+                    )
+    )
+  )
+
+  Join Run_Grade(graft.graft_run.grade_code = grove.scion_grade.grade_code)
+  Join Run_Journal(graft.graft_run.journal_id = journal.graft_journal.journal_id)
+  Join Journal_TrayView(journal.graft_journal.journal_id = journal.tray_load_vw.journalId)
+  Join Run_JournalTag(graft.graft_run.journal_id = journal.journal_tag_vw.journalId)
+
+  Filter LoadedTrayFilter(journal.tray_load.tray_mass_kg > 0.0)
+  Filter GraftingJournalFilter(journal.graft_journal.journal_kind = 'GRAFTING')
+)

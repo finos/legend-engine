@@ -1,0 +1,25 @@
+name: indigo-lighthouse-registry
+title: "Indigo Lighthouse — Museum Registry Reference Types"
+description: |
+  Registry-side reference types that the curatorial catalogue links out to.
+  Two of them are processing-temporal, so an association reaching them from a
+  versioned catalogue class propagates the system-time argument across the
+  module boundary. The remaining four are plain reference classes that only
+  ever appear as diagram class views.
+
+modelSources:
+  model:
+    root: indigo-lighthouse-registry
+    files:
+      - test/indigolighthouse/registry/RegistryTypes.pure
+
+features:
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - museum-registry
+  - processing-temporal
+  - reference-types
+  - shared-domain

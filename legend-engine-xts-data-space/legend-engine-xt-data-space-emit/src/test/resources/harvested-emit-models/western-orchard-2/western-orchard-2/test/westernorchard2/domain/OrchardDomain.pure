@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A planted block of the orchard, described by its site, its stock and the dates it was established and last walked.'} test::westernorchard2::domain::OrchardBlock
+{
+  blockCode: String[1];
+  blockName: String[1];
+  rootstock: String[0..1];
+  district: String[0..1];
+  soilSeries: String[0..1];
+  hectares: Float[1];
+  elevationM: Float[0..1];
+  plantedOn: StrictDate[1];
+  surveyedAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single planted row inside a block, carrying its cultivar, training geometry and the stamps of the last orchard operations on it.'} test::westernorchard2::domain::TreeRow
+{
+  rowCode: String[1];
+  blockCode: String[1];
+  cultivar: String[1];
+  trellisType: String[0..1];
+  orientation: String[0..1];
+  spacingM: Float[1];
+  canopyWidthM: Float[0..1];
+  establishedOn: StrictDate[1];
+  lastPrunedAt: DateTime[0..1];
+  lastScoutedAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One picking pass over a row, recording the crew, the grade it was packed to, the fruit measures taken and the stamps bounding the pass.'} test::westernorchard2::domain::HarvestPass
+{
+  passCode: String[1];
+  rowCode: String[1];
+  crewLead: String[0..1];
+  gradeLabel: String[0..1];
+  packHouse: String[0..1];
+  binsFilled: Float[1];
+  brixDegrees: Float[0..1];
+  firmnessKg: Float[0..1];
+  startedAt: DateTime[1];
+  finishedAt: DateTime[0..1];
+  weighedAt: DateTime[0..1];
+}

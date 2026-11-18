@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernlighthouse3::service::LampRefitSchedule
+{
+  pattern: '/harbourlight/v1/refit-schedule/{processingDate}';
+  title: 'Lamp Refit Schedule';
+  owners:
+  [
+    'harbour-light-engineering'
+  ];
+  documentation: 'Schedules the refit of the requested lamp types across the serviceable navigation lights of a processing slice, gating on an inspection age measured back from the current instant and reporting the fitted lamp detail reached through the join path.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], lampTypes: String[*], currentDate: StrictDate[1]|test::westernlighthouse3::domain::NavigationLight.all($processingDate)->filter(
+      l|(($l.fittedLamp.lampType->toOne()->in($lampTypes)) && ($l.statusCode == 'ACTIVE')) && ($l.lastInspected <= $currentDate->adjust(-30, meta::pure::functions::date::DurationUnit.DAYS))
+    )->project(
+      [
+        l|$l.lightCode,
+        l|$l.homeStation.stationName,
+        l|$l.fittedLamp.lampType,
+        l|$l.fittedLamp.wattage,
+        l|$l.fittedLamp.installedOn
+      ],
+      [
+        'LightCode',
+        'StationName',
+        'LampType',
+        'Wattage',
+        'InstalledOn'
+      ]
+    )->sort([asc('LightCode')])};
+    mapping: test::westernlighthouse3::mapping::HarbourLightMapping;
+    runtime: test::westernlighthouse3::runtime::HarbourEngineeringRuntime;
+  }
+  testSuites:
+  [
+    lampRefitScheduleSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          engineering_connection:
+            Relational
+            #{
+              harbour.navigation_light:
+                'light_code,station_code,lamp_code,character_code,focal_height_m,range_nm,status_code,last_inspected,in_z,out_z\n'+
+                'NL-01,HS-01,LU-01,Fl W 5s,18.5,12.0,ACTIVE,2025-11-02,2026-01-01,9999-12-31\n'+
+                'NL-02,HS-01,LU-02,Oc R 3s,9.0,7.5,ACTIVE,2025-02-14,2026-01-01,9999-12-31\n'+
+                'NL-03,HS-02,LU-01,Fl G 4s,12.25,9.0,ACTIVE,2024-08-19,2026-01-01,9999-12-31\n'+
+                'NL-04,HS-02,LU-01,Iso W 6s,22.0,14.0,ACTIVE,2023-05-05,2024-01-01,2025-06-30\n'+
+                'NL-05,HS-01,LU-01,Fl W 3s,8.0,5.0,MAINTENANCE,2024-04-01,2026-01-01,9999-12-31\n';
+              harbour.lamp_unit:
+                'lamp_code,lamp_type,wattage,installed_on\n'+
+                'LU-01,LED array,45,2024-03-01\n'+
+                'LU-02,Halogen bulb,120,2022-07-15\n';
+              harbour.harbour_station:
+                'station_code,station_name,coast_sector\n'+
+                'HS-01,North Mole Station,Outer Approach\n'+
+                'HS-02,South Quay Station,Inner Basin\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        ledRefitRound:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            lampTypes = ['LED array'],
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            twoLedLights:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LightCode":"NL-01","StationName":"North Mole Station","LampType":"LED array","Wattage":45,"InstalledOn":"2024-03-01"},{"LightCode":"NL-03","StationName":"South Quay Station","LampType":"LED array","Wattage":45,"InstalledOn":"2024-03-01"}]';
+                  }#;
+              }#
+          ]
+        },
+        halogenRefitRound:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            lampTypes = ['Halogen bulb'],
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            oneHalogenLight:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LightCode":"NL-02","StationName":"North Mole Station","LampType":"Halogen bulb","Wattage":120,"InstalledOn":"2022-07-15"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quiettundra2::mapping::PlotIntakeM2M
+(
+  include test::quiettundra2::mapping::TundraEnumMappings
+
+  *test::quiettundra2::domain::Plot[m2mPlot]: Pure
+  {
+    ~src test::quiettundra2::source::PlotSubmission
+    ~filter $src.plotCode->isNotEmpty() && $src.season->isNotEmpty() && ($src.habitatCode->isEmpty() || $src.habitatCode->toOne()->in(['H', 'S', 'M', 'B']))
+    code: $src.plotCode->toOne(),
+    season: $src.season,
+    shortLabel: if($src.plotName->isEmpty(),
+                   | [],
+                   | if($src.plotName->toOne()->length() > 6,
+                        | $src.plotName->toOne()->substring(0, 6),
+                        | $src.plotName->toOne())),
+    habitat: EnumerationMapping HabitatCodes: $src.habitatCode,
+    coverBand: if($src.coverPct->isEmpty(),
+                  | [],
+                  | if($src.coverPct->toOne() >= 90,
+                       | 'CLOSED',
+                       | if($src.coverPct->toOne() >= 75,
+                            | 'DENSE',
+                            | if($src.coverPct->toOne() >= 60,
+                                 | 'THICK',
+                                 | if($src.coverPct->toOne() >= 45,
+                                      | 'MODERATE',
+                                      | if($src.coverPct->toOne() >= 30,
+                                           | 'OPEN',
+                                           | if($src.coverPct->toOne() >= 15,
+                                                | 'SPARSE',
+                                                | if($src.coverPct->toOne() >= 5,
+                                                     | 'SCANT',
+                                                     | if($src.coverPct->toOne() > 0,
+                                                          | 'TRACE',
+                                                          | 'BARE'))))))))),
+    quadratCount: $src.quadrats,
+    coveredCount: $src.covered,
+    sampleLabels: $src.samples->map(s|if($s.code->isEmpty(),
+                                         | 'UNTAGGED',
+                                         | if($s.code->toOne()->length() > 6,
+                                              | $s.code->toOne()->substring(0, 6),
+                                              | $s.code->toOne()))),
+    station[m2mStation]: $src.station,
+    samples[m2mSample]: $src.samples
+  }
+
+  test::quiettundra2::domain::Station[m2mStation]: Pure
+  {
+    ~src test::quiettundra2::source::StationBlock
+    code: $src.code->toOne(),
+    stationName: $src.name,
+    ridgeCode: if($src.ridge->isEmpty(), | [], | $src.ridge->toOne()->toUpper())
+  }
+
+  test::quiettundra2::domain::PlotSample[m2mSample]: Pure
+  {
+    ~src test::quiettundra2::source::SampleBlock
+    ~filter $src.code->isNotEmpty()
+    sampleCode: $src.code->toOne(),
+    kind: EnumerationMapping SampleKindCodes: $src.kindCode,
+    massG: $src.mass
+  }
+
+  *test::quiettundra2::domain::Crew[m2mCrew]: Pure
+  {
+    ~src test::quiettundra2::source::CrewSubmission
+    ~filter $src.crewCode->isNotEmpty()
+    code: $src.crewCode->toOne(),
+    leadName: if($src.lead->isEmpty(), | [], | $src.lead->toOne()->trim()->toUpper()),
+    memberCount: $src.members->size(),
+    roster: $src.members->map(m|$m->trim())
+  }
+
+  testSuites:
+  [
+    coverBandSuite:
+    {
+      function: |test::quiettundra2::domain::Plot.all()->graphFetch(
+        #{
+          test::quiettundra2::domain::Plot{
+            code,
+            habitat,
+            coverBand,
+            shortLabel,
+            sampleLabels
+          }
+        }#
+      )->serialize(
+        #{
+          test::quiettundra2::domain::Plot{
+            code,
+            habitat,
+            coverBand,
+            shortLabel,
+            sampleLabels
+          }
+        }#
+      );
+      tests:
+      [
+        everyCoverBandArm:
+        {
+          doc: 'Feeds one submission per cover band from closed down to bare, one without a habitat or cover reading, one without a plot code and one with an unknown habitat code; the last two are dropped by the source filter, long names and long bag tags are cut after the length check and untagged bags are labelled as such.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quiettundra2::source::PlotSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"plotCode":"PL-11","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Cotton Grass Mire","habitatCode":"S","coverPct":95,"samples":[{"code":"SM-110","kindCode":"PL"},{"code":"SM-111-LONGTAG","kindCode":"SO"}]},{"plotCode":"PL-12","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Birchwood","habitatCode":"H","coverPct":80,"samples":[]},{"plotCode":"PL-13","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Moss","habitatCode":"M","coverPct":65,"samples":[{"kindCode":"MW"}]},{"plotCode":"PL-14","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Tussock","habitatCode":"S","coverPct":50},{"plotCode":"PL-15","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Frost","habitatCode":"H","coverPct":35},{"plotCode":"PL-16","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Polygon","habitatCode":"M","coverPct":20},{"plotCode":"PL-17","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Scree","habitatCode":"B","coverPct":8},{"plotCode":"PL-18","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Pingo","habitatCode":"B","coverPct":2},{"plotCode":"PL-19","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"},"plotName":"Bare Till","habitatCode":"B","coverPct":0},{"plotCode":"PL-20","season":"S26","station":{"code":"ST-1","name":"Upper Knoll Hut","ridge":"rg1"}},{"season":"S26","plotName":"Unlabelled","habitatCode":"H","coverPct":50},{"plotCode":"PL-21","season":"S26","habitatCode":"X","coverPct":50}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            tenBandedPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"code":"PL-11","habitat":"SEDGE","coverBand":"CLOSED","shortLabel":"Cotton","sampleLabels":["SM-110","SM-111"]},{"code":"PL-12","habitat":"HEATH","coverBand":"DENSE","shortLabel":"Birchw","sampleLabels":[]},{"code":"PL-13","habitat":"MOSS","coverBand":"THICK","shortLabel":"Moss","sampleLabels":["UNTAGGED"]},{"code":"PL-14","habitat":"SEDGE","coverBand":"MODERATE","shortLabel":"Tussoc","sampleLabels":[]},{"code":"PL-15","habitat":"HEATH","coverBand":"OPEN","shortLabel":"Frost","sampleLabels":[]},{"code":"PL-16","habitat":"MOSS","coverBand":"SPARSE","shortLabel":"Polygo","sampleLabels":[]},{"code":"PL-17","habitat":"BARREN","coverBand":"SCANT","shortLabel":"Scree","sampleLabels":[]},{"code":"PL-18","habitat":"BARREN","coverBand":"TRACE","shortLabel":"Pingo","sampleLabels":[]},{"code":"PL-19","habitat":"BARREN","coverBand":"BARE","shortLabel":"Bare T","sampleLabels":[]},{"code":"PL-20","habitat":null,"coverBand":null,"shortLabel":null,"sampleLabels":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

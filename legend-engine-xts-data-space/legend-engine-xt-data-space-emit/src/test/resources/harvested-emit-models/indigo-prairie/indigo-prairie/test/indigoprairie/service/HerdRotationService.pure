@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::indigoprairie::service::HerdRotationService
+{
+  pattern: '/indigoprairie/v1/rotation/moves';
+  title: 'Herd Rotation Register';
+  owners:
+  [
+    'range-stewardship',
+    'herd-operations'
+  ];
+  documentation: 'Publishes herd moves above a herd-size floor with the paddock reached across the schema boundary and the recorder of each attached field note.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minHerdSize: Integer[1]|demo::indigoprairie::domain::HerdMove.all()->filter(
+      m|$m.herdSize >= $minHerdSize
+    )->project(
+      [
+        m|$m.moveCode,
+        m|$m.herdSize,
+        m|$m.paddockName,
+        m|$m.notes.recordedBy
+      ],
+      [
+        'MoveCode',
+        'HerdSize',
+        'PaddockName',
+        'RecordedBy'
+      ]
+    )->sort(
+      [
+        asc('MoveCode')
+      ]
+    )};
+    mapping: demo::indigoprairie::mapping::RotationMapping;
+    runtime: demo::indigoprairie::runtime::RotationH2Runtime;
+  }
+  testSuites:
+  [
+    rotationRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          rotationConnection:
+            Relational
+            #{
+              paddock.grazing_paddock:
+                'paddock_id,paddock_name,grass_association,acreage\n'+
+                'PD-01,North Swale,Big Bluestem,64.5\n'+
+                'PD-02,Cedar Draw,Little Bluestem,41.25\n';
+
+              rotation.herd_move:
+                'move_id,move_code,herd_size,paddock_id\n'+
+                'HM-01,mv-spring-1,120,PD-01\n'+
+                'HM-02,mv-spring-2,88,PD-02\n';
+
+              rotation.move_note:
+                'note_id,note_text,recorded_by,move_id\n'+
+                'MN-01,Sward height even,range rider,HM-01\n'+
+                'MN-02,Water point clear,herd steward,HM-02\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        largeMovesOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minHerdSize = 100
+          ]
+          asserts:
+          [
+            oneMoveAboveFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MoveCode":"mv-spring-1","HerdSize":120,"PaddockName":"North Swale","RecordedBy":"range rider"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

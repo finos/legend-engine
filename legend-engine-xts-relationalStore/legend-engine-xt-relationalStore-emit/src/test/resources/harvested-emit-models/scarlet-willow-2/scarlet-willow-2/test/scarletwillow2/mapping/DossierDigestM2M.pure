@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletwillow2::mapping::DossierDigestM2M
+(
+  test::scarletwillow2::domain::RecordStatus: EnumerationMapping DigestStatusMapping
+  {
+    PRELIMINARY: ['PRELIM'],
+    FINAL: ['FINAL']
+  }
+
+  test::scarletwillow2::domain::MemoKind: EnumerationMapping DigestMemoMapping
+  {
+    INTAKE_MEMO: ['INTAKE'],
+    RELEASE_MEMO: ['RELEASE'],
+    REVIEW_MEMO: ['REVIEW']
+  }
+
+  test::scarletwillow2::domain::ShelvableKind: EnumerationMapping DigestShelvableMapping
+  {
+    OPEN_SHELF: ['OPEN'],
+    CLOSED_SHELF: ['CLOSED']
+  }
+
+  *test::scarletwillow2::domain::DossierDigest[dossierDigest]: Pure
+  {
+    ~src test::scarletwillow2::domain::RawDossierFeed
+    dossierCode: $src.dossierCode,
+    custodianLabel: if($src.custodianName->isEmpty(),
+                       | 'UNRECORDED CUSTODIAN',
+                       | $src.custodianName->toOne()->toUpper()),
+    status: EnumerationMapping DigestStatusMapping: [if($src.statusCode->isEmpty(), | 'PRELIM', | $src.statusCode->toOne()->toUpper()->trim())]->toOne(),
+    memoKind: EnumerationMapping DigestMemoMapping: [if($src.memoCode->isEmpty(), | 'REVIEW', | $src.memoCode->toOne()->toUpper()->trim())]->toOne(),
+    shelvable: EnumerationMapping DigestShelvableMapping: [if($src.shelvableCode->isEmpty(),
+                                                              | 'CLOSED',
+                                                              | if($src.shelvableCode->toOne()->toUpper()->trim() == 'OPEN',
+                                                                   | 'OPEN',
+                                                                   | 'CLOSED'))]->toOne(),
+    sheetBand: if($src.sheetCount->isEmpty(),
+                  | 'UNCOUNTED',
+                  | if($src.sheetCount->toOne() >= 24,
+                       | 'LARGE',
+                       | if($src.sheetCount->toOne() >= 8,
+                            | 'MEDIUM',
+                            | 'SMALL')))
+  }
+
+  testSuites:
+  [
+    digestDecodeSuite:
+    {
+      function: |test::scarletwillow2::domain::DossierDigest.all()->graphFetch(
+        #{
+          test::scarletwillow2::domain::DossierDigest
+          {
+            dossierCode,
+            custodianLabel,
+            status,
+            memoKind,
+            shelvable,
+            sheetBand
+          }
+        }#
+      )->serialize(
+        #{
+          test::scarletwillow2::domain::DossierDigest
+          {
+            dossierCode,
+            custodianLabel,
+            status,
+            memoKind,
+            shelvable,
+            sheetBand
+          }
+        }#
+      );
+      tests:
+      [
+        decodedDigest:
+        {
+          doc: 'Decodes a raw conservation feed into the digest extent, exercising all three expression-sourced enumeration mappings including their absent-code defaults and differently cased codes, every band arm of the sheet count and the blank-custodian fallback label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::scarletwillow2::domain::RawDossierFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dossierCode":"DOS-01","custodianName":"reading room","statusCode":"final","memoCode":"intake","shelvableCode":"open","sheetCount":30},{"dossierCode":"DOS-02","custodianName":"map room","statusCode":"prelim","memoCode":"release","shelvableCode":"closed","sheetCount":12},{"dossierCode":"DOS-03","custodianName":"print room","sheetCount":4},{"dossierCode":"DOS-04"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dossierCode":"DOS-01","custodianLabel":"READING ROOM","status":"FINAL","memoKind":"INTAKE_MEMO","shelvable":"OPEN_SHELF","sheetBand":"LARGE"},{"dossierCode":"DOS-02","custodianLabel":"MAP ROOM","status":"PRELIMINARY","memoKind":"RELEASE_MEMO","shelvable":"CLOSED_SHELF","sheetBand":"MEDIUM"},{"dossierCode":"DOS-03","custodianLabel":"PRINT ROOM","status":"PRELIMINARY","memoKind":"REVIEW_MEMO","shelvable":"CLOSED_SHELF","sheetBand":"SMALL"},{"dossierCode":"DOS-04","custodianLabel":"UNRECORDED CUSTODIAN","status":"PRELIMINARY","memoKind":"REVIEW_MEMO","shelvable":"CLOSED_SHELF","sheetBand":"UNCOUNTED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

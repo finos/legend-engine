@@ -1,0 +1,90 @@
+name: azure-meadow-3
+title: "Azure Meadow 3 — a milestoned hay cut register widened by a joined detail table, folded by terrace behind the class and packaged as governed data spaces"
+description: |
+  An alpine hay meadow held in one relational store across two schemas: a parcel book, a detail table
+  carrying the slope and aspect of the parcels cut into alpine terraces, a terrace book, a keeper roster,
+  a store-side view folding the parcel book by terrace and a hay cut register.
+  The register relation is milestoned by a business window, so one read at a business date returns the nine
+  open rows and drops the row whose window closed two years earlier, while a second read at a date inside
+  that closed window returns exactly that row — the explicit date, not the extent, is doing the scoping.
+  The parcel book is read three ways from one main table: as the root parcel, as a subtype whose own slope
+  and aspect are carried on a detail table joined to it rather than on the parcel book itself, and as a fold
+  grouped by terrace behind the class so the parcel tally and the plot total are aggregated by the mapping
+  rather than by the query; the same fold is then read a fourth way straight off the store view, so the
+  aggregation declared once in the store returns what the mapping fold returns.
+  The register reaches its parcel one hop out, the terrace of that parcel two hops out and the keeper of that
+  terrace three hops out, leaving the tail of the chain unresolved where a parcel is cut into no terrace or a
+  terrace is walked by no keeper. A bale tier falls out of an eight-armed nested conditional with an
+  unresolved tail, a four-arm band over the bale tally and the moisture falls through to a floor label, a note
+  label is composed from the note and its own measured length, and a nested arithmetic fold over the moisture
+  and the stem length is walked deep enough that the plan has to compute it before it reads the columns. Sward,
+  drying and access enumerations are mapped from coded columns, so an unlisted code yields no member at all.
+  The row-shaped endpoint keeps the cuts whose yield band the caller names and which tied at least as many
+  bales as the caller names, then places each cut beside a distinct projection of the parcel book over an
+  inner join; a second endpoint reads the terrace fold for the terraces the caller names. Both the register
+  and the terrace estate are packaged as governed data spaces carrying their diagrams and a support address.
+modelSources:
+  model:
+    root: azure-meadow-3
+    files:
+      - test/azuremeadow3/connection/MeadowConnections.pure
+      - test/azuremeadow3/data/MeadowTestData.pure
+      - test/azuremeadow3/dataspace/MeadowDataSpaces.pure
+      - test/azuremeadow3/diagram/MeadowDiagrams.pure
+      - test/azuremeadow3/domain/MeadowDomain.pure
+      - test/azuremeadow3/mapping/MeadowCutMapping.pure
+      - test/azuremeadow3/mapping/MeadowRefMapping.pure
+      - test/azuremeadow3/runtime/MeadowRuntimes.pure
+      - test/azuremeadow3/service/HayCutRegister.pure
+      - test/azuremeadow3/service/TerraceLoadRollup.pure
+      - test/azuremeadow3/store/MeadowDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-group-by
+  - mapping:relational-joined-table-inheritance
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - data-space-governance
+  - deep-arithmetic-fold
+  - eight-arm-bale-tier
+  - group-by-mapping
+  - h2
+  - joined-table-inheritance
+  - mapping-include
+  - milestoning-out-of-range
+  - nested-null-sentinel
+  - point-in-time
+  - qualified-property-banding
+  - store-view-fold
+  - tds-join
+  - three-hop-keeper-path

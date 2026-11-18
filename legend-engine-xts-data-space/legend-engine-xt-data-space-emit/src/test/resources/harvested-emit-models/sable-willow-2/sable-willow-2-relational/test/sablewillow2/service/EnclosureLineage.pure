@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sablewillow2::service::EnclosureLineage
+{
+  pattern: '/rehab/v1/enclosures/{habitatCode}';
+  title: 'Sable Willow 2 - Enclosure Lineage By Habitat Band';
+  ownership: DID { identifier: 'wildlife-rehabilitation-register' };
+  documentation: 'Reads the processing-temporal enclosure register at a pinned instant, keeps the pens of the requested habitat band and projects each pen with its parent complex and with the reference species whose suitability band matches the upper-cased habitat code.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {habitatCode: String[1]|test::sablewillow2::domain::Enclosure.all(%2026-06-01T00:00:00)->filter(
+      e|$e.habitatCode == $habitatCode
+    )->project(
+      [
+        e|$e.enclosureName,
+        e|$e.habitatCode,
+        e|$e.parentEnclosure.enclosureName->toOne(),
+        e|$e.suitableSpecies.commonName->toOne()
+      ],
+      [
+        'Enclosure',
+        'Habitat Code',
+        'Parent Enclosure',
+        'Suitable Species'
+      ]
+    )->sort(
+      [
+        asc('Enclosure')
+      ]
+    )};
+    mapping: test::sablewillow2::mapping::RehabMapping;
+    runtime: test::sablewillow2::runtime::RehabRuntime;
+  }
+  testSuites:
+  [
+    enclosureLineageSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          rehabConnection:
+            Reference
+            #{
+              test::sablewillow2::data::RehabTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        bandWithALiveChildPen:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            habitatCode = 'riverbank'
+          ]
+          asserts:
+          [
+            childPenWithItsComplex:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Enclosure":"Otter Pool","Habitat Code":"riverbank","Parent Enclosure":"Riverside Complex","Suitable Species":"Common kingfisher"}]';
+                  }#;
+              }#
+          ]
+        },
+        bandWhoseOnlyPenIsOutOfWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            habitatCode = 'scrub'
+          ]
+          asserts:
+          [
+            noPensInsideTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

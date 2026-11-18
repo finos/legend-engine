@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldquarry::mapping::QuarryFaceMapping
+(
+  *test::emeraldquarry::domain::ExtractionFace[face_history]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldquarry::store::QuarryYardStore]quarry.pit_face_history.face_id
+    )
+    ~mainTable [test::emeraldquarry::store::QuarryYardStore]quarry.pit_face_history
+    FACE_CODE: [test::emeraldquarry::store::QuarryYardStore]quarry.pit_face_history.face_code,
+    DIVISION_CODE: [test::emeraldquarry::store::QuarryYardStore]quarry.pit_face_history.division_code,
+    EXTRACTED_TONNES: [test::emeraldquarry::store::QuarryYardStore]quarry.pit_face_history.extracted_tonnes,
+    SURVEY_NOTE: [test::emeraldquarry::store::QuarryYardStore]quarry.pit_face_history.survey_note
+  }
+
+  testSuites:
+  [
+    faceVersionSuite:
+    {
+      function: |test::emeraldquarry::domain::ExtractionFace.all(%2026-03-01)->filter(
+  f|$f.EXTRACTED_TONNES > 0
+)->project(
+  [
+    f|$f.FACE_CODE,
+    f|$f.DIVISION_CODE,
+    f|$f.EXTRACTED_TONNES
+  ],
+  [
+    'Face/Code',
+    'Face/Division',
+    'Face/Tonnes'
+  ]
+)->sort(
+  [
+    asc('Face/Code')
+  ]
+);
+      tests:
+      [
+        onlyTheVersionCurrentAtTheProcessingInstant:
+        {
+          doc: 'Reads the processing-temporal extent at one system-time instant so the superseded version of the face and the version opened after the instant are both excluded, leaving the single in-range version whose constrained code and division widths are within their ceilings.';
+          data:
+          [
+            test::emeraldquarry::store::QuarryYardStore:
+              Relational
+              #{
+                quarry.pit_face_history:
+                  'face_id,face_code,division_code,extracted_tonnes,survey_note,in_z,out_z\n'+
+                  '1,QF-NORTH-01,NORTHERN,1400,Bench two reworked,2026-02-01,9999-12-31\n'+
+                  '2,QF-NORTH-02,NORTHERN,900,Superseded reading,2025-06-01,2025-12-31\n'+
+                  '3,QF-SOUTH-01,SOUTHERN,250,Opened after the instant,2026-06-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            singleInRangeVersion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Face/Code":"QF-NORTH-01","Face/Division":"NORTHERN","Face/Tonnes":1400}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import test::azurecove3::survey::*;
+
+Association {doc.doc = 'Relates a plot to the tidal sampling windows opened on it; both ends are business-milestoned.'} test::azurecove3::survey::ShorelinePlot_TidalSamplingWindow
+{
+  {doc.doc = 'Plot the window was opened on.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Tidal sampling windows opened on the plot.'} tidalWindows: TidalSamplingWindow[*];
+}
+
+Association {doc.doc = 'Relates a plot to the sediment sampling windows opened on it.'} test::azurecove3::survey::ShorelinePlot_SedimentSamplingWindow
+{
+  {doc.doc = 'Plot the window was opened on.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Sediment sampling windows opened on the plot.'} sedimentWindows: SedimentSamplingWindow[*];
+}
+
+Association {doc.doc = 'Relates a plot to the vegetation survey windows opened on it; the plot end is optional so a window can be drafted before it is attached.'} test::azurecove3::survey::ShorelinePlot_VegetationSurveyWindow
+{
+  {doc.doc = 'Plot the window was opened on, absent for a draft window.'} plot: ShorelinePlot[0..1];
+  {doc.doc = 'Vegetation survey windows opened on the plot.'} vegetationWindows: VegetationSurveyWindow[*];
+}
+
+Association {doc.doc = 'Relates a plot to the water quality windows opened on it.'} test::azurecove3::survey::ShorelinePlot_WaterQualityWindow
+{
+  {doc.doc = 'Plot the window was opened on.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Water quality windows opened on the plot.'} waterQualityWindows: WaterQualityWindow[*];
+}
+
+Association {doc.doc = 'Relates a plot to the spring-tide windows opened on it, reaching a class that inherits from a base outside this module.'} test::azurecove3::survey::ShorelinePlot_SpringTideWindow
+{
+  {doc.doc = 'Plot the spring-tide window was opened on.'} plot: ShorelinePlot[0..1];
+  {doc.doc = 'Spring-tide windows opened on the plot.'} springTideWindows: SpringTideWindow[*];
+}
+
+Association {doc.doc = 'Relates a plot to the habitat observations filed about it, crossing from a business timeline to a processing timeline.'} test::azurecove3::survey::ShorelinePlot_HabitatObservation
+{
+  {doc.doc = 'Plot the observation is about, absent while the observation is unattached.'} plot: ShorelinePlot[0..1];
+  {doc.doc = 'Habitat observations filed about the plot.'} observations: HabitatObservation[*];
+}
+
+Association {doc.doc = 'Relates a plot to the access arrangements recorded over it.'} test::azurecove3::survey::ShorelinePlot_PlotAccessRecord
+{
+  {doc.doc = 'Plot the arrangement applies to.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Access arrangements recorded over the plot.'} accessRecords: PlotAccessRecord[*];
+}
+
+Association {doc.doc = 'Relates a plot to its published reporting sheet; the sheet end is an optional to-one because a plot is not always published.'} test::azurecove3::survey::ShorelinePlot_PlotReportingSheet
+{
+  {doc.doc = 'Plot the sheet reports on.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Reporting sheet published for the plot, absent until it is published.'} reportingSheet: PlotReportingSheet[0..1];
+}
+
+Association {doc.doc = 'Relates a plot to the identifiers minted for it, joining a milestoned end to a non-milestoned one.'} test::azurecove3::survey::ShorelinePlot_PlotIdentifierRecord
+{
+  {doc.doc = 'Plot the identifier was minted for.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Identifiers minted for the plot.'} identifierRecords: PlotIdentifierRecord[*];
+}
+
+Association {doc.doc = 'Relates a plot to the permanent marks set along it.'} test::azurecove3::survey::ShorelinePlot_ShorelineSegmentMark
+{
+  {doc.doc = 'Plot the mark was set on, absent for a mark outside every registered plot.'} plot: ShorelinePlot[0..1];
+  {doc.doc = 'Marks set along the plot shoreline.'} segmentMarks: ShorelineSegmentMark[*];
+}
+
+Association {doc.doc = 'Relates a shoreline mark to the contact points responsible for maintaining it.'} test::azurecove3::survey::ShorelineSegmentMark_SurveyPartyContact
+{
+  {doc.doc = 'Mark the contact is responsible for.'} segmentMark: ShorelineSegmentMark[0..1];
+  {doc.doc = 'Contact points responsible for the mark.'} partyContacts: SurveyPartyContact[*];
+}
+
+Association <<temporal.businesstemporal>> {doc.doc = 'Relates a plot to the habitat zones it falls inside. The association itself carries a business timeline, so which zones a plot belongs to is versioned independently of the validity windows of the plot and the zones; the far end is owned by a class declared outside this module.'} test::azurecove3::survey::ShorelinePlot_HabitatZone
+{
+  {doc.doc = 'Plot falling inside the zone.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Habitat zones the plot falls inside.'} habitatZones: test::azurecove3::reference::HabitatZone[*];
+}
+
+Association {doc.doc = 'Relates a plot to the field parties contracted to walk it; the far end is owned by a class declared outside this module.'} test::azurecove3::survey::ShorelinePlot_FieldParty
+{
+  {doc.doc = 'Plot the party is contracted to walk.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Field parties contracted to walk the plot.'} fieldParties: test::azurecove3::reference::FieldParty[*];
+}
+
+Association {doc.doc = 'Relates a plot to the access permits minted for it by the coastal authority; the far end is owned by a class declared outside this module.'} test::azurecove3::survey::ShorelinePlot_PermitIdentifier
+{
+  {doc.doc = 'Plot the permit was minted for.'} plot: ShorelinePlot[1];
+  {doc.doc = 'Permits minted for the plot.'} permitIdentifiers: test::azurecove3::reference::PermitIdentifier[*];
+}
+
+Association {doc.doc = 'Relates a shoreline mark to the mooring buoys maintained beside it; the far end is owned by a class declared outside this module.'} test::azurecove3::survey::ShorelineSegmentMark_MooringBuoyUnit
+{
+  {doc.doc = 'Mark the buoy is maintained beside.'} segmentMark: ShorelineSegmentMark[0..1];
+  {doc.doc = 'Mooring buoys maintained beside the mark.'} mooringBuoys: test::azurecove3::reference::MooringBuoyUnit[*];
+}

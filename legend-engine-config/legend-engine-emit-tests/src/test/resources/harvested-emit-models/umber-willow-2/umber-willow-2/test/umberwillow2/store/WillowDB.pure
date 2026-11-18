@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberwillow2::store::WillowDB
+(
+  Schema riparian
+  (
+    Table scheme
+    (
+      scheme_id INTEGER PRIMARY KEY,
+      scheme_name VARCHAR(60) NOT NULL,
+      steward VARCHAR(60) NOT NULL
+    )
+    Table designation
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      designation_id INTEGER PRIMARY KEY,
+      designation_code VARCHAR(20) NOT NULL,
+      scheme_ref VARCHAR(20) NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table stand
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      stand_id INTEGER PRIMARY KEY,
+      stand_code VARCHAR(20) NOT NULL,
+      clone_name VARCHAR(40) NOT NULL,
+      canopy_height_m DOUBLE NOT NULL,
+      reach_zone VARCHAR(20) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table section
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      section_id INTEGER PRIMARY KEY,
+      section_code VARCHAR(20) NOT NULL,
+      stem_count INTEGER NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table reading
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      reading_id INTEGER PRIMARY KEY,
+      reading_ref VARCHAR(20) NOT NULL,
+      soil_moisture_pct DOUBLE NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table batch
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      batch_id INTEGER PRIMARY KEY,
+      batch_ref VARCHAR(20) NOT NULL,
+      cutting_count INTEGER NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+  )
+)

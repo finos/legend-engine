@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietarboretum2::store::AccessionDb
+(
+  Schema arbor
+  (
+    Table accession_record
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      accession_code VARCHAR(24) PRIMARY KEY,
+      taxon_name VARCHAR(128) NOT NULL,
+      bed_code VARCHAR(16) NOT NULL,
+      curator_name VARCHAR(64) NOT NULL,
+      specimen_count INTEGER NOT NULL,
+      height_cm INTEGER,
+      spread_cm INTEGER,
+      propagation_count INTEGER NOT NULL,
+      planted_on DATE NOT NULL,
+      verified_on DATE,
+      surveyed_at TIMESTAMP,
+      updated_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+)

@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfullantern3::service::TreeRegisterAsOf
+{
+  pattern: '/wistfullantern3/treeRegisterAsOf/{asOf}';
+  ownership: UserList { users: ['estate-survey-desk'] };
+  documentation: 'Publishes the register of trees whose record was on file at a processing date, narrowed to the ones in serviceable condition that are either girthy enough or of the rowan planting, and long enough in the ground, so the processing date the caller supplies reaches the generated predicate as well as the projected age of each tree.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfullantern3::domain::ParkTree.all($asOf)->filter(
+      t|(($t.conditionScore >= 3) && (($t.girthCm >= 90.00) || ($t.speciesLabel->toUpper()->startsWith('ROWAN')))) && ($t.plantedOn->dateDiff($asOf, DurationUnit.DAYS) >= 1000)
+    )->project(
+      [
+        t|$t.treeRef,
+        t|$t.parkName,
+        t|$t.speciesLabel,
+        t|$t.girthCm,
+        t|$t.plantedOn->dateDiff($asOf, DurationUnit.DAYS)
+      ],
+      [
+        'Tree',
+        'Park',
+        'Species',
+        'GirthCm',
+        'DaysPlanted'
+      ]
+    )->sort(
+      [
+        desc('GirthCm'),
+        asc('Tree')
+      ]
+    )};
+    mapping: test::wistfullantern3::mapping::EstateMapping;
+    runtime: test::wistfullantern3::runtime::EstateFieldRuntime;
+  }
+  testSuites:
+  [
+    treeRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateConnection: Reference
+            #{
+              test::wistfullantern3::data::EstateTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerOnAProcessingDateWithVisibleGenerations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            theGirthFloorTheSpeciesAlternativeAndTheNestedDayDifferenceSelectFourTrees:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tree":"TR-4","Park":"Riverside Walk","Species":"Horse Chestnut","GirthCm":240.15,"DaysPlanted":10106},{"Tree":"TR-1","Park":"Northgate Green","Species":"Common Lime","GirthCm":182.45,"DaysPlanted":5192},{"Tree":"TR-2","Park":"Northgate Green","Species":"Field Maple","GirthCm":96.25,"DaysPlanted":3864},{"Tree":"TR-5","Park":"Hollow Meadow","Species":"Rowan","GirthCm":38.35,"DaysPlanted":1693}]';
+                  }#;
+              }#
+          ]
+        },
+        registerOnAProcessingDateBeforeAnyGenerationOpened:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2025-01-01
+          ]
+          asserts:
+          [
+            nothingIsOnRecordBecauseEveryGenerationOpensAfterTheRequestedInstant:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

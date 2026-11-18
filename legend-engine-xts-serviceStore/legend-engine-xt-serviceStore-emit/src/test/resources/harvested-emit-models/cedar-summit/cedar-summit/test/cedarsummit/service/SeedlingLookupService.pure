@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarsummit::service::SeedlingLookupService
+{
+  pattern: '/nursery/v1/sd-1180/{trayCode}/{greenhouseZone}/{batchLabel}/{lotReference}';
+  title: 'Greenhouse Network - Single Seedling Record';
+  documentation: 'Selects one remote seedling record by tray, zone, batch and propagation lot through the nursery lookup endpoint, then graph-fetches and serialises the descriptive attributes under a configuration that strips absent values and empty collections. The equality on the propagation lot compares an optional property against a mandatory parameter.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['greenhouse-network', 'propagation-audit'] };
+  execution: Single
+  {
+    query: {trayCode: String[1], greenhouseZone: String[1], batchLabel: String[1], lotReference: String[1]|test::cedarsummit::domain::SeedlingRecord.all()->filter(
+      s|((($s.trayCode == $trayCode) && ($s.greenhouseZone == $greenhouseZone)) && ($s.batchLabel == $batchLabel)) && ($s.lotReference->toOne() == $lotReference)
+    )->toOne()->graphFetch(
+      #{
+        test::cedarsummit::domain::SeedlingRecord
+        {
+          cultivarName,
+          greenhouseZone,
+          sowingDate,
+          lotReference
+        }
+      }#
+    )->serialize(
+      #{
+        test::cedarsummit::domain::SeedlingRecord
+        {
+          cultivarName,
+          greenhouseZone,
+          sowingDate,
+          lotReference
+        }
+      }#,
+      ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+        typeKeyName = '@type',
+        includeType = false,
+        includeEnumType = false,
+        removePropertiesWithNullValues = true,
+        removePropertiesWithEmptySets = true,
+        fullyQualifiedTypePath = false
+      )
+    )};
+    mapping: test::cedarsummit::mapping::SeedlingLookupMapping;
+    runtime: test::cedarsummit::runtime::NorthNurseryRuntime;
+  }
+  testSuites:
+  [
+    seedlingLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northNurseryConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/nursery/seedlings/TR-4410/NORTH-2/BATCH-77?lot=LOT-9001';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"trayCode":"TR-4410","greenhouseZone":"NORTH-2","batchLabel":"BATCH-77","cultivarName":"Alpine Bellflower","sowingDate":"2026-03-14","lotReference":"LOT-9001"}';
+                      }#;
+                  };
+                },
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/nursery/seedlings/TR-4411/NORTH-2/BATCH-78?lot=LOT-9002';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"trayCode":"TR-4411","greenhouseZone":"NORTH-2","batchLabel":"BATCH-78","cultivarName":"Marsh Sedge","lotReference":"LOT-9002"}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        seedlingWithLotAndSowingDate:
+        {
+          parameters:
+          [
+            trayCode = 'TR-4410',
+            greenhouseZone = 'NORTH-2',
+            batchLabel = 'BATCH-77',
+            lotReference = 'LOT-9001'
+          ]
+          asserts:
+          [
+            seedlingDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"cultivarName":"Alpine Bellflower","greenhouseZone":"NORTH-2","sowingDate":"2026-03-14","lotReference":"LOT-9001"}}';
+                  }#;
+              }#
+          ]
+        },
+        seedlingWithAbsentSowingDate:
+        {
+          parameters:
+          [
+            trayCode = 'TR-4411',
+            greenhouseZone = 'NORTH-2',
+            batchLabel = 'BATCH-78',
+            lotReference = 'LOT-9002'
+          ]
+          asserts:
+          [
+            absentSowingDateDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"cultivarName":"Marsh Sedge","greenhouseZone":"NORTH-2","lotReference":"LOT-9002"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::scarletmarsh::connection::OrchardConnection
+{
+  store: test::scarletmarsh::store::OrchardCoreDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists keeper;',
+      'drop schema if exists orchard;',
+      'drop schema if exists reference;',
+      'create schema keeper;',
+      'create schema orchard;',
+      'create schema reference;',
+      'create table keeper.keeper_record (keeper_code varchar(16), keeper_name varchar(120) not null, keeper_kind varchar(16) not null, rota_code varchar(24), badge_expiry date, guild_name varchar(120));',
+      'create table orchard.plot (plot_code varchar(24), plot_label varchar(120) not null, district varchar(60) not null, plot_state varchar(16) not null, parent_plot_code varchar(24));',
+      'create table orchard.graft_log (graft_code varchar(24), plot_code varchar(24) not null, variety_code varchar(24) not null, rootstock varchar(40) not null, keeper_code varchar(16), grade_code varchar(16), graft_status varchar(16) not null, grafted_on date not null, survival_score integer not null);',
+      'create table reference.variety (variety_code varchar(24), variety_name varchar(120) not null, ripening varchar(16));'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection test::scarletmarsh::connection::PickingConnection
+{
+  store: test::scarletmarsh::store::HarvestSideDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists picking;',
+      'create schema picking;',
+      'create table picking.harvest_ticket (ticket_code varchar(24), plot_ref varchar(24) not null, crates integer not null, picked_on date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

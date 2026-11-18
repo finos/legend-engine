@@ -1,0 +1,48 @@
+name: maple-prairie
+title: "Rocky-Shore Quadrat Cover — Service Relation with Subtype-Narrowed Recorder Columns"
+description: |
+  A rocky-shore quadrat survey whose polymorphic recorder hierarchy is mapped
+  over a joined recorder table, so the accredited recorder columns are reached
+  only by narrowing the subtype. A single-execution service guards the quadrats
+  with a compound predicate combining a five-member shore-zone membership test
+  and a tide-phase equality on the service parameter, then projects a
+  twelve-column relation of direct, string and arithmetic derived columns.
+modelSources:
+  model:
+    root: maple-prairie
+    files:
+      - test/mapleprairie/connection/ShoreH2Connection.pure
+      - test/mapleprairie/domain/TidePoolDomain.pure
+      - test/mapleprairie/mapping/ShoreQuadratMapping.pure
+      - test/mapleprairie/runtime/TidePoolRuntime.pure
+      - test/mapleprairie/service/QuadratCoverService.pure
+      - test/mapleprairie/store/ShoreDatabase.pure
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - mapping:relational-joined-table-inheritance
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - class-hierarchy
+  - duckdb
+  - h2
+  - marine-biology
+  - membership-filter
+  - relation
+  - relational
+  - service-test
+  - subtype-narrowing
+  - tide-pool

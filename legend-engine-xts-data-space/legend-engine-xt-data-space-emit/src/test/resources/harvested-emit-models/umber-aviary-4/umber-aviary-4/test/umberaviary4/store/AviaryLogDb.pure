@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberaviary4::store::AviaryLogDb
+(
+  Schema aviary
+  (
+    Table ringing_record
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      ring_code VARCHAR(24) PRIMARY KEY,
+      species_code VARCHAR(24) NOT NULL,
+      age_class VARCHAR(16),
+      wing_mm DOUBLE,
+      mass_g DOUBLE,
+      ringed_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table nest_box_check
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      check_code VARCHAR(24) PRIMARY KEY,
+      box_code VARCHAR(24) NOT NULL,
+      nest_stage VARCHAR(16),
+      egg_count DOUBLE,
+      chick_count DOUBLE,
+      checked_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table feeder_visit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      visit_code VARCHAR(24) PRIMARY KEY,
+      feeder_code VARCHAR(24) NOT NULL,
+      seed_mix VARCHAR(24),
+      visit_tally DOUBLE,
+      counted_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table moult_score
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      score_code VARCHAR(24) PRIMARY KEY,
+      ring_code VARCHAR(24) NOT NULL,
+      moult_phase VARCHAR(16),
+      primary_score DOUBLE,
+      scored_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table flight_hall_inspection
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      hall_code VARCHAR(24) NOT NULL,
+      mesh_state VARCHAR(24),
+      perch_count DOUBLE,
+      inspected_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL
+    )
+    Table diet_ration
+    (
+      ration_code VARCHAR(24) PRIMARY KEY,
+      group_code VARCHAR(24) NOT NULL,
+      food_kind VARCHAR(24),
+      grams_per_bird DOUBLE,
+      planned_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP
+    )
+    Table health_check
+    (
+      health_code VARCHAR(24) PRIMARY KEY,
+      ring_code VARCHAR(24) NOT NULL,
+      plumage_note VARCHAR(48),
+      body_condition DOUBLE,
+      checked_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP
+    )
+    Table perch_survey
+    (
+      survey_code VARCHAR(24) PRIMARY KEY,
+      hall_code VARCHAR(24) NOT NULL,
+      roost_side VARCHAR(16),
+      birds_roosting DOUBLE,
+      surveyed_on DATE,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP
+    )
+  )
+)

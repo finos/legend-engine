@@ -1,0 +1,253 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantfossil::service::SiteTrenchBoard
+{
+  pattern: '/dig/v1/sites/{regionName}';
+  title: 'Site Trench Board';
+  owners:
+  [
+    'example-dig-register'
+  ];
+  documentation: 'Trenches reached from their site through the association, listed for one region with the depth band each trench falls into.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {regionName: String[1]|test::verdantfossil::domain::DigSite.all()->filter(
+      s|$s.regionName == $regionName
+    )->project(
+      [
+        s|$s.siteName,
+        s|$s.trenches.trenchLabel,
+        s|$s.trenches.depthBand()
+      ],
+      [
+        'Site',
+        'Trench',
+        'Band'
+      ]
+    )->sort([asc('Site'), asc('Trench')])};
+    mapping: test::verdantfossil::mapping::DigMapping;
+    runtime: test::verdantfossil::runtime::DigRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              dig.site:
+                'site_code,site_name,region_name,opened_year\n'+
+                'SI-01,Larch Ridge Quarry,Upland Moor,2016\n'+
+                'SI-02,Willow Bend Pit,River Terrace,2019\n'+
+                'SI-03,Cedar Hollow Cut,Coastal Cliff,2012\n';
+              dig.trench:
+                'trench_code,site_code,trench_label,depth_cm\n'+
+                'TR-01,SI-01,North Cutting,240\n'+
+                'TR-02,SI-02,Ridge Step,120\n'+
+                'TR-03,SI-01,South Gallery,310\n'+
+                'TR-04,SI-03,Cliff Bench,90\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_association_walk:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            regionName = 'Upland Moor'
+          ]
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"Larch Ridge Quarry","Trench":"North Cutting","Band":"DEEP"},{"Site":"Larch Ridge Quarry","Trench":"South Gallery","Band":"DEEP"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::verdantfossil::service::TrenchDepthBoard
+{
+  pattern: '/dig/v1/trenches/{minDepth}';
+  title: 'Trench Depth Board';
+  owners:
+  [
+    'example-dig-register'
+  ];
+  documentation: 'Trenches deeper than a cut-off with the derived depth band, so both arms of the band expression are observable across the fixture.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minDepth: Integer[1]|test::verdantfossil::domain::Trench.all()->filter(
+      t|$t.depthCm >= $minDepth
+    )->project(
+      [
+        t|$t.trenchLabel,
+        t|$t.depthBand(),
+        t|$t.siteName
+      ],
+      [
+        'Trench',
+        'Band',
+        'Site'
+      ]
+    )->sort([asc('Trench')])};
+    mapping: test::verdantfossil::mapping::DigMapping;
+    runtime: test::verdantfossil::runtime::DigRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              dig.trench:
+                'trench_code,site_code,trench_label,depth_cm\n'+
+                'TR-01,SI-01,North Cutting,240\n'+
+                'TR-02,SI-02,Ridge Step,120\n'+
+                'TR-03,SI-01,South Gallery,310\n'+
+                'TR-04,SI-03,Cliff Bench,90\n';
+              dig.site:
+                'site_code,site_name,region_name,opened_year\n'+
+                'SI-01,Larch Ridge Quarry,Upland Moor,2016\n'+
+                'SI-02,Willow Bend Pit,River Terrace,2019\n'+
+                'SI-03,Cedar Hollow Cut,Coastal Cliff,2012\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_both_bands:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minDepth = 100
+          ]
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trench":"North Cutting","Band":"DEEP","Site":"Larch Ridge Quarry"},{"Trench":"Ridge Step","Band":"SHALLOW","Site":"Willow Bend Pit"},{"Trench":"South Gallery","Band":"DEEP","Site":"Larch Ridge Quarry"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::verdantfossil::service::SeasonLeadBoard
+{
+  pattern: '/dig/v1/seasons/{seasonYear}';
+  title: 'Season Lead Board';
+  owners:
+  [
+    'example-dig-register'
+  ];
+  documentation: 'Field seasons worked in one year with the site each was run at, resolved through the season-to-site join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {seasonYear: Integer[1]|test::verdantfossil::domain::FieldSeason.all()->filter(
+      s|$s.seasonYear == $seasonYear
+    )->project(
+      [
+        s|$s.seasonCode,
+        s|$s.fieldLead,
+        s|$s.siteName
+      ],
+      [
+        'Season',
+        'Lead',
+        'Site'
+      ]
+    )->sort([asc('Season')])};
+    mapping: test::verdantfossil::mapping::DigMapping;
+    runtime: test::verdantfossil::runtime::DigRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              dig.season:
+                'season_code,site_code,season_year,field_lead\n'+
+                'SE-01,SI-01,2024,Alder Quinn\n'+
+                'SE-02,SI-02,2024,Nell Harrow\n'+
+                'SE-03,SI-03,2023,Bram Idris\n';
+              dig.site:
+                'site_code,site_name,region_name,opened_year\n'+
+                'SI-01,Larch Ridge Quarry,Upland Moor,2016\n'+
+                'SI-02,Willow Bend Pit,River Terrace,2019\n'+
+                'SI-03,Cedar Hollow Cut,Coastal Cliff,2012\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_named_year:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonYear = 2024
+          ]
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Season":"SE-01","Lead":"Alder Quinn","Site":"Larch Ridge Quarry"},{"Season":"SE-02","Lead":"Nell Harrow","Site":"Willow Bend Pit"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data <<test::amberotter3::domain::CorpusLineage.collected>> {test::amberotter3::domain::FixtureClassification.scope = 'germination trial rows', test::amberotter3::domain::CorpusLineage.collectionRound = 'first trial'} test::amberotter3::data::GerminationTrialRows
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[\n  {"trialRef": "GT-01", "accessionRef": "AC-1001", "sownOn": "2025-03-20", "sprouted": 412, "sown": 480},\n  {"trialRef": "GT-02", "accessionRef": "AC-1002", "sownOn": "2025-03-27", "sprouted": 33, "sown": 120},\n  {"trialRef": "GT-03", "accessionRef": "AC-1003", "sownOn": "2025-04-15", "sprouted": 0, "sown": 64}\n]';
+  }#
+}
+
+Data <<test::amberotter3::domain::CorpusLineage.propagated>> {test::amberotter3::domain::FixtureClassification.curator = 'propagation glasshouse', test::amberotter3::domain::CorpusLineage.payloadShape = 'nested'} test::amberotter3::data::PropagationBatchRows
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '{"batchRef": "PB-77", "glasshouse": "GH-2", "cuttings": [{"cuttingRef": "CT-1", "accessionRef": "AC-1001", "rooted": true}, {"cuttingRef": "CT-2", "accessionRef": "AC-2001", "rooted": false}]}';
+  }#
+}
+
+Data <<test::amberotter3::domain::FixtureClassification.canonical>> {test::amberotter3::domain::FixtureClassification.scope = 'vault humidity readings', test::amberotter3::domain::FixtureClassification.refreshWindow = 'weekly'} test::amberotter3::data::VaultReadingRows
+{
+  ExternalFormat
+  #{
+    contentType: 'text/csv';
+    data: 'vaultRef,readOn,relativeHumidity,temperatureCelsius\nVAULT-A,2025-06-02,32,4\nVAULT-B,2025-06-02,29,4\nVAULT-C,2025-06-02,41,6\n';
+  }#
+}

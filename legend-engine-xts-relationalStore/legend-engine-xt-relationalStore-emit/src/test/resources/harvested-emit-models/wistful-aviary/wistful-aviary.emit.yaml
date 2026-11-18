@@ -1,0 +1,61 @@
+name: wistful-aviary
+title: "Bird Ringing Network — Business-Temporal Rollups over Milestoned Associations"
+description: |
+  A bird-ringing observation network whose rings and field observations are
+  business-temporal, associated to one another and to their ringing site through
+  milestoned associations. Three single-execution services aggregate and project
+  point-in-time tabular results with collection-membership filters, conditional
+  grouping keys and a rolling date window, so every query drives execution-plan
+  generation over the milestoned join chain.
+
+modelSources:
+  model:
+    root: wistful-aviary
+    files:
+      - test/wistfulaviary/connection/AviaryH2Connection.pure
+      - test/wistfulaviary/domain/Aviary.pure
+      - test/wistfulaviary/mapping/AviaryMapping.pure
+      - test/wistfulaviary/runtime/AviaryRuntime.pure
+      - test/wistfulaviary/service/AviaryServices.pure
+      - test/wistfulaviary/store/AviaryStore.pure
+
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - grammar:qualified-property
+  - mapping:relational-conditional-transform
+  - store:relational-join
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - bird-ringing
+  - business-temporal
+  - date-arithmetic
+  - group-by
+  - h2
+  - milestoned-association
+  - plan-generation
+  - point-in-time
+  - relational
+  - service-test

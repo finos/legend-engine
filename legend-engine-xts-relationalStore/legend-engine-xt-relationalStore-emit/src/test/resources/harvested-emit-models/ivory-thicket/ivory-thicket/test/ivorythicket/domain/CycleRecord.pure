@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ivorythicket::domain::*;
+
+Class <<CycleProfile.fleetRoot, temporal.businesstemporal>> {CycleProfile.notes = 'Root of the cycle-share fleet lattice; subtypes add body-specific detail.'} test::ivorythicket::domain::CycleRecord
+[
+  gearCountWithinBounds
+  (
+    ~function: $this.gearCount->isEmpty() ||
+  (($this.gearCount->toOne() >= 1) &&
+  ($this.gearCount->toOne() <= 27))
+    ~enforcementLevel: Error
+    ~message: 'A hub or derailleur gear count must sit between one and twenty-seven'
+  ),
+  wearIndexWithinScale
+  (
+    ~function: $this.wearIndex->isEmpty() ||
+  (($this.wearIndex->toOne() >= 0) &&
+  ($this.wearIndex->toOne() <= 9))
+    ~enforcementLevel: Error
+    ~message: 'The street wear index runs from zero to nine'
+  ),
+  cycleRefIsStamped
+  (
+    ~function: $this.cycleRef->trim()->length() >= 4
+    ~enforcementLevel: Error
+    ~message: 'Every frame carries a stamped reference of at least four characters'
+  ),
+  retiredCyclesCarryAWearIndex
+  (
+    ~function: ($this.serviceState != 'RETIRED') || ($this.wearIndex->isNotEmpty())
+    ~enforcementLevel: Warn
+    ~message: 'A retired frame should record the wear index that took it off the street'
+  )
+]
+{
+  cycleRef: String[1];
+  stationRef: String[1];
+  serviceState: String[1];
+  gearCount: Integer[0..1];
+  wearIndex: Integer[0..1];
+  wearBand: String[0..1];
+  lastSeenOn: StrictDate[1];
+  worseThan(floor: Integer[1])
+  {
+    $this.inspections->filter(i | $i.faultsFound > $floor)
+  }: Inspection[*];
+  inspectionsOfKind(kind: FrameKind[1])
+  {
+    $this.inspections->filter(i | $i.frameKind == $kind)
+  }: Inspection[*];
+  faultTally()
+  {
+    $this.inspections->map(i | $i.faultsFound)->sum()
+  }: Integer[1];
+  hasCriticalInspection()
+  {
+    $this.inspections->exists(i | ($i.severity->isNotEmpty()) && ($i.severity->toOne() == FaultSeverity.CRITICAL))
+  }: Boolean[1];
+  provisionalBand()
+  {
+    if($this.wearBand->isEmpty(), | 'unassessed-' + $this.cycleRef, | $this.wearBand->toOne())
+  }: String[1];
+  cargoCapacityKg()
+  {
+    $this->subType(@CargoCycle).loadCapacityKg
+  }: Integer[1];
+  heavyCargoInspections(floor: Integer[1])
+  {
+    if($this->subType(@CargoCycle).loadCapacityKg >= $floor,
+       | $this.inspections->filter(i | $i.faultsFound > 0),
+       | [])
+  }: Inspection[*];
+}
+
+Class <<CycleProfile.streetCollected>> test::ivorythicket::domain::CargoCycle extends CycleRecord
+{
+  loadCapacityKg: Integer[1];
+  boxLitres: Integer[1];
+}
+
+Class <<CycleProfile.provisional>> test::ivorythicket::domain::LongtailCargoCycle extends CargoCycle
+{
+  rearBenchSeats: Integer[1];
+}
+
+Class test::ivorythicket::domain::FoldingCycle extends CycleRecord
+{
+  foldedLengthCm: Integer[1];
+}

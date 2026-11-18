@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::easternhatchery2::domain::*;
+
+Profile test::easternhatchery2::domain::CollectionSemantics
+{
+  stereotypes: [set, ordered];
+  tags: [membership];
+}
+
+Enum {doc.doc = 'Outcomes a dispatch of hatchery telemetry to a downstream pond registry can end in.'} test::easternhatchery2::domain::DeliveryOutcome
+{
+  DELIVERED,
+  DEFERRED,
+  REJECTED,
+  SUPERSEDED
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Abstract root of the hatchery ingest event hierarchy; carries the identifier, creation instant and origin that every concrete event kind inherits, and can only be instantiated through a subtype.'} test::easternhatchery2::domain::HatcheryEvent
+{
+  eventId: String[1];
+  createdAt: DateTime[1];
+  origin: String[1];
+}
+
+Class {doc.doc = 'A rearing-readiness signal raised when a pond tank clears its transfer checks; first level below the abstract root and itself a supertype in the diamond.'} test::easternhatchery2::domain::RearingReadinessEvent extends test::easternhatchery2::domain::HatcheryEvent
+{
+  readinessStage: String[1];
+  readyForTransfer: Boolean[1];
+}
+
+Class {doc.doc = 'A sample-quality event that extends both the abstract root and the readiness event, so the root identifier, instant and origin are inherited along two paths and resolve once.'} test::easternhatchery2::domain::SampleQualityEvent extends test::easternhatchery2::domain::RearingReadinessEvent, test::easternhatchery2::domain::HatcheryEvent
+{
+  qualityScore: Integer[1];
+  gradedBy: String[0..1];
+}
+
+Class {doc.doc = 'A dispatch of telemetry to a downstream registry, adding a mandatory delivery outcome and an optional reference back to the event it was raised from.'} test::easternhatchery2::domain::DispatchEvent extends test::easternhatchery2::domain::HatcheryEvent
+{
+  deliveryStatus: DeliveryOutcome[1];
+  sourceEvent: HatcheryEvent[0..1];
+}
+
+Class {doc.doc = 'A landing event for one telemetry dataset, adding the dataset coordinates plus an optional batch label; a subtype instance may leave the batch label absent.'} test::easternhatchery2::domain::DatasetLandingEvent extends test::easternhatchery2::domain::HatcheryEvent
+{
+  pondSetName: String[1];
+  surveyLane: String[1];
+  batchLabel: String[0..1];
+}
+
+Class {doc.doc = 'A telemetry pull raised against a remote pond gateway, adding the remote request reference the gateway echoes back.'} test::easternhatchery2::domain::RemoteRequestEvent extends test::easternhatchery2::domain::HatcheryEvent
+{
+  requestReference: String[1];
+}
+
+Class {doc.doc = 'An inspection walk recorded against a hatchery site, adding the site address the walk was performed at.'} test::easternhatchery2::domain::SiteVisitEvent extends test::easternhatchery2::domain::HatcheryEvent
+{
+  visitAddress: SiteAddress[1];
+  inspectorCode: String[0..1];
+}
+
+Class {doc.doc = 'Postal coordinates of a hatchery site, reached only through the inspection-walk event that carries it.'} test::easternhatchery2::domain::SiteAddress
+{
+  streetLine: String[1];
+  locality: String[1];
+  postalCode: String[0..1];
+}

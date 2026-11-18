@@ -1,0 +1,26 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+function {doc.doc = 'Label a block carries in published results: its own code joined to the varietal planted on it.'} test::gildedvineyard4::function::blockLabel(blockCode: String[1], varietalCode: String[1]): String[1]
+{
+  $blockCode + '/' + $varietalCode
+}
+
+function {doc.doc = 'Sugar reading a harvest pass must clear before it is counted: the nominal target less the tolerance the picking desk grants.'} test::gildedvineyard4::function::brixFloor(target: Float[1], tolerance: Float[1]): Float[1]
+{
+  $target - $tolerance
+}

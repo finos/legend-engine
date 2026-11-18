@@ -1,0 +1,36 @@
+name: scarlet-aviary
+title: "Bird Sanctuary Domain — Profile, Business-Temporal Class and JSON-Schema Generation"
+description: |
+  An intermediate domain model over a bird sanctuary. Defines an AviaryMeta
+  profile of stereotypes and tags applied across the domain, ten scaffolding
+  classes describing species, birds, aviaries, enclosures, habitats, caretakers,
+  feeding schedules, diet items, observations and banding records, and a
+  business-temporal PopulationCensus class milestoned on a business timeline. A
+  JSON-schema file generation scopes the connected domain graph and a generation
+  specification collects it.
+modelSources:
+  model:
+    root: scarlet-aviary
+    files:
+      - test/scarletaviary/domain/SanctuaryDomain.pure
+      - test/scarletaviary/generation/SanctuaryGeneration.pure
+      - test/scarletaviary/profile/AviaryMeta.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:profile
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: intermediate
+tags:
+  - aviary
+  - birds
+  - business-temporal
+  - conservation
+  - file-generation
+  - generation-specification
+  - json-schema
+  - milestoning
+  - profile
+  - sanctuary

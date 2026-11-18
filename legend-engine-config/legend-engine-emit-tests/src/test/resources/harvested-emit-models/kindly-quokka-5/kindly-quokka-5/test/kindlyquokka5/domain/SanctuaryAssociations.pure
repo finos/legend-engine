@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Association test::kindlyquokka5::domain::Sanctuary_Zone
+{
+  sanctuary: test::kindlyquokka5::domain::Sanctuary[1];
+  zones: test::kindlyquokka5::domain::Zone[*];
+}
+
+Association test::kindlyquokka5::domain::Zone_Enclosure
+{
+  zone: test::kindlyquokka5::domain::Zone[1];
+  enclosures: test::kindlyquokka5::domain::Enclosure[*];
+}
+
+Association test::kindlyquokka5::domain::Enclosure_BrowsePlot
+{
+  enclosure: test::kindlyquokka5::domain::Enclosure[0..1];
+  browsePlots: test::kindlyquokka5::domain::BrowsePlot[*];
+}
+
+Association test::kindlyquokka5::domain::Enclosure_WaterPoint
+{
+  servedEnclosure: test::kindlyquokka5::domain::Enclosure[0..1];
+  waterPoints: test::kindlyquokka5::domain::WaterPoint[*];
+}
+
+Association test::kindlyquokka5::domain::Enclosure_Animal
+{
+  homeEnclosure: test::kindlyquokka5::domain::Enclosure[0..1];
+  residents: test::kindlyquokka5::domain::Animal[*];
+}
+
+Association test::kindlyquokka5::domain::Animal_SpeciesProfile
+{
+  animals: test::kindlyquokka5::domain::Animal[*];
+  speciesProfile: test::kindlyquokka5::domain::SpeciesProfile[1];
+}
+
+Association test::kindlyquokka5::domain::Keeper_Enclosure
+{
+  namedKeeper: test::kindlyquokka5::domain::Keeper[0..1];
+  keptEnclosures: test::kindlyquokka5::domain::Enclosure[*];
+}
+
+Association test::kindlyquokka5::domain::Sanctuary_Permit
+{
+  holder: test::kindlyquokka5::domain::Sanctuary[1];
+  permits: test::kindlyquokka5::domain::Permit[*];
+}
+
+Association test::kindlyquokka5::domain::TransferPermit_Consignment
+{
+  transferPermit: test::kindlyquokka5::domain::TransferPermit[0..1];
+  consignments: test::kindlyquokka5::domain::TransferConsignment[*];
+}
+
+Association test::kindlyquokka5::domain::Volunteer_RoundNote
+{
+  raisedBy: test::kindlyquokka5::domain::Volunteer[0..1];
+  roundNotes: test::kindlyquokka5::domain::RoundNote[*];
+}
+
+Association test::kindlyquokka5::domain::Veterinarian_Animal
+{
+  attendingVet: test::kindlyquokka5::domain::Veterinarian[0..1];
+  caseload: test::kindlyquokka5::domain::Animal[*];
+}

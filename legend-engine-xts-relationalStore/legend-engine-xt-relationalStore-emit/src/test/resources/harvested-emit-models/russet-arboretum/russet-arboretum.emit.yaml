@@ -1,0 +1,69 @@
+name: russet-arboretum
+title: "Russet Arboretum — business-temporal collection model (point-in-time service family with aggregation, subtype narrowing and de-duplicated wide projections)"
+description: |
+  A business-temporal living-collection model whose sites, beds, specimens and care operations
+  are all milestoned, so every navigation hop carries an explicit anchor date. Three
+  single-execution services over one mapping and one runtime span the shape range of the family:
+  a de-duplicated, sorted wide projection built from multi-hop bed, site and self-referencing
+  propagation navigation with a coerced-to-string column; an aggregation grouping on a two-hop
+  navigation with an extremal date aggregate and a row count followed by a post-aggregation
+  filter; and a parameterised endpoint that narrows the care-operation extent to one subtype
+  behind an inheritance-routed class mapping and labels each row by concatenating navigated
+  strings. Fixtures include a bed out of range at the anchor, a retired specimen, an operation
+  of the other subtype and an operation just inside the shifted day boundary.
+modelSources:
+  model:
+    root: russet-arboretum
+    files:
+      - test/russetarboretum/connection/ArboretumH2Connection.pure
+      - test/russetarboretum/domain/ArboretumDomain.pure
+      - test/russetarboretum/mapping/ArboretumMapping.pure
+      - test/russetarboretum/runtime/ArboretumRuntime.pure
+      - test/russetarboretum/service/BedCareSummaryService.pure
+      - test/russetarboretum/service/SpecimenCanopyDetailService.pure
+      - test/russetarboretum/service/SpecimenLineageService.pure
+      - test/russetarboretum/store/ArboretumDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:aggregation
+  - query:collection-op
+  - query:date-arithmetic
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:let-binding
+  - query:project
+  - query:sort-limit
+  - query:string-function
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aggregation
+  - arboretum
+  - business-temporal
+  - distinct
+  - enumeration-mapping
+  - group-by
+  - h2
+  - milestoning
+  - point-in-time
+  - relational
+  - service-test
+  - subtype

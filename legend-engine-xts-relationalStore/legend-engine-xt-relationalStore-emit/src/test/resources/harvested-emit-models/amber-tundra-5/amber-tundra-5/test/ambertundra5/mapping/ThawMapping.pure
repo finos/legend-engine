@@ -1,0 +1,303 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ambertundra5::mapping::ThawMapping
+(
+  include test::ambertundra5::mapping::BoreMapping
+
+  *test::ambertundra5::domain::ThawReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambertundra5::store::ReadingDb]probe.thaw_reading.reading_id
+    )
+    ~mainTable [test::ambertundra5::store::ReadingDb]probe.thaw_reading
+    readingId: [test::ambertundra5::store::ReadingDb]probe.thaw_reading.reading_id,
+    readingRef: concat('TR-', toString([test::ambertundra5::store::ReadingDb]probe.thaw_reading.reading_id)),
+    kindLabel: case(
+      equal([test::ambertundra5::store::ReadingDb]probe.thaw_reading.kind_code, 'A'),
+      'AUTOMATIC',
+      case(
+        equal([test::ambertundra5::store::ReadingDb]probe.thaw_reading.kind_code, 'M'),
+        'MANUAL',
+        'OTHER'
+      )
+    ),
+    thawClass: case(
+      isNull([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc),
+      sqlNull(),
+      case(
+        lessThan([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc, -150),
+        'DEEP FROZEN',
+        case(
+          lessThan([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc, -80),
+          'FROZEN',
+          case(
+            lessThan([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc, -20),
+            'COLD',
+            case(
+              lessThan([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc, 0),
+              'NEAR FREEZING',
+              case(
+                equal([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc, 0),
+                'ZERO CURTAIN',
+                case(
+                  lessThan([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc, 20),
+                  'SURFACE THAW',
+                  case(
+                    lessThan([test::ambertundra5::store::ReadingDb]probe.thaw_reading.temp_dc, 60),
+                    'ACTIVE THAW',
+                    'WARM ANOMALY'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    netDepthCm: case(
+      greaterThan(indexOf([test::ambertundra5::store::ReadingDb]probe.thaw_reading.probe_label, '-'), 0),
+      minus(plus(parseInteger(substring([test::ambertundra5::store::ReadingDb]probe.thaw_reading.probe_label, 4, 3)), [test::ambertundra5::store::ReadingDb]probe.thaw_reading.sensor_offset_cm), 5),
+      sqlNull()
+    ),
+    siteName: [test::ambertundra5::store::ReadingDb]@Reading_Bore > (INNER) @Bore_Site | site.field_site.site_name,
+    regionName: [test::ambertundra5::store::ReadingDb]@Reading_Bore > (INNER) @Bore_Site > (INNER) @Site_Region | site.region.region_name,
+    source: 'PERMAFROST PROBE',
+    placement
+    (
+      slotCode: case(
+        greaterThan(indexOf([test::ambertundra5::store::ReadingDb]probe.thaw_reading.probe_label, '-'), 0),
+        toUpper(substring([test::ambertundra5::store::ReadingDb]probe.thaw_reading.probe_label, 1, 2)),
+        'UNSLOTTED'
+      ),
+      offsetCm: [test::ambertundra5::store::ReadingDb]probe.thaw_reading.sensor_offset_cm
+    ),
+    bore[bore]: [test::ambertundra5::store::ReadingDb]@Reading_Bore
+  }
+
+  testSuites:
+  [
+    thawReadingSuite:
+    {
+      function: |test::ambertundra5::domain::ThawReading.all(%2026-06-01)->project(
+        [
+          r|$r.readingId,
+          r|$r.readingRef,
+          r|$r.kindLabel,
+          r|$r.thawClass,
+          r|$r.placement.slotCode,
+          r|$r.netDepthCm,
+          r|$r.siteName,
+          r|$r.regionName,
+          r|$r.source
+        ],
+        [
+          'Id',
+          'Ref',
+          'Kind',
+          'Thaw',
+          'Slot',
+          'NetDepth',
+          'Site',
+          'Region',
+          'Source'
+        ]
+      )->sort(
+        [
+          asc('Id')
+        ]
+      );
+      tests:
+      [
+        everyThawArmAndJoinEdge:
+        {
+          doc: 'One in-window reading per thaw band from deep frozen to the warm-anomaly fallback, a reading with no temperature that falls through to an empty band and has no probe slot, a reading whose borehole fails the depth condition on the join, one whose borehole fails the two-column site join, and a superseded reading outside the processing window that is never returned.';
+          data:
+          [
+            test::ambertundra5::store::ReadingDb:
+              Relational
+              #{
+                site.region:
+                  'region_code,region_name,biome_code\n'+
+                  'R-N,Northern Barrens,TUNDRA\n';
+                site.field_site:
+                  'site_code,region_code,site_name,parent_site_code\n'+
+                  'S-1,R-N,Caribou Flats,\n'+
+                  'S-2,R-N,Lichen Ridge,S-1\n'+
+                  'S-3,R-X,Frost Hollow,S-9\n';
+                probe.borehole:
+                  'bore_code,site_code,region_code,bore_tag,depth_cm,retired_at\n'+
+                  'B-1,S-1,R-N,BH-0101,300,\n'+
+                  'B-2,S-2,R-N,BH-0202,250,2099-01-01 00:00:00\n'+
+                  'B-3,S-3,R-X,BH-0303,0,\n'+
+                  'B-4,S-1,R-Q,BH-0404,120,\n'+
+                  'B-5,S-2,R-N,BH-0505,90,2020-01-01 00:00:00\n';
+                probe.thaw_reading:
+                  'reading_id,bore_code,kind_code,temp_dc,probe_label,sensor_offset_cm,in_z,out_z\n'+
+                  '1,B-1,A,-200,S1-040,5,2026-01-01,9999-12-31\n'+
+                  '2,B-1,M,-100,S2-060,0,2026-01-01,9999-12-31\n'+
+                  '3,B-2,A,-50,S1-020,2,2026-01-01,9999-12-31\n'+
+                  '4,B-2,A,-10,S3-080,0,2026-01-01,9999-12-31\n'+
+                  '5,B-2,X,0,S1-010,0,2026-01-01,9999-12-31\n'+
+                  '6,B-1,A,10,S2-030,1,2026-01-01,9999-12-31\n'+
+                  '7,B-1,M,40,S1-050,0,2026-01-01,9999-12-31\n'+
+                  '8,B-2,A,75,S2-100,0,2026-01-01,9999-12-31\n'+
+                  '9,B-1,,,NOSLOT,0,2026-01-01,9999-12-31\n'+
+                  '10,B-3,A,-5,S1-015,0,2026-01-01,9999-12-31\n'+
+                  '11,B-4,A,-5,S1-025,0,2026-01-01,9999-12-31\n'+
+                  '12,B-1,A,-300,S1-040,0,2025-01-01,2025-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            readingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Ref":"TR-1","Kind":"AUTOMATIC","Thaw":"DEEP FROZEN","Slot":"S1","NetDepth":40,"Site":"Caribou Flats","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":2,"Ref":"TR-2","Kind":"MANUAL","Thaw":"FROZEN","Slot":"S2","NetDepth":55,"Site":"Caribou Flats","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":3,"Ref":"TR-3","Kind":"AUTOMATIC","Thaw":"COLD","Slot":"S1","NetDepth":17,"Site":"Lichen Ridge","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":4,"Ref":"TR-4","Kind":"AUTOMATIC","Thaw":"NEAR FREEZING","Slot":"S3","NetDepth":75,"Site":"Lichen Ridge","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":5,"Ref":"TR-5","Kind":"OTHER","Thaw":"ZERO CURTAIN","Slot":"S1","NetDepth":5,"Site":"Lichen Ridge","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":6,"Ref":"TR-6","Kind":"AUTOMATIC","Thaw":"SURFACE THAW","Slot":"S2","NetDepth":26,"Site":"Caribou Flats","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":7,"Ref":"TR-7","Kind":"MANUAL","Thaw":"ACTIVE THAW","Slot":"S1","NetDepth":45,"Site":"Caribou Flats","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":8,"Ref":"TR-8","Kind":"AUTOMATIC","Thaw":"WARM ANOMALY","Slot":"S2","NetDepth":95,"Site":"Lichen Ridge","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":9,"Ref":"TR-9","Kind":"OTHER","Thaw":null,"Slot":"UNSLOTTED","NetDepth":null,"Site":"Caribou Flats","Region":"Northern Barrens","Source":"PERMAFROST PROBE"},{"Id":10,"Ref":"TR-10","Kind":"AUTOMATIC","Thaw":"NEAR FREEZING","Slot":"S1","NetDepth":10,"Site":null,"Region":null,"Source":"PERMAFROST PROBE"},{"Id":11,"Ref":"TR-11","Kind":"AUTOMATIC","Thaw":"NEAR FREEZING","Slot":"S1","NetDepth":20,"Site":null,"Region":null,"Source":"PERMAFROST PROBE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    boreholeSuite:
+    {
+      function: |test::ambertundra5::domain::Borehole.all()->project(
+        [
+          b|$b.boreCode,
+          b|$b.tagSerial,
+          b|$b.depthCm,
+          b|$b.site.siteName,
+          b|$b.site.region.regionName,
+          b|$b.site.parent.siteName,
+          b|$b.network
+        ],
+        [
+          'Bore',
+          'Serial',
+          'Depth',
+          'Site',
+          'Region',
+          'Parent',
+          'Network'
+        ]
+      )->sort(
+        [
+          asc('Bore')
+        ]
+      );
+      tests:
+      [
+        liveBoresWithSiteRegionAndParent:
+        {
+          doc: 'The live-bore filter keeps bores never retired or retired in the future and drops one retired in the past; serials are cut from the tag, sites resolve through the two-column join, regions and parent sites one and two hops further, with a site whose region and parent are missing and a bore whose region does not match its site.';
+          data:
+          [
+            test::ambertundra5::store::ReadingDb:
+              Relational
+              #{
+                site.region:
+                  'region_code,region_name,biome_code\n'+
+                  'R-N,Northern Barrens,TUNDRA\n';
+                site.field_site:
+                  'site_code,region_code,site_name,parent_site_code\n'+
+                  'S-1,R-N,Caribou Flats,\n'+
+                  'S-2,R-N,Lichen Ridge,S-1\n'+
+                  'S-3,R-X,Frost Hollow,S-9\n';
+                probe.borehole:
+                  'bore_code,site_code,region_code,bore_tag,depth_cm,retired_at\n'+
+                  'B-1,S-1,R-N,BH-0101,300,\n'+
+                  'B-2,S-2,R-N,BH-0202,250,2099-01-01 00:00:00\n'+
+                  'B-3,S-3,R-X,BH-0303,0,\n'+
+                  'B-4,S-1,R-Q,BH-0404,120,\n'+
+                  'B-5,S-2,R-N,BH-0505,90,2020-01-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            boreRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bore":"B-1","Serial":101,"Depth":300,"Site":"Caribou Flats","Region":"Northern Barrens","Parent":null,"Network":"TUNDRA ARRAY"},{"Bore":"B-2","Serial":202,"Depth":250,"Site":"Lichen Ridge","Region":"Northern Barrens","Parent":"Caribou Flats","Network":"TUNDRA ARRAY"},{"Bore":"B-3","Serial":303,"Depth":0,"Site":"Frost Hollow","Region":null,"Parent":null,"Network":"TUNDRA ARRAY"},{"Bore":"B-4","Serial":404,"Depth":120,"Site":null,"Region":null,"Parent":null,"Network":"TUNDRA ARRAY"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteTallySuite:
+    {
+      function: |test::ambertundra5::domain::SiteBoreTally.all()->project(
+        [
+          t|$t.siteCode,
+          t|$t.boreCount,
+          t|$t.maxDepthCm
+        ],
+        [
+          'Site',
+          'Bores',
+          'MaxDepth'
+        ]
+      )->sort(
+        [
+          asc('Site')
+        ]
+      );
+      tests:
+      [
+        groupedBoresPerSite:
+        {
+          doc: 'The grouped view counts every bore per site, retired ones included, and keeps the deepest bore depth.';
+          data:
+          [
+            test::ambertundra5::store::ReadingDb:
+              Relational
+              #{
+                probe.borehole:
+                  'bore_code,site_code,region_code,bore_tag,depth_cm,retired_at\n'+
+                  'B-1,S-1,R-N,BH-0101,300,\n'+
+                  'B-2,S-2,R-N,BH-0202,250,2099-01-01 00:00:00\n'+
+                  'B-3,S-3,R-X,BH-0303,0,\n'+
+                  'B-4,S-1,R-Q,BH-0404,120,\n'+
+                  'B-5,S-2,R-N,BH-0505,90,2020-01-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            tallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"S-1","Bores":2,"MaxDepth":300},{"Site":"S-2","Bores":2,"MaxDepth":250},{"Site":"S-3","Bores":1,"MaxDepth":0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

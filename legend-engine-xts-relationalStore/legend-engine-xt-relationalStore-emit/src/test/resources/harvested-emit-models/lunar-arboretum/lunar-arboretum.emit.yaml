@@ -1,0 +1,46 @@
+name: lunar-arboretum
+title: "Conservatory Nursery — Operation-Union Mapping over an Inline Filtered View"
+description: |
+  A plant-nursery corpus over a schemaless H2 store. Tree specimens are drawn
+  from a northern source (through a filtered inline view that keeps only tall
+  trees) and a southern table, unioned by an operation mapping onto the
+  inheriting TreeSpecimen class. A mapping testSuite asserts the unioned
+  projection and a single-execution service asserts a parameterised query,
+  driving EMIT test execution and execution-plan generation.
+modelSources:
+  model:
+    root: lunar-arboretum
+    files:
+      - test/lunararboretum/connection/NurseryH2Connection.pure
+      - test/lunararboretum/domain/NurseryDomain.pure
+      - test/lunararboretum/mapping/NurseryMapping.pure
+      - test/lunararboretum/runtime/NurseryRuntime.pure
+      - test/lunararboretum/service/TreesByConservatory.pure
+      - test/lunararboretum/store/NurseryDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - mapping:store-union
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - class-inheritance
+  - h2
+  - inline-view
+  - mapping-test
+  - nursery
+  - operation-union
+  - plan-generation
+  - relational
+  - service-test

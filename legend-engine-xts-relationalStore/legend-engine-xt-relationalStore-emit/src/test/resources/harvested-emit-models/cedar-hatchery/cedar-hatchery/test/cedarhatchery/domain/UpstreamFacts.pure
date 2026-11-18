@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'Upstream tank rearing fact, named the way the tank register emits it.'} test::cedarhatchery::domain::TankFact
+{
+  tankCode: String[1];
+  cycleMonth: String[1];
+  unitRef: String[1];
+  species: String[1];
+  leadKeeper: String[0..1];
+  reliefKeeper: String[0..1];
+  fryCount: Integer[0..1];
+  batchCounts: Integer[*];
+  releasedCount: Integer[0..1];
+  lossCount: Integer[0..1];
+  loggedOn: StrictDate[0..1];
+  transferFlag: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Upstream pond rearing fact, whose counts and keeper fields carry different names from the tank register.'} test::cedarhatchery::domain::PondFact
+{
+  pondRef: String[1];
+  cycleMonth: String[1];
+  unitRef: String[1];
+  species: String[1];
+  wardenName: String[0..1];
+  standInWarden: String[0..1];
+  fingerlingCount: Integer[0..1];
+  netCounts: Integer[*];
+  releasedCount: Integer[0..1];
+  lossCount: Integer[0..1];
+  loggedOn: StrictDate[0..1];
+  transferFlag: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Upstream creek raceway fact from a third register.'} test::cedarhatchery::domain::CreekFact
+{
+  racewayRef: String[1];
+  cycleMonth: String[1];
+  unitRef: String[1];
+  species: String[1];
+  stewardName: String[0..1];
+  coverStewardName: String[0..1];
+  parrCount: Integer[0..1];
+  screenCounts: Integer[*];
+  releasedCount: Integer[0..1];
+  lossCount: Integer[0..1];
+  loggedOn: StrictDate[0..1];
+  transferFlag: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Upstream marsh trough fact from a fourth register.'} test::cedarhatchery::domain::MarshFact
+{
+  troughRef: String[1];
+  cycleMonth: String[1];
+  unitRef: String[1];
+  species: String[1];
+  handlerName: String[0..1];
+  reserveHandlerName: String[0..1];
+  smoltCount: Integer[0..1];
+  trayCounts: Integer[*];
+  releasedCount: Integer[0..1];
+  lossCount: Integer[0..1];
+  loggedOn: StrictDate[0..1];
+  transferFlag: String[0..1];
+}

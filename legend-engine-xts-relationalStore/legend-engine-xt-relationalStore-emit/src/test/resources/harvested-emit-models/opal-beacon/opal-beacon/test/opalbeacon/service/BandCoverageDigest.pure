@@ -1,0 +1,174 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::opalbeacon::service::BandCoverageDigest
+{
+  pattern: '/opalbeacon/v1/band-coverage-digest/{env}';
+  title: 'Opal Beacon - Band Coverage Digest Keyed By Environment';
+  owners:
+  [
+    'sky-survey',
+    'station-coverage'
+  ];
+  documentation: 'Digest of catalogued beacon stars resolved at one business and one processing instant. The coverage column branches on the observing band: the radio arm walks the four-hop path to the serving dome, while the fallback arm stops at the single-hop sector name, so the two arms traverse different join depths.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], bands: String[*]|test::opalbeacon::domain::BeaconStar.all($asOf, $asOf)->filter(
+      s|($s.bandCode->in($bands)) && (($s.magnitude > 2) && (($s.sectorName->toOne() == 'Northern Fan') || ($s.sectorName->toOne() == 'Southern Fan')))
+    )->project(
+      [
+        s|$s.starCode,
+        s|if($s.bandCode == 'RADIO', |$s.domeKind->toOne(), |$s.sectorName->toOne()),
+        s|$s.magnitude
+      ],
+      [
+        'Star',
+        'Coverage',
+        'Magnitude'
+      ]
+    )->filter(
+      r: meta::pure::tds::TDSRow[1]|$r.getString('Coverage') != 'CLAMSHELL'
+    )->distinct()->sort(
+      [
+        asc('Star'),
+        asc('Coverage')
+      ]
+    )};
+    key: 'env';
+    executions['survey']:
+    {
+      mapping: test::opalbeacon::mapping::SkyMapping;
+      runtime: test::opalbeacon::runtime::SkySurveyRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::opalbeacon::mapping::SkyMapping;
+      runtime: test::opalbeacon::runtime::SkyArchiveRuntime;
+    }
+  }
+}
+
+###Service
+Service test::opalbeacon::service::BandCoverageDigestArchive
+{
+  pattern: '/opalbeacon/v1/band-coverage-digest-archive';
+  title: 'Opal Beacon - Band Coverage Digest (Archive)';
+  owners:
+  [
+    'sky-survey',
+    'station-coverage'
+  ];
+  documentation: 'Archive-pinned counterpart of the environment-keyed digest: the same deep pipeline whose projected coverage column branches into a four-hop dome lookup or a single-hop sector fallback, then filters and de-duplicates the tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], bands: String[*]|test::opalbeacon::domain::BeaconStar.all($asOf, $asOf)->filter(
+      s|($s.bandCode->in($bands)) && (($s.magnitude > 2) && (($s.sectorName->toOne() == 'Northern Fan') || ($s.sectorName->toOne() == 'Southern Fan')))
+    )->project(
+      [
+        s|$s.starCode,
+        s|if($s.bandCode == 'RADIO', |$s.domeKind->toOne(), |$s.sectorName->toOne()),
+        s|$s.magnitude
+      ],
+      [
+        'Star',
+        'Coverage',
+        'Magnitude'
+      ]
+    )->filter(
+      r: meta::pure::tds::TDSRow[1]|$r.getString('Coverage') != 'CLAMSHELL'
+    )->distinct()->sort(
+      [
+        asc('Star'),
+        asc('Coverage')
+      ]
+    )};
+    mapping: test::opalbeacon::mapping::SkyMapping;
+    runtime: test::opalbeacon::runtime::SkyArchiveRuntime;
+  }
+  testSuites:
+  [
+    bandCoverageDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyConnection:
+            Relational
+            #{
+              OPS.STATION:
+                'station_code,station_name,dome_kind\n'+
+                'ST-1,Ridge Observatory,SLIDING\n'+
+                'ST-2,Plateau Observatory,ROLLOFF\n'+
+                'ST-3,Basin Observatory,CLAMSHELL\n';
+              OPS.OBSERVING_TEAM:
+                'team_code,team_name,station_code,valid_from,valid_thru\n'+
+                'TM-1,Night Watch,ST-1,2020-01-01,9999-12-31\n'+
+                'TM-2,Dawn Watch,ST-2,2020-01-01,9999-12-31\n'+
+                'TM-3,Retired Watch,ST-3,2020-01-01,9999-12-31\n';
+              OPS.SECTOR_TEAM:
+                'sector_code,team_code,valid_from,valid_thru\n'+
+                'SC-1,TM-1,2020-01-01,9999-12-31\n'+
+                'SC-1,TM-2,2020-01-01,9999-12-31\n'+
+                'SC-2,TM-1,2020-01-01,9999-12-31\n'+
+                'SC-3,TM-3,2020-01-01,2021-01-01\n';
+              SKY.SKY_SECTOR:
+                'sector_code,sector_name\n'+
+                'SC-1,Northern Fan\n'+
+                'SC-2,Southern Fan\n'+
+                'SC-3,Zenith Fan\n';
+              SKY.SURVEY_RUN:
+                'run_code,run_name,sector_code\n'+
+                'RN-1,Spring Sweep,SC-2\n';
+              SKY.BEACON_STAR:
+                'star_code,star_name,magnitude,band_code,sector_code,bus_from,bus_thru,proc_in,proc_out\n'+
+                'BS-1,Opal Alpha,3,radio,SC-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'BS-2,Opal Beta,5,optical,SC-2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'BS-3,Opal Gamma,7,radio,SC-3,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                'BS-4,Opal Delta,9,radio,SC-1,2020-01-01,2021-01-01,2026-01-01,9999-12-31\n'+
+                'BS-5,Opal Epsilon,1,radio,SC-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothArmsAndBoundaries:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            bands = ['RADIO', 'OPTICAL']
+          ]
+          asserts:
+          [
+            branchArmsAndBounds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Star":"BS-1","Coverage":"ROLLOFF","Magnitude":3},{"Star":"BS-1","Coverage":"SLIDING","Magnitude":3},{"Star":"BS-2","Coverage":"Southern Fan","Magnitude":5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

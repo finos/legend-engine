@@ -1,0 +1,175 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::goldenisle3::diagram::QueueScheduleDiagram
+{
+  classView observatoryRecordView
+  {
+    class: test::goldenisle3::domain::ObservatoryRecord;
+    position: (500.0, 60.0);
+    rectangle: (260.0, 140.0);
+  }
+  classView observingProgrammeView
+  {
+    class: test::goldenisle3::domain::ObservingProgramme;
+    position: (500.0, 260.0);
+    rectangle: (280.0, 200.0);
+  }
+  classView scheduledBlockView
+  {
+    class: test::goldenisle3::domain::ScheduledBlock;
+    position: (500.0, 520.0);
+    rectangle: (280.0, 160.0);
+  }
+  classView scienceBlockView
+  {
+    class: test::goldenisle3::domain::ScienceBlock;
+    position: (280.0, 760.0);
+    rectangle: (260.0, 180.0);
+  }
+  classView calibrationBlockView
+  {
+    class: test::goldenisle3::domain::CalibrationBlock;
+    position: (760.0, 760.0);
+    rectangle: (260.0, 160.0);
+  }
+  classView siteRefView
+  {
+    class: test::goldenisle3::domain::SiteRef;
+    position: (100.0, 60.0);
+    rectangle: (220.0, 110.0);
+  }
+  classView telescopeRefView
+  {
+    class: test::goldenisle3::domain::TelescopeRef;
+    position: (100.0, 260.0);
+    rectangle: (220.0, 110.0);
+  }
+  classView investigatorRefView
+  {
+    class: test::goldenisle3::domain::InvestigatorRef;
+    position: (100.0, 420.0);
+    rectangle: (220.0, 90.0);
+  }
+  classView instrumentRefView
+  {
+    class: test::goldenisle3::domain::InstrumentRef;
+    position: (960.0, 520.0);
+    rectangle: (220.0, 110.0);
+  }
+  classView targetRefView
+  {
+    class: test::goldenisle3::domain::TargetRef;
+    position: (100.0, 980.0);
+    rectangle: (220.0, 130.0);
+  }
+  classView filterRefView
+  {
+    class: test::goldenisle3::domain::FilterRef;
+    position: (400.0, 980.0);
+    rectangle: (220.0, 110.0);
+  }
+  classView nightSummaryView
+  {
+    class: test::goldenisle3::domain::NightSummary;
+    position: (1240.0, 60.0);
+    rectangle: (260.0, 180.0);
+  }
+  classView seeingLogRowView
+  {
+    class: test::goldenisle3::domain::SeeingLogRow;
+    position: (1240.0, 300.0);
+    rectangle: (240.0, 110.0);
+  }
+  classView weatherLogRowView
+  {
+    class: test::goldenisle3::domain::WeatherLogRow;
+    position: (1240.0, 460.0);
+    rectangle: (240.0, 130.0);
+  }
+  generalizationView
+  {
+    source: observingProgrammeView;
+    target: observatoryRecordView;
+    points: [(640.0, 360.0), (630.0, 130.0)];
+  }
+  generalizationView
+  {
+    source: scheduledBlockView;
+    target: observingProgrammeView;
+    points: [(640.0, 600.0), (640.0, 360.0)];
+  }
+  generalizationView
+  {
+    source: scienceBlockView;
+    target: scheduledBlockView;
+    points: [(410.0, 850.0), (640.0, 600.0)];
+  }
+  generalizationView
+  {
+    source: calibrationBlockView;
+    target: scheduledBlockView;
+    points: [(890.0, 840.0), (640.0, 600.0)];
+  }
+  propertyView
+  {
+    property: test::goldenisle3::domain::ObservatoryRecord.site;
+    source: observatoryRecordView;
+    target: siteRefView;
+    points: [(630.0, 130.0), (210.0, 115.0)];
+  }
+  propertyView
+  {
+    property: test::goldenisle3::domain::ObservingProgramme.telescope;
+    source: observingProgrammeView;
+    target: telescopeRefView;
+    points: [(640.0, 360.0), (210.0, 315.0)];
+  }
+  propertyView
+  {
+    property: test::goldenisle3::domain::ObservingProgramme.principalInvestigator;
+    source: observingProgrammeView;
+    target: investigatorRefView;
+    points: [(640.0, 360.0), (210.0, 465.0)];
+  }
+  propertyView
+  {
+    property: test::goldenisle3::domain::ObservingProgramme.coInvestigators;
+    source: observingProgrammeView;
+    target: investigatorRefView;
+    points: [(640.0, 360.0), (210.0, 465.0)];
+  }
+  propertyView
+  {
+    property: test::goldenisle3::domain::ScheduledBlock.instrument;
+    source: scheduledBlockView;
+    target: instrumentRefView;
+    points: [(640.0, 600.0), (1070.0, 575.0)];
+  }
+  propertyView
+  {
+    property: test::goldenisle3::domain::ScienceBlock.target;
+    source: scienceBlockView;
+    target: targetRefView;
+    points: [(410.0, 850.0), (210.0, 1045.0)];
+  }
+  propertyView
+  {
+    property: test::goldenisle3::domain::ScienceBlock.filter;
+    source: scienceBlockView;
+    target: filterRefView;
+    points: [(410.0, 850.0), (510.0, 1035.0)];
+  }
+}

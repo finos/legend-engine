@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowotter::mapping::OtterMapping
+(
+  test::meadowotter::domain::Otter: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowotter::store::MeadowDatabase]meadow.otter.otter_id
+    )
+    ~mainTable [test::meadowotter::store::MeadowDatabase]meadow.otter
+    tagCode: [test::meadowotter::store::MeadowDatabase]meadow.otter.tag_code,
+    name: [test::meadowotter::store::MeadowDatabase]meadow.otter.otter_name,
+    status: [test::meadowotter::store::MeadowDatabase]meadow.otter.status,
+    habitat: [test::meadowotter::store::MeadowDatabase]meadow.otter.habitat,
+    lastSeenOn: [test::meadowotter::store::MeadowDatabase]meadow.otter.last_seen_on,
+    weightKg: [test::meadowotter::store::MeadowDatabase]meadow.otter.weight_kg
+  }
+
+  testSuites:
+  [
+    otterMappingSuite:
+    {
+      function: |test::meadowotter::domain::Otter.all()->filter(
+  o|$o.status == 'ACTIVE'
+)->project(
+  [
+    o|$o.tagCode,
+    o|$o.name
+  ],
+  [
+    'TagCode',
+    'Name'
+  ]
+)->sort(
+  [
+    asc('TagCode')
+  ]
+);
+      tests:
+      [
+        activeOtters:
+        {
+          doc: 'Projects the active otters by tag and name, exercising the relational main-table mapping under a status filter.';
+          data:
+          [
+            test::meadowotter::store::MeadowDatabase:
+              Relational
+              #{
+                meadow.otter:
+                  'otter_id,tag_code,otter_name,status,habitat,last_seen_on,weight_kg\n'+
+                  '1,OT-100,Willow,ACTIVE,MEADOW,2024-05-01,7.5\n'+
+                  '2,OT-200,Reed,RELEASED,MARSH,2024-04-11,6.2\n'+
+                  '3,OT-300,Rush,ACTIVE,MEADOW,2024-05-09,8.1\n';
+              }#
+          ];
+          asserts:
+          [
+            twoActive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TagCode":"OT-100","Name":"Willow"},{"TagCode":"OT-300","Name":"Rush"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

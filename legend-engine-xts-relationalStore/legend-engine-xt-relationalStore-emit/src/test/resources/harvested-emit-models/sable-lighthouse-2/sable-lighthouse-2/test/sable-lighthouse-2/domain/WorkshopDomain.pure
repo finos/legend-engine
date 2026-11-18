@@ -1,0 +1,37 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'An active treatment case on a museum object, assigned to a conservator.'} test::sablelighthouse2::domain::TreatmentCase
+{
+  caseId: String[1];
+  objectLabel: String[1];
+  priorityLevel: Integer[1];
+  conservatorName: String[0..1];
+  kindLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A condition survey case, split out of the same case table by record kind.'} test::sablelighthouse2::domain::SurveyCase
+{
+  caseId: String[1];
+  objectLabel: String[1];
+  priorityLevel: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A workshop note on a case; the conservator is reached through the case it belongs to.'} test::sablelighthouse2::domain::CaseNote
+{
+  noteId: String[1];
+  noteText: String[1];
+  caseConservatorName: String[0..1];
+}

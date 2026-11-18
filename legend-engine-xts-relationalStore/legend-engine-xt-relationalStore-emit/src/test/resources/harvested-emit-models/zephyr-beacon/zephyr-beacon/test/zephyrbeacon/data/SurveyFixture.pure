@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::zephyrbeacon::data::SurveyFixture
+{
+  Relational
+  #{
+    survey.observation:
+      'observation_id,station_code,species_code,habitat_code,individual_count,observer_name,from_z,thru_z\n'+
+      'OBS-01,ST-NORTH,SP-WREN,HB-REED,14,Ada Fern,2026-01-01,9999-12-31\n'+
+      'OBS-02,ST-NORTH,SP-WREN,HB-REED,6,Ada Fern,2026-01-01,9999-12-31\n'+
+      'OBS-03,ST-NORTH,SP-EGRET,,9,,2026-01-01,9999-12-31\n'+
+      'OBS-04,ST-SOUTH,SP-EGRET,HB-DUNE,21,Bo Larch,2026-01-01,9999-12-31\n'+
+      'OBS-05,ST-SOUTH,SP-TERN,HB-DUNE,3,Bo Larch,2026-01-01,9999-12-31\n'+
+      'OBS-06,ST-RIDGE,SP-TERN,HB-SCREE,14,Cy Moss,2026-01-01,9999-12-31\n'+
+      'OBS-07,ST-RIDGE,SP-WREN,HB-SCREE,2,Cy Moss,2026-01-01,2026-04-01\n'+
+      'OBS-07,ST-RIDGE,SP-WREN,HB-SCREE,17,Cy Moss,2026-04-01,9999-12-31\n';
+  }#
+}

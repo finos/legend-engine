@@ -1,0 +1,31 @@
+name: noble-delta-4
+title: "Noble Delta 4 - river gauge staging with case expressions over parsed text readings"
+description: |
+  A delta river-gauge log that lands water level, flow and crest readings as
+  text. A relational mapping binds each gauge reading through property
+  expressions that parse the text columns to integers, re-render them to test
+  for a canonical numeric form, and classify the crest through a nested case
+  expression with a null fallback, all asserted by a mapping test suite.
+modelSources:
+  model:
+    root: noble-delta-4
+    files:
+      - test/nobledelta4/domain/GaugeDomain.pure
+      - test/nobledelta4/mapping/GaugeMapping.pure
+      - test/nobledelta4/store/GaugeLogDb.pure
+features:
+  - mapping:relational-case-expression
+  - mapping:relational-property-expression
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - case-expression
+  - h2
+  - mapping-test
+  - property-expression
+  - relational-mapping
+  - river-gauge

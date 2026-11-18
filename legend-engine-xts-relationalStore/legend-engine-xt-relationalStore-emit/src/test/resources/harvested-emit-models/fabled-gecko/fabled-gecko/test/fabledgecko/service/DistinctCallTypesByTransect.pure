@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledgecko::service::DistinctCallTypesByTransect
+{
+  pattern: '/gecko-survey/v1/transect/distinct-call-types';
+  title: 'Gecko Survey - Distinct Call Types By Transect';
+  owners:
+  [
+    'gecko-survey-platform',
+    'nocturnal-fauna-eng'
+  ];
+  documentation: 'Groups every scored gecko call by transect, counts the distinct call types heard on each transect, and keeps only the transects where more than one distinct call type was scored.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::fabledgecko::domain::CallObservation.all()->groupBy(
+      [
+        o|$o.transectName
+      ],
+      [
+        agg(
+          o|$o.callType,
+          vals|$vals->distinct()->count()
+        )
+      ],
+      [
+        'Transect',
+        'DistinctCallTypes'
+      ]
+    )->filter(
+      r: meta::pure::tds::TDSRow[1]|$r.getInteger('DistinctCallTypes') > 1
+    );
+    mapping: test::fabledgecko::mapping::GeckoSurveyMapping;
+    runtime: test::fabledgecko::runtime::GeckoSurveyRuntime;
+  }
+  testSuites:
+  [
+    distinctCallTypesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          geckoSurveyConnection:
+            Relational
+            #{
+              survey.call_observation:
+                'observation_id,transect_name,call_type\n'+
+                '1,Riverside Trail,chirp\n'+
+                '2,Riverside Trail,bark\n'+
+                '3,Riverside Trail,chirp\n'+
+                '4,Quarry Ridge,click\n'+
+                '5,Quarry Ridge,click\n'+
+                '6,Kelp Cove,warble\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyMultiCallTransectSurvives:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            oneTransectAboveThreshold:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {"Transect": "Riverside Trail", "DistinctCallTypes": 2 } ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

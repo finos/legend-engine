@@ -1,0 +1,304 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quiettundra2::mapping::TundraFieldMapping
+(
+  include test::quiettundra2::mapping::TundraEnumMappings
+
+  test::quiettundra2::domain::Plot[relPlot]: Relational
+  {
+    ~filter [test::quiettundra2::store::TundraFieldDB]KeptPlotFilter
+    ~primaryKey
+    (
+      [test::quiettundra2::store::TundraFieldDB]field.plot.plot_code,
+      [test::quiettundra2::store::TundraFieldDB]field.plot.season
+    )
+    ~mainTable [test::quiettundra2::store::TundraFieldDB]field.plot
+    code: [test::quiettundra2::store::TundraFieldDB]field.plot.plot_code,
+    season: [test::quiettundra2::store::TundraFieldDB]field.plot.season,
+    shortLabel: substring([test::quiettundra2::store::TundraFieldDB]field.plot.plot_name, 1, 6),
+    habitat: EnumerationMapping HabitatCodes: [test::quiettundra2::store::TundraFieldDB]field.plot.habitat_code,
+    coverBand: case(greaterThanEqual([test::quiettundra2::store::TundraFieldDB]field.plot.cover_pct, 60),
+                    'THICK',
+                    case(greaterThanEqual([test::quiettundra2::store::TundraFieldDB]field.plot.cover_pct, 30),
+                         'OPEN',
+                         case(greaterThan([test::quiettundra2::store::TundraFieldDB]field.plot.cover_pct, 0),
+                              'TRACE',
+                              'BARE'))),
+    quadratCount: [test::quiettundra2::store::TundraFieldDB]field.plot.quadrats,
+    coveredCount: [test::quiettundra2::store::TundraFieldDB]field.plot.covered,
+    zoneLabel: [test::quiettundra2::store::TundraFieldDB]@Plot_Station > @Station_Ridge > @Ridge_Zone | ref.zone_ref.zone_label,
+    zoneCode: [test::quiettundra2::store::TundraFieldDB]@Plot_Zone | field.plot_zone_vw.zone_code,
+    parentName: [test::quiettundra2::store::TundraFieldDB]@Plot_Parent | field.plot.plot_name,
+    keptSamples: [test::quiettundra2::store::TundraFieldDB]@Plot_Tally | field.plot_sample_tally_vw.kept_count,
+    heaviestSampleG: [test::quiettundra2::store::TundraFieldDB]@Plot_Tally | field.plot_sample_tally_vw.heaviest_g,
+    siteFacts
+    (
+      slopeDeg: [test::quiettundra2::store::TundraFieldDB]field.plot.slope_deg,
+      aspect: toUpper([test::quiettundra2::store::TundraFieldDB]field.plot.aspect)
+    )
+  }
+
+  test::quiettundra2::domain::Station[relStation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quiettundra2::store::TundraFieldDB]ref.station_ref.station_code,
+      [test::quiettundra2::store::TundraFieldDB]ref.station_ref.ridge_code
+    )
+    ~mainTable [test::quiettundra2::store::TundraFieldDB]ref.station_ref
+    code: [test::quiettundra2::store::TundraFieldDB]ref.station_ref.station_code,
+    stationName: [test::quiettundra2::store::TundraFieldDB]ref.station_ref.station_name,
+    ridgeCode: toUpper([test::quiettundra2::store::TundraFieldDB]ref.station_ref.ridge_code)
+  }
+
+  test::quiettundra2::domain::PlotSample[relSample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quiettundra2::store::TundraFieldDB]field.plot_sample.sample_code
+    )
+    ~mainTable [test::quiettundra2::store::TundraFieldDB]field.plot_sample
+    sampleCode: [test::quiettundra2::store::TundraFieldDB]field.plot_sample.sample_code,
+    kind: EnumerationMapping SampleKindCodes: [test::quiettundra2::store::TundraFieldDB]field.plot_sample.kind_code,
+    massG: [test::quiettundra2::store::TundraFieldDB]field.plot_sample.mass_g
+  }
+
+  test::quiettundra2::domain::PlotKindPair[relKindPair]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quiettundra2::store::TundraFieldDB]field.plot_kind_vw.plot_code,
+      [test::quiettundra2::store::TundraFieldDB]field.plot_kind_vw.kind_code
+    )
+    ~mainTable [test::quiettundra2::store::TundraFieldDB]field.plot_kind_vw
+    plotCode: [test::quiettundra2::store::TundraFieldDB]field.plot_kind_vw.plot_code,
+    kind: EnumerationMapping SampleKindCodes: [test::quiettundra2::store::TundraFieldDB]field.plot_kind_vw.kind_code
+  }
+
+  test::quiettundra2::domain::PlotStation: Relational
+  {
+    AssociationMapping
+    (
+      plots[relStation, relPlot]: [test::quiettundra2::store::TundraFieldDB]@Plot_Station,
+      station[relPlot, relStation]: [test::quiettundra2::store::TundraFieldDB]@Plot_Station
+    )
+  }
+
+  test::quiettundra2::domain::PlotSamples: Relational
+  {
+    AssociationMapping
+    (
+      samples[relPlot, relSample]: [test::quiettundra2::store::TundraFieldDB]@Plot_Sample,
+      plot[relSample, relPlot]: [test::quiettundra2::store::TundraFieldDB]@Plot_Sample
+    )
+  }
+
+  testSuites:
+  [
+    plotSuite:
+    {
+      function: |test::quiettundra2::domain::Plot.all()->project(
+        [
+          p|$p.code,
+          p|$p.season,
+          p|$p.shortLabel,
+          p|$p.habitat,
+          p|$p.coverBand,
+          p|$p.zoneLabel,
+          p|$p.zoneCode,
+          p|$p.parentName,
+          p|$p.keptSamples,
+          p|$p.heaviestSampleG,
+          p|$p.siteFacts.slopeDeg,
+          p|$p.siteFacts.aspect,
+          p|$p.station.stationName
+        ],
+        [
+          'Code',
+          'Season',
+          'Label',
+          'Habitat',
+          'Band',
+          'Zone',
+          'ZoneCode',
+          'Parent',
+          'Kept',
+          'HeaviestG',
+          'Slope',
+          'Aspect',
+          'Station'
+        ]
+      )->sort([asc('Code'), asc('Season')]);
+      tests:
+      [
+        plotsThroughEveryJoinShape:
+        {
+          doc: 'Reads the kept and revisit plots; the dropped plot is filtered out. Station ridge codes match the ridge register only after upper-casing, the retired zone is refused by the literal join condition, the plot whose ridge does not complete the composite station key has no station, a split plot names its parent through the self-join and the sample tally view sums the kept bags per plot and season.';
+          data:
+          [
+            test::quiettundra2::store::TundraFieldDB:
+              Relational
+              #{
+                field.plot:
+                  'plot_code,season,plot_name,habitat_code,cover_pct,quadrats,covered,station_code,ridge_code,parent_plot_code,slope_deg,aspect,plot_state\n'+
+                  'PL-01,S26,Lichen Heath East,H,72,10,7,ST-1,rg1,,4,north,KEPT\n'+
+                  'PL-02,S26,Sedge,S,40,8,3,ST-1,rg1,PL-01,2,east,REVISIT\n'+
+                  'PL-03,S26,Moss Hollow,M,5,6,1,ST-2,rg2,PL-01,,,KEPT\n'+
+                  'PL-04,S26,Gravel Bar,B,0,4,0,ST-3,rg1,,9,south,KEPT\n'+
+                  'PL-05,S26,Dropped Plot,H,50,5,2,ST-1,rg1,,1,west,DROPPED\n'+
+                  'PL-01,S25,Lichen Heath East,H,,10,,ST-1,rg1,,4,north,KEPT\n';
+                field.plot_sample:
+                  'sample_code,plot_code,season,kind_code,sample_state,mass_g\n'+
+                  'SM-1,PL-01,S26,SO,KEPT,120.5\n'+
+                  'SM-2,PL-01,S26,PL,KEPT,30.0\n'+
+                  'SM-3,PL-01,S26,PL,LOST,45.0\n'+
+                  'SM-4,PL-02,S26,MW,KEPT,250.0\n'+
+                  'SM-5,PL-01,S25,SO,KEPT,99.0\n';
+                ref.station_ref:
+                  'station_code,ridge_code,station_name\n'+
+                  'ST-1,rg1,Upper Knoll Hut\n'+
+                  'ST-2,rg2,Frost Boil Camp\n'+
+                  'ST-3,rg9,Polygon Flats Hut\n';
+                ref.ridge_ref:
+                  'ridge_key,zone_code\n'+
+                  'RG1,Z1\n'+
+                  'RG2,Z2\n';
+                ref.zone_ref:
+                  'zone_code,zone_label,zone_state\n'+
+                  'Z1,Wet Lowland Zone,LIVE\n'+
+                  'Z2,Old Fell Zone,RETIRED\n';
+              }#
+          ];
+          asserts:
+          [
+            fivePlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"PL-01","Season":"S25","Label":"Lichen","Habitat":"HEATH","Band":"BARE","Zone":"Wet Lowland Zone","ZoneCode":"Z1","Parent":null,"Kept":1,"HeaviestG":99.0,"Slope":4,"Aspect":"NORTH","Station":"Upper Knoll Hut"},{"Code":"PL-01","Season":"S26","Label":"Lichen","Habitat":"HEATH","Band":"THICK","Zone":"Wet Lowland Zone","ZoneCode":"Z1","Parent":null,"Kept":2,"HeaviestG":120.5,"Slope":4,"Aspect":"NORTH","Station":"Upper Knoll Hut"},{"Code":"PL-02","Season":"S26","Label":"Sedge","Habitat":"SEDGE","Band":"OPEN","Zone":"Wet Lowland Zone","ZoneCode":"Z1","Parent":"Lichen Heath East","Kept":1,"HeaviestG":250.0,"Slope":2,"Aspect":"EAST","Station":"Upper Knoll Hut"},{"Code":"PL-03","Season":"S26","Label":"Moss H","Habitat":"MOSS","Band":"TRACE","Zone":null,"ZoneCode":"Z2","Parent":"Lichen Heath East","Kept":null,"HeaviestG":null,"Slope":null,"Aspect":null,"Station":"Frost Boil Camp"},{"Code":"PL-04","Season":"S26","Label":"Gravel","Habitat":"BARREN","Band":"BARE","Zone":null,"ZoneCode":null,"Parent":null,"Kept":null,"HeaviestG":null,"Slope":9,"Aspect":"SOUTH","Station":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sampleSuite:
+    {
+      function: |test::quiettundra2::domain::PlotSample.all()->project(
+        [
+          s|$s.sampleCode,
+          s|$s.kind,
+          s|$s.massG,
+          s|$s.plot.code,
+          s|$s.plot.season
+        ],
+        [
+          'Sample',
+          'Kind',
+          'MassG',
+          'Plot',
+          'Season'
+        ]
+      )->sort([asc('Sample')]);
+      tests:
+      [
+        samplesReachTheirSeasonPlot:
+        {
+          doc: 'Reads the sample bags with their kind translated from the bag code and the plot reached over the composite plot and season join, so a bag of the earlier season reaches only the plot row of that season.';
+          data:
+          [
+            test::quiettundra2::store::TundraFieldDB:
+              Relational
+              #{
+                field.plot:
+                  'plot_code,season,plot_name,habitat_code,cover_pct,quadrats,covered,station_code,ridge_code,parent_plot_code,slope_deg,aspect,plot_state\n'+
+                  'PL-01,S26,Lichen Heath East,H,72,10,7,ST-1,rg1,,4,north,KEPT\n'+
+                  'PL-01,S25,Lichen Heath East,H,,10,,ST-1,rg1,,4,north,KEPT\n';
+                field.plot_sample:
+                  'sample_code,plot_code,season,kind_code,sample_state,mass_g\n'+
+                  'SM-1,PL-01,S26,SO,KEPT,120.5\n'+
+                  'SM-2,PL-01,S26,PL,KEPT,30.0\n'+
+                  'SM-5,PL-01,S25,MW,KEPT,99.0\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"SM-1","Kind":"SOIL","MassG":120.5,"Plot":"PL-01","Season":"S26"},{"Sample":"SM-2","Kind":"PLANT","MassG":30.0,"Plot":"PL-01","Season":"S26"},{"Sample":"SM-5","Kind":"MELTWATER","MassG":99.0,"Plot":"PL-01","Season":"S25"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    kindPairSuite:
+    {
+      function: |test::quiettundra2::domain::PlotKindPair.all()->project(
+        [
+          k|$k.plotCode,
+          k|$k.kind
+        ],
+        [
+          'Plot',
+          'Kind'
+        ]
+      )->sort([asc('Plot'), asc('Kind')]);
+      tests:
+      [
+        duplicatePairsCollapse:
+        {
+          doc: 'Reads the distinct plot and sample kind view; two plant bags of one plot and two soil bags of one plot in different seasons each collapse to one pairing.';
+          data:
+          [
+            test::quiettundra2::store::TundraFieldDB:
+              Relational
+              #{
+                field.plot_sample:
+                  'sample_code,plot_code,season,kind_code,sample_state,mass_g\n'+
+                  'SM-1,PL-01,S26,SO,KEPT,120.5\n'+
+                  'SM-2,PL-01,S26,PL,KEPT,30.0\n'+
+                  'SM-3,PL-01,S26,PL,LOST,45.0\n'+
+                  'SM-4,PL-02,S26,MW,KEPT,250.0\n'+
+                  'SM-5,PL-01,S25,SO,KEPT,99.0\n';
+              }#
+          ];
+          asserts:
+          [
+            threePairs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PL-01","Kind":"PLANT"},{"Plot":"PL-01","Kind":"SOIL"},{"Plot":"PL-02","Kind":"MELTWATER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

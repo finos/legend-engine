@@ -1,0 +1,46 @@
+name: silver-cove-2
+title: "Silver Cove 2 — Letterpress Type Archive: Three Association Implementations Across a Composed Relational Mapping"
+description: |
+  A letterpress type archive whose typeface, matrix and specimen classes are
+  linked by three associations, each declaring a to-many side and its to-one
+  partner. The class mappings are deliberately split: the typeface and specimen
+  sheet are mapped in a base mapping, the matrix is mapped in a second mapping
+  that includes it, and all three association implementations are declared in the
+  composing mapping so every one of them binds a property pair across the include
+  boundary. Reference labels are reached over single declared joins, the storage
+  city is reached over a chained second hop, and the matrix size signature is an
+  arithmetic-then-string composition rather than a column read. Two mapping test
+  suites drive the two directions — specimen to face and matrix, then matrix back
+  to face — and both seed a row whose reference codes have no counterpart so the
+  unmatched sides are asserted as nulls.
+modelSources:
+  model:
+    root: silver-cove-2
+    files:
+      - test/silvercove2/domain/TypeArchiveAssociations.pure
+      - test/silvercove2/domain/TypeArchiveDomain.pure
+      - test/silvercove2/mapping/ArchiveBaseMapping.pure
+      - test/silvercove2/mapping/ArchiveMapping.pure
+      - test/silvercove2/store/TypeArchiveDB.pure
+features:
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-multi-hop-join-path
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-mapping
+  - duckdb
+  - inner-join
+  - letterpress-archive
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - relational
+  - string-transform

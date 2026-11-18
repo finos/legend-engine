@@ -1,0 +1,169 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::cobaltarboretum::domain::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract, meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'Shared shape of every physical park fixture tracked on the system timeline.'} test::cobaltarboretum::domain::InventoryRecord
+{
+  <<meta::pure::profiles::equality.Key>> {meta::pure::profiles::doc.doc = 'Stable inventory code; identity of the record.'} recordCode: String[1];
+  <<meta::pure::profiles::equality.Key>> fixtureLabel: String[1];
+  condition: FixtureCondition[1];
+  lastInspectedNote: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A planted canopy site, the most heavily surveyed fixture kind.'} test::cobaltarboretum::domain::TreeCanopySite extends InventoryRecord
+{
+  <<meta::pure::profiles::equality.Key>> speciesName: String[1];
+  plantedYear: Integer[1];
+  canopySpreadMetres: Float[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A seating fixture with a material and a mounting note.'} test::cobaltarboretum::domain::BenchFixture extends InventoryRecord
+{
+  <<meta::pure::profiles::equality.Key>> seatCount: Integer[1];
+  mountingNote: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A walkable segment with a surface material and a graded difficulty.'} test::cobaltarboretum::domain::PathSegment extends InventoryRecord
+{
+  <<meta::pure::profiles::equality.Key>> surface: SurfaceMaterial[1];
+  lengthMetres: Float[1];
+  difficulty: TrailDifficulty[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A watering point with a delivery mode and a flow allowance.'} test::cobaltarboretum::domain::IrrigationNode extends InventoryRecord
+{
+  <<meta::pure::profiles::equality.Key>> mode: IrrigationMode[1];
+  litresPerHour: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An interpretive or wayfinding sign.'} test::cobaltarboretum::domain::SignPost extends InventoryRecord
+{
+  <<meta::pure::profiles::equality.Key>> legend: String[1];
+  braillePresent: Boolean[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A play apparatus with an age band and a safer-surfacing note.'} test::cobaltarboretum::domain::PlaygroundUnit extends InventoryRecord
+{
+  <<meta::pure::profiles::equality.Key>> ageBandLabel: String[1];
+  saferSurfacingNote: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'Head of a site revision: what the survey team asserted, when it was asserted and when it was recorded.'} test::cobaltarboretum::domain::SiteRevisionHead
+{
+  <<meta::pure::profiles::equality.Key>> revisionCode: String[1];
+  <<meta::pure::profiles::equality.Key>> siteCode: String[1];
+  campaignLabel: String[1];
+  method: SurveyMethod[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A single measured quantity belonging to a site revision.'} test::cobaltarboretum::domain::SiteMeasure
+{
+  <<meta::pure::profiles::equality.Key>> measureCode: String[1];
+  kind: MeasureKind[1];
+  amount: Float[1];
+  qualifierNote: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An append-only history row narrating one edit to a site revision.'} test::cobaltarboretum::domain::RevisionLogEntry
+{
+  <<meta::pure::profiles::equality.Key>> entrySequence: Integer[1];
+  source: RevisionSource[1];
+  narrative: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'An attribute value attributed to a park zone, keyed by a selector.'} test::cobaltarboretum::domain::ZoneAttribution
+{
+  <<meta::pure::profiles::equality.Key>> selector: AttributionSelector[1];
+  textValue: String[0..1];
+  numericValue: Float[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A window during which maintenance may be dispatched into a zone.'} test::cobaltarboretum::domain::MaintenanceWindow
+{
+  <<meta::pure::profiles::equality.Key>> windowCode: String[1];
+  priority: DispatchPriority[1];
+  crewSize: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A snapshot of the canopy hierarchy that resolver profiles are evaluated against.'} test::cobaltarboretum::domain::CanopyHierarchySnapshot
+{
+  <<meta::pure::profiles::equality.Key>> snapshotCode: String[1];
+  densityBand: CanopyDensityBand[1];
+  levelCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named planning zone grouping fixtures and attribution rows.'} test::cobaltarboretum::domain::ParkZone
+{
+  <<meta::pure::profiles::equality.Key>> zoneCode: String[1];
+  zoneName: String[1];
+  category: ZoneCategory[1];
+  hectares: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Vocabulary row describing a measure kind and its unit label.'} test::cobaltarboretum::domain::MeasureKindDescriptor
+{
+  <<meta::pure::profiles::equality.Key>> kind: MeasureKind[1];
+  unitLabel: String[1];
+  precisionDigits: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named rule set resolved against a canopy hierarchy snapshot.'} test::cobaltarboretum::domain::ResolverProfile
+{
+  <<meta::pure::profiles::equality.Key>> profileCode: String[1];
+  profileName: String[1];
+  tolerancePercent: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A team accountable for stewarding fixtures in one or more zones.'} test::cobaltarboretum::domain::StewardTeam
+{
+  <<meta::pure::profiles::equality.Key>> teamCode: String[1];
+  teamName: String[1];
+  leadRole: StewardRole[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A scheduled data-collection campaign over the inventory.'} test::cobaltarboretum::domain::SurveyCampaign
+{
+  <<meta::pure::profiles::equality.Key>> campaignCode: String[1];
+  method: SurveyMethod[1];
+  observerCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A patch of ground cover maintained inside a zone.'} test::cobaltarboretum::domain::GroundCoverPatch
+{
+  <<meta::pure::profiles::equality.Key>> patchCode: String[1];
+  squareMetres: Float[1];
+  mixtureNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A route marker carrying a graded difficulty.'} test::cobaltarboretum::domain::TrailMarker
+{
+  <<meta::pure::profiles::equality.Key>> markerCode: String[1];
+  difficulty: TrailDifficulty[1];
+  headingDegrees: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A water feature and its recirculation volume.'} test::cobaltarboretum::domain::WaterFeature
+{
+  <<meta::pure::profiles::equality.Key>> featureCode: String[1];
+  featureKind: WaterFeatureKind[1];
+  recirculationLitres: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A built shade structure and the area it shelters.'} test::cobaltarboretum::domain::ShadeStructure
+{
+  <<meta::pure::profiles::equality.Key>> structureCode: String[1];
+  structureKind: ShadeStructureKind[1];
+  shelteredSquareMetres: Float[1];
+}

@@ -1,0 +1,231 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::borealwillow::service::CuttingDispatchBoard
+{
+  pattern: '/borealwillow/v1/cuttingDispatchBoard';
+  title: 'Boreal Willow - Cutting Dispatch Board';
+  owners:
+  [
+    'willow-nursery-platform'
+  ];
+  documentation: 'Environment-keyed multi-execution service that filters graded rooted cutting batches, projects them into a tabular result, joins that result to a per-stand rollup of the same feed, restricts the joined columns and returns the leading rows in batch order.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {minStems: Integer[1], gradeCodes: String[*]|demo::borealwillow::domain::CuttingBatch.all()->filter(
+      b|($b.stemCount >= $minStems) && (($gradeCodes->isEmpty()) || (($b.gradeCode->in($gradeCodes)) && ($b.rootedFlag == 'true')))
+    )->project(
+      [
+        b|$b.batchRef,
+        b|$b.standCode,
+        b|$b.cloneCode,
+        b|$b.stemCount,
+        b|$b.gradeCode
+      ],
+      [
+        'Batch',
+        'Stand',
+        'Clone',
+        'Stems',
+        'Grade'
+      ]
+    )->join(
+      demo::borealwillow::domain::CuttingBatch.all()->groupBy(
+        [
+          s|$s.standCode,
+          s|$s.standName
+        ],
+        [
+          agg(
+            s|$s.stemCount,
+            y|$y->sum()
+          )
+        ],
+        [
+          'StandRef',
+          'StandName',
+          'StandStems'
+        ]
+      ),
+      meta::relational::metamodel::join::JoinType.INNER,
+      {l, r|$l.getString('Stand') == $r.getString('StandRef')}
+    )->restrict(
+      [
+        'Batch',
+        'Stand',
+        'StandName',
+        'Clone',
+        'Stems',
+        'Grade',
+        'StandStems'
+      ]
+    )->sort(
+      [
+        asc('Batch')
+      ]
+    )->limit(5)};
+    key: 'environment';
+    executions['field']:
+    {
+      mapping: demo::borealwillow::mapping::WillowMapping;
+      runtime: demo::borealwillow::runtime::WillowFieldRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: demo::borealwillow::mapping::WillowMapping;
+      runtime: demo::borealwillow::runtime::WillowArchiveRuntime;
+    }
+  }
+}
+
+###Service
+Service demo::borealwillow::service::FieldCuttingDispatchBoard
+{
+  pattern: '/borealwillow/v1/fieldCuttingDispatchBoard';
+  title: 'Boreal Willow - Field Cutting Dispatch Board';
+  owners:
+  [
+    'willow-nursery-platform'
+  ];
+  documentation: 'Field-pinned single-execution counterpart of the environment-keyed dispatch board; it carries the executed coverage for the filtered, projected, joined and restricted board shape.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minStems: Integer[1], gradeCodes: String[*]|demo::borealwillow::domain::CuttingBatch.all()->filter(
+      b|($b.stemCount >= $minStems) && (($gradeCodes->isEmpty()) || (($b.gradeCode->in($gradeCodes)) && ($b.rootedFlag == 'true')))
+    )->project(
+      [
+        b|$b.batchRef,
+        b|$b.standCode,
+        b|$b.cloneCode,
+        b|$b.stemCount,
+        b|$b.gradeCode
+      ],
+      [
+        'Batch',
+        'Stand',
+        'Clone',
+        'Stems',
+        'Grade'
+      ]
+    )->join(
+      demo::borealwillow::domain::CuttingBatch.all()->groupBy(
+        [
+          s|$s.standCode,
+          s|$s.standName
+        ],
+        [
+          agg(
+            s|$s.stemCount,
+            y|$y->sum()
+          )
+        ],
+        [
+          'StandRef',
+          'StandName',
+          'StandStems'
+        ]
+      ),
+      meta::relational::metamodel::join::JoinType.INNER,
+      {l, r|$l.getString('Stand') == $r.getString('StandRef')}
+    )->restrict(
+      [
+        'Batch',
+        'Stand',
+        'StandName',
+        'Clone',
+        'Stems',
+        'Grade',
+        'StandStems'
+      ]
+    )->sort(
+      [
+        asc('Batch')
+      ]
+    )->limit(5)};
+    mapping: demo::borealwillow::mapping::WillowMapping;
+    runtime: demo::borealwillow::runtime::WillowFieldRuntime;
+  }
+  testSuites:
+  [
+    dispatchBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          willowFieldConnection:
+            Relational
+            #{
+              nursery.cutting_batch:
+                'batch_ref,stand_code,stand_name,clone_code,stem_count,grade_code,rooted\n'+
+                'WB-1,ST-1,Riverside Cutting Stand,CL-A,400,A,true\n'+
+                'WB-2,ST-2,Fen Edge Stand,CL-B,120,B,true\n'+
+                'WB-3,ST-1,Riverside Cutting Stand,CL-C,600,A,false\n'+
+                'WB-4,ST-9,Outfield Stand,CL-D,900,A,true\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        gradedRootedBatches:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minStems = 200,
+            gradeCodes = ['A']
+          ]
+          asserts:
+          [
+            joinedBoardRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"WB-1","Stand":"ST-1","StandName":"Riverside Cutting Stand","Clone":"CL-A","Stems":400,"Grade":"A","StandStems":1000},{"Batch":"WB-4","Stand":"ST-9","StandName":"Outfield Stand","Clone":"CL-D","Stems":900,"Grade":"A","StandStems":900}]';
+                  }#;
+              }#
+          ]
+        },
+        everyGradeWhenNoCodesGiven:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minStems = 100,
+            gradeCodes = []
+          ]
+          asserts:
+          [
+            unfilteredBoardRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"WB-1","Stand":"ST-1","StandName":"Riverside Cutting Stand","Clone":"CL-A","Stems":400,"Grade":"A","StandStems":1000},{"Batch":"WB-2","Stand":"ST-2","StandName":"Fen Edge Stand","Clone":"CL-B","Stems":120,"Grade":"B","StandStems":120},{"Batch":"WB-3","Stand":"ST-1","StandName":"Riverside Cutting Stand","Clone":"CL-C","Stems":600,"Grade":"A","StandStems":1000},{"Batch":"WB-4","Stand":"ST-9","StandName":"Outfield Stand","Clone":"CL-D","Stems":900,"Grade":"A","StandStems":900}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

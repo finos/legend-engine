@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealvineyard::service::StationIntakeRegister
+{
+  pattern: '/tealvineyard/stationIntakeRegister/{calendarYear}/{districtCode}';
+  documentation: 'Lists the docking points a district took into service during one calendar year, with the installation month and the size band both derived rather than stored. The surface narrowing is a single parameter that doubles as an opt-out: the sentinel value keeps every surface, any other value keeps only that surface.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['cycle-network-operations'] };
+  execution: Single
+  {
+    query: {calendarYear: Integer[1], districtCode: String[1], surfaceKind: String[1]|
+      test::tealvineyard::domain::DockStation.all()->filter(
+        s|(($s.installedOn->year() == $calendarYear) && ($s.districtCode == $districtCode)) &&
+          if($surfaceKind == 'ANY', |true, |$s.surfaceKind == $surfaceKind)
+      )->project(
+        ~[
+          STATION: s|$s.stationCode,
+          NAME: s|$s.stationName,
+          DISTRICT: s|$s.districtCode,
+          SURFACE: s|$s.surfaceKind,
+          STANDS: s|$s.standCount,
+          BAND: s|$s.serviceBand(),
+          MONTH: s|$s.installedMonth()
+        ]
+      )->sort(~STATION->ascending())
+       ->limit(10);
+    };
+    mapping: test::tealvineyard::mapping::CycleNetworkMapping;
+    runtime: test::tealvineyard::runtime::CycleNetworkLiveRuntime;
+  }
+  testSuites:
+  [
+    stationIntakeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cycleNetworkConnection:
+            Relational
+            #{
+              cyclenet.dock_station:
+                'station_id,station_code,station_name,district_code,surface_kind,stand_count,override_band,installed_on\n'+
+                '21,DS-21,Quay Steps Rack,DT-QUAY,cobble,210,,2022-02-03\n'+
+                '22,DS-22,Quay Arch Rack,DT-QUAY,asphalt,140,,2022-03-04\n'+
+                '23,DS-23,Ridge Walk Rack,DT-RIDGE,gravel,95,,2022-04-05\n'+
+                '24,DS-24,Quay Sheds Rack,DT-QUAY,timber,80,,2021-05-06\n'+
+                '25,DS-25,Quay Corner Stand,DT-QUAY,timber,5,,2022-06-07\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theSentinelSurfaceKeepsEverySurfaceTakenInThatYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            calendarYear = 2022,
+            districtCode = 'DT-QUAY',
+            surfaceKind = 'ANY'
+          ]
+          asserts:
+          [
+            theEarlierYearAndTheOtherDistrictAreBothDroppedAndTheSmallestPointIsLeftUnbanded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"STATION":"DS-21","NAME":"Quay Steps Rack","DISTRICT":"DT-QUAY","SURFACE":"COBBLE","STANDS":210,"BAND":"TIER-HARBOUR","MONTH":2},{"STATION":"DS-22","NAME":"Quay Arch Rack","DISTRICT":"DT-QUAY","SURFACE":"ASPHALT","STANDS":140,"BAND":"TIER-PROMENADE","MONTH":3},{"STATION":"DS-25","NAME":"Quay Corner Stand","DISTRICT":"DT-QUAY","SURFACE":"TIMBER","STANDS":5,"BAND":null,"MONTH":6}]';
+                  }#;
+              }#
+          ]
+        },
+        anExplicitSurfaceNarrowsTheSameYearToOnePoint:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            calendarYear = 2022,
+            districtCode = 'DT-QUAY',
+            surfaceKind = 'TIMBER'
+          ]
+          asserts:
+          [
+            onlyTheTimberPointOfThatYearSurvivesTheConditionalArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"STATION":"DS-25","NAME":"Quay Corner Stand","DISTRICT":"DT-QUAY","SURFACE":"TIMBER","STANDS":5,"BAND":null,"MONTH":6}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

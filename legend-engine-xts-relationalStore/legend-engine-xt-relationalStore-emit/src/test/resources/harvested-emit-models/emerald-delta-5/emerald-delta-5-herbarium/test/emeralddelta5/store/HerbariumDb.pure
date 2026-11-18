@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emeralddelta5::store::HerbariumDb
+(
+  Schema herbarium
+  (
+    Table specimen_sheet
+    (
+      milestoning
+      (
+        business(BUS_FROM = valid_from, BUS_THRU = valid_thru, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      sheet_code VARCHAR(24) PRIMARY KEY,
+      cabinet_code VARCHAR(20) NOT NULL,
+      family_name VARCHAR(48) NOT NULL,
+      genus_name VARCHAR(48) NOT NULL,
+      species_epithet VARCHAR(48) NOT NULL,
+      collector_code VARCHAR(24) NOT NULL,
+      locality_code VARCHAR(24) NOT NULL,
+      condition_grade VARCHAR(8) NOT NULL,
+      mounted_height_cm FLOAT NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL
+    )
+  )
+)

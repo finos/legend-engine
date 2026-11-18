@@ -1,0 +1,169 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternwarren5::service::FlowBandRollup
+{
+  pattern: '/easternwarren5/v1/flow-band-rollup/{environment}/{asOf}';
+  title: 'Eastern Warren 5 - Flow Band Rollup By Zone And Station';
+  ownership: UserList { users: ['catchment-hydrometry-desk'] };
+  documentation: 'Aggregates accepted discharge per catchment zone and station inside a rolling window whose lower bound is computed by date arithmetic, and plans the same query body under two keyed environments that differ only in the runtime and connection they bind.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], currentDate: StrictDate[1]|test::easternwarren5::domain::GaugeReading.all()->filter(
+      r|($r.reviewState == 'ACCEPTED') && (($r.recordedOn <= $asOf) && (($r.recordedOn > $currentDate->adjust(-7300, meta::pure::functions::date::DurationUnit.DAYS)) && (($r.stageMetres <= 9.0) && (($r.dischargeCumecs > 0.0) && $r.zoneName->in(['Upper Fell', 'Lower Vale'])))))
+    )->groupBy(
+      [
+        r|$r.zoneName,
+        r|$r.stationName
+      ],
+      [
+        agg(r|$r.dischargeCumecs, y|$y->sum())
+      ],
+      [
+        'Zone',
+        'Station',
+        'TotalDischarge'
+      ]
+    )->sort(
+      [
+        asc('Zone'),
+        asc('Station')
+      ]
+    )};
+    key: 'environment';
+    executions['live']:
+    {
+      mapping: test::easternwarren5::mapping::GaugeMapping;
+      runtime: test::easternwarren5::runtime::GaugeLiveRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::easternwarren5::mapping::GaugeMapping;
+      runtime: test::easternwarren5::runtime::GaugeArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    liveRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeLive:
+            Relational
+            #{
+              catchment.catchment_zone:
+                'zone_code,zone_name,upland_flag\n'+
+                'CZ-1,Upper Fell,Y\n'+
+                'CZ-2,Lower Vale,N\n';
+
+              catchment.gauge_station:
+                'station_code,station_name,zone_code,sensor_grade\n'+
+                'GS-1,Fell Head,CZ-1,primary\n'+
+                'GS-2,Vale Bridge,CZ-2,backup\n';
+
+              catchment.gauge_reading:
+                'reading_code,station_code,recorded_on,review_state,stage_metres,discharge_cumecs,rainfall_mm,turbidity_ntu\n'+
+                'GR-01,GS-1,2026-03-01,ACCEPTED,4.5,12.5,6.0,10.0\n'+
+                'GR-02,GS-1,2026-03-02,ACCEPTED,3.5,9.0,4.0,12.0\n'+
+                'GR-03,GS-1,2026-03-03,PROVISIONAL,2.5,7.5,3.0,14.0\n'+
+                'GR-04,GS-2,2026-03-04,ACCEPTED,1.8,6.0,2.0,60.0\n'+
+                'GR-05,GS-2,2026-03-05,ACCEPTED,1.2,4.5,1.5,20.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        liveKeyWindowedRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['live'];
+          parameters:
+          [
+            asOf = %2026-04-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            provisionalRowExcludedFromBothGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"Lower Vale","Station":"Vale Bridge","TotalDischarge":10.5},{"Zone":"Upper Fell","Station":"Fell Head","TotalDischarge":21.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    archiveRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeArchive:
+            Relational
+            #{
+              catchment.catchment_zone:
+                'zone_code,zone_name,upland_flag\n'+
+                'CZ-1,Upper Fell,Y\n';
+
+              catchment.gauge_station:
+                'station_code,station_name,zone_code,sensor_grade\n'+
+                'GS-1,Fell Head,CZ-1,primary\n';
+
+              catchment.gauge_reading:
+                'reading_code,station_code,recorded_on,review_state,stage_metres,discharge_cumecs,rainfall_mm,turbidity_ntu\n'+
+                'GR-21,GS-1,2026-02-01,ACCEPTED,2.2,5.0,1.0,5.0\n'+
+                'GR-22,GS-1,2026-02-02,REJECTED,3.0,8.0,1.0,5.0\n'+
+                'GR-23,GS-1,2026-05-02,ACCEPTED,3.0,8.0,1.0,5.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        archiveKeyExcludesRejectedAndOutOfWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            asOf = %2026-04-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            onlyTheAcceptedInWindowRowSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"Upper Fell","Station":"Fell Head","TotalDischarge":5.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

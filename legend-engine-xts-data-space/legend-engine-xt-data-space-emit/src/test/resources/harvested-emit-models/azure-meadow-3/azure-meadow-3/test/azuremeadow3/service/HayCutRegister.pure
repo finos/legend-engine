@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azuremeadow3::service::HayCutRegister
+{
+  pattern: '/azuremeadow3/v1/hay-cut-register';
+  title: 'Alpine Meadow - Hay Cuts Placed Beside The Parcels They Were Mown From';
+  ownership: UserList { users: ['alpine-meadow-desk'] };
+  documentation: 'Reads the hay cut register at one business date, keeps the cuts whose yield band the caller names and which tied at least as many bales as the caller names, folds the cut arithmetic deep enough that the plan has to compute it before it reads the columns, then places each cut beside a distinct projection of the parcel book over an inner join and keeps the ordered rows.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query:
+    {
+      asOfDate: StrictDate[1], bands: String[*], minBales: Integer[1]|
+      test::azuremeadow3::domain::HayCut.all($asOfDate)->filter(
+        x|($x.yieldBand()->in($bands)) && ($x.tiesAtLeast($minBales)) && ($x.baleTally > 0) && ($x.parcelName->isNotEmpty())
+      )->project(
+        [
+          x|$x.cutCode,
+          x|$x.parcelName,
+          x|$x.terraceName,
+          x|$x.keeperName,
+          x|$x.cutOn,
+          x|$x.baleTally,
+          x|$x.cutIndex(),
+          x|$x.yieldBand()
+        ],
+        [
+          'Cut',
+          'Parcel',
+          'Terrace',
+          'Keeper',
+          'Cut On',
+          'Bales',
+          'Index',
+          'Band'
+        ]
+      )->join(
+        test::azuremeadow3::domain::MeadowParcel.all()->filter(
+          x|$x.parcelName->isNotEmpty()
+        )->project(
+          [
+            x|$x.parcelName->toOne(),
+            x|$x.terraceName
+          ],
+          [
+            'Joined Parcel',
+            'Parcel Terrace'
+          ]
+        )->distinct(),
+        meta::relational::metamodel::join::JoinType.INNER,
+        {l, r|$l.getString('Parcel') == $r.getString('Joined Parcel')}
+      )->restrict(
+        [
+          'Cut',
+          'Parcel',
+          'Terrace',
+          'Keeper',
+          'Cut On',
+          'Bales',
+          'Index',
+          'Band',
+          'Parcel Terrace'
+        ]
+      )->sort(
+        [
+          asc('Cut')
+        ]
+      )->limit(10)
+    };
+    mapping: test::azuremeadow3::mapping::MeadowCutMapping;
+    runtime: test::azuremeadow3::runtime::MeadowCutRuntime;
+  }
+  testSuites:
+  [
+    hayCutRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowConnection:
+            Reference
+            #{
+              test::azuremeadow3::data::MeadowTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        namedBandsAtOneBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2031-12-01,
+            bands = ['BAND ONE HEAVY', 'BAND TWO FULL'],
+            minBales = 40
+          ]
+          asserts:
+          [
+            heavyCutsPlacedBesideTheirParcel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut":"MC-05","Parcel":"Lower Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Cut On":"2031-06-09","Bales":45,"Index":75.5,"Band":"BAND TWO FULL","Parcel Terrace":"Lower Terrace"},{"Cut":"MC-06","Parcel":"Lower Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Cut On":"2031-06-10","Bales":55,"Index":81.5,"Band":"BAND TWO FULL","Parcel Terrace":"Lower Terrace"},{"Cut":"MC-07","Parcel":"Spring Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Cut On":"2031-06-11","Bales":65,"Index":87.5,"Band":"BAND TWO FULL","Parcel Terrace":"Lower Terrace"},{"Cut":"MC-08","Parcel":"Spring Hay Parcel","Terrace":"Lower Terrace","Keeper":null,"Cut On":"2031-06-12","Bales":75,"Index":93.5,"Band":"BAND ONE HEAVY","Parcel Terrace":"Lower Terrace"},{"Cut":"MC-09","Parcel":"Ridge Hay Parcel","Terrace":null,"Keeper":null,"Cut On":"2031-06-13","Bales":95,"Index":99.5,"Band":"BAND ONE HEAVY","Parcel Terrace":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

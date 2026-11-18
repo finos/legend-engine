@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietridge::store::RidgeDb
+(
+  Schema ridge
+  (
+    Table trail_segment
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      segment_id INTEGER PRIMARY KEY,
+      segment_code VARCHAR(20) NOT NULL,
+      trail_name VARCHAR(200) NOT NULL,
+      patrol_zone INTEGER NOT NULL,
+      gain_metres INTEGER NOT NULL,
+      surface_kind VARCHAR(20) NOT NULL,
+      segment_class CHAR(1) NOT NULL,
+      exposure_rating INTEGER,
+      canopy_cover_pct INTEGER,
+      in_z TIMESTAMP NOT NULL,
+      out_z TIMESTAMP NOT NULL
+    )
+    Table hazard_note
+    (
+      hazard_id INTEGER PRIMARY KEY,
+      segment_id INTEGER NOT NULL,
+      hazard_kind VARCHAR(30) NOT NULL,
+      severity_level INTEGER NOT NULL
+    )
+  )
+
+  Filter RidgeClassFilter
+  (
+    [test::quietridge::store::RidgeDb]ridge.trail_segment.segment_class = 'R'
+  )
+
+  Filter ForestClassFilter
+  (
+    [test::quietridge::store::RidgeDb]ridge.trail_segment.segment_class = 'F'
+  )
+
+  Join Segment_Hazard
+  (
+    [test::quietridge::store::RidgeDb]ridge.trail_segment.segment_id = [test::quietridge::store::RidgeDb]ridge.hazard_note.segment_id
+  )
+)

@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umbermeadow2::store::CommonsDb
+(
+  Schema grazing
+  (
+    Table herd_allocation
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      alloc_code VARCHAR(16) PRIMARY KEY,
+      block_code VARCHAR(16) NOT NULL,
+      herd_name VARCHAR(128) NOT NULL,
+      head_count INTEGER NOT NULL,
+      state_code VARCHAR(4) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table grazing_block
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      block_code VARCHAR(16) PRIMARY KEY,
+      block_name VARCHAR(128) NOT NULL,
+      terrain_code VARCHAR(4) NOT NULL,
+      warden_code VARCHAR(16) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table commons_warden
+    (
+      warden_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(128) NOT NULL,
+      contact_note VARCHAR(128)
+    )
+
+    Table patrol_round
+    (
+      round_code VARCHAR(16) PRIMARY KEY,
+      block_code VARCHAR(16) NOT NULL,
+      patrol_team VARCHAR(64)
+    )
+  )
+
+  Schema mirror
+  (
+    Table herd_allocation
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      alloc_code VARCHAR(16) PRIMARY KEY,
+      block_code VARCHAR(16) NOT NULL,
+      herd_name VARCHAR(128) NOT NULL,
+      head_count INTEGER NOT NULL,
+      state_code VARCHAR(4) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table grazing_block
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      block_code VARCHAR(16) PRIMARY KEY,
+      block_name VARCHAR(128) NOT NULL,
+      terrain_code VARCHAR(4) NOT NULL,
+      warden_code VARCHAR(16) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table commons_warden
+    (
+      warden_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(128) NOT NULL,
+      contact_note VARCHAR(128)
+    )
+
+    Table patrol_round
+    (
+      round_code VARCHAR(16) PRIMARY KEY,
+      block_code VARCHAR(16) NOT NULL,
+      patrol_team VARCHAR(64)
+    )
+  )
+
+  Join Register_Allocation_Block(grazing.herd_allocation.block_code = grazing.grazing_block.block_code)
+  Join Register_Block_Warden(grazing.grazing_block.warden_code = grazing.commons_warden.warden_code)
+  Join Register_Block_Patrol(grazing.grazing_block.block_code = grazing.patrol_round.block_code)
+
+  Join Mirror_Allocation_Block(mirror.herd_allocation.block_code = mirror.grazing_block.block_code)
+  Join Mirror_Block_Warden(mirror.grazing_block.warden_code = mirror.commons_warden.warden_code)
+  Join Mirror_Block_Patrol(mirror.grazing_block.block_code = mirror.patrol_round.block_code)
+)

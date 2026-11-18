@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::opalreef2::service::TopSpeciesTally
+{
+  pattern: '/tidepool/v1/tally/top/{zone}';
+  title: 'Leading Species Tally';
+  owners:
+  [
+    'shore-survey',
+    'intertidal-ops'
+  ];
+  documentation: 'Ranks the aggregated species tallies of a shore zone and returns only the leading group.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {speciesList: String[*], zone: String[1], exposure: String[1], surveyor: String[1], method: String[1]|test::opalreef2::domain::Census.all()->filter(
+      c|($c.species->in($speciesList)) &&
+        (($c.pool.shoreZone == $zone) &&
+          (($c.pool.exposureClass == $exposure) &&
+            (($c.surveyor == $surveyor) && ($c.surveyMethod == $method))))
+    )->groupBy(
+      [
+        c|$c.species,
+        c|$c.pool.shoreZone
+      ],
+      [
+        agg(
+          c|$c.tally,
+          y|$y->sum()
+        ),
+        agg(
+          c|$c.tally,
+          y|$y->max()
+        )
+      ],
+      [
+        'Species',
+        'Zone',
+        'TotalTally',
+        'PeakTally'
+      ]
+    )->sort(
+      [
+        desc('TotalTally')
+      ]
+    )->take(1)};
+    mapping: test::opalreef2::mapping::ReefSurveyMapping;
+    runtime: test::opalreef2::runtime::ReefSurveyRuntime;
+  }
+  testSuites:
+  [
+    topTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+                tidepool.pool:
+                  'pool_id,pool_code,shore_zone,exposure_class\n'+
+                  '1,P01,HIGH_SHORE,SHELTERED\n'+
+                  '2,P02,MID_SHORE,EXPOSED\n'+
+                  '3,P03,LOW_SHORE,SHELTERED\n';
+                tidepool.census:
+                  'census_id,census_code,species_name,tally_n,survey_on,surveyor_name,method_c,pool_id\n'+
+                  '1,C01,Anemone,12,2024-05-01,TEAM_A,QUADRAT,1\n'+
+                  '2,C02,Anemone,8,2024-05-02,TEAM_A,QUADRAT,1\n'+
+                  '3,C03,Chiton,5,2024-05-03,TEAM_A,QUADRAT,1\n'+
+                  '4,C04,Anemone,20,2024-05-04,TEAM_A,QUADRAT,2\n'+
+                  '5,C05,Limpet,7,2024-05-05,TEAM_A,QUADRAT,3\n'+
+                  '6,C06,Chiton,9,2024-05-06,TEAM_B,QUADRAT,1\n'+
+                  '7,C07,Chiton,4,2024-05-07,TEAM_A,TRANSECT,1\n'+
+                  '8,C08,Chiton,6,2024-05-08,TEAM_A,QUADRAT,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        leadingGroupOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            speciesList = ['Anemone', 'Chiton'],
+            zone = 'HIGH_SHORE',
+            exposure = 'SHELTERED',
+            surveyor = 'TEAM_A',
+            method = 'QUADRAT'
+          ]
+          asserts:
+          [
+            leadingGroup:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Species":"Anemone","Zone":"HIGH_SHORE","TotalTally":20,"PeakTally":12}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

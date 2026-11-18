@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealwillow2::service::ExhibitRoster
+{
+  pattern: '/tealwillow2/v1/exhibit-roster';
+  title: 'Teal Willow - Exhibits Holding A Bronze Artifact';
+  owners:
+  [
+    'museum-curation',
+    'collection-registry'
+  ];
+  documentation: 'Keeps exhibits that hold at least one bronze artifact, walking the exhibit-to-artifact association inside an existence test, then projecting the exhibit with its join-reached gallery and curator labels.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::tealwillow2::domain::Exhibit.all()->filter(
+      e|$e.artifacts->exists(a|$a.material == 'BRONZE')
+    )->project(
+      [
+        e|$e.exhibitId,
+        e|$e.title,
+        e|$e.galleryLabel->toOne(),
+        e|$e.curatorLabel->toOne()
+      ],
+      [
+        'ExhibitId',
+        'Title',
+        'Gallery',
+        'Curator'
+      ]
+    )->sort(
+      [
+        asc('ExhibitId')
+      ]
+    )};
+    mapping: test::tealwillow2::mapping::CurationMapping;
+    runtime: test::tealwillow2::runtime::CurationRuntime;
+  }
+  testSuites:
+  [
+    exhibitRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          curationConnection: Reference
+            #{
+              test::tealwillow2::data::CurationTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        bronzeHolders:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+          ]
+          asserts:
+          [
+            rosterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ExhibitId":"E-1","Title":"BRONZE AGE HALL","Gallery":"ANCIENT WING","Curator":"ADA NORTH"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::tealwillow2::service::ArtifactCatalog
+{
+  pattern: '/tealwillow2/v1/artifact-catalog';
+  title: 'Teal Willow - Artifacts By Material Set';
+  owners:
+  [
+    'museum-curation',
+    'collection-registry'
+  ];
+  documentation: 'Keeps artifacts whose material is a member of the supplied set and projects each with its condition band and the two-hop gallery trail reached through the exhibit and gallery joins.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {materials: String[*]|test::tealwillow2::domain::Artifact.all()->filter(
+      a|$a.material->in($materials)
+    )->project(
+      [
+        a|$a.artifactId,
+        a|$a.label,
+        a|$a.conditionLabel,
+        a|$a.galleryTrail->toOne()
+      ],
+      [
+        'ArtifactId',
+        'Label',
+        'Condition',
+        'GalleryTrail'
+      ]
+    )->sort(
+      [
+        asc('ArtifactId')
+      ]
+    )};
+    mapping: test::tealwillow2::mapping::CurationMapping;
+    runtime: test::tealwillow2::runtime::CurationRuntime;
+  }
+  testSuites:
+  [
+    artifactCatalogSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          curationConnection: Reference
+            #{
+              test::tealwillow2::data::CurationTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        stoneAndBronze:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            materials = ['STONE', 'BRONZE', 'GLASS']
+          ]
+          asserts:
+          [
+            catalogRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ArtifactId":"A-1","Label":"CEREMONIAL AXE","Condition":"PRISTINE","GalleryTrail":"ANCIENT WING"},{"ArtifactId":"A-2","Label":"CAST FIGURINE","Condition":"STABLE","GalleryTrail":"ANCIENT WING"},{"ArtifactId":"A-4","Label":"ETCHED PANE","Condition":"UNASSESSED","GalleryTrail":"ANCIENT WING"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

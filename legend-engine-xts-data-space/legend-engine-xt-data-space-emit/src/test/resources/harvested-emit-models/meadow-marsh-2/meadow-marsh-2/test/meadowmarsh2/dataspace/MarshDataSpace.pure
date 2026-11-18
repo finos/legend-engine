@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::meadowmarsh2::dataspace::MarshDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'fleet';
+      description: 'Fleet context - the single association-bearing mapping resolved through the shared warehouse runtime.';
+      mapping: demo::meadowmarsh2::mapping::MarshMapping;
+      defaultRuntime: demo::meadowmarsh2::runtime::MarshRuntime;
+    }
+  ];
+  defaultExecutionContext: 'fleet';
+  title: 'Marsh Meadow Bike Share Fleet';
+  description: 'Discovery surface over the marsh bike-share network: stations and their docks, the bicycles parked in them, the rides taken on those bicycles and the maintenance tickets raised against them, all navigable through mapped associations rather than restated joins.';
+  elements:
+  [
+    demo::meadowmarsh2::domain::Bicycle,
+    demo::meadowmarsh2::domain::Dock,
+    demo::meadowmarsh2::domain::Ride,
+    demo::meadowmarsh2::domain::Rider,
+    demo::meadowmarsh2::domain::Station,
+    demo::meadowmarsh2::domain::Ticket
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Station Dock Roster';
+      description: 'The open docks of one ward with their station labels and capacities.';
+      executable: demo::meadowmarsh2::service::StationDockRoster;
+    },
+    {
+      id: 2;
+      title: 'Rider Ride Log';
+      description: 'The causeway rides of one membership tier with rider and bicycle labels attached.';
+      executable: demo::meadowmarsh2::service::RiderRideLog;
+    },
+    {
+      id: 3;
+      title: 'Bicycle Ticket Digest';
+      description: 'The per-model ticket counts and gear totals of one severity.';
+      executable: demo::meadowmarsh2::service::BicycleTicketDigest;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'bikeshare-fleet-desk@marshmeadowtransport.invalid';
+  };
+}

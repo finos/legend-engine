@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::indigoharbor4::domain::*;
+
+Class <<HarbourMarks.fixture>> {doc.doc = 'Anything fixed on or under the harbour water that a keeper must inspect and keep lit or painted.', HarbourMarks.chartRef = 'Harbour chart sheet A'} test::indigoharbor4::domain::HarbourFixture
+[
+  fixtureCodePresent: $this.fixtureCode->isNotEmpty(),
+  installedBeforeInspection
+  (
+    ~function: $this.lastInspectedOn >= $this.installedOn
+    ~enforcementLevel: Error
+  )
+]
+{
+  {doc.doc = 'Painted reference shown on the harbour chart.'} fixtureCode: String[1];
+  fixtureLabel: String[1];
+  installedOn: StrictDate[1];
+  lastInspectedOn: StrictDate[1];
+  waterDepthM: Float[0..1];
+  harbourZone: String[0..1];
+  inspections: test::indigoharbor4::domain::InspectionVisit[*];
+  latestInspectionBy(asOf: StrictDate[1])
+  {
+    $this.inspections->filter(v|$v.visitedOn <= $asOf)->sortBy(v|$v.visitedOn)->last()
+  }: test::indigoharbor4::domain::InspectionVisit[0..1];
+}
+
+Class <<HarbourMarks.watched>> {doc.doc = 'A floating mark moored to a sinker by a chain of shackled lengths.'} test::indigoharbor4::domain::Buoy extends test::indigoharbor4::domain::HarbourFixture
+[
+  chainCountWarning
+  (
+    ~function: (($this.colourBand->isEmpty() || !($this.colourBand == $this.topmarkColour)) || $this.withdrawnOn->isEmpty()) || (!($this.chainLengthM->toOne()->rem($this.shackleCount) == 0) && !($this.chainLengthM->toOne()->rem($this.shackleCount) == 1))
+    ~enforcementLevel: Warn
+    ~message: 'A withdrawn buoy whose band matches its topmark should not leave an even chain on the sinker'
+  ),
+  depthWithinRange
+  (
+    ~function: $this.waterDepthM->isEmpty() || (($this.waterDepthM->toOne()->abs() >= 0.5) && ($this.waterDepthM->toOne()->abs() <= 80.0))
+    ~enforcementLevel: Error
+  ),
+  shapeNeedsZone
+  (
+    ~function: ($this.harbourZone->isEmpty() || !($this.harbourZone->toOne()->in(['NORTH ARM', 'SOUTH ARM']))) || $this.colourBand->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'A buoy in either arm of the harbour carries a colour band'
+  )
+]
+{
+  shape: BuoyShape[1];
+  colourBand: String[0..1];
+  topmarkColour: String[0..1];
+  chainLengthM: Integer[0..1];
+  shackleCount: Integer[1];
+  withdrawnOn: StrictDate[0..1];
+}
+
+Class <<HarbourMarks.watched>> {doc.doc = 'A fixed light standing on a pier head or rock.'} test::indigoharbor4::domain::Beacon extends test::indigoharbor4::domain::HarbourFixture
+[
+  lampNeedsMaker
+  (
+    ~function: ($this.lampKind->isEmpty() || !($this.lampKind->toOne()->in([LampKind.ACETYLENE, LampKind.HALOGEN]))) || $this.lensMaker->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'A beacon burning gas or a halogen lamp names the lens maker'
+  ),
+  rangeNotNegative: $this.nominalRangeNm >= 0.0,
+  serviceDateAhead
+  (
+    ~function: ($this.lastLitOn->isEmpty() || !($this.lastLitOn == $this.installedOn)) || ($this.nextServiceOn->isNotEmpty() && ($this.nextServiceOn->toOne() >= today()))
+    ~enforcementLevel: Error
+    ~message: 'A beacon relit since installation has a service date still ahead'
+  )
+]
+{
+  lampKind: LampKind[0..1];
+  lensMaker: String[0..1];
+  nominalRangeNm: Float[1];
+  lastLitOn: StrictDate[0..1];
+  nextServiceOn: StrictDate[0..1];
+  pierHead: test::indigoharbor4::domain::PierHead[0..1];
+}
+
+Class <<HarbourMarks.seasonal>> {doc.doc = 'A gauge board or float well reading the tide against chart datum.'} test::indigoharbor4::domain::TideGauge extends test::indigoharbor4::domain::HarbourFixture
+[
+  readingsNeedDatum
+  (
+    ~function: (($this.datumOffsetM->isEmpty() || $this.boardHeightM->isEmpty()) || $this.datumNote->isNotEmpty()) || $this.lastCalibratedOn->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'A gauge with a datum offset and a board height records a datum note or calibration'
+  ),
+  offsetBelowBoard: ($this.datumOffsetM->isEmpty() || $this.boardHeightM->isEmpty()) || ($this.datumOffsetM->toOne()->abs() <= $this.boardHeightM->toOne()->abs()),
+  heightRecorded
+  (
+    ~function: $this.boardHeightM->isNotEmpty() || $this.datumNote->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'A gauge records a board height or explains why not'
+  )
+]
+{
+  datumOffsetM: Float[0..1];
+  boardHeightM: Float[0..1];
+  datumNote: String[0..1];
+  lastCalibratedOn: StrictDate[0..1];
+  band: TideBand[1];
+  readings: test::indigoharbor4::domain::TideReading[*];
+  latestReadingBy(asOf: StrictDate[1])
+  {
+    $this.readings->filter(r|$r.readOn <= $asOf)->sortBy(r|$r.readOn)->last()
+  }: test::indigoharbor4::domain::TideReading[0..1];
+}
+
+Class {doc.doc = 'A stone pier head carrying one or more beacons.'} test::indigoharbor4::domain::PierHead
+{
+  pierCode: String[1];
+  pierName: String[1];
+  lengthM: Float[1];
+}
+
+Class {doc.doc = 'One keeper visit to a fixture.'} test::indigoharbor4::domain::InspectionVisit
+[
+  visitNotBeforeEpoch: $this.visitedOn >= %1990-01-01
+]
+{
+  visitedOn: StrictDate[1];
+  visitorName: String[1];
+  remark: String[0..1];
+}
+
+Class {doc.doc = 'One height read off a gauge board.'} test::indigoharbor4::domain::TideReading
+[
+  heightNotNegative: $this.heightM >= 0.0
+]
+{
+  readOn: StrictDate[1];
+  heightM: Float[1];
+}
+
+Class <<HarbourCare.keeperOwned>> {doc.doc = 'A person working on the harbour.', HarbourCare.careGroup = 'harbour staff'} test::indigoharbor4::domain::HarbourHand
+{
+  handCode: String[1];
+  fullName: String[1];
+  joinedOn: StrictDate[1];
+}
+
+Class <<HarbourCare.keeperOwned>> {doc.doc = 'A lamp keeper responsible for beacons.'} test::indigoharbor4::domain::LampKeeper extends test::indigoharbor4::domain::HarbourHand
+{
+  grade: KeeperGrade[1];
+}
+
+Class <<HarbourCare.contracted>> {doc.doc = 'A diver contracted to inspect sinkers and chains.', HarbourMarks.upkeepNote = 'certified each spring'} test::indigoharbor4::domain::MooringDiver extends test::indigoharbor4::domain::HarbourHand
+{
+  diveDepthLimitM: Float[1];
+}
+
+Association test::indigoharbor4::domain::BeaconKeeping
+{
+  keptBeacons: test::indigoharbor4::domain::Beacon[*];
+  keeper: test::indigoharbor4::domain::LampKeeper[0..1];
+}
+
+Association test::indigoharbor4::domain::BuoyDiving
+{
+  divedBuoys: test::indigoharbor4::domain::Buoy[*];
+  diver: test::indigoharbor4::domain::MooringDiver[0..1];
+}

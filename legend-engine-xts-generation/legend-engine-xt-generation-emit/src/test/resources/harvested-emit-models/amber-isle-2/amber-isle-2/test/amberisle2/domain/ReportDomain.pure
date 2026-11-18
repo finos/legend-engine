@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::amberisle2::domain::*;
+import demo::amberisle2::profile::*;
+
+Class <<ColonyMeta.publishedField>> {ColonyMeta.steward = 'colony-register'} demo::amberisle2::domain::ColonyReportRecord
+{
+  <<ColonyMeta.colonyKey, Serialisation.notNull>> {ColonyMeta.maxLength = '18'} reportCode: String[1];
+  <<Serialisation.notNull>> publishedOn: StrictDate[1];
+  <<Serialisation.notNull>> {ColonyMeta.maxLength = '12'} colonyCode: String[1];
+}
+
+Class demo::amberisle2::domain::SeasonTotalsReport extends ColonyReportRecord
+{
+  <<Serialisation.notNull>> {ColonyMeta.maxLength = '120'} seasonCaption: String[1];
+  <<Serialisation.notNull>> totalOccupiedNests: Integer[1];
+}
+
+Class demo::amberisle2::domain::SpeciesMixReport extends ColonyReportRecord
+{
+  <<Serialisation.notNull>> {ColonyMeta.maxLength = '1'} dominantSpeciesBand: String[1];
+}
+
+Class demo::amberisle2::domain::ForageMixReport extends ColonyReportRecord
+{
+  <<Serialisation.notNull>> {ColonyMeta.maxLength = '1024'} forageCommentary: String[1];
+}
+
+Class demo::amberisle2::domain::BurrowOccupancyReport extends ColonyReportRecord
+{
+  <<Serialisation.notNull>> occupancyPercent: Float[1];
+}
+
+Class <<ColonyMeta.provenanceBlock>> {ColonyMeta.steward = 'colony-survey-team'} demo::amberisle2::domain::AmendedReportTrait
+{
+  <<Serialisation.notNull>> {ColonyMeta.maxLength = '18'} supersededReportCode: String[1];
+  <<Serialisation.notNull>> {ColonyMeta.maxLength = '8'} amendmentReasonCode: String[1];
+}
+
+Class demo::amberisle2::domain::AmendedSeasonTotalsReport extends SeasonTotalsReport, AmendedReportTrait
+{
+}
+
+Class demo::amberisle2::domain::AmendedBurrowOccupancyReport extends BurrowOccupancyReport, AmendedReportTrait
+{
+}

@@ -1,0 +1,239 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonglacier2::service::RainfallReadingRegister
+{
+  pattern: '/crimsonglacier2/v1/rainfall-register';
+  title: 'Crimson Glacier - Rainfall Reading Register';
+  documentation: 'Single-execution register of the rainfall readings a caller-supplied instant can see: an optional region collection narrows the join onto the gauge, a rolling window measured backwards from that instant bounds the reading date, an unreviewed reading is dropped on the empty quality flag, and the projection carries the three-armed intensity grade, the branched altitude band of the joined gauge and the day count that separates the reading from the review cut-off.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['rainfall-network-desk'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], regionCodes: String[*], minMillimetres: Float[1], sinceDays: Integer[1]|test::crimsonglacier2::domain::RainfallReading.all()->filter(
+      r|(($regionCodes->isEmpty()) || ($r.gaugeStation.regionCode->in($regionCodes))) && (($r.millimetres >= $minMillimetres) && (($r.readingDate >= $asOf->adjust($sinceDays * -1, meta::pure::functions::date::DurationUnit.DAYS)) && (($r.readingDate <= $asOf) && (!$r.qualityFlag->isEmpty()))))
+    )->project(
+      [
+        r|$r.readingId,
+        r|$r.gaugeStation.stationCode,
+        r|$r.gaugeStation.displayLabel(),
+        r|$r.gaugeStation.altitudeBand(),
+        r|$r.readingDate,
+        r|$r.millimetres,
+        r|$r.intensityGrade(),
+        r|$r.daysBeforeReview(),
+        r|$r.qualityFlag
+      ],
+      [
+        'Reading',
+        'Station',
+        'Station Label',
+        'Altitude Band',
+        'Reading Date',
+        'Millimetres',
+        'Intensity',
+        'Days Before Review',
+        'Quality Flag'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Reading')
+      ]
+    )->limit(20)};
+    mapping: test::crimsonglacier2::mapping::RainfallMapping;
+    runtime: test::crimsonglacier2::runtime::RainfallRuntime;
+  }
+  testSuites:
+  [
+    rainfallReadingRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          rainfallConnection:
+            Relational
+            #{
+              rainfall.gauge_station:
+                'station_code,station_name,region_code,altitude_metres\n'+
+                'GS-1,Beacon Hill Gauge,RG-N,900\n'+
+                'GS-2,Willow Flat Gauge,RG-N,250\n'+
+                'GS-3,Cedar Pass Gauge,RG-S,450\n';
+              rainfall.rain_reading:
+                'reading_id,station_code,reading_date,millimetres,quality_flag\n'+
+                '1,GS-1,2026-06-10,30.0,CHECKED\n'+
+                '2,GS-2,2026-06-11,7.5,CHECKED\n'+
+                '3,GS-3,2026-06-12,2.0,CHECKED\n'+
+                '4,GS-1,2026-01-05,40.0,CHECKED\n'+
+                '5,GS-2,2026-06-13,12.0,\n'+
+                '6,GS-3,2026-06-14,26.0,REVIEWED\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyIntensityArmInsideTheRollingWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-20,
+            regionCodes = [],
+            minMillimetres = 1.0,
+            sinceDays = 90
+          ]
+          asserts:
+          [
+            outOfWindowAndUnreviewedReadingsDropOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":1,"Station":"GS-1","Station Label":"Beacon Hill Gauge [RG-N]","Altitude Band":"HIGHLAND","Reading Date":"2026-06-10","Millimetres":30.0,"Intensity":"HEAVY","Days Before Review":21,"Quality Flag":"CHECKED"},{"Reading":2,"Station":"GS-2","Station Label":"Willow Flat Gauge [RG-N]","Altitude Band":"LOWLAND","Reading Date":"2026-06-11","Millimetres":7.5,"Intensity":"MODERATE","Days Before Review":20,"Quality Flag":"CHECKED"},{"Reading":3,"Station":"GS-3","Station Label":"Cedar Pass Gauge [RG-S]","Altitude Band":"UPLAND","Reading Date":"2026-06-12","Millimetres":2.0,"Intensity":"LIGHT","Days Before Review":19,"Quality Flag":"CHECKED"},{"Reading":6,"Station":"GS-3","Station Label":"Cedar Pass Gauge [RG-S]","Altitude Band":"UPLAND","Reading Date":"2026-06-14","Millimetres":26.0,"Intensity":"HEAVY","Days Before Review":17,"Quality Flag":"REVIEWED"}]';
+                  }#;
+              }#
+          ]
+        },
+        narrowedToOneRegionCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-20,
+            regionCodes = ['RG-S'],
+            minMillimetres = 1.0,
+            sinceDays = 90
+          ]
+          asserts:
+          [
+            onlyTheSouthernGaugeSurvivesTheJoinFilter:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":3,"Station":"GS-3","Station Label":"Cedar Pass Gauge [RG-S]","Altitude Band":"UPLAND","Reading Date":"2026-06-12","Millimetres":2.0,"Intensity":"LIGHT","Days Before Review":19,"Quality Flag":"CHECKED"},{"Reading":6,"Station":"GS-3","Station Label":"Cedar Pass Gauge [RG-S]","Altitude Band":"UPLAND","Reading Date":"2026-06-14","Millimetres":26.0,"Intensity":"HEAVY","Days Before Review":17,"Quality Flag":"REVIEWED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonglacier2::service::RainfallRollupByNetwork
+{
+  pattern: '/crimsonglacier2/v1/rainfall-rollup/{network}';
+  title: 'Crimson Glacier - Rainfall Rollup Keyed By Network';
+  documentation: 'Network-keyed counterpart of the register: the same joined reading set is grouped by the region of the joined gauge and by the derived intensity grade, totalling millimetres and counting readings, so one query function is planned against two keyed execution stacks.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['rainfall-network-desk'] };
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], regionCodes: String[*]|test::crimsonglacier2::domain::RainfallReading.all()->filter(
+      r|(($regionCodes->isEmpty()) || ($r.gaugeStation.regionCode->in($regionCodes))) && (($r.readingDate <= $asOf) && ($r.millimetres > 0.0))
+    )->groupBy(
+      [
+        r|$r.gaugeStation.regionCode,
+        r|$r.intensityGrade()
+      ],
+      [
+        agg(r|$r.millimetres, y|$y->sum()),
+        agg(r|$r.readingId, y|$y->count())
+      ],
+      [
+        'Region',
+        'Intensity',
+        'TotalMillimetres',
+        'Readings'
+      ]
+    )->sort(
+      [
+        asc('Region'),
+        asc('Intensity')
+      ]
+    )};
+    key: 'network';
+    executions['primary']:
+    {
+      mapping: test::crimsonglacier2::mapping::RainfallMapping;
+      runtime: test::crimsonglacier2::runtime::RainfallRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::crimsonglacier2::mapping::RainfallMapping;
+      runtime: test::crimsonglacier2::runtime::RainfallRuntime;
+    }
+  }
+  testSuites:
+  [
+    rainfallRollupByNetworkSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          rainfallConnection:
+            Relational
+            #{
+              rainfall.gauge_station:
+                'station_code,station_name,region_code,altitude_metres\n'+
+                'GS-1,Beacon Hill Gauge,RG-N,900\n'+
+                'GS-2,Willow Flat Gauge,RG-N,250\n'+
+                'GS-3,Cedar Pass Gauge,RG-S,450\n';
+              rainfall.rain_reading:
+                'reading_id,station_code,reading_date,millimetres,quality_flag\n'+
+                '1,GS-1,2026-06-10,30.0,CHECKED\n'+
+                '2,GS-2,2026-06-11,7.5,CHECKED\n'+
+                '3,GS-3,2026-06-12,2.0,CHECKED\n'+
+                '4,GS-1,2026-01-05,40.0,CHECKED\n'+
+                '5,GS-2,2026-06-13,12.0,\n'+
+                '6,GS-3,2026-06-14,26.0,REVIEWED\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        primaryKeyRegionAndIntensityTotals:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['primary'];
+          parameters:
+          [
+            asOf = %2026-06-20,
+            regionCodes = []
+          ]
+          asserts:
+          [
+            fourGroupsAcrossTwoRegions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"RG-N","Intensity":"HEAVY","TotalMillimetres":70.0,"Readings":2},{"Region":"RG-N","Intensity":"MODERATE","TotalMillimetres":19.5,"Readings":2},{"Region":"RG-S","Intensity":"HEAVY","TotalMillimetres":26.0,"Readings":1},{"Region":"RG-S","Intensity":"LIGHT","TotalMillimetres":2.0,"Readings":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

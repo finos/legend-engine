@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::borealwarren2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A ripening cave holding wheels of cheese at a controlled humidity.'} demo::borealwarren2::domain::RipeningCave
+{
+  caveCode: String[1];
+  caveName: String[1];
+  humidityPct: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A batch of wheels turned and brushed on the shelves of a ripening cave.'} demo::borealwarren2::domain::WheelBatch
+[
+  ripeningStarted: $this.rindDays > 0,
+  namedBatch: $this.batchName->length() > 2
+]
+{
+  batchCode: String[1];
+  batchName: String[1];
+  milkKind: String[1];
+  rindDays: Integer[1];
+  weightKg: Float[1];
+  rindIndex: Float[1];
+  turnedOn: StrictDate[1];
+  rindBand: String[0..1];
+  batchNote: String[1];
+  brushTotal: Integer[0..1];
+  turnTally: Integer[0..1];
+  gradeLabel: String[0..1];
+  bandLabel(primary: String[0..1], fallback: String[1])
+  {
+    if($primary->isEmpty(),
+       | $fallback->trim()->toUpper(),
+       | $primary->toOne()->trim()->toUpper())
+  }: String[1];
+}
+
+Association demo::borealwarren2::domain::Cave_Batches
+{
+  cave: RipeningCave[1];
+  batches: WheelBatch[*];
+}

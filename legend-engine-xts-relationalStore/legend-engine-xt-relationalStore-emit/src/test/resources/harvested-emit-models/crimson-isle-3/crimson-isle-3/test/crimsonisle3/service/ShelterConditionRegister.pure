@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonisle3::service::ShelterConditionRegister
+{
+  pattern: '/crimsonisle3/v1/shelter-condition-register/{businessDate}/{processingDate}';
+  title: 'Crimson Isle - Shelter Condition Register';
+  ownership: UserList { users: ['upper-valley-wardens'] };
+  documentation: 'Publishes the derived condition grade, route label and winter sweep status of every trail shelter effective on the requested business date, alongside the sleeping permit resolved bi-temporally and the warden assignment resolved at the requested processing date. The three graded columns are class-level derived properties, so the nested conditional chains are what the register is actually asserting.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], processingDate: StrictDate[1]|test::crimsonisle3::domain::TrailShelter.all($businessDate)->project(
+      [
+        s|$s.shelterCode,
+        s|$s.shelterName,
+        s|$s.conditionGrade(),
+        s|$s.routeLabel(),
+        s|$s.winterStatus(),
+        s|$s.permit($processingDate, $businessDate).permitRef,
+        s|$s.warden($processingDate).wardenName
+      ],
+      [
+        'Shelter/Code',
+        'Shelter/Name',
+        'Shelter/Grade',
+        'Shelter/RouteLabel',
+        'Shelter/WinterStatus',
+        'Permit/Ref',
+        'Warden/Name'
+      ]
+    )->sort([asc('Shelter/Code')])};
+    mapping: test::crimsonisle3::mapping::ShelterNetworkMapping;
+    runtime: test::crimsonisle3::runtime::ShelterH2Runtime;
+  }
+  testSuites:
+  [
+    shelterConditionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          shelterH2:
+            Relational
+            #{
+              alpine.shelter:
+                'shelter_id,shelter_code,shelter_name,tier_code,roof_code,route_code,bunk_count,altitude_m,water_source,sweep_note,from_z,thru_z\n'+
+                '1,SH-01,Ridge Crest Hut,T,SH,CH,12,2500,SPRING,upper ledge swept,2026-01-01,9999-12-31\n'+
+                '2,SH-02,Cirque Bothy,T,SM,CH,8,2000,SNOWMELT,ridge swept,2026-01-01,9999-12-31\n'+
+                '3,SH-03,Larch Bothy,T,TU,CH,6,1500,TANK,lower shelf swept,2026-01-01,9999-12-31\n'+
+                '4,SH-04,Col Refuge,T,CA,MT,4,2600,SPRING,,2026-01-01,9999-12-31\n'+
+                '5,SH-05,Moraine Hut,S,SH,MT,10,1900,STREAM,porch checked,2026-01-01,9999-12-31\n'+
+                '6,SH-06,Snowfield Hut,S,SM,FP,14,2450,SNOWMELT,porch swept,2026-01-01,9999-12-31\n'+
+                '7,SH-07,Pine Bench Hut,S,TU,FP,9,1850,TANK,hut swept,2026-01-01,9999-12-31\n'+
+                '8,SH-08,Meadow Shelter,S,CA,MT,5,1400,SPRING,canvas swept,2026-01-01,9999-12-31\n'+
+                '9,SH-09,Scarp Hoist Hut,B,SH,CH,7,2200,SPRING,basic swept,2026-01-01,9999-12-31\n'+
+                '10,SH-10,Turf Roof Shelter,B,TU,FP,3,1600,TANK,turf swept,2026-01-01,9999-12-31\n'+
+                '11,SH-11,Closed Saddle Hut,B,SM,MT,4,1700,SPRING,saddle swept,2024-01-01,2024-06-30\n';
+
+              alpine.permit:
+                'permit_id,shelter_code,permit_ref,bunk_allowance,in_z,out_z,from_z,thru_z\n'+
+                '100,SH-01,PM-1001,12,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+
+              alpine.warden_assignment:
+                'warden_id,shelter_code,warden_name,contact_radio,in_z,out_z\n'+
+                '200,SH-01,A. Fellstone,RADIO-11,2026-01-01,9999-12-31\n'+
+                '201,SH-02,B. Screeway,RADIO-12,2026-01-01,9999-12-31\n';
+
+              alpine.inspection:
+                'inspection_id,shelter_code,inspection_ref,checklist_tag,outcome_code,inspected_on\n'+
+                '300,SH-01,RI-3001,ROOF,D,2026-02-01\n'+
+                '301,SH-01,SI-3002,ACCESS,C,2026-02-10\n'+
+                '302,SH-02,RI-3003,ACCESS,A,2026-02-11\n';
+
+              alpine.routine_inspection:
+                'routine_id,inspection_ref,checklist_tag,outcome_code,inspected_on,checklist_version\n'+
+                '400,RI-3001,ROOF,D,2026-02-01,v4\n';
+
+              alpine.storm_inspection:
+                'storm_id,inspection_ref,checklist_tag,outcome_code,inspected_on,wind_speed_kph\n'+
+                '500,SI-3002,ACCESS,C,2026-02-10,118\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyGradedArmAtOneAsOfDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-03-01,
+            processingDate = %2026-03-01
+          ]
+          asserts:
+          [
+            tenSheltersEachOnItsOwnConditionalArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shelter/Code":"SH-01","Shelter/Name":"Ridge Crest Hut","Shelter/Grade":"STAFFED-SHINGLE","Shelter/RouteLabel":"HOIST-HIGH","Shelter/WinterStatus":"upper ledge swept","Permit/Ref":"PM-1001","Warden/Name":"A. Fellstone"},{"Shelter/Code":"SH-02","Shelter/Name":"Cirque Bothy","Shelter/Grade":"STAFFED-SHEET","Shelter/RouteLabel":"HOIST-MID","Shelter/WinterStatus":"ridge swept","Permit/Ref":null,"Warden/Name":"B. Screeway"},{"Shelter/Code":"SH-03","Shelter/Name":"Larch Bothy","Shelter/Grade":"STAFFED-TURF","Shelter/RouteLabel":"HOIST-LOW","Shelter/WinterStatus":"lower shelf swept","Permit/Ref":null,"Warden/Name":null},{"Shelter/Code":"SH-04","Shelter/Name":"Col Refuge","Shelter/Grade":"STAFFED-CANVAS","Shelter/RouteLabel":"MULE-HIGH","Shelter/WinterStatus":"NOT SWEPT","Permit/Ref":null,"Warden/Name":null},{"Shelter/Code":"SH-05","Shelter/Name":"Moraine Hut","Shelter/Grade":"SERVICED-SHINGLE","Shelter/RouteLabel":"MULE-MID","Shelter/WinterStatus":"NOT SWEPT","Permit/Ref":null,"Warden/Name":null},{"Shelter/Code":"SH-06","Shelter/Name":"Snowfield Hut","Shelter/Grade":"SERVICED-SHEET","Shelter/RouteLabel":"FOOT-HIGH","Shelter/WinterStatus":"porch swept","Permit/Ref":null,"Warden/Name":null},{"Shelter/Code":"SH-07","Shelter/Name":"Pine Bench Hut","Shelter/Grade":"SERVICED-TURF","Shelter/RouteLabel":"FOOT-MID","Shelter/WinterStatus":"hut swept","Permit/Ref":null,"Warden/Name":null},{"Shelter/Code":"SH-08","Shelter/Name":"Meadow Shelter","Shelter/Grade":"SERVICED-CANVAS","Shelter/RouteLabel":"UNROUTED","Shelter/WinterStatus":"canvas swept","Permit/Ref":null,"Warden/Name":null},{"Shelter/Code":"SH-09","Shelter/Name":"Scarp Hoist Hut","Shelter/Grade":"BASIC-HOIST","Shelter/RouteLabel":"HOIST-MID","Shelter/WinterStatus":"basic swept","Permit/Ref":null,"Warden/Name":null},{"Shelter/Code":"SH-10","Shelter/Name":"Turf Roof Shelter","Shelter/Grade":"UNGRADED","Shelter/RouteLabel":"UNROUTED","Shelter/WinterStatus":"turf swept","Permit/Ref":null,"Warden/Name":null}]';
+                  }#;
+              }#
+          ]
+        },
+        closedShelterStaysOutOfTheHistoricRead:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-03-01,
+            processingDate = %2024-03-01
+          ]
+          asserts:
+          [
+            onlyTheShelterEffectiveInTwentyTwentyFour:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shelter/Code":"SH-11","Shelter/Name":"Closed Saddle Hut","Shelter/Grade":"BASIC-MULE","Shelter/RouteLabel":"UNROUTED","Shelter/WinterStatus":"saddle swept","Permit/Ref":null,"Warden/Name":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

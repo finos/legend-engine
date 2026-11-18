@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'Territory a specimen repository was established in. A closed set that carries an explicit unknown member, so a repository whose founding territory was never recorded is still typed rather than left as a free string.'} demo::zephyrfossil4::domain::EstablishmentTerritory
+{
+  ARGENTINA,
+  AUSTRALIA,
+  BOTSWANA,
+  BRAZIL,
+  CANADA,
+  CHILE,
+  DENMARK,
+  EGYPT,
+  ETHIOPIA,
+  FINLAND,
+  GREENLAND,
+  ICELAND,
+  INDONESIA,
+  KENYA,
+  MADAGASCAR,
+  MONGOLIA,
+  MOROCCO,
+  NAMIBIA,
+  NEPAL,
+  NEW_ZEALAND,
+  NORWAY,
+  PERU,
+  PORTUGAL,
+  SPAIN,
+  TANZANIA,
+  UNKNOWN_TERRITORY
+}
+
+Enum {doc.doc = 'Whether a specimen repository is still accessioning material or has been wound down. Exactly two members, so the lifecycle of a repository cannot drift into an undeclared state.'} demo::zephyrfossil4::domain::RepositoryLifecycle
+{
+  ACCESSIONING,
+  WOUND_DOWN
+}

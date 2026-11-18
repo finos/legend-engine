@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::olivedelta::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A monitored reef survey site inside one lagoon zone.'} test::olivedelta::domain::SurveySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  lagoonZone: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tagged coral colony recorded at a survey site, carrying a composed display tag derived from its growth form.'} test::olivedelta::domain::CoralColony
+{
+  colonyCode: String[1];
+  growthForm: String[1];
+  diameterCm: Integer[1];
+  displayTag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A shore-based dive team responsible for surveying one or more sites.'} test::olivedelta::domain::DiveTeam
+{
+  teamCode: String[1];
+  teamName: String[1];
+  shoreBase: String[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A bleaching observation held on a processing timeline, so superseded observations drop out of range.'} test::olivedelta::domain::BleachCheck
+{
+  checkCode: String[1];
+  bleachPercent: Integer[1];
+  siteName: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a survey site to the coral colonies tagged at it.'} test::olivedelta::domain::SiteColonies
+{
+  site: SurveySite[0..1];
+  colonies: CoralColony[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a dive team to the survey sites it is responsible for.'} test::olivedelta::domain::TeamSites
+{
+  team: DiveTeam[0..1];
+  sites: SurveySite[*];
+}

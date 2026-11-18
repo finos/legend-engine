@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quiethatchery2::mapping::TrayMapping
+(
+  include mapping test::quiethatchery2::mapping::TrayEnumMappings
+  include mapping test::quiethatchery2::mapping::HatcheryBaseMapping
+
+  *test::quiethatchery2::domain::TrayRevision[trayRevision]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.basis_code,
+      [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.tray_code,
+      [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.batch_code,
+      [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.record_date
+    )
+    ~mainTable [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision
+    basisCode: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.basis_code,
+    trayCode: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.tray_code,
+    batchCode: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.batch_code,
+    recordDate: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.record_date,
+    tallyMethod: EnumerationMapping TallyMethodMapping: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.tally_method,
+    earlyBand: EnumerationMapping TrayBandMapping: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.early_band,
+    lateBand: EnumerationMapping TrayBandMapping: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.late_band,
+    observationKind: EnumerationMapping ObservationKindMapping: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.observation_kind,
+    eggCount: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.egg_count,
+    fryCount: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.fry_count,
+    trayNote: [test::quiethatchery2::store::HatcheryDatabase]hatchery.tray_revision.tray_note
+  }
+
+  testSuites:
+  [
+    trayRevisionSuite:
+    {
+      function: |test::quiethatchery2::domain::TrayRevision.all(%2026-06-15, %2026-06-01)->project(
+  [
+    r|$r.basisCode,
+    r|$r.trayCode,
+    r|$r.batchCode,
+    r|$r.recordDate,
+    r|$r.tallyMethod,
+    r|$r.earlyBand,
+    r|$r.lateBand,
+    r|$r.observationKind,
+    r|$r.eggCount,
+    r|$r.fryCount,
+    r|$r.trayNote
+  ],
+  [
+    'Basis',
+    'Tray',
+    'Batch',
+    'Recorded On',
+    'Tally Method',
+    'Early Band',
+    'Late Band',
+    'Observation',
+    'Eggs',
+    'Fry',
+    'Note'
+  ]
+)->sort(
+  [
+    asc('Tray')
+  ]
+);
+      tests:
+      [
+        openVersionsAtBothInstants:
+        {
+          doc: 'Covers the four-column key spanning a basis discriminator, two tray identifiers and the recording date, the two properties that share one band enumeration mapping, a stored value no source value translates, a row whose optional counts and note are all null, and the versions the processing and recording windows exclude.';
+          data:
+          [
+            test::quiethatchery2::store::HatcheryDatabase:
+              Relational
+              #{
+                hatchery.tray_revision:
+                  'basis_code,tray_code,batch_code,record_date,tally_method,early_band,late_band,observation_kind,egg_count,fry_count,tray_note,in_z,out_z,from_z,thru_z\n'+
+                  'PRIMARY,TR-01,BA-01,2026-06-01,HC,EA,LA,DIR,1200,900,steady warm run,2026-06-10,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'PRIMARY,TR-01,BA-01,2026-06-01,SS,EA,MI,INF,1180,880,superseded count,2026-06-01,2026-06-10,2026-01-01,9999-12-31\n'+
+                  'REVIEW,TR-02,BA-02,2026-06-01,VE,MI,LA,DIR,,,,2026-06-10,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'PRIMARY,TR-03,BA-03,2026-06-01,ZZ,EA,LA,DIR,500,400,unmapped tally,2026-06-10,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'PRIMARY,TR-04,BA-04,2026-05-01,HC,EA,LA,DIR,700,600,recording window closed,2026-06-10,9999-12-31,2026-01-01,2026-04-01\n';
+              }#
+          ];
+          asserts:
+          [
+            threeVisibleVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Basis":"PRIMARY","Tray":"TR-01","Batch":"BA-01","Recorded On":"2026-06-01","Tally Method":"HEADCOUNT","Early Band":"EARLY","Late Band":"LATE","Observation":"DIRECT","Eggs":1200,"Fry":900,"Note":"steady warm run"},{"Basis":"REVIEW","Tray":"TR-02","Batch":"BA-02","Recorded On":"2026-06-01","Tally Method":"VOLUME_ESTIMATE","Early Band":"MIDDLE","Late Band":"LATE","Observation":"DIRECT","Eggs":null,"Fry":null,"Note":null},{"Basis":"PRIMARY","Tray":"TR-03","Batch":"BA-03","Recorded On":"2026-06-01","Tally Method":null,"Early Band":"EARLY","Late Band":"LATE","Observation":"DIRECT","Eggs":500,"Fry":400,"Note":"unmapped tally"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

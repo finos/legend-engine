@@ -1,0 +1,377 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::sunlitcove6::mapping::CoveSurveyMapping
+(
+  *demo::sunlitcove6::domain::KelpPatch[kelpPatch]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.patch_id
+    )
+    ~mainTable [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch
+    patchId: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.patch_id,
+    patchLabel: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.patch_label,
+    holdfastCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.holdfast_code,
+    flowRegime: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.flow_regime,
+    frondTally: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.frond_tally,
+    coverIndex: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index,
+    mappedOn: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.mapped_on,
+    lastDivedAt: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.last_dived_at,
+    patchNote: [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.patch_note,
+    surveyScheme: 'COVE-SURVEY-A',
+    coverBand: case(
+                 equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 1),
+                 'BARREN',
+                 case(
+                   equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 2),
+                   'SPARSE',
+                   case(
+                     equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 3),
+                     'PATCHY',
+                     case(
+                       equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 4),
+                       'SPREADING',
+                       case(
+                         equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 5),
+                         'HALF COVERED',
+                         case(
+                           equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 6),
+                           'THICKENING',
+                           case(
+                             equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 7),
+                             'COVERED',
+                             case(
+                               equal([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.cover_index, 8),
+                               'CROWDED',
+                               sqlNull()
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    patchTag: concat(
+                concat(
+                  toUpper(trim([demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.holdfast_code)),
+                  '-'
+                ),
+                [demo::sunlitcove6::store::CoveSurveyDB]survey.kelp_patch.patch_label
+              ),
+    stationName: [demo::sunlitcove6::store::CoveSurveyDB]@Patch_Station | [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.station_name,
+    reachCode: [demo::sunlitcove6::store::CoveSurveyDB]@Patch_Station | [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.reach_code,
+    tractCode: [demo::sunlitcove6::store::CoveSurveyDB]@Patch_Station | [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.tract_code,
+    stationHectares: [demo::sunlitcove6::store::CoveSurveyDB]@Patch_Station | [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.hectares,
+    holdfastName: [demo::sunlitcove6::store::CoveSurveyDB]@Patch_Holdfast | [demo::sunlitcove6::store::CoveSurveyDB]survey.holdfast_reference.holdfast_name,
+    growthForm: [demo::sunlitcove6::store::CoveSurveyDB]@Patch_Holdfast | [demo::sunlitcove6::store::CoveSurveyDB]survey.holdfast_reference.growth_form,
+    dives[diveLog]: [demo::sunlitcove6::store::CoveSurveyDB]@Patch_Dive
+  }
+
+  *demo::sunlitcove6::domain::DiveLog[diveLog]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.dive_id
+    )
+    ~mainTable [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log
+    diveId: [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.dive_id,
+    patchId: [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.patch_id,
+    divedAt: [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.dived_at,
+    diverCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.diver_code,
+    clarityScore: [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.clarity_score,
+    hazardCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.hazard_code,
+    clarityTier: case(
+                   greaterThan([demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.clarity_score, 80),
+                   'CLEAR WATER',
+                   case(
+                     greaterThan([demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.clarity_score, 50),
+                     concat('MURKY-', toUpper([demo::sunlitcove6::store::CoveSurveyDB]survey.dive_log.diver_code)),
+                     sqlNull()
+                   )
+                 ),
+    postingStationName: [demo::sunlitcove6::store::CoveSurveyDB]@Diver_Station | [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.station_name,
+    postingTractName: [demo::sunlitcove6::store::CoveSurveyDB]@Diver_Station > @Station_Tract | [demo::sunlitcove6::store::CoveSurveyDB]survey.shore_tract.tract_name
+  }
+
+  *demo::sunlitcove6::domain::CoveStation[coveStation]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.station_id
+    )
+    ~mainTable [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station
+    stationId: [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.station_id,
+    stationName: [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.station_name,
+    reachCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.reach_code,
+    tractCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.tract_code,
+    hectares: [demo::sunlitcove6::store::CoveSurveyDB]survey.cove_station.hectares
+  }
+
+  *demo::sunlitcove6::domain::ShoreTract[shoreTract]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitcove6::store::CoveSurveyDB]survey.shore_tract.tract_code
+    )
+    ~mainTable [demo::sunlitcove6::store::CoveSurveyDB]survey.shore_tract
+    tractCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.shore_tract.tract_code,
+    tractName: [demo::sunlitcove6::store::CoveSurveyDB]survey.shore_tract.tract_name,
+    wardenCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.shore_tract.warden_code
+  }
+
+  *demo::sunlitcove6::domain::HoldfastReference[holdfastReference]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitcove6::store::CoveSurveyDB]survey.holdfast_reference.holdfast_code
+    )
+    ~mainTable [demo::sunlitcove6::store::CoveSurveyDB]survey.holdfast_reference
+    holdfastCode: [demo::sunlitcove6::store::CoveSurveyDB]survey.holdfast_reference.holdfast_code,
+    holdfastName: [demo::sunlitcove6::store::CoveSurveyDB]survey.holdfast_reference.holdfast_name,
+    growthForm: [demo::sunlitcove6::store::CoveSurveyDB]survey.holdfast_reference.growth_form
+  }
+
+  testSuites:
+  [
+    coverBandCascadeSuite:
+    {
+      function: |demo::sunlitcove6::domain::KelpPatch.all()->project(
+        [
+          p|$p.patchLabel,
+          p|$p.coverIndex,
+          p|$p.coverBand,
+          p|$p.surveyScheme
+        ],
+        [
+          'Patch',
+          'Cover',
+          'Band',
+          'Scheme'
+        ]
+      )->sort([asc('Patch')]);
+      tests:
+      [
+        eachCoverClassHitsItsOwnArmAndTheNinthFallsThrough:
+        {
+          data:
+          [
+            demo::sunlitcove6::store::CoveSurveyDB:
+              Relational
+              #{
+                survey.kelp_patch:
+                  'patch_id,station_id,patch_label,holdfast_code,flow_regime,frond_tally,cover_index,mapped_on,last_dived_at,patch_note\n'+
+                  'P-01,ST-01,PATCH-01,bull,SURGE,240,1,2024-03-01,2026-05-01 08:00:00.000,Barren rock\n'+
+                  'P-02,ST-01,PATCH-02,bull,SURGE,232,2,2024-03-02,2026-05-01 08:00:00.000,\n'+
+                  'P-03,ST-01,PATCH-03,ribbon,SURGE,228,3,2024-03-03,2026-05-01 08:00:00.000,\n'+
+                  'P-04,ST-01,PATCH-04,ribbon,SHELTERED,224,4,2024-03-04,2026-05-01 08:00:00.000,\n'+
+                  'P-05,ST-02,PATCH-05,bull,SURGE,216,5,2024-03-05,2026-05-01 08:00:00.000,\n'+
+                  'P-06,ST-02,PATCH-06,feather,SURGE,212,6,2024-03-06,2026-05-01 08:00:00.000,\n'+
+                  'P-07,ST-02,PATCH-07,feather,SLACK,208,7,2024-03-07,2026-05-01 08:00:00.000,\n'+
+                  'P-08,ST-02,PATCH-08,bull,SURGE,204,8,2024-03-08,2026-05-01 08:00:00.000,Crowded stipes\n'+
+                  'P-09,ST-02,PATCH-09,bull,SURGE,200,9,2024-03-09,2026-05-01 08:00:00.000,Off the scored range\n';
+              }#
+          ];
+          asserts:
+          [
+            theEightBandsResolveAndTheOffRangePatchCarriesNoBand:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch":"PATCH-01","Cover":1,"Band":"BARREN","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-02","Cover":2,"Band":"SPARSE","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-03","Cover":3,"Band":"PATCHY","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-04","Cover":4,"Band":"SPREADING","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-05","Cover":5,"Band":"HALF COVERED","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-06","Cover":6,"Band":"THICKENING","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-07","Cover":7,"Band":"COVERED","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-08","Cover":8,"Band":"CROWDED","Scheme":"COVE-SURVEY-A"},{"Patch":"PATCH-09","Cover":9,"Band":null,"Scheme":"COVE-SURVEY-A"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinWideningSuite:
+    {
+      function: |demo::sunlitcove6::domain::KelpPatch.all()->project(
+        [
+          p|$p.patchTag,
+          p|$p.stationName,
+          p|$p.reachCode,
+          p|$p.holdfastName,
+          p|$p.growthForm
+        ],
+        [
+          'Tag',
+          'Station',
+          'Reach',
+          'Holdfast',
+          'Form'
+        ]
+      )->sort([asc('Tag')]);
+      tests:
+      [
+        theStationAndHoldfastRegistersAreReachedThroughTwoNamedJoinsAndTheTagIsBuiltFromTheCode:
+        {
+          data:
+          [
+            demo::sunlitcove6::store::CoveSurveyDB:
+              Relational
+              #{
+                survey.kelp_patch:
+                  'patch_id,station_id,patch_label,holdfast_code,flow_regime,frond_tally,cover_index,mapped_on,last_dived_at,patch_note\n'+
+                  'P-01,ST-01,PATCH-01,bull,SURGE,240,4,2024-03-01,2026-05-01 08:00:00.000,Outer shoal head\n'+
+                  'P-05,ST-02,PATCH-05,feather,SURGE,216,5,2024-03-05,2026-05-01 08:00:00.000,\n';
+
+                survey.cove_station:
+                  'station_id,station_name,reach_code,tract_code,hectares\n'+
+                  'ST-01,North Shoal,RC-NORTH,TR-01,12.5\n'+
+                  'ST-02,South Shoal,RC-SOUTH,TR-02,8.25\n';
+
+                survey.holdfast_reference:
+                  'holdfast_code,holdfast_name,growth_form\n'+
+                  'bull,Bull kelp,CANOPY\n'+
+                  'feather,Feather boa kelp,UNDERSTORY\n';
+              }#
+          ];
+          asserts:
+          [
+            eachPatchCarriesItsStationAndHoldfastDetail:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tag":"BULL-PATCH-01","Station":"North Shoal","Reach":"RC-NORTH","Holdfast":"Bull kelp","Form":"CANOPY"},{"Tag":"FEATHER-PATCH-05","Station":"South Shoal","Reach":"RC-SOUTH","Holdfast":"Feather boa kelp","Form":"UNDERSTORY"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    diveClarityTierSuite:
+    {
+      function: |demo::sunlitcove6::domain::KelpPatch.all()->project(
+        [
+          p|$p.patchLabel,
+          p|$p.dives.clarityScore,
+          p|$p.dives.clarityTier
+        ],
+        [
+          'Patch',
+          'Clarity',
+          'Tier'
+        ]
+      )->sort(
+        [
+          asc('Patch'),
+          asc('Clarity')
+        ]
+      );
+      tests:
+      [
+        theClarityCascadeResolvesPerDiveReachedThroughTheJoin:
+        {
+          data:
+          [
+            demo::sunlitcove6::store::CoveSurveyDB:
+              Relational
+              #{
+                survey.kelp_patch:
+                  'patch_id,station_id,patch_label,holdfast_code,flow_regime,frond_tally,cover_index,mapped_on,last_dived_at,patch_note\n'+
+                  'P-01,ST-01,PATCH-01,bull,SURGE,240,4,2024-03-01,2026-05-01 08:00:00.000,Outer shoal head\n';
+
+                survey.dive_log:
+                  'dive_id,patch_id,dived_at,diver_code,clarity_score,hazard_code\n'+
+                  'D-01,P-01,2026-04-01 09:00:00.000,pair-a,91,\n'+
+                  'D-02,P-01,2026-04-02 09:00:00.000,pair-b,64,SWELL\n'+
+                  'D-03,P-01,2026-04-03 09:00:00.000,pair-c,22,VISIBILITY\n';
+              }#
+          ];
+          asserts:
+          [
+            theClearDiveClearsTheMiddleDiveIsMurkyTieredAndTheLowDiveCarriesNoTier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch":"PATCH-01","Clarity":22,"Tier":null},{"Patch":"PATCH-01","Clarity":64,"Tier":"MURKY-PAIR-B"},{"Patch":"PATCH-01","Clarity":91,"Tier":"CLEAR WATER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    diverPostingSuite:
+    {
+      function: |demo::sunlitcove6::domain::DiveLog.all()->project(
+        [
+          d|$d.diveId,
+          d|$d.diverCode,
+          d|$d.postingStationName,
+          d|$d.postingTractName
+        ],
+        [
+          'Dive',
+          'Pair',
+          'Posting',
+          'Tract'
+        ]
+      )->sort([asc('Dive')]);
+      tests:
+      [
+        onlyThePairCodesThatUpperCaseOntoAPrefixedTractResolveAPostingAndItsTract:
+        {
+          data:
+          [
+            demo::sunlitcove6::store::CoveSurveyDB:
+              Relational
+              #{
+                survey.dive_log:
+                  'dive_id,patch_id,dived_at,diver_code,clarity_score,hazard_code\n'+
+                  'D-01,P-01,2026-04-01 09:00:00.000,div-tr-01,91,\n'+
+                  'D-02,P-01,2026-04-02 09:00:00.000,div-tr-02,64,SWELL\n'+
+                  'D-03,P-02,2026-04-03 09:00:00.000,pair-c,22,VISIBILITY\n';
+
+                survey.cove_station:
+                  'station_id,station_name,reach_code,tract_code,hectares\n'+
+                  'ST-01,North Shoal,RC-NORTH,TR-01,12.5\n'+
+                  'ST-02,South Shoal,RC-SOUTH,TR-02,8.25\n';
+
+                survey.shore_tract:
+                  'tract_code,tract_name,warden_code\n'+
+                  'TR-01,Lantern Tract,WD-01\n'+
+                  'TR-02,Beacon Tract,WD-02\n';
+              }#
+          ];
+          asserts:
+          [
+            theTwoTractKeyedPairsResolveTheirShoalAndTractAndTheThirdResolvesNeither:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Dive":"D-01","Pair":"div-tr-01","Posting":"North Shoal","Tract":"Lantern Tract"},{"Dive":"D-02","Pair":"div-tr-02","Posting":"South Shoal","Tract":"Beacon Tract"},{"Dive":"D-03","Pair":"pair-c","Posting":null,"Tract":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

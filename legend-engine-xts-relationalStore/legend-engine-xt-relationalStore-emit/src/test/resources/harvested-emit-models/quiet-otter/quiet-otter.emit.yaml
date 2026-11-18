@@ -1,0 +1,37 @@
+name: quiet-otter
+title: "Otter Holt Survey — A Business-Temporal Extent Read At A Fixed Business Date"
+description: |
+  A riparian otter holt survey register held in a business-milestoned relational
+  table. One class mapping binds the extent through an explicit main-table alias
+  and a declared primary key, and maps a string, a float and a date column
+  straight off the milestoned table. A mapping test resolves the extent at a
+  fixed business date and projects those three column kinds alongside the holt
+  code, with one abandoned holt whose survey window had already closed before
+  that date: it is out of range and must not reach the projection.
+modelSources:
+  model:
+    root: quiet-otter
+    files:
+      - test/quietotter/domain/HoltDomain.pure
+      - test/quietotter/mapping/HoltMapping.pure
+      - test/quietotter/store/HoltDB.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - mapping-test
+  - milestoning
+  - otter-survey
+  - out-of-range-row
+  - relational

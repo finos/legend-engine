@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarisle3::store::IsleTrailDb
+(
+  Schema field
+  (
+    Table trail_reading
+    (
+      reading_id VARCHAR(24) PRIMARY KEY,
+      sensor_code VARCHAR(24),
+      tier_code VARCHAR(16),
+      grade_level INTEGER,
+      sample_count INTEGER,
+      signal_value DOUBLE,
+      status_text VARCHAR(32),
+      label_text VARCHAR(64),
+      taken_on DATE,
+      taken_at TIMESTAMP
+    )
+  )
+
+  Schema registry
+  (
+    Table trail_sensor
+    (
+      sensor_code VARCHAR(24) PRIMARY KEY,
+      sensor_name VARCHAR(64) NOT NULL,
+      segment_code VARCHAR(24)
+    )
+
+    Table trail_segment
+    (
+      segment_code VARCHAR(24) PRIMARY KEY,
+      segment_name VARCHAR(64) NOT NULL,
+      station_code VARCHAR(24)
+    )
+
+    Table field_station
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(64) NOT NULL,
+      district_code VARCHAR(24)
+    )
+
+    Table isle_district
+    (
+      district_code VARCHAR(24) PRIMARY KEY,
+      district_name VARCHAR(64) NOT NULL
+    )
+  )
+
+  Join Reading_Sensor(field.trail_reading.sensor_code = registry.trail_sensor.sensor_code)
+  Join Segment_Station(registry.trail_segment.station_code = registry.field_station.station_code)
+  Join Sensor_Segment(registry.trail_sensor.segment_code = registry.trail_segment.segment_code)
+  Join Station_District(registry.field_station.district_code = registry.isle_district.district_code)
+)

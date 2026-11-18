@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::easternwharf::domain::*;
+
+function {meta::pure::profiles::doc.doc = 'Normalises a label the nursery typed by hand: surrounding whitespace is dropped and the remainder upper-cased, so a defaulted literal and a document-supplied value are published in the same shape.'} test::easternwharf::function::normalizeLabel(rawLabel: String[1]): String[1]
+{
+  $rawLabel->trim()->toUpper()
+}
+
+function {meta::pure::profiles::doc.doc = 'The whole publishing flow as a function rather than as a service body: resolves the tray summaries, then graph-fetches and serialises the published tree so the service delegates its entire query to one call.'} test::easternwharf::function::publishTraySummaries(propagationDocument: String[1]): String[1]
+{
+  test::easternwharf::domain::TraySummary.all()->graphFetch(
+    #{
+      test::easternwharf::domain::TraySummary{
+        runCode,
+        trayCode,
+        benchLabel,
+        trayLabel,
+        stageLabel,
+        leadSeedling,
+        vigorousCount,
+        tallestHeightMicron
+      }
+    }#
+  )->serialize(
+    #{
+      test::easternwharf::domain::TraySummary{
+        runCode,
+        trayCode,
+        benchLabel,
+        trayLabel,
+        stageLabel,
+        leadSeedling,
+        vigorousCount,
+        tallestHeightMicron
+      }
+    }#
+  )
+}

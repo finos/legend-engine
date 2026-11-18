@@ -1,0 +1,54 @@
+name: verdant-harbor-2
+title: "Verdant Harbour Register — Independently Keyed Tables Projected Through One Snowflake-Bound Mapping and a Data Space"
+description: |
+  A harbour fixture register. Four flat, primitive-typed classes — mooring
+  berths, quayside cranes, tide-gauge readings and channel dredging surveys —
+  are each bound to their own independently keyed table in a single schema of
+  one relational store, so the mapping carries one main-table binding and one
+  single-column primary-key declaration per class instead of a rooted table
+  graph. Service queries project those classes straight into select lists with
+  no predicate, grouping or sort, a mapping test suite resolves identity for a
+  fully null-payload row, and a data space with an email support contact wires
+  the mapping to the one OAuth-authenticated Snowflake connection the runtime
+  exposes.
+modelSources:
+  model:
+    root: verdant-harbor-2
+    files:
+      - test/verdantharbor2/connection/HarborRegisterConnection.pure
+      - test/verdantharbor2/dataspace/HarborRegisterDataSpace.pure
+      - test/verdantharbor2/domain/HarborDomain.pure
+      - test/verdantharbor2/mapping/HarborRegisterMapping.pure
+      - test/verdantharbor2/runtime/HarborRegisterRuntime.pure
+      - test/verdantharbor2/service/BerthRegisterFeed.pure
+      - test/verdantharbor2/service/CraneRegisterFeed.pure
+      - test/verdantharbor2/service/TideReadingFeed.pure
+      - test/verdantharbor2/store/HarborRegisterDB.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - h2
+  - harbour-operations
+  - mapping-test
+  - multi-table
+  - plan-generation
+  - primary-key
+  - projection
+  - relational
+  - service-test
+  - snowflake

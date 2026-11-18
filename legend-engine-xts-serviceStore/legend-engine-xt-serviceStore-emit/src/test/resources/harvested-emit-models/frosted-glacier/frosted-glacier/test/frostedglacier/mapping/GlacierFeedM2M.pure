@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedglacier::mapping::GlacierFeedM2M
+(
+  *test::frostedglacier::domain::MassBalanceReading[reading]: Pure
+  {
+    ~src test::frostedglacier::api::GlacierReadingFeed
+    stationCode: $src.station,
+    observedOn: $src.readAt,
+    observers: $src.fieldTeam,
+    method: test::frostedglacier::domain::SurveyMethod.StakeArray,
+    regime: if($src.massBalanceCode == 'AC',
+               | 'Accumulation Dominant',
+               | if($src.massBalanceCode == 'AB',
+                    | 'Ablation Dominant',
+                    | if($src.massBalanceCode == 'EQ',
+                         | 'Equilibrium',
+                         | if($src.massBalanceCode == 'CV',
+                              | 'Calving Loss',
+                              | if($src.massBalanceCode == 'SB',
+                                   | 'Sublimation Loss',
+                                   | if($src.massBalanceCode == 'RF',
+                                        | 'Refreeze Gain',
+                                        | if($src.massBalanceCode == 'SF',
+                                             | 'Snowfall Gain',
+                                             | if($src.massBalanceCode == 'ME',
+                                                  | 'Meltwater Loss',
+                                                  | $src.remark)))))))),
+    ablationDepthCm: if($src.ablationCm->isEmpty(),
+                        | 0,
+                        | $src.ablationCm->toOne()),
+    accumulationDepthCm: if($src.accumulationCm->isEmpty(),
+                            | 0,
+                            | $src.accumulationCm->toOne()),
+    netBalanceCm: if($src.accumulationCm->isEmpty(),
+                     | 0,
+                     | $src.accumulationCm->toOne()) - if($src.ablationCm->isEmpty(),
+                                                          | 0,
+                                                          | $src.ablationCm->toOne())
+  }
+
+  *test::frostedglacier::domain::ObservationWindow[window]: Pure
+  {
+    ~src test::frostedglacier::api::GlacierReadingFeed
+    stationCode: $src.station,
+    openedOn: $src.readAt,
+    leadObserver: if($src.fieldTeam->isEmpty(),
+                     | $src.remark,
+                     | $src.fieldTeam->at(0))
+  }
+
+  *test::frostedglacier::domain::SiteNote[note]: Pure
+  {
+    ~src test::frostedglacier::api::GlacierReadingFeed
+    stationCode: $src.station,
+    note: if($src.remark->isEmpty(),
+             | 'no field remark recorded',
+             | $src.remark->toOne())
+  }
+
+  testSuites:
+  [
+    massBalanceTransformSuite:
+    {
+      function: |test::frostedglacier::domain::MassBalanceReading.all()->graphFetch(
+        #{
+          test::frostedglacier::domain::MassBalanceReading{
+            stationCode,
+            observedOn,
+            method,
+            regime,
+            ablationDepthCm,
+            accumulationDepthCm,
+            netBalanceCm
+          }
+        }#
+      )->serialize(
+        #{
+          test::frostedglacier::domain::MassBalanceReading{
+            stationCode,
+            observedOn,
+            method,
+            regime,
+            ablationDepthCm,
+            accumulationDepthCm,
+            netBalanceCm
+          }
+        }#
+      );
+      tests:
+      [
+        everyRegimeArmAndTheNullFallback:
+        {
+          doc: 'Nine feed records drive the regime conditional: one per recognised classification code, plus a final record carrying neither a code nor a remark so the fallback yields no regime at all. The same records also exercise the absent-depth arms that default a missing ablation or accumulation depth to zero before the net balance is computed.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::frostedglacier::api::GlacierReadingFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"station":"GLC-014","massBalanceCode":"AC","ablationCm":12,"accumulationCm":140,"readAt":"2024-09-30","fieldTeam":["I. Frost"]},{"station":"GLC-014","massBalanceCode":"AB","ablationCm":210,"accumulationCm":40,"readAt":"2024-10-01","fieldTeam":["I. Frost","N. Vale"]},{"station":"GLC-027","massBalanceCode":"EQ","ablationCm":90,"accumulationCm":90,"readAt":"2024-10-02","fieldTeam":["N. Vale"]},{"station":"GLC-041","massBalanceCode":"CV","ablationCm":310,"accumulationCm":25,"readAt":"2024-10-03","fieldTeam":[]},{"station":"GLC-041","massBalanceCode":"SB","ablationCm":45,"readAt":"2024-10-04","fieldTeam":["S. Rime"]},{"station":"GLC-027","massBalanceCode":"RF","accumulationCm":75,"readAt":"2024-10-05","fieldTeam":["S. Rime"]},{"station":"GLC-014","massBalanceCode":"SF","ablationCm":5,"accumulationCm":180,"readAt":"2024-10-06","fieldTeam":["I. Frost"]},{"station":"GLC-041","massBalanceCode":"ME","ablationCm":260,"accumulationCm":30,"readAt":"2024-10-07","fieldTeam":["N. Vale"]},{"station":"GLC-027","readAt":"2024-10-08","fieldTeam":["S. Rime"]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            nineReadingsOnePerArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stationCode":"GLC-014","observedOn":"2024-09-30","method":"StakeArray","regime":"Accumulation Dominant","ablationDepthCm":12,"accumulationDepthCm":140,"netBalanceCm":128},{"stationCode":"GLC-014","observedOn":"2024-10-01","method":"StakeArray","regime":"Ablation Dominant","ablationDepthCm":210,"accumulationDepthCm":40,"netBalanceCm":-170},{"stationCode":"GLC-027","observedOn":"2024-10-02","method":"StakeArray","regime":"Equilibrium","ablationDepthCm":90,"accumulationDepthCm":90,"netBalanceCm":0},{"stationCode":"GLC-041","observedOn":"2024-10-03","method":"StakeArray","regime":"Calving Loss","ablationDepthCm":310,"accumulationDepthCm":25,"netBalanceCm":-285},{"stationCode":"GLC-041","observedOn":"2024-10-04","method":"StakeArray","regime":"Sublimation Loss","ablationDepthCm":45,"accumulationDepthCm":0,"netBalanceCm":-45},{"stationCode":"GLC-027","observedOn":"2024-10-05","method":"StakeArray","regime":"Refreeze Gain","ablationDepthCm":0,"accumulationDepthCm":75,"netBalanceCm":75},{"stationCode":"GLC-014","observedOn":"2024-10-06","method":"StakeArray","regime":"Snowfall Gain","ablationDepthCm":5,"accumulationDepthCm":180,"netBalanceCm":175},{"stationCode":"GLC-041","observedOn":"2024-10-07","method":"StakeArray","regime":"Meltwater Loss","ablationDepthCm":260,"accumulationDepthCm":30,"netBalanceCm":-230},{"stationCode":"GLC-027","observedOn":"2024-10-08","method":"StakeArray","ablationDepthCm":0,"accumulationDepthCm":0,"netBalanceCm":0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

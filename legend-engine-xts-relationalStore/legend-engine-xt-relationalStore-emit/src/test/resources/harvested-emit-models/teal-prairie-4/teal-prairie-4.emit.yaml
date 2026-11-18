@@ -1,0 +1,49 @@
+name: teal-prairie-4
+title: "Teal Prairie 4 — Three Relational Mappings Of One Pool Timetable, Each Asserted Through Its Own Suite"
+description: |
+  A public swimming timetable held in one relational store of three tables and mapped onto three
+  classes by three separate mappings, so each mapping is the unit under test rather than a query
+  over them. Every mapping declares its main table by alias and its key explicitly, and each one
+  carries a derived column of a different kind: an area tag concatenated over the upper-cased area
+  code beside a mapped string constant, a venue kind that is a constant alone, and a booking tag
+  assembled by nested concatenation over the slot code and the stringified key. Each mapping owns a
+  suite that reads its extent through a projection and asserts the derived columns against
+  deterministic relations, including a single-row relation and an empty one, so a constant is shown
+  not to invent a row and a key-derived string is shown to be taken per row. Three engine runtimes
+  bind the three mappings across two DB2 connections whose datasources are static and whose
+  authentication is delegated Kerberos, so the same store is reached under both a primary and an
+  archive binding.
+modelSources:
+  model:
+    root: teal-prairie-4
+    files:
+      - test/tealprairie4/connection/AquaticsConnections.pure
+      - test/tealprairie4/domain/AquaticsDomain.pure
+      - test/tealprairie4/mapping/LaneBookingMapping.pure
+      - test/tealprairie4/mapping/LaneSlotMapping.pure
+      - test/tealprairie4/mapping/PoolAreaMapping.pure
+      - test/tealprairie4/runtime/AquaticsRuntimes.pure
+      - test/tealprairie4/store/AquaticsDb.pure
+features:
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - aquatics
+  - db2
+  - delegated-kerberos
+  - h2
+  - literal-mapping
+  - main-table-alias
+  - mapping-test
+  - primary-key
+  - relational
+  - static-datasource

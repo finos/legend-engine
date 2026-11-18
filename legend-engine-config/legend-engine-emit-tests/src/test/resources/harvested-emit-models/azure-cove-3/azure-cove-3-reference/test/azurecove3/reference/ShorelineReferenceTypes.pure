@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'Base class for instrument gauge measures; local measure specialisations add nothing but a name.'} test::azurecove3::reference::GaugeMeasureBase
+{
+  {doc.doc = 'Numeric magnitude read off the gauge.'} measureValue: Float[0..1];
+  {doc.doc = 'Unit the magnitude is expressed in.'} unitCode: String[0..1];
+}
+
+Class {doc.doc = 'Base class for laboratory reading values carried by shoreline samples.'} test::azurecove3::reference::ReadingValueBase
+{
+  {doc.doc = 'Reported reading value.'} readingValue: Float[0..1];
+  {doc.doc = 'Qualifier recorded alongside the reading, such as an estimate marker.'} qualifier: String[0..1];
+}
+
+Class {doc.doc = 'Base class for sampling windows; a local specialisation adds a business validity window on top of it.'} test::azurecove3::reference::SamplingWindowBase
+{
+  {doc.doc = 'First day the window is open for field work.'} windowStartDate: StrictDate[0..1];
+  {doc.doc = 'Last day the window is open for field work.'} windowEndDate: StrictDate[0..1];
+}
+
+Class {doc.doc = 'Base class for field observation features; a local specialisation adds a processing timeline to it.'} test::azurecove3::reference::ObservationFeatureBase
+{
+  {doc.doc = 'Registry code of the observation.'} observationCode: String[1];
+  {doc.doc = 'Day the observation was made in the field.'} observedOn: StrictDate[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A designated habitat zone whose boundary is redrawn over business time; owns the far end of the milestoned association reaching it from the survey root.'} test::azurecove3::reference::HabitatZone
+{
+  {doc.doc = 'Zone code published in the shoreline atlas.'} zoneCode: String[1];
+  {doc.doc = 'Name the zone is signposted under.'} zoneName: String[0..1];
+  {doc.doc = 'Mapped surface of the zone in hectares.'} areaHectares: Float[0..1];
+}
+
+Class {doc.doc = 'A field party contracted to walk shoreline transects.'} test::azurecove3::reference::FieldParty
+{
+  {doc.doc = 'Party code held by the programme office.'} partyCode: String[1];
+  {doc.doc = 'Party name as printed on permits.'} partyName: String[0..1];
+}
+
+Class {doc.doc = 'A permit identifier minted by the coastal authority for shoreline access.'} test::azurecove3::reference::PermitIdentifier
+{
+  {doc.doc = 'Identifier string carried on the permit.'} identifierValue: String[1];
+  {doc.doc = 'Authority scheme the identifier belongs to.'} schemeName: String[0..1];
+}
+
+Class {doc.doc = 'A mooring buoy maintained near a shoreline segment mark.'} test::azurecove3::reference::MooringBuoyUnit
+{
+  {doc.doc = 'Buoy mark stencilled on the hull.'} buoyMark: String[1];
+  {doc.doc = 'Rated holding weight of the mooring in kilograms.'} holdingWeightKg: Float[0..1];
+}

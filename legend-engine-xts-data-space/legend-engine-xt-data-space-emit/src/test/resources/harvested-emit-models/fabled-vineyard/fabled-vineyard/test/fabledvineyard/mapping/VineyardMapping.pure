@@ -1,0 +1,191 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledvineyard::mapping::VineyardMapping
+(
+  *test::fabledvineyard::domain::VineBlock[vine_block]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledvineyard::store::VineyardDb]vineyard.vine_block.block_code
+    )
+    ~mainTable [test::fabledvineyard::store::VineyardDb]vineyard.vine_block
+    blockCode: [test::fabledvineyard::store::VineyardDb]vineyard.vine_block.block_code,
+    blockName: [test::fabledvineyard::store::VineyardDb]vineyard.vine_block.block_name,
+    rowSpacingM: [test::fabledvineyard::store::VineyardDb]vineyard.vine_block.row_spacing_m,
+    vineCount: [test::fabledvineyard::store::VineyardDb]vineyard.vine_block.vine_count,
+    plantedOn: [test::fabledvineyard::store::VineyardDb]vineyard.vine_block.planted_on,
+    lastWalkedAt: [test::fabledvineyard::store::VineyardDb]vineyard.vine_block.last_walked_at
+  }
+
+  *test::fabledvineyard::domain::TrellisRun[trellis_run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run.run_code
+    )
+    ~mainTable [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run
+    runCode: [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run.run_code,
+    runLabel: [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run.run_label,
+    wireHeightM: [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run.wire_height_m,
+    postCount: [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run.post_count,
+    installedOn: [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run.installed_on,
+    inspectedAt: [test::fabledvineyard::store::VineyardDb]vineyard.trellis_run.inspected_at
+  }
+
+  *test::fabledvineyard::domain::CanopyReading[canopy_reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading.reading_code
+    )
+    ~mainTable [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading
+    readingCode: [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading.reading_code,
+    observerName: [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading.observer_name,
+    leafAreaM2: [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading.leaf_area_m2,
+    shootCount: [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading.shoot_count,
+    readingOn: [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading.reading_on,
+    recordedAt: [test::fabledvineyard::store::VineyardDb]vineyard.canopy_reading.recorded_at
+  }
+
+  *test::fabledvineyard::domain::IrrigationPulse[irrigation_pulse]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse.pulse_code
+    )
+    ~mainTable [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse
+    pulseCode: [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse.pulse_code,
+    zoneName: [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse.zone_name,
+    litresDelivered: [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse.litres_delivered,
+    valveCount: [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse.valve_count,
+    pulseOn: [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse.pulse_on,
+    startedAt: [test::fabledvineyard::store::VineyardDb]vineyard.irrigation_pulse.started_at
+  }
+
+  testSuites:
+  [
+    blockAliasSuite:
+    {
+      function: |test::fabledvineyard::domain::VineBlock.all()->project(
+        [
+          b|$b.blockCode,
+          b|$b.blockName,
+          b|$b.rowSpacingM,
+          b|$b.vineCount,
+          b|$b.plantedOn
+        ],
+        [
+          'Block',
+          'Name',
+          'RowSpacing',
+          'Vines',
+          'Planted'
+        ]
+      )->sort(
+        [
+          asc('Block')
+        ]
+      );
+      tests:
+      [
+        keyTupleAndNullColumns:
+        {
+          doc: 'Two block rows differing in exactly one key column, a row with nulls in the non-key columns and a row with a null key column, so the explicit key tuple and the nullable single-table alias bindings are both observable.';
+          data:
+          [
+            test::fabledvineyard::store::VineyardDb:
+              Relational
+              #{
+                vineyard.vine_block:
+                  'block_code,block_name,row_spacing_m,vine_count,planted_on,last_walked_at\n'+
+                  'VB-01,North Terrace,2.5,1200,2011-03-14,2024-05-06 07:08:00\n'+
+                  'VB-02,North Terrace,2.5,1200,2011-03-14,2024-05-06 07:08:00\n'+
+                  'VB-03,,,,,\n'+
+                  ',Unkeyed Bench,1.8,640,2019-07-01,\n';
+              }#
+          ];
+          asserts:
+          [
+            fourKeyedBlocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":null,"Name":"Unkeyed Bench","RowSpacing":1.8,"Vines":640,"Planted":"2019-07-01"},{"Block":"VB-01","Name":"North Terrace","RowSpacing":2.5,"Vines":1200,"Planted":"2011-03-14"},{"Block":"VB-02","Name":"North Terrace","RowSpacing":2.5,"Vines":1200,"Planted":"2011-03-14"},{"Block":"VB-03","Name":null,"RowSpacing":null,"Vines":null,"Planted":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    pulseAliasSuite:
+    {
+      function: |test::fabledvineyard::domain::IrrigationPulse.all()->project(
+        [
+          p|$p.pulseCode,
+          p|$p.zoneName,
+          p|$p.litresDelivered,
+          p|$p.valveCount,
+          p|$p.pulseOn
+        ],
+        [
+          'Pulse',
+          'Zone',
+          'Litres',
+          'Valves',
+          'PulseOn'
+        ]
+      )->sort(
+        [
+          asc('Pulse')
+        ]
+      );
+      tests:
+      [
+        secondRootAlone:
+        {
+          doc: 'Rows in a second independent table of the same store, queried through their own root with no join declared between the tables, including a null-bearing non-key row.';
+          data:
+          [
+            test::fabledvineyard::store::VineyardDb:
+              Relational
+              #{
+                vineyard.irrigation_pulse:
+                  'pulse_code,zone_name,litres_delivered,valve_count,pulse_on,started_at\n'+
+                  'IP-01,North Zone,4200.5,3,2024-06-02,2024-06-02 04:30:00\n'+
+                  'IP-02,,,,,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoPulseRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pulse":"IP-01","Zone":"North Zone","Litres":4200.5,"Valves":3,"PulseOn":"2024-06-02"},{"Pulse":"IP-02","Zone":null,"Litres":null,"Valves":null,"PulseOn":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

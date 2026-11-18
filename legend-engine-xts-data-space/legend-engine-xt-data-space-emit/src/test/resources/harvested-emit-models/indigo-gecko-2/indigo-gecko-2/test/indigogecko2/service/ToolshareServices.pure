@@ -1,0 +1,293 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigogecko2::service::PeriodCheckoutTally
+{
+  pattern: '/indigogecko2/v1/checkout-tally/{period}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Tallies wear points, all points and checkout counts per workshop, tool class and supplier for one sharing period, leaving out test rigs, external members and lost or held checkouts, and keeping only groups with a non-zero wear point total ordered by points.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {period: String[1]|test::indigogecko2::domain::ToolCheckout.all()->filter(l|((($l.period == $period) && !$l.toolCode->contains('TEST')) && !$l.member.memberCode->toOne()->startsWith('X')) && !$l.statusCode->in(['LOST', 'HOLD']))->groupBy([l|$l.member.workshop.workshopName, l|if($l.toolCode->contains('SAW'), |'cutting', |'general'), l|$l.tool.supplier.supplierName], [agg(l|$l.wearPoints, y|$y->sum()), agg(l|$l.totalPoints(), y|$y->sum()), agg(l|$l.checkoutCode, y|$y->count())], ['Workshop', 'Class', 'Supplier', 'Points', 'AllPoints', 'Checkouts'])->filter(r|$r.getFloat('Points') != 0.0)->sort(desc('Points'))};
+    mapping: test::indigogecko2::mapping::ToolshareMapping;
+    runtime: test::indigogecko2::runtime::ToolshareBenchRuntime;
+  }
+  testSuites:
+  [
+    periodTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          toolshareBench:
+            Reference
+            #{
+              test::indigogecko2::data::ToolshareFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        mayTally:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            period = '2026-05'
+          ]
+          asserts:
+          [
+            groupedPoints:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Workshop":"Metal bench","Class":"general","Supplier":"Clearance lot","Points":8.0,"AllPoints":8.0,"Checkouts":1},{"Workshop":"Wood bench","Class":"cutting","Supplier":"Grainline Tools","Points":7.0,"AllPoints":22.0,"Checkouts":2},{"Workshop":"Metal bench","Class":"general","Supplier":"Anvil Supply","Points":6.0,"AllPoints":16.0,"Checkouts":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigogecko2::service::WorkshopRoster
+{
+  pattern: '/indigogecko2/v1/roster/{period}/{workshop}';
+  ownership: UserList { users: ['toolshare-desk-lead', 'bench-steward'] };
+  documentation: 'Lists the distinct member, steward, tool and supplier pairings of one workshop bench in a sharing period, skipping tools out for repair. Parameters: period is a year-month such as 2026-05; workshop is a bench code such as WS-1.';
+  autoActivateUpdates: true;
+  mcpServer: workshopRoster;
+  execution: Single
+  {
+    query: {period: String[1], workshop: String[1]|test::indigogecko2::domain::ToolCheckout.all()->filter(l|(($l.period == $period) && ($l.member.workshop.workshopCode == $workshop)) && !$l.toolCode->endsWith('-R'))->project([l|$l.member.memberCode, l|$l.member.memberName->toOne()->toLower(), l|$l.member.workshop.steward.stewardName, l|$l.tool.toolName, l|$l.tool.supplier.supplierName], ['Member', 'Name', 'Steward', 'Tool', 'Supplier'])->distinct()->sort([asc('Member'), asc('Tool')])};
+    mapping: test::indigogecko2::mapping::ToolshareMapping;
+    runtime: test::indigogecko2::runtime::ToolshareBenchRuntime;
+  }
+  testSuites:
+  [
+    rosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          toolshareBench:
+            Reference
+            #{
+              test::indigogecko2::data::ToolshareFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        woodBenchRoster:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            period = '2026-05',
+            workshop = 'WS-1'
+          ]
+          asserts:
+          [
+            distinctPairs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Member":"MB-01","Name":"ada fox","Steward":"Steward Ida","Tool":"Panel saw","Supplier":"Grainline Tools"},{"Member":"MB-01","Name":"ada fox","Steward":"Steward Ida","Tool":"Test rig","Supplier":"Anvil Supply"},{"Member":"MB-02","Name":"bea lund","Steward":"Steward Ida","Tool":"Coping saw","Supplier":"Grainline Tools"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigogecko2::service::OverdueWatch
+{
+  pattern: '/indigogecko2/v1/overdue/{asOf}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists unreturned checkouts past due on the given date but still inside a thirty-day grace window, taken no later than today, and either untagged or tagged as priority, with the days late.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::indigogecko2::domain::ToolCheckout.all()->filter(l|(((($l.returnedOn->isEmpty() && $l.dueOn->isNotEmpty()) && ($l.dueOn->toOne() < $asOf)) && ($l.dueOn->toOne()->adjust(30, meta::pure::functions::date::DurationUnit.DAYS) >= $asOf)) && ($l.takenOn->dateDiff(today(), meta::pure::functions::date::DurationUnit.DAYS) >= 0)) && ($l.tags->isEmpty() || $l.tags->exists(t|$t.tagCode == 'PRIORITY')))->project([l|$l.checkoutCode, l|$l.dueOn->toOne()->dateDiff($asOf, meta::pure::functions::date::DurationUnit.DAYS), l|$l.member.workshop.workshopName], ['Checkout', 'DaysLate', 'Workshop'])->sort(asc('Checkout'))};
+    mapping: test::indigogecko2::mapping::ToolshareMapping;
+    runtime: test::indigogecko2::runtime::ToolshareBenchRuntime;
+  }
+  testSuites:
+  [
+    overdueSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          toolshareBench:
+            Reference
+            #{
+              test::indigogecko2::data::ToolshareFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        midMonthOverdue:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-15
+          ]
+          asserts:
+          [
+            lateCheckouts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Checkout":"L01","DaysLate":6,"Workshop":"Wood bench"},{"Checkout":"L04","DaysLate":3,"Workshop":"Wood bench"},{"Checkout":"L08","DaysLate":18,"Workshop":"Textile bench"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigogecko2::service::SupplierUsage
+{
+  pattern: '/indigogecko2/v1/supplier-usage/{period}';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Reports the highest and lowest checkout wear points and the total minutes used per supplier for one sharing period, leaving out the clearance supplier, ordered by minutes.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {period: String[1]|test::indigogecko2::domain::ToolCheckout.all()->filter(l|($l.period == $period) && !$l.tool.supplier.supplierCode->toOne()->in(['SP-9']))->groupBy([l|$l.tool.supplier.supplierName], [agg(l|$l.wearPoints, y|$y->max()), agg(l|$l.wearPoints, y|$y->min()), agg(l|$l.usage.minutesUsed, y|$y->sum())], ['Supplier', 'TopPoints', 'LowPoints', 'Minutes'])->sort(desc('Minutes'))};
+    mapping: test::indigogecko2::mapping::ToolshareMapping;
+    runtime: test::indigogecko2::runtime::ToolshareBenchRuntime;
+  }
+  testSuites:
+  [
+    supplierSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          toolshareBench:
+            Reference
+            #{
+              test::indigogecko2::data::ToolshareFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        maySuppliers:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            period = '2026-05'
+          ]
+          asserts:
+          [
+            supplierTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Supplier":"Anvil Supply","TopPoints":6.0,"LowPoints":0.0,"Minutes":195},{"Supplier":"Grainline Tools","TopPoints":9.0,"LowPoints":3.0,"Minutes":190}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigogecko2::service::CheckoutStateBoard
+{
+  pattern: '/indigogecko2/v1/state-board/{period}/{division}';
+  ownership: UserList { users: ['toolshare-desk-lead', 'bench-steward'] };
+  documentation: 'Shows each checkout of one bench in a sharing period with its translated state, open or closed label, minutes used and wear grade. Parameters: period is a year-month; division is a bench code.';
+  autoActivateUpdates: true;
+  mcpServer: checkoutStateBoard;
+  execution: Single
+  {
+    query: {period: String[1], division: String[1]|test::indigogecko2::domain::ToolCheckout.all()->filter(l|($l.period == $period) && ($l.member.workshop.workshopCode == $division))->project([l|$l.checkoutCode, l|$l.state, l|$l.statusLabel, l|$l.usage.minutesUsed->toOne()->toString(), l|$l.usage.wearGrade->toOne()->toLower()], ['Checkout', 'State', 'Label', 'Minutes', 'Wear'])->sort(asc('Checkout'))};
+    mapping: test::indigogecko2::mapping::ToolshareMapping;
+    runtime: test::indigogecko2::runtime::ToolshareBenchRuntime;
+  }
+  testSuites:
+  [
+    stateBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          toolshareBench:
+            Reference
+            #{
+              test::indigogecko2::data::ToolshareFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        metalBenchStates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            period = '2026-05',
+            division = 'WS-2'
+          ]
+          asserts:
+          [
+            checkoutStates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Checkout":"L03","State":"CHECKED_OUT","Label":"OPEN","Minutes":"90","Wear":"a"},{"Checkout":"L05","State":"CHECKED_OUT","Label":"OPEN","Minutes":"55","Wear":"b"},{"Checkout":"L10","State":"RETURNED","Label":"CLOSED","Minutes":"15","Wear":"b"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

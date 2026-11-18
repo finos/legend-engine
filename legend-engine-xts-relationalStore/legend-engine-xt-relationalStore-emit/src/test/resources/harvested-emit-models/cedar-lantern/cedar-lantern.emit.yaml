@@ -1,0 +1,52 @@
+name: cedar-lantern
+title: "Cedar Lantern - a banded, enumerated and literal-stamped relational mapping walking a chained keeper path over a harbour lantern store"
+description: |
+  A harbour lantern tending register over one relational store whose lamp nights are banded by the
+  wick length they were trimmed to. One mapping includes a base mapping carrying the tower register
+  and adds the tending extent: an eight-armed nested conditional bands the wick length and falls
+  through to a database null, a second two-armed conditional decodes the glass fitting and defaults
+  the unlisted ones, a burn score is derived arithmetically from the hours burnt and the wick length,
+  the watch name is upper-cased off its column, every row carries a literal source stamp, the glass
+  fitting is decoded into an enumeration, and the tower and its keeper post are reached over a
+  two-hop and a chained three-hop service-to-lens-to-tower-to-post path. The mapping tests assert
+  every band arm, the fallback that resolves to no value, both conditional defaults and the night
+  booked against a lens grade no register row claims so that both join paths reach nothing.
+modelSources:
+  model:
+    root: cedar-lantern
+    files:
+      - test/cedarlantern/domain/LanternDomain.pure
+      - test/cedarlantern/mapping/LanternBaseMapping.pure
+      - test/cedarlantern/mapping/LanternEnumMappings.pure
+      - test/cedarlantern/mapping/LanternMapping.pure
+      - test/cedarlantern/store/LanternDb.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: basic
+tags:
+  - chained-join-path
+  - conditional-band-chain
+  - duckdb
+  - enumeration-mapping
+  - harbour-lantern
+  - literal-transform
+  - main-table-alias
+  - mapping-include
+  - relation-mapping-tests
+  - relational
+  - string-function-transform
+  - three-hop-join-path

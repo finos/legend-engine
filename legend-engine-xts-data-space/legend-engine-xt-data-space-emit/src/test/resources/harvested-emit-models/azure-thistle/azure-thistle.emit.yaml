@@ -1,0 +1,78 @@
+name: azure-thistle
+title: "Upland Turbine Estate — A Six-Relation Maintenance Register Whose Flag Columns Resolve Through Null-Guarded Conditional Transforms"
+description: |
+  A non-financial upland wind-farm maintenance model. One relational store holds a single schema
+  of six tables of very uneven width: a wide daily turbine register carrying placement, geometry,
+  production and crew columns beside four operating flag columns, and five narrow companions -
+  nacelle telemetry, blade inspections, substation feeders, hill access tracks and met masts -
+  each carrying one flag column of its own. Several column names repeat across those tables, so
+  every class mapping fixes its own main-table alias and declares the composite primary key its
+  rows are keyed on. Nine named inner joins connect the register to its companions and the
+  companions to one another, and nine associations state the same reachability on the type graph.
+  Every flag column is read through a conditional transform that guards the absent value first and
+  falls back to an explicit SQL null, then compares the flag against an integer literal and
+  resolves one of two computed labels, two of which concatenate an upper-cased code from the row.
+  Thirteen single-execution services publish the estate as tabular projections: seven read a
+  relation whole and six conjoin two equality terms, one stated against a literal and one against
+  a supplied parameter, with the literal and the parameter appearing on either side of the
+  comparison across the bodies. Two Snowflake connections with public-key authentication address
+  the same store in two regions and two runtimes pair each of them with the one mapping, so the
+  same binding plans through either environment, and a data space publishes both contexts with a
+  maintenance support address. Mapping and service test suites pin both arms of every conditional
+  and the null each one falls back to when its flag was never logged.
+modelSources:
+  model:
+    root: azure-thistle
+    files:
+      - test/azurethistle/connection/EstateConnections.pure
+      - test/azurethistle/data/EstateTestData.pure
+      - test/azurethistle/dataspace/EstateDataSpace.pure
+      - test/azurethistle/domain/EstateAssociations.pure
+      - test/azurethistle/domain/EstateDomain.pure
+      - test/azurethistle/mapping/EstateMapping.pure
+      - test/azurethistle/runtime/EstateRuntimes.pure
+      - test/azurethistle/service/EstateFeeds.pure
+      - test/azurethistle/service/EstateFilteredFeeds.pure
+      - test/azurethistle/store/TurbineEstateDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - connection:snowflake
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-graph
+  - association-implementation
+  - composite-primary-key
+  - conditional-ladder
+  - h2
+  - main-table-alias
+  - mapping-test
+  - null-sentinel
+  - service-test
+  - shared-column-names
+  - snowflake
+  - snowflake-public-auth
+  - tabular-data-set
+  - turbine-maintenance-estate
+  - two-environment-runtimes

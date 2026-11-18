@@ -1,0 +1,32 @@
+name: fabled-vineyard-5-estate
+title: "Fabled Vineyard 5 - business-temporal vine block model with two keyed estate runtimes"
+description: >
+  The model half of a trellised vineyard corpus: a business-temporal vine block mapped onto a
+  milestoned block table, with the store, mapping and the two connections and runtimes that the
+  keyed multi-execution services resolve through but do not define.
+modelSources:
+  model:
+    root: fabled-vineyard-5-estate
+    files:
+      - test/fabledvineyard5/connection/VineyardConnections.pure
+      - test/fabledvineyard5/domain/VineyardDomain.pure
+      - test/fabledvineyard5/mapping/VineyardMapping.pure
+      - test/fabledvineyard5/runtime/VineyardRuntimes.pure
+      - test/fabledvineyard5/store/VineyardDb.pure
+tds_variant: tabular-data-set
+complexity: basic
+stores:
+  - relational
+tags:
+  - business-temporal
+  - relational
+  - trellis
+  - vineyard
+features:
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime

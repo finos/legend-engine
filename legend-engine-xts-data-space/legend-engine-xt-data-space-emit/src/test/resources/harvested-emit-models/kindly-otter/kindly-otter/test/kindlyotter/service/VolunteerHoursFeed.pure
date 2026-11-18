@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyotter::service::VolunteerHoursFeed
+{
+  pattern: '/kindlylibrary/v1/volunteer-hours';
+  title: 'Kindly Library - Volunteer Logged Hours';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the volunteer period record at full width, including the badge fallback for unbadged volunteers, resolved over the mirrored estate.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::kindlyotter::domain::VolunteerHours.all()->project(
+      [
+        x|$x.volunteerCode,
+        x|$x.periodCode,
+        x|$x.branchCode,
+        x|$x.loggedHours,
+        x|$x.badgeGrade
+      ],
+      [
+        'VolunteerCode',
+        'PeriodCode',
+        'BranchCode',
+        'LoggedHours',
+        'BadgeGrade'
+      ]
+    )->sort([asc('VolunteerCode'), asc('PeriodCode')]);
+    mapping: test::kindlyotter::mapping::LibraryBranchMapping;
+    runtime: test::kindlyotter::runtime::LibraryMirrorRuntime;
+  }
+  testSuites:
+  [
+    volunteerHoursFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          libraryMirror:
+            Relational
+            #{
+              libmain.volunteer_hours:
+                'volunteer_code,period_code,branch_code,logged_hours,badge_grade\n'+
+                'VL-01,2026Q1,BR-01,18.5,gld\n'+
+                'VL-01,2026Q2,BR-01,22.0,gld\n'+
+                'VL-02,2026Q1,BR-02,6.25,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothBadgeArms:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            badgedAndUnbadgedPeriods:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VolunteerCode":"VL-01","PeriodCode":"2026Q1","BranchCode":"BR-01","LoggedHours":18.5,"BadgeGrade":"GLD"},{"VolunteerCode":"VL-01","PeriodCode":"2026Q2","BranchCode":"BR-01","LoggedHours":22.0,"BadgeGrade":"GLD"},{"VolunteerCode":"VL-02","PeriodCode":"2026Q1","BranchCode":"BR-02","LoggedHours":6.25,"BadgeGrade":"UNBADGED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

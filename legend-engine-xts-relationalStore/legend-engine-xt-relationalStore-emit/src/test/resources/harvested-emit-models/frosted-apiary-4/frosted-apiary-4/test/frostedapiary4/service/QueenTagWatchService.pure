@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedapiary4::service::QueenTagWatchService
+{
+  pattern: '/frostedapiary4/v1/hive/queen-tag-watch';
+  title: 'Frosted Apiary - Queen Tag Watch';
+  owners:
+  [
+    'apiary-register-platform',
+    'queen-rearing-eng'
+  ];
+  documentation: 'Single-execution service returning, at a pinned processing instant, only the hives that have at least one recorded inspection visit, together with the audit note defaulted to a literal when the source note is absent.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::frostedapiary4::domain::Hive.all(%2025-06-15T00:00:00)->filter(
+      h|$h.visits->isNotEmpty()
+    )->project(
+      [
+        col(
+          h|$h.hiveName,
+          'HiveName'
+        ),
+        col(
+          h|$h.queenTag,
+          'QueenTag'
+        ),
+        col(
+          h|$h.auditNote,
+          'AuditNote'
+        )
+      ]
+    )->sort([asc('HiveName')]);
+    mapping: test::frostedapiary4::mapping::ApiaryMapping;
+    runtime: test::frostedapiary4::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    queenTagWatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryConnection:
+            Relational
+            #{
+              apiary.hive:
+                'hive_id,hive_name,forage_zone,frame_count,queen_tag,audit_note,in_z,out_z\n'+
+                '1,Clover Row,ORCHARD,24,QT-1,frames drawn,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '2,Willow Verge,MEADOW,12,,,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '3,Bramble End,HEATHLAND,6,QT-3,,2025-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '4,Retired Skep,ORCHARD,30,QT-4,decommissioned,2024-01-01 00:00:00,2024-06-01 00:00:00\n';
+              apiary.hive_visit:
+                'visit_id,hive_id,visit_kind,visit_date\n'+
+                '10,1,FRAME_CHECK,2025-04-02\n'+
+                '11,3,SPLIT,2025-04-09\n'+
+                '12,4,DECOMMISSION,2024-05-20\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        visitedHivesOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            queenTagRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HiveName":"Bramble End","QueenTag":"QT-3","AuditNote":"no audit recorded"},{"HiveName":"Clover Row","QueenTag":"QT-1","AuditNote":"frames drawn"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+name: indigo-delta-2-glasshouse
+title: Indigo Delta Glasshouse Irrigation
+description: A point-in-time glasshouse irrigation register that joins business-temporal watering cycles to their houses, groups active work by house, and exposes the same mapped model through single and keyed multi-execution services.
+modelSources:
+  model:
+    root: indigo-delta-2-glasshouse
+    files:
+      - test/indigodelta2/connection/GlasshouseConnections.pure
+      - test/indigodelta2/dataspace/GlasshouseDataSpace.pure
+      - test/indigodelta2/domain/GlasshouseDomain.pure
+      - test/indigodelta2/mapping/GlasshouseBaseMapping.pure
+      - test/indigodelta2/mapping/GlasshouseMapping.pure
+      - test/indigodelta2/runtime/GlasshouseRuntimes.pure
+      - test/indigodelta2/service/IrrigationServices.pure
+      - test/indigodelta2/store/GlasshouseStore.pure
+features:
+  - execution:data-space
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - data-space
+  - glasshouse
+  - group-by
+  - h2
+  - mapping-include
+  - point-in-time
+  - relational

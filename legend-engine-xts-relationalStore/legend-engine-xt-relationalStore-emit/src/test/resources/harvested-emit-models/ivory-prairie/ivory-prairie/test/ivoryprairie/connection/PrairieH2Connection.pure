@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::ivoryprairie::connection::PrairieH2Connection
+{
+  store: test::ivoryprairie::store::PrairieDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists prairie;',
+      'create schema prairie;',
+      'create table prairie.meadow (meadow_id integer, meadow_name varchar(200) not null, wildflower_count integer not null, from_z date not null, thru_z date);',
+      'insert into prairie.meadow values (1, \'North Meadow\', 40, DATE \'2023-01-01\', DATE \'9999-12-31\');'
+      ];
+  };
+  auth: DefaultH2;
+}

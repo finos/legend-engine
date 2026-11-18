@@ -1,0 +1,46 @@
+name: silver-fjord-2
+title: "Silver Fjord 2 — environment-keyed tide-gauge roll-up and open-gauge register"
+description: |
+  A fjord tide-monitoring corpus. A single-schema relational gauge store feeds two
+  multi-execution services that resolve an environment-keyed mapping/runtime binding
+  at execution time: one aggregates wave and tide readings per monitoring station
+  through a grouped projection, the other assembles a de-duplicated register of the
+  stations currently reporting. Each multi-execution service has a single-execution
+  counterpart that carries the tested suite over an inline relational fixture.
+modelSources:
+  model:
+    root: silver-fjord-2
+    files:
+      - test/silverfjord2/connection/FjordConnection.pure
+      - test/silverfjord2/domain/FjordDomain.pure
+      - test/silverfjord2/mapping/FjordMapping.pure
+      - test/silverfjord2/runtime/FjordRuntimes.pure
+      - test/silverfjord2/service/OpenGaugeRegister.pure
+      - test/silverfjord2/service/StationTideRollup.pure
+      - test/silverfjord2/store/FjordDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - group-by
+  - h2
+  - multi-execution
+  - relational
+  - service-test
+  - tide-gauge

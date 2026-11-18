@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::nobleestuary::diagram::CurationDiagram
+{
+  classView catalogueRecordView
+  {
+    class: test::nobleestuary::domain::CatalogueRecord;
+    position: (400.0,60.0);
+    rectangle: (200.0,60.0);
+  }
+  classView specimenRecordView
+  {
+    class: test::nobleestuary::domain::SpecimenRecord;
+    position: (240.0,220.0);
+    rectangle: (220.0,110.0);
+  }
+  classView artefactRecordView
+  {
+    class: test::nobleestuary::domain::ArtefactRecord;
+    position: (560.0,220.0);
+    rectangle: (220.0,90.0);
+  }
+  classView partyView
+  {
+    class: test::nobleestuary::domain::Party;
+    position: (960.0,60.0);
+    rectangle: (180.0,60.0);
+  }
+  classView curatorView
+  {
+    class: test::nobleestuary::domain::Curator;
+    position: (880.0,220.0);
+    rectangle: (180.0,70.0);
+  }
+  classView donorView
+  {
+    class: test::nobleestuary::domain::Donor;
+    position: (1120.0,220.0);
+    rectangle: (180.0,70.0);
+  }
+  classView addressView
+  {
+    class: test::nobleestuary::domain::Address;
+    position: (240.0,420.0);
+    rectangle: (200.0,90.0);
+  }
+  classView specimenSummaryView
+  {
+    class: test::nobleestuary::domain::SpecimenSummary;
+    position: (560.0,420.0);
+    rectangle: (220.0,90.0);
+  }
+  classView exhibitView
+  {
+    class: test::nobleestuary::domain::Exhibit;
+    position: (880.0,420.0);
+    rectangle: (220.0,110.0);
+  }
+  classView exhibitLocationView
+  {
+    class: test::nobleestuary::domain::ExhibitLocation;
+    position: (1180.0,420.0);
+    rectangle: (200.0,90.0);
+  }
+  generalizationView
+  {
+    source: specimenRecordView;
+    target: catalogueRecordView;
+    points: [(350.0,220.0),(500.0,120.0)];
+  }
+  generalizationView
+  {
+    source: artefactRecordView;
+    target: catalogueRecordView;
+    points: [(670.0,220.0),(500.0,120.0)];
+  }
+  generalizationView
+  {
+    source: curatorView;
+    target: partyView;
+    points: [(970.0,220.0),(1050.0,120.0)];
+  }
+  generalizationView
+  {
+    source: donorView;
+    target: partyView;
+    points: [(1210.0,220.0),(1050.0,120.0)];
+  }
+  propertyView
+  {
+    property: test::nobleestuary::domain::SpecimenSummary.site;
+    source: specimenSummaryView;
+    target: addressView;
+    points: [(670.0,465.0),(340.0,465.0)];
+  }
+  propertyView
+  {
+    property: test::nobleestuary::domain::CatalogueRecord.postalAddress;
+    source: catalogueRecordView;
+    target: addressView;
+    points: [(500.0,90.0),(340.0,465.0)];
+  }
+  propertyView
+  {
+    property: test::nobleestuary::domain::Exhibit.location;
+    source: exhibitView;
+    target: exhibitLocationView;
+    points: [(990.0,475.0),(1280.0,465.0)];
+  }
+}

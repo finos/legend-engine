@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::fabledvineyard::dataspace::VineyardDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier - the four independent trellis roots bound to the single relational mapping and its warehouse runtime.';
+      mapping: test::fabledvineyard::mapping::VineyardMapping;
+      defaultRuntime: test::fabledvineyard::runtime::VineyardWarehouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Fabled Vineyard Trellis Record';
+  description: 'A governed entry point over the estate trellis record - vine blocks, their trellis runs, canopy readings and irrigation pulses - catalogued alongside the flat registers that project each root.';
+  featuredDiagrams:
+  [
+    test::fabledvineyard::diagram::VineyardDiagram
+  ];
+  elements:
+  [
+    test::fabledvineyard::domain::VineBlock,
+    test::fabledvineyard::domain::TrellisRun,
+    test::fabledvineyard::domain::CanopyReading,
+    test::fabledvineyard::domain::IrrigationPulse
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Block register';
+      description: 'Flat register over the vine block root.';
+      executable: test::fabledvineyard::service::BlockRegister;
+    },
+    {
+      id: 2;
+      title: 'Trellis register';
+      description: 'Flat register over the trellis run root.';
+      executable: test::fabledvineyard::service::TrellisRegister;
+    },
+    {
+      id: 3;
+      title: 'Canopy register';
+      description: 'Flat register over the canopy reading root.';
+      executable: test::fabledvineyard::service::CanopyRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'trellis-record-desk@fabledvineyard.invalid';
+  };
+}

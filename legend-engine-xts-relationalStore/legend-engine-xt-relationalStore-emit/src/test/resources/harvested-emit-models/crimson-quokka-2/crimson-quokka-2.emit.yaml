@@ -1,0 +1,50 @@
+name: crimson-quokka-2
+title: "Island Sanctuary Burrow Colonies - Point-in-Time Extent, Compound Predicate and Two-Column Projection"
+description: |
+  An island wildlife-sanctuary model whose service opens the burrow-colony
+  extent as of a date carried in the URL path, then narrows it with a compound
+  predicate before projecting two aliased columns.
+
+    * `test::crimsonquokka2::domain::BurrowColony` is business-temporal, so the
+      service retrieval is parameterised by the date path parameter and a colony
+      version whose window has already closed never reaches the predicate.
+    * The predicate pairs an enumeration equality on the habitat band with a
+      negated emptiness test over a two-hop path into the ranger who looks after
+      the colony, so a colony with no ranger and a ranger with no radio tag are
+      excluded for different reasons.
+    * The projection stays on direct columns, one of them reached across the
+      `Colony_Steward` join, and names both columns explicitly.
+
+  The mapping `testSuite` re-runs the same extent at a literal date over an
+  inline H2 fixture, and the service `testSuite` invokes the pattern twice: once
+  with a date that selects a single colony and once with a date that stands
+  before every colony window and therefore selects none.
+
+modelSources:
+  model:
+    root: crimson-quokka-2
+    files:
+      - test/crimsonquokka2/connection/SanctuaryH2Connection.pure
+      - test/crimsonquokka2/domain/BurrowColony.pure
+      - test/crimsonquokka2/domain/FieldSteward.pure
+      - test/crimsonquokka2/domain/HabitatZone.pure
+      - test/crimsonquokka2/mapping/SanctuaryMapping.pure
+      - test/crimsonquokka2/runtime/SanctuaryRuntime.pure
+      - test/crimsonquokka2/service/ColonyRosterService.pure
+      - test/crimsonquokka2/store/SanctuaryDatabase.pure
+
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - island-sanctuary
+  - point-in-time
+  - service-test
+  - wildlife-survey

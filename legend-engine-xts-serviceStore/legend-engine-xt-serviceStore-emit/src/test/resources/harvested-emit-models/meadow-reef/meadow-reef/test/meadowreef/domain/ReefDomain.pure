@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::meadowreef::domain::*;
+import test::meadowreef::source::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Standing of a recorded species synonym in the trail register.'} test::meadowreef::domain::SynonymStatus
+{
+  ACCEPTED,
+  DEPRECATED
+}
+
+Class {meta::pure::profiles::doc.doc = 'Serialized snorkel-trail sighting submission fed in through the in-memory model store.'} test::meadowreef::source::SightingSubmission
+{
+  entryRef: String[0..1];
+  speciesTag: String[0..1];
+  depthTags: String[*];
+  observer: ObserverBlock[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Observer block of a submitted sighting.'} test::meadowreef::source::ObserverBlock
+{
+  code: String[0..1];
+  trailName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A snorkel-trail sighting unpacked from a submitted document.'} test::meadowreef::domain::SnorkelSighting
+{
+  sightingRef: String[1];
+  speciesCode: String[1];
+  observerLabel: String[1];
+  depthMetres: Integer[0..1];
+
+  sightedSpecies()
+  {
+    $this.species
+  }: ReefSpecies[0..1];
+
+  sightedFamily()
+  {
+    $this.species.familyName
+  }: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A reef species held in the stored trail register.'} test::meadowreef::domain::ReefSpecies
+{
+  speciesCode: String[1];
+  familyName: String[1];
+  trailZone: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An alternate name recorded against a reef species, with the standing read through the register reference table.'} test::meadowreef::domain::SpeciesSynonym
+{
+  synonymText: String[1];
+  status: SynonymStatus[1];
+  registerLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Species document read from the endpoint-backed register store.'} test::meadowreef::domain::SpeciesDoc
+{
+  speciesCode: String[0..1];
+  commonName: String[0..1];
+  register: RegisterNode[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Register node of a species document.'} test::meadowreef::domain::RegisterNode
+{
+  registerCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Register listing document read from the second endpoint-backed store.'} test::meadowreef::domain::RegisterDoc
+{
+  registerCode: String[0..1];
+  steward: String[0..1];
+}
+
+Association test::meadowreef::domain::Sighting_Species
+{
+  sightings: SnorkelSighting[*];
+  species: ReefSpecies[0..1];
+}
+
+Association test::meadowreef::domain::Species_Synonym
+{
+  synonyms: SpeciesSynonym[*];
+  synonymSpecies: ReefSpecies[0..1];
+}

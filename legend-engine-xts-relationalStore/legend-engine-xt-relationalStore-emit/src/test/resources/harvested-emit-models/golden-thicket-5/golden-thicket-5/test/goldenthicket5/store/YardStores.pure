@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenthicket5::store::YardStagingDB
+(
+  Table wagon_arrival
+  (
+    arrival_code VARCHAR(30) PRIMARY KEY,
+    wagon_code VARCHAR(20) NOT NULL,
+    consist_code VARCHAR(20) NOT NULL,
+    siding_code VARCHAR(20),
+    arrived_on DATE NOT NULL,
+    gross_tonnes DECIMAL(12,3),
+    crew_code VARCHAR(20),
+    shift_label VARCHAR(20)
+  )
+)
+
+Database test::goldenthicket5::store::YardOperationsDB
+(
+  Schema yard
+  (
+    Table wagon
+    (
+      wagon_code VARCHAR(20) PRIMARY KEY,
+      wagon_type VARCHAR(30) NOT NULL,
+      consist_code VARCHAR(20),
+      siding_code VARCHAR(20),
+      tare_tonnes DECIMAL(10,3) NOT NULL,
+      last_overhaul_on DATE
+    )
+
+    Table consist
+    (
+      consist_code VARCHAR(20) PRIMARY KEY,
+      formed_on DATE NOT NULL,
+      wagon_count INTEGER NOT NULL,
+      destination_yard VARCHAR(60),
+      crew_code VARCHAR(20),
+      shift_label VARCHAR(20)
+    )
+
+    Table siding
+    (
+      siding_code VARCHAR(20) PRIMARY KEY,
+      siding_name VARCHAR(120) NOT NULL,
+      length_metres DECIMAL(10,2) NOT NULL,
+      electrified CHAR(1) NOT NULL
+    )
+
+    Table wagon_inspection
+    (
+      inspection_code VARCHAR(30) PRIMARY KEY,
+      wagon_code VARCHAR(20) NOT NULL,
+      inspected_on DATE NOT NULL,
+      brake_test_passed CHAR(1) NOT NULL,
+      defect_note VARCHAR(400)
+    )
+  )
+
+  Schema roster
+  (
+    Table shift_crew
+    (
+      crew_code VARCHAR(20) PRIMARY KEY,
+      shift_label VARCHAR(20) PRIMARY KEY,
+      headcount INTEGER NOT NULL,
+      depot_code VARCHAR(20) NOT NULL
+    )
+
+    Table depot
+    (
+      depot_code VARCHAR(20) PRIMARY KEY,
+      depot_name VARCHAR(120) NOT NULL,
+      region_name VARCHAR(80) NOT NULL
+    )
+  )
+
+  Join Wagon_Consist(yard.wagon.consist_code = yard.consist.consist_code)
+  Join Wagon_Siding(yard.wagon.siding_code = yard.siding.siding_code)
+  Join Wagon_Inspection(yard.wagon.wagon_code = yard.wagon_inspection.wagon_code)
+  Join Consist_Crew(yard.consist.crew_code = roster.shift_crew.crew_code and yard.consist.shift_label = roster.shift_crew.shift_label)
+  Join Crew_Depot(roster.shift_crew.depot_code = roster.depot.depot_code)
+)

@@ -1,0 +1,173 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyhatchery3::mapping::HatcheryMapping
+(
+  *test::duskyhatchery3::domain::BroodBatch[broodBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.batch_id
+    )
+    ~mainTable [test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch
+    batchCode: [test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.batch_code,
+    speciesCode: [test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.species_code,
+    fryCount: [test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.fry_count,
+    healthCode: [test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.health_code,
+    batchLabel: trim(
+                  concat(
+                    case(
+                    equal(length(trim([test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.batch_code)), 0),
+                    'UNLABELLED',
+                    concat(
+                      concat(
+                        concat(
+                          toUpper(trim([test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.species_code)),
+                          '-'
+                        ),
+                        toLower(trim([test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.batch_code))
+                      ),
+                      case(
+                        greaterThan([test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.fry_count, 8000),
+                        '-DENSE',
+                        '-SPARSE'
+                      )
+                    )
+                  ),
+                    case(
+                      equal([test::duskyhatchery3::store::HatcheryDb]rearing.brood_batch.health_code, 'H9'),
+                      ' (QUARANTINED)',
+                      ''
+                    )
+                  )
+                )
+  }
+
+  *test::duskyhatchery3::domain::RearingTank[rearingTank]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyhatchery3::store::HatcheryDb]rearing.rearing_tank.tank_id
+    )
+    ~mainTable [test::duskyhatchery3::store::HatcheryDb]rearing.rearing_tank
+    tankCode: [test::duskyhatchery3::store::HatcheryDb]rearing.rearing_tank.tank_code,
+    tankLabel: toUpper(trim([test::duskyhatchery3::store::HatcheryDb]rearing.rearing_tank.tank_label)),
+    volumeLitres: [test::duskyhatchery3::store::HatcheryDb]rearing.rearing_tank.volume_litres
+  }
+
+  *test::duskyhatchery3::domain::HatcherySite[hatcherySite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyhatchery3::store::HatcheryDb]facility.hatchery_site.site_id
+    )
+    ~mainTable [test::duskyhatchery3::store::HatcheryDb]facility.hatchery_site
+    siteCode: [test::duskyhatchery3::store::HatcheryDb]facility.hatchery_site.site_code,
+    siteName: [test::duskyhatchery3::store::HatcheryDb]facility.hatchery_site.site_name,
+    regionLabel: toLower(trim([test::duskyhatchery3::store::HatcheryDb]facility.hatchery_site.region_label))
+  }
+
+  test::duskyhatchery3::domain::BatchTank: Relational
+  {
+    AssociationMapping
+    (
+      tank[broodBatch, rearingTank]: [test::duskyhatchery3::store::HatcheryDb]@Batch_Tank,
+      batches[rearingTank, broodBatch]: [test::duskyhatchery3::store::HatcheryDb]@Batch_Tank
+    )
+  }
+
+  test::duskyhatchery3::domain::TankSite: Relational
+  {
+    AssociationMapping
+    (
+      site[rearingTank, hatcherySite]: [test::duskyhatchery3::store::HatcheryDb]@Tank_Site,
+      tanks[hatcherySite, rearingTank]: [test::duskyhatchery3::store::HatcheryDb]@Tank_Site
+    )
+  }
+
+  testSuites:
+  [
+    batchTreeSuite:
+    {
+      function: |test::duskyhatchery3::domain::BroodBatch.all()->graphFetch(
+        #{
+          test::duskyhatchery3::domain::BroodBatch{
+            batchCode,
+            batchLabel,
+            tank{
+              tankCode,
+              tankLabel,
+              site{
+                siteCode,
+                regionLabel
+              }
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::duskyhatchery3::domain::BroodBatch{
+            batchCode,
+            batchLabel,
+            tank{
+              tankCode,
+              tankLabel,
+              site{
+                siteCode,
+                regionLabel
+              }
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        batchAcrossBothJoins:
+        {
+          doc: 'Fetches a brood batch together with its tank and the facility site reached across the cross-schema join, proving both association implementations and the folded label transform.';
+          data:
+          [
+            test::duskyhatchery3::store::HatcheryDb:
+              Relational
+              #{
+                rearing.brood_batch:
+                  'batch_id,batch_code,species_code,health_code,fry_count,tank_id\n'+
+                  '1,bb-001,salmo-example,H1,9200,10\n';
+                rearing.rearing_tank:
+                  'tank_id,tank_code,tank_label,volume_litres,site_id\n'+
+                  '10,tk-010, upper raceway ,6000,100\n';
+                facility.hatchery_site:
+                  'site_id,site_code,site_name,region_label\n'+
+                  '100,ST-100,Upland Hatchery, NORTHERN COAST \n';
+              }#
+          ];
+          asserts:
+          [
+            nestedBatchTree:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"batchCode":"bb-001","batchLabel":"SALMO-EXAMPLE-bb-001-DENSE","tank":{"tankCode":"tk-010","tankLabel":"UPPER RACEWAY","site":{"siteCode":"ST-100","regionLabel":"northern coast"}}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

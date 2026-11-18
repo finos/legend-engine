@@ -1,0 +1,74 @@
+name: cedar-quarry
+title: "Tree Nursery Propagation — Deep Conditional Derivations, Enum-of-Expression, Embedded Stewardship and Multi-Hop Joins"
+description: |
+  A tree-nursery propagation model whose seedling lots are derived from a
+  two-schema relational store of beds, species, grafts, greenhouses, zones and
+  propagation crews. One relational mapping reached through a mapping-include
+  binds aliased main tables with explicit primary keys, decodes grades with a
+  plain enumeration mapping and with three further enumeration mappings applied
+  to computed expressions, folds height and care advice through nested
+  conditional arms down to a null sentinel, composes labels with string
+  functions, reaches the greenhouse and the propagation zone through two- and
+  three-hop join paths, reads a grouped inline view for bed totals and projects
+  an embedded stewardship stamp inline. Named store filters restrict beds and
+  species, an association mapping binds bed-to-lot traversal onto the store
+  join, and four mapping suites assert every conditional arm, the unmapped
+  enumeration source value, the aggregated view and the graft register.
+modelSources:
+  model:
+    root: cedar-quarry
+    files:
+      - test/cedarquarry/domain/NurseryDomain.pure
+      - test/cedarquarry/mapping/NurseryBaseMapping.pure
+      - test/cedarquarry/mapping/NurseryEnumMappings.pure
+      - test/cedarquarry/mapping/NurseryMapping.pure
+      - test/cedarquarry/store/NurseryDatabase.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - conditional-transform
+  - cross-schema
+  - embedded-mapping
+  - enum-of-expression
+  - enumeration
+  - grouped-view
+  - h2
+  - inline-view
+  - main-table-alias
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - null-sentinel
+  - nursery
+  - relational
+  - store-filter
+  - string-transform

@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::easternlighthouse::store::ShoalSurveyDb
+(
+  Schema survey
+  (
+    Table beacon_kind
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = snapshot_z)
+      )
+
+      snapshot_z DATE PRIMARY KEY,
+      beacon_code VARCHAR(20) PRIMARY KEY,
+      proc_in_z TIMESTAMP PRIMARY KEY,
+      kind_label VARCHAR(60) NOT NULL,
+      lamp_class VARCHAR(12) NOT NULL,
+      focal_height_m DOUBLE NOT NULL,
+      automated_flag BIT NOT NULL,
+      proc_out_z TIMESTAMP,
+      batch_code VARCHAR(24) NOT NULL,
+      batch_z TIMESTAMP NOT NULL,
+      digest_hex VARCHAR(64) NOT NULL
+    )
+    Table beacon_record
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = snapshot_z)
+      )
+
+      snapshot_z DATE PRIMARY KEY,
+      beacon_code VARCHAR(20) PRIMARY KEY,
+      tender_org_code VARCHAR(12) PRIMARY KEY,
+      tender_seq INTEGER PRIMARY KEY,
+      record_code VARCHAR(24) NOT NULL,
+      shoal_name VARCHAR(80) NOT NULL,
+      sector_arc_deg DOUBLE NOT NULL,
+      proc_in_z TIMESTAMP NOT NULL,
+      proc_out_z TIMESTAMP,
+      batch_code VARCHAR(24) NOT NULL,
+      batch_z TIMESTAMP NOT NULL,
+      digest_hex VARCHAR(64) NOT NULL
+    )
+    Table tender_party
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = snapshot_z)
+      )
+
+      snapshot_z DATE PRIMARY KEY,
+      tender_org_code VARCHAR(12) PRIMARY KEY,
+      tender_seq INTEGER PRIMARY KEY,
+      tender_name VARCHAR(80) NOT NULL,
+      home_port VARCHAR(60) NOT NULL,
+      crew_size INTEGER NOT NULL,
+      proc_in_z TIMESTAMP NOT NULL,
+      proc_out_z TIMESTAMP,
+      batch_code VARCHAR(24) NOT NULL,
+      batch_z TIMESTAMP NOT NULL,
+      digest_hex VARCHAR(64) NOT NULL
+    )
+    Table reading_measure
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = snapshot_z)
+      )
+
+      beacon_code VARCHAR(20) PRIMARY KEY,
+      record_code VARCHAR(24) PRIMARY KEY,
+      measure_name VARCHAR(40) PRIMARY KEY,
+      log_z TIMESTAMP PRIMARY KEY,
+      snapshot_z DATE PRIMARY KEY,
+      measure_amount DOUBLE NOT NULL,
+      measure_unit VARCHAR(12) NOT NULL,
+      instrument_code VARCHAR(20) NOT NULL,
+      proc_in_z TIMESTAMP NOT NULL,
+      proc_out_z TIMESTAMP,
+      batch_code VARCHAR(24) NOT NULL,
+      batch_z TIMESTAMP NOT NULL,
+      digest_hex VARCHAR(64) NOT NULL
+    )
+    Table drift_summary
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = snapshot_z)
+      )
+
+      beacon_code VARCHAR(20) PRIMARY KEY,
+      record_code VARCHAR(24) PRIMARY KEY,
+      measure_name VARCHAR(40) PRIMARY KEY,
+      log_z TIMESTAMP PRIMARY KEY,
+      leg_code VARCHAR(16) PRIMARY KEY,
+      segment_no INTEGER PRIMARY KEY,
+      revision_no INTEGER PRIMARY KEY,
+      snapshot_z DATE PRIMARY KEY,
+      drift_amount DOUBLE NOT NULL,
+      residual_amount DOUBLE NOT NULL,
+      bearing_deg DOUBLE,
+      proc_in_z TIMESTAMP NOT NULL,
+      proc_out_z TIMESTAMP,
+      batch_code VARCHAR(24) NOT NULL,
+      batch_z TIMESTAMP NOT NULL,
+      digest_hex VARCHAR(64) NOT NULL
+    )
+  )
+)

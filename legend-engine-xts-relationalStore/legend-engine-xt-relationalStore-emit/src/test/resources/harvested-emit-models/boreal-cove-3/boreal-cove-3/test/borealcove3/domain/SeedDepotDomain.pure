@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::borealcove3::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'The habitat family a meadow plot belongs to.'} test::borealcove3::domain::HabitatClass
+{
+  DUNE,
+  FEN,
+  HEATH
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where a seed lot stands in the seed-depot rotation.'} test::borealcove3::domain::LotState
+{
+  ACTIVE,
+  RESTED,
+  WITHDRAWN
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A collected lot of wildflower seed held by the seed depot, effective over business time.'} test::borealcove3::domain::SeedLot
+{
+  lotCode: String[1];
+  taxonName: String[1];
+  seedGrams: Integer[1];
+  lotState: LotState[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A surveyed meadow plot whose habitat classification is effective over business time.'} test::borealcove3::domain::MeadowPlot
+{
+  plotCode: String[1];
+  plotName: String[1];
+  habitatCode: String[1];
+  habitatClass: HabitatClass[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The keeper answerable for a set of meadow plots.'} test::borealcove3::domain::SeedKeeper
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+  contactNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A germination trial booked against a meadow plot.'} test::borealcove3::domain::GerminationTrial
+{
+  trialCode: String[1];
+  trialCrew: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a seed lot to the plot it was collected from; both ends are effective over business time, so the navigation carries a date.'} test::borealcove3::domain::Lot_Plot
+{
+  lots: SeedLot[*];
+  plot: MeadowPlot[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a meadow plot to its keeper, the second hop of the register navigation.'} test::borealcove3::domain::Plot_Keeper
+{
+  keeperPlots: MeadowPlot[*];
+  keeper: SeedKeeper[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a meadow plot to the germination trials run on it, the to-many end the emptiness test reaches through.'} test::borealcove3::domain::Plot_Trials
+{
+  trialPlot: MeadowPlot[0..1];
+  trials: GerminationTrial[*];
+}

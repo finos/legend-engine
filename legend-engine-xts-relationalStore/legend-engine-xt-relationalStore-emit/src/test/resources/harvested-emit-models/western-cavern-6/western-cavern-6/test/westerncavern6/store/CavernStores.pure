@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::westerncavern6::store::CavernBaseDb
+(
+  Schema karst
+  (
+    Table cavern
+    (
+      cavern_code VARCHAR(16) PRIMARY KEY,
+      massif_code VARCHAR(16),
+      cavern_name VARCHAR(80) NOT NULL,
+      status_code VARCHAR(12),
+      entrance_alt INTEGER,
+      surveyed_on DATE,
+      steward_name VARCHAR(60),
+      steward_phone VARCHAR(24)
+    )
+  )
+
+  Schema registry
+  (
+    Table massif
+    (
+      massif_code VARCHAR(16) PRIMARY KEY,
+      massif_name VARCHAR(80) NOT NULL,
+      region_code VARCHAR(16)
+    )
+    Table region
+    (
+      region_code VARCHAR(16) PRIMARY KEY,
+      region_name VARCHAR(80) NOT NULL,
+      authority_code VARCHAR(16)
+    )
+    Table authority
+    (
+      authority_code VARCHAR(16) PRIMARY KEY,
+      authority_name VARCHAR(80) NOT NULL
+    )
+  )
+)
+
+###Relational
+Database test::westerncavern6::store::CavernSurveyDb
+(
+  include test::westerncavern6::store::CavernBaseDb
+
+  Schema survey
+  (
+    Table chamber
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      chamber_code VARCHAR(16) PRIMARY KEY,
+      cavern_code VARCHAR(16) PRIMARY KEY,
+      depth_m INTEGER,
+      kind_num INTEGER,
+      floor_code VARCHAR(8),
+      mapped_on DATE,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table passage
+    (
+      passage_code VARCHAR(16) PRIMARY KEY,
+      cavern_ref VARCHAR(16) NOT NULL,
+      next_code VARCHAR(16),
+      length_m INTEGER NOT NULL,
+      grade_num INTEGER,
+      flow_code VARCHAR(4),
+      survey_state VARCHAR(8) NOT NULL
+    )
+    Table trip_log
+    (
+      trip_code VARCHAR(16) PRIMARY KEY,
+      cavern_code VARCHAR(16) NOT NULL,
+      team_code VARCHAR(16) NOT NULL,
+      hours INTEGER NOT NULL
+    )
+
+    View trip_summary_vw
+    (
+      ~groupBy
+      (
+        survey.trip_log.cavern_code
+      )
+      cavern_code: survey.trip_log.cavern_code PRIMARY KEY,
+      trip_count: count(survey.trip_log.trip_code),
+      total_hours: sum(survey.trip_log.hours)
+    )
+    View team_visit_vw
+    (
+      ~distinct
+      team_code: survey.trip_log.team_code PRIMARY KEY,
+      cavern_code: survey.trip_log.cavern_code PRIMARY KEY
+    )
+  )
+
+  Filter OpenCavernFilter(karst.cavern.status_code <> 'SEALED')
+  Filter SurveyedPassageFilter(survey.passage.survey_state = 'DONE')
+
+  Join Cavern_Massif(karst.cavern.massif_code = registry.massif.massif_code)
+  Join Massif_Region(registry.massif.region_code = registry.region.region_code)
+  Join Region_Authority(registry.region.authority_code = registry.authority.authority_code)
+  Join Passage_Cavern(toUpper(trim(survey.passage.cavern_ref)) = karst.cavern.cavern_code and survey.passage.length_m > 0)
+  Join Passage_Next(survey.passage.next_code = {target}.passage_code)
+  Join Chamber_Cavern(survey.chamber.cavern_code = karst.cavern.cavern_code)
+  Join Cavern_Trips(karst.cavern.cavern_code = survey.trip_summary_vw.cavern_code)
+)
+
+###Relational
+Database test::westerncavern6::store::CavernOpsDb
+(
+  include test::westerncavern6::store::CavernBaseDb
+
+  Schema ops
+  (
+    Table rescue_note
+    (
+      note_code VARCHAR(16) PRIMARY KEY,
+      cavern_code VARCHAR(16) NOT NULL,
+      note_text VARCHAR(200) NOT NULL,
+      logged_on DATE NOT NULL
+    )
+  )
+
+  Schema archive
+  (
+    Table bat_tally
+    (
+      tally_code VARCHAR(16) PRIMARY KEY,
+      cavern_code VARCHAR(16) NOT NULL,
+      species_text VARCHAR(80) NOT NULL,
+      counted_on DATE NOT NULL
+    )
+  )
+)

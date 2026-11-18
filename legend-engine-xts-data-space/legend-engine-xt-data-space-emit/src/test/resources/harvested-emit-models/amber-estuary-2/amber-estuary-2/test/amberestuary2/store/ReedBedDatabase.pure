@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::amberestuary2::store::ReedBedDatabase
+(
+  Schema wetland
+  (
+    Table reed_plot
+    (
+      plot_code VARCHAR(24) NOT NULL,
+      survey_date DATE,
+      plot_label VARCHAR(120) NOT NULL,
+      sector_code VARCHAR(24) NOT NULL,
+      reed_density DOUBLE NOT NULL,
+      water_depth_cm DOUBLE NOT NULL,
+      stem_count INTEGER NOT NULL,
+      salinity_psu DOUBLE,
+      canopy_pct DOUBLE,
+      warden_code VARCHAR(24),
+      habitat_note VARCHAR(240),
+      season_code VARCHAR(24) NOT NULL,
+      access_flag VARCHAR(1) NOT NULL,
+      tide_stage VARCHAR(24) NOT NULL
+    )
+
+    Table nesting_platform
+    (
+      platform_code VARCHAR(24) NOT NULL,
+      sector_code VARCHAR(24) NOT NULL,
+      platform_label VARCHAR(120) NOT NULL,
+      install_year INTEGER NOT NULL,
+      mount_height_m DOUBLE NOT NULL
+    )
+  )
+
+  Join plot_platform(wetland.reed_plot.sector_code = wetland.nesting_platform.sector_code)
+)

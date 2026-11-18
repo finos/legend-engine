@@ -1,0 +1,107 @@
+name: western-thicket-3
+title: "Western Thicket 3 — a milestoned coppice cutting register ranked over a window and folded against grove tallies"
+description: |
+  A coppice wood held in one relational store split across a working schema, a reference schema and an
+  audit schema, so the register reaches its stand book across one schema boundary and its checker note
+  across another. The reference schema also carries a grouped view that tallies the stands of each grove,
+  and the register reaches that tally three hops out through chained joins.
+  The register relation is milestoned by a business window, so one read at a business date drops both the
+  survey whose window closed two years earlier and the survey whose window opens the year after, while a
+  second read at a date inside the closed window returns exactly that survey — the explicit date, not the
+  extent, is doing the scoping.
+  A conditional walks eight arms over the regrowth code, two of them narrowed by a numeric comparison, and
+  falls through to a spare label the fixture leaves blank so the ninth outcome is empty. Three enumerations
+  are mapped, one from a plain column and two from computed expressions, and a tier label is mapped as a
+  literal rather than a column. A polymorphic warden is resolved through two filtered subtype sets extending
+  one root set, so a query needing the rota of a grove warden narrows to the subtype while a survey walked
+  by a contractor resolves the other set instead.
+  Nine derived and qualified properties sit on the register, including a nine-arm band over the counted stems
+  and the stool height and a day count over the open cutting cycle, and both are read back through the mapping
+  tests. The row-shaped endpoints rank surveys inside each cut over a window and keep the two strongest, and
+  fold the register by cut before placing each fold beside the grove tallies its surveys were cut under by
+  joining it to a distinct projection of the same extent. The ranking endpoint is served by two keyed
+  executions over two runtimes. A model-to-model mapping bands the raw tally sheet the wood writes down
+  before anything is coded, walking four arms and substituting a fallback for each absent code. A data space
+  pairs the curated mapping with the wood tier, the archive tier and a reference-only tier, and a generation
+  specification drives a JSON schema over the published shapes.
+modelSources:
+  model:
+    root: western-thicket-3
+    files:
+      - test/westernthicket3/connection/ThicketConnections.pure
+      - test/westernthicket3/data/ThicketTestData.pure
+      - test/westernthicket3/dataspace/ThicketDataSpace.pure
+      - test/westernthicket3/domain/ThicketDomain.pure
+      - test/westernthicket3/generation/ThicketGeneration.pure
+      - test/westernthicket3/mapping/ThicketDigestM2M.pure
+      - test/westernthicket3/mapping/ThicketRefMapping.pure
+      - test/westernthicket3/mapping/ThicketSurveyMapping.pure
+      - test/westernthicket3/payload/ThicketPayload.pure
+      - test/westernthicket3/runtime/ThicketRuntimes.pure
+      - test/westernthicket3/service/CutSurveyRegister.pure
+      - test/westernthicket3/service/GroveVigourRollup.pure
+      - test/westernthicket3/store/ThicketSurveyDb.pure
+features:
+  - execution:data-space
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - milestoning:business-temporal
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - query:subtype-cast
+  - query:window
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - collection-operators
+  - conditional-arms
+  - grouped-view
+  - h2
+  - literal-mapping
+  - milestoning-out-of-range
+  - model-to-model-mapping
+  - multi-execution-service
+  - multi-hop-join
+  - point-in-time
+  - qualified-property
+  - subtype-cast
+  - tds-join
+  - window-rank

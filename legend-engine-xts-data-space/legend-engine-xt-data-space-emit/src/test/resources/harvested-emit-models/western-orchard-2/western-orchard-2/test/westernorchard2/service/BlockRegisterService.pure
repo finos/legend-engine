@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernorchard2::service::BlockRegisterService
+{
+  pattern: '/western-orchard/v1/blocks';
+  title: 'Western Orchard - Block Register';
+  owners:
+  [
+    'orchard-register-desk',
+    'grove-survey-ops'
+  ];
+  documentation: 'Publishes the planted block register: every mapped block column read off its own main table, so the register carries the site description, the planted area and the survey stamp in one tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::westernorchard2::domain::OrchardBlock.all()->project(
+      [
+        b|$b.blockCode,
+        b|$b.blockName,
+        b|$b.rootstock,
+        b|$b.district,
+        b|$b.soilSeries,
+        b|$b.hectares,
+        b|$b.elevationM,
+        b|$b.plantedOn,
+        b|$b.surveyedAt
+      ],
+      [
+        'Block',
+        'Name',
+        'Rootstock',
+        'District',
+        'SoilSeries',
+        'Hectares',
+        'ElevationM',
+        'PlantedOn',
+        'SurveyedAt'
+      ]
+    )->sort(
+      [
+        asc('Block')
+      ]
+    );
+    mapping: test::westernorchard2::mapping::OrchardMapping;
+    runtime: test::westernorchard2::runtime::OrchardRuntime;
+  }
+  testSuites:
+  [
+    blockRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardConnection:
+            Relational
+            #{
+              grove.orchard_block:
+                'block_code,block_name,rootstock,district,soil_series,hectares,elevation_m,planted_on,surveyed_at\n'+
+                'WB-01,North Terrace,M9 dwarfing,Upper Bench,Silt loam,4.5,318.5,2019-04-02,2026-03-11 07:30:00\n'+
+                'WB-02,Creek Flat,,Lower Flat,,2.25,,2021-03-18,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            everyMappedBlockColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"WB-01","Name":"North Terrace","Rootstock":"M9 dwarfing","District":"Upper Bench","SoilSeries":"Silt loam","Hectares":4.5,"ElevationM":318.5,"PlantedOn":"2019-04-02","SurveyedAt":"2026-03-11T07:30:00.000000000+0000"},{"Block":"WB-02","Name":"Creek Flat","Rootstock":null,"District":"Lower Flat","SoilSeries":null,"Hectares":2.25,"ElevationM":null,"PlantedOn":"2021-03-18","SurveyedAt":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

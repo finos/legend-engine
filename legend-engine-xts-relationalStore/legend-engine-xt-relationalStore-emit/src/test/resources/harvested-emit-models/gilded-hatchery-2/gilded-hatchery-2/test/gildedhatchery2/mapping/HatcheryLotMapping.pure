@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedhatchery2::mapping::HatcheryLotMapping
+(
+  *test::gildedhatchery2::domain::TankKeeper[keeper]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedhatchery2::store::HatcheryDB]facility.tank_keeper.keeper_id
+    )
+    ~mainTable [test::gildedhatchery2::store::HatcheryDB]facility.tank_keeper
+    keeperCode: [test::gildedhatchery2::store::HatcheryDB]facility.tank_keeper.keeper_code,
+    keeperName: [test::gildedhatchery2::store::HatcheryDB]facility.tank_keeper.keeper_name
+  }
+
+  *test::gildedhatchery2::domain::SpawnLot[lot]: Relational
+  {
+    ~distinct
+    ~primaryKey
+    (
+      [test::gildedhatchery2::store::HatcheryDB]rearing.spawn_lot.lot_id
+    )
+    ~mainTable [test::gildedhatchery2::store::HatcheryDB]rearing.spawn_lot
+    lotCode: [test::gildedhatchery2::store::HatcheryDB]rearing.spawn_lot.lot_code,
+    lotName: [test::gildedhatchery2::store::HatcheryDB]rearing.spawn_lot.lot_name,
+    fryCount: [test::gildedhatchery2::store::HatcheryDB]rearing.spawn_lot.fry_count,
+    meanWeightGrams: [test::gildedhatchery2::store::HatcheryDB]rearing.spawn_lot.mean_weight_grams,
+    loggedAt: [test::gildedhatchery2::store::HatcheryDB]rearing.spawn_lot.logged_at,
+    registerLabel: 'HATCHERY-REGISTER',
+    tankLabel: [test::gildedhatchery2::store::HatcheryDB]@Lot_Tank | rearing.rearing_tank.tank_label,
+    bayName: [test::gildedhatchery2::store::HatcheryDB]@Lot_Tank > @Tank_Bay | rearing.hatch_bay.bay_name,
+    zoneName: [test::gildedhatchery2::store::HatcheryDB]@Lot_Keeper > @Keeper_Station > @Station_Zone | facility.station_zone.zone_name,
+    postedKeeper
+    (
+      keeperCode: [test::gildedhatchery2::store::HatcheryDB]@Lot_Keeper | facility.tank_keeper.keeper_code,
+      keeperName: [test::gildedhatchery2::store::HatcheryDB]@Lot_Keeper | facility.tank_keeper.keeper_name
+    ) Otherwise ( [keeper]: [test::gildedhatchery2::store::HatcheryDB]@Lot_Keeper )
+  }
+
+  testSuites:
+  [
+    rearingLotSuite:
+    {
+      function: |test::gildedhatchery2::domain::SpawnLot.all()->project(
+        [
+          l|$l.lotCode,
+          l|$l.registerLabel,
+          l|$l.tankLabel,
+          l|$l.bayName,
+          l|$l.zoneName,
+          l|$l.postedKeeper.keeperName,
+          l|$l.fryCount,
+          l|$l.meanWeightGrams
+        ],
+        [
+          'Code',
+          'Register',
+          'Tank',
+          'Bay',
+          'Zone',
+          'Keeper',
+          'Fry',
+          'Weight'
+        ]
+      )->sort(
+        [
+          asc('Code')
+        ]
+      );
+      tests:
+      [
+        sevenRearingRows:
+        {
+          doc: 'Covers a one-hop tank label, a two-hop bay path, a three-hop keeper zone path, the literal register, a keeper code that only joins once normalised, and a duplicated source row that the distinct mapping collapses.';
+          data:
+          [
+            test::gildedhatchery2::store::HatcheryDB:
+              Relational
+              #{
+                rearing.spawn_lot:
+                  'lot_id,lot_code,lot_name,tank_code,keeper_code,fry_count,mean_weight_grams,logged_at\n'+
+                  '1,GH-001,Alder Fry Batch,TK-01,KP-01,1200,2.5,2026-03-01 06:15:00\n'+
+                  '2,GH-002,Birch Fry Batch,TK-01,KP-02,900,3.25,2026-03-02 06:15:00\n'+
+                  '3,GH-003,Cedar Fry Batch,TK-02,kp-03,1500,1.75,2026-03-03 06:15:00\n'+
+                  '4,GH-004,Dogwood Fry Batch,TK-03,KP-01,1100,4.5,2026-03-04 06:15:00\n'+
+                  '5,GH-005,Elder Fry Batch,TK-02,KP-02,700,2.25,2026-03-05 06:15:00\n'+
+                  '6,GH-006,Fir Fry Batch,TK-03,KP-03,800,3.5,2026-03-06 06:15:00\n'+
+                  '7,GH-006,Fir Fry Batch,TK-03,KP-03,800,3.5,2026-03-06 06:15:00\n';
+                rearing.rearing_tank:
+                  'tank_id,tank_code,tank_label,bay_code\n'+
+                  '1,TK-01,Upper Trough One,BY-01\n'+
+                  '2,TK-02,Upper Trough Two,BY-01\n'+
+                  '3,TK-03,Lower Trough One,BY-02\n';
+                rearing.hatch_bay:
+                  'bay_id,bay_code,bay_name\n'+
+                  '1,BY-01,North Hatch Bay\n'+
+                  '2,BY-02,South Hatch Bay\n';
+                facility.tank_keeper:
+                  'keeper_id,keeper_code,keeper_name,station_code\n'+
+                  '1,KP-01,Ada Warden,ST-01\n'+
+                  '2,KP-02,Ben Warden,ST-01\n'+
+                  '3,KP-03,Cleo Warden,ST-02\n';
+                facility.keeper_station:
+                  'station_id,station_code,station_name,zone_code\n'+
+                  '1,ST-01,Riverside Station,ZN-01\n'+
+                  '2,ST-02,Lakeside Station,ZN-02\n';
+                facility.station_zone:
+                  'zone_id,zone_code,zone_name\n'+
+                  '1,ZN-01,Riverside Zone\n'+
+                  '2,ZN-02,Lakeside Zone\n';
+              }#
+          ];
+          asserts:
+          [
+            rearingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"GH-001","Register":"HATCHERY-REGISTER","Tank":"Upper Trough One","Bay":"North Hatch Bay","Zone":"Riverside Zone","Keeper":"Ada Warden","Fry":1200,"Weight":2.5},{"Code":"GH-002","Register":"HATCHERY-REGISTER","Tank":"Upper Trough One","Bay":"North Hatch Bay","Zone":"Riverside Zone","Keeper":"Ben Warden","Fry":900,"Weight":3.25},{"Code":"GH-003","Register":"HATCHERY-REGISTER","Tank":"Upper Trough Two","Bay":"North Hatch Bay","Zone":"Lakeside Zone","Keeper":"Cleo Warden","Fry":1500,"Weight":1.75},{"Code":"GH-004","Register":"HATCHERY-REGISTER","Tank":"Lower Trough One","Bay":"South Hatch Bay","Zone":"Riverside Zone","Keeper":"Ada Warden","Fry":1100,"Weight":4.5},{"Code":"GH-005","Register":"HATCHERY-REGISTER","Tank":"Upper Trough Two","Bay":"North Hatch Bay","Zone":"Riverside Zone","Keeper":"Ben Warden","Fry":700,"Weight":2.25},{"Code":"GH-006","Register":"HATCHERY-REGISTER","Tank":"Lower Trough One","Bay":"South Hatch Bay","Zone":"Lakeside Zone","Keeper":"Cleo Warden","Fry":800,"Weight":3.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

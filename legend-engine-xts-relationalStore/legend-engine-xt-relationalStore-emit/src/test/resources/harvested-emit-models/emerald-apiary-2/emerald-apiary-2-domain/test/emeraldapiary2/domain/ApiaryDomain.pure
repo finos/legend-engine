@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::emeraldapiary2::domain::*;
+
+Class test::emeraldapiary2::domain::InspectionAddress
+{
+  street: String[1];
+  district: String[1];
+}
+
+Class test::emeraldapiary2::domain::Apiary
+{
+  apiaryCode: String[1];
+  apiaryName: String[1];
+  colonies: Colony[*];
+}
+
+Class test::emeraldapiary2::domain::Colony
+{
+  colonyCode: String[1];
+  colonyName: String[1];
+  apiary: Apiary[1];
+  inspectionAddress: InspectionAddress[1];
+}
+
+Class test::emeraldapiary2::domain::HiveInspection
+{
+  inspectionCode: String[1];
+  colonyCode: String[1];
+  inspectedOn: StrictDate[1];
+  inspectorName: String[1];
+  apiaryName: String[1];
+  inspectionStamp: InspectionStamp[1];
+}
+
+Class test::emeraldapiary2::domain::InspectionStamp
+{
+  inspectorAlias: String[1];
+  apiaryLabel: String[1];
+}
+
+Class test::emeraldapiary2::domain::TreatmentInspection extends HiveInspection
+{
+  treatmentCode: String[1];
+  treatmentNotes: String[0..1];
+}
+
+Class test::emeraldapiary2::domain::RoutineInspection extends HiveInspection
+{
+  observationNote: String[0..1];
+}
+
+Association test::emeraldapiary2::domain::Apiary_Colony
+{
+  apiary: Apiary[1];
+  colonies: Colony[*];
+}

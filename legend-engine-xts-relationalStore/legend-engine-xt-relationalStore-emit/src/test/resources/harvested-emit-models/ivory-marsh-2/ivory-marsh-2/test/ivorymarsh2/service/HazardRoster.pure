@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivorymarsh2::service::HazardRoster
+{
+  pattern: '/marsh/v1/sections/hazard-roster';
+  title: 'Wetland Boardwalk - Hazard roster with the warden rota to call';
+  owners:
+  [
+    'wetland-boardwalk-desk',
+    'reserve-estate-eng'
+  ];
+  documentation: 'Single-execution service that keeps every reserve when the reserve collection is empty, holds sections at or above a hazard floor, and reports the roster ordered by hazard tier and truncated to the sections a rota is called out for.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {reserveCodes: String[*], minTier: Integer[1], rosterSize: Integer[1]|test::ivorymarsh2::domain::BoardwalkSection.all()->filter(
+      s|(($reserveCodes->isEmpty()) || ($s.reserveCode->in($reserveCodes))) && (($s.hazardTier >= $minTier) && (($s.plankCount > 0) && ($s.surfaceCode != 'UNSET')))
+    )->project(
+      [
+        col(s|$s.sectionCode->toUpper(), 'Section'),
+        col(s|$s.reserveCode, 'Reserve'),
+        col(s|$s.contactRota, 'Rota'),
+        col(s|$s.hazardTier, 'Tier'),
+        col(s|$s.plankCount * 2, 'Plank Faces')
+      ]
+    )->sort(
+      [
+        desc('Tier'),
+        asc('Section')
+      ]
+    )->limit($rosterSize)};
+    mapping: test::ivorymarsh2::mapping::MarshMapping;
+    runtime: test::ivorymarsh2::runtime::MarshTestRuntime;
+  }
+  testSuites:
+  [
+    hazardRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              wetland.boardwalk_section:
+                'section_id,section_code,reserve_id,surface_code,plank_count,hazard_tier\n'+
+                '1,SC-01,100,PLANK,240,4\n'+
+                '2,SC-02,100,MESH,120,2\n'+
+                '3,SC-03,200,PLANK,80,5\n';
+              wetland.reserve:
+                'reserve_id,reserve_code,wetland_name,access_code\n'+
+                '100,RS-NORTH,North Fen,OPEN\n'+
+                '200,RS-SOUTH,South Carr,PERMIT\n';
+              wetland.section_warden:
+                'warden_id,section_id,warden_name,contact_rota\n'+
+                '1,1,Ada Wren,MORNING\n'+
+                '2,2,Bo Heron,EVENING\n'+
+                '3,3,Cai Snipe,MORNING\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        emptyReserveCollectionKeepsEveryReserve:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            reserveCodes = [],
+            minTier = 1,
+            rosterSize = 2
+          ]
+          asserts:
+          [
+            worstTwoSectionsAreRostered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Section":"SC-03","Reserve":"RS-SOUTH","Rota":"MORNING","Tier":5,"Plank Faces":160},{"Section":"SC-01","Reserve":"RS-NORTH","Rota":"MORNING","Tier":4,"Plank Faces":480}]';
+                  }#;
+              }#
+          ]
+        },
+        oneReserveAboveTheHazardFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            reserveCodes = ['RS-NORTH'],
+            minTier = 3,
+            rosterSize = 5
+          ]
+          asserts:
+          [
+            onlyTheRequestedReserveIsRostered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Section":"SC-01","Reserve":"RS-NORTH","Rota":"MORNING","Tier":4,"Plank Faces":480}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

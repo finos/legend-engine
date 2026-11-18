@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::gildedharbor2::store::OrchardDb
+(
+  Schema orchard
+  (
+    Table grafted_block
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      planting_code VARCHAR(24) PRIMARY KEY,
+      block_code VARCHAR(20) NOT NULL,
+      planted_on DATE NOT NULL,
+      row_count INTEGER NOT NULL,
+      cultivar_name VARCHAR(48) NOT NULL,
+      rootstock_code VARCHAR(20) NOT NULL,
+      canopy_area_sqm FLOAT NOT NULL,
+      lot_code VARCHAR(20) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+
+    Table nursery_lot
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      lot_code VARCHAR(20) PRIMARY KEY,
+      lot_name VARCHAR(48) NOT NULL,
+      steward_code VARCHAR(20) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+
+    Table steward_desk
+    (
+      steward_code VARCHAR(20) PRIMARY KEY,
+      steward_name VARCHAR(48) NOT NULL,
+      zone_code VARCHAR(20) NOT NULL
+    )
+  )
+
+  Join BlockToLot(orchard.grafted_block.lot_code = orchard.nursery_lot.lot_code)
+  Join LotToSteward(orchard.nursery_lot.steward_code = orchard.steward_desk.steward_code)
+)

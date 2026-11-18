@@ -1,0 +1,67 @@
+name: ivory-quokka-2
+title: "Sanctuary Quokka Register — Enumeration Mappings, Mapping Include Chain and Join-Reached Enumerated Columns"
+description: |
+  A non-financial relational EMIT model over a wildlife sanctuary quokka colony. Two relational stores
+  are chained by inclusion: the base store holds the member and enclosure relations with a keeper-name
+  store filter expressed through a case-folding dyna function and an equality join between them, and
+  the roster store includes that base store and adds its own keeper-shift relation with a second join
+  onto the shared enclosure relation. Three mappings form an include chain of their own: an
+  enumeration-only mapping declares the foraging, health and pouch enumerations of the register, the
+  base mapping includes it and binds the member relation behind its primary key and store filter,
+  resolving all three enumerations from single-character source codes, and the roster mapping includes
+  the base mapping and adds its own shift-part and terrain enumeration mappings over the roster
+  relation. Both class mappings reach one column across a single equality join hop, and the terrain
+  case resolves an enumeration from that join-reached column. Assertion-backed coverage: two mapping
+  test suites project every enumerated property, each asserting that a source code claimed by no
+  enumeration member resolves to no value, that the filtered row is absent, and that the join-reached
+  columns carry the enclosure they belong to. The roster store also declares a
+  tally view grouped by enclosure and keeper that counts shifts, takes the
+  extreme check counts and encodes the first and latest shift start days as
+  year-month-day integers with nested date-part arithmetic; the roster mapping
+  maps that view as the main table of a tally class, and a third suite asserts
+  the grouped rows across a month end.
+modelSources:
+  model:
+    root: ivory-quokka-2
+    files:
+      - test/ivoryquokka2/domain/ColonyDomain.pure
+      - test/ivoryquokka2/mapping/ColonyBaseMapping.pure
+      - test/ivoryquokka2/mapping/ColonyEnumMappings.pure
+      - test/ivoryquokka2/mapping/RosterMapping.pure
+      - test/ivoryquokka2/store/SanctuaryDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-store-include
+  - store:relational-view-group-by
+stores:
+  - relational
+complexity: advanced
+tags:
+  - dyna-function
+  - enumeration
+  - enumeration-mapping
+  - h2
+  - inner-join
+  - mapping-include
+  - mapping-test
+  - multi-table
+  - primary-key
+  - project
+  - quokka
+  - relational
+  - store-filter
+  - store-include
+  - view-group-by

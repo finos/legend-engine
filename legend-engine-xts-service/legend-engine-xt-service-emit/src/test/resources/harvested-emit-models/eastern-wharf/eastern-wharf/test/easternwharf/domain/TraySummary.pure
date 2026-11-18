@@ -1,0 +1,25 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A flat published summary of one propagation tray: where it stands in the glasshouse, the stage it has reached and the leading vigorous seedling in it, with typed defaults wherever the inbound document leaves the answer absent.'} test::easternwharf::domain::TraySummary
+{
+  runCode: String[1];
+  trayCode: String[0..1];
+  benchLabel: String[1];
+  trayLabel: String[1];
+  stageLabel: String[1];
+  leadSeedling: String[1];
+  vigorousCount: Integer[1];
+  tallestHeightMicron: Integer[1];
+}

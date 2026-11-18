@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarotter::mapping::WildlifeMapping
+(
+  *test::lunarotter::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarotter::store::WildlifeDB]wildlife.region.region_id
+    )
+    ~mainTable [test::lunarotter::store::WildlifeDB]wildlife.region
+    name: [test::lunarotter::store::WildlifeDB]wildlife.region.region_name
+  }
+  *test::lunarotter::domain::Habitat[habitat]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarotter::store::WildlifeDB]wildlife.habitat.habitat_id
+    )
+    ~mainTable [test::lunarotter::store::WildlifeDB]wildlife.habitat
+    name: [test::lunarotter::store::WildlifeDB]wildlife.habitat.habitat_name,
+    region[region]: [test::lunarotter::store::WildlifeDB]@Habitat_Region
+  }
+  *test::lunarotter::domain::Otter[otter]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarotter::store::WildlifeDB]wildlife.otter.otter_id
+    )
+    ~mainTable [test::lunarotter::store::WildlifeDB]wildlife.otter
+    name: [test::lunarotter::store::WildlifeDB]wildlife.otter.otter_name,
+    weightKg: [test::lunarotter::store::WildlifeDB]wildlife.otter.weight_kg,
+    habitat[habitat]: [test::lunarotter::store::WildlifeDB]@Otter_Habitat
+  }
+
+  testSuites:
+  [
+    otterProjectionSuite:
+    {
+      function: |test::lunarotter::domain::Otter.all()->project(
+  [
+    x|$x.name,
+    x|$x.habitat.name,
+    x|$x.habitat.region.name
+  ],
+  [
+    'Otter',
+    'Habitat',
+    'Region'
+  ]
+);
+      tests:
+      [
+        otterNestedJoinProjection:
+        {
+          doc: 'Projects an otter with its habitat and region, exercising the chained Otter_Habitat > Habitat_Region nested join.';
+          data:
+          [
+            test::lunarotter::store::WildlifeDB:
+              Relational
+              #{
+                wildlife.region:
+                  'region_id,region_name\n'+
+                  '1,Northern Fenland\n';
+                wildlife.habitat:
+                  'habitat_id,habitat_name,region_id\n'+
+                  '1,Willow Bend,1\n';
+                wildlife.otter:
+                  'otter_id,otter_name,weight_kg,habitat_id\n'+
+                  '1,Pebble,8.4,1\n';
+              }#
+          ];
+          asserts:
+          [
+            oneRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Otter":"Pebble","Habitat":"Willow Bend","Region":"Northern Fenland"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

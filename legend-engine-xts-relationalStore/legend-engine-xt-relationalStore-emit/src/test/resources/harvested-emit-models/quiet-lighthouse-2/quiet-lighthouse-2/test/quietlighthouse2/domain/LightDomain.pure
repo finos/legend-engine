@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::quietlighthouse2::domain::*;
+
+Enum test::quietlighthouse2::domain::LampKind
+{
+  OIL,
+  ACETYLENE,
+  ELECTRIC,
+  UNRECORDED
+}
+
+Enum test::quietlighthouse2::domain::Glazing
+{
+  CLEAR,
+  RUBY,
+  EMERALD,
+  UNGLAZED
+}
+
+Enum test::quietlighthouse2::domain::ShoreAspect
+{
+  SEAWARD,
+  HARBOURWARD,
+  ESTUARY,
+  UNKNOWN
+}
+
+Class <<temporal.processingtemporal>> test::quietlighthouse2::domain::BeaconRecord
+{
+  beaconCode: String[1];
+  beaconName: String[1];
+  rangeNm: Integer[1];
+  statusLabel: String[1];
+  lampKind: LampKind[0..1];
+  rangeBand() {if($this.rangeNm >= 15, |'LONG RANGE', |'SHORT RANGE')}: String[1];
+}
+
+Class test::quietlighthouse2::domain::LensBeaconRecord extends BeaconRecord
+{
+  lensOrder: Integer[1];
+  lensLabel() {'ORDER ' + $this.lensOrder->toString()}: String[1];
+}
+
+Class <<temporal.processingtemporal>> test::quietlighthouse2::domain::CoastSection
+{
+  sectionCode: String[1];
+  sectionName: String[1];
+}
+
+Class <<temporal.processingtemporal>> test::quietlighthouse2::domain::BeaconAlias
+{
+  aliasKind: String[1];
+  aliasText: String[1];
+}
+
+Class test::quietlighthouse2::domain::LampRecord
+{
+  lampCode: String[1];
+  lampText: String[0..1];
+  wattage: Integer[0..1];
+  fittedFlag: String[1];
+  glassText: String[0..1];
+  aspectCode: String[0..1];
+  markings: String[*];
+}
+
+Association test::quietlighthouse2::domain::Beacon_Section
+{
+  section: CoastSection[0..1];
+  beacons: BeaconRecord[*];
+}
+
+Association test::quietlighthouse2::domain::Beacon_Alias
+{
+  aliases: BeaconAlias[*];
+  aliasedBeacon: BeaconRecord[0..1];
+}
+
+Association test::quietlighthouse2::domain::Beacon_Lamp
+{
+  lamps: LampRecord[*];
+  lampBeacon: BeaconRecord[0..1];
+}
+
+Class test::quietlighthouse2::published::LampSheet
+{
+  lampCode: String[1];
+  beamClass: String[0..1];
+  markingFlag: String[1];
+  leadMarking: String[0..1];
+  allMarkings: String[*];
+  lampKind: LampKind[1];
+  glazing: Glazing[1];
+  aspect: ShoreAspect[1];
+  sheetLabel(prefix: String[1]) {$prefix + '/' + $this.lampCode}: String[1];
+}

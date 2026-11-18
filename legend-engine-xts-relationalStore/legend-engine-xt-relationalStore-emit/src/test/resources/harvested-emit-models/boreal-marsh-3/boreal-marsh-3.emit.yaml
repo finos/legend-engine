@@ -1,0 +1,75 @@
+name: boreal-marsh-3
+title: "Boreal Marsh 3 — a milestoned peat probe register widened by a joined detail table and folded by basin behind the class"
+description: |
+  A boreal peat marsh held in one relational store: a basin book, a point book, a detail table carrying the
+  probe collar of the points cut into peat, a surveyor roster and a probe register.
+  The register relation is milestoned by a business window, so one read at a business date returns the five
+  open rows and drops the row whose window closed two years earlier, while a second read at a date inside
+  that closed window returns exactly that row — the explicit date, not the extent, is doing the scoping.
+  The point book is read three ways from one main table: as the root point, as a subtype whose own peat depth
+  and probe collar are carried on a detail table joined to it rather than on the point book itself, and as a
+  fold grouped by basin behind the class so the point tally and the stake total are aggregated by the mapping
+  rather than by the query. The register reaches its point one hop out, the basin of that point two hops out
+  and the surveyor on a second one-hop path, and it also reaches the point through an association implemented
+  over the same join, so the same row is resolved both as a mapped column and as an associated instance.
+  A moisture enumeration is mapped from a coded column, a four-arm band over the water table and the peat
+  temperature falls through to a floor label, and a nested arithmetic fold over the water table, the peat
+  temperature and the probe count is walked deep enough that the plan has to compute it before it reads the
+  columns. Both are read back through the mapping tests. The row-shaped endpoint keeps the readings whose band
+  the caller names and whose water table stands above a depth the caller names, then places each reading
+  beside a distinct projection of the point book over an inner join; a second endpoint reads the basin fold
+  for the basins the caller names.
+modelSources:
+  model:
+    root: boreal-marsh-3
+    files:
+      - test/borealmarsh3/connection/MarshConnections.pure
+      - test/borealmarsh3/data/MarshTestData.pure
+      - test/borealmarsh3/domain/MarshDomain.pure
+      - test/borealmarsh3/mapping/MarshReadingMapping.pure
+      - test/borealmarsh3/mapping/MarshRefMapping.pure
+      - test/borealmarsh3/runtime/MarshRuntimes.pure
+      - test/borealmarsh3/service/BasinLoadRollup.pure
+      - test/borealmarsh3/service/PlotReadingRegister.pure
+      - test/borealmarsh3/store/MarshSurveyDb.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-group-by
+  - mapping:relational-joined-table-inheritance
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - query:collection-op
+  - query:filter
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - business-temporal
+  - collection-operators
+  - group-by-mapping
+  - h2
+  - joined-table-inheritance
+  - mapping-include
+  - milestoning-out-of-range
+  - multi-hop-join
+  - point-in-time
+  - tds-join

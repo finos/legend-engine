@@ -1,0 +1,154 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelcove::service::ColonyRosterFeed
+{
+  pattern: '/colony-census/v1/roster';
+  title: 'Colony Census - Published Warden Roster';
+  owners:
+  [
+    'seabird-survey-platform',
+    'colony-census-eng'
+  ];
+  documentation: 'Keyed multi-execution service over the delimited roster dataset of the census API, whose request constants are supplied by the mapping and whose rows are chained through the fetch mapping before the roster transform runs.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazelcove::domain::ColonyRoster.all()->graphFetch(
+      #{
+        test::hazelcove::domain::ColonyRoster
+        {
+          colonyRef,
+          wardenLabel,
+          sheetBand,
+          tallyPerHectare
+        }
+      }#
+    )->serialize(
+      #{
+        test::hazelcove::domain::ColonyRoster
+        {
+          colonyRef,
+          wardenLabel,
+          sheetBand,
+          tallyPerHectare
+        }
+      }#
+    );
+    mapping: test::hazelcove::mapping::CensusRosterMapping;
+    runtime: test::hazelcove::runtime::RosterPrimaryRuntime;
+  }
+  testSuites:
+  [
+    rosterFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          censusApiConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/census/colonies/sheet?dataset=roster-sheet&season=autumn';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/x.flatdata';
+                        data: 'colonyRef,bandCode,nestTally,plotHectares,warden\nCL-201,B2,48,6.0,shore warden\nCL-202,B4,220,8.0,stack warden\n';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosterRowsFromDelimitedPayload:
+        {
+          asserts:
+          [
+            rosterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"colonyRef":"CL-201","wardenLabel":"SHORE WARDEN","sheetBand":"B2","tallyPerHectare":8.0},{"colonyRef":"CL-202","wardenLabel":"STACK WARDEN","sheetBand":"B4","tallyPerHectare":27.5}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::hazelcove::service::ColonyRosterByEnvironment
+{
+  pattern: '/colony-census/v1/roster-by-env';
+  title: 'Colony Census - ColonyRoster by Environment';
+  owners:
+  [
+    'seabird-survey-platform',
+    'colony-census-eng'
+  ];
+  documentation: 'Keyed multi-execution variant of the published feed: the same fetch tree and transform layer are routed to one census environment per key, so a caller selects the environment instead of the endpoint.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |test::hazelcove::domain::ColonyRoster.all()->graphFetch(
+      #{
+        test::hazelcove::domain::ColonyRoster
+        {
+          colonyRef,
+          wardenLabel,
+          sheetBand,
+          tallyPerHectare
+        }
+      }#
+    )->serialize(
+      #{
+        test::hazelcove::domain::ColonyRoster
+        {
+          colonyRef,
+          wardenLabel,
+          sheetBand,
+          tallyPerHectare
+        }
+      }#
+    );
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::hazelcove::mapping::CensusRosterMapping;
+      runtime: test::hazelcove::runtime::RosterPrimaryRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::hazelcove::mapping::CensusRosterMapping;
+      runtime: test::hazelcove::runtime::RosterStandbyRuntime;
+    }
+  }
+}

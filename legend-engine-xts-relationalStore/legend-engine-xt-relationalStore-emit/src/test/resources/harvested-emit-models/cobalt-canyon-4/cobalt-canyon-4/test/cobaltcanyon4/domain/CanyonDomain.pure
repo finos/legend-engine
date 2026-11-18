@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::cobaltcanyon4::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A numbered patrol sector of the canyon floor.'} test::cobaltcanyon4::domain::CanyonSector
+{
+  sectorNumber: Integer[1];
+  sectorName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A stretch of trail whose open or closed state is versioned over business time.'} test::cobaltcanyon4::domain::TrailSegment
+{
+  segmentName: String[1];
+  closed: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A hazard noted by a ranger against a patrol report.'} test::cobaltcanyon4::domain::HazardNote
+{
+  hazardLabel: String[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A ranger patrol report, re-recorded over processing time whenever it is revised.'} test::cobaltcanyon4::domain::PatrolReport
+{
+  reportId: Integer[1];
+  reportCode: String[1];
+  createdAt: DateTime[1];
+  updatedAt: DateTime[1];
+  archived: Boolean[0..1];
+  rangerTag: String[0..1];
+  sector: CanyonSector[0..1];
+  segment: TrailSegment[0..1];
+  hazards: HazardNote[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The published row shape of the live patrol watch lists.'} test::cobaltcanyon4::domain::PatrolWatchRow
+{
+  report: String[0..1];
+  sector: String[0..1];
+  segmentClosed: Boolean[0..1];
+  archived: Boolean[0..1];
+  rangerTag: String[0..1];
+  source: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The published row shape of the archived patrol registers.'} test::cobaltcanyon4::domain::ArchiveRegisterRow
+{
+  report: String[0..1];
+  sector: String[0..1];
+  segment: String[0..1];
+  segmentClosed: Boolean[0..1];
+  archived: Boolean[0..1];
+  source: String[0..1];
+}

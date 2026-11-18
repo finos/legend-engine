@@ -1,0 +1,43 @@
+name: golden-glacier
+title: "Golden Glacier - A Checked Document Refinement Onto Specimen Cards With Two Structurally Identical Execution Alternatives"
+description: |
+  A glacier-valley orchid conservatory catalogue whose single model-to-model mapping is the only
+  bridge between the nested specimen documents published upstream and the flat local card graph.
+  The primary transform reaches nine of its ten scalar attributes through two to four chained
+  property hops into a to-many cutting collection, banding the recorded moisture across five arms,
+  decoding a free-text grade code through an enumeration mapping over a computed expression and
+  stamping a label out of a cabinet's nested identifier structure; a second transform flattens the
+  cutting child and lets its height cross numeric type families, and a third copies the cabinet tag
+  attribute for attribute. The mapping carries its own checked traversal test whose defect envelope
+  pins the absence of conversion defects, and one multi-execution service exposes the same card tree
+  over two structurally identical alternatives, each binding the three published source classes to
+  its own inline document connections.
+modelSources:
+  model:
+    root: golden-glacier
+    files:
+      - test/goldenglacier/domain/CatalogDomain.pure
+      - test/goldenglacier/domain/FeedDomain.pure
+      - test/goldenglacier/mapping/SpecimenCardM2M.pure
+      - test/goldenglacier/service/SpecimenCardsByEnvironment.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - checked-graph-fetch
+  - enumeration-mapping
+  - graph-fetch
+  - inline-runtime
+  - mapping-test
+  - model-to-model
+  - multi-execution
+  - service-test

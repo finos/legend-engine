@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldendelta::mapping::RosterRelationalMapping
+(
+  *test::goldendelta::source::VolunteerRecord[volunteerRecordSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldendelta::store::RosterDatabase]roster.volunteer_record.record_ref
+    )
+    ~mainTable [test::goldendelta::store::RosterDatabase]roster.volunteer_record
+    recordRef: [test::goldendelta::store::RosterDatabase]roster.volunteer_record.record_ref,
+    combinedName: [test::goldendelta::store::RosterDatabase]roster.volunteer_record.combined_name,
+    depotCode: [test::goldendelta::store::RosterDatabase]roster.volunteer_record.depot_code,
+    trailheadName: [test::goldendelta::store::RosterDatabase]roster.volunteer_record.trailhead_name,
+    accessNote: [test::goldendelta::store::RosterDatabase]roster.volunteer_record.access_note
+  }
+
+  testSuites:
+  [
+    recordReadSuite:
+    {
+      function: |test::goldendelta::source::VolunteerRecord.all()->project(
+        [
+          r|$r.recordRef,
+          r|$r.combinedName,
+          r|$r.trailheadName
+        ],
+        [
+          'Ref',
+          'Combined',
+          'Trailhead'
+        ]
+      )->sort([asc('Ref'), asc('Combined')]);
+      tests:
+      [
+        distinctAndRepeatedIdentifiers:
+        {
+          doc: 'Reads the source record straight off the single aliased table with no expression of any kind, so the only shaping is the explicit identifier key: two rows carrying the same identifier and identical remaining values stand for one source instance, while a row whose identifier was never issued still materialises because identity is declared in the mapping rather than enforced by the table.';
+          data:
+          [
+            test::goldendelta::store::RosterDatabase:
+              Relational
+              #{
+                roster.volunteer_record:
+                  'record_ref,combined_name,depot_code,trailhead_name,access_note,enrolled_on\n' +
+                  'GD-201,Ferny Wraysbury,DP-N,Alder Steps,Gate is left unlatched in summer,2026-03-02\n' +
+                  'GD-202,Marsh Kite Alderway,DP-N,Bramble Gate,Second gate on the lower path,2026-03-05\n' +
+                  'GD-203,Bracken Hollow,DP-S,Cinder Rise,Park on the verge below the rise,2026-03-09\n' +
+                  'GD-203,Bracken Hollow,DP-S,Cinder Rise,Park on the verge below the rise,2026-03-09\n' +
+                  ',Willow Fernbrake,DP-S,Dyke Crossing,Ford is impassable after rain,2026-03-11\n';
+              }#
+          ];
+          asserts:
+          [
+            everyTableRowIsReadOnce:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ref":null,"Combined":"Willow Fernbrake","Trailhead":"Dyke Crossing"},{"Ref":"GD-201","Combined":"Ferny Wraysbury","Trailhead":"Alder Steps"},{"Ref":"GD-202","Combined":"Marsh Kite Alderway","Trailhead":"Bramble Gate"},{"Ref":"GD-203","Combined":"Bracken Hollow","Trailhead":"Cinder Rise"},{"Ref":"GD-203","Combined":"Bracken Hollow","Trailhead":"Cinder Rise"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

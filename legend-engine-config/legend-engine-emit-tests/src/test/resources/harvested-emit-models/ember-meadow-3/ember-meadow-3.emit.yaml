@@ -1,0 +1,35 @@
+name: ember-meadow-3
+title: "Ember Meadow 3 — bird ringing scheme with an associated capture hierarchy drawn as a diagram"
+description: |
+  A wetland bird-ringing scheme. Ringing sites, ringers and marked individuals are plain
+  classes; a capture supertype is narrowed by mist-net, cannon-net and recapture events, so the
+  hierarchy is two levels deep from the type the register reads. Three associations wire the
+  graph into something navigable from either end — a site to the captures made on it, a ringer
+  to the captures they made, and a marked individual to its capture history — and two closed
+  vocabularies fix the age classes and moult states a capture may be scored under. A diagram
+  lays the whole thing out, drawing the generalisation edges of the capture hierarchy and the
+  association ends as property views, so the navigable shape is documented alongside the
+  grammar rather than in a separate drawing.
+modelSources:
+  model:
+    root: ember-meadow-3
+    files:
+      - test/embermeadow3/diagram/RingingDiagram.pure
+      - test/embermeadow3/domain/RingingAssociations.pure
+      - test/embermeadow3/domain/RingingDomain.pure
+      - test/embermeadow3/domain/RingingVocabulary.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - bird-ringing
+  - class-inheritance
+  - diagram
+  - enumeration
+  - store-less

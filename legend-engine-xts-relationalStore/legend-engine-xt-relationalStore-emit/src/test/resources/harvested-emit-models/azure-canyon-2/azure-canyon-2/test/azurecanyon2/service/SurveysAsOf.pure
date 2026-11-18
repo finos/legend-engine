@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azurecanyon2::service::SurveysAsOf
+{
+  pattern: '/sky/v1/surveys/{processingDate}/{businessDate}';
+  title: 'Sky - Surveys As Of';
+  owners:
+  [
+    'sky-survey-ops',
+    'observatory-eng'
+  ];
+  documentation: 'Returns observing campaigns visible at the requested processing and business dates, restricted to a collection of target bands and annotated with a derived coverage tier.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::azurecanyon2::domain::SkySurvey.all($processingDate, $businessDate)->filter(
+      s|$s.targetBand->in(['UV', 'IR'])
+    )->project(
+      [
+        x|$x.name,
+        x|$x.coverageTier(),
+        x|$x.plateCount
+      ],
+      [
+        'Survey',
+        'Tier',
+        'Plates'
+      ]
+    )->sort(
+      [
+        asc('Survey')
+      ]
+    )};
+    mapping: test::azurecanyon2::mapping::SkyMapping;
+    runtime: test::azurecanyon2::runtime::SkyRuntime;
+  }
+  testSuites:
+  [
+    surveysAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyConnection:
+            Relational
+            #{
+              sky.survey:
+                'survey_id,survey_name,target_band,plate_count,in_z,out_z,from_z,thru_z\n'+
+                '1,Northern Arc Survey,UV,512,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                '2,Southern Arc Survey,IR,180,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                '3,Retired Patrol,UV,90,2023-01-01,2023-12-31,2023-01-01,2023-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        midYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2024-06-01,
+            businessDate = %2024-06-01
+          ]
+          asserts:
+          [
+            twoLiveSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"Northern Arc Survey","Tier":"DEEP-UV","Plates":512},{"Survey":"Southern Arc Survey","Tier":"MID-IR","Plates":180}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskybeacon::mapping::SkyMapping
+(
+  *test::duskybeacon::domain::Observatory[observatory]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskybeacon::store::SkyDB]sky.observatory.obs_code
+    )
+    ~mainTable [test::duskybeacon::store::SkyDB]sky.observatory
+    obsCode: [test::duskybeacon::store::SkyDB]sky.observatory.obs_code,
+    obsName: [test::duskybeacon::store::SkyDB]sky.observatory.obs_name,
+    elevationM: [test::duskybeacon::store::SkyDB]sky.observatory.elevation_m,
+    telescopes[telescope]: [test::duskybeacon::store::SkyDB]@Observatory_Telescope
+  }
+
+  *test::duskybeacon::domain::Telescope[telescope]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskybeacon::store::SkyDB]sky.telescope.instrument_code
+    )
+    ~mainTable [test::duskybeacon::store::SkyDB]sky.telescope
+    instrumentCode: [test::duskybeacon::store::SkyDB]sky.telescope.instrument_code,
+    opticalClass: toUpper([test::duskybeacon::store::SkyDB]sky.telescope.optical_class),
+    apertureCm: [test::duskybeacon::store::SkyDB]sky.telescope.aperture_cm,
+    apertureBand: case([test::duskybeacon::store::SkyDB]sky.telescope.aperture_cm > 200, 'WIDE', case([test::duskybeacon::store::SkyDB]sky.telescope.aperture_cm > 100, 'MEDIUM', 'NARROW')),
+    commissionedOn: [test::duskybeacon::store::SkyDB]sky.telescope.commissioned_on,
+    observatory[observatory]: [test::duskybeacon::store::SkyDB]@Observatory_Telescope
+  }
+
+  testSuites:
+  [
+    telescopeRosterSuite:
+    {
+      function: |test::duskybeacon::domain::Telescope.all()->project(
+        [
+          t|$t.instrumentCode,
+          t|$t.opticalClass,
+          t|$t.apertureBand,
+          t|$t.observatory.obsName->toOne()
+        ],
+        [
+          'Instrument',
+          'Optics',
+          'Band',
+          'Observatory'
+        ]
+      )->sort([asc('Instrument')]);
+      tests:
+      [
+        rosterWalksJoin:
+        {
+          doc: 'Projects every telescope with its aperture band and the observatory name reached through the inner join, exercising the association implementation.';
+          data:
+          [
+            test::duskybeacon::store::SkyDB:
+              Reference
+              #{
+                test::duskybeacon::data::SkyTestData
+              }#
+          ];
+          asserts:
+          [
+            roster:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Instrument":"T-100","Optics":"REFLECTOR","Band":"WIDE","Observatory":"Ridgecrest Dome"},{"Instrument":"T-200","Optics":"REFRACTOR","Band":"MEDIUM","Observatory":"Ridgecrest Dome"},{"Instrument":"T-300","Optics":"SCHMIDT","Band":"NARROW","Observatory":"Coastal Array"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

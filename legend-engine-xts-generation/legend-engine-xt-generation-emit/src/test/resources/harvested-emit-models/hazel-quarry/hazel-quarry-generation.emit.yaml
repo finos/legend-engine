@@ -1,0 +1,28 @@
+name: hazel-quarry-generation
+title: "Quarry Survey Domain — Profile-Annotated Classes and Avro Artifact Generation"
+description: |
+  A stone-quarry survey corpus. A profile declares stereotypes and tags that
+  annotate the extraction-site, stone-block and survey-reading classes and their
+  documentation. An Avro file generation emits an external schema from those
+  classes, including their inherited supertype properties and logical types, and
+  a generation specification sequences that artifact generation over the model.
+modelSources:
+  model:
+    root: hazel-quarry-generation
+    files:
+      - test/hazelquarry/domain/QuarryDomain.pure
+      - test/hazelquarry/generation/QuarryGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - avro
+  - file-generation
+  - generation-specification
+  - profile
+  - quarry
+  - stereotypes

@@ -1,0 +1,75 @@
+name: teal-otter-3
+title: "Seed Vault - a four-table cold-room accession register with composite keys, three chained-join associations and a taxon-partitioned germination window"
+description: |
+  A conservation seed archive spread over four sibling tables of one schema: stored accessions keyed on
+  their code and collection date, the taxa and cold rooms they resolve against, and the germination
+  trials keyed on trial number and accession. One relational mapping names a main-table alias per
+  class, declares composite primary keys of mixed type on two of them, derives a literal curation
+  column and a concatenated grade column beside the direct column bindings, and reaches the taxon
+  name of a trial through a chained two-hop traversal. Three named equi-joins of differing key shape
+  - two single-column and one two-column - realise the three declared associations as relational
+  association implementations, so navigation becomes an inner join and a driver row whose vault key
+  does not resolve drops out. Three single-execution services differ structurally: a three-parameter
+  filtered projection of eight mixed-type columns with an existence test over the to-many trial
+  traversal and a single-value coercion, a rolled-up per-vault seed total restricted by a membership
+  test, and a taxon-partitioned window ranking where a tie shares the leading rank. A data space
+  packages the mapping, runtime and two of those endpoints behind support metadata, and the runtime
+  binds the mapping to a Snowflake connection authenticated through OAuth.
+modelSources:
+  model:
+    root: teal-otter-3
+    files:
+      - test/tealotter3/connection/SeedVaultConnections.pure
+      - test/tealotter3/data/SeedArchiveData.pure
+      - test/tealotter3/dataspace/SeedArchiveDataSpace.pure
+      - test/tealotter3/domain/SeedArchiveDomain.pure
+      - test/tealotter3/mapping/SeedArchiveMapping.pure
+      - test/tealotter3/runtime/SeedVaultRuntimes.pure
+      - test/tealotter3/service/AccessionRegister.pure
+      - test/tealotter3/service/TrialRankBoard.pure
+      - test/tealotter3/service/VaultYieldSummary.pure
+      - test/tealotter3/store/SeedVaultDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - composite-key
+  - data-space
+  - group-by
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - multi-table
+  - primary-key
+  - relational
+  - seed-archive
+  - service-test
+  - snowflake
+  - tabular-data-set
+  - window

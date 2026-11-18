@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedvineyard4::service::VarietalRoster
+{
+  pattern: '/vineyard/v1/varietals/{processedAt}';
+  title: 'Gilded Vineyard - Distinct Varietal Roster';
+  owners:
+  [
+    'vineyard-estate-programme',
+    'vineyard-survey-desk'
+  ];
+  documentation: 'Enters the vine-block extent at the requested processing date, keeps blocks whose estate appears in the supplied set or whose canopy style is one the caller names, projects the varietal alone, de-duplicates it, orders it and takes a bounded slice, so both the set semantics of the projection and the bound on the ordered result are part of the plan. An empty membership collection makes its disjunct false rather than faulting.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processedAt: StrictDate[1], estateCodes: String[*], canopyStyles: String[*], rowLimit: Integer[1]|test::gildedvineyard4::domain::VineBlock.all($processedAt)->filter(
+      b|($b.estateCode->in($estateCodes)) || ($b.canopyStyle->in($canopyStyles))
+    )->project(
+      [
+        b|$b.varietalCode
+      ],
+      [
+        'Varietal'
+      ]
+    )->distinct()->sort([asc('Varietal')])->take($rowLimit)};
+    mapping: test::gildedvineyard4::mapping::VineyardMapping;
+    runtime: test::gildedvineyard4::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    varietalRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardWarehouseConnection:
+            Relational
+            #{
+              vineyard.trellis_section:
+                'section_id,section_code,canopy_style,estate_code,row_spacing_m,in_z,out_z\n'+
+                'S1,SC-10,VERTICAL-SHOOT,EST-N,2.5,2026-01-01,9999-12-31\n'+
+                'S2,SC-20,SPRAWL,EST-S,3.0,2026-01-01,9999-12-31\n';
+
+              vineyard.vine_block:
+                'block_id,block_code,varietal_code,estate_code,section_id,vine_count,hectares,soil_ph,planted_on,surveyed_at,warden_name,in_z,out_z\n'+
+                'B1,BL-100,VR-ALBA,EST-N,S1,4200,3.500,6.4,2019-04-01,2026-02-16 08:30:00,Wren Ash,2026-01-01,9999-12-31\n'+
+                'B2,BL-200,VR-NOIR,EST-S,S2,3100,2.250,6.8,2020-05-01,,,2026-01-01,9999-12-31\n'+
+                'B3,BL-300,VR-ALBA,EST-N,S1,1800,1.125,6.1,2021-03-01,,Rowan Vale,2026-01-01,9999-12-31\n'+
+                'B4,BL-400,VR-GRIS,EST-W,S2,5000,4.000,6.9,2018-02-01,,,2025-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        duplicateVarietalCollapses:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2026-03-01,
+            estateCodes = ['EST-N'],
+            canopyStyles = ['SPRAWL'],
+            rowLimit = 10
+          ]
+          asserts:
+          [
+            twoDistinctVarietals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Varietal":"VR-ALBA"},{"Varietal":"VR-NOIR"}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyCanopyCollectionIsFalseNotFatal:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2026-03-01,
+            estateCodes = ['EST-S'],
+            canopyStyles = [],
+            rowLimit = 10
+          ]
+          asserts:
+          [
+            onlyTheEstateMembershipSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Varietal":"VR-NOIR"}]';
+                  }#;
+              }#
+          ]
+        },
+        boundOnTheOrderedRoster:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processedAt = %2026-03-01,
+            estateCodes = ['EST-N'],
+            canopyStyles = ['SPRAWL'],
+            rowLimit = 1
+          ]
+          asserts:
+          [
+            onlyTheLeadingVarietal:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Varietal":"VR-ALBA"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

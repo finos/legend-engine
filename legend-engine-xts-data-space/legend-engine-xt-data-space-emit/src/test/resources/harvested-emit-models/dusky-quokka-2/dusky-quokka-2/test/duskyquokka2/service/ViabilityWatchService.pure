@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyquokka2::service::ViabilityWatchService
+{
+  pattern: '/duskyquokka2/v1/viability/watch';
+  title: 'Viability Watch';
+  owners:
+  [
+    'nursery-propagation'
+  ];
+  documentation: 'Returns the germination viability readings at or above a requested threshold, reaching the propagation block name through the join-reached column on the reading.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {threshold: Integer[1]|test::duskyquokka2::domain::ViabilityCheck.all()->filter(
+      c|$c.viabilityPercent >= $threshold
+    )->project(
+      [
+        c|$c.checkCode,
+        c|$c.viabilityPercent,
+        c|$c.blockName
+      ],
+      [
+        'CheckCode',
+        'ViabilityPercent',
+        'BlockName'
+      ]
+    )->sort(
+      [
+        asc('CheckCode')
+      ]
+    )};
+    mapping: test::duskyquokka2::mapping::NurseryMapping;
+    runtime: test::duskyquokka2::runtime::NurseryRuntime;
+  }
+  testSuites:
+  [
+    watchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryConnection:
+            Relational
+            #{
+              nursery.propagation_block:
+                'block_code,block_name,glasshouse_zone,crew_code\n'+
+                'PB-01,Long Bench,EAST,GC-01\n'+
+                'PB-02,Cold Frame,WEST,GC-02\n';
+
+              nursery.viability_check:
+                'check_code,block_code,viability_percent\n'+
+                'VC-01,PB-01,88\n'+
+                'VC-02,PB-02,41\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        germinatingReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            threshold = 70
+          ]
+          asserts:
+          [
+            oneGerminatingReading:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"VC-01","ViabilityPercent":88,"BlockName":"Long Bench"}]';
+                  }#;
+              }#
+          ]
+        },
+        allReadings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            threshold = 0
+          ]
+          asserts:
+          [
+            bothReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"VC-01","ViabilityPercent":88,"BlockName":"Long Bench"},{"CheckCode":"VC-02","ViabilityPercent":41,"BlockName":"Cold Frame"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

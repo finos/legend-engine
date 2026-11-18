@@ -1,0 +1,54 @@
+name: quiet-canyon-3
+title: "Quiet Canyon 3 — Payload-Backed Panel Reports Through Checked And Unchecked Graph Fetches"
+description: >-
+  A rock-art panel condition register with no database behind it at all. Submissions arrive as
+  serialised documents delivered by the executor, bound to the model store by connections that name
+  the submission class, and one model-to-model mapping reshapes them onto the published panel
+  contract: a condition band selected from four nested arms over the submitted integrity fraction,
+  a staged phase label composed out of a trimmed and upper-cased phase word, a fracture index
+  computed arithmetically from the submitted count, a cover label banded off the lichen percentage,
+  a digest joined out of the clearance-note collection and a two-level station graph whose codes are
+  rebuilt with prefixes. A source filter admits a submission only while its panel code carries the
+  expected prefix and its notes are either absent or cleared. Two services publish the same target
+  class over inline runtimes declared in their own execution blocks rather than through a shared
+  runtime element: the first materialises the whole nested graph and serialises it, the second
+  materialises a narrower graph in checked form so per-value validation outcomes travel with the
+  values. The mapping carries its own suite covering every condition arm, the absent station graph,
+  the missing sector and every fallback arm.
+modelSources:
+  model:
+    root: quiet-canyon-3
+    files:
+      - test/quietcanyon3/domain/CanyonDomain.pure
+      - test/quietcanyon3/mapping/CanyonM2M.pure
+      - test/quietcanyon3/service/PanelDigestFeed.pure
+      - test/quietcanyon3/service/PanelIntakeDocument.pure
+      - test/quietcanyon3/source/CanyonFeed.pure
+features:
+  - scaffolding:model-connection
+  - execution:embedded-runtime
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - execution:graph-fetch
+  - execution:checked-graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores:
+  - model-store
+complexity: intermediate
+tags:
+  - checked-graph-fetch
+  - conditional-transform
+  - embedded-runtime
+  - graph-fetch
+  - mapping-test
+  - model-store-json
+  - model-to-model
+  - rock-art-survey
+  - service-test
+  - source-filter

@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::tealotter3::data::SeedArchiveData
+{
+  Relational
+  #{
+    seedarchive.accession:
+      'accession_code,collected_on,taxon_code,vault_code,seed_count,viable_pct,dried\n'+
+      'AC-01,2026-01-04,TX-01,VL-01,1200,91.5,true\n'+
+      'AC-01,2026-03-09,TX-01,VL-01,800,88.25,true\n'+
+      'AC-02,2026-02-11,TX-02,VL-02,450,74.25,false\n'+
+      'AC-03,2026-02-14,TX-03,VL-09,90,,false\n'+
+      'AC-04,2026-02-20,TX-01,VL-03,300,55.75,false\n';
+
+    seedarchive.taxon:
+      'taxon_code,taxon_name,family_code\n'+
+      'TX-01,Bristle Sedge,FM-CYP\n'+
+      'TX-02,Marsh Vetch,FM-FAB\n'+
+      'TX-03,Dune Fescue,\n';
+
+    seedarchive.vault:
+      'vault_code,vault_name,chill_degrees\n'+
+      'VL-01,North Chill Room,-18\n'+
+      'VL-02,South Chill Room,-20\n'+
+      'VL-03,Dry Annex,4\n';
+
+    seedarchive.germination:
+      'trial_id,accession_code,vault_code,germinated_pct,tested_on\n'+
+      '1,AC-01,VL-01,84,2026-04-01\n'+
+      '2,AC-01,VL-01,79,2026-05-01\n'+
+      '3,AC-02,VL-02,61,2026-04-15\n'+
+      '4,AC-02,VL-02,61,2026-04-20\n'+
+      '5,AC-09,VL-01,50,2026-04-22\n';
+  }#
+}

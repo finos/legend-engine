@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One nest count taken on a survey plot of an island seabird colony. Counts are delivered in processing batches, so every version of a count is valid from the day it was loaded until the day a later load closed it, and a query always reads the versions open on its processing day. Classifications of the weather, the counting method, the breeding outcome, the season and the size band are derived from the raw codes, and the plot, colony, island, reserve, species and observer of the count are reached through the store joins.'} test::azureisle::domain::NestCount
+{
+  {meta::pure::profiles::doc.doc = 'Identifier of the nest count.'} countId: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Code of the survey plot the count was taken on.'} plotCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Day the nests were counted.'} countedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Number of occupied nests counted.'} nestTotal: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Number of chicks seen, when they were counted.'} chickTotal: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Weather during the count, classified from the raw weather code.'} weatherLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Counting method classified from the raw method code.'} methodLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Breeding outcome inferred from the chick total; empty when chicks were not counted.'} breedingStatus: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Half of the breeding season the count fell in.'} countSeason: String[1];
+  {meta::pure::profiles::doc.doc = 'Size band of the count combined with the counting method code.'} productivityBand: String[1];
+  {meta::pure::profiles::doc.doc = 'Habitat of the survey plot, one join away.'} habitatKind: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the colony the plot belongs to, two joins away.'} colonyName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the island the colony nests on, three joins away.'} islandName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the reserve the island belongs to, four joins away.'} reserveName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Common name of the species of the colony, three joins away.'} speciesName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the active observer who took the count, read through the distinct roster view.'} observerName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Latest completed census visit of a colony, read from a grouped view that keeps only completed or verified visits.'} test::azureisle::domain::ColonyVisitSummary
+{
+  {meta::pure::profiles::doc.doc = 'Code of the visited colony.'} colonyCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Instant of the latest completed visit.'} latestVisitAt: DateTime[1];
+  {meta::pure::profiles::doc.doc = 'Highest headcount recorded on a completed visit.'} peakHeadcount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Name of the visited colony.'} colonyName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One active observer of the survey roster, read from a distinct view that collapses repeated roster rows and drops retired observers.'} test::azureisle::domain::ObserverRosterEntry
+{
+  {meta::pure::profiles::doc.doc = 'Code of the observer.'} observerCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Name of the observer.'} observerName: String[1];
+  {meta::pure::profiles::doc.doc = 'Team the observer counts with.'} teamCode: String[1];
+}

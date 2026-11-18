@@ -1,0 +1,184 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernquarry::mapping::DepotBaleMapping
+(
+  *test::westernquarry::domain::BaleLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernquarry::store::DepotDb]recycling.bale_lot.lot_code
+    )
+    ~mainTable [test::westernquarry::store::DepotDb]recycling.bale_lot
+    lotCode: [test::westernquarry::store::DepotDb]recycling.bale_lot.lot_code,
+    depotCode: [test::westernquarry::store::DepotDb]recycling.bale_lot.depot_code,
+    depotName: [test::westernquarry::store::DepotDb]@Lot_Depot | recycling.sort_depot.depot_name,
+    materialCode: [test::westernquarry::store::DepotDb]recycling.bale_lot.material_code,
+    pressCode: [test::westernquarry::store::DepotDb]recycling.bale_lot.press_code,
+    purityPct: [test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct,
+    massKg: [test::westernquarry::store::DepotDb]recycling.bale_lot.mass_kg,
+    feedStream: 'MUNICIPAL-KERBSIDE',
+    purityGrade: case(
+                   greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 99),
+                   'ARM-8-MILL-READY',
+                   case(
+                     greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 97),
+                     'ARM-7-PRIME',
+                     case(
+                       greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 94),
+                       'ARM-6-CLEAN',
+                       case(
+                         greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 90),
+                         'ARM-5-STANDARD',
+                         case(
+                           greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 85),
+                           'ARM-4-MIXED',
+                           case(
+                             greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 78),
+                             'ARM-3-CONTAMINATED',
+                             case(
+                               greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 70),
+                               'ARM-2-REWORK',
+                               case(
+                                 greaterThanEqual([test::westernquarry::store::DepotDb]recycling.bale_lot.purity_pct, 55),
+                                 'ARM-1-REJECT',
+                                 sqlNull()
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    kilosPerBale: round(divide(coalesce([test::westernquarry::store::DepotDb]recycling.bale_lot.mass_kg, 0), coalesce([test::westernquarry::store::DepotDb]recycling.bale_lot.bale_count, 1)), 2)
+  }
+
+  *test::westernquarry::domain::SortDepot[depot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernquarry::store::DepotDb]recycling.sort_depot.depot_code
+    )
+    ~mainTable [test::westernquarry::store::DepotDb]recycling.sort_depot
+    depotCode: [test::westernquarry::store::DepotDb]recycling.sort_depot.depot_code,
+    depotName: [test::westernquarry::store::DepotDb]recycling.sort_depot.depot_name,
+    districtName: [test::westernquarry::store::DepotDb]recycling.sort_depot.district_name
+  }
+
+  test::westernquarry::domain::Depot_Lots: Relational
+  {
+    AssociationMapping
+    (
+      lots[depot, lot]: [test::westernquarry::store::DepotDb]@Lot_Depot,
+      depot[lot, depot]: [test::westernquarry::store::DepotDb]@Lot_Depot
+    )
+  }
+
+  testSuites:
+  [
+    purityGradeSuite:
+    {
+      function: |test::westernquarry::domain::BaleLot.all()->project(~[lotCode: l|$l.lotCode, depotName: l|$l.depotName, purityGrade: l|$l.purityGrade, feedStream: l|$l.feedStream, kilosPerBale: l|$l.kilosPerBale]);
+      tests:
+      [
+        allEightPurityArmsTheNullFallbackAndAJoinMiss:
+        {
+          doc: 'Nine lots cover the eight arms of the purity conditional plus the fallback that resolves to no value, the mapping-supplied literal feed stream on every row, the rounded division over a defaulted bale count, and the depot name reached over the association join including the row whose depot reference is absent.';
+          data:
+          [
+            test::westernquarry::store::DepotDb:
+              Relational
+              #{
+                recycling.sort_depot:
+                  'depot_code,depot_name,district_name\n'+
+                  'DP-1,Riverside Sorting Depot,Riverside\n'+
+                  'DP-2,Hillcrest Sorting Depot,Hillcrest\n'+
+                  'DP-3,Eastgate Sorting Depot,Eastgate\n';
+
+                recycling.bale_lot:
+                  'lot_code,depot_code,material_code,press_code,purity_pct,mass_kg,bale_count,pressed_on\n'+
+                  'BL-01,DP-1,PET,PR-1,99.5,500,2,2026-03-01\n'+
+                  'BL-02,DP-1,PET,PR-1,97.5,450,2,2026-03-02\n'+
+                  'BL-03,DP-1,HDPE,PR-2,95.0,400,4,2026-03-03\n'+
+                  'BL-04,DP-2,HDPE,PR-2,91.0,360,4,2026-03-04\n'+
+                  'BL-05,DP-2,PAPER,PR-3,86.0,300,5,2026-03-05\n'+
+                  'BL-06,DP-2,PAPER,PR-3,80.0,250,5,2026-03-06\n'+
+                  'BL-07,DP-3,GLASS,PR-4,72.0,200,8,2026-03-07\n'+
+                  'BL-08,DP-3,GLASS,PR-4,60.0,150,8,2026-03-08\n'+
+                  'BL-09,DP-9,MIXED,PR-5,40.0,90,,2026-03-09\n';
+              }#
+          ];
+          asserts:
+          [
+            gradedLots:
+              Relation
+              #{
+                lotCode,depotName,purityGrade,feedStream,kilosPerBale
+                BL-01,Riverside Sorting Depot,ARM-8-MILL-READY,MUNICIPAL-KERBSIDE,250.0
+                BL-02,Riverside Sorting Depot,ARM-7-PRIME,MUNICIPAL-KERBSIDE,225.0
+                BL-03,Riverside Sorting Depot,ARM-6-CLEAN,MUNICIPAL-KERBSIDE,100.0
+                BL-04,Hillcrest Sorting Depot,ARM-5-STANDARD,MUNICIPAL-KERBSIDE,90.0
+                BL-05,Hillcrest Sorting Depot,ARM-4-MIXED,MUNICIPAL-KERBSIDE,60.0
+                BL-06,Hillcrest Sorting Depot,ARM-3-CONTAMINATED,MUNICIPAL-KERBSIDE,50.0
+                BL-07,Eastgate Sorting Depot,ARM-2-REWORK,MUNICIPAL-KERBSIDE,25.0
+                BL-08,Eastgate Sorting Depot,ARM-1-REJECT,MUNICIPAL-KERBSIDE,18.75
+                BL-09,,,MUNICIPAL-KERBSIDE,90.0;
+              }#
+          ];
+        }
+      ];
+    },
+    depotNavigationSuite:
+    {
+      function: |test::westernquarry::domain::SortDepot.all()->project(~[depotCode: d|$d.depotCode, districtName: d|$d.districtName, lotCode: d|$d.lots.lotCode, lotGrade: d|$d.lots.purityGrade]);
+      tests:
+      [
+        associationNavigationFromDepotToItsBales:
+        {
+          doc: 'Navigating the to-many association end from each depot resolves through the store join, so every depot row fans out to the bales it pressed and carries their derived grade with it.';
+          data:
+          [
+            test::westernquarry::store::DepotDb:
+              Relational
+              #{
+                recycling.sort_depot:
+                  'depot_code,depot_name,district_name\n'+
+                  'DP-1,Riverside Sorting Depot,Riverside\n'+
+                  'DP-2,Hillcrest Sorting Depot,Hillcrest\n';
+
+                recycling.bale_lot:
+                  'lot_code,depot_code,material_code,press_code,purity_pct,mass_kg,bale_count,pressed_on\n'+
+                  'BL-01,DP-1,PET,PR-1,99.5,500,2,2026-03-01\n'+
+                  'BL-03,DP-1,HDPE,PR-2,95.0,400,4,2026-03-03\n'+
+                  'BL-04,DP-2,HDPE,PR-2,91.0,360,4,2026-03-04\n';
+              }#
+          ];
+          asserts:
+          [
+            depotBales:
+              Relation
+              #{
+                depotCode,districtName,lotCode,lotGrade
+                DP-1,Riverside,BL-01,ARM-8-MILL-READY
+                DP-1,Riverside,BL-03,ARM-6-CLEAN
+                DP-2,Hillcrest,BL-04,ARM-5-STANDARD;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

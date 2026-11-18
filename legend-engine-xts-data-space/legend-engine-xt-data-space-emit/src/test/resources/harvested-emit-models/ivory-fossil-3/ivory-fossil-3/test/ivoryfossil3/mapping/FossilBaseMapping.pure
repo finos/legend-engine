@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryfossil3::mapping::FossilBaseMapping
+(
+  test::ivoryfossil3::domain::PreservationGrade: EnumerationMapping GradeMapping
+  {
+    PRISTINE: ['P'],
+    WEATHERED: ['W'],
+    FRAGMENT: ['F'],
+    UNGRADED: ['ZZ']
+  }
+
+  *test::ivoryfossil3::domain::Stratum[stratum]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryfossil3::store::FieldDb]field.stratum.site_code,
+      [test::ivoryfossil3::store::FieldDb]field.stratum.layer_no
+    )
+    ~mainTable [test::ivoryfossil3::store::FieldDb]field.stratum
+    siteCode: [test::ivoryfossil3::store::FieldDb]field.stratum.site_code,
+    layerNo: [test::ivoryfossil3::store::FieldDb]field.stratum.layer_no,
+    eraCode: case(equal([test::ivoryfossil3::store::FieldDb]field.stratum.era_code, '?'), sqlNull(), [test::ivoryfossil3::store::FieldDb]field.stratum.era_code),
+    depthM: [test::ivoryfossil3::store::FieldDb]field.stratum.depth_m
+  }
+
+  *test::ivoryfossil3::domain::DigSite[digSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryfossil3::store::FieldDb]field.dig_site.site_code
+    )
+    ~mainTable [test::ivoryfossil3::store::FieldDb]field.dig_site
+    siteCode: [test::ivoryfossil3::store::FieldDb]field.dig_site.site_code,
+    siteName: [test::ivoryfossil3::store::FieldDb]field.dig_site.site_name,
+    regionCode: [test::ivoryfossil3::store::FieldDb]field.dig_site.region_code
+  }
+
+  test::ivoryfossil3::domain::Stratum_Site: Relational
+  {
+    AssociationMapping
+    (
+      site[stratum, digSite]: [test::ivoryfossil3::store::FieldDb]@StratumSite,
+      strata[digSite, stratum]: [test::ivoryfossil3::store::FieldDb]@StratumSite
+    )
+  }
+
+  testSuites:
+  [
+    stratumSiteSuite:
+    {
+      function: |test::ivoryfossil3::domain::Stratum.all()->project(
+  [
+    s|$s.siteCode,
+    s|$s.layerNo,
+    s|$s.eraCode,
+    s|$s.depthBand(3.0),
+    s|$s.site.siteName
+  ],
+  [
+    'Site',
+    'Layer',
+    'Era',
+    'Band',
+    'SiteName'
+  ]
+)->sort(
+  [
+    asc('Site'),
+    asc('Layer')
+  ]
+);
+      tests:
+      [
+        layersWithAndWithoutSites:
+        {
+          doc: 'Layers reach their dig site across the stratum-to-site association; a placeholder era code becomes null, depth bands split on the three-metre limit and an orphan layer keeps a null site name.';
+          data:
+          [
+            test::ivoryfossil3::store::FieldDb:
+              Relational
+              #{
+                field.dig_site:
+                  'site_code,site_name,region_code\n'+
+                  'QS,Quarry Shelf,N1\n'+
+                  'RB,Red Bluff,S2\n';
+                field.stratum:
+                  'site_code,layer_no,era_code,depth_m\n'+
+                  'QS,1,CAM,2.5\n'+
+                  'QS,2,ORD,4.0\n'+
+                  'RB,1,?,1.5\n'+
+                  'XX,1,DEV,\n';
+              }#
+          ];
+          asserts:
+          [
+            layerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"QS","Layer":1,"Era":"CAM","Band":"SHALLOW","SiteName":"Quarry Shelf"},{"Site":"QS","Layer":2,"Era":"ORD","Band":"DEEP","SiteName":"Quarry Shelf"},{"Site":"RB","Layer":1,"Era":null,"Band":"SHALLOW","SiteName":"Red Bluff"},{"Site":"XX","Layer":1,"Era":"DEV","Band":"UNMEASURED","SiteName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

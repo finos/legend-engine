@@ -1,0 +1,59 @@
+name: quiet-prairie-4
+title: "Prairie Grassland Seed Returns — A Relational Mapping Folding Burn Codes onto an Enumeration Beside a Model-to-Model Mapping Digesting Submitted Returns"
+description: |
+  A prairie reserve keeps its grassland plots and the tracts they sit in as two
+  tables of one relational store. The plot class is bound onto its own main
+  table with a declared primary key, every property is read through a column of
+  that table alias, the tract name is read across a single join hop, and the
+  short burn code held in the table is folded onto a burn-state enumeration by
+  an enumeration mapping in which one state is reached by a single literal and
+  another by a list of two literals. A mapping test narrows the plots to the
+  well-yielding one standing in the rested state, so the second of the folded
+  literals is matched, a plot in another state is dropped, and the joined tract
+  name is asserted. Beside the relational side, a model-to-model mapping
+  digests the submitted seed returns: the digest code is taken straight from
+  the return, the label is built up from the trimmed and upper-cased plot name
+  with a fallback when no collector is named, the seed weight is carried from
+  kilograms into grams with a zero when no weight was returned, and the burn
+  state is folded through a second enumeration mapping over a computed value so
+  a return carrying no burn code lands on the unburnt state. Its test submits a
+  fully filled return, a collector-less one and one missing both weight and
+  burn code, and asserts all three digested rows.
+
+modelSources:
+  model:
+    root: quiet-prairie-4
+    files:
+      - test/quietprairie4/domain/PrairieDomain.pure
+      - test/quietprairie4/mapping/PlotDigestM2M.pure
+      - test/quietprairie4/mapping/PrairiePlotMapping.pure
+      - test/quietprairie4/store/PrairieDb.pure
+
+features:
+  - execution:mapping-test
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:relational-literal
+  - mapping:relational-literal-list
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - computed-enum-value
+  - enumeration-mapping
+  - fallback-label
+  - h2
+  - literal-list
+  - m2m-mapping
+  - mapping-test
+  - prairie-seed-return
+  - relational-mapping
+  - table-alias-column
+  - unit-conversion

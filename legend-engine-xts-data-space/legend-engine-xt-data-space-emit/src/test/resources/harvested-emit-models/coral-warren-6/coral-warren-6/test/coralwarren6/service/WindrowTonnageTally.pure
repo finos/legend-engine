@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralwarren6::service::WindrowTonnageTally
+{
+  pattern: '/coralwarren6/v1/{environment}/windrow-tonnage/{asOf}';
+  title: 'Coral Warren 6 - Windrow Tonnage Tally By Environment';
+  documentation: 'Groups the composting windrows standing at a business date by the site that operates them, keeping only the requested sites whose pile is actively turning, whose feedstock and aeration match the published regime, whose moisture and turn record sit exactly on the regime figures, whose recorded ward still agrees with the ward the operating site belongs to, and which carry at least one core-depth temperature probe. It reports the summed tonnage, the counted windrows and the largest single windrow per site, and dispatches the one body through an environment-keyed execution.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['compost-yard-desk'] };
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], siteCodes: String[*]|test::coralwarren6::domain::Windrow.all($asOf)->filter(
+      w|($w.windrowState == 'ACTIVE') && (($w.probes->exists(p|$p.probeGrade == 'CORE')) && (($w.feedstockGrade == 'GREEN') && (($w.wardCode == $w.compostSite.wardCode) && (($w.aerationMode == 'FORCED') && (($w.turnCount == 3) && (($w.moisturePct == 55) && ($w.siteCode->in($siteCodes))))))))
+    )->project(~[
+      site: w|$w.siteCode,
+      windrow: w|$w.windrowCode,
+      tonnage: w|$w.tonnage
+    ])->groupBy(~[site], ~[totalTonnage: x|$x.tonnage : y|$y->sum(), windrows: x|$x.windrow : y|$y->count(), topTonnage: x|$x.tonnage : y|$y->max()])->sort(~site->ascending())};
+    key: 'environment';
+    executions['yard']:
+    {
+      mapping: test::coralwarren6::mapping::CompostYardMapping;
+      runtime: test::coralwarren6::runtime::CompostYardRuntime;
+    }
+  }
+  testSuites:
+  [
+    windrowTonnageSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          compostYardConnection:
+            Relational
+            #{
+              SITE.COMPOST_SITE:
+            'SITE_CODE,SITE_NAME,WARD_CODE\n'+
+              'ST-1,Willowbank Compost Yard,W-1\n'+
+              'ST-2,Ferndale Compost Yard,W-2\n'+
+              'ST-3,Marlpit Compost Yard,W-3\n'+
+              'ST-4,Oldkiln Compost Yard,W-4\n';
+
+              YARD.WINDROW:
+            'WINDROW_CODE,SITE_CODE,WARD_CODE,FEEDSTOCK_GRADE,AERATION_MODE,MOISTURE_PCT,TURN_COUNT,TONNAGE,WINDROW_STATE,FROM_Z,THRU_Z\n'+
+              'WR-01,ST-1,W-1,GREEN,FORCED,55,3,120,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-02,ST-1,W-1,GREEN,FORCED,55,3,80,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-03,ST-2,W-2,GREEN,FORCED,55,3,150,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-04,ST-2,W-2,GREEN,FORCED,55,3,60,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-05,ST-3,W-3,BROWN,FORCED,55,3,90,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-06,ST-1,W-9,GREEN,FORCED,55,3,70,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-07,ST-1,W-1,GREEN,PASSIVE,55,3,50,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-08,ST-1,W-1,GREEN,FORCED,40,3,40,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-09,ST-1,W-1,GREEN,FORCED,55,1,30,ACTIVE,2026-01-01,9999-12-31\n'+
+              'WR-10,ST-1,W-1,GREEN,FORCED,55,3,20,CURED,2026-01-01,9999-12-31\n'+
+              'WR-11,ST-4,W-4,GREEN,FORCED,55,3,45,ACTIVE,2024-01-01,2024-12-31\n';
+
+              PROBE.TEMPERATURE_PROBE:
+            'PROBE_CODE,WINDROW_CODE,PROBE_GRADE,FROM_Z,THRU_Z\n'+
+              'PR-01,WR-01,CORE,2026-01-01,9999-12-31\n'+
+              'PR-02,WR-02,CORE,2026-01-01,9999-12-31\n'+
+              'PR-03,WR-03,CORE,2026-01-01,9999-12-31\n'+
+              'PR-04,WR-04,EDGE,2026-01-01,9999-12-31\n'+
+              'PR-05,WR-05,CORE,2026-01-01,9999-12-31\n'+
+              'PR-06,WR-06,CORE,2026-01-01,9999-12-31\n'+
+              'PR-07,WR-07,CORE,2026-01-01,9999-12-31\n'+
+              'PR-08,WR-08,CORE,2026-01-01,9999-12-31\n'+
+              'PR-09,WR-09,CORE,2026-01-01,9999-12-31\n'+
+              'PR-10,WR-10,CORE,2026-01-01,9999-12-31\n'+
+              'PR-11,WR-11,CORE,2024-01-01,2024-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        tonnagePerSiteUnderThePublishedRegime:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['yard'];
+          parameters:
+          [
+            asOf = %2026-06-01,
+            siteCodes = ['ST-1', 'ST-2']
+          ]
+          asserts:
+          [
+            siteTallies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"site":"ST-1","totalTonnage":200,"windrows":2,"topTonnage":120},{"site":"ST-2","totalTonnage":150,"windrows":1,"topTonnage":150}]';
+                  }#;
+              }#
+          ]
+        },
+        anEarlierBusinessDateReadsTheRetiredWindrow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['yard'];
+          parameters:
+          [
+            asOf = %2024-06-01,
+            siteCodes = ['ST-1', 'ST-4']
+          ]
+          asserts:
+          [
+            retiredWindrowTally:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"site":"ST-4","totalTonnage":45,"windrows":1,"topTonnage":45}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

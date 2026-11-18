@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::kindlylighthouse2::store::ObservatoryDb
+(
+  Schema sky
+  (
+    Table telescope_slot
+    (
+      milestoning
+      (
+        business(BUS_FROM = valid_from, BUS_THRU = valid_thru)
+      )
+
+      slot_code VARCHAR(24) PRIMARY KEY,
+      telescope_code VARCHAR(24) NOT NULL,
+      observatory_code VARCHAR(24) NOT NULL,
+      target_name VARCHAR(120) NOT NULL,
+      status_code VARCHAR(24) NOT NULL,
+      valid_from DATE,
+      valid_thru DATE
+    )
+
+    Table telescope
+    (
+      telescope_code VARCHAR(24) PRIMARY KEY,
+      telescope_name VARCHAR(120) NOT NULL,
+      observatory_code VARCHAR(24) NOT NULL
+    )
+
+    Table observatory
+    (
+      observatory_code VARCHAR(24) PRIMARY KEY,
+      observatory_name VARCHAR(120) NOT NULL,
+      campus_code VARCHAR(24) NOT NULL
+    )
+
+    View observatory_snapshot
+    (
+      observatory_code: sky.observatory.observatory_code PRIMARY KEY,
+      observatory_label: concat(sky.observatory.observatory_code, sky.observatory.observatory_name),
+      campus_code: sky.observatory.campus_code
+    )
+  )
+
+  Schema ground
+  (
+    Table campus
+    (
+      campus_code VARCHAR(24) PRIMARY KEY,
+      campus_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(24) NOT NULL
+    )
+
+    Table region
+    (
+      region_code VARCHAR(24) PRIMARY KEY,
+      region_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Filter OpenSlots(sky.telescope_slot.status_code != 'CANCELLED')
+
+  Join Slot_Telescope(sky.telescope_slot.telescope_code = sky.telescope.telescope_code)
+  Join Telescope_Observatory(sky.telescope.observatory_code = sky.observatory.observatory_code)
+  Join Observatory_Campus(sky.observatory.campus_code = ground.campus.campus_code)
+  Join Campus_Region(ground.campus.region_code = ground.region.region_code)
+  Join Observatory_Snapshot(sky.observatory.observatory_code = sky.observatory_snapshot.observatory_code)
+)

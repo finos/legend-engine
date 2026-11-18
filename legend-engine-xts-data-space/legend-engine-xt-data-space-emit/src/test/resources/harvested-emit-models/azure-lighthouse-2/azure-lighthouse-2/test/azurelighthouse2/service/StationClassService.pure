@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::azurelighthouse2::service::StationClassService
+{
+  pattern: '/lighthouse/v1/stations/{zone}';
+  title: 'Coast beacon station classes';
+  owners:
+  [
+    'beacon-survey-team'
+  ];
+  documentation: 'Publish the classified beacon stations of one stretch of coast as a tabular result, resolved through the beacon mapping and the warehouse-backed runtime.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {zone: String[1]|demo::azurelighthouse2::domain::LighthouseStation.all()->filter(
+      s|($s.coastZone == $zone) && ($s.lampWatts >= 1000)
+    )->project(
+      [
+        x|$x.stationCode,
+        x|$x.stationName->toUpper(),
+        x|if(
+          $x.focalHeightM >= 60,
+          |'landfall',
+          |if(
+            $x.focalHeightM >= 30,
+            |'coastal',
+            |'harbour'
+          )
+        ),
+        x|$x.lampWatts / 1000
+      ],
+      [
+        'Station',
+        'Name',
+        'Class',
+        'Kilowatts'
+      ]
+    )};
+    mapping: demo::azurelighthouse2::mapping::LighthouseMapping;
+    runtime: demo::azurelighthouse2::runtime::LighthouseRuntime;
+  }
+  testSuites:
+  [
+    stationClassSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconWarehouse:
+            Relational
+            #{
+              beacons.lighthouse_station:
+                'station_code,station_name,coast_zone,focal_height_m,lamp_watts\n'+
+                'LS-01,North Spit Light,north-shore,72,4000\n'+
+                'LS-02,Gull Rock Light,north-shore,44,2000\n'+
+                'LS-03,Inner Quay Light,harbour-mouth,18,1000\n'+
+                'LS-04,Sand Beacon,north-shore,12,400\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northShoreStations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zone = 'north-shore'
+          ]
+          asserts:
+          [
+            weakBeaconDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"LS-01","Name":"NORTH SPIT LIGHT","Class":"landfall","Kilowatts":4},{"Station":"LS-02","Name":"GULL ROCK LIGHT","Class":"coastal","Kilowatts":2}]';
+                  }#;
+              }#
+          ]
+        },
+        harbourMouthStations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zone = 'harbour-mouth'
+          ]
+          asserts:
+          [
+            lowestClassArmReached:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"LS-03","Name":"INNER QUAY LIGHT","Class":"harbour","Kilowatts":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

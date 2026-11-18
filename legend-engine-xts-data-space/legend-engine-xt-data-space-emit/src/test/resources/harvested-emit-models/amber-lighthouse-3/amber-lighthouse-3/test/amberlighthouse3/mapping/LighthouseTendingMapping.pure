@@ -1,0 +1,187 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::amberlighthouse3::mapping::LighthouseTendingMapping
+(
+  include mapping test::amberlighthouse3::mapping::LighthouseEnumMappings
+
+  *test::amberlighthouse3::domain::LighthouseStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberlighthouse3::store::LighthouseDb]coastal.lighthouse_station.station_id
+    )
+    ~mainTable [test::amberlighthouse3::store::LighthouseDb]coastal.lighthouse_station
+    stationCode: [test::amberlighthouse3::store::LighthouseDb]coastal.lighthouse_station.station_code,
+    stationLabel: [test::amberlighthouse3::store::LighthouseDb]coastal.lighthouse_station.station_label,
+    coastCode: [test::amberlighthouse3::store::LighthouseDb]coastal.lighthouse_station.coast_code,
+    lensGrade: EnumerationMapping LensGradeMapping: [test::amberlighthouse3::store::LighthouseDb]coastal.lighthouse_station.lens_grade_char,
+    lamps[lamp]: [test::amberlighthouse3::store::LighthouseDb]@Station_Lamp
+  }
+
+  *test::amberlighthouse3::domain::LampFitting[lamp]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberlighthouse3::store::LighthouseDb]coastal.lamp_fitting.lamp_id
+    )
+    ~mainTable [test::amberlighthouse3::store::LighthouseDb]coastal.lamp_fitting
+    lampCode: [test::amberlighthouse3::store::LighthouseDb]coastal.lamp_fitting.lamp_code,
+    lampKind: [test::amberlighthouse3::store::LighthouseDb]coastal.lamp_fitting.lamp_kind,
+    wattage: [test::amberlighthouse3::store::LighthouseDb]coastal.lamp_fitting.wattage
+  }
+
+  *test::amberlighthouse3::domain::CoastTendingSummary[coastSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberlighthouse3::store::LighthouseDb]coastal.coast_tending_summary.coast_code
+    )
+    ~mainTable [test::amberlighthouse3::store::LighthouseDb]coastal.coast_tending_summary
+    coastCode: [test::amberlighthouse3::store::LighthouseDb]coastal.coast_tending_summary.coast_code,
+    stationCount: [test::amberlighthouse3::store::LighthouseDb]coastal.coast_tending_summary.station_count
+  }
+
+  testSuites:
+  [
+    coastalTendingBindingSuite:
+    {
+      function: |test::amberlighthouse3::domain::LighthouseStation.all()->graphFetch(
+  #{
+    test::amberlighthouse3::domain::LighthouseStation
+    {
+      stationCode,
+      stationLabel,
+      coastCode,
+      lensGrade,
+      lamps
+      {
+        lampCode,
+        lampKind,
+        wattage
+      }
+    }
+  }#
+)->serialize(
+  #{
+    test::amberlighthouse3::domain::LighthouseStation
+    {
+      stationCode,
+      stationLabel,
+      coastCode,
+      lensGrade,
+      lamps
+      {
+        lampCode,
+        lampKind,
+        wattage
+      }
+    }
+  }#
+);
+      tests:
+      [
+        everyStationReachesItsLanternRoomFittings:
+        {
+          doc: 'Resolves the station binding through its aliased main table and declared key, folds the stored lens code out through the included enumeration mapping, and reaches the lantern-room fittings across the join, including a station holding a single fitting.';
+          data:
+          [
+            test::amberlighthouse3::store::LighthouseDb:
+              Relational
+              #{
+                coastal.lighthouse_station:
+                  'station_id,station_code,station_label,coast_code,lens_grade_char\n'+
+                  '1,LS-01,Gull Point Light,CO-01,F\n'+
+                  '2,LS-02,Shingle Spit Light,CO-01,S\n'+
+                  '3,LS-03,Cormorant Rock Light,CO-02,T\n';
+
+                coastal.lamp_fitting:
+                  'lamp_id,station_code,lamp_code,lamp_kind,wattage\n'+
+                  '1,LS-01,LF-01,HALOGEN,400\n'+
+                  '2,LS-01,LF-02,LED,120\n'+
+                  '3,LS-02,LF-03,LED,150\n'+
+                  '4,LS-03,LF-04,HALOGEN,500\n';
+              }#
+          ];
+          asserts:
+          [
+            stationGraphs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stationCode":"LS-01","stationLabel":"Gull Point Light","coastCode":"CO-01","lensGrade":"FIRST_ORDER","lamps":[{"lampCode":"LF-01","lampKind":"HALOGEN","wattage":400},{"lampCode":"LF-02","lampKind":"LED","wattage":120}]},{"stationCode":"LS-02","stationLabel":"Shingle Spit Light","coastCode":"CO-01","lensGrade":"SECOND_ORDER","lamps":[{"lampCode":"LF-03","lampKind":"LED","wattage":150}]},{"stationCode":"LS-03","stationLabel":"Cormorant Rock Light","coastCode":"CO-02","lensGrade":"THIRD_ORDER","lamps":[{"lampCode":"LF-04","lampKind":"HALOGEN","wattage":500}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    coastRollupBindingSuite:
+    {
+      function: |test::amberlighthouse3::domain::CoastTendingSummary.all()->graphFetch(
+  #{
+    test::amberlighthouse3::domain::CoastTendingSummary
+    {
+      coastCode,
+      stationCount
+    }
+  }#
+)->serialize(
+  #{
+    test::amberlighthouse3::domain::CoastTendingSummary
+    {
+      coastCode,
+      stationCount
+    }
+  }#
+);
+      tests:
+      [
+        theRegisterPublishesOneRollupRowPerCoast:
+        {
+          doc: 'Resolves the rollup binding over the grouped surface the register publishes, so the coast holding two lighthouses arrives as one row carrying a count of two.';
+          data:
+          [
+            test::amberlighthouse3::store::LighthouseDb:
+              Relational
+              #{
+                coastal.lighthouse_station:
+                  'station_id,station_code,station_label,coast_code,lens_grade_char\n'+
+                  '1,LS-01,Gull Point Light,CO-01,F\n'+
+                  '2,LS-02,Shingle Spit Light,CO-01,S\n'+
+                  '3,LS-03,Cormorant Rock Light,CO-02,T\n';
+              }#
+          ];
+          asserts:
+          [
+            rollupGraphs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"coastCode":"CO-01","stationCount":2},{"coastCode":"CO-02","stationCount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

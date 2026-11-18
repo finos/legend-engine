@@ -1,0 +1,64 @@
+name: cobalt-marsh
+title: "Cobalt Marsh — Wetland Monitoring Network (processing-temporal store, multi-arm conditional transforms, null sentinel, literal binding, four projection services, data space)"
+description: |
+  A wetland monitoring model over a four-table relational store in one schema.
+  Monitoring stations are milestoned on a single processing axis, and their
+  habitat, depth note and name length are derived through nested conditional
+  and string expressions rather than direct column reads, with a literal survey
+  programme bound to no physical column. Water sample quality falls back to an
+  explicit relational null sentinel in its final arm, bird tallies and ranger
+  shifts carry their own arithmetic conditional bands, and four
+  single-execution services project the results as labelled tabular rows. A
+  data space groups the mapping, the Snowflake-backed runtime, support contact
+  metadata and the featured endpoints into one consumable entry point.
+
+modelSources:
+  model:
+    root: cobalt-marsh
+    files:
+      - test/cobaltmarsh/connection/MarshConnection.pure
+      - test/cobaltmarsh/dataspace/MarshDataSpace.pure
+      - test/cobaltmarsh/domain/MarshDomain.pure
+      - test/cobaltmarsh/mapping/MarshMapping.pure
+      - test/cobaltmarsh/runtime/MarshRuntime.pure
+      - test/cobaltmarsh/service/BirdTallies.pure
+      - test/cobaltmarsh/service/SampleGrades.pure
+      - test/cobaltmarsh/service/ShiftLoad.pure
+      - test/cobaltmarsh/service/StationHabitats.pure
+      - test/cobaltmarsh/store/MarshDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - data-space
+  - h2
+  - null-sentinel
+  - processing-temporal
+  - projection
+  - service-test
+  - snowflake
+  - wetland-monitoring

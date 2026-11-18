@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A surveyed park tree whose record is corrected over processing time, so each correction is retained as its own generation and a queried processing date selects the generation that was on record at that instant.'} test::wistfullantern3::domain::ParkTree
+{
+  treeRef: String[1];
+  parkName: String[1];
+  speciesLabel: String[1];
+  canopyClass: String[1];
+  girthCm: Decimal[1];
+  spreadM: Float[1];
+  conditionScore: Integer[1];
+  plantedOn: StrictDate[1];
+  surveyedAt: DateTime[0..1];
+  wardenNote: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A park bench whose record is corrected over processing time, carrying an optional plaque inscription.'} test::wistfullantern3::domain::ParkBench
+{
+  benchRef: String[1];
+  parkName: String[1];
+  timberKind: String[1];
+  seatCount: Integer[1];
+  plaqueText: String[0..1];
+  installedOn: StrictDate[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A surfaced path segment whose measurements are corrected over processing time.'} test::wistfullantern3::domain::PathSegment
+{
+  segmentRef: String[1];
+  parkName: String[1];
+  surfaceKind: String[1];
+  lengthM: Float[1];
+  widthM: Decimal[1];
+  inspectedAt: DateTime[0..1];
+}

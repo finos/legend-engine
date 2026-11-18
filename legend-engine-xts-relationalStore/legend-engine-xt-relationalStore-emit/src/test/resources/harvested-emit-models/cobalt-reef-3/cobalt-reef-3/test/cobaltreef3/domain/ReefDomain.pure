@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import test::cobaltreef3::domain::*;
+
+Enum {doc.doc = 'Access state of a monitored reef zone.'} test::cobaltreef3::domain::ZoneStatus
+{
+  OPEN,
+  RESTRICTED,
+  CLOSED
+}
+
+Enum {doc.doc = 'Operating health of an underwater monitoring probe.'} test::cobaltreef3::domain::ProbeHealth
+{
+  ACTIVE,
+  FAULTY,
+  RETIRED
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A monitored coral reef site whose register entry is corrected over processing time.'} test::cobaltreef3::domain::ReefSite
+{
+  siteCode: String[1];
+  siteName: String[0..1];
+  zoneStatus: ZoneStatus[0..1];
+  depthMetres: Integer[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'An underwater sensor probe anchored at a reef site.'} test::cobaltreef3::domain::MonitorProbe
+{
+  probeCode: String[1];
+  health: ProbeHealth[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A named reef region grouping probes.'} test::cobaltreef3::domain::ReefRegion
+{
+  regionCode: String[1];
+  regionName: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A recorded survey dive over a reef site.'} test::cobaltreef3::domain::SurveyDive
+{
+  diveCode: String[1];
+  diveLabel: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A volunteer dive crew that carries out surveys.'} test::cobaltreef3::domain::DiveCrew
+{
+  crewCode: String[1];
+  crewName: String[0..1];
+}
+
+Association {doc.doc = 'The probe currently anchored at each reef site.'} test::cobaltreef3::domain::SiteProbe
+{
+  anchoredSites: ReefSite[*];
+  probe: MonitorProbe[0..1];
+}
+
+Association {doc.doc = 'The region a probe reports into.'} test::cobaltreef3::domain::ProbeRegion
+{
+  regionProbes: MonitorProbe[*];
+  region: ReefRegion[0..1];
+}
+
+Association {doc.doc = 'The survey dives logged over a reef site.'} test::cobaltreef3::domain::SiteDives
+{
+  site: ReefSite[0..1];
+  dives: SurveyDive[*];
+}
+
+Association {doc.doc = 'The crew that carried out a survey dive.'} test::cobaltreef3::domain::DiveCrewing
+{
+  crewDives: SurveyDive[*];
+  crew: DiveCrew[0..1];
+}

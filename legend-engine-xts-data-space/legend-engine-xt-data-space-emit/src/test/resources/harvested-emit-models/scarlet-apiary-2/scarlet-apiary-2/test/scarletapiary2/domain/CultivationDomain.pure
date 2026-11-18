@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletapiary2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One inoculated substrate block in the cultivation lab. Every banded label on it is derived in the mapping, and the two derived properties below are computed on the built instance from those labels.'} test::scarletapiary2::domain::SubstrateBlock
+{
+  blockCode: String[1];
+  inoculatedOn: StrictDate[0..1];
+  roomName: String[0..1];
+  strainLabel: String[0..1];
+  flushClass: String[0..1];
+  humidityBand: String[1];
+  contaminationFlag: String[1];
+  gradeLabel: String[1];
+  yieldPerKg: Float[0..1];
+  blockNote: String[0..1];
+  strainType: StrainType[1];
+  blockStatus: BlockStatus[1];
+
+  readinessLabel()
+  {
+    if(or($this.flushClass->isEmpty(), $this.flushClass->toOne() == 'ARM-1-TRACE'),
+       |if(or($this.gradeLabel->isEmpty(), $this.gradeLabel == 'GRADE-UNSET'),
+           |'HOLD-A',
+           |if($this.contaminationFlag == 'CLEAR', |'HOLD-B', |'HOLD-C')),
+       |if(or($this.gradeLabel->isEmpty(), $this.gradeLabel == 'GRADE-UNSET'),
+           |if($this.humidityBand == 'BAND-SATURATED', |'HOLD-D', |'HOLD-E'),
+           |if(or($this.humidityBand->isEmpty(), $this.humidityBand == 'BAND-LOW'),
+               |if($this.contaminationFlag == 'CLEAR', |'READY-F', |'HOLD-G'),
+               |if(and($this.contaminationFlag == 'CLEAR', $this.blockStatus == BlockStatus.FRUITING), |'READY-H', |'HOLD-I'))))
+  }: String[1];
+
+  flagged()
+  {
+    if($this.contaminationFlag == 'FLAGGED', |true, |false)
+  }: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fruiting room the blocks are shelved in, reached from a block over one join hop.'} test::scarletapiary2::domain::FruitingRoom
+{
+  roomCode: String[1];
+  roomName: String[1];
+  tempSetpointC: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A strain reference row, reached from a block over one join hop.'} test::scarletapiary2::domain::MushroomStrain
+{
+  strainCode: String[1];
+  strainLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One picked flush off a block.'} test::scarletapiary2::domain::FlushHarvest
+{
+  flushCode: String[1];
+  blockCode: String[1];
+  pickedOn: StrictDate[0..1];
+  pickedGrams: Float[0..1];
+  blockRoomCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lab technician; unmapped, and one navigable end of the recipe association.'} test::scarletapiary2::domain::LabTechnician
+{
+  technicianCode: String[1];
+  technicianName: String[1];
+  shiftLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A substrate recipe; unmapped, and the other navigable end of the recipe association.'} test::scarletapiary2::domain::SubstrateRecipe
+{
+  recipeCode: String[1];
+  recipeName: String[1];
+  sawdustPct: Float[0..1];
+  branPct: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A flat inbound block sheet as the grow-room clipboard supplies it, all scalars.'} test::scarletapiary2::domain::InboundBlockRow
+{
+  blockCode: String[1];
+  roomCode: String[0..1];
+  strainCode: String[0..1];
+  yieldGrams: Float[0..1];
+  humidityPct: Float[0..1];
+  gradeCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rolled-up count surface over the cultivation lab, flat scalars only.'} test::scarletapiary2::domain::CultivationSummary
+{
+  summaryCode: String[1];
+  summarisedOn: StrictDate[1];
+  blockCount: Integer[1];
+  flushCount: Integer[1];
+  meanYieldPerKg: Float[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Which technician owns which recipe, navigable from both ends: a technician keeps many recipes and a recipe names one owning technician.'} test::scarletapiary2::domain::Technician_Recipe
+{
+  owner: LabTechnician[1];
+  recipes: SubstrateRecipe[*];
+}

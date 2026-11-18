@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ivoryfjord3::store::CoastalDB
+(
+  Schema coastal
+  (
+    Table water_sample
+    (
+      sample_id INTEGER PRIMARY KEY,
+      sample_code VARCHAR(20) NOT NULL,
+      collector_name VARCHAR(120) NOT NULL,
+      collected_on DATE NOT NULL,
+      temperature_c FLOAT NOT NULL,
+      salinity FLOAT NOT NULL,
+      depth_m FLOAT NOT NULL,
+      probe_id INTEGER
+    )
+    Table probe_unit
+    (
+      probe_id INTEGER PRIMARY KEY,
+      probe_code VARCHAR(20) NOT NULL,
+      firmware_tag VARCHAR(20) NOT NULL,
+      station_id INTEGER
+    )
+    Table shore_station
+    (
+      milestoning
+      (
+        business(BUS_FROM=from_z, BUS_THRU=thru_z)
+      )
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(20) NOT NULL,
+      station_name VARCHAR(120) NOT NULL,
+      custodian VARCHAR(120) NOT NULL,
+      shore_zone VARCHAR(120) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+  )
+
+  Join Sample_Probe(coastal.water_sample.probe_id = coastal.probe_unit.probe_id)
+  Join Probe_Station(coastal.probe_unit.station_id = coastal.shore_station.station_id)
+)

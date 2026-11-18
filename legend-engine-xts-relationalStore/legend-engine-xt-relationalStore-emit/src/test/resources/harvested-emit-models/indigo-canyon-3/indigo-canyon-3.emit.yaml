@@ -1,0 +1,42 @@
+name: indigo-canyon-3
+title: "Indigo Canyon 3 — Rolling Ringing-Season Windows Over A Projected Register"
+description: |
+  A wetland bird-ringing model whose whole published surface is two single-execution
+  services. Each fetches the ringing-record extent, projects it to a named column list
+  that carries a literal register label alongside direct columns, restricts the projected
+  extent to a half-open rolling window whose bounds are computed by shifting a reference
+  date twice, deduplicates the result and sorts it. One service narrows to the surveyed
+  station set, the other to the published ringing-scheme set, and both activate updates
+  automatically.
+
+modelSources:
+  model:
+    root: indigo-canyon-3
+    files:
+      - test/indigocanyon3/connection/RingingConnections.pure
+      - test/indigocanyon3/domain/RingingDomain.pure
+      - test/indigocanyon3/function/RingingWindow.pure
+      - test/indigocanyon3/mapping/RingingMapping.pure
+      - test/indigocanyon3/runtime/RingingRuntime.pure
+      - test/indigocanyon3/service/RingedWindowRegister.pure
+      - test/indigocanyon3/service/SchemeWindowRegister.pure
+      - test/indigocanyon3/store/RingingDB.pure
+
+features:
+  - execution:service
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: basic
+tags:
+  - date-arithmetic
+  - deduplication
+  - h2
+  - post-projection-filter
+  - projection
+  - rolling-window
+  - service
+  - service-test
+  - wetland-ecology

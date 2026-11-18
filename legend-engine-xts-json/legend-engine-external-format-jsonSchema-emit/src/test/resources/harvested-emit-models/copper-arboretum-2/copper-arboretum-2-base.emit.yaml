@@ -1,0 +1,24 @@
+name: copper-arboretum-2-base
+title: "Arboretum care base model"
+description: |
+  Base tree-care model: the payload-bearing care event table, the shared nested
+  detail classes, the base care event record and the two JSON bindings used to
+  deserialise nested payload fragments.
+modelSources:
+  model:
+    root: copper-arboretum-2-base
+    files:
+      - test/copperarboretum2/binding/CareBindings.pure
+      - test/copperarboretum2/domain/CareDetails.pure
+      - test/copperarboretum2/domain/CareEventRecord.pure
+      - test/copperarboretum2/store/CareEventDb.pure
+features:
+  - execution:external-format-binding
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+tags:
+  - external-format
+  - relational
+complexity: basic

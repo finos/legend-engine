@@ -1,0 +1,160 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarridge::service::ZoneHarvestRollup
+{
+  pattern: '/solarridge/v1/zones/{zoneCode}/harvest/{fromDate}/{thruDate}';
+  ownership: UserList { users: ['allotment-site-office'] };
+  documentation: 'Rolls up the weighed crop lifts of one cultivation zone over an inclusive date window. The predicate reaches the zone identifier through a two-hop to-one chain and excludes retired crop labels by membership; the grouping resolves ten keys through one-, two-, three- and four-hop chains including the self-referencing parent zone traversal, reduces the to-many warden visits to their latest date, and deduplicates the grouped table.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {zoneCode: String[1], fromDate: StrictDate[1], thruDate: StrictDate[1]|test::solarridge::domain::HarvestEntry.all()->filter(
+      h|(($h.plot.zone.zoneCode == $zoneCode) && (($h.harvestedOn >= $fromDate) && ($h.harvestedOn <= $thruDate))) && ($h.cropName->in(['WITHDRAWN', 'VOIDED'])->not())
+    )->groupBy(
+      [
+        h|$h.cropName,
+        h|$h.harvestedOn,
+        h|$h.weightKg,
+        h|$h.plot.plotCode,
+        h|$h.plot.plotName,
+        h|$h.plot.zone.zoneCode,
+        h|$h.plot.zone.zoneName,
+        h|$h.plot.zone.parentZone.zoneCode,
+        h|$h.plot.zone.parentZone.zoneName,
+        h|$h.plot.zone.parentZone.parentZone.zoneCode
+      ],
+      [
+        agg(h|$h.inspections.inspectedOn, d|$d->max())
+      ],
+      [
+        'CropName',
+        'HarvestedOn',
+        'WeightKg',
+        'PlotCode',
+        'PlotName',
+        'ZoneCode',
+        'ZoneName',
+        'ParentZoneCode',
+        'ParentZoneName',
+        'RootZoneCode',
+        'LastInspectedOn'
+      ]
+    )->distinct()->sort(
+      [
+        asc('CropName'),
+        asc('PlotCode'),
+        asc('HarvestedOn')
+      ]
+    )};
+    mapping: test::solarridge::mapping::GardenMapping;
+    runtime: test::solarridge::runtime::GardenRuntime;
+  }
+  testSuites:
+  [
+    rollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              garden.garden_zone:
+                'zone_code,zone_name,parent_code\n'+
+                'Z-SITE,Whole Site,\n'+
+                'Z-NORTH,North Field,Z-SITE\n'+
+                'Z-SOUTH,South Field,Z-SITE\n';
+
+              garden.allotment_plot:
+                'plot_code,plot_name,zone_code\n'+
+                'P-01,Plot One,Z-NORTH\n'+
+                'P-02,Plot Two,Z-NORTH\n'+
+                'P-03,Plot Three,Z-SOUTH\n';
+
+              garden.harvest_entry:
+                'entry_code,crop_name,harvested_on,weight_kg,plot_code\n'+
+                'H-01,Runner Bean,2026-06-05,12,P-01\n'+
+                'H-02,Runner Bean,2026-06-05,12,P-01\n'+
+                'H-03,Rhubarb,2026-06-10,8,P-02\n'+
+                'H-04,Rhubarb,2026-05-20,5,P-01\n'+
+                'H-05,Rhubarb,2026-07-02,6,P-01\n'+
+                'H-06,Courgette,2026-06-12,9,P-03\n'+
+                'H-07,WITHDRAWN,2026-06-14,4,P-01\n'+
+                'H-08,Squash,2026-06-20,7,P-02\n';
+
+              garden.plot_inspection:
+                'inspection_code,entry_code,inspected_on\n'+
+                'V-01,H-01,2026-06-06\n'+
+                'V-02,H-01,2026-06-18\n'+
+                'V-03,H-02,2026-06-06\n'+
+                'V-04,H-08,2026-06-21\n'+
+                'V-05,H-08,2026-06-25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northFieldJuneWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zoneCode = 'Z-NORTH',
+            fromDate = %2026-06-01,
+            thruDate = %2026-06-30
+          ]
+          asserts:
+          [
+            threeDeduplicatedGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CropName":"Rhubarb","HarvestedOn":"2026-06-10","WeightKg":8,"PlotCode":"P-02","PlotName":"Plot Two","ZoneCode":"Z-NORTH","ZoneName":"North Field","ParentZoneCode":"Z-SITE","ParentZoneName":"Whole Site","RootZoneCode":null,"LastInspectedOn":null},{"CropName":"Runner Bean","HarvestedOn":"2026-06-05","WeightKg":12,"PlotCode":"P-01","PlotName":"Plot One","ZoneCode":"Z-NORTH","ZoneName":"North Field","ParentZoneCode":"Z-SITE","ParentZoneName":"Whole Site","RootZoneCode":null,"LastInspectedOn":"2026-06-18"},{"CropName":"Squash","HarvestedOn":"2026-06-20","WeightKg":7,"PlotCode":"P-02","PlotName":"Plot Two","ZoneCode":"Z-NORTH","ZoneName":"North Field","ParentZoneCode":"Z-SITE","ParentZoneName":"Whole Site","RootZoneCode":null,"LastInspectedOn":"2026-06-25"}]';
+                  }#;
+              }#
+          ]
+        },
+        southFieldNoMatchingCrops:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zoneCode = 'Z-SOUTH',
+            fromDate = %2026-06-01,
+            thruDate = %2026-06-05
+          ]
+          asserts:
+          [
+            emptyWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

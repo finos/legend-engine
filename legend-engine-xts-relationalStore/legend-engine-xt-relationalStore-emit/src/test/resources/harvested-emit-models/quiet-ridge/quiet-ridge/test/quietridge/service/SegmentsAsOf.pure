@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietridge::service::SegmentsAsOf
+{
+  pattern: '/quietridge/v1/segments-as-of/{processingDate}/{minGain}';
+  title: 'Quiet Ridge - Trail Segments As Of';
+  owners:
+  [
+    'ridge-patrol-platform',
+    'trail-registry-eng'
+  ];
+  documentation: 'Single-execution form of the segment query used to assert the projection, the hazard existence filter, the derived band arms, the subtype exposure branch and the processing-milestoning boundary over the in-process store.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: DateTime[1], minGain: Integer[1]|test::quietridge::domain::TrailSegment.all($processingDate)->filter(
+      s|($s.elevationGainM >= $minGain) && ((($s.surfaceKind == 'ROCK') || ($s.surfaceKind == 'SCREE')) || ($s.surfaceKind == 'TURF')) && ($s.hazards->exists(h|($h.severityLevel > 2) || ($h.hazardKind == 'ICE')))
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.trailName,
+        s|$s.patrolZone,
+        s|if($s.elevationGainM > 500, |'ALPINE', |'SUBALPINE')
+      ],
+      [
+        'Code',
+        'Trail',
+        'Zone',
+        'Band'
+      ]
+    )->concatenate(
+      test::quietridge::domain::TrailSegment.all($processingDate)->filter(
+        s|$s.surfaceKind == 'ROCK'
+      )->project(
+        [
+          s|$s.segmentCode,
+          s|$s.trailName,
+          s|$s.patrolZone,
+          s|if($s->subType(@test::quietridge::domain::RidgeSegment).exposureRating > 3, |'EXPOSURE-HIGH', |'EXPOSURE-LOW')
+        ],
+        [
+          'Code',
+          'Trail',
+          'Zone',
+          'Band'
+        ]
+      )
+    )->sort(
+      [
+        asc('Code'),
+        asc('Band')
+      ]
+    )->limit(20)};
+    mapping: test::quietridge::mapping::RidgeMapping;
+    runtime: test::quietridge::runtime::RidgeRuntime;
+  }
+  testSuites:
+  [
+    segmentsByEnvironmentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeConnection:
+            Relational
+            #{
+              ridge.trail_segment:
+                'segment_id,segment_code,trail_name,patrol_zone,gain_metres,surface_kind,segment_class,exposure_rating,canopy_cover_pct,in_z,out_z\n'+
+                '1,SEG-101,North Ridge Traverse,4,820,ROCK,R,5,,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '2,SEG-102,Meadow Loop,4,180,TURF,F,,35,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                '3,SEG-103,Scree Gully,7,640,SCREE,R,3,,2026-01-01 00:00:00,2026-03-01 00:00:00\n'+
+                '4,SEG-104,Cirque Traverse,5,900,ROCK,R,2,,2026-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              ridge.hazard_note:
+                'hazard_id,segment_id,hazard_kind,severity_level\n'+
+                '1,1,ICE,4\n'+
+                '2,2,ICE,1\n'+
+                '3,3,ROCKFALL,5\n'+
+                '4,4,MUD,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        uplandCurrentProcessing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01T00:00:00,
+            minGain = 500
+          ]
+          asserts:
+          [
+            ridgeAndExposureRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"SEG-101","Trail":"North Ridge Traverse","Zone":4,"Band":"ALPINE"},{"Code":"SEG-101","Trail":"North Ridge Traverse","Zone":4,"Band":"EXPOSURE-HIGH"},{"Code":"SEG-104","Trail":"Cirque Traverse","Zone":5,"Band":"EXPOSURE-LOW"}]';
+                  }#;
+              }#
+          ]
+        },
+        lowlandLowThreshold:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01T00:00:00,
+            minGain = 100
+          ]
+          asserts:
+          [
+            forestRowIncluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"SEG-101","Trail":"North Ridge Traverse","Zone":4,"Band":"ALPINE"},{"Code":"SEG-101","Trail":"North Ridge Traverse","Zone":4,"Band":"EXPOSURE-HIGH"},{"Code":"SEG-102","Trail":"Meadow Loop","Zone":4,"Band":"SUBALPINE"},{"Code":"SEG-104","Trail":"Cirque Traverse","Zone":5,"Band":"EXPOSURE-LOW"}]';
+                  }#;
+              }#
+          ]
+        },
+        uplandEarlyProcessing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-15T00:00:00,
+            minGain = 500
+          ]
+          asserts:
+          [
+            screeRowInRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"SEG-101","Trail":"North Ridge Traverse","Zone":4,"Band":"ALPINE"},{"Code":"SEG-101","Trail":"North Ridge Traverse","Zone":4,"Band":"EXPOSURE-HIGH"},{"Code":"SEG-103","Trail":"Scree Gully","Zone":7,"Band":"ALPINE"},{"Code":"SEG-104","Trail":"Cirque Traverse","Zone":5,"Band":"EXPOSURE-LOW"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

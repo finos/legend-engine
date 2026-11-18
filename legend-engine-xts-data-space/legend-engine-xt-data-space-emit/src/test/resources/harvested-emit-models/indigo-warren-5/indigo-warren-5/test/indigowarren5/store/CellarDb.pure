@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigowarren5::store::CellarDb
+(
+  Schema cellar
+  (
+    Table dairy
+    (
+      dairy_code VARCHAR(16) PRIMARY KEY,
+      dairy_name VARCHAR(120) NOT NULL,
+      county_label VARCHAR(60) NOT NULL
+    )
+
+    Table cave
+    (
+      cave_code VARCHAR(16) PRIMARY KEY,
+      dairy_code VARCHAR(16) NOT NULL,
+      cave_name VARCHAR(120),
+      humidity_pct INTEGER,
+      temp_c INTEGER
+    )
+
+    Table shelf
+    (
+      shelf_code VARCHAR(16) PRIMARY KEY,
+      cave_code VARCHAR(16) NOT NULL,
+      tier INTEGER NOT NULL,
+      capacity INTEGER NOT NULL
+    )
+
+    Table turner
+    (
+      turner_code VARCHAR(16) PRIMARY KEY,
+      cave_code VARCHAR(16) NOT NULL,
+      dairy_code VARCHAR(16) NOT NULL,
+      turner_name VARCHAR(120) NOT NULL,
+      rota_label VARCHAR(40)
+    )
+
+    Table wheel
+    (
+      wheel_code VARCHAR(16) PRIMARY KEY,
+      shelf_code VARCHAR(16) NOT NULL,
+      turner_code VARCHAR(16) NOT NULL,
+      milk_kind VARCHAR(20) NOT NULL,
+      rind_code VARCHAR(20),
+      weight_grams INTEGER,
+      wrapped_on DATE NOT NULL
+    )
+
+    Table rind_check
+    (
+      check_code VARCHAR(16) PRIMARY KEY,
+      wheel_code VARCHAR(16) NOT NULL,
+      rind_score INTEGER,
+      checked_on DATE NOT NULL,
+      note_text VARCHAR(200)
+    )
+
+    Table affinage_entry
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      entry_code VARCHAR(16) PRIMARY KEY,
+      wheel_code VARCHAR(16) NOT NULL,
+      rind_code VARCHAR(20),
+      turn_count INTEGER,
+      room_note VARCHAR(200),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+  )
+
+  Join Dairy_Cave(cellar.dairy.dairy_code = cellar.cave.dairy_code)
+  Join Cave_Shelf(cellar.cave.cave_code = cellar.shelf.cave_code)
+  Join Shelf_Wheel(cellar.shelf.shelf_code = cellar.wheel.shelf_code)
+  Join Wheel_Check(cellar.wheel.wheel_code = cellar.rind_check.wheel_code)
+  Join Turner_Wheel(cellar.turner.turner_code = cellar.wheel.turner_code)
+  Join Cave_Turner(cellar.cave.cave_code = cellar.turner.cave_code)
+  Join Wheel_Entry(cellar.wheel.wheel_code = cellar.affinage_entry.wheel_code)
+  Join Dairy_Turner(cellar.dairy.dairy_code = cellar.turner.dairy_code)
+)

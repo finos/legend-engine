@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarvineyard::service::DenseCanopyReadings
+{
+  pattern: '/cedarvineyard/v1/readings/{minLayers}';
+  owners:
+  [
+    'example-vineyard-team'
+  ];
+  documentation: 'Reports canopy readings at or above a requested leaf-layer count where the shaded leaf share is also substantial.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minLayers: Integer[1]|test::cedarvineyard::domain::CanopyReading.all()->filter(
+      r|($r.leafLayerCount >= $minLayers) && (($r.shadedLeafPct >= 25) && ($r.blockCode->startsWith('VB')))
+    )->project(
+      ~[
+        reading: x|$x.readingRef,
+        block: x|$x.blockCode,
+        layers: x|$x.leafLayerCount,
+        shaded: x|$x.shadedLeafPct
+      ]
+    )->sort(~reading->ascending())->limit(5)};
+    mapping: test::cedarvineyard::mapping::VineyardMapping;
+    runtime: test::cedarvineyard::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    denseCanopySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardConnection:
+            Relational
+            #{
+              vineyard.canopy_reading:
+                'reading_ref,block_code,leaf_layer_count,shaded_leaf_pct,read_on\n'+
+                'CR-01,VB-01,4,45,2026-06-01\n'+
+                'CR-02,VB-01,1,12,2026-06-02\n'+
+                'CR-03,VB-02,5,26,2026-06-03\n'+
+                'CR-04,XX-09,6,80,2026-06-04\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        denseAndShaded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minLayers = 3
+          ]
+          asserts:
+          [
+            twoReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"reading":"CR-01","block":"VB-01","layers":4,"shaded":45},{"reading":"CR-03","block":"VB-02","layers":5,"shaded":26}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

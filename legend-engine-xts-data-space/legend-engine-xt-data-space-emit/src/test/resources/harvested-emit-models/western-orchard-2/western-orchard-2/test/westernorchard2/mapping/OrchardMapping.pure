@@ -1,0 +1,203 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernorchard2::mapping::OrchardMapping
+(
+  test::westernorchard2::domain::OrchardBlock[block]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.block_code
+    )
+    ~mainTable [test::westernorchard2::store::OrchardDatabase]grove.orchard_block
+    blockCode: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.block_code,
+    blockName: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.block_name,
+    rootstock: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.rootstock,
+    district: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.district,
+    soilSeries: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.soil_series,
+    hectares: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.hectares,
+    elevationM: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.elevation_m,
+    plantedOn: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.planted_on,
+    surveyedAt: [test::westernorchard2::store::OrchardDatabase]grove.orchard_block.surveyed_at
+  }
+
+  test::westernorchard2::domain::TreeRow[treeRow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernorchard2::store::OrchardDatabase]grove.tree_row.row_code
+    )
+    ~mainTable [test::westernorchard2::store::OrchardDatabase]grove.tree_row
+    rowCode: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.row_code,
+    blockCode: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.block_code,
+    cultivar: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.cultivar,
+    trellisType: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.trellis_type,
+    orientation: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.orientation,
+    spacingM: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.spacing_m,
+    canopyWidthM: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.canopy_width_m,
+    establishedOn: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.established_on,
+    lastPrunedAt: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.last_pruned_at,
+    lastScoutedAt: [test::westernorchard2::store::OrchardDatabase]grove.tree_row.last_scouted_at
+  }
+
+  test::westernorchard2::domain::HarvestPass[harvestPass]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.pass_code
+    )
+    ~mainTable [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass
+    passCode: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.pass_code,
+    rowCode: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.row_code,
+    crewLead: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.crew_lead,
+    gradeLabel: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.grade_label,
+    packHouse: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.pack_house,
+    binsFilled: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.bins_filled,
+    brixDegrees: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.brix_degrees,
+    firmnessKg: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.firmness_kg,
+    startedAt: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.started_at,
+    finishedAt: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.finished_at,
+    weighedAt: [test::westernorchard2::store::OrchardDatabase]grove.harvest_pass.weighed_at
+  }
+
+  testSuites:
+  [
+    blockRegisterSuite:
+    {
+      function: |test::westernorchard2::domain::OrchardBlock.all()->filter(
+        b|$b.hectares > 1.0
+      )->project(
+        [
+          b|$b.blockCode,
+          b|$b.blockName,
+          b|$b.rootstock,
+          b|$b.district,
+          b|$b.soilSeries,
+          b|$b.hectares,
+          b|$b.elevationM,
+          b|$b.plantedOn,
+          b|$b.surveyedAt
+        ],
+        [
+          'Block',
+          'Name',
+          'Rootstock',
+          'District',
+          'SoilSeries',
+          'Hectares',
+          'ElevationM',
+          'PlantedOn',
+          'SurveyedAt'
+        ]
+      )->sort(
+        [
+          asc('Block')
+        ]
+      );
+      tests:
+      [
+        blockRegister:
+        {
+          doc: 'Reads every mapped block column off the aliased main table, keeps the blocks above the reporting size and shows the optional stock, site and survey-stamp columns as absent where the register never recorded them.';
+          data:
+          [
+            test::westernorchard2::store::OrchardDatabase:
+              Relational
+              #{
+                grove.orchard_block:
+                  'block_code,block_name,rootstock,district,soil_series,hectares,elevation_m,planted_on,surveyed_at\n'+
+                  'WB-01,North Terrace,M9 dwarfing,Upper Bench,Silt loam,4.5,318.5,2019-04-02,2026-03-11 07:30:00\n'+
+                  'WB-02,Creek Flat,,Lower Flat,,2.25,,2021-03-18,\n'+
+                  'WB-03,Windbreak Strip,M26 semi-dwarf,Upper Bench,Sandy loam,0.75,296.0,2022-11-05,2026-02-27 06:15:00\n';
+              }#
+          ];
+          asserts:
+          [
+            registerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"WB-01","Name":"North Terrace","Rootstock":"M9 dwarfing","District":"Upper Bench","SoilSeries":"Silt loam","Hectares":4.5,"ElevationM":318.5,"PlantedOn":"2019-04-02","SurveyedAt":"2026-03-11T07:30:00.000000000+0000"},{"Block":"WB-02","Name":"Creek Flat","Rootstock":null,"District":"Lower Flat","SoilSeries":null,"Hectares":2.25,"ElevationM":null,"PlantedOn":"2021-03-18","SurveyedAt":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    harvestPassSuite:
+    {
+      function: |test::westernorchard2::domain::HarvestPass.all()->project(
+        [
+          p|$p.passCode,
+          p|$p.rowCode,
+          p|$p.crewLead,
+          p|$p.gradeLabel,
+          p|$p.binsFilled,
+          p|$p.brixDegrees,
+          p|$p.startedAt,
+          p|$p.finishedAt
+        ],
+        [
+          'Pass',
+          'Row',
+          'CrewLead',
+          'Grade',
+          'Bins',
+          'Brix',
+          'StartedAt',
+          'FinishedAt'
+        ]
+      )->sort(
+        [
+          asc('Pass')
+        ]
+      );
+      tests:
+      [
+        harvestPasses:
+        {
+          doc: 'Reads the picking passes off their own main table so the mapped fruit measures and both pass stamps are checked independently of the block and row registers.';
+          data:
+          [
+            test::westernorchard2::store::OrchardDatabase:
+              Relational
+              #{
+                grove.harvest_pass:
+                  'pass_code,row_code,crew_lead,grade_label,pack_house,bins_filled,brix_degrees,firmness_kg,started_at,finished_at,weighed_at\n'+
+                  'HP-01,WR-01,Ada Quince,EXTRA,North Shed,12.5,13.4,7.25,2026-09-12 06:00:00,2026-09-12 11:30:00,2026-09-12 12:00:00\n'+
+                  'HP-02,WR-02,,STANDARD,North Shed,8.0,,6.5,2026-09-13 06:30:00,,\n';
+              }#
+          ];
+          asserts:
+          [
+            passRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pass":"HP-01","Row":"WR-01","CrewLead":"Ada Quince","Grade":"EXTRA","Bins":12.5,"Brix":13.4,"StartedAt":"2026-09-12T06:00:00.000000000+0000","FinishedAt":"2026-09-12T11:30:00.000000000+0000"},{"Pass":"HP-02","Row":"WR-02","CrewLead":null,"Grade":"STANDARD","Bins":8.0,"Brix":null,"StartedAt":"2026-09-13T06:30:00.000000000+0000","FinishedAt":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

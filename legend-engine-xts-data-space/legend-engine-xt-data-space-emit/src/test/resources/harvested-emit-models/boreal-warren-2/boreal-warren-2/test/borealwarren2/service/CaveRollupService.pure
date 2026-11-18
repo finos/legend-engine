@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::borealwarren2::service::CaveRollupService
+{
+  pattern: '/borealwarren/v1/caves/rollup';
+  title: 'Boreal Warren - Cave Rollup';
+  ownership: UserList { users: ['cave-floor-desk'] };
+  documentation: 'Totals the ripening weight and counts the batches held in each cave once batches below the requested rind age are dropped, grouping on the cave name reached through the association so the grouping key itself is produced by a join rather than a stored column.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minDays: Integer[1]|demo::borealwarren2::domain::WheelBatch.all()->filter(
+      b|$b.rindDays >= $minDays
+    )->groupBy(
+      [
+        b|$b.cave.caveName
+      ],
+      [
+        agg(b|$b.weightKg, y|$y->sum()),
+        agg(b|$b.batchCode, y|$y->count())
+      ],
+      [
+        'CaveName',
+        'TotalWeightKg',
+        'Batches'
+      ]
+    )->sort([asc('CaveName')])->limit(5)};
+    mapping: demo::borealwarren2::mapping::BatchMapping;
+    runtime: demo::borealwarren2::runtime::CaveRuntime;
+  }
+  testSuites:
+  [
+    caveRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          caveConnection:
+            Reference
+            #{
+              demo::borealwarren2::data::CaveTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        rollupOfTheOlderBatches:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minDays = 10
+          ]
+          asserts:
+          [
+            weightAndCountPerCave:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CaveName":"Lower Cellar","TotalWeightKg":31.5,"Batches":6},{"CaveName":"Upper Cellar","TotalWeightKg":5.25,"Batches":1}]';
+                  }#;
+              }#
+          ]
+        },
+        rollupOfTheYoungestBatchesOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minDays = 20
+          ]
+          asserts:
+          [
+            onlyTheLowerCellarSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CaveName":"Lower Cellar","TotalWeightKg":19.0,"Batches":3}]';
+                  }#;
+              }#
+          ]
+        },
+        rollupBeyondEveryRindAge:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minDays = 100
+          ]
+          asserts:
+          [
+            noCaves:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

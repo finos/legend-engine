@@ -1,0 +1,45 @@
+name: verdant-ridge
+title: "Verdant Ridge - Reading-Room Catalogue Over A Remote Service Store With Region-Keyed Multi-Execution"
+description: |
+  A branch-library reading-room catalogue whose holdings live behind a remote HTTP store
+  rather than a table: a class mapping binds the endpoint's path parameters to property
+  expressions on the mapped holding, so a query predicate over branch, shelf mark and season
+  is resolved into request parameters and the response is deserialised through a json-schema
+  external-format binding. A region-keyed multi-execution service resolves the same
+  graph-fetch against two reading-room endpoints, and a model-to-model mapping folds each
+  holding into a shelf summary whose availability band and note sentinel are asserted per arm.
+modelSources:
+  model:
+    root: verdant-ridge
+    files:
+      - test/verdantridge/binding/CatalogueBindings.pure
+      - test/verdantridge/connection/CatalogueConnections.pure
+      - test/verdantridge/domain/CatalogueDomain.pure
+      - test/verdantridge/mapping/HoldingsMapping.pure
+      - test/verdantridge/mapping/ShelfSummaryMapping.pure
+      - test/verdantridge/runtime/CatalogueRuntimes.pure
+      - test/verdantridge/service/HoldingLookupRidgeService.pure
+      - test/verdantridge/service/HoldingLookupService.pure
+      - test/verdantridge/store/HoldingsApi.pure
+features:
+  - execution:external-format-binding
+  - execution:multi-execution-service
+  - execution:service
+  - mapping:service-store-mapping
+  - query:filter
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - service-store
+complexity: intermediate
+tags:
+  - external-format-binding
+  - graph-fetch
+  - library-catalogue
+  - m2m
+  - multi-execution
+  - request-parameter-resolution
+  - service-store
+  - service-test

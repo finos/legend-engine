@@ -1,0 +1,72 @@
+name: wistful-lantern-3
+title: "Park Estate Survey — Processing-Temporal Trees, Benches And Path Segments Read At A Requested Processing Date And Ranked Per Park"
+description: |
+  A municipal park-estate survey model whose three record families — surveyed
+  trees, benches and surfaced path segments — are each milestoned over processing
+  time, so every correction of a record is retained as its own generation and a
+  queried processing date selects the generation that was on file at that instant.
+  The store declares three sibling tables in one schema, each with its own primary
+  key and its own table-level processing window with an infinity sentinel for the
+  open-ended generation, over a mixed column surface of variable-length strings,
+  fixed-precision numerics, floats, integers, dates and timestamps. The mapping
+  binds each class to an explicit main-table alias with an explicit primary-key
+  clause and one direct column read per property, and its three suites assert the
+  whole type surface with populated and absent optional values against the
+  processing window. Two dataspaces package the field and review bindings as named
+  execution contexts and list the register and ranking services as executables. The
+  tree register enters the model through the milestoned accessor with the caller's
+  processing date, applies a condition floor conjoined with a girth-or-species
+  disjunction and a day difference against that same date, and projects a fixed
+  column list; a second service projects the same accessor and numbers a canopy
+  ranking inside each park partition, so the plan materialises an ordered
+  intermediate result with tied spreads sharing a rank and a single-tree park
+  ranking on its own; a third reads the bench generations. The register suite also
+  asserts a processing date at which no generation is yet on record.
+modelSources:
+  model:
+    root: wistful-lantern-3
+    files:
+      - test/wistfullantern3/connection/EstateConnection.pure
+      - test/wistfullantern3/dataspace/EstateDataSpaces.pure
+      - test/wistfullantern3/domain/EstateDomain.pure
+      - test/wistfullantern3/mapping/EstateMapping.pure
+      - test/wistfullantern3/runtime/EstateRuntimes.pure
+      - test/wistfullantern3/service/BenchRegister.pure
+      - test/wistfullantern3/service/CanopySpreadRanking.pure
+      - test/wistfullantern3/service/TreeRegister.pure
+      - test/wistfullantern3/store/EstateDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - infinity-date
+  - main-table-alias
+  - mapping-test
+  - park-estate
+  - point-in-time
+  - primary-key
+  - processing-temporal
+  - service-test
+  - snowflake
+  - window-function

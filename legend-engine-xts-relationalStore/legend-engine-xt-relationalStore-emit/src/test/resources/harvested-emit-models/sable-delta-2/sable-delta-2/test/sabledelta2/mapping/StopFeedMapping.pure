@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sabledelta2::mapping::StopFeedMapping
+(
+  include mapping test::sabledelta2::mapping::StopDigestMapping
+
+  *test::sabledelta2::domain::LogbookRow[logbookSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook.stop_ref
+    )
+    ~mainTable [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook
+    stopRef: [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook.stop_ref,
+    driverCode: [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook.driver_code,
+    depotCode: [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook.depot_code,
+    plateCode: [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook.plate_code,
+    holdingCount: [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook.holding_count,
+    dwellMinutes: [test::sabledelta2::store::StopLogbookDb]dispatch.stop_logbook.dwell_minutes
+  }
+
+  test::sabledelta2::domain::LogbookRow_DriverSummary: XStore
+  {
+    driverOfRecord[logbookSet, driverSet]: $this.stopRef == $that.stopRef,
+    coveredLogbookRows[driverSet, logbookSet]: $this.stopRef == $that.stopRef
+  }
+
+  test::sabledelta2::domain::LogbookRow_DepotSummary: XStore
+  {
+    servingDepot[logbookSet, depotSet]: $this.stopRef == $that.stopRef,
+    depotLogbookRows[depotSet, logbookSet]: $this.stopRef == $that.stopRef
+  }
+
+  test::sabledelta2::domain::LogbookRow_VehicleSummary: XStore
+  {
+    assignedVehicle[logbookSet, vehicleSet]: $this.stopRef == $that.stopRef,
+    vehicleLogbookRows[vehicleSet, logbookSet]: $this.stopRef == $that.stopRef
+  }
+
+  testSuites:
+  [
+    dispatchLogbookSuite:
+    {
+      function: |test::sabledelta2::domain::LogbookRow.all()->project(
+        [
+          x|$x.stopRef,
+          x|$x.driverCode,
+          x|$x.depotCode,
+          x|$x.plateCode,
+          x|$x.holdingCount,
+          x|$x.dwellMinutes
+        ],
+        [
+          'Stop',
+          'Driver',
+          'Depot',
+          'Plate',
+          'Holdings',
+          'Dwell'
+        ]
+      )->sort([asc('Stop')]);
+      tests:
+      [
+        logbookRowsProjectAsRows:
+        {
+          doc: 'Projects the tabular dispatch logbook, which is the store-side half of the three cross-store relationships, so every mapped column surfaces as a row including the stop whose dwell minutes were never recorded.';
+          data:
+          [
+            test::sabledelta2::store::StopLogbookDb:
+              Relational
+              #{
+                dispatch.stop_logbook:
+                  'stop_ref,driver_code,depot_code,plate_code,holding_count,dwell_minutes\n'+
+                  'ST-01,DV-1,DP-1,BM-11,42,35\n'+
+                  'ST-02,DV-2,DP-2,BM-22,8,\n'+
+                  'ST-03,DV-1,DP-1,BM-11,17,12\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLogbookRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stop":"ST-01","Driver":"DV-1","Depot":"DP-1","Plate":"BM-11","Holdings":42,"Dwell":35},{"Stop":"ST-02","Driver":"DV-2","Depot":"DP-2","Plate":"BM-22","Holdings":8,"Dwell":null},{"Stop":"ST-03","Driver":"DV-1","Depot":"DP-1","Plate":"BM-11","Holdings":17,"Dwell":12}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

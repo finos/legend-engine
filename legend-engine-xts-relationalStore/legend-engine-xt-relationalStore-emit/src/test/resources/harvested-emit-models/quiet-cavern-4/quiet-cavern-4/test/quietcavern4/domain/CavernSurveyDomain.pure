@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'How freely a passage may be entered by a survey party.'} test::quietcavern4::domain::AccessLevel
+{
+  OPEN,
+  GUIDED_ONLY,
+  SEALED
+}
+
+Class {meta::pure::profiles::doc.doc = 'A physical gate fitted across a passage, held by one key holder.'} test::quietcavern4::domain::GateSpec
+{
+  gateCode: String[1];
+  keyHolder: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The access rule governing entry into a flooded or crawl passage.'} test::quietcavern4::domain::AccessRule
+{
+  ruleCode: String[1];
+  level: test::quietcavern4::domain::AccessLevel[1];
+  gate: test::quietcavern4::domain::GateSpec[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey marker fixed along a passage.'} test::quietcavern4::domain::Marker
+{
+  markerCode: String[1];
+  markerKind: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surveyed chamber that passages open into.'} test::quietcavern4::domain::Chamber
+{
+  chamberCode: String[1];
+  chamberLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The walking trail that leads to a cave entrance.'} test::quietcavern4::domain::ApproachTrail
+{
+  trailCode: String[1];
+  trailLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surface entrance, optionally reached by a marked approach trail.'} test::quietcavern4::domain::Entrance
+{
+  entranceCode: String[1];
+  entranceLabel: String[1];
+  approach: test::quietcavern4::domain::ApproachTrail[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Somebody enrolled in a survey team.'} test::quietcavern4::domain::TeamMember
+{
+  memberCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey team that leads visits into the cave.'} test::quietcavern4::domain::SurveyTeam
+{
+  teamCode: String[1];
+  members: test::quietcavern4::domain::TeamMember[*];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A surveyed cave passage, versioned by the survey load that recorded it.'} test::quietcavern4::domain::Passage
+{
+  passageCode: String[1];
+  kindCode: String[1];
+  lengthMetres: Integer[1];
+  chamber: test::quietcavern4::domain::Chamber[1];
+  entrance: test::quietcavern4::domain::Entrance[0..1];
+  markers: test::quietcavern4::domain::Marker[*];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A passage that floods seasonally and is gated by a flood rule.'} test::quietcavern4::domain::FloodedPassage extends test::quietcavern4::domain::Passage
+{
+  floodRule: test::quietcavern4::domain::AccessRule[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A low passage that has to be crawled and is gated by a crawl rule.'} test::quietcavern4::domain::CrawlPassage extends test::quietcavern4::domain::Passage
+{
+  crawlRule: test::quietcavern4::domain::AccessRule[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A dry walking passage with no access rule of its own.'} test::quietcavern4::domain::DryPassage extends test::quietcavern4::domain::Passage
+{
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A survey visit into a passage, corrected over processing time and scheduled over business time.'} test::quietcavern4::domain::SurveyVisit
+{
+  visitCode: String[1];
+  leadTeam: test::quietcavern4::domain::SurveyTeam[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a passage to the survey visits made into it; the visit end is bitemporal, so navigation takes a processing date and a business date.'} test::quietcavern4::domain::Passage_Visit
+{
+  passages: test::quietcavern4::domain::Passage[*];
+  visits: test::quietcavern4::domain::SurveyVisit[*];
+}

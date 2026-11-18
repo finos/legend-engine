@@ -1,0 +1,46 @@
+name: ember-wharf-2
+title: "Ember Wharf 2 - two data spaces over processing-temporal wharf records mapped by composite key onto sibling tables"
+description: |
+  A harbour wharf operations model. Four processing-temporal record types - berthing slots, gantry
+  cranes, vessel visits and staged pallet lots - are mapped onto four unjoined sibling tables of one
+  relational store, each class mapping pinning its main table alias and declaring a composite primary
+  key over the identifier and the processing-window start so the same identifier can recur across
+  load batches. Four single-execution services project the surviving versions flat, and two data
+  spaces group the mapping with the warehouse runtime and advertise those services as executables.
+modelSources:
+  model:
+    root: ember-wharf-2
+    files:
+      - test/emberwharf2/connection/WharfConnection.pure
+      - test/emberwharf2/dataspace/WharfDataSpaces.pure
+      - test/emberwharf2/domain/WharfDomain.pure
+      - test/emberwharf2/mapping/WharfMapping.pure
+      - test/emberwharf2/runtime/WharfRuntime.pure
+      - test/emberwharf2/service/WharfServices.pure
+      - test/emberwharf2/store/WharfDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - composite-primary-key
+  - data-space
+  - h2
+  - harbour
+  - main-table-alias
+  - processing-temporal
+  - project
+  - service
+  - snowflake

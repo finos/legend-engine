@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::embercanyon3::store::VaultDatabase
+(
+  Schema registry
+  (
+    Table seed_accession
+    (
+      accession_id INTEGER PRIMARY KEY,
+      accession_code VARCHAR(32) NOT NULL,
+      taxon_name VARCHAR(120) NOT NULL,
+      vault_code VARCHAR(24) NOT NULL,
+      collected_on DATE NOT NULL,
+      seed_count INTEGER NOT NULL,
+      viability_rate FLOAT NOT NULL,
+      collector_name VARCHAR(80) NOT NULL,
+      region_name VARCHAR(80) NOT NULL,
+      habitat_code VARCHAR(32)
+    )
+    Table accession_archive
+    (
+      archive_id INTEGER PRIMARY KEY,
+      accession_code VARCHAR(32) NOT NULL,
+      taxon_name VARCHAR(120) NOT NULL,
+      vault_code VARCHAR(24) NOT NULL,
+      collected_on DATE NOT NULL,
+      seed_count INTEGER NOT NULL,
+      viability_rate FLOAT NOT NULL,
+      collector_name VARCHAR(80) NOT NULL,
+      region_name VARCHAR(80) NOT NULL,
+      habitat_code VARCHAR(32)
+    )
+    View accession_yield_view
+    (
+      ~groupBy
+      (
+        registry.seed_accession.vault_code
+      )
+      vault_code: registry.seed_accession.vault_code PRIMARY KEY,
+      accession_total: count(registry.seed_accession.accession_code),
+      seed_total: sum(registry.seed_accession.seed_count)
+    )
+  )
+  Schema trials
+  (
+    Table germination_trial
+    (
+      trial_id INTEGER PRIMARY KEY,
+      trial_code VARCHAR(32) NOT NULL,
+      accession_code VARCHAR(32) NOT NULL,
+      emerged_count INTEGER NOT NULL,
+      tray_label VARCHAR(80) NOT NULL
+    )
+    View trial_summary_view
+    (
+      ~groupBy
+      (
+        trials.germination_trial.accession_code
+      )
+      accession_code: trials.germination_trial.accession_code PRIMARY KEY,
+      emerged_total: sum(trials.germination_trial.emerged_count)
+    )
+  )
+
+  Filter WildAccessionFilter(registry.seed_accession.habitat_code != '')
+)

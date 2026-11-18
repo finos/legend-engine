@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::umberglacier4::contract::*;
+import test::umberglacier4::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Published contract root for stake survey rounds walked on the glacier tongue.'} test::umberglacier4::domain::SurveyRoundContract extends test::umberglacier4::contract::MonitoringEnvelope
+{
+  records: SurveyRoundPayload[1..*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Published contract root for meltwater gauge runs read at the glacier snout.'} test::umberglacier4::domain::MeltwaterRunContract extends test::umberglacier4::contract::MonitoringEnvelope
+{
+  records: MeltwaterRunPayload[1..*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Published contract root for crevasse scan sweeps flown over the icefall.'} test::umberglacier4::domain::CrevasseSweepContract extends test::umberglacier4::contract::MonitoringEnvelope
+{
+  records: CrevasseSweepPayload[1..*];
+}

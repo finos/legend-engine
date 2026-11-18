@@ -1,0 +1,285 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberreef5::mapping::ReefBuoyMapping
+(
+  *test::emberreef5::domain::CrestBuoyHourly[crestBuoyHourly]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."report_code"
+    )
+    ~mainTable [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly
+    reportCode: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."report_code",
+    buoyCode: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."buoy_code",
+    waterTempC: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."water_temp_c",
+    salinityPsu: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."salinity_psu",
+    phLevel: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."ph_level",
+    turbidityNtu: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."turbidity_ntu",
+    dissolvedOxygen: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."dissolved_oxygen",
+    chlorophyllUg: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."chlorophyll_ug",
+    parLight: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."par_light",
+    currentSpeed: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."current_speed",
+    waveHeightM: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."wave_height_m",
+    readAt: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly."read_at"
+  }
+
+  *test::emberreef5::domain::CrestBuoyHourlyRevised[crestBuoyHourlyRevised]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."report_code"
+    )
+    ~mainTable [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev
+    reportCode: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."report_code",
+    buoyCode: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."buoy_code",
+    waterTempC: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."water_temp_c",
+    salinityPsu: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."salinity_psu",
+    phLevel: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."ph_level",
+    turbidityNtu: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."turbidity_ntu",
+    dissolvedOxygen: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."dissolved_oxygen",
+    chlorophyllUg: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."chlorophyll_ug",
+    parLight: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."par_light",
+    currentSpeed: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."current_speed",
+    waveHeightM: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."wave_height_m",
+    readAt: [test::emberreef5::store::ReefBuoyDb]reef.crest_buoy_hourly_rev."read_at"
+  }
+
+  *test::emberreef5::domain::LagoonBuoyDaily[lagoonBuoyDaily]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."report_code"
+    )
+    ~mainTable [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily
+    reportCode: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."report_code",
+    buoyCode: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."buoy_code",
+    meanTempC: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."mean_temp_c",
+    maxTempC: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."max_temp_c",
+    minTempC: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."min_temp_c",
+    tidalRangeM: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."tidal_range_m",
+    nitrateUm: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."nitrate_um",
+    phosphateUm: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."phosphate_um",
+    silicateUm: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."silicate_um",
+    sedimentLoad: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."sediment_load",
+    readAt: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily."read_at"
+  }
+
+  *test::emberreef5::domain::LagoonBuoyDailyRevised[lagoonBuoyDailyRevised]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."report_code"
+    )
+    ~mainTable [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev
+    reportCode: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."report_code",
+    buoyCode: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."buoy_code",
+    meanTempC: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."mean_temp_c",
+    maxTempC: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."max_temp_c",
+    minTempC: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."min_temp_c",
+    tidalRangeM: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."tidal_range_m",
+    nitrateUm: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."nitrate_um",
+    phosphateUm: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."phosphate_um",
+    silicateUm: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."silicate_um",
+    sedimentLoad: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."sediment_load",
+    readAt: [test::emberreef5::store::ReefBuoyDb]reef.lagoon_buoy_daily_rev."read_at"
+  }
+
+  *test::emberreef5::domain::PolypTransectSurvey[polypTransectSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."report_code"
+    )
+    ~mainTable [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey
+    reportCode: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."report_code",
+    buoyCode: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."buoy_code",
+    coverPct: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."cover_pct",
+    bleachedPct: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."bleached_pct",
+    recruitDensity: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."recruit_density",
+    algaeCoverPct: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."algae_cover_pct",
+    rugosityIndex: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."rugosity_index",
+    grazerDensity: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."grazer_density",
+    fishBiomassKg: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."fish_biomass_kg",
+    readAt: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey."read_at"
+  }
+
+  *test::emberreef5::domain::PolypTransectSurveyRevised[polypTransectSurveyRevised]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."report_code"
+    )
+    ~mainTable [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev
+    reportCode: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."report_code",
+    buoyCode: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."buoy_code",
+    coverPct: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."cover_pct",
+    bleachedPct: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."bleached_pct",
+    recruitDensity: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."recruit_density",
+    algaeCoverPct: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."algae_cover_pct",
+    rugosityIndex: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."rugosity_index",
+    grazerDensity: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."grazer_density",
+    fishBiomassKg: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."fish_biomass_kg",
+    readAt: [test::emberreef5::store::ReefBuoyDb]reef.polyp_transect_survey_rev."read_at"
+  }
+
+  *test::emberreef5::domain::ThermalStressIndex[thermalStressIndex]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."report_code"
+    )
+    ~mainTable [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index
+    reportCode: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."report_code",
+    buoyCode: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."buoy_code",
+    degreeHeatingWeeks: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."degree_heating_weeks",
+    hotspotC: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."hotspot_c",
+    anomalyC: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."anomaly_c",
+    alertScore: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."alert_score",
+    cloudFraction: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."cloud_fraction",
+    windSpeedMs: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."wind_speed_ms",
+    readAt: [test::emberreef5::store::ReefBuoyDb]reef.thermal_stress_index."read_at"
+  }
+
+  testSuites:
+  [
+    crestBuoyHourlyLatestSuite:
+    {
+      function: |test::emberreef5::domain::CrestBuoyHourly.all(%latest)->project(
+        [
+          x|$x.reportCode,
+          x|$x.buoyCode,
+          x|$x.waterTempC,
+          x|$x.salinityPsu,
+          x|$x.phLevel,
+          x|$x.turbidityNtu,
+          x|$x.dissolvedOxygen,
+          x|$x.chlorophyllUg,
+          x|$x.parLight,
+          x|$x.currentSpeed,
+          x|$x.waveHeightM,
+          x|$x.readAt
+        ],
+        [
+          'ReportCode',
+          'BuoyCode',
+          'WaterTempC',
+          'SalinityPsu',
+          'PhLevel',
+          'TurbidityNtu',
+          'DissolvedOxygen',
+          'ChlorophyllUg',
+          'ParLight',
+          'CurrentSpeed',
+          'WaveHeightM',
+          'ReadAt'
+        ]
+      )->sort([asc('ReportCode')]);
+      tests:
+      [
+        latestVersionOnly:
+        {
+          doc: 'Two current reports and one superseded processing version of the first report; the superseded version is out of range at the latest instant and must not be returned, and the null optional reading surfaces as an empty cell.';
+          data:
+          [
+            test::emberreef5::store::ReefBuoyDb:
+              Relational
+              #{
+                reef.crest_buoy_hourly:
+                  'report_code,buoy_code,water_temp_c,salinity_psu,ph_level,turbidity_ntu,dissolved_oxygen,chlorophyll_ug,par_light,current_speed,wave_height_m,read_at,in_z,out_z\n'+
+                  'CH-01,B-1A,10.25,10.75,11.25,11.75,12.25,12.75,13.25,13.75,14.25,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                  'CH-02,B-1B,20.25,,21.25,21.75,22.25,22.75,23.25,23.75,24.25,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                  'CH-01,B-1A,30.25,30.75,31.25,31.75,32.25,32.75,33.25,33.75,34.25,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"CH-01","BuoyCode":"B-1A","WaterTempC":10.25,"SalinityPsu":10.75,"PhLevel":11.25,"TurbidityNtu":11.75,"DissolvedOxygen":12.25,"ChlorophyllUg":12.75,"ParLight":13.25,"CurrentSpeed":13.75,"WaveHeightM":14.25,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"CH-02","BuoyCode":"B-1B","WaterTempC":20.25,"SalinityPsu":null,"PhLevel":21.25,"TurbidityNtu":21.75,"DissolvedOxygen":22.25,"ChlorophyllUg":22.75,"ParLight":23.25,"CurrentSpeed":23.75,"WaveHeightM":24.25,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    polypTransectSurveyLatestSuite:
+    {
+      function: |test::emberreef5::domain::PolypTransectSurvey.all(%latest)->project(
+        [
+          x|$x.reportCode,
+          x|$x.buoyCode,
+          x|$x.coverPct,
+          x|$x.bleachedPct,
+          x|$x.recruitDensity,
+          x|$x.algaeCoverPct,
+          x|$x.rugosityIndex,
+          x|$x.grazerDensity,
+          x|$x.fishBiomassKg,
+          x|$x.readAt
+        ],
+        [
+          'ReportCode',
+          'BuoyCode',
+          'CoverPct',
+          'BleachedPct',
+          'RecruitDensity',
+          'AlgaeCoverPct',
+          'RugosityIndex',
+          'GrazerDensity',
+          'FishBiomassKg',
+          'ReadAt'
+        ]
+      )->sort([asc('ReportCode')]);
+      tests:
+      [
+        latestVersionOnly:
+        {
+          doc: 'Two current reports and one superseded processing version of the first report; the superseded version is out of range at the latest instant and must not be returned, and the null optional reading surfaces as an empty cell.';
+          data:
+          [
+            test::emberreef5::store::ReefBuoyDb:
+              Relational
+              #{
+                reef.polyp_transect_survey:
+                  'report_code,buoy_code,cover_pct,bleached_pct,recruit_density,algae_cover_pct,rugosity_index,grazer_density,fish_biomass_kg,read_at,in_z,out_z\n'+
+                  'PT-01,B-5A,15.25,15.75,16.25,16.75,17.25,17.75,18.25,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                  'PT-02,B-5B,25.25,,26.25,26.75,27.25,27.75,28.25,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                  'PT-01,B-5A,35.25,35.75,36.25,36.75,37.25,37.75,38.25,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"PT-01","BuoyCode":"B-5A","CoverPct":15.25,"BleachedPct":15.75,"RecruitDensity":16.25,"AlgaeCoverPct":16.75,"RugosityIndex":17.25,"GrazerDensity":17.75,"FishBiomassKg":18.25,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"PT-02","BuoyCode":"B-5B","CoverPct":25.25,"BleachedPct":null,"RecruitDensity":26.25,"AlgaeCoverPct":26.75,"RugosityIndex":27.25,"GrazerDensity":27.75,"FishBiomassKg":28.25,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

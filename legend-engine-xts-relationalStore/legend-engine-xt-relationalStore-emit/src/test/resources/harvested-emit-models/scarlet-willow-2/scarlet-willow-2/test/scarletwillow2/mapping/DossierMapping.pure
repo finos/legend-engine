@@ -1,0 +1,327 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletwillow2::mapping::DossierMapping
+(
+  include mapping test::scarletwillow2::mapping::ConservationEnumMapping
+  include mapping test::scarletwillow2::mapping::ItemRefMapping[test::scarletwillow2::store::ItemRefDB->test::scarletwillow2::store::DossierDB]
+  include mapping test::scarletwillow2::mapping::RecordRefMapping[test::scarletwillow2::store::RecordRefDB->test::scarletwillow2::store::DossierDB]
+
+  *test::scarletwillow2::domain::TreatmentDossier[dossier]: Relational
+  {
+    ~filter [test::scarletwillow2::store::DossierDB]FinalDossiers
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.dossier_code,
+      [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier
+    dossierCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.dossier_code,
+    recordNoText: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.record_no_text,
+    itemCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.item_code,
+    entityCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.entity_code,
+    unitCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.unit_code,
+    openedOn: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.opened_on,
+    closedOn: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.closed_on,
+    sheetCount: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.sheet_count,
+    folioCount: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.folio_count,
+    summaryText: toUpper([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.summary_text),
+    custodianName: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.custodian_name,
+    workshopName: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.workshop_name,
+    status: EnumerationMapping RecordStatusMapping: rtrim([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.status_code),
+    memoKind: EnumerationMapping MemoKindMapping: rtrim([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.memo_code),
+    intakeAgent
+    (
+      agentCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.intake_agent_code,
+      agentName: toUpper([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.intake_agent_name),
+      deskName: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.intake_desk_name
+    ),
+    releaseAgent
+    (
+      agentCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.release_agent_code,
+      agentName: toUpper([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.release_agent_name),
+      deskName: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.release_desk_name
+    ),
+    reviewAgent
+    (
+      agentCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.review_agent_code,
+      agentName: toUpper([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.review_agent_name),
+      deskName: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.review_desk_name
+    ),
+    sheetMeasure
+    (
+      measureText: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.sheet_measure_text,
+      measureCount: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.sheet_count,
+      measureKind: EnumerationMapping MeasureKindMapping: 'SHEET',
+      detail
+      (
+        detailCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.sheet_detail_code,
+        detailNote: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.sheet_detail_note
+      )
+    ),
+    folioMeasure
+    (
+      measureText: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.folio_measure_text,
+      measureCount: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.folio_count,
+      measureKind: EnumerationMapping MeasureKindMapping: 'FOLIO',
+      detail
+      (
+        detailCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.folio_detail_code,
+        detailNote: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.folio_detail_note
+      )
+    ),
+    bathMeasure
+    (
+      measureText: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.bath_measure_text,
+      measureCount: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.bath_minutes,
+      measureKind: EnumerationMapping MeasureKindMapping: 'BATH',
+      detail
+      (
+        detailCode: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.bath_detail_code,
+        detailNote: [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.bath_detail_note
+      )
+    ),
+    shelfLabel() Inline[shelfLabelPanel],
+    boxLabel() Inline[boxLabelPanel],
+    item[itemRef]: [test::scarletwillow2::store::DossierDB]@Dossier_Item,
+    record[recordRef]: [test::scarletwillow2::store::DossierDB]@Dossier_Record
+  }
+
+  *test::scarletwillow2::domain::LabelPanel[shelfLabelPanel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.dossier_code,
+      [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier
+    labelText: toUpper([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.shelf_label_text),
+    labelKind: EnumerationMapping LabelKindMapping: 'SHELF',
+    identifierKind: EnumerationMapping IdentifierKindMapping: 'DOSSIER'
+  }
+
+  test::scarletwillow2::domain::LabelPanel[boxLabelPanel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.dossier_code,
+      [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::DossierDB]dossier.treatment_dossier
+    labelText: toUpper([test::scarletwillow2::store::DossierDB]dossier.treatment_dossier.box_label_text),
+    labelKind: EnumerationMapping LabelKindMapping: 'BOX',
+    identifierKind: EnumerationMapping IdentifierKindMapping: 'RECORD'
+  }
+
+  test::scarletwillow2::domain::Dossier_Entity: Relational
+  {
+    AssociationMapping
+    (
+      entity[dossier, entityRef]: [test::scarletwillow2::store::DossierDB]@Dossier_Entity,
+      dossiers[entityRef, dossier]: [test::scarletwillow2::store::DossierDB]@Dossier_Entity
+    )
+  }
+
+  testSuites:
+  [
+    dossierProjectionSuite:
+    {
+      function: |test::scarletwillow2::domain::TreatmentDossier.all(%2026-04-01)->project(
+        [
+          d|$d.dossierCode,
+          d|$d.intakeAgent.agentName,
+          d|$d.reviewAgent.deskName,
+          d|$d.sheetMeasure.detail.detailCode,
+          d|$d.bathMeasure.measureText,
+          d|$d.shelfLabel.labelText,
+          d|$d.boxLabel.labelText,
+          d|$d.item.itemName,
+          d|$d.record.recordLabel,
+          d|if($d.status == test::scarletwillow2::domain::RecordStatus.FINAL, |'FINAL STATE', |'OTHER STATE'),
+          d|if($d.memoKind == test::scarletwillow2::domain::MemoKind.INTAKE_MEMO, |'INTAKE MEMO', |'OTHER MEMO')
+        ],
+        [
+          'Dossier',
+          'IntakeAgent',
+          'ReviewDesk',
+          'SheetDetail',
+          'BathMeasure',
+          'ShelfLabel',
+          'BoxLabel',
+          'Item',
+          'Record',
+          'State',
+          'Memo'
+        ]
+      )->sort([asc('Dossier')]);
+      tests:
+      [
+        wideRowWithReferenceHops:
+        {
+          doc: 'Reads the wide dossier row as of a date inside its business window, so the three agent panels, the two-level measure panels, both delegated label panels and both reference hops resolve. The second row carries a state code that no enumeration mapping value covers, so its translated state falls back to the other-state arm while every other attribute still reads.';
+          data:
+          [
+            test::scarletwillow2::store::DossierDB:
+              Relational
+              #{
+                dossier.treatment_dossier:
+                  'dossier_code,record_no_text,item_code,entity_code,unit_code,opened_on,closed_on,sheet_count,folio_count,summary_text,custodian_name,workshop_name,status_code,memo_code,intake_agent_code,intake_agent_name,intake_desk_name,release_agent_code,release_agent_name,release_desk_name,review_agent_code,review_agent_name,review_desk_name,sheet_measure_text,sheet_detail_code,sheet_detail_note,folio_measure_text,folio_detail_code,folio_detail_note,bath_minutes,bath_measure_text,bath_detail_code,bath_detail_note,shelf_label_text,box_label_text,bus_from,bus_thru\n'+
+                  'DOS-01,4101,ITM-01,ENT-01,UNI-01,2026-01-12,2026-02-20,18,4,washed and rehoused,Reading Room,North Workshop,FINAL,INTAKE,AG-01,ada quill,North Desk,AG-02,bo folio,South Desk,AG-03,cy binder,Review Desk,18 sheets,CALIPER,measured twice,4 folios,RULE,,45,45 minutes,BATH-TIMER,timed by clock,shelf nine,box four,2026-01-01,2026-12-31\n'+
+                  'DOS-02,4102,ITM-02,ENT-01,UNI-02,2026-02-02,,26,6,,Map Room,South Workshop,FINAL,REVIEW,AG-04,di paster,,AG-05,el mount,,AG-06,fi presser,,26 sheets,CALIPER,,6 folios,RULE,,,,,,shelf two,box one,2026-01-01,2026-12-31\n'+
+                  'DOS-03,4103,ITM-03,ENT-02,UNI-01,2025-05-05,2025-06-06,9,2,superseded intake,Store Room,East Workshop,FINAL,INTAKE,AG-07,gu binder,East Desk,AG-08,ha folio,East Desk,AG-09,il quill,East Desk,9 sheets,CALIPER,,2 folios,RULE,,20,20 minutes,BATH-TIMER,,shelf one,box nine,2025-01-01,2025-12-31\n';
+                reference.item_ref:
+                  'item_code,item_name,shelvable_code,bus_from,bus_thru\n'+
+                  'ITM-01,Bound Chronicle Volume,OPEN,2026-01-01,2026-12-31\n'+
+                  'ITM-02,Folded Survey Plan,CLOSED,2026-01-01,2026-12-31\n'+
+                  'ITM-03,Loose Sheet Bundle,OPEN,2025-01-01,2025-12-31\n';
+                reference.unit_rate_ref:
+                  'unit_code,unit_name,basis_code,bus_from,bus_thru\n'+
+                  'UNI-01,Sheet Washing,SHEET,2026-01-01,2026-12-31\n'+
+                  'UNI-02,Folio Pressing,FOLIO,2026-01-01,2026-12-31\n';
+                registry.record_ref:
+                  'record_no,raised_by,bus_from,bus_thru\n'+
+                  '4101,North Workshop,2026-01-01,2026-12-31\n'+
+                  '4102,South Workshop,2026-01-01,2026-12-31\n'+
+                  '4103,East Workshop,2025-01-01,2025-12-31\n';
+                registry.entity_ref:
+                  'entity_code,entity_name,bus_from,bus_thru\n'+
+                  'ENT-01,Paper Conservation,2026-01-01,2026-12-31\n'+
+                  'ENT-02,Photographic Conservation,2026-01-01,2026-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedWideRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Dossier":"DOS-01","IntakeAgent":"ADA QUILL","ReviewDesk":"Review Desk","SheetDetail":"CALIPER","BathMeasure":"45 minutes","ShelfLabel":"SHELF NINE","BoxLabel":"BOX FOUR","Item":"Bound Chronicle Volume","Record":"4101","State":"FINAL STATE","Memo":"INTAKE MEMO"},{"Dossier":"DOS-02","IntakeAgent":"DI PASTER","ReviewDesk":null,"SheetDetail":"CALIPER","BathMeasure":null,"ShelfLabel":"SHELF TWO","BoxLabel":"BOX ONE","Item":"Folded Survey Plan","Record":"4102","State":"FINAL STATE","Memo":"OTHER MEMO"}]';
+                  }#;
+              }#
+          ];
+        },
+        dateBeforeEveryWindow:
+        {
+          doc: 'Reads as of a date that falls before the business window of every dossier row, every reference row opening later in the year, so the milestoned relation contributes nothing and the projection is empty.';
+          data:
+          [
+            test::scarletwillow2::store::DossierDB:
+              Relational
+              #{
+                dossier.treatment_dossier:
+                  'dossier_code,record_no_text,item_code,entity_code,unit_code,opened_on,closed_on,sheet_count,folio_count,summary_text,custodian_name,workshop_name,status_code,memo_code,intake_agent_code,intake_agent_name,intake_desk_name,release_agent_code,release_agent_name,release_desk_name,review_agent_code,review_agent_name,review_desk_name,sheet_measure_text,sheet_detail_code,sheet_detail_note,folio_measure_text,folio_detail_code,folio_detail_note,bath_minutes,bath_measure_text,bath_detail_code,bath_detail_note,shelf_label_text,box_label_text,bus_from,bus_thru\n'+
+                  'DOS-01,4101,ITM-01,ENT-01,UNI-01,2026-07-12,2026-08-20,18,4,washed and rehoused,Reading Room,North Workshop,FINAL,INTAKE,AG-01,ada quill,North Desk,AG-02,bo folio,South Desk,AG-03,cy binder,Review Desk,18 sheets,CALIPER,measured twice,4 folios,RULE,,45,45 minutes,BATH-TIMER,timed by clock,shelf nine,box four,2026-07-01,2026-12-31\n';
+                reference.item_ref:
+                  'item_code,item_name,shelvable_code,bus_from,bus_thru\n'+
+                  'ITM-01,Bound Chronicle Volume,OPEN,2026-07-01,2026-12-31\n';
+                reference.unit_rate_ref:
+                  'unit_code,unit_name,basis_code,bus_from,bus_thru\n'+
+                  'UNI-01,Sheet Washing,SHEET,2026-07-01,2026-12-31\n';
+                registry.record_ref:
+                  'record_no,raised_by,bus_from,bus_thru\n'+
+                  '4101,North Workshop,2026-07-01,2026-12-31\n';
+                registry.entity_ref:
+                  'entity_code,entity_name,bus_from,bus_thru\n'+
+                  'ENT-01,Paper Conservation,2026-07-01,2026-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            noRowsBeforeTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    dossierDocumentSuite:
+    {
+      function: |test::scarletwillow2::domain::TreatmentDossier.all(%2026-04-01)->graphFetch(
+        #{
+          test::scarletwillow2::domain::TreatmentDossier
+          {
+            dossierCode,
+            recordNoText,
+            itemCode,
+            openedOn,
+            closedOn,
+            sheetCount,
+            folioCount,
+            summaryText,
+            custodianName,
+            workshopName
+          }
+        }#
+      )->serialize(
+        #{
+          test::scarletwillow2::domain::TreatmentDossier
+          {
+            dossierCode,
+            recordNoText,
+            itemCode,
+            openedOn,
+            closedOn,
+            sheetCount,
+            folioCount,
+            summaryText,
+            custodianName,
+            workshopName
+          }
+        }#
+      );
+      tests:
+      [
+        selectedAttributesAsDocument:
+        {
+          doc: 'Fetches an explicit subset of the dossier attributes and serializes it to a document, so the wide row is published as a narrow document with its absent closing date and absent summary preserved.';
+          data:
+          [
+            test::scarletwillow2::store::DossierDB:
+              Relational
+              #{
+                dossier.treatment_dossier:
+                  'dossier_code,record_no_text,item_code,entity_code,unit_code,opened_on,closed_on,sheet_count,folio_count,summary_text,custodian_name,workshop_name,status_code,memo_code,intake_agent_code,intake_agent_name,intake_desk_name,release_agent_code,release_agent_name,release_desk_name,review_agent_code,review_agent_name,review_desk_name,sheet_measure_text,sheet_detail_code,sheet_detail_note,folio_measure_text,folio_detail_code,folio_detail_note,bath_minutes,bath_measure_text,bath_detail_code,bath_detail_note,shelf_label_text,box_label_text,bus_from,bus_thru\n'+
+                  'DOS-01,4101,ITM-01,ENT-01,UNI-01,2026-01-12,2026-02-20,18,4,washed and rehoused,Reading Room,North Workshop,FINAL,INTAKE,AG-01,ada quill,North Desk,AG-02,bo folio,South Desk,AG-03,cy binder,Review Desk,18 sheets,CALIPER,measured twice,4 folios,RULE,,45,45 minutes,BATH-TIMER,timed by clock,shelf nine,box four,2026-01-01,2026-12-31\n'+
+                  'DOS-02,4102,ITM-02,ENT-01,UNI-02,2026-02-02,,26,6,,Map Room,South Workshop,FINAL,REVIEW,AG-04,di paster,,AG-05,el mount,,AG-06,fi presser,,26 sheets,CALIPER,,6 folios,RULE,,,,,,shelf two,box one,2026-01-01,2026-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            serializedDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dossierCode":"DOS-01","recordNoText":"4101","itemCode":"ITM-01","openedOn":"2026-01-12","closedOn":"2026-02-20","sheetCount":18,"folioCount":4,"summaryText":"WASHED AND REHOUSED","custodianName":"Reading Room","workshopName":"North Workshop"},{"dossierCode":"DOS-02","recordNoText":"4102","itemCode":"ITM-02","openedOn":"2026-02-02","closedOn":null,"sheetCount":26,"folioCount":6,"summaryText":null,"custodianName":"Map Room","workshopName":"South Workshop"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

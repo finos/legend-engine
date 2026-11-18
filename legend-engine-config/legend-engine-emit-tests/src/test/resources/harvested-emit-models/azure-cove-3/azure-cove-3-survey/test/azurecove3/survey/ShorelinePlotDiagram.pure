@@ -1,0 +1,244 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::azurecove3::survey::ShorelinePlotDiagram
+{
+  classView plotView
+  {
+    class: test::azurecove3::survey::ShorelinePlot;
+    position: (600.0,60.0);
+    rectangle: (300.0,420.0);
+  }
+  classView tidalWindowView
+  {
+    class: test::azurecove3::survey::TidalSamplingWindow;
+    position: (60.0,60.0);
+    rectangle: (240.0,100.0);
+  }
+  classView sedimentWindowView
+  {
+    class: test::azurecove3::survey::SedimentSamplingWindow;
+    position: (60.0,220.0);
+    rectangle: (240.0,110.0);
+  }
+  classView vegetationWindowView
+  {
+    class: test::azurecove3::survey::VegetationSurveyWindow;
+    position: (60.0,390.0);
+    rectangle: (240.0,90.0);
+  }
+  classView waterQualityWindowView
+  {
+    class: test::azurecove3::survey::WaterQualityWindow;
+    position: (60.0,540.0);
+    rectangle: (240.0,120.0);
+  }
+  classView springTideWindowView
+  {
+    class: test::azurecove3::survey::SpringTideWindow;
+    position: (60.0,720.0);
+    rectangle: (240.0,80.0);
+  }
+  classView habitatObservationView
+  {
+    class: test::azurecove3::survey::HabitatObservation;
+    position: (1040.0,60.0);
+    rectangle: (240.0,80.0);
+  }
+  classView accessRecordView
+  {
+    class: test::azurecove3::survey::PlotAccessRecord;
+    position: (1040.0,200.0);
+    rectangle: (240.0,110.0);
+  }
+  classView reportingSheetView
+  {
+    class: test::azurecove3::survey::PlotReportingSheet;
+    position: (1040.0,370.0);
+    rectangle: (260.0,260.0);
+  }
+  classView identifierRecordView
+  {
+    class: test::azurecove3::survey::PlotIdentifierRecord;
+    position: (1040.0,690.0);
+    rectangle: (240.0,90.0);
+  }
+  classView segmentMarkView
+  {
+    class: test::azurecove3::survey::ShorelineSegmentMark;
+    position: (600.0,560.0);
+    rectangle: (260.0,110.0);
+  }
+  classView partyContactView
+  {
+    class: test::azurecove3::survey::SurveyPartyContact;
+    position: (600.0,740.0);
+    rectangle: (260.0,110.0);
+  }
+  classView turbidityValueView
+  {
+    class: test::azurecove3::survey::TurbidityValue;
+    position: (1360.0,60.0);
+    rectangle: (240.0,80.0);
+  }
+  classView habitatZoneView
+  {
+    class: test::azurecove3::reference::HabitatZone;
+    position: (1360.0,200.0);
+    rectangle: (240.0,110.0);
+  }
+  classView fieldPartyView
+  {
+    class: test::azurecove3::reference::FieldParty;
+    position: (1360.0,370.0);
+    rectangle: (240.0,90.0);
+  }
+  classView permitIdentifierView
+  {
+    class: test::azurecove3::reference::PermitIdentifier;
+    position: (1360.0,520.0);
+    rectangle: (240.0,90.0);
+  }
+  classView mooringBuoyView
+  {
+    class: test::azurecove3::reference::MooringBuoyUnit;
+    position: (1360.0,670.0);
+    rectangle: (240.0,90.0);
+  }
+  classView gaugeMeasureBaseView
+  {
+    class: test::azurecove3::reference::GaugeMeasureBase;
+    position: (1680.0,60.0);
+    rectangle: (240.0,90.0);
+  }
+  classView readingValueBaseView
+  {
+    class: test::azurecove3::reference::ReadingValueBase;
+    position: (1680.0,220.0);
+    rectangle: (240.0,90.0);
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_TidalSamplingWindow.tidalWindows;
+    source: plotView;
+    target: tidalWindowView;
+    points: [(750.0,270.0),(180.0,110.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_SedimentSamplingWindow.sedimentWindows;
+    source: plotView;
+    target: sedimentWindowView;
+    points: [(750.0,270.0),(180.0,275.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_VegetationSurveyWindow.vegetationWindows;
+    source: plotView;
+    target: vegetationWindowView;
+    points: [(750.0,270.0),(180.0,435.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_WaterQualityWindow.waterQualityWindows;
+    source: plotView;
+    target: waterQualityWindowView;
+    points: [(750.0,270.0),(180.0,600.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_SpringTideWindow.springTideWindows;
+    source: plotView;
+    target: springTideWindowView;
+    points: [(750.0,270.0),(180.0,760.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_HabitatObservation.observations;
+    source: plotView;
+    target: habitatObservationView;
+    points: [(750.0,270.0),(1160.0,100.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_PlotAccessRecord.accessRecords;
+    source: plotView;
+    target: accessRecordView;
+    points: [(750.0,270.0),(1160.0,255.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_PlotReportingSheet.reportingSheet;
+    source: plotView;
+    target: reportingSheetView;
+    points: [(750.0,270.0),(1170.0,500.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_PlotIdentifierRecord.identifierRecords;
+    source: plotView;
+    target: identifierRecordView;
+    points: [(750.0,270.0),(1160.0,735.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_ShorelineSegmentMark.segmentMarks;
+    source: plotView;
+    target: segmentMarkView;
+    points: [(750.0,270.0),(730.0,615.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelineSegmentMark_SurveyPartyContact.partyContacts;
+    source: segmentMarkView;
+    target: partyContactView;
+    points: [(730.0,615.0),(730.0,795.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_HabitatZone.habitatZones;
+    source: plotView;
+    target: habitatZoneView;
+    points: [(750.0,270.0),(1480.0,255.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_HabitatZone.plot;
+    source: habitatZoneView;
+    target: plotView;
+    points: [(1480.0,255.0),(750.0,270.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_FieldParty.fieldParties;
+    source: plotView;
+    target: fieldPartyView;
+    points: [(750.0,270.0),(1480.0,415.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelinePlot_PermitIdentifier.permitIdentifiers;
+    source: plotView;
+    target: permitIdentifierView;
+    points: [(750.0,270.0),(1480.0,565.0)];
+  }
+  propertyView
+  {
+    property: test::azurecove3::survey::ShorelineSegmentMark_MooringBuoyUnit.mooringBuoys;
+    source: segmentMarkView;
+    target: mooringBuoyView;
+    points: [(730.0,615.0),(1480.0,715.0)];
+  }
+}

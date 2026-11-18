@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantisle4::mapping::BenchRegistryMapping
+(
+  *test::verdantisle4::domain::Bench[bench]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantisle4::store::BenchRegistryDB]benchreg.bench.bench_code
+    )
+    ~mainTable [test::verdantisle4::store::BenchRegistryDB]benchreg.bench
+    benchCode: [test::verdantisle4::store::BenchRegistryDB]benchreg.bench.bench_code,
+    benchName: [test::verdantisle4::store::BenchRegistryDB]benchreg.bench.bench_name,
+    houseCode: [test::verdantisle4::store::BenchRegistryDB]benchreg.bench.house_code
+  }
+
+  *test::verdantisle4::domain::Keeper[keeper]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper.keeper_code
+    )
+    ~mainTable [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper
+    keeperCode: [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper.keeper_code,
+    keeperName: [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper.keeper_name,
+    rota[keeperRota]: [test::verdantisle4::store::BenchRegistryDB]@Keeper_Rota
+  }
+
+  *test::verdantisle4::domain::KeeperRota[keeperRota]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper_rota.rota_code
+    )
+    ~mainTable [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper_rota
+    rotaCode: [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper_rota.rota_code,
+    rotaName: [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper_rota.rota_name,
+    cadenceCode: [test::verdantisle4::store::BenchRegistryDB]benchreg.keeper_rota.cadence_code
+  }
+
+  test::verdantisle4::domain::Bench_Keeper: Relational
+  {
+    AssociationMapping
+    (
+      benches[keeper, bench]: [test::verdantisle4::store::BenchRegistryDB]@Bench_Keeper,
+      keeper[bench, keeper]: [test::verdantisle4::store::BenchRegistryDB]@Bench_Keeper
+    )
+  }
+)

@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::kindlythicket2::connection::ThicketH2Connection
+{
+  store: test::kindlythicket2::store::ThicketDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists reserve;',
+      'create schema reserve;',
+      'create table reserve.trail_node (node_code varchar(20) not null, node_label varchar(200) not null, reserve_name varchar(200) not null, reserve_code varchar(20) not null, district_name varchar(200) not null, district_code varchar(20) not null, corridor_name varchar(200) not null, corridor_code varchar(20) not null, sector_name varchar(200) not null, sector_code varchar(20) not null, segment_name varchar(200) not null, segment_code varchar(20) not null, spur_name varchar(200), spur_code varchar(20), station_name varchar(200), station_code varchar(20), waypoint_name varchar(200), waypoint_code varchar(20), from_z date, thru_z date);',
+      'create table reserve.steward_record (record_code varchar(20) not null, steward_name varchar(200) not null, node_code varchar(20) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+ModelChainConnection test::kindlythicket2::connection::ThicketNodeChainConnection
+{
+  mappings:
+  [
+    test::kindlythicket2::mapping::ThicketNodeMapping
+  ];
+}

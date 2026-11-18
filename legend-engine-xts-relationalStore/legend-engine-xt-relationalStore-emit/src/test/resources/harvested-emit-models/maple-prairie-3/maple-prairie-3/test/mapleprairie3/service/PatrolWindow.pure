@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::mapleprairie3::service::PatrolWindow
+{
+  pattern: '/trails/v1/patrol-window';
+  title: 'Maple Prairie - Patrol window';
+  owners:
+  [
+    'alpine-trail-desk',
+    'mountain-hut-wardens'
+  ];
+  documentation: 'A bounded patrol window combining station membership, patrol kind, sequence, and date arithmetic before projecting and limiting visits.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], stationCodes: String[*], patrolKind: String[1]|test::mapleprairie3::domain::PatrolVisit.all()->filter(
+      v|(($v.visitSequence == 1) && ($v.stationCode->in($stationCodes))) && (($v.patrolKind == $patrolKind) && (($v.visitedOn <= $asOf) && ($v.visitedOn >= $asOf->adjust(-14, meta::pure::functions::date::DurationUnit.DAYS))))
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.stationCode,
+        v|$v.hutCode,
+        v|$v.patrolKind,
+        v|$v.visitSequence,
+        v|$v.visitedOn
+      ],
+      [
+        'Visit/Code',
+        'Visit/Station',
+        'Visit/Hut',
+        'Visit/Kind',
+        'Visit/Sequence',
+        'Visit/Date'
+      ]
+    )->sort([asc('Visit/Code')])->limit(3)};
+    mapping: test::mapleprairie3::mapping::TrailMapping;
+    runtime: test::mapleprairie3::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    patrolWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailConnection:
+            Relational
+            #{
+              watch.patrol_visit:
+                'visit_code,station_code,hut_code,patrol_kind,visit_sequence,visited_on\n'+
+                'PV-1,RS-1,H-1,ROUTINE,1,2024-06-10\n'+
+                'PV-2,RS-2,H-2,ROUTINE,1,2024-06-20\n'+
+                'PV-3,RS-1,H-3,EMERGENCY,1,2024-06-22\n'+
+                'PV-4,RS-1,H-4,ROUTINE,2,2024-06-18\n'+
+                'PV-5,RS-1,H-5,ROUTINE,1,2024-06-08\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        visitsInWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-21,
+            stationCodes = ['RS-1'],
+            patrolKind = 'ROUTINE'
+          ]
+          asserts:
+          [
+            twoVisits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit/Code":"PV-1","Visit/Station":"RS-1","Visit/Hut":"H-1","Visit/Kind":"ROUTINE","Visit/Sequence":1,"Visit/Date":"2024-06-10"},{"Visit/Code":"PV-5","Visit/Station":"RS-1","Visit/Hut":"H-5","Visit/Kind":"ROUTINE","Visit/Sequence":1,"Visit/Date":"2024-06-08"}]';
+                  }#;
+              }#
+          ]
+        },
+        noVisitsForStation:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-21,
+            stationCodes = ['RS-9'],
+            patrolKind = 'ROUTINE'
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

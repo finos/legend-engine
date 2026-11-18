@@ -1,0 +1,243 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarbeacon::mapping::NetworkMapping
+(
+  *test::cedarbeacon::domain::ServiceDistrict[serviceDistrict]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon::store::CivicNetworkDb]network.service_district.district_code
+    )
+    ~mainTable [test::cedarbeacon::store::CivicNetworkDb]network.service_district
+    districtCode: [test::cedarbeacon::store::CivicNetworkDb]network.service_district.district_code,
+    districtName: [test::cedarbeacon::store::CivicNetworkDb]network.service_district.district_name
+  }
+
+  *test::cedarbeacon::domain::NetworkZone[networkZone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon::store::CivicNetworkDb]network.network_zone.zone_code
+    )
+    ~mainTable [test::cedarbeacon::store::CivicNetworkDb]network.network_zone
+    zoneCode: [test::cedarbeacon::store::CivicNetworkDb]network.network_zone.zone_code,
+    zoneName: [test::cedarbeacon::store::CivicNetworkDb]network.network_zone.zone_name,
+    districtName: [test::cedarbeacon::store::CivicNetworkDb]@ZoneDistrict | [test::cedarbeacon::store::CivicNetworkDb]network.service_district.district_name
+  }
+
+  *test::cedarbeacon::domain::StopPoint[stopPoint]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon::store::CivicNetworkDb]network.stop_point.stop_code
+    )
+    ~mainTable [test::cedarbeacon::store::CivicNetworkDb]network.stop_point
+    stopCode: [test::cedarbeacon::store::CivicNetworkDb]network.stop_point.stop_code,
+    stopName: [test::cedarbeacon::store::CivicNetworkDb]network.stop_point.stop_name,
+    shelterCount: [test::cedarbeacon::store::CivicNetworkDb]network.stop_point.shelter_count,
+    zoneName: [test::cedarbeacon::store::CivicNetworkDb]@StopZone | [test::cedarbeacon::store::CivicNetworkDb]network.network_zone.zone_name,
+    districtName: [test::cedarbeacon::store::CivicNetworkDb]@StopZone > @ZoneDistrict | [test::cedarbeacon::store::CivicNetworkDb]network.service_district.district_name
+  }
+
+  testSuites:
+  [
+    stopHierarchySuite:
+    {
+      function: |test::cedarbeacon::domain::StopPoint.all(%2026-06-01)->filter(s|$s.stopCode == 'SP-1')->graphFetch(
+        #{
+          test::cedarbeacon::domain::StopPoint
+          {
+            stopCode,
+            stopName,
+            shelterCount,
+            zoneName,
+            districtName
+          }
+        }#
+      )->serialize(
+        #{
+          test::cedarbeacon::domain::StopPoint
+          {
+            stopCode,
+            stopName,
+            shelterCount,
+            zoneName,
+            districtName
+          }
+        }#
+      );
+      tests:
+      [
+        hierarchyResolvedInWindow:
+        {
+          doc: 'A stop whose zone and district versions are both open at the pinned business date resolves its own columns, the one-hop zone name and the two-hop district name.';
+          data:
+          [
+            test::cedarbeacon::store::CivicNetworkDb:
+              Relational
+              #{
+                network.service_district:
+                  'district_code,district_name,valid_from,valid_thru\n'+
+                  'D1,Riverside District,2026-01-01,9999-12-31\n'+
+                  'D2,Hillcrest District,2026-01-01,9999-12-31\n';
+                network.network_zone:
+                  'zone_code,zone_name,district_code,valid_from,valid_thru\n'+
+                  'Z1,North Quarter Zone,D1,2026-01-01,9999-12-31\n'+
+                  'Z9,Retired Quarter Zone,D2,2026-01-01,2026-03-01\n';
+                network.stop_point:
+                  'stop_code,stop_name,shelter_count,zone_code,valid_from,valid_thru\n'+
+                  'SP-1,Elm Crossing Stop,2,Z1,2026-01-01,9999-12-31\n'+
+                  'SP-3,Quarry Lane Stop,0,Z9,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            resolvedStop:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stopCode":"SP-1","stopName":"Elm Crossing Stop","shelterCount":2,"zoneName":"North Quarter Zone","districtName":"Riverside District"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    stopOutOfWindowSuite:
+    {
+      function: |test::cedarbeacon::domain::StopPoint.all(%2026-06-01)->filter(s|$s.stopCode == 'SP-3')->graphFetch(
+        #{
+          test::cedarbeacon::domain::StopPoint
+          {
+            stopCode,
+            stopName,
+            zoneName,
+            districtName
+          }
+        }#
+      )->serialize(
+        #{
+          test::cedarbeacon::domain::StopPoint
+          {
+            stopCode,
+            stopName,
+            zoneName,
+            districtName
+          }
+        }#
+      );
+      tests:
+      [
+        parentOutOfBusinessWindow:
+        {
+          doc: 'A stop that is open at the pinned business date but whose zone version closed earlier loses both hops of the hierarchy, so the zone and district names are absent.';
+          data:
+          [
+            test::cedarbeacon::store::CivicNetworkDb:
+              Relational
+              #{
+                network.service_district:
+                  'district_code,district_name,valid_from,valid_thru\n'+
+                  'D1,Riverside District,2026-01-01,9999-12-31\n'+
+                  'D2,Hillcrest District,2026-01-01,9999-12-31\n';
+                network.network_zone:
+                  'zone_code,zone_name,district_code,valid_from,valid_thru\n'+
+                  'Z1,North Quarter Zone,D1,2026-01-01,9999-12-31\n'+
+                  'Z9,Retired Quarter Zone,D2,2026-01-01,2026-03-01\n';
+                network.stop_point:
+                  'stop_code,stop_name,shelter_count,zone_code,valid_from,valid_thru\n'+
+                  'SP-1,Elm Crossing Stop,2,Z1,2026-01-01,9999-12-31\n'+
+                  'SP-3,Quarry Lane Stop,0,Z9,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            unresolvedStop:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stopCode":"SP-3","stopName":"Quarry Lane Stop","zoneName":null,"districtName":null}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    zoneAsOfSuite:
+    {
+      function: |test::cedarbeacon::domain::NetworkZone.all(%2026-02-01)->filter(z|$z.zoneCode == 'Z9')->graphFetch(
+        #{
+          test::cedarbeacon::domain::NetworkZone
+          {
+            zoneCode,
+            zoneName,
+            districtName
+          }
+        }#
+      )->serialize(
+        #{
+          test::cedarbeacon::domain::NetworkZone
+          {
+            zoneCode,
+            zoneName,
+            districtName
+          }
+        }#
+      );
+      tests:
+      [
+        zoneInsideClosedWindow:
+        {
+          doc: 'Pinning the business date inside the closed zone window returns the retired zone with its district reached through the single hop, proving the same key is invisible at a later date.';
+          data:
+          [
+            test::cedarbeacon::store::CivicNetworkDb:
+              Relational
+              #{
+                network.service_district:
+                  'district_code,district_name,valid_from,valid_thru\n'+
+                  'D1,Riverside District,2026-01-01,9999-12-31\n'+
+                  'D2,Hillcrest District,2026-01-01,9999-12-31\n';
+                network.network_zone:
+                  'zone_code,zone_name,district_code,valid_from,valid_thru\n'+
+                  'Z1,North Quarter Zone,D1,2026-01-01,9999-12-31\n'+
+                  'Z9,Retired Quarter Zone,D2,2026-01-01,2026-03-01\n';
+              }#
+          ];
+          asserts:
+          [
+            retiredZone:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"zoneCode":"Z9","zoneName":"Retired Quarter Zone","districtName":"Hillcrest District"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

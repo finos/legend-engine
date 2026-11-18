@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigocanyon2::service::IncidentKeyFeed
+{
+  pattern: '/indigocanyon2/v1/incident-key';
+  title: 'Indigo Canyon - Caller-Supplied Trail Event Key Projection';
+  owners:
+  [
+    'canyon-trail-registry'
+  ];
+  documentation: 'Projects the incident reference buried three levels inside a caller-supplied trail event document. The mandatory parameter is not a path variable but the payload itself: the inline runtime interpolates it into the document location its model connection parses, so the endpoint carries no store and no credentials.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {payload: String[1]|test::indigocanyon2::domain::TrailIncidentKey.all()->graphFetch(
+    #{
+      test::indigocanyon2::domain::TrailIncidentKey{
+        incidentRef
+      }
+    }#
+    )->serialize(
+    #{
+      test::indigocanyon2::domain::TrailIncidentKey{
+        incidentRef
+      }
+    }#
+    )};
+    mapping: test::indigocanyon2::mapping::IncidentKeyM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::indigocanyon2::mapping::IncidentKeyM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          callerSuppliedTrailEvents:
+          #{
+            JsonModelConnection
+            {
+              class: test::indigocanyon2::domain::InboundTrailEvent;
+              url: 'data:application/json,${payload}';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    suppliedPayloadSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          callerSuppliedTrailEvents:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"eventCode":"EV-4410","header":{"reportedBy":"ranger station 3","detail":{"incidentRef":"IR-88231","gradeHint":"SLOT_TRAVERSE"}},"observations":[{"observationCode":"OB-1","reading":14},{"observationCode":"OB-2"},{"observationCode":"OB-3","reading":0}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        payloadKeyProjected:
+        {
+          parameters:
+          [
+            payload = 'ignored-because-the-suite-substitutes-the-connection'
+          ]
+          asserts:
+          [
+            nestedRefExtracted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"incidentRef":"IR-88231"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

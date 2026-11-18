@@ -1,0 +1,284 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::quietdelta::service::ZonedCanopyWindow
+{
+  pattern: '/quietdelta/v1/zonedCanopyWindow/{asOf}/{lookbackWeeks}/{coastalZone}/{labelTerm}';
+  ownership: UserList { users: ['reef-survey-desk'] };
+  documentation: 'Returns the transect swims inside a rolling window of whole weeks ending on the requested day, keeping only the reefs of one coastal zone whose join-reached label carries the requested term.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], lookbackWeeks: Integer[1], coastalZone: String[1], labelTerm: String[1]|demo::quietdelta::domain::CanopyTransect.all()->filter(
+      t|((($t.reefLabel->toOne()->toUpper()->contains($labelTerm)) && ($t.reefZone->toOne() == $coastalZone)) && ($t.swumOn >= $asOf->adjust(-($lookbackWeeks * 7), DurationUnit.DAYS))) && ($t.swumOn <= $asOf)
+    )->project(
+      [
+        t|$t.transectRef,
+        t|$t.reefRef,
+        t|$t.swumOn,
+        t|$t.stipeCount,
+        t|$t.canopyCoverPct
+      ],
+      [
+        'TransectRef',
+        'ReefRef',
+        'SwumOn',
+        'StipeCount',
+        'CanopyCoverPct'
+      ]
+    )->sort(
+      [
+        asc('TransectRef')
+      ]
+    )};
+    mapping: demo::quietdelta::mapping::KelpSurveyMapping;
+    runtime: demo::quietdelta::runtime::KelpH2Runtime;
+  }
+  testSuites:
+  [
+    zonedCanopyWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kelpConnection:
+            Relational
+            #{
+              kelp.survey_reef:
+                'reef_ref,reef_label,coastal_zone,mean_depth_metres,warden_team\n'+
+                'RF-1,Granite Skerry,INTERTIDAL,8.50,north shore team\n'+
+                'RF-2,Cobble Sound,SUBTIDAL,17.25,west shore team\n';
+
+              kelp.canopy_transect:
+                'transect_ref,reef_ref,swum_on,stipe_count,canopy_cover_pct,visibility_metres\n'+
+                'TR-01,RF-1,2026-05-04,142,63.50,6.25\n'+
+                'TR-02,RF-2,2026-05-11,87,41.75,4.00\n'+
+                'TR-03,RF-1,2026-02-02,55,22.00,3.50\n';
+
+              kelp.holdfast_quadrat:
+                'quadrat_ref,transect_ref,urchin_count,sediment_grade\n'+
+                'HQ-01,TR-01,12,coarse sand\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        threeWeekIntertidalWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-18,
+            lookbackWeeks = 3,
+            coastalZone = 'INTERTIDAL',
+            labelTerm = 'SKERRY'
+          ]
+          asserts:
+          [
+            onlyTheInWindowIntertidalSwim:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TransectRef":"TR-01","ReefRef":"RF-1","SwumOn":"2026-05-04","StipeCount":142,"CanopyCoverPct":63.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service demo::quietdelta::service::ZoneRollCall
+{
+  pattern: '/quietdelta/v1/zoneRollCall/{firstZone}/{secondZone}';
+  ownership: UserList { users: ['reef-survey-desk'] };
+  documentation: 'Returns the transect swims whose join-reached coastal zone is one of the two requested zones, projecting the swim identity together with its reef label.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {firstZone: String[1], secondZone: String[1]|demo::quietdelta::domain::CanopyTransect.all()->filter(
+      t|$t.reefZone->toOne()->in([$firstZone, $secondZone])
+    )->project(
+      [
+        t|$t.transectRef,
+        t|$t.reefLabel->toOne()->toLower(),
+        t|$t.reefZone,
+        t|$t.stipeCount
+      ],
+      [
+        'TransectRef',
+        'ReefLabel',
+        'ReefZone',
+        'StipeCount'
+      ]
+    )->sort(
+      [
+        asc('TransectRef')
+      ]
+    )};
+    mapping: demo::quietdelta::mapping::KelpSurveyMapping;
+    runtime: demo::quietdelta::runtime::KelpH2Runtime;
+  }
+  testSuites:
+  [
+    zoneRollCallSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kelpConnection:
+            Relational
+            #{
+              kelp.survey_reef:
+                'reef_ref,reef_label,coastal_zone,mean_depth_metres,warden_team\n'+
+                'RF-1,Granite Skerry,INTERTIDAL,8.50,north shore team\n'+
+                'RF-2,Cobble Sound,SUBTIDAL,17.25,west shore team\n'+
+                'RF-3,Drift Ledge,ESTUARINE,3.75,east shore team\n';
+
+              kelp.canopy_transect:
+                'transect_ref,reef_ref,swum_on,stipe_count,canopy_cover_pct,visibility_metres\n'+
+                'TR-01,RF-1,2026-05-04,142,63.50,6.25\n'+
+                'TR-02,RF-2,2026-05-11,87,41.75,4.00\n'+
+                'TR-04,RF-3,2026-05-12,19,9.25,2.75\n';
+
+              kelp.holdfast_quadrat:
+                'quadrat_ref,transect_ref,urchin_count,sediment_grade\n'+
+                'HQ-01,TR-01,12,coarse sand\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        twoZoneRollCall:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            firstZone = 'INTERTIDAL',
+            secondZone = 'SUBTIDAL'
+          ]
+          asserts:
+          [
+            estuarineSwimIsLeftOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TransectRef":"TR-01","ReefLabel":"granite skerry","ReefZone":"INTERTIDAL","StipeCount":142},{"TransectRef":"TR-02","ReefLabel":"cobble sound","ReefZone":"SUBTIDAL","StipeCount":87}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service demo::quietdelta::service::SwimAgeRegister
+{
+  pattern: '/quietdelta/v1/swimAgeRegister/{asOf}/{labelTerm}';
+  ownership: UserList { users: ['reef-survey-desk'] };
+  documentation: 'Returns the transect swims whose join-reached reef label carries the requested term, reporting how many days separate each swim from the requested day.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], labelTerm: String[1]|demo::quietdelta::domain::CanopyTransect.all()->filter(
+      t|$t.reefLabel->toOne()->contains($labelTerm)
+    )->project(
+      [
+        t|$t.transectRef,
+        t|$t.swumOn,
+        t|dateDiff($t.swumOn, $asOf, DurationUnit.DAYS),
+        t|$t.canopyCoverPct
+      ],
+      [
+        'TransectRef',
+        'SwumOn',
+        'DaysSinceSwim',
+        'CanopyCoverPct'
+      ]
+    )->sort(
+      [
+        asc('TransectRef')
+      ]
+    )};
+    mapping: demo::quietdelta::mapping::KelpSurveyMapping;
+    runtime: demo::quietdelta::runtime::KelpH2Runtime;
+  }
+  testSuites:
+  [
+    swimAgeRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kelpConnection:
+            Relational
+            #{
+              kelp.survey_reef:
+                'reef_ref,reef_label,coastal_zone,mean_depth_metres,warden_team\n'+
+                'RF-1,Granite Skerry,INTERTIDAL,8.50,north shore team\n'+
+                'RF-2,Cobble Sound,SUBTIDAL,17.25,west shore team\n';
+
+              kelp.canopy_transect:
+                'transect_ref,reef_ref,swum_on,stipe_count,canopy_cover_pct,visibility_metres\n'+
+                'TR-01,RF-1,2026-05-04,142,63.50,6.25\n'+
+                'TR-02,RF-2,2026-05-11,87,41.75,4.00\n';
+
+              kelp.holdfast_quadrat:
+                'quadrat_ref,transect_ref,urchin_count,sediment_grade\n'+
+                'HQ-01,TR-01,12,coarse sand\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        daysSinceTheSkerrySwim:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-18,
+            labelTerm = 'Skerry'
+          ]
+          asserts:
+          [
+            fourteenDaysSinceTheSwim:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TransectRef":"TR-01","SwumOn":"2026-05-04","DaysSinceSwim":14,"CanopyCoverPct":63.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

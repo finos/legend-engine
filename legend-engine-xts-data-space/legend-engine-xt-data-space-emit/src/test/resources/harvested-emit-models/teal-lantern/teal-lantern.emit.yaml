@@ -1,0 +1,76 @@
+name: teal-lantern
+title: "Teal Lantern — Harbour Light Register With An Eight-Arm Glare Banding Over A Cross-Schema Relational Store"
+description: |
+  A harbour navigation-light maintenance programme held in one relational store
+  whose tables are split across two schemas: the station and lamp register in the
+  first, the filed glare inspections and the rostered keeper crews in the second.
+  Three named inner joins wire the four tables, and three associations are
+  implemented over exactly those joins, so navigating a station to its lamps, a
+  lamp to its inspections or a station to its crews crosses a schema boundary in
+  the generated SQL. One mapping pins each mostly optional class to its table
+  through an explicit main-table alias and its own declared primary key. A
+  diagram records the visual layout of the four classes and the three association
+  connectors and contributes no execution behaviour. Two parameterized services
+  publish the register: the first grades the recorded glare score through eight
+  conditional arms with an empty-band fallback, names the station reached across
+  two association hops and dates each reading by day arithmetic; the second keeps
+  the lamp kinds supplied in a caller collection — and every kind when that
+  collection arrives empty — drops the withdrawn codes through a collection
+  membership test and publishes a deterministic three-row page carrying a
+  nullable measured output. Service and mapping test suites assert nine banded
+  rows covering every conditional arm and its fallback, the paged fleet under
+  both a populated and an empty caller collection, and the folded association
+  counts of a station with lamps and crews beside one with neither. A data
+  space binds both execution contexts, the four classes and the banding service
+  behind one discovery surface. Two engine runtimes pair the
+  mapping with two Snowflake connections authenticated by OAuth over quoted
+  identifiers.
+modelSources:
+  model:
+    root: teal-lantern
+    files:
+      - test/teallantern/connection/HarbourLightConnections.pure
+      - test/teallantern/dataspace/HarbourLightDataSpace.pure
+      - test/teallantern/diagram/HarbourLightDiagram.pure
+      - test/teallantern/domain/HarbourLightDomain.pure
+      - test/teallantern/mapping/HarbourLightMapping.pure
+      - test/teallantern/runtime/HarbourLightRuntimes.pure
+      - test/teallantern/service/GlareBandRegister.pure
+      - test/teallantern/service/LampFleetBoard.pure
+      - test/teallantern/store/HarbourLightDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:conditional-expression
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - conditional
+  - cross-schema
+  - data-space
+  - diagram
+  - h2
+  - harbour-light
+  - relational
+  - service
+  - snowflake
+  - sort-limit

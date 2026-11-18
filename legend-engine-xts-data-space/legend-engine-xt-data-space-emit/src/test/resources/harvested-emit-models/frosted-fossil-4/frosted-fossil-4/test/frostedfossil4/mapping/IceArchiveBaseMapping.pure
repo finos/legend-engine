@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedfossil4::mapping::IceArchiveBaseMapping
+(
+  *test::frostedfossil4::domain::DrillSite[site_base]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil4::store::IceArchiveDb]archive.drill_site.site_code
+    )
+    ~mainTable [test::frostedfossil4::store::IceArchiveDb]archive.drill_site
+    siteCode: [test::frostedfossil4::store::IceArchiveDb]archive.drill_site.site_code,
+    siteName: [test::frostedfossil4::store::IceArchiveDb]archive.drill_site.site_name,
+    regionName: [test::frostedfossil4::store::IceArchiveDb]archive.drill_site.region_name
+  }
+
+  *test::frostedfossil4::domain::CoreSegment[segment_base]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil4::store::IceArchiveDb]archive.core_segment.segment_code
+    )
+    ~mainTable [test::frostedfossil4::store::IceArchiveDb]archive.core_segment
+    segmentCode: [test::frostedfossil4::store::IceArchiveDb]archive.core_segment.segment_code,
+    coreCode: [test::frostedfossil4::store::IceArchiveDb]archive.core_segment.core_code,
+    segmentLengthCm: [test::frostedfossil4::store::IceArchiveDb]archive.core_segment.segment_length_cm,
+    densityGcm3: [test::frostedfossil4::store::IceArchiveDb]archive.core_segment.density_g_cm3
+  }
+)

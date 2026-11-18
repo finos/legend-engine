@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigodelta3::store::ApiaryDb
+(
+  Schema apiary
+  (
+    Table hive_inspection
+    (
+      inspection_id INTEGER PRIMARY KEY,
+      hive_tag VARCHAR(24) NOT NULL,
+      yard_code VARCHAR(24) NOT NULL,
+      brood_pattern VARCHAR(32) NOT NULL,
+      mite_wash_count INTEGER NOT NULL,
+      super_count INTEGER NOT NULL,
+      log_state VARCHAR(16) NOT NULL
+    )
+    Table hive_yard
+    (
+      yard_id INTEGER PRIMARY KEY,
+      yard_code VARCHAR(24) NOT NULL,
+      yard_name VARCHAR(120),
+      forage_zone VARCHAR(60),
+      steward_name VARCHAR(120),
+      shelter_note VARCHAR(120)
+    )
+    Table forage_sample
+    (
+      sample_id INTEGER PRIMARY KEY,
+      yard_code VARCHAR(24) NOT NULL,
+      nectar_source VARCHAR(60) NOT NULL,
+      gram_yield INTEGER NOT NULL
+    )
+
+    View yard_forage_view
+    (
+      ~groupBy
+      (
+        apiary.forage_sample.yard_code
+      )
+      yard_code: apiary.forage_sample.yard_code PRIMARY KEY,
+      sample_count: count(apiary.forage_sample.sample_id),
+      total_gram_yield: sum(apiary.forage_sample.gram_yield),
+      top_source: max(apiary.forage_sample.nectar_source)
+    )
+  )
+
+  Filter LoggedInspectionFilter(apiary.hive_inspection.log_state != 'VOID')
+
+  Join Inspection_Yard(trim(apiary.hive_inspection.yard_code) = trim(apiary.hive_yard.yard_code))
+  Join Inspection_Forage(toUpper(trim(apiary.hive_inspection.yard_code)) = toUpper(apiary.yard_forage_view.yard_code))
+)

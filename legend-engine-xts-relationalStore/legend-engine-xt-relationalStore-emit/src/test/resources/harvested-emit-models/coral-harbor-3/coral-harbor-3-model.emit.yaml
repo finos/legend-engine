@@ -1,0 +1,46 @@
+name: coral-harbor-3-model
+title: "Nursery Propagation Register - Three Widths Of One Row Shape, Point-In-Time And All-Version Access, And Alias-Addressed Enum Filters"
+description: |
+  A glasshouse propagation register whose entire content is three parameterised
+  query bodies over the same business-temporal batch class. One resolves the
+  batches at a date parameter and publishes a bare thirteen-column projection,
+  one reads every stored version without a temporal coordinate and hand-writes a
+  closed sowing window before a sixteen-column projection, and one resolves at a
+  date and reuses that same date as an ordinary potting-date equality before the
+  six-column core projection. The two narrowing services then filter the
+  projected result again by reading its stage and watering columns as enumerated
+  values by alias and comparing them to enum-typed parameters, so the alias
+  vocabulary rather than the property vocabulary is the contract, and the second
+  filter stage cannot be pushed into the same select. Ownership is declared once
+  as a system identifier and twice as an explicit user list.
+modelSources:
+  model:
+    root: coral-harbor-3-model
+    files:
+      - test/coralharbor3/connection/NurseryH2Connection.pure
+      - test/coralharbor3/domain/PropagationDomain.pure
+      - test/coralharbor3/mapping/NurseryMapping.pure
+      - test/coralharbor3/runtime/NurseryRuntime.pure
+      - test/coralharbor3/service/BatchRegisterAsOf.pure
+      - test/coralharbor3/service/BatchSownWindow.pure
+      - test/coralharbor3/service/BatchStageAsOf.pure
+      - test/coralharbor3/store/NurseryDB.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - query:tds-enum-access
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - alias-addressed-columns
+  - all-versions
+  - business-temporal
+  - enum-typed-parameter
+  - h2
+  - nursery-propagation
+  - point-in-time
+  - service-test
+  - tabular-post-filter

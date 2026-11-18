@@ -1,0 +1,185 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskytundra::service::PlotBandRosterMulti
+{
+  pattern: '/duskytundra/v1/plot-band-roster-multi';
+  title: 'Tundra - grazing band roster (multi-environment)';
+  owners:
+  [
+    'example-tundra-survey'
+  ];
+  documentation: 'Keyed multi-execution roster: one query body whose compound predicate switches between an unrestricted plot-code path and a caller-supplied plot-code membership path is bound to two environment-keyed runtimes, so the plan is chosen at call time.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {rangeName: String[1], plotCodes: String[*], minCover: Integer[1], maxCover: Integer[1]|let anchor = $rangeName->toUpper()->trim();
+      test::duskytundra::domain::LichenPlot.all()->filter(
+      p|((($plotCodes->isEmpty()) && ($p.plotCode->isNotEmpty())) || (($plotCodes->isNotEmpty()) && ($p.plotCode->in($plotCodes)))) && ((($p.lichenCoverPct >= $minCover) && ($p.lichenCoverPct <= $maxCover)) && (($p.rangeName->toUpper()->trim()) == $anchor))
+    )->project(
+      [
+        col(
+          p|$p.plotCode,
+          'Plot'
+        ),
+        col(
+          p|$p.rangeName,
+          'Range'
+        ),
+        col(
+          p|$p.grazingBand,
+          'Band'
+        ),
+        col(
+          p|$p.lichenCoverPct,
+          'Cover'
+        ),
+        col(
+          p|$p.mossDepthMm,
+          'MossDepth'
+        )
+      ]
+    )->distinct()->sort([asc('Plot')]);};
+    key: 'environment';
+    executions['north']:
+    {
+      mapping: test::duskytundra::mapping::TundraMapping;
+      runtime: test::duskytundra::runtime::NorthRangeRuntime;
+    }
+    executions['south']:
+    {
+      mapping: test::duskytundra::mapping::TundraMapping;
+      runtime: test::duskytundra::runtime::SouthRangeRuntime;
+    }
+  }
+}
+
+###Service
+Service test::duskytundra::service::PlotBandRoster
+{
+  pattern: '/duskytundra/v1/plot-band-roster';
+  title: 'Tundra - grazing band roster';
+  owners:
+  [
+    'example-tundra-survey'
+  ];
+  documentation: 'Single-execution counterpart of the keyed roster, carrying the test suite that exercises both arms of the plot-code predicate and the cover bounds against seeded rows.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {rangeName: String[1], plotCodes: String[*], minCover: Integer[1], maxCover: Integer[1]|let anchor = $rangeName->toUpper()->trim();
+      test::duskytundra::domain::LichenPlot.all()->filter(
+      p|((($plotCodes->isEmpty()) && ($p.plotCode->isNotEmpty())) || (($plotCodes->isNotEmpty()) && ($p.plotCode->in($plotCodes)))) && ((($p.lichenCoverPct >= $minCover) && ($p.lichenCoverPct <= $maxCover)) && (($p.rangeName->toUpper()->trim()) == $anchor))
+    )->project(
+      [
+        col(
+          p|$p.plotCode,
+          'Plot'
+        ),
+        col(
+          p|$p.rangeName,
+          'Range'
+        ),
+        col(
+          p|$p.grazingBand,
+          'Band'
+        ),
+        col(
+          p|$p.lichenCoverPct,
+          'Cover'
+        ),
+        col(
+          p|$p.mossDepthMm,
+          'MossDepth'
+        )
+      ]
+    )->distinct()->sort([asc('Plot')]);};
+    mapping: test::duskytundra::mapping::TundraMapping;
+    runtime: test::duskytundra::runtime::NorthRangeRuntime;
+  }
+  testSuites:
+  [
+    plotBandRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          tundraConnection:
+            Relational
+            #{
+              tundra.lichen_plot:
+                'plot_code,range_name,grazing_band,lichen_cover_pct,moss_depth_mm,surveyed_on\n'+
+                'LP-01,NORTH RIDGE,ROTATIONAL,40,18,2026-05-02\n'+
+                'LP-02,north ridge,RESTED,55,24,2026-05-03\n'+
+                'LP-03,NORTH RIDGE,ROTATIONAL,91,12,2026-05-04\n'+
+                'LP-04,SOUTH BENCH,RESTED,50,20,2026-05-05\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        unrestrictedPlotCodes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            rangeName = 'north ridge',
+            plotCodes = [],
+            minCover = 20,
+            maxCover = 80
+          ]
+          asserts:
+          [
+            bothInBoundRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"LP-01","Range":"NORTH RIDGE","Band":"ROTATIONAL","Cover":40,"MossDepth":18},{"Plot":"LP-02","Range":"north ridge","Band":"RESTED","Cover":55,"MossDepth":24}]';
+                  }#;
+              }#
+          ]
+        },
+        restrictedPlotCodes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            rangeName = 'NORTH RIDGE',
+            plotCodes = ['LP-02', 'LP-03'],
+            minCover = 20,
+            maxCover = 80
+          ]
+          asserts:
+          [
+            onlyTheListedInBoundRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"LP-02","Range":"north ridge","Band":"RESTED","Cover":55,"MossDepth":24}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

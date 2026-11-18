@@ -1,0 +1,35 @@
+name: umber-glacier-4
+title: "Umber Glacier 4 — Published Glacier Monitoring Contracts"
+description: |
+  Three JSON-schema contracts published from one glacier-monitoring class
+  graph. Each contract root specialises a shared monitoring envelope declared
+  outside the observation package and adds a single mandatory unbounded
+  collection of its own payload type, so the three roots are inheritance
+  siblings rather than nested in one another. One payload nests two
+  near-duplicate detail records that share five identically named columns,
+  the other two payloads stay flat, and every scalar - including values that
+  are semantically timestamps, percentages and thresholds - is typed as a
+  string. A single generation specification lists the three schema
+  generations in an order that matches none of their declaration order.
+modelSources:
+  model:
+    root: umber-glacier-4
+    files:
+      - test/umberglacier4/contract/MonitoringEnvelope.pure
+      - test/umberglacier4/domain/GlacierContracts.pure
+      - test/umberglacier4/domain/GlacierDetails.pure
+      - test/umberglacier4/domain/GlacierPayloads.pure
+      - test/umberglacier4/generation/GlacierGenerationSpec.pure
+      - test/umberglacier4/generation/GlacierSchemas.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:nested-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - glacier
+  - monitoring
+  - schema-contract

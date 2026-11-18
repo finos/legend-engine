@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::indigoprairie::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A fenced grazing paddock of the prairie holding.'} demo::indigoprairie::domain::GrazingPaddock
+{
+  paddockId: String[1];
+  paddockName: String[1];
+  grassAssociation: String[1];
+  acreage: Float[1];
+  paddockLabel() {$this.grassAssociation->toUpper()->trim() + ' / ' + $this.paddockName}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A clipped forage sample taken on a paddock, carrying its dry-matter reading.'} demo::indigoprairie::domain::ForageSample
+{
+  sampleId: String[1];
+  sampleCode: String[1];
+  dryMatterPct: Float[1];
+  grassAssociation: String[1];
+  sampleTag() {$this.sampleCode->toUpper() + '-' + $this.dryMatterPct->toString()}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A recorded move of the herd onto a paddock.'} demo::indigoprairie::domain::HerdMove
+{
+  moveId: String[1];
+  moveCode: String[1];
+  herdSize: Integer[1];
+  paddockName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field note written against a herd move, reaching its paddock through two join hops.'} demo::indigoprairie::domain::MoveNote
+{
+  noteId: String[1];
+  noteText: String[1];
+  recordedBy: String[1];
+  paddockName: String[1];
+  noteLength() {$this.noteText->length()}: Integer[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a paddock to the forage samples clipped on it.'} demo::indigoprairie::domain::Paddock_Samples
+{
+  samplePaddock: GrazingPaddock[0..1];
+  samples: ForageSample[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a herd move to the field notes recorded against it.'} demo::indigoprairie::domain::Move_Notes
+{
+  noteMove: HerdMove[0..1];
+  notes: MoveNote[*];
+}

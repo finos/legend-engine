@@ -1,0 +1,39 @@
+name: cedar-thicket-2-base
+title: "Cedar Park Base Layer — Two Subject Areas, Physical Store and Per-Area Relational Mappings"
+description: |
+  The shared cedar park layer: a trail-run class for the trailway subject area
+  and a shelter-stay class carrying a nested identifier structure for the
+  shelter subject area, a store declaring one relation per subject area in its
+  own schema, and one relational mapping per subject area, each pinning its
+  relation, declaring its own primary key and composing a label from
+  non-conditional string functions. The shelter mapping reads its nested
+  identifier structure inline from the stay relation, so no join is needed. It
+  exists to be included, unchanged, by the root layer.
+
+modelSources:
+  model:
+    root: cedar-thicket-2-base
+    files:
+      - test/cedarthicket2/data/ParkTestData.pure
+      - test/cedarthicket2/domain/ParkDomain.pure
+      - test/cedarthicket2/mapping/ShelterMapping.pure
+      - test/cedarthicket2/mapping/TrailwayMapping.pure
+      - test/cedarthicket2/store/ParkCoreDb.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cedar-park

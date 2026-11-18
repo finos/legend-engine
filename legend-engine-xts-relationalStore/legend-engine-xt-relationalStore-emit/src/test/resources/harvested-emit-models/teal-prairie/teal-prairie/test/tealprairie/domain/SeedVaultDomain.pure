@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::tealprairie::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One accession of collected prairie seed, reaching its classification hierarchy, its temporally resolved habitat, storage, programme, viability and custodian records.'} test::tealprairie::domain::SeedCollection
+{
+  collectionRef: String[1];
+  feedName: String[1];
+  eventDate: StrictDate[1];
+  seedWeightGrams: Float[1];
+  taxon: TaxonName[0..1];
+  habitat: HabitatPatch[0..1];
+  storeRoom: StoreRoom[0..1];
+  programme: ConservationProgramme[0..1];
+  viability: ViabilityCheck[0..1];
+  custodian: SeedCustodian[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The lowest level of the four-level classification hierarchy an accession is filed under.'} test::tealprairie::domain::TaxonName
+{
+  taxonLabel: String[1];
+  genus: Genus[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The genus level of the classification hierarchy.'} test::tealprairie::domain::Genus
+{
+  genusLabel: String[1];
+  family: Family[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The family level of the classification hierarchy.'} test::tealprairie::domain::Family
+{
+  familyLabel: String[1];
+  taxonOrder: TaxonOrder[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The order level of the classification hierarchy.'} test::tealprairie::domain::TaxonOrder
+{
+  orderLabel: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The prairie patch an accession was gathered from, restated whenever the patch is redrawn.'} test::tealprairie::domain::HabitatPatch
+{
+  patchName: String[1];
+  patchZone: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The cold-storage room an accession is held in, restated whenever the room is reorganised.'} test::tealprairie::domain::StoreRoom
+{
+  roomCode: String[1];
+  roomWing: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The conservation programme an accession belongs to for a given business period.'} test::tealprairie::domain::ConservationProgramme
+{
+  programmeName: String[1];
+  programmeTier: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The germination viability verdict standing for an accession over a business period.'} test::tealprairie::domain::ViabilityCheck
+{
+  gradeCode: String[1];
+  methodCode: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'The curator responsible for an accession, resolved along both the processing and the business axis.'} test::tealprairie::domain::SeedCustodian
+{
+  custodianName: String[1];
+  custodianDesk: String[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A crate transfer moving accession seed between field, store and visit steward, recorded along the processing axis and banded by kind, crate count and holding temperature.'} test::tealprairie::domain::StewardTransfer
+{
+  transferRef: String[1];
+  transferKind: String[1];
+  crateCount: Integer[0..1];
+  holdingTempC: Float[1];
+  transferBand: String[0..1];
+  genusLabel: String[0..1];
+  familyLabel: String[0..1];
+}

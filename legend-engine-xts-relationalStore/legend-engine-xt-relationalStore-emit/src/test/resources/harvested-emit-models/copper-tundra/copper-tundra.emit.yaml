@@ -1,0 +1,55 @@
+name: copper-tundra
+title: "Tundra Caribou Telemetry — relational store, cross-schema join, dyna-function view, and a model-to-model track transform"
+description: |
+  A caribou herd-tracking model over an arctic tundra range. A cross-schema
+  relational store holds field sightings and a collared-animal registry, joined
+  by animal tag, with a grouped inline aggregate view and a collar-active
+  filter. A relational mapping binds the domain classes to the store (primary
+  keys, main-table aliases, a join-reached species property) and a
+  model-to-model mapping normalises a raw telemetry ping into a track point with
+  conditional battery and fix-quality logic. A deep collar status-label derived
+  property exercises nested conditionals and string operations.
+modelSources:
+  model:
+    root: copper-tundra
+    files:
+      - test/coppertundra/connection/PingConnection.pure
+      - test/coppertundra/connection/TundraConnection.pure
+      - test/coppertundra/domain/Model.pure
+      - test/coppertundra/mapping/TrackM2M.pure
+      - test/coppertundra/mapping/TundraMapping.pure
+      - test/coppertundra/runtime/TrackRuntime.pure
+      - test/coppertundra/runtime/TundraRuntime.pure
+      - test/coppertundra/store/TundraDb.pure
+
+features:
+  - grammar:derived-property
+  - grammar:qualified-property
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - caribou
+  - cross-schema
+  - model-to-model
+  - relational
+  - telemetry
+  - tundra
+  - wildlife

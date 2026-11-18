@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledvineyard5::service::CrewOverlapAsOf
+{
+  pattern: '/vineyard/v1/crew-overlap/{estate}/{asOfDate}';
+  title: 'Fabled Vineyard - Crew Overlap Register As Of';
+  owners:
+  [
+    'vineyard-trellis-crew'
+  ];
+  documentation: 'Opens the business-temporal vine block extent at a supplied instant and keeps the blocks where the crew that checked the canopy is also the crew that pruned or trained it, comparing two properties against each other on both arms of the disjunction, then projects the crew register under two keyed estates.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {asOfDate: StrictDate[1]|test::fabledvineyard5::domain::VineBlock.all($asOfDate)->filter(
+      b|($b.pruneCrewCode == $b.checkCrewCode) || ($b.trainCrewCode == $b.checkCrewCode)
+    )->project(
+      [
+        b|$b.blockCode,
+        b|$b.pruneCrewCode,
+        b|$b.trainCrewCode,
+        b|$b.checkCrewCode
+      ],
+      [
+        'Block',
+        'PruneCrew',
+        'TrainCrew',
+        'CheckCrew'
+      ]
+    )->sort(
+      [
+        asc('Block')
+      ]
+    )};
+    key: 'estate';
+    executions['northSlope']:
+    {
+      mapping: test::fabledvineyard5::mapping::VineyardMapping;
+      runtime: test::fabledvineyard5::runtime::NorthSlopeRuntime;
+    }
+    executions['riverTerrace']:
+    {
+      mapping: test::fabledvineyard5::mapping::VineyardMapping;
+      runtime: test::fabledvineyard5::runtime::RiverTerraceRuntime;
+    }
+  }
+  testSuites:
+  [
+    crewOverlapSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          riverTerrace:
+            Relational
+            #{
+              trellis.vine_block:
+                'block_id,block_code,variety_code,block_status,prune_crew_code,train_crew_code,check_crew_code,row_count_total,from_z,thru_z\n'+
+                '1,VB-201,PINOT,PRUNED,CR-21,CR-22,CR-21,140,2026-01-01,9999-12-31\n'+
+                '2,VB-203,RIESLING,TRAINED,CR-25,CR-26,CR-26,80,2026-01-01,9999-12-31\n'+
+                '3,VB-204,SYRAH,RESTING,CR-27,CR-28,CR-29,55,2026-01-01,9999-12-31\n'+
+                '4,VB-205,MALBEC,PRUNED,CR-30,CR-31,CR-30,35,2025-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        riverTerraceOverlappingCrews:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['riverTerrace'];
+          parameters:
+          [
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            bothOverlapArmsInRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"VB-201","PruneCrew":"CR-21","TrainCrew":"CR-22","CheckCrew":"CR-21"},{"Block":"VB-203","PruneCrew":"CR-25","TrainCrew":"CR-26","CheckCrew":"CR-26"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

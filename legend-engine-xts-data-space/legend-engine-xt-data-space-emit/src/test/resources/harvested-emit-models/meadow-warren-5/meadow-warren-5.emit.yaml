@@ -1,0 +1,58 @@
+name: meadow-warren-5
+title: "Meadow Warren 5 — A Processing-Temporal Meadow Register Published As A Data Space"
+description: |
+  An alpine meadow monitoring model in which every mapped class is processing-temporal and
+  every physical table carries the matching table-level milestoning block, so the three
+  sibling tables - clipped forage samples, the plots they came from and the weather
+  summaries published for those plots - each keep their corrections as new versions behind
+  the same processing window columns and infinity sentinel. Each class mapping pins an
+  explicit main-table alias and declares its primary key over the same columns the table
+  declares, across a mixed type surface of strings, integers, fixed-precision numerics,
+  floats, dates and timestamps. A single-execution service enters the model through the
+  milestoned accessor with a point-in-time date parameter and projects a wide tabular
+  result, so the generated SQL carries the temporal predicate and the projected column
+  list together; its fixture holds a version open at the requested instant, a version
+  closed before it and a correction opened after it. A data space publishes the model as
+  a product with two named execution contexts, a default context, documentation, the
+  service as a listed executable and a support contact.
+modelSources:
+  model:
+    root: meadow-warren-5
+    files:
+      - test/meadowwarren5/connection/MeadowConnection.pure
+      - test/meadowwarren5/dataspace/MeadowDataSpace.pure
+      - test/meadowwarren5/domain/MeadowDomain.pure
+      - test/meadowwarren5/mapping/MeadowMapping.pure
+      - test/meadowwarren5/runtime/MeadowRuntime.pure
+      - test/meadowwarren5/service/SampleRegister.pure
+      - test/meadowwarren5/store/MeadowDatabase.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - meadow-monitoring
+  - milestoning
+  - multi-table
+  - point-in-time
+  - processing-temporal
+  - relational
+  - service
+  - snowflake
+  - tabular-data-set

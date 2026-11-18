@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::verdantotter2::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A named navigable reach of the canal, held as a static reference row rather than a corrected one.'} demo::verdantotter2::domain::Reach
+{
+  reachCode: String[1];
+  reachName: String[1];
+  regionName: String[1];
+  summitMetres: Float[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A lock chamber on the canal, corrected over processing time, whose reach name is reached across a join rather than stored on the chamber row.'} demo::verdantotter2::domain::LockChamber
+{
+  lockCode: String[1];
+  lockName: String[1];
+  reachCode: String[1];
+  reachName: String[0..1];
+  chamberLengthMetres: Decimal[0..1];
+  riseMetres: Float[0..1];
+  commissionedOn: StrictDate[0..1];
+  surveyedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A vessel licensed on the canal, corrected over processing time, carrying its home reach name across a join.'} demo::verdantotter2::domain::Vessel
+{
+  vesselCode: String[1];
+  vesselName: String[1];
+  reachCode: String[1];
+  reachName: String[0..1];
+  beamMetres: Float[0..1];
+  registeredOn: StrictDate[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'One recorded transit of a lock chamber by a vessel, corrected over processing time; the wide primitive surface is read directly from one aliased table.'} demo::verdantotter2::domain::LockPassage
+{
+  passageCode: String[1];
+  lockCode: String[1];
+  vesselCode: String[1];
+  crewSize: Integer[0..1];
+  dwellMinutes: Decimal[0..1];
+  waterLevelMetres: Float[0..1];
+  loggedOn: StrictDate[0..1];
+  recordedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A lock keeper duty shift standing against a reach, corrected over processing time.'} demo::verdantotter2::domain::KeeperShift
+{
+  keeperName: String[1];
+  shiftLabel: String[1];
+  reachCode: String[1];
+  reachName: String[0..1];
+  hoursOnDuty: Float[0..1];
+}
+
+Association {doc.doc = 'Relates a lock chamber to the passages recorded through it: a collection at one end, a single chamber at the other.'} demo::verdantotter2::domain::Lock_Passage
+{
+  passages: LockPassage[*];
+  transitedLock: LockChamber[1];
+}
+
+Association {doc.doc = 'Relates a vessel to the passages it made: a collection at one end, a single vessel at the other.'} demo::verdantotter2::domain::Vessel_Passage
+{
+  vesselPassages: LockPassage[*];
+  transitingVessel: Vessel[1];
+}

@@ -1,0 +1,38 @@
+name: ember-fossil-2
+title: "Ember Fossil 2 — Quarry Notebook Domain (Abstract Record Hierarchy, Constrained Classes, Document-Schema Generation)"
+description: |
+  A store-free domain product for a fossil quarry notebook. An abstract dig
+  record fixes the reference, the day and the crew initials, and four concrete
+  record kinds inherit it — a face visit, a stratigraphic sample, a cast request
+  and a walked sweep — each narrowing the base with its own constraints, so the
+  inherited predicate has to hold alongside the specialised ones. The catalogued
+  specimen, drawer, crew, matrix block, grid square and label card classes carry
+  the rest of the collection surface, with a graded condition enumeration and
+  optional and repeated properties on the specimen. Because the whole hierarchy
+  is reachable from the specimen, one document-schema generation is scoped on it
+  with related types and constraints switched on, and a generation specification
+  sequences that generation, so the constrained hierarchy is exercised through
+  the generated artifact rather than through a query.
+modelSources:
+  model:
+    root: ember-fossil-2
+    files:
+      - test/emberfossil2/domain/FossilDomain.pure
+      - test/emberfossil2/generation/FossilGeneration.pure
+
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - constraints
+  - enumeration
+  - file-generation
+  - fossil-quarry
+  - json-schema

@@ -1,0 +1,57 @@
+name: amber-estuary-2
+title: "Amber Estuary 2 - data-space published reed bed survey over a Snowflake-backed wetland store"
+description: |
+  A reed bed reserve survey mapped relationally: reed plots and nesting platforms each bind to
+  their own explicit main table under a composite primary key of mixed type, and the plot's
+  platform label is reached through a sector join so alias qualification matters in more than
+  one place. Two single-execution services publish structurally different bodies over the same
+  mapping - a parameterized filtered projection that bands the recorded water depth through a
+  standalone function call, and an aggregate roll-up per reserve sector - and a data space
+  groups both endpoints with the mapping, the Snowflake-backed engine runtime and an email
+  support target. Mapping and service test suites execute the projections against embedded
+  relational fixtures covering rows that share part of the composite key, a row whose key date
+  column is null, and a plot with no join counterpart.
+modelSources:
+  model:
+    root: amber-estuary-2
+    files:
+      - test/amberestuary2/connection/ReedBedWarehouseConnection.pure
+      - test/amberestuary2/dataspace/ReedBedDataSpace.pure
+      - test/amberestuary2/domain/Domain.pure
+      - test/amberestuary2/function/PlotFunctions.pure
+      - test/amberestuary2/mapping/ReedBedMapping.pure
+      - test/amberestuary2/runtime/ReedBedRuntime.pure
+      - test/amberestuary2/service/PlotsBySectorService.pure
+      - test/amberestuary2/service/SectorSummaryService.pure
+      - test/amberestuary2/store/ReedBedDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - reed-bed
+  - relational
+  - service-test
+  - snowflake
+  - tabular-data-set
+  - wetland

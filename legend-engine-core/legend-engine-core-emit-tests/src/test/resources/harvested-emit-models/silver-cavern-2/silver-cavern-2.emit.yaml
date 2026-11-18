@@ -1,0 +1,42 @@
+name: silver-cavern-2
+title: "Silver Cavern 2 — Constrained Cave-Survey Record Hierarchy Over Three Model-To-Model Digests"
+description: |
+  A cave-survey club register whose whole surface is a constrained class
+  hierarchy fed by model-to-model transforms. One abstract register header
+  carries a function-backed reference constraint and a function-backed filer
+  constraint, and three concrete subtypes inherit both while adding their own:
+  the survey leg adds a recognised-grade delegation, a positive tape length and
+  a to-many chamber-tag cardinality test; the chamber digest adds a usable-label
+  delegation; the trip summary adds a title delegation and a positive leg tally.
+  Four standalone predicate functions hold the delegated halves of those
+  constraints. Three model-to-model mappings turn raw logbook notes into the
+  constrained subtypes and each carries its own graph-fetch test suite: the leg
+  digest trims and upper-cases the inherited header, composes the grade tag and
+  maps every chamber tag; the chamber digest walks all four ceiling-band arms
+  including the unmeasured fallback; the trip summary tallies the tagged leg
+  references, indexes the lead reference and composes or defaults the deepest
+  point band.
+modelSources:
+  model:
+    root: silver-cavern-2
+    files:
+      - test/silvercavern2/domain/CavernDomain.pure
+      - test/silvercavern2/function/CavernFunctions.pure
+      - test/silvercavern2/mapping/ChamberDigestMapping.pure
+      - test/silvercavern2/mapping/LegDigestMapping.pure
+      - test/silvercavern2/mapping/TripSummaryMapping.pure
+features:
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:constraint-function-call
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - cave-survey
+  - class-inheritance
+  - constraint
+  - constraint-function-call
+  - graph-fetch
+  - m2m

@@ -1,0 +1,233 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::meadowcove2::mapping::KelpFlattening
+(
+  *demo::meadowcove2::flat::KelpObservation[flat_kelp]: Pure
+  {
+    ~src demo::meadowcove2::envelope::KelpSurveyEnvelope
+    identifier: $src.identifier,
+    collectionName: $src.collectionName,
+    registeredBy: $src.content.registeredBy,
+    registrationSource: $src.content.registrationSource,
+    revision: $src.content.revision,
+    reviewStatus: $src.content.reviewStatus,
+    validFrom: $src.content.validFrom,
+    validThru: if($src.content.validThru->isEmpty(),
+                  | %9999-12-31T00:00:00,
+                  | $src.content.validThru->toOne()),
+    surveyDate: $src.content.surveyDate,
+    depthBand: if($src.content.depthCode->isEmpty(),
+                  | 'unrecorded',
+                  | if($src.content.depthCode->toOne() == 'S',
+                       | 'shallow',
+                       | if($src.content.depthCode->toOne() == 'M',
+                            | 'midwater',
+                            | 'deep'))),
+    waterTemperature: $src.content.waterTemperature,
+    canopyCoverPercent: if($src.content.canopyCoverPercent->isEmpty(),
+                           | 0.0,
+                           | $src.content.canopyCoverPercent->toOne()),
+    frondCount: if($src.content.frondCount->isEmpty(),
+                   | 0,
+                   | $src.content.frondCount->toOne())
+  }
+
+  testSuites:
+  [
+    flattenedTransformSuite:
+    {
+      function: |demo::meadowcove2::flat::KelpObservation.all()->graphFetch(
+        #{
+          demo::meadowcove2::flat::KelpObservation{
+            identifier,
+            reviewStatus,
+            depthBand,
+            canopyCoverPercent,
+            frondCount,
+            validThru
+          }
+        }#
+      )->serialize(
+        #{
+          demo::meadowcove2::flat::KelpObservation{
+            identifier,
+            reviewStatus,
+            depthBand,
+            canopyCoverPercent,
+            frondCount,
+            validThru
+          }
+        }#
+      );
+      tests:
+      [
+        depthBandArms:
+        {
+          doc: 'Hits the shallow, midwater and deep depth-code arms and the unrecorded fallback arm of the depth-band conditional.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::meadowcove2::envelope::KelpSurveyEnvelope:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"identifier":"cove-1","collectionName":"kelp-canopy","content":{"registeredBy":"shore-team","registrationSource":"diver-log","revision":1,"reviewStatus":"reviewed","validFrom":"2024-03-05T08:15:00","validThru":"2025-01-01T00:00:00","surveyDate":"2024-03-05","depthCode":"S","waterTemperature":13.4,"canopyGrade":"dense","canopyCoverPercent":12.5,"frondCount":40}},{"identifier":"cove-2","collectionName":"kelp-canopy","content":{"registeredBy":"shore-team","registrationSource":"diver-log","revision":2,"reviewStatus":"reviewed","validFrom":"2024-03-06T08:15:00","validThru":"2025-01-01T00:00:00","surveyDate":"2024-03-06","depthCode":"M","waterTemperature":12.1,"canopyGrade":"patchy","canopyCoverPercent":31.0,"frondCount":73}},{"identifier":"cove-3","collectionName":"kelp-canopy","content":{"registeredBy":"shore-team","registrationSource":"sled-camera","revision":1,"reviewStatus":"pending","validFrom":"2024-03-07T08:15:00","validThru":"2025-01-01T00:00:00","surveyDate":"2024-03-07","depthCode":"D","waterTemperature":9.8,"canopyGrade":"sparse","canopyCoverPercent":4.5,"frondCount":11}},{"identifier":"cove-4","collectionName":"kelp-canopy","content":{"registeredBy":"shore-team","registrationSource":"sled-camera","revision":1,"reviewStatus":"pending","validFrom":"2024-03-08T08:15:00","validThru":"2025-01-01T00:00:00","surveyDate":"2024-03-08","waterTemperature":10.2,"canopyGrade":"sparse","canopyCoverPercent":6.0,"frondCount":18}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            depthBands:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"identifier":"cove-1","reviewStatus":"reviewed","depthBand":"shallow","canopyCoverPercent":12.5,"frondCount":40,"validThru":"2025-01-01T00:00:00"},{"identifier":"cove-2","reviewStatus":"reviewed","depthBand":"midwater","canopyCoverPercent":31.0,"frondCount":73,"validThru":"2025-01-01T00:00:00"},{"identifier":"cove-3","reviewStatus":"pending","depthBand":"deep","canopyCoverPercent":4.5,"frondCount":11,"validThru":"2025-01-01T00:00:00"},{"identifier":"cove-4","reviewStatus":"pending","depthBand":"unrecorded","canopyCoverPercent":6.0,"frondCount":18,"validThru":"2025-01-01T00:00:00"}]';
+                  }#;
+              }#
+          ];
+        },
+        sentinelAndDefaults:
+        {
+          doc: 'Hits the far-future validity sentinel arm and the zero-default arms of the canopy-cover and frond-count conditionals.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::meadowcove2::envelope::KelpSurveyEnvelope:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"identifier":"cove-5","collectionName":"kelp-canopy","content":{"registeredBy":"reef-team","registrationSource":"diver-log","revision":3,"reviewStatus":"reviewed","validFrom":"2024-04-01T06:00:00","surveyDate":"2024-04-01","depthCode":"S","waterTemperature":14.0,"canopyGrade":"dense","canopyCoverPercent":55.5,"frondCount":91}},{"identifier":"cove-6","collectionName":"kelp-canopy","content":{"registeredBy":"reef-team","registrationSource":"diver-log","revision":1,"reviewStatus":"draft","validFrom":"2024-04-02T06:00:00","validThru":"2025-04-02T00:00:00","surveyDate":"2024-04-02","depthCode":"M","waterTemperature":11.7,"canopyGrade":"patchy","frondCount":26}},{"identifier":"cove-7","collectionName":"kelp-canopy","content":{"registeredBy":"reef-team","registrationSource":"sled-camera","revision":1,"reviewStatus":"draft","validFrom":"2024-04-03T06:00:00","validThru":"2025-04-03T00:00:00","surveyDate":"2024-04-03","depthCode":"D","waterTemperature":8.9,"canopyGrade":"sparse","canopyCoverPercent":2.5}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            sentinelAndZeroDefaults:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"identifier":"cove-5","reviewStatus":"reviewed","depthBand":"shallow","canopyCoverPercent":55.5,"frondCount":91,"validThru":"9999-12-31T00:00:00"},{"identifier":"cove-6","reviewStatus":"draft","depthBand":"midwater","canopyCoverPercent":0.0,"frondCount":26,"validThru":"2025-04-02T00:00:00"},{"identifier":"cove-7","reviewStatus":"draft","depthBand":"deep","canopyCoverPercent":2.5,"frondCount":0,"validThru":"2025-04-03T00:00:00"}]';
+                  }#;
+              }#
+          ];
+        },
+        combinedEdges:
+        {
+          doc: 'Combines an all-absent optional payload, an unknown depth code falling through to the deep arm, and a fully populated boundary record.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::meadowcove2::envelope::KelpSurveyEnvelope:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"identifier":"cove-8","collectionName":"kelp-canopy","content":{"registeredBy":"shoal-team","registrationSource":"drone-pass","revision":1,"reviewStatus":"draft","validFrom":"2024-05-01T05:30:00","surveyDate":"2024-05-01","waterTemperature":10.0,"canopyGrade":"unknown"}},{"identifier":"cove-9","collectionName":"kelp-canopy","content":{"registeredBy":"shoal-team","registrationSource":"drone-pass","revision":2,"reviewStatus":"reviewed","validFrom":"2024-05-02T05:30:00","validThru":"2026-05-02T00:00:00","surveyDate":"2024-05-02","depthCode":"X","waterTemperature":10.6,"canopyGrade":"patchy","canopyCoverPercent":19.25,"frondCount":33}},{"identifier":"cove-10","collectionName":"kelp-canopy","content":{"registeredBy":"shoal-team","registrationSource":"diver-log","revision":4,"reviewStatus":"reviewed","validFrom":"2024-05-03T05:30:00","validThru":"2026-05-03T00:00:00","surveyDate":"2024-05-03","depthCode":"S","waterTemperature":15.2,"canopyGrade":"dense","canopyCoverPercent":100.0,"frondCount":204}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            combinedArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"identifier":"cove-8","reviewStatus":"draft","depthBand":"unrecorded","canopyCoverPercent":0.0,"frondCount":0,"validThru":"9999-12-31T00:00:00"},{"identifier":"cove-9","reviewStatus":"reviewed","depthBand":"deep","canopyCoverPercent":19.25,"frondCount":33,"validThru":"2026-05-02T00:00:00"},{"identifier":"cove-10","reviewStatus":"reviewed","depthBand":"shallow","canopyCoverPercent":100.0,"frondCount":204,"validThru":"2026-05-03T00:00:00"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    flattenedGraphFetchSuite:
+    {
+      function: |demo::meadowcove2::flat::KelpObservation.all()->graphFetch(
+        #{
+          demo::meadowcove2::flat::KelpObservation{
+            identifier,
+            collectionName,
+            revision,
+            reviewStatus,
+            depthBand,
+            waterTemperature,
+            canopyCoverPercent,
+            frondCount
+          }
+        }#
+      )->serialize(
+        #{
+          demo::meadowcove2::flat::KelpObservation{
+            identifier,
+            collectionName,
+            revision,
+            reviewStatus,
+            depthBand,
+            waterTemperature,
+            canopyCoverPercent,
+            frondCount
+          }
+        }#
+      );
+      tests:
+      [
+        flattenedObjectTree:
+        {
+          doc: 'Graph-fetches the flattened record so the two-hop reads through the envelope content are asserted as an object tree rather than a projection.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::meadowcove2::envelope::KelpSurveyEnvelope:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"identifier":"cove-11","collectionName":"kelp-canopy","content":{"registeredBy":"shore-team","registrationSource":"diver-log","revision":6,"reviewStatus":"reviewed","validFrom":"2024-06-01T07:00:00","surveyDate":"2024-06-01","depthCode":"M","waterTemperature":13.9,"canopyGrade":"dense","canopyCoverPercent":47.5,"frondCount":66}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            flattenedTree:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"identifier":"cove-11","collectionName":"kelp-canopy","revision":6,"reviewStatus":"reviewed","depthBand":"midwater","waterTemperature":13.9,"canopyCoverPercent":47.5,"frondCount":66}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

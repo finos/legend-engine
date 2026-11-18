@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::emeraldcove::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Waymarker plate fixed at the entrance of a rockpool walk, carried inline with the walk it belongs to.'} test::emeraldcove::domain::WalkMarker
+{
+  markerCode: String[0..1];
+  markerLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Volunteer guide who leads rockpool walks.'} test::emeraldcove::domain::WalkGuide
+{
+  guideId: String[1];
+  guideName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Tidal pool that rockpool walks are routed through.'} test::emeraldcove::domain::TidePool
+{
+  poolId: String[1];
+  poolName: String[0..1];
+  shoreLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Guided rockpool walk, reaching its shore section through the pool it visits.'} test::emeraldcove::domain::RockpoolWalk
+{
+  walkId: String[1];
+  walkName: String[1];
+  poolName: String[0..1];
+  shoreLabel: String[0..1];
+  marker: WalkMarker[0..1];
+  guide: WalkGuide[0..1];
+}

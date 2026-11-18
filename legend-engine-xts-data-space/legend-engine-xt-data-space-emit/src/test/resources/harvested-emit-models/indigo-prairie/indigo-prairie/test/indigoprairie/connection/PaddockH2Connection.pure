@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::indigoprairie::connection::PaddockH2Connection
+{
+  store: demo::indigoprairie::store::PaddockDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists paddock;',
+      'create schema paddock;',
+      'drop schema if exists rotation;',
+      'create schema rotation;',
+      'create table paddock.grazing_paddock (paddock_id varchar(24) primary key, paddock_name varchar(120) not null, grass_association varchar(60) not null, acreage double not null);',
+      'create table paddock.forage_sample (sample_id varchar(24) primary key, sample_code varchar(40) not null, dry_matter_pct double not null, paddock_id varchar(24) not null);',
+      'create table rotation.herd_move (move_id varchar(24) primary key, move_code varchar(40) not null, herd_size integer not null, paddock_id varchar(24) not null);',
+      'create table rotation.move_note (note_id varchar(24) primary key, note_text varchar(240) not null, recorded_by varchar(60) not null, move_id varchar(24) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

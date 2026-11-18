@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarharbor::mapping::ReserveMapping
+(
+  *test::cedarharbor::domain::AnimalCount[animalCount]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarharbor::store::ReserveDB]census.animal_count.reserve_code,
+      [test::cedarharbor::store::ReserveDB]census.animal_count.species
+    )
+    ~mainTable [test::cedarharbor::store::ReserveDB]census.animal_count
+    reserveCode: [test::cedarharbor::store::ReserveDB]census.animal_count.reserve_code,
+    species: [test::cedarharbor::store::ReserveDB]census.animal_count.species,
+    headcount: [test::cedarharbor::store::ReserveDB]census.animal_count.headcount
+  }
+
+  testSuites:
+  [
+    animalCountProjectionSuite:
+    {
+      function: |test::cedarharbor::domain::AnimalCount.all(%2023-06-01)->filter(
+        a|$a.reserveCode == 'NORTH'
+      )->project(
+        [
+          a|$a.species,
+          a|$a.headcount
+        ],
+        [
+          'Species',
+          'Headcount'
+        ]
+      );
+      tests:
+      [
+        northCounts:
+        {
+          doc: 'Point-in-time projection over the business-temporal animal_count table, verifying primary-key and main-table-alias mapping under milestoning.';
+          data:
+          [
+            test::cedarharbor::store::ReserveDB:
+              Relational
+              #{
+                census.animal_count:
+                  'reserve_code,species,headcount,from_z,thru_z\n'+
+                  'NORTH,Osprey,12,2020-01-01,2999-12-31\n'+
+                  'NORTH,Grey Heron,7,2020-01-01,2999-12-31\n'+
+                  'SOUTH,Osprey,3,2020-01-01,2999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoNorthRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Species":"Osprey","Headcount":12},{"Species":"Grey Heron","Headcount":7}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

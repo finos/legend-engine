@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealwillow3::mapping::ApiaryBaseMapping
+(
+  include mapping test::borealwillow3::mapping::ApiaryEnumMappings
+
+  *test::borealwillow3::domain::Yard[yard]: Relational
+  {
+    ~filter [test::borealwillow3::store::ApiaryDb]NamedYard
+    ~primaryKey
+    (
+      [test::borealwillow3::store::ApiaryDb]registry.yard.yard_code
+    )
+    ~mainTable [test::borealwillow3::store::ApiaryDb]registry.yard
+    yardCode: [test::borealwillow3::store::ApiaryDb]registry.yard.yard_code,
+    yardName: [test::borealwillow3::store::ApiaryDb]registry.yard.yard_name,
+    districtCode: [test::borealwillow3::store::ApiaryDb]registry.yard.district_code,
+    forage: EnumerationMapping ForageMapping: case(
+              equal([test::borealwillow3::store::ApiaryDb]registry.yard.forage_code, 'OR'),
+              'OR',
+              case(
+                equal([test::borealwillow3::store::ApiaryDb]registry.yard.forage_code, 'HE'),
+                'HE',
+                case(
+                  equal([test::borealwillow3::store::ApiaryDb]registry.yard.forage_code, 'CV'),
+                  'CV',
+                  case(
+                    equal([test::borealwillow3::store::ApiaryDb]registry.yard.forage_code, 'CL'),
+                    'CL',
+                    'LI'
+                  )
+                )
+              )
+            ),
+    stewardCount: [test::borealwillow3::store::ApiaryDb]@Yard_StewardTally | [test::borealwillow3::store::ApiaryDb]registry.yard_steward_tally.steward_count,
+    bloomLabel: [test::borealwillow3::store::ApiaryDb]@Yard_ForageLabel | [test::borealwillow3::store::ApiaryDb]registry.forage_label_vw.bloom_label,
+    trapCodes: [test::borealwillow3::store::ApiaryDb]@Yard_Trap | [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.trap_code
+  }
+
+  *test::borealwillow3::domain::SwarmTrap[swarmTrap]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.trap_code
+    )
+    ~mainTable [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap
+    recordCode: [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.trap_code,
+    yardCode: [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.yard_code,
+    trapCode: [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.trap_code,
+    lureCode: [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code,
+    catchCount: [test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.catch_count,
+    catchBand: case(
+                 equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'PR'),
+                 'PRIME CAST',
+                 case(
+                   equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'LG'),
+                   'LARGE CAST',
+                   case(
+                     equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'MD'),
+                     'MEDIUM CAST',
+                     case(
+                       equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'SM'),
+                       'SMALL CAST',
+                       case(
+                         equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'LT'),
+                         'LATE CAST',
+                         case(
+                           equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'EA'),
+                           'EARLY CAST',
+                           case(
+                             equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'DC'),
+                             'DECOY ONLY',
+                             case(
+                               equal([test::borealwillow3::store::ApiaryDb]apiary.swarm_trap.lure_code, 'EM'),
+                               'EMPTY TRAP',
+                               sqlNull()
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    stewardCount: [test::borealwillow3::store::ApiaryDb]@Trap_Yard > @Yard_StewardTally | [test::borealwillow3::store::ApiaryDb]registry.yard_steward_tally.steward_count,
+    yardName: [test::borealwillow3::store::ApiaryDb]@Trap_Yard | [test::borealwillow3::store::ApiaryDb]registry.yard.yard_name,
+    watchLabel: 'SWARM WATCH ROTA'
+  }
+
+  *test::borealwillow3::domain::ForageRef[forageRef]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealwillow3::store::ApiaryDb]registry.forage_ref.forage_code
+    )
+    ~mainTable [test::borealwillow3::store::ApiaryDb]registry.forage_ref
+    forageCode: [test::borealwillow3::store::ApiaryDb]registry.forage_ref.forage_code,
+    forageName: [test::borealwillow3::store::ApiaryDb]registry.forage_ref.forage_name,
+    bloomNote: [test::borealwillow3::store::ApiaryDb]registry.forage_ref.bloom_note
+  }
+
+  *test::borealwillow3::domain::Steward[steward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealwillow3::store::ApiaryDb]registry.steward.steward_code
+    )
+    ~mainTable [test::borealwillow3::store::ApiaryDb]registry.steward
+    stewardCode: [test::borealwillow3::store::ApiaryDb]registry.steward.steward_code,
+    yardCode: [test::borealwillow3::store::ApiaryDb]registry.steward.yard_code,
+    stewardName: [test::borealwillow3::store::ApiaryDb]registry.steward.steward_name
+  }
+
+  *test::borealwillow3::domain::FrameSample[frameSample]: Relational
+  {
+    ~filter [test::borealwillow3::store::ApiaryDb]GradedSample
+    ~primaryKey
+    (
+      [test::borealwillow3::store::ApiaryDb]apiary.frame_sample.sample_id
+    )
+    ~mainTable [test::borealwillow3::store::ApiaryDb]apiary.frame_sample
+    sampleId: [test::borealwillow3::store::ApiaryDb]apiary.frame_sample.sample_id,
+    hiveCode: [test::borealwillow3::store::ApiaryDb]apiary.frame_sample.hive_code,
+    cellCount: [test::borealwillow3::store::ApiaryDb]apiary.frame_sample.cell_count,
+    gradeCode: [test::borealwillow3::store::ApiaryDb]apiary.frame_sample.grade_code
+  }
+)

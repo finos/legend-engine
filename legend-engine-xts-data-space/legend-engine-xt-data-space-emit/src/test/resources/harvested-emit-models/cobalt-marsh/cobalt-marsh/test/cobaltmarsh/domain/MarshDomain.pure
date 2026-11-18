@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A monitoring station installed in the wetland network, tracked on a processing timeline.'} test::cobaltmarsh::domain::SamplingStation
+{
+  stationId: String[1];
+  stationName: String[1];
+  habitat: String[1];
+  depthNote: String[1];
+  nameLength: Integer[1];
+  surveyProgram: String[1];
+  installedOn: StrictDate[1];
+  tidal: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A water sample drawn at a monitoring station.'} test::cobaltmarsh::domain::WaterSample
+{
+  sampleId: String[1];
+  turbidityNtu: Float[1];
+  oxygenMgl: Float[1];
+  sampledOn: StrictDate[1];
+  qualityBand: String[0..1];
+  sampleLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bird tally recorded during a wetland walk.'} test::cobaltmarsh::domain::BirdCount
+{
+  countId: String[1];
+  speciesCode: String[1];
+  tally: Integer[1];
+  observedOn: StrictDate[1];
+  flockSize: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A ranger patrol shift covering the wetland reserve.'} test::cobaltmarsh::domain::RangerShift
+{
+  shiftId: String[1];
+  rangerName: String[1];
+  shiftHours: Float[1];
+  nightShift: Boolean[1];
+  workloadBand: String[1];
+}

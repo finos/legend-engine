@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarlagoon3::mapping::GaugeMapping
+(
+  test::lunarlagoon3::domain::GaugeStation: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station.station_code
+    )
+    ~mainTable [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station
+    stationCode: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station.station_code,
+    stationName: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station.station_name,
+    districtCode: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station.district_code,
+    stationKind: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station.station_kind
+  }
+
+  test::lunarlagoon3::domain::GaugeReading: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading.reading_code
+    )
+    ~mainTable [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading
+    readingCode: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading.reading_code,
+    readingState: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading.reading_state,
+    sensorCode: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading.sensor_code,
+    waterLevelCm: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading.water_level_cm,
+    salinityPpt: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading.salinity_ppt,
+    takenOn: [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_reading.taken_on,
+    stationName: [test::lunarlagoon3::store::GaugeDb]@Station_Reading | [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station.station_name,
+    districtCode: [test::lunarlagoon3::store::GaugeDb]@Station_Reading | [test::lunarlagoon3::store::GaugeDb]tidewatch.gauge_station.district_code
+  }
+
+  test::lunarlagoon3::domain::Station_Readings: Relational
+  {
+    AssociationMapping
+    (
+      readings[test_lunarlagoon3_domain_GaugeStation, test_lunarlagoon3_domain_GaugeReading]: [test::lunarlagoon3::store::GaugeDb]@Station_Reading,
+      readingStation[test_lunarlagoon3_domain_GaugeReading, test_lunarlagoon3_domain_GaugeStation]: [test::lunarlagoon3::store::GaugeDb]@Station_Reading
+    )
+  }
+)

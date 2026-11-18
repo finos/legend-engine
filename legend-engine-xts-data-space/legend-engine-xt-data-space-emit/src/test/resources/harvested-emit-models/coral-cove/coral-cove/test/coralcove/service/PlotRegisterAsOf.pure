@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralcove::service::PlotRegisterAsOf
+{
+  pattern: '/dune/v1/plot-register/{asOfDate}';
+  title: 'Dune Restoration - Plot Register As Of';
+  documentation: 'Resolves the dune plot register at a requested processing instant and projects the mixed-type measurement surface for the plots on the rostered sectors that clear the crest-height threshold.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['dune-restoration-register'] };
+  execution: Single
+  {
+    // Plan: the date parameter enters through the milestoned accessor, so the
+    // temporal rewrite turns the extent read into a window predicate over the
+    // plot register's in/out columns before the sector membership test and the
+    // crest-height comparison narrow it; the projection then fixes a seven-column
+    // tabular contract over strings, a float, a fixed-precision numeric, a date
+    // and an optional string, giving a single relational result-set instantiation
+    // whose predicate stack is four levels above the extent read.
+    query: {asOfDate: StrictDate[1]|test::coralcove::domain::PlotRegistration.all($asOfDate)->filter(
+      p|($p.sectorCode->in(['SECT-01', 'SECT-02', 'SECT-03', 'SECT-04', 'SECT-05', 'SECT-06', 'SECT-07', 'SECT-08'])) &&
+        ($p.crestHeightM->toOne() > 3.0)
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.sectorCode,
+        p|$p.plotName,
+        p|$p.crestHeightM,
+        p|$p.stabilisedAreaHa,
+        p|$p.surveyedOn,
+        p|$p.warden
+      ],
+      [
+        'Plot/Code',
+        'Plot/Sector',
+        'Plot/Name',
+        'Plot/CrestHeightM',
+        'Plot/StabilisedAreaHa',
+        'Plot/SurveyedOn',
+        'Plot/Warden'
+      ]
+    )->sort([asc('Plot/Code')])};
+    mapping: test::coralcove::mapping::DuneMapping;
+    runtime: test::coralcove::runtime::DuneRuntime;
+  }
+  testSuites:
+  [
+    plotRegisterAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          duneWarehouseConnection:
+            Relational
+            #{
+              dune.plot_register:
+                'plot_code,in_z,sector_code,plot_name,crest_height_m,stabilised_area_ha,surveyed_on,last_checked_at,warden,out_z\n'+
+                'CC-PL-01,2025-02-01,SECT-01,Foredune Terrace,4.5,1.250,2025-01-20,2025-01-20 07:15:00,ines vardy,2026-02-01\n'+
+                'CC-PL-01,2026-02-01,SECT-01,Foredune Terrace,5.25,1.480,2026-01-18,2026-01-18 06:40:00,ines vardy,9999-12-31\n'+
+                'CC-PL-02,2026-02-01,SECT-02,Slack Hollow,2.75,0.640,2026-01-19,2026-01-19 08:05:00,teodor rask,9999-12-31\n'+
+                'CC-PL-03,2026-02-01,SECT-11,Outer Ridge,6.10,2.100,2026-01-21,2026-01-21 08:40:00,mira solvang,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAtProcessingInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-05-01
+          ]
+          asserts:
+          [
+            onlyOpenRosteredPlotAboveThresholdSurfaces:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"CC-PL-01","Plot/Sector":"SECT-01","Plot/Name":"Foredune Terrace","Plot/CrestHeightM":5.25,"Plot/StabilisedAreaHa":1.480,"Plot/SurveyedOn":"2026-01-18","Plot/Warden":"ines vardy"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

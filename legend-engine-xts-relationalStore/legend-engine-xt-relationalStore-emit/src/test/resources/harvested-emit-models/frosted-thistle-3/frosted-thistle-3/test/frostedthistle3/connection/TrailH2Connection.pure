@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::frostedthistle3::connection::TrailH2Connection
+{
+  store: test::frostedthistle3::store::TrailNetworkDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists trail;',
+      'create schema trail;',
+      'create table trail.trail_segment (segment_code varchar(20) primary key, path_code varchar(40) not null, crew_code varchar(20) not null, surface_code varchar(20), gradient_pct integer not null, span_metres integer not null, last_inspected_on date not null, waymark_label varchar(40), ridge_flag varchar(1), ridge_exposure integer);'
+      ];
+  };
+  auth: DefaultH2;
+}

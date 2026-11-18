@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::opalbeacon::connection::SkySurveyH2Connection
+{
+  store: test::opalbeacon::store::SkyDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists SKY;',
+      'drop schema if exists OPS;',
+      'create schema SKY;',
+      'create schema OPS;',
+      'create table OPS.STATION (station_code varchar(24) primary key, station_name varchar(120) not null, dome_kind varchar(24) not null);',
+      'create table OPS.OBSERVING_TEAM (team_code varchar(24) primary key, team_name varchar(120) not null, station_code varchar(24) not null, valid_from date not null, valid_thru date not null);',
+      'create table OPS.SECTOR_TEAM (sector_code varchar(24) not null, team_code varchar(24) not null, valid_from date not null, valid_thru date not null);',
+      'create table SKY.SKY_SECTOR (sector_code varchar(24) primary key, sector_name varchar(120) not null);',
+      'create table SKY.SURVEY_RUN (run_code varchar(24) primary key, run_name varchar(120) not null, sector_code varchar(24) not null);',
+      'create table SKY.BEACON_STAR (star_code varchar(24) not null, star_name varchar(120) not null, magnitude integer not null, band_code varchar(12) not null, sector_code varchar(24) not null, bus_from date not null, bus_thru date, proc_in date not null, proc_out date);',
+      'insert into OPS.STATION values (\'ST-1\', \'Ridge Observatory\', \'SLIDING\');',
+      'insert into OPS.OBSERVING_TEAM values (\'TM-1\', \'Night Watch\', \'ST-1\', DATE \'2020-01-01\', DATE \'9999-12-31\');',
+      'insert into OPS.SECTOR_TEAM values (\'SC-1\', \'TM-1\', DATE \'2020-01-01\', DATE \'9999-12-31\');',
+      'insert into SKY.SKY_SECTOR values (\'SC-1\', \'Northern Fan\');',
+      'insert into SKY.SURVEY_RUN values (\'RN-1\', \'Spring Sweep\', \'SC-1\');',
+      'insert into SKY.BEACON_STAR values (\'BS-1\', \'Opal Alpha\', 3, \'radio\', \'SC-1\', DATE \'2026-01-01\', DATE \'9999-12-31\', DATE \'2026-01-01\', DATE \'9999-12-31\');'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+RelationalDatabaseConnection test::opalbeacon::connection::SkyArchiveH2Connection
+{
+  store: test::opalbeacon::store::SkyDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists SKY;',
+      'drop schema if exists OPS;',
+      'create schema SKY;',
+      'create schema OPS;',
+      'create table OPS.STATION (station_code varchar(24) primary key, station_name varchar(120) not null, dome_kind varchar(24) not null);',
+      'create table OPS.OBSERVING_TEAM (team_code varchar(24) primary key, team_name varchar(120) not null, station_code varchar(24) not null, valid_from date not null, valid_thru date not null);',
+      'create table OPS.SECTOR_TEAM (sector_code varchar(24) not null, team_code varchar(24) not null, valid_from date not null, valid_thru date not null);',
+      'create table SKY.SKY_SECTOR (sector_code varchar(24) primary key, sector_name varchar(120) not null);',
+      'create table SKY.SURVEY_RUN (run_code varchar(24) primary key, run_name varchar(120) not null, sector_code varchar(24) not null);',
+      'create table SKY.BEACON_STAR (star_code varchar(24) not null, star_name varchar(120) not null, magnitude integer not null, band_code varchar(12) not null, sector_code varchar(24) not null, bus_from date not null, bus_thru date, proc_in date not null, proc_out date);',
+      'insert into OPS.STATION values (\'ST-2\', \'Plateau Observatory\', \'ROLLOFF\');',
+      'insert into OPS.OBSERVING_TEAM values (\'TM-2\', \'Dawn Watch\', \'ST-2\', DATE \'2020-01-01\', DATE \'9999-12-31\');',
+      'insert into OPS.SECTOR_TEAM values (\'SC-2\', \'TM-2\', DATE \'2020-01-01\', DATE \'9999-12-31\');',
+      'insert into SKY.SKY_SECTOR values (\'SC-2\', \'Southern Fan\');',
+      'insert into SKY.SURVEY_RUN values (\'RN-2\', \'Autumn Sweep\', \'SC-2\');',
+      'insert into SKY.BEACON_STAR values (\'BS-2\', \'Opal Beta\', 5, \'optical\', \'SC-2\', DATE \'2026-01-01\', DATE \'9999-12-31\', DATE \'2026-01-01\', DATE \'9999-12-31\');'
+      ];
+  };
+  auth: DefaultH2;
+}

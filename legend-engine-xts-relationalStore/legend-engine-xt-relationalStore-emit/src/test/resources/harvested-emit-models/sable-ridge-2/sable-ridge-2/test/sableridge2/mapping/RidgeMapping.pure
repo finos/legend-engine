@@ -1,0 +1,333 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sableridge2::mapping::RidgeMapping
+(
+  test::sableridge2::domain::HutClass: EnumerationMapping HutClassMapping
+  {
+    SHELTER: ['SHL'],
+    LODGE: ['LDG'],
+    BIVOUAC: ['BIV'],
+    DORMITORY: ['DRM']
+  }
+
+  test::sableridge2::domain::TrailGrade: EnumerationMapping TrailGradeMapping
+  {
+    EASY: ['ESY'],
+    MODERATE: ['MOD'],
+    ALPINE: ['ALP'],
+    GLACIER: ['GLC']
+  }
+
+  *test::sableridge2::domain::HutStay[stay]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableridge2::store::RidgeDB]alpine.hut_stay.stay_ref
+    )
+    ~mainTable [test::sableridge2::store::RidgeDB]alpine.hut_stay
+    stayRef: [test::sableridge2::store::RidgeDB]alpine.hut_stay.stay_ref,
+    stayDate: [test::sableridge2::store::RidgeDB]alpine.hut_stay.stay_date,
+    bunkCount: [test::sableridge2::store::RidgeDB]alpine.hut_stay.bunk_count,
+    guestCount: [test::sableridge2::store::RidgeDB]alpine.hut_stay.guest_count,
+    supplyKg: [test::sableridge2::store::RidgeDB]alpine.hut_stay.supply_kg,
+    occupancyPercent: divide(
+                        times(
+                          [test::sableridge2::store::RidgeDB]alpine.hut_stay.guest_count,
+                          100
+                        ),
+                        [test::sableridge2::store::RidgeDB]alpine.hut_stay.bunk_count
+                      ),
+    spareBunks: minus(
+                  [test::sableridge2::store::RidgeDB]alpine.hut_stay.bunk_count,
+                  [test::sableridge2::store::RidgeDB]alpine.hut_stay.guest_count
+                ),
+    stayLabel: concat(
+                 concat(
+                   toUpper(trim([test::sableridge2::store::RidgeDB]alpine.hut_stay.hut_code)),
+                   '/'
+                 ),
+                 [test::sableridge2::store::RidgeDB]alpine.hut_stay.stay_ref
+               ),
+    loadBand: case(
+                equal([test::sableridge2::store::RidgeDB]alpine.hut_stay.guest_count, 0),
+                'empty-hut',
+                case(
+                  greaterThanEqual(
+                    divide(
+                      times(
+                        [test::sableridge2::store::RidgeDB]alpine.hut_stay.guest_count,
+                        100
+                      ),
+                      [test::sableridge2::store::RidgeDB]alpine.hut_stay.bunk_count
+                    ),
+                    90
+                  ),
+                  'full-hut',
+                  case(
+                    greaterThanEqual(
+                      divide(
+                        times(
+                          [test::sableridge2::store::RidgeDB]alpine.hut_stay.guest_count,
+                          100
+                        ),
+                        [test::sableridge2::store::RidgeDB]alpine.hut_stay.bunk_count
+                      ),
+                      60
+                    ),
+                    'busy-hut',
+                    case(
+                      greaterThanEqual(
+                        divide(
+                          times(
+                            [test::sableridge2::store::RidgeDB]alpine.hut_stay.guest_count,
+                            100
+                          ),
+                          [test::sableridge2::store::RidgeDB]alpine.hut_stay.bunk_count
+                        ),
+                        30
+                      ),
+                      'settled-hut',
+                      'quiet-hut'
+                    )
+                  )
+                )
+              ),
+    segmentName: [test::sableridge2::store::RidgeDB]@Stay_Hut > @Hut_Segment | [test::sableridge2::store::RidgeDB]alpine.trail_segment.segment_name,
+    hut[hut]: [test::sableridge2::store::RidgeDB]@Stay_Hut
+  }
+
+  *test::sableridge2::domain::MountainHut[hut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableridge2::store::RidgeDB]alpine.mountain_hut.hut_code
+    )
+    ~mainTable [test::sableridge2::store::RidgeDB]alpine.mountain_hut
+    hutCode: [test::sableridge2::store::RidgeDB]alpine.mountain_hut.hut_code,
+    hutName: [test::sableridge2::store::RidgeDB]alpine.mountain_hut.hut_name,
+    hutClass: EnumerationMapping HutClassMapping: toUpper(trim([test::sableridge2::store::RidgeDB]alpine.mountain_hut.class_code)),
+    elevationM: [test::sableridge2::store::RidgeDB]alpine.mountain_hut.elevation_m,
+    segment[segment]: [test::sableridge2::store::RidgeDB]@Hut_Segment
+  }
+
+  *test::sableridge2::domain::TrailSegment[segment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableridge2::store::RidgeDB]alpine.trail_segment.segment_code
+    )
+    ~mainTable [test::sableridge2::store::RidgeDB]alpine.trail_segment
+    segmentCode: [test::sableridge2::store::RidgeDB]alpine.trail_segment.segment_code,
+    segmentName: [test::sableridge2::store::RidgeDB]alpine.trail_segment.segment_name,
+    grade: EnumerationMapping TrailGradeMapping: toUpper(trim([test::sableridge2::store::RidgeDB]alpine.trail_segment.grade_code))
+  }
+
+  *test::sableridge2::domain::Warden[warden]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sableridge2::store::RidgeDB]alpine.warden.warden_code
+    )
+    ~mainTable [test::sableridge2::store::RidgeDB]alpine.warden
+    wardenCode: [test::sableridge2::store::RidgeDB]alpine.warden.warden_code,
+    wardenName: [test::sableridge2::store::RidgeDB]alpine.warden.warden_name
+  }
+
+  test::sableridge2::domain::SegmentPatrol: Relational
+  {
+    AssociationMapping
+    (
+      wardens[segment, warden]: [test::sableridge2::store::RidgeDB]@Warden_Segment,
+      patrolSegment[warden, segment]: [test::sableridge2::store::RidgeDB]@Warden_Segment
+    )
+  }
+
+  testSuites:
+  [
+    stayDerivationSuite:
+    {
+      function: |test::sableridge2::domain::HutStay.all()->graphFetch(
+        #{
+          test::sableridge2::domain::HutStay
+          {
+            stayRef,
+            bunkCount,
+            guestCount,
+            supplyKg,
+            occupancyPercent,
+            spareBunks,
+            stayLabel,
+            loadBand,
+            segmentName,
+            hut
+            {
+              hutName,
+              hutClass,
+              elevationM,
+              segment
+              {
+                segmentName,
+                grade
+              }
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::sableridge2::domain::HutStay
+          {
+            stayRef,
+            bunkCount,
+            guestCount,
+            supplyKg,
+            occupancyPercent,
+            spareBunks,
+            stayLabel,
+            loadBand,
+            segmentName,
+            hut
+            {
+              hutName,
+              hutClass,
+              elevationM,
+              segment
+              {
+                segmentName,
+                grade
+              }
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyLoadBandArm:
+        {
+          doc: 'Drives all five arms of the occupancy band including the zero-guest sentinel, the arithmetic occupancy and spare-bunk transforms, the composed stay label, both enumeration translations over trimmed and lower-cased codes, the two-hop segment name and a stay whose hut code resolves to no hut row.';
+          data:
+          [
+            test::sableridge2::store::RidgeDB:
+              Relational
+              #{
+                alpine.hut_stay:
+                  'stay_ref,hut_code,stay_date,bunk_count,guest_count,supply_kg,party_note\n'+
+                  'ST-01,HT-1,2026-04-02,20,20,140,summer traverse party\n'+
+                  'ST-02,HT-1,2026-04-05,20,14,90,\n'+
+                  'ST-03,HT-2,2026-04-07,16,7,40,school ridge walk\n'+
+                  'ST-04,HT-2,2026-04-09,16,2,,quiet midweek pair\n'+
+                  'ST-05,HT-3,2026-04-11,12,0,,\n'+
+                  'ST-06,HT-9,2026-04-14,10,9,55,unlisted hut booking\n';
+                alpine.mountain_hut:
+                  'hut_code,hut_name,class_code,segment_code,elevation_m\n'+
+                  'HT-1,Sable Col Lodge, ldg ,SG-1,2140\n'+
+                  'HT-2,Ridge Notch Shelter,shl,SG-1,1880\n'+
+                  'HT-3,Glacier Rim Bivouac,BIV,SG-2,2560\n';
+                alpine.trail_segment:
+                  'segment_code,segment_name,grade_code\n'+
+                  'SG-1,Sable Ridge Traverse,mod\n'+
+                  'SG-2,Glacier Rim Link,GLC\n';
+                alpine.warden:
+                  'warden_code,warden_name,segment_code\n'+
+                  'WD-1,Ridge Warden North,SG-1\n'+
+                  'WD-2,Glacier Warden,SG-2\n';
+              }#
+          ];
+          asserts:
+          [
+            sixDerivedStays:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stayRef":"ST-01","bunkCount":20,"guestCount":20,"supplyKg":140,"occupancyPercent":100.0,"spareBunks":0,"stayLabel":"HT-1/ST-01","loadBand":"full-hut","segmentName":"Sable Ridge Traverse","hut":{"hutName":"Sable Col Lodge","hutClass":"LODGE","elevationM":2140,"segment":{"segmentName":"Sable Ridge Traverse","grade":"MODERATE"}}},{"stayRef":"ST-02","bunkCount":20,"guestCount":14,"supplyKg":90,"occupancyPercent":70.0,"spareBunks":6,"stayLabel":"HT-1/ST-02","loadBand":"busy-hut","segmentName":"Sable Ridge Traverse","hut":{"hutName":"Sable Col Lodge","hutClass":"LODGE","elevationM":2140,"segment":{"segmentName":"Sable Ridge Traverse","grade":"MODERATE"}}},{"stayRef":"ST-03","bunkCount":16,"guestCount":7,"supplyKg":40,"occupancyPercent":43.75,"spareBunks":9,"stayLabel":"HT-2/ST-03","loadBand":"settled-hut","segmentName":"Sable Ridge Traverse","hut":{"hutName":"Ridge Notch Shelter","hutClass":"SHELTER","elevationM":1880,"segment":{"segmentName":"Sable Ridge Traverse","grade":"MODERATE"}}},{"stayRef":"ST-04","bunkCount":16,"guestCount":2,"supplyKg":null,"occupancyPercent":12.5,"spareBunks":14,"stayLabel":"HT-2/ST-04","loadBand":"quiet-hut","segmentName":"Sable Ridge Traverse","hut":{"hutName":"Ridge Notch Shelter","hutClass":"SHELTER","elevationM":1880,"segment":{"segmentName":"Sable Ridge Traverse","grade":"MODERATE"}}},{"stayRef":"ST-05","bunkCount":12,"guestCount":0,"supplyKg":null,"occupancyPercent":0.0,"spareBunks":12,"stayLabel":"HT-3/ST-05","loadBand":"empty-hut","segmentName":"Glacier Rim Link","hut":{"hutName":"Glacier Rim Bivouac","hutClass":"BIVOUAC","elevationM":2560,"segment":{"segmentName":"Glacier Rim Link","grade":"GLACIER"}}},{"stayRef":"ST-06","bunkCount":10,"guestCount":9,"supplyKg":55,"occupancyPercent":90.0,"spareBunks":1,"stayLabel":"HT-9/ST-06","loadBand":"full-hut","segmentName":null,"hut":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    wardenPatrolSuite:
+    {
+      function: |test::sableridge2::domain::Warden.all()->graphFetch(
+        #{
+          test::sableridge2::domain::Warden
+          {
+            wardenCode,
+            wardenName,
+            patrolSegment
+            {
+              segmentCode,
+              segmentName,
+              grade
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::sableridge2::domain::Warden
+          {
+            wardenCode,
+            wardenName,
+            patrolSegment
+            {
+              segmentCode,
+              segmentName,
+              grade
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        wardensResolveTheirSegment:
+        {
+          doc: 'Resolves the association implementation in both directions, including a warden whose segment code matches no segment row.';
+          data:
+          [
+            test::sableridge2::store::RidgeDB:
+              Relational
+              #{
+                alpine.warden:
+                  'warden_code,warden_name,segment_code\n'+
+                  'WD-1,Ridge Warden North,SG-1\n'+
+                  'WD-2,Glacier Warden,SG-2\n'+
+                  'WD-3,Relief Warden,SG-9\n';
+                alpine.trail_segment:
+                  'segment_code,segment_name,grade_code\n'+
+                  'SG-1,Sable Ridge Traverse,mod\n'+
+                  'SG-2,Glacier Rim Link,GLC\n';
+              }#
+          ];
+          asserts:
+          [
+            threeWardens:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"wardenCode":"WD-1","wardenName":"Ridge Warden North","patrolSegment":{"segmentCode":"SG-1","segmentName":"Sable Ridge Traverse","grade":"MODERATE"}},{"wardenCode":"WD-2","wardenName":"Glacier Warden","patrolSegment":{"segmentCode":"SG-2","segmentName":"Glacier Rim Link","grade":"GLACIER"}},{"wardenCode":"WD-3","wardenName":"Relief Warden","patrolSegment":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::scarletapiary2::dataspace::CultivationDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'lab';
+      description: 'Cultivation lab environment - the banded substrate blocks served through the lab warehouse.';
+      mapping: test::scarletapiary2::mapping::CultivationMapping;
+      defaultRuntime: test::scarletapiary2::runtime::CultivationRuntime;
+    }
+  ];
+  defaultExecutionContext: 'lab';
+  title: 'Scarlet Cultivation Lab Blocks';
+  description: 'Discovery surface over the mushroom cultivation lab: banded substrate blocks with their fruiting room, strain reference and picked flushes.';
+  elements:
+  [
+    test::scarletapiary2::domain::SubstrateBlock,
+    test::scarletapiary2::domain::FruitingRoom,
+    test::scarletapiary2::domain::MushroomStrain,
+    test::scarletapiary2::domain::FlushHarvest
+  ];
+  supportInfo: Email
+  {
+    address: 'cultivation-lab-desk@scarletcultivation.invalid';
+  };
+}

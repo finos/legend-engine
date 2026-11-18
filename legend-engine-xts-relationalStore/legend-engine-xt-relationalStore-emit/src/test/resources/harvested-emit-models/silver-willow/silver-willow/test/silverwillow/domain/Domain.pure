@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::silverwillow::domain::*;
+
+Class test::silverwillow::domain::StorageVault
+{
+  vaultId: Integer[1];
+  vaultName: String[1];
+  climateZone: String[1];
+  storeTier: String[0..1];
+}
+
+Class test::silverwillow::domain::SeedLot
+{
+  lotId: Integer[1];
+  taxonCode: String[1];
+  vigourBand: String[0..1];
+  moistureLabel: String[1];
+  zoneLabel: String[1];
+  curatorTier: String[0..1];
+  handoverNote: String[1];
+  germinationCount: Integer[0..1];
+  vaultName: String[1];
+}
+
+Class test::silverwillow::domain::LotDigest
+{
+  reference: String[1];
+  headline: String[1];
+  germinated: Integer[1];
+}

@@ -1,0 +1,46 @@
+name: emerald-apiary-2-relational
+title: "Emerald Apiary 2 - relational inspection register"
+description: |
+  Relational apiary inspection mappings with embedded address fields,
+  joined inspection subtypes, a two-hop colony-to-apiary path, an included
+  base mapping and a one-row mapping test.
+modelSources:
+  model:
+    root: emerald-apiary-2-relational
+    files:
+      - test/emeraldapiary2/connection/ApiaryConnection.pure
+      - test/emeraldapiary2/mapping/ApiaryBaseMapping.pure
+      - test/emeraldapiary2/mapping/ApiaryRelationalMapping.pure
+      - test/emeraldapiary2/runtime/ApiaryRuntime.pure
+      - test/emeraldapiary2/store/ApiaryDatabase.pure
+  dependencies:
+    - source: emerald-apiary-2-domain.emit.yaml
+features:
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-embedded
+  - mapping:relational-inline-embedded
+  - mapping:relational-joined-table-inheritance
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - mapping:store-union
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - apiary
+  - embedded
+  - h2
+  - inheritance
+  - mapping-include
+  - operation-mapping
+  - relational
+  - store-union

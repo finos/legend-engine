@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletthistle4::mapping::ThistleMapping
+(
+  *test::scarletthistle4::domain::TrailContact[trailContact]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletthistle4::store::ThistleDB]trail.contact.contact_code
+    )
+    ~mainTable [test::scarletthistle4::store::ThistleDB]trail.contact
+    contactCode: [test::scarletthistle4::store::ThistleDB]trail.contact.contact_code,
+    contactName: [test::scarletthistle4::store::ThistleDB]trail.contact.contact_name
+  }
+
+  *test::scarletthistle4::domain::TrailSubscription[trailSubscription]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletthistle4::store::ThistleDB]trail.subscription.subscription_code
+    )
+    ~mainTable [test::scarletthistle4::store::ThistleDB]trail.subscription
+    subscriptionCode: [test::scarletthistle4::store::ThistleDB]trail.subscription.subscription_code,
+    programName: [test::scarletthistle4::store::ThistleDB]trail.subscription.program_name,
+    regionCode: [test::scarletthistle4::store::ThistleDB]trail.subscription.region_code,
+    cadenceCode: [test::scarletthistle4::store::ThistleDB]trail.subscription.cadence_code,
+    tierCode: [test::scarletthistle4::store::ThistleDB]trail.subscription.tier_code,
+    channelCode: [test::scarletthistle4::store::ThistleDB]trail.subscription.channel_code
+  }
+
+  *test::scarletthistle4::domain::TrailOffering[trailOffering]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletthistle4::store::ThistleDB]trail.offering.offering_code
+    )
+    ~mainTable [test::scarletthistle4::store::ThistleDB]trail.offering
+    offeringCode: [test::scarletthistle4::store::ThistleDB]trail.offering.offering_code,
+    offeringName: [test::scarletthistle4::store::ThistleDB]trail.offering.offering_name
+  }
+
+  test::scarletthistle4::domain::ContactSubscription: Relational
+  {
+    AssociationMapping
+    (
+      subscription[trailContact, trailSubscription]: [test::scarletthistle4::store::ThistleDB]@Contact_Subscription,
+      subscribedContacts[trailSubscription, trailContact]: [test::scarletthistle4::store::ThistleDB]@Contact_Subscription
+    )
+  }
+
+  test::scarletthistle4::domain::SubscriptionOffering: Relational
+  {
+    AssociationMapping
+    (
+      offerings[trailSubscription, trailOffering]: [test::scarletthistle4::store::ThistleDB]@Subscription_Offering,
+      offeredSubscriptions[trailOffering, trailSubscription]: [test::scarletthistle4::store::ThistleDB]@Subscription_Offering
+    )
+  }
+)

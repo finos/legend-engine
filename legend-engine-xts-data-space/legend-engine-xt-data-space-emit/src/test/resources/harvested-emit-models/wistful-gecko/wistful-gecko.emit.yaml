@@ -1,0 +1,83 @@
+name: wistful-gecko
+title: "Wistful Gecko — Nocturnal Sighting Register With Join-Widened Point-In-Time Boards And A Survey Data Space"
+description: |
+  A non-financial nocturnal reptile survey. A registry store holds the field
+  observers and is included by the field store, which carries a plain habitat
+  table, a business-temporal sighting register and a processing-temporal canopy
+  survey table alongside named joins from the register to the habitat and to the
+  registry observer. A third archive store keeps retired sighting rows under
+  their own processing window. Three mappings layer over those stores: a base
+  observer mapping, an including field mapping that widens the sighting register
+  with habitat, terrain and observer columns reached over the joins and maps the
+  habitat-to-sightings association, and an including archive mapping. Its own
+  mapping suite proves the join-widened projection reports an empty observer for
+  a sighting whose observer key has no registry row and omits one whose business
+  window has closed.
+  Three engine runtimes bind those mappings to an embedded test connection, a
+  key-pair authenticated cloud-warehouse connection and an archive connection,
+  and a data space publishes the three estates as named execution contexts with
+  the local one as default. An estate-keyed multi-execution service compiles the
+  same point-in-time board against two of those runtimes, and a local-estate
+  pinned form carries the executable suite.
+
+modelSources:
+  model:
+    root: wistful-gecko
+    files:
+      - test/wistfulgecko/connection/GeckoArchiveConnection.pure
+      - test/wistfulgecko/connection/GeckoH2Connection.pure
+      - test/wistfulgecko/connection/GeckoWarehouseConnection.pure
+      - test/wistfulgecko/dataspace/GeckoDataSpace.pure
+      - test/wistfulgecko/domain/GeckoDomain.pure
+      - test/wistfulgecko/mapping/GeckoArchiveMapping.pure
+      - test/wistfulgecko/mapping/GeckoMapping.pure
+      - test/wistfulgecko/mapping/GeckoRegistryMapping.pure
+      - test/wistfulgecko/runtime/GeckoArchiveRuntime.pure
+      - test/wistfulgecko/runtime/GeckoH2Runtime.pure
+      - test/wistfulgecko/runtime/GeckoWarehouseRuntime.pure
+      - test/wistfulgecko/service/SightingBoards.pure
+      - test/wistfulgecko/store/GeckoArchiveDB.pure
+      - test/wistfulgecko/store/GeckoDB.pure
+      - test/wistfulgecko/store/GeckoRegistryDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - business-temporal
+  - data-space
+  - h2
+  - inner-join
+  - mapping-include
+  - mapping-test
+  - multi-execution
+  - point-in-time
+  - processing-temporal
+  - service-test
+  - snowflake

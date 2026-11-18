@@ -1,0 +1,368 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonwharf4::mapping::KilnMapping
+(
+  *test::crimsonwharf4::domain::KilnFiring[firing]: Relational
+  {
+    ~filter [test::crimsonwharf4::store::KilnDB]LoggedFiring
+    ~primaryKey
+    (
+      [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.firing_code
+    )
+    ~mainTable [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing
+    firingCode: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.firing_code,
+    kilnCode: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.kiln_code,
+    studioCode: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.studio_code,
+    firingDate: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.firing_date,
+    startedAt: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.started_at,
+    peakCelsius: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius,
+    holdMinutes: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.hold_minutes,
+    leadPotter: trim([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.lead_potter),
+    firingNote: [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.firing_note,
+    firingLabel: case(
+                   isNotEmpty([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.firing_note),
+                   substring(
+                     toUpper(
+                       trim(
+                         concat(
+                           [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.firing_code,
+                           concat(' / ', [test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.firing_note)
+                         )
+                       )
+                     ),
+                     0,
+                     28
+                   ),
+                   'UNLOGGED FIRING'
+                 ),
+    firingBand: case(
+                  lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 700),
+                  'DRYING',
+                  case(
+                    lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 800),
+                    'BISQUE LOW',
+                    case(
+                      lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 900),
+                      'BISQUE MID',
+                      case(
+                        lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 1000),
+                        'BISQUE HIGH',
+                        case(
+                          lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 1100),
+                          'EARTHENWARE',
+                          case(
+                            lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 1200),
+                            'MIDFIRE',
+                            case(
+                              and(
+                                lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 1280),
+                                greaterThanEqual([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.hold_minutes, 20)
+                              ),
+                              'STONEWARE',
+                              case(
+                                lessThan([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.peak_celsius, 1400),
+                                'PORCELAIN',
+                                sqlNull()
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+    holdFraction: divide([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.hold_minutes, 60.0)
+  }
+
+  *test::crimsonwharf4::domain::PotteryPiece[piece]: Relational
+  {
+    ~filter [test::crimsonwharf4::store::KilnDB]NamedPiece
+    ~primaryKey
+    (
+      [test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.piece_code
+    )
+    ~mainTable [test::crimsonwharf4::store::KilnDB]pottery.pottery_piece
+    pieceCode: [test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.piece_code,
+    pieceName: trim([test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.piece_name),
+    clayBody: [test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.clay_body,
+    wallMm: [test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.wall_mm,
+    massGrams: [test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.mass_grams,
+    massKilograms: divide([test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.mass_grams, 1000.0),
+    glazeMode: case(
+                 greaterThan([test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.wall_mm, 8.0),
+                 'DIPPED',
+                 case(
+                   equal([test::crimsonwharf4::store::KilnDB]pottery.pottery_piece.clay_body, 'Porcelain'),
+                   'SPRAYED',
+                   'BRUSHED'
+                 )
+               ),
+    firingLeadPotter: [test::crimsonwharf4::store::KilnDB]@Firing_Piece | trim([test::crimsonwharf4::store::KilnDB]pottery.kiln_firing.lead_potter),
+    reviewFlag: [test::crimsonwharf4::store::KilnDB]@Firing_Piece > @Firing_Review | [test::crimsonwharf4::store::KilnDB]pottery.firing_review.passed_flag
+  }
+
+  *test::crimsonwharf4::domain::GlazeBatch[glaze]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonwharf4::store::KilnDB]pottery.glaze_batch.glaze_code
+    )
+    ~mainTable [test::crimsonwharf4::store::KilnDB]pottery.glaze_batch
+    glazeCode: [test::crimsonwharf4::store::KilnDB]pottery.glaze_batch.glaze_code,
+    glazeName: trim([test::crimsonwharf4::store::KilnDB]pottery.glaze_batch.glaze_name),
+    coneNumber: [test::crimsonwharf4::store::KilnDB]pottery.glaze_batch.cone_number,
+    matteFlag: [test::crimsonwharf4::store::KilnDB]pottery.glaze_batch.matte_flag,
+    glazeLabel: toUpper(
+                  trim(
+                    concat(
+                      [test::crimsonwharf4::store::KilnDB]pottery.glaze_batch.glaze_code,
+                      concat(' - ', [test::crimsonwharf4::store::KilnDB]pottery.glaze_batch.glaze_name)
+                    )
+                  )
+                )
+  }
+
+  *test::crimsonwharf4::domain::FiringReview[review]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonwharf4::store::KilnDB]pottery.firing_review.review_code
+    )
+    ~mainTable [test::crimsonwharf4::store::KilnDB]pottery.firing_review
+    reviewCode: [test::crimsonwharf4::store::KilnDB]pottery.firing_review.review_code,
+    passedFlag: [test::crimsonwharf4::store::KilnDB]pottery.firing_review.passed_flag,
+    reviewedAt: [test::crimsonwharf4::store::KilnDB]pottery.firing_review.reviewed_at,
+    reviewerName: trim([test::crimsonwharf4::store::KilnDB]pottery.firing_review.reviewer_name)
+  }
+
+  test::crimsonwharf4::domain::Firing_Pieces: Relational
+  {
+    AssociationMapping
+    (
+      pieces[firing, piece]: [test::crimsonwharf4::store::KilnDB]@Firing_Piece,
+      firing[piece, firing]: [test::crimsonwharf4::store::KilnDB]@Firing_Piece
+    )
+  }
+
+  test::crimsonwharf4::domain::Piece_Glaze: Relational
+  {
+    AssociationMapping
+    (
+      glaze[piece, glaze]: [test::crimsonwharf4::store::KilnDB]@Piece_Glaze,
+      glazedPieces[glaze, piece]: [test::crimsonwharf4::store::KilnDB]@Piece_Glaze
+    )
+  }
+
+  test::crimsonwharf4::domain::Firing_Reviews: Relational
+  {
+    AssociationMapping
+    (
+      reviews[firing, review]: [test::crimsonwharf4::store::KilnDB]@Firing_Review,
+      reviewedFiring[review, firing]: [test::crimsonwharf4::store::KilnDB]@Firing_Review
+    )
+  }
+
+  testSuites:
+  [
+    firingBandSuite:
+    {
+      function: |test::crimsonwharf4::domain::KilnFiring.all()->project(
+        [
+          f|$f.firingCode,
+          f|$f.firingLabel,
+          f|$f.firingBand,
+          f|$f.leadPotter,
+          f|$f.holdFraction,
+          f|$f.rosterLine()
+        ],
+        [
+          'Firing',
+          'Label',
+          'Band',
+          'Potter',
+          'Hold',
+          'Roster'
+        ]
+      )->sort([asc('Firing')]);
+      tests:
+      [
+        everyBandArmAndTheNullFallback:
+        {
+          doc: 'Drives one row through every arm of the peak-temperature ladder and one row past its top edge so the graded band falls back to no value, keeps the composed label that switches to a fixed caption when the note is absent, trims one padded lead potter, derives the hold fraction arithmetically and drops the firing the store predicate excludes.';
+          data:
+          [
+            test::crimsonwharf4::store::KilnDB:
+              Relational
+              #{
+                pottery.kiln_firing:
+                  'firing_code,kiln_code,studio_code,firing_date,started_at,peak_celsius,hold_minutes,firing_state,firing_note,lead_potter\n'+
+                  'F-01,K-1,S-1,2026-03-01,2026-03-01 08:00:00,650,30,1,slow dry,rosa quill\n'+
+                  'F-02,K-1,S-1,2026-03-02,2026-03-02 08:00:00,760,30,1,first bisque,ada plumtree\n'+
+                  'F-03,K-1,S-2,2026-03-03,2026-03-03 08:00:00,860,30,1,second bisque, iris fenwick \n'+
+                  'F-04,K-2,S-2,2026-03-04,2026-03-04 08:00:00,960,30,1,third bisque,ivo marsh\n'+
+                  'F-05,K-2,S-2,2026-03-05,2026-03-05 08:00:00,1060,30,1,,noor bellweather\n'+
+                  'F-06,K-2,S-1,2026-03-06,2026-03-06 08:00:00,1160,30,1,mid range,rosa quill\n'+
+                  'F-07,K-3,S-1,2026-03-07,2026-03-07 08:00:00,1240,30,1,long hold,ada plumtree\n'+
+                  'F-08,K-3,S-2,2026-03-08,2026-03-08 08:00:00,1240,15,1,short hold,ivo marsh\n'+
+                  'F-09,K-3,S-2,2026-03-09,2026-03-09 08:00:00,1460,45,1,over the top,iris fenwick\n'+
+                  'F-10,K-3,S-1,2026-03-10,2026-03-10 08:00:00,1100,30,0,kiln offline,noor bellweather\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Firing":"F-01","Label":"F-01 / SLOW DRY","Band":"DRYING","Potter":"rosa quill","Hold":0.5,"Roster":"F-01 <- rosa quill"},{"Firing":"F-02","Label":"F-02 / FIRST BISQUE","Band":"BISQUE LOW","Potter":"ada plumtree","Hold":0.5,"Roster":"F-02 <- ada plumtree"},{"Firing":"F-03","Label":"F-03 / SECOND BISQUE","Band":"BISQUE MID","Potter":"iris fenwick","Hold":0.5,"Roster":"F-03 <- iris fenwick"},{"Firing":"F-04","Label":"F-04 / THIRD BISQUE","Band":"BISQUE HIGH","Potter":"ivo marsh","Hold":0.5,"Roster":"F-04 <- ivo marsh"},{"Firing":"F-05","Label":"UNLOGGED FIRING","Band":"EARTHENWARE","Potter":"noor bellweather","Hold":0.5,"Roster":"F-05 <- noor bellweather"},{"Firing":"F-06","Label":"F-06 / MID RANGE","Band":"MIDFIRE","Potter":"rosa quill","Hold":0.5,"Roster":"F-06 <- rosa quill"},{"Firing":"F-07","Label":"F-07 / LONG HOLD","Band":"STONEWARE","Potter":"ada plumtree","Hold":0.5,"Roster":"F-07 <- ada plumtree"},{"Firing":"F-08","Label":"F-08 / SHORT HOLD","Band":"PORCELAIN","Potter":"ivo marsh","Hold":0.25,"Roster":"F-08 <- ivo marsh"},{"Firing":"F-09","Label":"F-09 / OVER THE TOP","Band":null,"Potter":"iris fenwick","Hold":0.75,"Roster":"F-09 <- iris fenwick"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    pieceGraphSuite:
+    {
+      function: |test::crimsonwharf4::domain::PotteryPiece.all()->project(
+        [
+          p|$p.pieceCode,
+          p|$p.pieceName,
+          p|$p.glazeMode,
+          p|$p.massKilograms,
+          p|$p.firing.firingCode,
+          p|$p.firingLeadPotter,
+          p|$p.glaze.glazeName,
+          p|$p.reviewFlag,
+          p|$p.sizeLine()
+        ],
+        [
+          'Piece',
+          'Name',
+          'Glazing',
+          'Mass',
+          'Firing',
+          'Potter',
+          'Glaze',
+          'Review',
+          'Size'
+        ]
+      )->sort([asc('Piece')]);
+      tests:
+      [
+        glazeArmsAndJoinReachedValues:
+        {
+          doc: 'Walks the piece side of two associations, reaches the lead potter one hop away and the review outcome two hops away, hits all three glazing arms, converts the mass arithmetically, leaves one glaze reference absent so the optional end surfaces as no value and lets the store predicate remove the piece whose name is blank.';
+          data:
+          [
+            test::crimsonwharf4::store::KilnDB:
+              Relational
+              #{
+                pottery.kiln_firing:
+                  'firing_code,kiln_code,studio_code,firing_date,started_at,peak_celsius,hold_minutes,firing_state,firing_note,lead_potter\n'+
+                  'F-21,K-1,S-1,2026-04-01,2026-04-01 08:00:00,1240,30,1,long hold, rosa quill \n'+
+                  'F-22,K-2,S-2,2026-04-02,2026-04-02 08:00:00,960,30,1,third bisque,ivo marsh\n';
+                pottery.pottery_piece:
+                  'piece_code,firing_code,glaze_code,piece_name,clay_body,wall_mm,mass_grams,piece_state\n'+
+                  'P-21,F-21,G-1, tall jar ,Stoneware,9.5,1450,1\n'+
+                  'P-22,F-21,G-2,thin bowl,Porcelain,4.0,320,1\n'+
+                  'P-23,F-22,,wide platter,Earthenware,6.5,2100,1\n'+
+                  'P-24,F-22,G-1,   ,Stoneware,7.0,800,1\n';
+                pottery.glaze_batch:
+                  'glaze_code,glaze_name,cone_number,matte_flag,batch_state\n'+
+                  'G-1,ash celadon,10,N,1\n'+
+                  'G-2,tin white,8,Y,1\n';
+                pottery.firing_review:
+                  'review_code,firing_code,passed_flag,reviewed_at,reviewer_name\n'+
+                  'R-21,F-21,Y,2026-04-03 09:00:00,noor bellweather\n'+
+                  'R-22,F-22,N,2026-04-04 09:00:00,iris fenwick\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Piece":"P-21","Name":"tall jar","Glazing":"DIPPED","Mass":1.45,"Firing":"F-21","Potter":"rosa quill","Glaze":"ash celadon","Review":"Y","Size":"P-21 Stoneware"},{"Piece":"P-22","Name":"thin bowl","Glazing":"SPRAYED","Mass":0.32,"Firing":"F-21","Potter":"rosa quill","Glaze":"tin white","Review":"Y","Size":"P-22 Porcelain"},{"Piece":"P-23","Name":"wide platter","Glazing":"BRUSHED","Mass":2.1,"Firing":"F-22","Potter":"ivo marsh","Glaze":null,"Review":"N","Size":"P-23 Earthenware"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    glazeBatchSuite:
+    {
+      function: |test::crimsonwharf4::domain::GlazeBatch.all()->project(
+        [
+          g|$g.glazeCode,
+          g|$g.glazeLabel,
+          g|$g.coneNumber,
+          g|$g.matteFlag,
+          g|$g.glazedPieces->map(p|$p.pieceCode)->count()
+        ],
+        [
+          'Glaze',
+          'Label',
+          'Cone',
+          'Matte',
+          'Pieces'
+        ]
+      )->sort([asc('Glaze')]);
+      tests:
+      [
+        composedLabelsAndPieceCounts:
+        {
+          doc: 'Pins the composed and upper-cased glaze label built from the code and the padded batch name the store trims, and counts the pieces reached across the to-many end of the glaze association.';
+          data:
+          [
+            test::crimsonwharf4::store::KilnDB:
+              Relational
+              #{
+                pottery.pottery_piece:
+                  'piece_code,firing_code,glaze_code,piece_name,clay_body,wall_mm,mass_grams,piece_state\n'+
+                  'P-31,F-31,G-1,tall jar,Stoneware,9.5,1450,1\n'+
+                  'P-32,F-31,G-1,thin bowl,Porcelain,4.0,320,1\n'+
+                  'P-33,F-32,G-2,wide platter,Earthenware,6.5,2100,1\n';
+                pottery.glaze_batch:
+                  'glaze_code,glaze_name,cone_number,matte_flag,batch_state\n'+
+                  'G-1,ash celadon ,10,N,1\n'+
+                  'G-2,tin white,8,Y,1\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Glaze":"G-1","Label":"G-1 - ASH CELADON","Cone":10,"Matte":"N","Pieces":2},{"Glaze":"G-2","Label":"G-2 - TIN WHITE","Cone":8,"Matte":"Y","Pieces":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

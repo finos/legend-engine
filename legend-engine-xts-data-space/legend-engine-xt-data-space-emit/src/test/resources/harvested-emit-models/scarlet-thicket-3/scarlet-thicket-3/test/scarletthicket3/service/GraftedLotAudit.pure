@@ -1,0 +1,176 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletthicket3::service::GraftedLotAudit
+{
+  pattern: '/thicket/v1/grafted-lot-audit';
+  title: 'Scarlet Thicket - Grafted Lot Audit';
+  owners:
+  [
+    'thicket-propagation-nursery'
+  ];
+  documentation: 'The deepest query in the project: a five-operand predicate combining a numeric floor, an exact grade, two negated tests - one of them a prefix test on the lot code - a season set and a lower date bound computed from the execution date rather than supplied, then a projection that reaches an inline detail name across one join and narrows the general cultivar to the grafted kind to read a name that only exists on that narrower kind, and finally collapses duplicate pairs so a repeated site-and-rootstock combination is reported once.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minGrams: Float[1], seasonCodes: String[*], currentDate: StrictDate[1]|test::scarletthicket3::domain::SeedLot.all()->filter(
+      l|($l.quantityGrams > $minGrams) && (($l.gradeCode == 'G-A') && ((!($l.statusCode == 'VOID')) && ((!$l.lotCode->startsWith('X-')) && (($l.seasonCode->in($seasonCodes)) && ($l.collectedOn > $currentDate->adjust(-3650, meta::pure::functions::date::DurationUnit.DAYS))))))
+    )->project(
+      [
+        l|$l.origin.siteName,
+        l|$l.cultivar->cast(@test::scarletthicket3::domain::GraftedCultivar).rootstockCode
+      ],
+      [
+        'Site',
+        'Rootstock'
+      ]
+    )->distinct()->sort([asc('Site')]);};
+    mapping: test::scarletthicket3::mapping::ThicketMapping;
+    runtime: test::scarletthicket3::runtime::ThicketWarehouseRuntime;
+  }
+  testSuites:
+  [
+    graftedLotAuditSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse: Reference
+            #{
+              test::scarletthicket3::data::ThicketFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyUnvoidedTopGradeLotsSurviveAndTheNarrowingYieldsNothingForAnOwnRootedCultivar:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minGrams = 100.0,
+            seasonCodes = ['S-2026A', 'S-2026B'],
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            twoSitesOneWithARootstockOneWithout:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"Fen Margin Strip","Rootstock":null},{"Site":"Heath Ridge Verge","Rootstock":"RS-STANDARD"}]';
+                  }#;
+              }#
+          ]
+        },
+        aQuantityFloorAboveEveryLotEmptiesTheResult:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minGrams = 500.0,
+            seasonCodes = ['S-2026A', 'S-2026B'],
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            noLotClearsTheFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::scarletthicket3::service::StewardRosterFeed
+{
+  pattern: '/thicket/v1/steward-roster-feed';
+  title: 'Scarlet Thicket - Steward Roster Feed';
+  owners:
+  [
+    'thicket-propagation-nursery'
+  ];
+  documentation: 'Lists every cultivar with the botanical family reached across one join, the stewarding crew reached across an association end, and the rootstock name that only appears once the cultivar is narrowed to the grafted kind - so the same narrowing appears in a second, unfiltered setting where own-rooted cultivars simply report nothing for that column.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::scarletthicket3::domain::Cultivar.all()->project(
+      [
+        c|$c.cultivarCode,
+        c|$c.familyName,
+        c|$c.stewardTeam.teamName,
+        c|$c->cast(@test::scarletthicket3::domain::GraftedCultivar).rootstockCode
+      ],
+      [
+        'Cultivar',
+        'Family',
+        'Steward',
+        'Rootstock'
+      ]
+    )->sort([asc('Cultivar')]);};
+    mapping: test::scarletthicket3::mapping::ThicketMapping;
+    runtime: test::scarletthicket3::runtime::ThicketWarehouseRuntime;
+  }
+  testSuites:
+  [
+    stewardRosterFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse: Reference
+            #{
+              test::scarletthicket3::data::ThicketFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        familyAndStewardResolveForEveryCultivarAndTheRootstockOnlyForGraftedOnes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeCultivarsTwoOfThemGrafted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cultivar":"CV-1","Family":"Legume Thicket","Steward":"Bench Crew","Rootstock":"RS-STANDARD"},{"Cultivar":"CV-2","Family":"Sedge Family","Steward":"Frame Crew","Rootstock":null},{"Cultivar":"CV-3","Family":"Legume Thicket","Steward":"Frame Crew","Rootstock":"RS-DWARF"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

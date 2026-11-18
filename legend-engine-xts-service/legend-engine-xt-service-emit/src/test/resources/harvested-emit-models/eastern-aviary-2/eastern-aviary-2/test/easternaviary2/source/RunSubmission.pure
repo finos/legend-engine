@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::easternaviary2::profile::*;
+
+Class test::easternaviary2::source::RunSubmission
+{
+  {FieldMetaProfile.textLength = '40', FieldMetaProfile.textTyped = 'true'} runRef: String[1];
+  {FieldMetaProfile.documentValued = 'true'} header: test::easternaviary2::source::RunHeaderBlock[0..1];
+  {FieldMetaProfile.documentValued = 'true'} sections: test::easternaviary2::source::RunSectionBlock[*];
+}
+
+Class test::easternaviary2::source::RunHeaderBlock
+{
+  {FieldMetaProfile.textLength = '40', FieldMetaProfile.textTyped = 'true'} notebookRef: String[1];
+  loggedAt: DateTime[1];
+  surveyedOn: StrictDate[0..1];
+  {FieldMetaProfile.textLength = '120', FieldMetaProfile.textTyped = 'true'} gangName: String[1];
+  {FieldMetaProfile.textLength = '32000', FieldMetaProfile.textTyped = 'true'} scanText: String[0..1];
+}
+
+Class test::easternaviary2::source::RunSectionBlock
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sectionCode: String[1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} mileageChain: Integer[1];
+  {FieldMetaProfile.textLength = '4000', FieldMetaProfile.textTyped = 'true'} sectionNote: String[0..1];
+  {FieldMetaProfile.documentValued = 'true'} railDefects: test::easternaviary2::source::RailDefectBlock[*];
+  {FieldMetaProfile.documentValued = 'true'} sleeperChecks: test::easternaviary2::source::SleeperCheckBlock[*];
+  {FieldMetaProfile.documentValued = 'true'} gaugeSummary: test::easternaviary2::source::GaugeSummaryBlock[0..1];
+  {FieldMetaProfile.documentValued = 'true'} ballastSummary: test::easternaviary2::source::BallastSummaryBlock[0..1];
+}
+
+Class test::easternaviary2::source::RailDefectBlock
+{
+  {FieldMetaProfile.textLength = '16', FieldMetaProfile.textTyped = 'true'} defectCode: String[1];
+  {FieldMetaProfile.textLength = '16', FieldMetaProfile.textTyped = 'true'} severityBand: String[0..1];
+  {FieldMetaProfile.numericPrecision = '18', FieldMetaProfile.wideInteger = 'true'} lengthMm: Integer[1];
+  foundAt: DateTime[1];
+}
+
+Class test::easternaviary2::source::SleeperCheckBlock
+{
+  {FieldMetaProfile.textLength = '24', FieldMetaProfile.textTyped = 'true'} sleeperRef: String[1];
+  {FieldMetaProfile.textLength = '8', FieldMetaProfile.textTyped = 'true'} conditionCode: String[1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} voidDepthMm: Integer[1];
+  checkedOn: StrictDate[1];
+  replaceFlag: Boolean[1];
+}
+
+Class test::easternaviary2::source::GaugeSummaryBlock
+{
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} widenMm: Integer[1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} twistMm: Integer[1];
+  {FieldMetaProfile.numericPrecision = '18', FieldMetaProfile.wideInteger = 'true'} sampleCount: Integer[1];
+}
+
+Class test::easternaviary2::source::BallastSummaryBlock
+{
+  {FieldMetaProfile.textLength = '8', FieldMetaProfile.textTyped = 'true'} ballastGrade: String[1];
+  {FieldMetaProfile.numericPrecision = '9', FieldMetaProfile.numericScale = '0'} shoulderMm: Integer[1];
+  fouledFlag: Boolean[1];
+}

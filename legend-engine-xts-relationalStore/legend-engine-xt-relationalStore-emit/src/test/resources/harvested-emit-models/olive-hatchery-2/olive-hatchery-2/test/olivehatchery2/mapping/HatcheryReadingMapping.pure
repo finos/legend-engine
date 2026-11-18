@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivehatchery2::mapping::HatcheryReadingMapping
+(
+  include mapping test::olivehatchery2::mapping::HatcheryCoreMapping
+
+  *test::olivehatchery2::domain::TankReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivehatchery2::store::HatcheryDb]hatchery.tank_reading.reading_id
+    )
+    ~mainTable [test::olivehatchery2::store::HatcheryDb]hatchery.tank_reading
+    readingId: [test::olivehatchery2::store::HatcheryDb]hatchery.tank_reading.reading_id,
+    readOn: [test::olivehatchery2::store::HatcheryDb]hatchery.tank_reading.read_on,
+    larvalDensity: [test::olivehatchery2::store::HatcheryDb]hatchery.tank_reading.larval_density,
+    survivalPercent: [test::olivehatchery2::store::HatcheryDb]hatchery.tank_reading.survival_pct,
+    feedGrams: [test::olivehatchery2::store::HatcheryDb]hatchery.tank_reading.feed_grams
+  }
+
+  test::olivehatchery2::domain::Batch_Reading: Relational
+  {
+    AssociationMapping
+    (
+      readings[batch, reading]: [test::olivehatchery2::store::HatcheryDb]@Reading_Batch,
+      readBatch[reading, batch]: [test::olivehatchery2::store::HatcheryDb]@Reading_Batch
+    )
+  }
+
+  testSuites:
+  [
+    readingRosterSuite:
+    {
+      function: |test::olivehatchery2::domain::TankReading.all()->project(
+        [
+          r|$r.readingId,
+          r|$r.readBatch.batchCode,
+          r|$r.readBatch.vigourLabel,
+          r|$r.larvalDensity,
+          r|$r.survivalPercent,
+          r|$r.densityMark()
+        ],
+        [
+          'Reading',
+          'Batch',
+          'Vigour',
+          'Density',
+          'Survival',
+          'Mark'
+        ]
+      )->sort([asc('Reading')]);
+      tests:
+      [
+        readingRoster:
+        {
+          doc: 'Resolves each dated tank reading back onto its rearing batch through the association implementation, carrying the batch vigour label resolved by the included mapping case arms.';
+          data:
+          [
+            test::olivehatchery2::store::HatcheryDb:
+              Relational
+              #{
+                hatchery.tank_reading:
+                  'reading_id,batch_id,read_on,larval_density,survival_pct,feed_grams\n'+
+                  '1,1,2026-02-10,900,88,12.5\n'+
+                  '2,1,2026-02-17,700,74,10.0\n'+
+                  '3,2,2026-02-11,850,91,11.0\n';
+
+                hatchery.larval_batch:
+                  'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                  '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                  '2,1,LB-102,TK-1,110000,2026-02-04,V5,OH-102,\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":1,"Batch":"LB-101","Vigour":"VIGOROUS SWIMMERS","Density":900,"Survival":88,"Mark":"H"},{"Reading":2,"Batch":"LB-101","Vigour":"VIGOROUS SWIMMERS","Density":700,"Survival":74,"Mark":"M"},{"Reading":3,"Batch":"LB-102","Vigour":"SLOW SWIMMERS","Density":850,"Survival":91,"Mark":"H"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

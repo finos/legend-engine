@@ -1,0 +1,47 @@
+name: silver-gecko
+title: "Silver Gecko Herbarium Governance - Structural Class Graph With Empty Diagrams"
+description: |
+  A herbarium governance domain expressed purely as structure: field stations,
+  collection plots, pressed specimen sheets, curators, transfers, accession
+  entries, review cycles, retention schedules and habitat zones are described as
+  plain typed property lists with no constraints, derived properties or qualified
+  properties anywhere. Nine subclasses cover four distinct one-level hierarchies -
+  three refining a property-less marker base with a single discriminating
+  property, two sibling pairs adding overlapping property sets to a shared
+  reference base, and two empty subclasses that exist solely to distinguish two
+  otherwise identical identifier shapes. Twelve associations bind the graph with
+  explicit end names, mostly mandatory and single-valued on both sides, including
+  a junction object linked to both the sheet and the curator it relates. Two
+  enumerations, one binary and one naming seven stewardship categories, are used
+  as property types. A second reachability style sits alongside the associations:
+  complex-typed properties nest two and three levels deep, one grid holding an
+  unbounded collection of sampling units keyed by a separate identifier class and
+  one lineage holding a one-or-more collection of catalogue versions that
+  themselves hold collections of dataset versions. Two diagram elements are
+  declared with completely empty bodies, so the model must emit valid elements
+  that carry no children.
+modelSources:
+  model:
+    root: silver-gecko
+    files:
+      - test/silvergecko/diagram/GovernanceDiagrams.pure
+      - test/silvergecko/domain/GovernanceAssociations.pure
+      - test/silvergecko/domain/GovernanceDomain.pure
+      - test/silvergecko/domain/GovernanceEnums.pure
+      - test/silvergecko/domain/GovernanceHierarchy.pure
+      - test/silvergecko/domain/GovernanceNesting.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:nested-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - empty-diagram
+  - empty-subclass
+  - herbarium-governance
+  - model-only
+  - nested-properties

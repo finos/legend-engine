@@ -1,0 +1,44 @@
+name: jade-glacier-4
+title: "Glacier Survey - Ice Core Register, Data Space and a Wide Alias-Contracted Projection"
+description: |
+  A basic relational EMIT model in a glacier-monitoring domain. One wide ice-core
+  relation is bound column-for-column onto a nineteen-property core class - fifteen
+  descriptive codes, the two instants the drilling and the logging happened at and
+  the two recovered measures - and published through a data space whose single
+  execution context pairs the core mapping with the survey warehouse runtime. A
+  parameterless single-execution service projects the whole register under a
+  deliberately mixed alias contract, de-duplicates it and orders it by core code;
+  its assertion-backed suite drives the projection off a shelved core fixture.
+modelSources:
+  model:
+    root: jade-glacier-4
+    files:
+      - test/jadeglacier4/connection/GlacierWarehouseConnection.pure
+      - test/jadeglacier4/dataspace/GlacierSurveyDataSpace.pure
+      - test/jadeglacier4/domain/IceCoreSample.pure
+      - test/jadeglacier4/mapping/IceCoreSampleMapping.pure
+      - test/jadeglacier4/runtime/IceCoreSampleRuntime.pure
+      - test/jadeglacier4/service/IceCoreRegister.pure
+      - test/jadeglacier4/store/GlacierSurveyDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - data-space
+  - glacier-survey
+  - h2
+  - ice-core
+  - relational
+  - service-test
+  - snowflake
+  - tabular-data-set
+  - wide-table

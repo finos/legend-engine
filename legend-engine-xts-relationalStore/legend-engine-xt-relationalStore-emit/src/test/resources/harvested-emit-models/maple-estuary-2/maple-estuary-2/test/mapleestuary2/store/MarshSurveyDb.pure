@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::mapleestuary2::store::MarshSurveyDb
+(
+  include test::mapleestuary2::store::MarshBaseDb
+
+  Schema marshview
+  (
+    View station_note_view
+    (
+      ~groupBy
+      (
+        marsh.station_note.station_code
+      )
+      station_code: marsh.station_note.station_code PRIMARY KEY,
+      note_count: count(marsh.station_note.note_id)
+    )
+
+    View station_depth_view
+    (
+      ~groupBy
+      (
+        marsh.transect_north.station_code
+      )
+      station_code: marsh.transect_north.station_code PRIMARY KEY,
+      min_depth_cm: min(marsh.transect_north.mean_depth_cm)
+    )
+
+    View station_grade_view
+    (
+      station_code: marsh.station.station_code PRIMARY KEY,
+      grade_swing: abs(marsh.station.station_grade),
+      channel_flag: case(or(and(equal(marsh.station.station_kind, 'TIDAL'), equal(abs(marsh.station.station_grade), 2)), and(equal(marsh.station.station_kind, 'CREEK'), equal(marsh.station.active_flag, 'Y'))), 'CHANNEL', 'MARGIN')
+    )
+  )
+
+  Filter TidalStationFilter(marsh.station.station_kind = 'TIDAL' and marsh.station.active_flag = 'Y' and marsh.station.zone_code = 'ZN-01')
+
+  Join TransectNorth_Station(marsh.transect_north.station_code = marsh.station.station_code)
+  Join TransectSouth_Station(marsh.transect_south.station_code = marsh.station.station_code)
+  Join GaugeTidal_Station(marsh.gauge_tidal.station_code = marsh.station.station_code)
+  Join GaugeField_Station(marsh.gauge_field.station_code = marsh.station.station_code)
+  Join Station_Zone(marsh.station.zone_code = marsh.habitat_zone.zone_code)
+  Join Zone_Grade(marsh.habitat_zone.grade_code = marsh.zone_grade.grade_code)
+  Join Grade_Steward(marsh.zone_grade.steward_code = marsh.steward.steward_code)
+  Join Steward_Reach(marsh.steward.reach_code = marsh.reach.reach_code)
+  Join Station_NoteView(marsh.station.station_code = marshview.station_note_view.station_code)
+)

@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::tealfjord3::connection::KelpH2Connection
+{
+  store: test::tealfjord3::store::KelpDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists kelp;',
+      'create schema kelp;',
+      'create table kelp.kelp_bed (bed_id integer not null, bed_code varchar(20) not null, canopy_area integer not null, last_survey_on date not null, recorder_id integer, from_z date, thru_z date);',
+      'create table kelp.survey_recorder (recorder_id integer primary key, recorder_code varchar(20) not null, permit_tag varchar(20));'
+      ];
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::nobleorchard7::data::OrchardData
+{
+  Relational
+  #{
+    ORCHARD.TREE:
+      'TREE_ID,TREE_CODE,CULTIVAR\n'+
+      '1,TR-101,Amber Plum\n'+
+      '2,TR-102,Silver Pear\n';
+    ORCHARD.GRAFT:
+      'GRAFT_ID,TREE_ID,GRAFT_CODE,SCION_LABEL\n'+
+      '11,1,GR-501,Early Gold\n'+
+      '12,1,GR-502,Red Crest\n'+
+      '13,2,GR-503,Winter Green\n';
+  }#
+}

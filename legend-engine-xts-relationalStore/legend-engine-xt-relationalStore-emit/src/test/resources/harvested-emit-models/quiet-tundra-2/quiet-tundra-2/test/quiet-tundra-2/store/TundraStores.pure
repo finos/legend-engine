@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quiettundra2::store::TundraRefDB
+(
+  Schema ref
+  (
+    Table station_ref
+    (
+      station_code VARCHAR(12) PRIMARY KEY,
+      ridge_code VARCHAR(8) PRIMARY KEY,
+      station_name VARCHAR(64)
+    )
+    Table ridge_ref
+    (
+      ridge_key VARCHAR(8) PRIMARY KEY,
+      zone_code VARCHAR(8)
+    )
+    Table zone_ref
+    (
+      zone_code VARCHAR(8) PRIMARY KEY,
+      zone_label VARCHAR(32),
+      zone_state VARCHAR(8)
+    )
+  )
+)
+
+###Relational
+Database test::quiettundra2::store::TundraFieldDB
+(
+  include test::quiettundra2::store::TundraRefDB
+
+  Schema field
+  (
+    Table plot
+    (
+      plot_code VARCHAR(12) PRIMARY KEY,
+      season VARCHAR(8) PRIMARY KEY,
+      plot_name VARCHAR(64),
+      habitat_code VARCHAR(2),
+      cover_pct INTEGER,
+      quadrats INTEGER,
+      covered INTEGER,
+      station_code VARCHAR(12),
+      ridge_code VARCHAR(8),
+      parent_plot_code VARCHAR(12),
+      slope_deg INTEGER,
+      aspect VARCHAR(8),
+      plot_state VARCHAR(8)
+    )
+    Table plot_sample
+    (
+      sample_code VARCHAR(12) PRIMARY KEY,
+      plot_code VARCHAR(12) NOT NULL,
+      season VARCHAR(8) NOT NULL,
+      kind_code VARCHAR(2),
+      sample_state VARCHAR(8),
+      mass_g DOUBLE
+    )
+
+    View plot_sample_tally_vw
+    (
+      ~groupBy
+      (
+        field.plot_sample.plot_code,
+        field.plot_sample.season
+      )
+      plot_code: field.plot_sample.plot_code PRIMARY KEY,
+      season: field.plot_sample.season PRIMARY KEY,
+      kept_count: sum(case(equal(field.plot_sample.sample_state, 'KEPT'), 1, 0)),
+      heaviest_g: max(field.plot_sample.mass_g),
+      lightest_g: min(field.plot_sample.mass_g),
+      sample_count: count(field.plot_sample.sample_code)
+    )
+    View plot_kind_vw
+    (
+      ~distinct
+      plot_code: field.plot_sample.plot_code PRIMARY KEY,
+      kind_code: field.plot_sample.kind_code PRIMARY KEY
+    )
+    View plot_zone_vw
+    (
+      plot_code: field.plot.plot_code PRIMARY KEY,
+      season: field.plot.season PRIMARY KEY,
+      zone_code: @Plot_Station > (INNER) @Station_Ridge | ref.ridge_ref.zone_code
+    )
+  )
+
+  Join Plot_Sample(field.plot.plot_code = field.plot_sample.plot_code and field.plot.season = field.plot_sample.season)
+  Join Plot_Station(field.plot.station_code = ref.station_ref.station_code and field.plot.ridge_code = ref.station_ref.ridge_code)
+  Join Station_Ridge(toUpper(ref.station_ref.ridge_code) = ref.ridge_ref.ridge_key)
+  Join Ridge_Zone(ref.ridge_ref.zone_code = ref.zone_ref.zone_code and ref.zone_ref.zone_state = 'LIVE')
+  Join Plot_Parent(field.plot.parent_plot_code = {target}.plot_code and field.plot.season = {target}.season)
+  Join Plot_Tally(field.plot.plot_code = field.plot_sample_tally_vw.plot_code and field.plot.season = field.plot_sample_tally_vw.season)
+  Join Plot_Zone(field.plot.plot_code = field.plot_zone_vw.plot_code and field.plot.season = field.plot_zone_vw.season)
+
+  Filter KeptPlotFilter(field.plot.plot_state = 'KEPT' or field.plot.plot_state = 'REVISIT')
+)

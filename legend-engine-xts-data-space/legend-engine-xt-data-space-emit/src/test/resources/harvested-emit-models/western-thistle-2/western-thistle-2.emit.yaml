@@ -1,0 +1,50 @@
+name: western-thistle-2
+title: "Propagation Nursery Bench Estate (multi-table relational store, composite keys, three service bodies and a data space)"
+description: |
+  A plant-propagation nursery estate mapped onto a four-table relational schema in one warehouse
+  store: propagation houses, the cultivar reference, the seed lots sown against both, and the
+  timestamped bench readings taken inside each house. Every class mapping names its own main table
+  and declares an explicit primary-key expression list, two of them composite over mixed types, so
+  alias qualification and key derivation are both observable. Three structurally different services
+  publish the same mapping - a keyed register with a nested conditional column, a grouped and sorted
+  seed tally, and an unparameterised ranked survey - and a data space packages two of them as
+  executables under a single execution context.
+modelSources:
+  model:
+    root: western-thistle-2
+    files:
+      - test/westernthistle2/connection/NurseryConnection.pure
+      - test/westernthistle2/data/NurseryFixture.pure
+      - test/westernthistle2/dataspace/NurseryDataSpace.pure
+      - test/westernthistle2/domain/NurseryDomain.pure
+      - test/westernthistle2/mapping/NurseryMapping.pure
+      - test/westernthistle2/runtime/NurseryRuntime.pure
+      - test/westernthistle2/service/CultivarSeedTally.pure
+      - test/westernthistle2/service/HeatedHouseSurvey.pure
+      - test/westernthistle2/service/HouseBenchRegister.pure
+      - test/westernthistle2/store/NurseryDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bench-reading
+  - composite-primary-key
+  - data-space
+  - h2
+  - main-table-alias
+  - multi-table
+  - plant-propagation
+  - relational
+  - service
+  - snowflake

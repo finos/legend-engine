@@ -1,0 +1,70 @@
+name: ember-marsh-2
+title: "Ember Marsh Register — Conditional Wetland Stewardship Notes Over A Six-Schema Reserve Store"
+description: |
+  A wetland reserve register whose single relational store spreads its tables
+  across six schemas, declares six named filters built from a spread of dynamic
+  predicate functions and defines two grouped inline views over its survey and
+  calibration tables. Three composed mappings resolve transitively through two
+  inclusions, so the outermost mapping binds classes and enumerations it never
+  declares itself. Unit properties are reached through join paths of one, two
+  and three forced-inner hops, through columns of a grouped view, through an
+  embedded extent block that shares the parent table alias and identity,
+  through a constant register name and through string and conditional
+  expressions pushed into the store, including an eight-arm stewardship
+  conditional whose else arm is an explicit null sentinel. Five enumeration
+  transforms are applied to computed expressions rather than bare columns, one
+  of which yields a source value outside the mapped enumeration set, and four
+  mapping test suites project the register, the association-walked visit trail,
+  the view-backed equipment readings and the filtered survey window.
+modelSources:
+  model:
+    root: ember-marsh-2
+    files:
+      - test/embermarsh2/domain/MarshDomain.pure
+      - test/embermarsh2/mapping/MarshCoreMapping.pure
+      - test/embermarsh2/mapping/MarshEnumMappings.pure
+      - test/embermarsh2/mapping/MarshReferenceMapping.pure
+      - test/embermarsh2/store/MarshCoreDb.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - cross-schema
+  - duckdb
+  - embedded-property
+  - enum-of-expression
+  - grouped-view
+  - mapping-include
+  - multi-hop-join
+  - null-sentinel
+  - relational
+  - wetland-reserve

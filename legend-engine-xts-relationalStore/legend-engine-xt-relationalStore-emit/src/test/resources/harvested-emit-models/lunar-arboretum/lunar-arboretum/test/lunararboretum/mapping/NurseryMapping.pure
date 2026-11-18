@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunararboretum::mapping::NurseryMapping
+(
+  *test::lunararboretum::domain::Conservatory[conservatory]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunararboretum::store::NurseryDB]conservatory.conservatory_id
+    )
+    ~mainTable [test::lunararboretum::store::NurseryDB]conservatory
+    name: [test::lunararboretum::store::NurseryDB]conservatory.conservatory_name
+  }
+
+  test::lunararboretum::domain::TreeSpecimen[north]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunararboretum::store::NurseryDB]tall_north_view.tree_id
+    )
+    ~mainTable [test::lunararboretum::store::NurseryDB]tall_north_view
+    label: [test::lunararboretum::store::NurseryDB]tall_north_view.label,
+    heightM: [test::lunararboretum::store::NurseryDB]tall_north_view.height_m,
+    conservatory[conservatory]: [test::lunararboretum::store::NurseryDB]@TallNorth_Conservatory
+  }
+
+  test::lunararboretum::domain::TreeSpecimen[south]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunararboretum::store::NurseryDB]tree_south.tree_id
+    )
+    ~mainTable [test::lunararboretum::store::NurseryDB]tree_south
+    label: [test::lunararboretum::store::NurseryDB]tree_south.label,
+    heightM: [test::lunararboretum::store::NurseryDB]tree_south.height_m,
+    conservatory[conservatory]: [test::lunararboretum::store::NurseryDB]@South_Conservatory
+  }
+
+  *test::lunararboretum::domain::TreeSpecimen: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(north, south)
+  }
+
+  testSuites:
+  [
+    treeUnionSuite:
+    {
+      function: |test::lunararboretum::domain::TreeSpecimen.all()->project(
+  [
+    x|$x.label,
+    x|$x.heightM,
+    x|$x.conservatory.name
+  ],
+  [
+    'Label',
+    'HeightM',
+    'Conservatory'
+  ]
+)->sort(
+  [
+    asc('Label')
+  ]
+);
+      tests:
+      [
+        unionAcrossViewAndTable:
+        {
+          doc: 'Unions tall northern trees (via the filtered inline view) with southern trees, exercising the operation union mapping, the inline view with filter, and the class-inheritance from Specimen.';
+          data:
+          [
+            test::lunararboretum::store::NurseryDB:
+              Relational
+              #{
+                default.conservatory:
+                  'conservatory_id,conservatory_name\n'+
+                  '1,Glass House\n';
+                default.tree_north:
+                  'tree_id,label,height_m,conservatory_id\n'+
+                  '1,Northern Oak,15.0,1\n'+
+                  '2,Northern Fern,3.0,1\n';
+                default.tree_south:
+                  'tree_id,label,height_m,conservatory_id\n'+
+                  '1,Southern Pine,8.0,1\n';
+              }#
+          ];
+          asserts:
+          [
+            twoTrees:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Label":"Northern Oak","HeightM":15.0,"Conservatory":"Glass House"},{"Label":"Southern Pine","HeightM":8.0,"Conservatory":"Glass House"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

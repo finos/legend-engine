@@ -1,0 +1,48 @@
+name: solar-isle
+title: Coral Reef Transect Observation Register
+description: >
+  A marine biology register for reef stations, transect runs, species sightings and diver
+  observations. Four relational tables are connected by inner-join paths and exposed through
+  five class mappings, including a multi-hop path from station context through a run and a
+  sighting to diver details. Four v1 services cover station filtering, date-window arithmetic,
+  sighting aggregation and association traversal over the mapped survey.
+modelSources:
+  model:
+    root: solar-isle
+    files:
+      - test/solarisle/connection/ReefConnection.pure
+      - test/solarisle/dataspace/ReefDataSpace.pure
+      - test/solarisle/domain/ReefDomain.pure
+      - test/solarisle/mapping/ReefMapping.pure
+      - test/solarisle/runtime/ReefRuntime.pure
+      - test/solarisle/service/ReefServices.pure
+      - test/solarisle/store/ReefDatabase.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:qualified-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - coral-reef
+  - h2
+  - inner-join
+  - marine-biology
+  - relational
+  - survey-register
+  - tabular-data-set

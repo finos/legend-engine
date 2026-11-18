@@ -1,0 +1,48 @@
+name: umber-aviary-4
+title: "Umber Aviary 4 — Eight Processing-Temporal Keeper Logs Read at the Latest Version Through a Data Space"
+description: |
+  A walk-through aviary keeps eight keeper logs (ringing, nest boxes, feeders, moult,
+  flight halls, diet rations, health checks and roost surveys). Every class is
+  processing-temporal and documented with doc tagged values; three backing tables keep
+  no version columns. Eight parameterless DID-owned services project every property at
+  the latest processing version from a Snowflake store with public-key authentication,
+  and a classified data space lists them all as executables.
+modelSources:
+  model:
+    root: umber-aviary-4
+    files:
+      - test/umberaviary4/connection/AviaryLogConnection.pure
+      - test/umberaviary4/dataspace/AviaryDataSpace.pure
+      - test/umberaviary4/domain/AviaryDomain.pure
+      - test/umberaviary4/mapping/AviaryLogMapping.pure
+      - test/umberaviary4/runtime/AviaryLogRuntime.pure
+      - test/umberaviary4/service/AviaryLogServices.pure
+      - test/umberaviary4/store/AviaryLogDb.pure
+features:
+  - connection:snowflake
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - grammar:class-temporal-stereotype
+  - grammar:tagged-value
+  - grammar:stereotype-tag-metadata
+  - milestoning:latest-batch-query
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aviary
+  - data-space
+  - h2
+  - latest-processing-date
+  - processing-temporal
+  - service-test
+  - snowflake

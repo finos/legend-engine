@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealglacier4::store::GlacierFieldDB
+(
+  Schema icefield
+  (
+    Table glacier_register
+    (
+      "Glacier Code" VARCHAR(16) PRIMARY KEY,
+      "Range Code" VARCHAR(16) PRIMARY KEY,
+      "Glacier Name" VARCHAR(80),
+      "Basin Name" VARCHAR(80),
+      "Area Sq Km" DECIMAL(10, 2),
+      "Monitored" BIT,
+      "Registered On" DATE,
+      "Updated At" TIMESTAMP
+    )
+    Table stake_reading
+    (
+      "Stake Code" VARCHAR(16) PRIMARY KEY,
+      "Glacier Code" VARCHAR(16) NOT NULL,
+      "Range Code" VARCHAR(16) NOT NULL,
+      "Read On" DATE NOT NULL,
+      "Ablation Cm" FLOAT,
+      "Snow Depth Raw" VARCHAR(12),
+      "Observer Code" VARCHAR(16) NOT NULL,
+      "Calibrated" BIT NOT NULL
+    )
+    Table crevasse_survey
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+      "Crevasse Code" VARCHAR(16) PRIMARY KEY,
+      "Glacier Code" VARCHAR(16) NOT NULL,
+      "Range Code" VARCHAR(16) NOT NULL,
+      "Width M" FLOAT,
+      "Survey Note" VARCHAR(120),
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Join Glacier_Stake(icefield.glacier_register."Glacier Code" = icefield.stake_reading."Glacier Code" and icefield.glacier_register."Range Code" = icefield.stake_reading."Range Code")
+)
+
+###Relational
+Database test::tealglacier4::store::GlacierArchiveDB
+(
+  Schema icearchive
+  (
+    Table archived_glacier
+    (
+      "Glacier Code" VARCHAR(16) PRIMARY KEY,
+      "Range Code" VARCHAR(16) PRIMARY KEY,
+      "Glacier Name" VARCHAR(80),
+      "Basin Name" VARCHAR(80),
+      "Registered On" DATE
+    )
+    Table archived_stake
+    (
+      "Stake Code" VARCHAR(16) PRIMARY KEY,
+      "Glacier Code" VARCHAR(16) NOT NULL,
+      "Range Code" VARCHAR(16) NOT NULL,
+      "Read On" DATE NOT NULL,
+      "Snow Depth Raw" VARCHAR(12),
+      "Observer Code" VARCHAR(16) NOT NULL
+    )
+  )
+
+  Join Archive_Glacier_Stake(icearchive.archived_glacier."Glacier Code" = icearchive.archived_stake."Glacier Code" and icearchive.archived_glacier."Range Code" = icearchive.archived_stake."Range Code")
+)

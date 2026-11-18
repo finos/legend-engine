@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitcavern2::mapping::ChamberMapping
+(
+  *test::sunlitcavern2::domain::CaveChamber[chamber]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber.chamber_id
+    )
+    ~mainTable [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber
+    chamberId: [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber.chamber_id,
+    chamberName: [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber.chamber_name,
+    passageGrade: [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber.passage_grade,
+    floorDepthM: [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber.floor_depth_m,
+    surveyedOn: [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber.surveyed_on,
+    gatedFlag: [test::sunlitcavern2::store::ChamberDb]chamber.cave_chamber.gated_flag
+  }
+
+  *test::sunlitcavern2::domain::ChamberReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitcavern2::store::ChamberDb]chamber.chamber_reading.reading_id
+    )
+    ~mainTable [test::sunlitcavern2::store::ChamberDb]chamber.chamber_reading
+    readingId: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_reading.reading_id,
+    chamberId: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_reading.chamber_id,
+    humidityPct: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_reading.humidity_pct,
+    recordedOn: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_reading.recorded_on,
+    probeLabel: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_reading.probe_label
+  }
+
+  *test::sunlitcavern2::domain::ChamberLatest[latest]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitcavern2::store::ChamberDb]chamber.chamber_latest_view.chamber_id
+    )
+    ~mainTable [test::sunlitcavern2::store::ChamberDb]chamber.chamber_latest_view
+    chamberId: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_latest_view.chamber_id,
+    latestReadingOn: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_latest_view.latest_reading_on,
+    readingCount: [test::sunlitcavern2::store::ChamberDb]chamber.chamber_latest_view.reading_count
+  }
+)
+
+Mapping test::sunlitcavern2::mapping::RouteMapping
+(
+  *test::sunlitcavern2::domain::AccessRoute[route]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitcavern2::store::RouteDb]route.access_route.route_id
+    )
+    ~mainTable [test::sunlitcavern2::store::RouteDb]route.access_route
+    routeId: [test::sunlitcavern2::store::RouteDb]route.access_route.route_id,
+    routeLabel: [test::sunlitcavern2::store::RouteDb]route.access_route.route_label,
+    ropeMetres: [test::sunlitcavern2::store::RouteDb]route.access_route.rope_metres,
+    openedOn: [test::sunlitcavern2::store::RouteDb]route.access_route.opened_on,
+    riggedFlag: [test::sunlitcavern2::store::RouteDb]route.access_route.rigged_flag
+  }
+)
+
+Mapping test::sunlitcavern2::mapping::BiotaMapping
+(
+  *test::sunlitcavern2::domain::BatRoost[roost]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitcavern2::store::BiotaDb]biota.bat_roost.roost_id
+    )
+    ~mainTable [test::sunlitcavern2::store::BiotaDb]biota.bat_roost
+    roostId: [test::sunlitcavern2::store::BiotaDb]biota.bat_roost.roost_id,
+    colonyName: [test::sunlitcavern2::store::BiotaDb]biota.bat_roost.colony_name,
+    individuals: [test::sunlitcavern2::store::BiotaDb]biota.bat_roost.individuals,
+    countedOn: [test::sunlitcavern2::store::BiotaDb]biota.bat_roost.counted_on,
+    maternityFlag: [test::sunlitcavern2::store::BiotaDb]biota.bat_roost.maternity_flag
+  }
+)
+
+Mapping test::sunlitcavern2::mapping::ClimateMapping
+(
+  *test::sunlitcavern2::domain::ClimateLog[log]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitcavern2::store::ClimateDb]climate.climate_log.log_id
+    )
+    ~mainTable [test::sunlitcavern2::store::ClimateDb]climate.climate_log
+    logId: [test::sunlitcavern2::store::ClimateDb]climate.climate_log.log_id,
+    stationLabel: [test::sunlitcavern2::store::ClimateDb]climate.climate_log.station_label,
+    airTempC: [test::sunlitcavern2::store::ClimateDb]climate.climate_log.air_temp_c,
+    loggedOn: [test::sunlitcavern2::store::ClimateDb]climate.climate_log.logged_on,
+    calibratedFlag: [test::sunlitcavern2::store::ClimateDb]climate.climate_log.calibrated_flag
+  }
+)

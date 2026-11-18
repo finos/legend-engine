@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetdelta2::service::LotSummary
+{
+  pattern: '/russetdelta/v1/lot-summary/{lotKind}';
+  title: 'Russet Delta - Honey Lot Summary';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the honey lots of one kind over the second store surface, projecting the composed jar label and the moisture-adjusted weight in a stable order.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {lotKind: String[1]|test::russetdelta2::domain::HoneyLot.all()->filter(
+      l|$l.lotKind->toOne() == $lotKind
+    )->project(
+      ~[
+        LotCode: l|$l.lotCode,
+        JarLabel: l|$l.jarLabel->toOne(),
+        DryKilograms: l|$l.dryKilograms->toOne()
+      ]
+    )->sort(~LotCode->ascending())->limit(20);};
+    mapping: test::russetdelta2::mapping::HarvestMapping;
+    runtime: test::russetdelta2::runtime::HarvestH2Runtime;
+  }
+  testSuites:
+  [
+    lotSummarySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harvestConnection:
+            Relational
+            #{
+              harvest.honey_lot:
+                'lot_code,yard_code,lot_kind,kilograms,moisture_pct,jar_count\n'+
+                'HL-01,YD-1,capped,1000,18,40\n'+
+                'HL-02,YD-2,uncapped,500,20,20\n'+
+                'HL-03,YD-1,capped,800,25,30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        cappedLots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lotKind = 'capped'
+          ]
+          asserts:
+          [
+            twoCappedLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotCode":"HL-01","JarLabel":"CAPPED#HL-01","DryKilograms":820},{"LotCode":"HL-03","JarLabel":"CAPPED#HL-03","DryKilograms":600}]';
+                  }#;
+              }#
+          ]
+        },
+        unknownKind:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lotKind = 'creamed'
+          ]
+          asserts:
+          [
+            emptySummary:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

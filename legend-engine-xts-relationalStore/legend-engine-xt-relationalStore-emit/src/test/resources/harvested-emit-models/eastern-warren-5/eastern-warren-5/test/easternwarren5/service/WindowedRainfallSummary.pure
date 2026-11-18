@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternwarren5::service::WindowedRainfallSummary
+{
+  pattern: '/easternwarren5/v1/windowed-rainfall-summary/{anchor}';
+  title: 'Eastern Warren 5 - Windowed Rainfall Summary';
+  ownership: UserList { users: ['catchment-hydrometry-desk'] };
+  documentation: 'Derives the reporting window from the anchor date rather than taking it as a parameter, shifting the anchor back by a whole number of days, then totals rainfall per catchment zone inside that window and caps the ordered result.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {anchor: StrictDate[1]|test::easternwarren5::domain::GaugeReading.all()->filter(
+      r|($r.recordedOn >= $anchor->adjust(-45, meta::pure::functions::date::DurationUnit.DAYS)) && (($r.recordedOn <= $anchor) && ($r.rainfallMm >= 0.0))
+    )->groupBy(
+      [
+        r|$r.zoneName
+      ],
+      [
+        agg(r|$r.rainfallMm, y|$y->sum())
+      ],
+      [
+        'Zone',
+        'TotalRainfallMm'
+      ]
+    )->sort(
+      [
+        asc('Zone')
+      ]
+    )->limit(5)};
+    mapping: test::easternwarren5::mapping::GaugeMapping;
+    runtime: test::easternwarren5::runtime::GaugeLiveRuntime;
+  }
+  testSuites:
+  [
+    rainfallWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeLive:
+            Relational
+            #{
+              catchment.catchment_zone:
+                'zone_code,zone_name,upland_flag\n'+
+                'CZ-1,Upper Fell,Y\n'+
+                'CZ-2,Lower Vale,N\n';
+
+              catchment.gauge_station:
+                'station_code,station_name,zone_code,sensor_grade\n'+
+                'GS-1,Fell Head,CZ-1,primary\n'+
+                'GS-2,Vale Bridge,CZ-2,backup\n';
+
+              catchment.gauge_reading:
+                'reading_code,station_code,recorded_on,review_state,stage_metres,discharge_cumecs,rainfall_mm,turbidity_ntu\n'+
+                'GR-31,GS-1,2026-03-01,ACCEPTED,4.5,12.5,6.0,10.0\n'+
+                'GR-32,GS-1,2026-03-02,ACCEPTED,3.5,9.0,4.0,12.0\n'+
+                'GR-33,GS-2,2026-03-04,ACCEPTED,1.8,6.0,2.0,60.0\n'+
+                'GR-34,GS-2,2026-03-05,ACCEPTED,1.2,4.5,1.5,20.0\n'+
+                'GR-35,GS-1,2026-01-05,ACCEPTED,2.0,5.0,9.0,4.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        derivedWindowExcludesEarlierReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            anchor = %2026-03-31
+          ]
+          asserts:
+          [
+            rainfallTotalsInsideDerivedWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"Lower Vale","TotalRainfallMm":3.5},{"Zone":"Upper Fell","TotalRainfallMm":10.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

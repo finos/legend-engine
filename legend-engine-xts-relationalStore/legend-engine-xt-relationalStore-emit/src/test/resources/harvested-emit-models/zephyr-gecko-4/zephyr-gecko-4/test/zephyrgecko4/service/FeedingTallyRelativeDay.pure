@@ -1,0 +1,117 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::zephyrgecko4::service::FeedingTallyRelativeDay
+{
+  pattern: '/zephyrgecko4/feedingTallyRelativeDay';
+  ownership: UserList { users: ['terrarium-husbandry-desk'] };
+  documentation: 'Takes no parameter and pins its population to the single day obtained by shifting the current date backwards by a fixed number of days, so the admitted day moves as the calendar advances and stored history is never admitted; groups on three keys, one of them reached through two chained hops from enclosure into room, and sums two measures.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {currentDate: StrictDate[1]|test::zephyrgecko4::domain::FeedingEvent.all()->filter(
+      e|$e.fedOn == adjust($currentDate, -3, meta::pure::functions::date::DurationUnit.DAYS)
+    )->groupBy(
+      [
+        e|$e.enclosure.room.roomName,
+        e|$e.species.commonName,
+        e|$e.keeper.shiftBlock
+      ],
+      [
+        agg(e|$e.portionCount, y|$y->sum()),
+        agg(e|$e.waterMl, y|$y->sum())
+      ],
+      [
+        'Enclosure/Room/Name',
+        'Species/Common',
+        'Keeper/Shift',
+        'Sum/Portions',
+        'Sum/WaterMl'
+      ]
+    )->sort(
+      [
+        asc('Enclosure/Room/Name')
+      ]
+    )->limit(4)};
+    mapping: test::zephyrgecko4::mapping::TerrariumMapping;
+    runtime: test::zephyrgecko4::runtime::TerrariumRuntime;
+  }
+  testSuites:
+  [
+    relativeDaySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              terrarium.room:
+                'room_code,room_name,building_wing\n'+
+                'R-1,Herpetology Hall,East Wing\n'+
+                'R-2,Nursery Hall,West Wing\n';
+
+              terrarium.enclosure:
+                'enclosure_code,enclosure_name,habitat_type,humidity_band,room_code\n'+
+                'E-1,Sandstone Ledge,ARID,LOW,R-1\n'+
+                'E-3,Nursery Bay,TEMPERATE,MEDIUM,R-2\n';
+
+              terrarium.species:
+                'species_code,common_name,care_level\n'+
+                'S-1,Crested Gecko,ROUTINE\n';
+
+              terrarium.keeper:
+                'keeper_code,keeper_name,shift_block\n'+
+                'K-1,Avery Lindquist,MORNING\n';
+
+              terrarium.diet_item:
+                'diet_code,diet_name,feed_form\n'+
+                'D-1,Dusted Crickets,LIVE\n';
+
+              terrarium.feeding_event:
+                'event_id,fed_on,event_kind,portion_count,live_prey_count,dusted_prey_count,refused_count,water_ml,supplement_mg,enclosure_code,species_code,keeper_code,diet_code\n'+
+                'H-1,2026-04-02,SCATTER,3,12,10,1,40,5,E-1,S-1,K-1,D-1\n'+
+                'H-2,2026-04-03,TONGS,4,6,6,0,45,6,E-3,S-1,K-1,D-1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        storedHistoryNeverMatchesRelativeDay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            noRowsOnComputedDay:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

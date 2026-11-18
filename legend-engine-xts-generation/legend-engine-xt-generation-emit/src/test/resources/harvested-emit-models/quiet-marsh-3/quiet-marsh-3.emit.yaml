@@ -1,0 +1,41 @@
+name: quiet-marsh-3
+title: "Quiet Marsh - Wetland Gauge Survey Interface-Document Generation (mandatory-only envelopes, bounded schedule collection, non-expressible constraints)"
+description: |
+  A wetland gauge-survey model with no store, no mapping and no runtime: its whole surface is a
+  class model plus one structural-schema generator. Two outer record envelopes each carry an
+  identifier and a single mandatory nested payload object - once for a wide survey payload of
+  roughly forty mandatory identifier, date-as-string, unit-label, availability-flag and
+  floating-point measure properties, and once for a minimal logged-on-and-source payload. The
+  survey payload composes a further nested schedule profile whose rows are a collection with both
+  a non-zero lower bound and an explicit finite upper bound in the hundreds - the only non-trivial
+  multiplicity in a model where every other property is exactly-one. Three shallow single-operator
+  constraints re-assert at instance level what the mandatory multiplicities already assert at type
+  level, and a fourth spans two properties. The JsonSchema generator is pinned to an
+  interface-description specification variant and serialisation dialect, so it emits an interface
+  document with referenced component schemas rather than a bare schema, and deliberately loses the
+  class-level constraints it cannot express; a thin generation specification with a single
+  file-generation node sequences it, coupling the whole class model to the build artefact.
+modelSources:
+  model:
+    root: quiet-marsh-3
+    files:
+      - test/quietmarsh3/domain/MarshSurveyDomain.pure
+      - test/quietmarsh3/generation/MarshSurveyGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:collection-multiplicity-bound
+  - grammar:constraint
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bounded-multiplicity
+  - constraints
+  - file-generation
+  - generation-specification
+  - json-schema
+  - nested-envelope
+  - open-api
+  - store-free
+  - wetland-survey

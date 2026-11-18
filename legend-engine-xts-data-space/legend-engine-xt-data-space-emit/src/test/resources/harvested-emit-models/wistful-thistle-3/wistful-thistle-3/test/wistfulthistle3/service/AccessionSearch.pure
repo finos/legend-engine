@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfulthistle3::service::AccessionSearch
+{
+  pattern: '/garden/v1/accessions/{originRegion}';
+  title: 'Botanic Garden - Accession Search';
+  ownership: DID { identifier: 'garden-living-collections' };
+  documentation: 'Narrows the accession register with a three-way predicate over the collecting region, an enumerated set of plant families and a fragment of the accepted botanical name, then projects the labelled accession columns and drops repeats.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {originRegion: String[1], families: String[*], nameFragment: String[1]|test::wistfulthistle3::domain::PlantAccession.all()->filter(
+      a|(($a.originRegion == $originRegion) && ($a.familyName->in($families))) && ($a.taxonName->contains($nameFragment))
+    )->project(
+      [
+        a|$a.accessionCode,
+        a|$a.taxonName,
+        a|$a.familyName,
+        a|$a.heightCm
+      ],
+      [
+        'Accession',
+        'Taxon',
+        'Family',
+        'HeightCm'
+      ]
+    )->sort([asc('Accession')])->distinct()};
+    mapping: test::wistfulthistle3::mapping::GardenMapping;
+    runtime: test::wistfulthistle3::runtime::GardenCuratedRuntime;
+  }
+  testSuites:
+  [
+    accessionSearchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gardenCuratedConnection:
+            Relational
+            #{
+              garden.plant_accession:
+                'accession_code,taxon_name,family_name,origin_region,bed_code,height_cm,hardiness_zone,propagation_note\n'+
+                'ACC-001,Cirsium eriophorum,Asteraceae,Anatolia,BED-A,120,6,division\n'+
+                'ACC-002,Cirsium palustre,Asteraceae,Anatolia,BED-A,95,5,seed\n'+
+                'ACC-003,Cirsium vulgare,Rosaceae,Anatolia,BED-B,140,6,seed\n'+
+                'ACC-004,Salvia officinalis,Lamiaceae,Anatolia,BED-B,60,7,cuttings\n'+
+                'ACC-005,Cirsium arvense,Asteraceae,Caucasus,BED-C,110,5,division\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        anatolianThistleSearch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            originRegion = 'Anatolia',
+            families = ['Asteraceae', 'Lamiaceae'],
+            nameFragment = 'Cirsium'
+          ]
+          asserts:
+          [
+            twoAccessionsMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"ACC-001","Taxon":"Cirsium eriophorum","Family":"Asteraceae","HeightCm":120},{"Accession":"ACC-002","Taxon":"Cirsium palustre","Family":"Asteraceae","HeightCm":95}]';
+                  }#;
+              }#
+          ]
+        },
+        familySetNarrowsToOne:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            originRegion = 'Anatolia',
+            families = ['Rosaceae'],
+            nameFragment = 'Cirsium'
+          ]
+          asserts:
+          [
+            onlyTheRosaceousThistle:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"ACC-003","Taxon":"Cirsium vulgare","Family":"Rosaceae","HeightCm":140}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

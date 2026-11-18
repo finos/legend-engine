@@ -1,0 +1,181 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::embermarsh2::domain::HabitatCondition
+{
+  PRISTINE,
+  FAVOURABLE,
+  DEGRADED,
+  POOR
+}
+
+Enum test::embermarsh2::domain::WaterRegimeClass
+{
+  PERMANENT,
+  SEASONAL,
+  EPHEMERAL
+}
+
+Enum test::embermarsh2::domain::AccessClass
+{
+  OPEN,
+  PERMIT,
+  CLOSED
+}
+
+Enum test::embermarsh2::domain::LoggerState
+{
+  ACTIVE,
+  FAULTY
+}
+
+Enum test::embermarsh2::domain::FeedingGuild
+{
+  WADER,
+  DABBLER,
+  DIVER,
+  PASSERINE
+}
+
+Class test::embermarsh2::domain::UnitExtent
+{
+  gridRef: String[0..1];
+  areaHa: Float[0..1];
+  perimeterM: Integer[0..1];
+}
+
+Class test::embermarsh2::domain::MarshUnit
+{
+  unitId: String[1];
+  unitCode: String[1];
+  unitName: String[0..1];
+  extent: test::embermarsh2::domain::UnitExtent[0..1];
+  zoneName: String[0..1];
+  regionName: String[0..1];
+  programmeName: String[0..1];
+  regimeClass: test::embermarsh2::domain::WaterRegimeClass[0..1];
+  accessClass: test::embermarsh2::domain::AccessClass[0..1];
+  conditionBand: test::embermarsh2::domain::HabitatCondition[0..1];
+  maxCoverPct: Integer[0..1];
+  coverSurveyCount: Integer[0..1];
+  stewardshipNote: String[0..1];
+  registryLabel: String[0..1];
+  registerName: String[0..1];
+  regimeName: String[0..1];
+  accessLabel: String[0..1];
+}
+
+Class test::embermarsh2::domain::Zone
+{
+  zoneCode: String[1];
+  zoneName: String[0..1];
+}
+
+Class test::embermarsh2::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[0..1];
+}
+
+Class test::embermarsh2::domain::Programme
+{
+  programmeCode: String[1];
+  programmeName: String[0..1];
+}
+
+Class test::embermarsh2::domain::WaterRegime
+{
+  regimeCode: String[1];
+  regimeName: String[0..1];
+  meanDepthCm: Integer[0..1];
+}
+
+Class test::embermarsh2::domain::Visit
+{
+  visitId: String[1];
+  visitDate: StrictDate[0..1];
+  waterDepthCm: Integer[0..1];
+  observerAlias: String[0..1];
+  teamName: String[0..1];
+  depthNote: String[0..1];
+}
+
+Class test::embermarsh2::domain::Observer
+{
+  observerCode: String[1];
+  observerAlias: String[0..1];
+  teamName: String[0..1];
+}
+
+Class test::embermarsh2::domain::Team
+{
+  teamCode: String[1];
+  teamName: String[0..1];
+}
+
+Class test::embermarsh2::domain::Sighting
+{
+  sightingId: String[1];
+  individuals: Integer[0..1];
+  taxonName: String[0..1];
+  guildName: String[0..1];
+  guild: test::embermarsh2::domain::FeedingGuild[0..1];
+}
+
+Class test::embermarsh2::domain::Taxon
+{
+  taxonCode: String[1];
+  taxonName: String[0..1];
+  guildName: String[0..1];
+}
+
+Class test::embermarsh2::domain::Guild
+{
+  guildCode: String[1];
+  guildName: String[0..1];
+}
+
+Class test::embermarsh2::domain::VegetationSurvey
+{
+  vegId: String[1];
+  unitCode: String[0..1];
+  coverPct: Integer[0..1];
+  swardHeightCm: Float[0..1];
+  surveyYear: Integer[0..1];
+  unitName: String[0..1];
+}
+
+Class test::embermarsh2::domain::DepthLogger
+{
+  loggerId: String[1];
+  loggerSerial: String[0..1];
+  installYear: Integer[0..1];
+  state: test::embermarsh2::domain::LoggerState[0..1];
+  calibrationCount: Integer[0..1];
+  maxDriftPpm: Float[0..1];
+  unitName: String[0..1];
+}
+
+Association test::embermarsh2::domain::MarshUnit_Visits
+{
+  visits: test::embermarsh2::domain::Visit[*];
+  unit: test::embermarsh2::domain::MarshUnit[0..1];
+}
+
+Association test::embermarsh2::domain::Visit_Sightings
+{
+  sightings: test::embermarsh2::domain::Sighting[*];
+  visit: test::embermarsh2::domain::Visit[0..1];
+}

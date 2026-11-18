@@ -1,0 +1,57 @@
+name: quiet-lagoon
+title: "Four deployment-owned lagoon registers whose predicates, grouping columns and badges are all answered by functions"
+description: |
+  A paddling club logging every boat it sends out of a lagoon dock. Almost none of the reading logic
+  is stored: a dock band is derived from a dock code, a badge is derived from the craft kind and the
+  time on the water, and the admission arms of one rollup are each answered by a function rather than
+  a column. Four deployment-owned registers share that library — a caller-parameterised dock band
+  rollup with a long chain of admitted docks and craft kinds, a paddler tally ordered so the busiest
+  craft kind leads and cut to a caller-supplied ceiling, a crewed-canoe hull rollup admitted through a
+  caller-supplied set, and a full-width trail that is built first and then has every row carrying a
+  caller-named fragment struck off the published column. The fixtures prove both arms of the badge, a
+  floor no paddle clears, a ceiling wider than the tally itself and an exclusion that empties the
+  whole trail.
+modelSources:
+  model:
+    root: quiet-lagoon
+    files:
+      - test/quietlagoon/connection/LagoonConnections.pure
+      - test/quietlagoon/domain/LagoonDomain.pure
+      - test/quietlagoon/function/LagoonReaders.pure
+      - test/quietlagoon/mapping/LagoonMapping.pure
+      - test/quietlagoon/runtime/LagoonRuntimes.pure
+      - test/quietlagoon/service/CraftRollupRegister.pure
+      - test/quietlagoon/service/HullRollupRegister.pure
+      - test/quietlagoon/service/LaunchTrailRegister.pure
+      - test/quietlagoon/service/PaddlerTallyRegister.pure
+      - test/quietlagoon/store/LagoonDb.pure
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - did-ownership
+  - distinct
+  - function-library
+  - group-by
+  - h2
+  - relational
+  - service-test
+  - set-membership
+  - sort-limit
+  - tabular-data-set

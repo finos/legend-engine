@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::noblequarry::archive::store::QuarryArchiveDB
+(
+  include test::noblequarry::shared::store::CodeSchemeDB
+
+  Schema quarry_archive
+  (
+    Table archived_survey
+    (
+      survey_ref VARCHAR(16) PRIMARY KEY,
+      archive_cycle INTEGER PRIMARY KEY,
+      bench_code VARCHAR(16) NOT NULL,
+      surveyor_code VARCHAR(16) NOT NULL,
+      face_height_m DOUBLE NOT NULL,
+      surveyed_on DATE NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_to DATE
+    )
+    Table archived_blast
+    (
+      blast_ref VARCHAR(16) PRIMARY KEY,
+      archive_cycle INTEGER PRIMARY KEY,
+      bench_code VARCHAR(16) NOT NULL,
+      site_ref VARCHAR(24) NOT NULL,
+      fired_on DATE NOT NULL,
+      charge_kg DOUBLE NOT NULL,
+      hole_count INTEGER NOT NULL
+    )
+  )
+
+  Join ArchiveSurvey_Blast(quarry_archive.archived_survey.bench_code = quarry_archive.archived_blast.bench_code and quarry_archive.archived_blast.fired_on >= quarry_archive.archived_survey.valid_from and (isNull(quarry_archive.archived_survey.valid_to) or quarry_archive.archived_blast.fired_on < quarry_archive.archived_survey.valid_to))
+  Join ArchiveSurvey_Scheme(quarry_archive.archived_survey.survey_ref = xref.code_scheme.local_code and xref.code_scheme.source_key = 'SURVEY' and xref.code_scheme.out_batch = 999999999)
+  Join ArchiveBlast_Scheme(quarry_archive.archived_blast.site_ref = xref.code_scheme.local_code and xref.code_scheme.source_key = 'REGISTRY' and xref.code_scheme.out_batch = 999999999)
+  Join ArchiveScheme_Link(xref.code_scheme.link_group = {target}.link_group and xref.code_scheme.source_key != {target}.source_key and {target}.out_batch = 999999999)
+  Join ArchiveScheme_Site(xref.code_scheme.linked_code = toString(registry.quarry_site.site_id) and xref.code_scheme.source_key = 'REGISTRY' and xref.code_scheme.out_batch = 999999999)
+)

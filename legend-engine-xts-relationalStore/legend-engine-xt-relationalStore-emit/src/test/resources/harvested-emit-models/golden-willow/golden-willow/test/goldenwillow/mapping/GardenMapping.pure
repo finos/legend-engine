@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenwillow::mapping::GardenMapping
+(
+  *test::goldenwillow::domain::Plant[plant]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenwillow::store::GardenDatabase]catalogue.plant.plant_id
+    )
+    ~mainTable [test::goldenwillow::store::GardenDatabase]catalogue.plant
+    plantId: [test::goldenwillow::store::GardenDatabase]catalogue.plant.plant_id,
+    commonName: [test::goldenwillow::store::GardenDatabase]catalogue.plant.common_name,
+    speciesCode: [test::goldenwillow::store::GardenDatabase]catalogue.plant.species_code,
+    statusCode: [test::goldenwillow::store::GardenDatabase]catalogue.plant.status_code,
+    plantedOn: [test::goldenwillow::store::GardenDatabase]catalogue.plant.planted_on,
+    retiredOn: [test::goldenwillow::store::GardenDatabase]catalogue.plant.retired_on,
+    bed[bed]: [test::goldenwillow::store::GardenDatabase]@Plant_Bed
+  }
+
+  *test::goldenwillow::domain::Bed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenwillow::store::GardenDatabase]layout.bed.bed_code
+    )
+    ~mainTable [test::goldenwillow::store::GardenDatabase]layout.bed
+    bedCode: [test::goldenwillow::store::GardenDatabase]layout.bed.bed_code,
+    gardenZone: [test::goldenwillow::store::GardenDatabase]layout.bed.garden_zone,
+    surfaceCode: [test::goldenwillow::store::GardenDatabase]layout.bed.surface_code
+  }
+
+  testSuites:
+  [
+    plantZoneSuite:
+    {
+      function: |test::goldenwillow::domain::Plant.all()->project(
+        [
+          p|$p.commonName,
+          p|$p.bed.gardenZone
+        ],
+        [
+          'CommonName',
+          'Zone'
+        ]
+      )->sort([asc('CommonName')]);
+      tests:
+      [
+        plantsWalkTheBedJoin:
+        {
+          doc: 'Projects each plant name and walks the Plant_Bed cross-schema join to its bed zone, exercising the main-table aliases, the primary keys and the inner join.';
+          data:
+          [
+            test::goldenwillow::store::GardenDatabase:
+              Relational
+              #{
+                catalogue.plant:
+                  'plant_id,common_name,species_code,status_code,bed_code,planted_on,retired_on\n'+
+                  '1,Fern,FER,ACTIVE,B1,2020-03-15,\n'+
+                  '2,Ivy,IVY,MATURE,B2,2019-06-01,9999-12-31\n'+
+                  '3,Moss,MOS,RETIRED,B1,2018-01-01,2021-05-05\n'+
+                  '4,Reed,REE,ACTIVE,B3,2021-07-07,\n'+
+                  '5,Sage,SAG,ACTIVE,B4,2099-01-01,\n';
+
+                layout.bed:
+                  'bed_code,garden_zone,surface_code\n'+
+                  'B1,EAST,LOAM\n'+
+                  'B2,NORTH,CLAY\n'+
+                  'B3,WEST,SAND\n'+
+                  'B4,EAST,PEAT\n';
+              }#
+          ];
+          asserts:
+          [
+            fivePlantsWithZones:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CommonName":"Fern","Zone":"EAST"},{"CommonName":"Ivy","Zone":"NORTH"},{"CommonName":"Moss","Zone":"EAST"},{"CommonName":"Reed","Zone":"WEST"},{"CommonName":"Sage","Zone":"EAST"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

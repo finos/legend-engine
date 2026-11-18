@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'Physical form of a pedestrian crossing in the municipal street network.'} test::solarcove2::domain::CrossingKind
+{
+  {meta::pure::profiles::doc.doc = 'Crossing controlled by a signal head with a dedicated walk phase.'} SIGNALISED,
+  {meta::pure::profiles::doc.doc = 'Marked crossing with priority but no signal control.'} ZEBRA,
+  {meta::pure::profiles::doc.doc = 'Crossing carried over a raised carriageway table.'} RAISED_TABLE,
+  {meta::pure::profiles::doc.doc = 'Desire line with no markings or control.'} UNMARKED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Stage a crossing survey return has reached in the municipal review cycle.'} test::solarcove2::domain::SurveyStage
+{
+  {meta::pure::profiles::doc.doc = 'Survey scheduled but no field visit yet made.'} PLANNED,
+  {meta::pure::profiles::doc.doc = 'Field observations in progress.'} FIELDWORK,
+  {meta::pure::profiles::doc.doc = 'Observations complete and under engineering review.'} REVIEW,
+  {meta::pure::profiles::doc.doc = 'Return accepted into the published street inventory.'} PUBLISHED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Fault classes an inspector can record against a signal head.'} test::solarcove2::domain::SignalFault
+{
+  {meta::pure::profiles::doc.doc = 'No fault observed during the visit.'} NONE_OBSERVED,
+  {meta::pure::profiles::doc.doc = 'One or more lamps dark.'} LAMP_OUT,
+  {meta::pure::profiles::doc.doc = 'Measured phase length drifted from the published plan.'} TIMING_DRIFT,
+  {meta::pure::profiles::doc.doc = 'Pedestrian detector not registering demand.'} DETECTOR_FAULT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How usable the dropped kerb approach is on the day of the visit.'} test::solarcove2::domain::KerbAccessGrade
+{
+  {meta::pure::profiles::doc.doc = 'Flush kerb, unobstructed approach.'} FULL,
+  {meta::pure::profiles::doc.doc = 'Usable but narrowed or partially obstructed.'} PARTIAL,
+  {meta::pure::profiles::doc.doc = 'Approach unusable on the day of the visit.'} BLOCKED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Mobility aid a resident declared when the access audit was taken.'} test::solarcove2::domain::MobilityAid
+{
+  WHEELCHAIR,
+  WALKING_FRAME,
+  GUIDE_DOG,
+  {meta::pure::profiles::doc.doc = 'Audit taken without any declared aid.'} NONE_DECLARED
+}

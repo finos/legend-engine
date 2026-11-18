@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::ivorybeacon::source::*;
+
+function {meta::pure::profiles::doc.doc = 'Collapses an optional text collection to a single value, distinguishing empty, single and multi-element collections.'} test::ivorybeacon::function::firstOrEmpty(values: String[*]): String[0..1]
+{
+  if($values->size() == 0,
+    | []->cast(@String),
+    | if($values->size() == 1,
+      | $values->toOne(),
+      | $values->at(0) + ' (+more)'
+    )
+  )
+}
+
+function {meta::pure::profiles::doc.doc = 'Labels the site a report is attached to, narrowing to the glacier subtype where the inbound record carries one.'} test::ivorybeacon::function::siteLabel(site: IncomingSite[0..1]): String[1]
+{
+  if($site->isEmpty(),
+    | 'UNSITED',
+    | $site->toOne()->match([
+        g: IncomingGlacierSite[1] | $g.glacierName->toUpper(),
+        s: IncomingSnowfieldSite[1] | $s.snowfieldName,
+        o: IncomingSite[1] | $o.siteRef
+      ])
+  )
+}
+
+function {meta::pure::profiles::doc.doc = 'Resolves the terminus altitude of a report site, defaulting to zero when the site is absent or carries no altitude.'} test::ivorybeacon::function::terminusAltitude(site: IncomingSite[0..1]): Integer[1]
+{
+  if($site->isEmpty(),
+    | 0,
+    | $site->toOne()->match([
+        g: IncomingGlacierSite[1] | if($g.terminusAltitudeText->isEmpty(),
+                                     | 0,
+                                     | $g.terminusAltitudeText->toOne()->parseInteger()
+                                   ),
+        o: IncomingSite[1] | 0
+      ])
+  )
+}

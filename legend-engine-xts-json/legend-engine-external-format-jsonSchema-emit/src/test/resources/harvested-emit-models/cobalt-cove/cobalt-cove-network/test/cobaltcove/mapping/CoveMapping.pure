@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::cobaltcove::mapping::CoveMapping
+(
+  demo::cobaltcove::domain::DockCondition: EnumerationMapping DockConditionMapping
+  {
+    SERVICEABLE: ['SERVICEABLE'],
+    WORN: ['WORN'],
+    BLOCKED: ['BLOCKED']
+  }
+
+  *demo::cobaltcove::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::cobaltcove::store::CoveDB]civic.district.district_id
+    )
+    ~mainTable [demo::cobaltcove::store::CoveDB]civic.district
+    districtCode: [demo::cobaltcove::store::CoveDB]civic.district.district_code,
+    districtName: [demo::cobaltcove::store::CoveDB]civic.district.district_name
+  }
+
+  *demo::cobaltcove::domain::DockStation[dockStation]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::cobaltcove::store::CoveDB]civic.dock_station.station_id
+    )
+    ~mainTable [demo::cobaltcove::store::CoveDB]civic.dock_station
+    stationCode: [demo::cobaltcove::store::CoveDB]civic.dock_station.station_code,
+    capacity: [demo::cobaltcove::store::CoveDB]civic.dock_station.capacity,
+    statusCode: [demo::cobaltcove::store::CoveDB]civic.dock_station.status_code,
+    districtCode: [demo::cobaltcove::store::CoveDB]@Station_District | civic.district.district_code
+  }
+
+  *demo::cobaltcove::domain::DockInspection[dockInspection]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::cobaltcove::store::CoveDB]civic.dock_inspection.inspection_id
+    )
+    ~mainTable [demo::cobaltcove::store::CoveDB]civic.dock_inspection
+    inspectionRef: [demo::cobaltcove::store::CoveDB]civic.dock_inspection.inspection_ref,
+    condition: EnumerationMapping DockConditionMapping: [demo::cobaltcove::store::CoveDB]civic.dock_inspection.condition_code,
+    faultCount: [demo::cobaltcove::store::CoveDB]civic.dock_inspection.fault_count
+  }
+
+  demo::cobaltcove::domain::Station_District: Relational
+  {
+    AssociationMapping
+    (
+      district[dockStation, district]: [demo::cobaltcove::store::CoveDB]@Station_District,
+      station[district, dockStation]: [demo::cobaltcove::store::CoveDB]@Station_District
+    )
+  }
+
+  demo::cobaltcove::domain::Station_Inspection: Relational
+  {
+    AssociationMapping
+    (
+      inspections[dockStation, dockInspection]: [demo::cobaltcove::store::CoveDB]@Station_Inspection,
+      station[dockInspection, dockStation]: [demo::cobaltcove::store::CoveDB]@Station_Inspection
+    )
+  }
+)

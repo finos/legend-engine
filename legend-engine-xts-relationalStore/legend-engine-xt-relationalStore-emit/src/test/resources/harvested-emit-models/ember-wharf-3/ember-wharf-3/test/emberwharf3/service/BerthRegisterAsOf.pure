@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberwharf3::service::BerthRegisterAsOf
+{
+  pattern: '/emberwharf3/v1/berth-register/{asOfDate}/{minPassengerCap}';
+  title: 'Ember Wharf - Berth register as of a business instant';
+  owners:
+  [
+    'wharf-operations-programme',
+    'ferry-timetable-survey'
+  ];
+  documentation: 'Resolves the business-time extent of the wharf berth assignments at one caller-supplied instant, keeps the named-vessel calls whose passenger capacity reaches a caller-supplied floor, and publishes the assignment reference, berth, vessel, route and capacity under spaced display aliases.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], minPassengerCap: Integer[1]|test::emberwharf3::domain::BerthAssignment.all($asOfDate)->filter(
+      a|(($a.passengerCap->toOne() >= $minPassengerCap) && ($a.vesselName->isNotEmpty())) &&
+        (($a.draughtM->toOne() <= 4.5) || ($a.callStatus->toOne()->startsWith('BERTH')))
+    )->project(
+      [
+        a|$a.assignmentRef,
+        a|$a.berthCode,
+        a|$a.vesselName->toOne()->toUpper(),
+        a|$a.serviceRoute->toOne(),
+        a|$a.passengerCap->toOne()
+      ],
+      ['Assignment Ref', 'Berth Code', 'Vessel', 'Service Route', 'Passenger Cap']
+    )};
+    mapping: test::emberwharf3::mapping::WharfRegisterMapping;
+    runtime: test::emberwharf3::runtime::WharfRegisterRuntime;
+  }
+  testSuites:
+  [
+    berthRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfRegisterConnection:
+            Relational
+            #{
+              wharf.berth_assignment:
+              'assignment_ref,berth_code,vessel_name,service_route,call_status,passenger_cap,draught_m,scheduled_on,ramp_fitted,bus_from,bus_thru\n'+
+              'BA-01,BR-1,Harbour Swift,Outer Isles,BERTHED,320,3.2,2026-05-04,true,2026-01-01,9999-12-31\n'+
+              'BA-02,BR-2,Tideline Runner,Cove Loop,BERTHED,280,2.8,2026-05-04,true,2026-01-01,9999-12-31\n'+
+              'BA-03,BR-3,Sound Wanderer,Upper Sound,BERTHED,410,4.1,2025-02-10,true,2025-01-01,2025-06-30\n'+
+              'BA-04,BR-4,,Cove Loop,BERTHED,300,3.0,2026-05-04,false,2026-01-01,9999-12-31\n'+
+              'BA-05,BR-5,Shingle Hopper,Inner Reach,BERTHED,90,1.9,2026-05-04,true,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentInstantRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            minPassengerCap = 200
+          ]
+          asserts:
+          [
+            twoNamedVesselCalls:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Assignment Ref" : "BA-01",\n  "Berth Code" : "BR-1",\n  "Vessel" : "HARBOUR SWIFT",\n  "Service Route" : "Outer Isles",\n  "Passenger Cap" : 320\n}, {\n  "Assignment Ref" : "BA-02",\n  "Berth Code" : "BR-2",\n  "Vessel" : "TIDELINE RUNNER",\n  "Service Route" : "Cove Loop",\n  "Passenger Cap" : 280\n} ]';
+                  }#;
+              }#
+          ]
+        },
+        pinnedEarlierInstantDropsOutOfRangeRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2025-03-01,
+            minPassengerCap = 200
+          ]
+          asserts:
+          [
+            onlyTheSupersededCall:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Assignment Ref" : "BA-03",\n  "Berth Code" : "BR-3",\n  "Vessel" : "SOUND WANDERER",\n  "Service Route" : "Upper Sound",\n  "Passenger Cap" : 410\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

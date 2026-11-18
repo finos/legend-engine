@@ -1,0 +1,150 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletwillow2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'The state a conservation dossier is published in.'} test::scarletwillow2::domain::RecordStatus
+{
+  PRELIMINARY,
+  FINAL
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The kind of measure a dossier panel records.'} test::scarletwillow2::domain::MeasureKind
+{
+  SHEET_COUNT,
+  FOLIO_COUNT,
+  BATH_MINUTES
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The kind of memo attached to a dossier.'} test::scarletwillow2::domain::MemoKind
+{
+  INTAKE_MEMO,
+  RELEASE_MEMO,
+  REVIEW_MEMO
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The basis a treatment charge was assessed on.'} test::scarletwillow2::domain::AssessBasis
+{
+  PER_SHEET,
+  PER_FOLIO,
+  PER_HOUR
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where a dossier label was written.'} test::scarletwillow2::domain::LabelKind
+{
+  SHELF,
+  BOX
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The kind of identifier a dossier panel carries.'} test::scarletwillow2::domain::IdentifierKind
+{
+  DOSSIER_CODE,
+  RECORD_NUMBER
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Whether a treated item may be shelved in open storage.'} test::scarletwillow2::domain::ShelvableKind
+{
+  OPEN_SHELF,
+  CLOSED_SHELF
+}
+
+Class <<test::scarletwillow2::profile::ConservationProfile.published>> {meta::pure::profiles::doc.doc = 'The conservator recorded against one stage of a dossier, held inline on the dossier row rather than joined.', test::scarletwillow2::profile::ConservationProfile.custodian = 'paper-conservation-desk', test::scarletwillow2::profile::ConservationProfile.reviewCadence = 'quarterly'} test::scarletwillow2::domain::AgentPanel
+{
+  {meta::pure::profiles::doc.doc = 'Short code of the conservator.'} agentCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Recorded name of the conservator.'} agentName: String[1];
+  {meta::pure::profiles::doc.doc = 'Workshop desk the conservator sat at, absent for visiting staff.'} deskName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The second nesting level of a measure panel, carrying the detail behind the recorded figure.'} test::scarletwillow2::domain::MeasureDetail
+{
+  {meta::pure::profiles::doc.doc = 'Code of the instrument or method the figure was taken with.'} detailCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Free note recorded beside the figure.'} detailNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One recorded measure of a dossier, itself carrying a nested detail so the shape is two levels deep.'} test::scarletwillow2::domain::MeasurePanel
+{
+  {meta::pure::profiles::doc.doc = 'Rendered form of the recorded figure.'} measureText: String[1];
+  {meta::pure::profiles::doc.doc = 'The recorded figure itself, absent when nothing was counted.'} measureCount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'What the figure counts.'} measureKind: MeasureKind[0..1];
+  {meta::pure::profiles::doc.doc = 'The nested detail behind the figure.'} detail: MeasureDetail[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A label written on a dossier, delegating to a named set implementation rather than being expanded inline.'} test::scarletwillow2::domain::LabelPanel
+{
+  {meta::pure::profiles::doc.doc = 'Text as written on the label.'} labelText: String[1];
+  {meta::pure::profiles::doc.doc = 'Where the label was written.'} labelKind: LabelKind[0..1];
+  {meta::pure::profiles::doc.doc = 'The kind of identifier the label repeats.'} identifierKind: IdentifierKind[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A treated item held in the item reference relation, reached from a dossier through a named store join alone.'} test::scarletwillow2::domain::ItemRef
+{
+  {meta::pure::profiles::doc.doc = 'Code of the item.'} itemCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Recorded name of the item.'} itemName: String[1];
+  {meta::pure::profiles::doc.doc = 'Whether the item may be shelved openly once treated.'} shelvable: ShelvableKind[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A treatment record keyed numerically in the record reference relation, reached from a text-typed dossier column that has to be parsed first.'} test::scarletwillow2::domain::RecordRef
+{
+  {meta::pure::profiles::doc.doc = 'Numeric key of the record.'} recordNo: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Rendered form of the numeric key, so the same identity is published as text.'} recordLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Workshop that raised the record.'} raisedBy: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The department a treatment was charged to.'} test::scarletwillow2::domain::EntityRef
+{
+  {meta::pure::profiles::doc.doc = 'Code of the department.'} entityCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Recorded name of the department.'} entityName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The rate a unit of treatment work was assessed at.'} test::scarletwillow2::domain::UnitRateRef
+{
+  {meta::pure::profiles::doc.doc = 'Code of the unit of work.'} unitCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Recorded name of the unit of work.'} unitName: String[1];
+  {meta::pure::profiles::doc.doc = 'Basis the unit is assessed on.'} basis: AssessBasis[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A very wide record-level summary of one paper-conservation dossier: a run of scalar attributes followed by repeated single-valued complex attributes, every one of which is projected from the same wide row rather than joined.'} test::scarletwillow2::domain::TreatmentDossier
+{
+  {meta::pure::profiles::doc.doc = 'Code of the dossier, unique within its validity window.'} dossierCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Treatment record number as held on the dossier row, recorded as text even though the reference relation keys it numerically.'} recordNoText: String[1];
+  {meta::pure::profiles::doc.doc = 'Code of the treated item.'} itemCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Code of the department charged.'} entityCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Code of the unit of work.'} unitCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Date the dossier was opened.'} openedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Date the dossier was closed, absent while the work is open.'} closedOn: StrictDate[0..1];
+  {meta::pure::profiles::doc.doc = 'Sheets counted at intake.'} sheetCount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Folios counted at intake.'} folioCount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Summary the conservator wrote when closing the dossier.'} summaryText: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Custodian of record for the treated item.'} custodianName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Workshop the treatment was carried out in.'} workshopName: String[0..1];
+  {meta::pure::profiles::doc.doc = 'State the dossier is published in, translated from the same column the store filters test.'} status: RecordStatus[0..1];
+  {meta::pure::profiles::doc.doc = 'Kind of memo attached, translated from a padded code that only resolves once trimmed.'} memoKind: MemoKind[0..1];
+  {meta::pure::profiles::doc.doc = 'Conservator recorded at intake.'} intakeAgent: AgentPanel[1];
+  {meta::pure::profiles::doc.doc = 'Conservator recorded at release.'} releaseAgent: AgentPanel[1];
+  {meta::pure::profiles::doc.doc = 'Conservator recorded at review.'} reviewAgent: AgentPanel[1];
+  {meta::pure::profiles::doc.doc = 'Sheet measure, nested two levels deep.'} sheetMeasure: MeasurePanel[1];
+  {meta::pure::profiles::doc.doc = 'Folio measure, nested two levels deep.'} folioMeasure: MeasurePanel[1];
+  {meta::pure::profiles::doc.doc = 'Bath measure, nested two levels deep.'} bathMeasure: MeasurePanel[1];
+  {meta::pure::profiles::doc.doc = 'Shelf label, delegated to a named set implementation.'} shelfLabel: LabelPanel[1];
+  {meta::pure::profiles::doc.doc = 'Box label, delegated to a named set implementation.'} boxLabel: LabelPanel[1];
+  {meta::pure::profiles::doc.doc = 'The treated item, reached through a named store join alone.'} item: ItemRef[0..1];
+  {meta::pure::profiles::doc.doc = 'The treatment record, reached by parsing the text record number before comparing it to the numeric reference key.'} record: RecordRef[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates a dossier to the department it was charged to, mapped through a store join declared on the dossier side alone.'} test::scarletwillow2::domain::Dossier_Entity
+{
+  {meta::pure::profiles::doc.doc = 'Dossiers charged to the department.'} dossiers: TreatmentDossier[*];
+  {meta::pure::profiles::doc.doc = 'The department charged.'} entity: EntityRef[0..1];
+}

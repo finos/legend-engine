@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryprairie::mapping::IncomingToArtifactM2M
+(
+  *test::ivoryprairie::domain::Artifact: Pure
+  {
+    ~src test::ivoryprairie::source::IncomingArtifact
+    catalogId: $src.refCode,
+    name: $src.label,
+    culture: $src.originCulture,
+    creationYear: $src.estimatedYear
+  }
+
+  testSuites:
+  [
+    artifactSuite:
+    {
+      function: |test::ivoryprairie::domain::Artifact.all()->graphFetch(
+  #{
+    test::ivoryprairie::domain::Artifact{
+      catalogId,
+      name,
+      culture,
+      creationYear
+    }
+  }#
+)->serialize(
+  #{
+    test::ivoryprairie::domain::Artifact{
+      catalogId,
+      name,
+      culture,
+      creationYear
+    }
+  }#
+);
+      tests:
+      [
+        artifactAlpha:
+        {
+          doc: 'Round-trips a single inbound artifact record through the model-to-model transform.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryprairie::source::IncomingArtifact:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"refCode":"ART-0001","label":"Carved Antler Comb","originCulture":"Sami","estimatedYear":1780}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedArtifact:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"catalogId":"ART-0001","name":"Carved Antler Comb","culture":"Sami","creationYear":1780}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

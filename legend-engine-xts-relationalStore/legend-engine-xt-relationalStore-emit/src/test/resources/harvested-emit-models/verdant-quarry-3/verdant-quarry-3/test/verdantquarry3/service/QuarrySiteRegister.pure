@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantquarry3::service::QuarrySiteRegister
+{
+  pattern: '/quarry/v1/site-register';
+  title: 'Verdant Quarry - Site Register';
+  owners:
+  [
+    'quarry-survey-desk',
+    'quarry-geology'
+  ];
+  documentation: 'Unfiltered four-column register of every quarry site, banding the region through a conditional inside the projection and de-duplicating the result, so the plan reads the whole extent and derives its last column rather than reading it.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::verdantquarry3::domain::QuarrySite.all()->project(
+      [
+        q|$q.quarryCode,
+        q|$q.quarryName,
+        q|$q.regionCode,
+        q|if($q.regionCode == 'RG-NORTH', |'NORTHERN', |'SOUTHERN')
+      ],
+      [
+        'Quarry Code',
+        'Quarry Name',
+        'Region Code',
+        'Region Band'
+      ]
+    )->distinct()->sort([asc('Quarry Code')])};
+    mapping: test::verdantquarry3::mapping::QuarryMapping;
+    runtime: test::verdantquarry3::runtime::QuarryH2Runtime;
+  }
+  testSuites:
+  [
+    quarrySiteRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          quarryConnection:
+            Relational
+            #{
+              geology.quarry_site:
+                'quarry_code,quarry_name,region_code\n'+
+                'QS-01,Verdant Ridge Quarry,RG-NORTH\n'+
+                'QS-02,Slate Hollow Quarry,RG-SOUTH\n';
+
+              geology.quarry_face:
+                'face_code,face_name,quarry_code,bench_height,surveyed_on\n'+
+                'QF-01,North Bench,QS-01,14,2026-03-04\n'+
+                'QF-02,East Bench,QS-01,9,2026-05-20\n'+
+                'QF-03,South Bench,QS-02,6,2026-03-11\n'+
+                'QF-04,Lower Floor,QS-01,3,2026-08-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        regionBandsPerSite:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+          ]
+          asserts:
+          [
+            bandDerivedFromRegionCode:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Quarry Code":"QS-01","Quarry Name":"Verdant Ridge Quarry","Region Code":"RG-NORTH","Region Band":"NORTHERN"},{"Quarry Code":"QS-02","Quarry Name":"Slate Hollow Quarry","Region Code":"RG-SOUTH","Region Band":"SOUTHERN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadevineyard::mapping::VineyardMapping
+(
+  *test::jadevineyard::domain::IrrigationRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.run_id
+    )
+    ~mainTable [test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run
+    runCode: [test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.run_code,
+    runDate: [test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.run_date,
+    districtCode: [test::jadevineyard::store::VineyardDatabase]@Run_Block > @Block_Parcel > @Parcel_District | vineyard.vineyard_district.district_code,
+    climateName: [test::jadevineyard::store::VineyardDatabase]@Run_Block > @Block_Parcel > @Parcel_District > @District_Climate | vineyard.climate_zone.climate_name,
+    trellisLabel: case(
+      equal([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.trellis_grade, 1),
+      'VISTA',
+      case(
+        equal([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.trellis_grade, 2),
+        'RIDGE',
+        case(
+          equal([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.trellis_grade, 3),
+          'MEADOW',
+          case(
+            equal([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.trellis_grade, 4),
+            'TERRACE',
+            case(
+              equal([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.trellis_grade, 5),
+              'GROVE',
+              'UNMARKED'
+            )
+          )
+        )
+      )
+    ),
+    readinessBand: case(
+      isNull([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.moisture_flag),
+      sqlNull(),
+      case(
+        equal([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.moisture_flag, 1),
+        'READY',
+        'WATCH'
+      )
+    ),
+    statusLabel: case(
+      equal([test::jadevineyard::store::VineyardDatabase]vineyard.irrigation_run.status_code, 1),
+      'SCHEDULED',
+      'COMPLETE'
+    )
+  }
+
+  testSuites:
+  [
+    irrigationBranches:
+    {
+      function: |test::jadevineyard::domain::IrrigationRun.all()->project(~[
+        runCode: x|$x.runCode,
+        trellisLabel: x|$x.trellisLabel,
+        readinessBand: x|$x.readinessBand,
+        statusLabel: x|$x.statusLabel,
+        districtCode: x|$x.districtCode,
+        climateName: x|$x.climateName
+      ]);
+      tests:
+      [
+        allConditionalArms:
+        {
+          data:
+          [
+            test::jadevineyard::store::VineyardDatabase:
+              Relational
+              #{
+                vineyard.irrigation_run:
+                  'run_id,run_code,run_date,block_id,trellis_grade,moisture_flag,status_code\n'+
+                  '1,IR-01,2026-06-01,101,1,,1\n'+
+                  '2,IR-02,2026-06-02,102,2,1,1\n'+
+                  '3,IR-03,2026-06-03,103,3,0,2\n'+
+                  '4,IR-04,2026-06-04,104,4,1,2\n'+
+                  '5,IR-05,2026-06-05,105,5,0,1\n'+
+                  '6,IR-06,2026-06-06,101,6,,2\n'+
+                  '7,IR-07,2026-06-07,102,1,1,1\n'+
+                  '8,IR-08,2026-06-08,103,2,0,2\n'+
+                  '9,IR-09,2026-06-09,104,3,1,1\n'+
+                  '10,IR-10,2026-06-10,105,4,0,2\n';
+                vineyard.vine_block:
+                  'block_id,block_code,parcel_id\n'+
+                  '101,VB-01,201\n'+
+                  '102,VB-02,202\n'+
+                  '103,VB-03,203\n'+
+                  '104,VB-04,204\n'+
+                  '105,VB-05,205\n';
+                vineyard.estate_parcel:
+                  'parcel_id,parcel_code,district_id\n'+
+                  '201,EP-01,301\n'+
+                  '202,EP-02,302\n'+
+                  '203,EP-03,303\n'+
+                  '204,EP-04,304\n'+
+                  '205,EP-05,305\n';
+                vineyard.vineyard_district:
+                  'district_id,district_code,climate_id\n'+
+                  '301,D-NORTH,401\n'+
+                  '302,D-EAST,402\n'+
+                  '303,D-SOUTH,403\n'+
+                  '304,D-WEST,404\n'+
+                  '305,D-CENTRAL,405\n';
+                vineyard.climate_zone:
+                  'climate_id,climate_name\n'+
+                  '401,Coastal Fog\n'+
+                  '402,High Plain\n'+
+                  '403,Sunlit Valley\n'+
+                  '404,Windward Slope\n'+
+                  '405,Temperate Basin\n';
+              }#
+          ];
+          asserts:
+          [
+            branchLabels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"runCode":"IR-01","trellisLabel":"VISTA","readinessBand":null,"statusLabel":"SCHEDULED","districtCode":"D-NORTH","climateName":"Coastal Fog"},{"runCode":"IR-02","trellisLabel":"RIDGE","readinessBand":"READY","statusLabel":"SCHEDULED","districtCode":"D-EAST","climateName":"High Plain"},{"runCode":"IR-03","trellisLabel":"MEADOW","readinessBand":"WATCH","statusLabel":"COMPLETE","districtCode":"D-SOUTH","climateName":"Sunlit Valley"},{"runCode":"IR-04","trellisLabel":"TERRACE","readinessBand":"READY","statusLabel":"COMPLETE","districtCode":"D-WEST","climateName":"Windward Slope"},{"runCode":"IR-05","trellisLabel":"GROVE","readinessBand":"WATCH","statusLabel":"SCHEDULED","districtCode":"D-CENTRAL","climateName":"Temperate Basin"},{"runCode":"IR-06","trellisLabel":"UNMARKED","readinessBand":null,"statusLabel":"COMPLETE","districtCode":"D-NORTH","climateName":"Coastal Fog"},{"runCode":"IR-07","trellisLabel":"VISTA","readinessBand":"READY","statusLabel":"SCHEDULED","districtCode":"D-EAST","climateName":"High Plain"},{"runCode":"IR-08","trellisLabel":"RIDGE","readinessBand":"WATCH","statusLabel":"COMPLETE","districtCode":"D-SOUTH","climateName":"Sunlit Valley"},{"runCode":"IR-09","trellisLabel":"MEADOW","readinessBand":"READY","statusLabel":"SCHEDULED","districtCode":"D-WEST","climateName":"Windward Slope"},{"runCode":"IR-10","trellisLabel":"TERRACE","readinessBand":"WATCH","statusLabel":"COMPLETE","districtCode":"D-CENTRAL","climateName":"Temperate Basin"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

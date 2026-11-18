@@ -1,0 +1,179 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrthicket::mapping::ThicketMapping
+(
+  *test::zephyrthicket::domain::ParkParcel[parkParcel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrthicket::store::ThicketRegistryStore]registry.park_parcel.parcel_id
+    )
+    ~mainTable [test::zephyrthicket::store::ThicketRegistryStore]registry.park_parcel
+    parcelCode: concat('PARCEL-', toString([test::zephyrthicket::store::ThicketRegistryStore]registry.park_parcel.parcel_id)),
+    parcelName: toUpper(trim([test::zephyrthicket::store::ThicketRegistryStore]registry.park_parcel.parcel_name)),
+    parcelSlug: toLower(substring(trim(toUpper([test::zephyrthicket::store::ThicketRegistryStore]registry.park_parcel.parcel_name)), 0, 5)),
+    areaSqm: [test::zephyrthicket::store::ThicketRegistryStore]registry.park_parcel.area_sqm
+  }
+
+  *test::zephyrthicket::domain::CivicWard[civicWard]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrthicket::store::ThicketRegistryStore]registry.civic_ward.ward_code
+    )
+    ~mainTable [test::zephyrthicket::store::ThicketRegistryStore]registry.civic_ward
+    wardCode: [test::zephyrthicket::store::ThicketRegistryStore]registry.civic_ward.ward_code,
+    wardName: toUpper(trim([test::zephyrthicket::store::ThicketRegistryStore]registry.civic_ward.ward_name))
+  }
+
+  *test::zephyrthicket::domain::CivicDistrict[civicDistrict]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrthicket::store::ThicketRegistryStore]registry.civic_district.district_code
+    )
+    ~mainTable [test::zephyrthicket::store::ThicketRegistryStore]registry.civic_district
+    districtCode: [test::zephyrthicket::store::ThicketRegistryStore]registry.civic_district.district_code,
+    districtName: trim([test::zephyrthicket::store::ThicketRegistryStore]registry.civic_district.district_name)
+  }
+
+  *test::zephyrthicket::domain::CanopyClass[canopyClass]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrthicket::store::ThicketRegistryStore]registry.canopy_class.canopy_code
+    )
+    ~mainTable [test::zephyrthicket::store::ThicketRegistryStore]registry.canopy_class
+    canopyCode: [test::zephyrthicket::store::ThicketRegistryStore]registry.canopy_class.canopy_code,
+    canopyLabel: trim([test::zephyrthicket::store::ThicketRegistryStore]registry.canopy_class.canopy_label)
+  }
+
+  *test::zephyrthicket::domain::ParcelSteward[parcelSteward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrthicket::store::ThicketRegistryStore]registry.parcel_steward.steward_code
+    )
+    ~mainTable [test::zephyrthicket::store::ThicketRegistryStore]registry.parcel_steward
+    stewardCode: [test::zephyrthicket::store::ThicketRegistryStore]registry.parcel_steward.steward_code,
+    stewardName: toUpper(trim([test::zephyrthicket::store::ThicketRegistryStore]registry.parcel_steward.steward_name))
+  }
+
+  test::zephyrthicket::domain::Parcel_Ward: Relational
+  {
+    AssociationMapping
+    (
+      parcels[civicWard,parkParcel]: [test::zephyrthicket::store::ThicketRegistryStore]@Parcel_Ward_Join,
+      ward[parkParcel,civicWard]: [test::zephyrthicket::store::ThicketRegistryStore]@Parcel_Ward_Join
+    )
+  }
+
+  test::zephyrthicket::domain::Parcel_Canopy: Relational
+  {
+    AssociationMapping
+    (
+      canopyParcels[canopyClass,parkParcel]: [test::zephyrthicket::store::ThicketRegistryStore]@Parcel_Canopy_Join,
+      canopy[parkParcel,canopyClass]: [test::zephyrthicket::store::ThicketRegistryStore]@Parcel_Canopy_Join
+    )
+  }
+
+  test::zephyrthicket::domain::Parcel_Steward: Relational
+  {
+    AssociationMapping
+    (
+      stewardParcels[parcelSteward,parkParcel]: [test::zephyrthicket::store::ThicketRegistryStore]@Parcel_Steward_Join,
+      steward[parkParcel,parcelSteward]: [test::zephyrthicket::store::ThicketRegistryStore]@Parcel_Steward_Join
+    )
+  }
+
+  test::zephyrthicket::domain::Ward_District: Relational
+  {
+    AssociationMapping
+    (
+      wards[civicDistrict,civicWard]: [test::zephyrthicket::store::ThicketRegistryStore]@Ward_District_Join,
+      wardDistrict[civicWard,civicDistrict]: [test::zephyrthicket::store::ThicketRegistryStore]@Ward_District_Join
+    )
+  }
+
+  test::zephyrthicket::domain::Parcel_District: Relational
+  {
+    AssociationMapping
+    (
+      districtParcels[civicDistrict,parkParcel]: [test::zephyrthicket::store::ThicketRegistryStore]@Ward_District_Join > @Parcel_Ward_Join,
+      district[parkParcel,civicDistrict]: [test::zephyrthicket::store::ThicketRegistryStore]@Parcel_Ward_Join > @Ward_District_Join
+    )
+  }
+
+  testSuites:
+  [
+    parcelRosterSuite:
+    {
+      function: |test::zephyrthicket::domain::ParkParcel.all()->project(
+  [
+    x|$x.parcelCode,
+    x|$x.parcelName,
+    x|$x.parcelSlug,
+    x|$x.areaSqm,
+    x|$x.ward.wardName,
+    x|$x.canopy.canopyLabel,
+    x|$x.steward.stewardName,
+    x|$x.district.districtName
+  ],
+  [
+    'ParcelCode',
+    'ParcelName',
+    'ParcelSlug',
+    'AreaSqm',
+    'Ward',
+    'Canopy',
+    'Steward',
+    'District'
+  ]
+)->sort(
+  [
+    asc('ParcelCode')
+  ]
+);
+      tests:
+      [
+        hubAndSpoke:
+        {
+          doc: 'Projects the parcel hub together with each spoke reached through its implemented association, including the district reached through the two-link chain.';
+          data:
+          [
+            test::zephyrthicket::store::ThicketRegistryStore: Reference
+              #{
+                test::zephyrthicket::data::ThicketTestData
+              }#
+          ];
+          asserts:
+          [
+            fourParcels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ParcelCode":"PARCEL-1","ParcelName":"RIVERSIDE GREEN","ParcelSlug":"river","AreaSqm":1200.5,"Ward":"WILLOW WARD","Canopy":"Broadleaf canopy","Steward":"WILLOW STEWARD","District":"Riverside District"},{"ParcelCode":"PARCEL-2","ParcelName":"WILLOW COMMONS","ParcelSlug":"willo","AreaSqm":802.25,"Ward":"WILLOW WARD","Canopy":"Conifer canopy","Steward":"WILLOW STEWARD","District":"Riverside District"},{"ParcelCode":"PARCEL-3","ParcelName":"ASPEN MEADOW","ParcelSlug":"aspen","AreaSqm":1500.25,"Ward":"ASPEN WARD","Canopy":"Broadleaf canopy","Steward":"ASPEN STEWARD","District":"Riverside District"},{"ParcelCode":"PARCEL-4","ParcelName":"CEDAR HOLLOW","ParcelSlug":"cedar","AreaSqm":640.75,"Ward":"CEDAR WARD","Canopy":"Conifer canopy","Steward":"CEDAR STEWARD","District":"Hilltop District"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

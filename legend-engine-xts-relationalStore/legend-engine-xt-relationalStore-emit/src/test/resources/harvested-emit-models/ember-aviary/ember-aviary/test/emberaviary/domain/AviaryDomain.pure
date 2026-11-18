@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'States a nest box can be found in when it is opened.'} test::emberaviary::domain::BoxCondition
+{
+  SOUND,
+  WEATHERED,
+  DAMAGED
+}
+
+Enum {doc.doc = 'How the birds found in a box were marked on the visit.'} test::emberaviary::domain::RingMode
+{
+  NEW_RING,
+  RECAPTURE,
+  NO_RING
+}
+
+Enum {doc.doc = 'How far the brood in a box had progressed when it was seen.'} test::emberaviary::domain::BroodStage
+{
+  EGGS,
+  CHICKS,
+  FLEDGED,
+  EMPTY
+}
+
+Enum {doc.doc = 'Standing an observer holds in the sanctuary.'} test::emberaviary::domain::ObserverRole
+{
+  WARDEN,
+  VOLUNTEER,
+  TRAINEE
+}
+
+Class {doc.doc = 'A stretch of the sanctuary the boxes are grouped into.'} test::emberaviary::domain::Habitat
+{
+  habitatCode: String[1];
+  habitatName: String[1];
+  canopyCode: String[1];
+  boxCount: Integer[0..1];
+  tallestMountCm: Integer[0..1];
+  teamName: String[0..1];
+  regionName: String[0..1];
+}
+
+Class {doc.doc = 'The team of wardens a habitat is looked after by.'} test::emberaviary::domain::WardenTeam
+{
+  wardenTeamCode: String[1];
+  teamName: String[1];
+  regionName: String[1];
+}
+
+Class {doc.doc = 'Somebody who opens boxes and records what is inside them.'} test::emberaviary::domain::Observer
+{
+  observerCode: String[1];
+  observerName: String[1];
+  role: test::emberaviary::domain::ObserverRole[0..1];
+  roleLabel: String[0..1];
+}
+
+Class {doc.doc = 'A box mounted in a habitat for birds to nest in, carrying the totals read back from the grouped visit view.'} test::emberaviary::domain::NestBox
+{
+  boxCode: String[1];
+  boxName: String[1];
+  mountHeightCm: Integer[1];
+  installedOn: StrictDate[1];
+  lastRepairedOn: StrictDate[0..1];
+  habitatName: String[0..1];
+  regionName: String[0..1];
+  visitCount: Integer[0..1];
+  totalChicks: Integer[0..1];
+  mostEggs: Integer[0..1];
+  mountLabel: String[0..1];
+  heightBand()
+  {
+    if($this.mountHeightCm >= 400,
+       | 'CANOPY',
+       | if($this.mountHeightCm >= 250,
+            | 'MID-TRUNK',
+            | if($this.mountHeightCm >= 120, | 'LOW-TRUNK', | 'GROUND')))
+  }: String[1];
+  broodPerVisit()
+  {
+    if($this.visitCount->isEmpty() || ($this.visitCount->toOne() == 0),
+       | 0.0,
+       | $this.totalChicks->toOne() / $this.visitCount->toOne())
+  }: Number[1];
+}
+
+Class {doc.doc = 'One opening of one box by one observer, with what was found written down.'} test::emberaviary::domain::BoxVisit
+{
+  visitCode: String[1];
+  visitedOn: StrictDate[1];
+  chickCount: Integer[1];
+  eggCount: Integer[1];
+  condition: test::emberaviary::domain::BoxCondition[0..1];
+  ringMode: test::emberaviary::domain::RingMode[0..1];
+  stage: test::emberaviary::domain::BroodStage[0..1];
+  conditionNote: String[0..1];
+  boxName: String[0..1];
+  habitatName: String[0..1];
+  canopyCode: String[0..1];
+  regionName: String[0..1];
+  observerName: String[0..1];
+  broodSize()
+  {
+    $this.chickCount + $this.eggCount
+  }: Integer[1];
+  stageLabel()
+  {
+    if($this.chickCount > 0,
+       | if($this.eggCount > 0, | 'mixed brood', | 'chicks only'),
+       | if($this.eggCount > 0, | 'eggs only', | 'nothing found'))
+  }: String[1];
+}
+
+Class {doc.doc = 'A single day of visiting read back as a board row for the wardens.'} test::emberaviary::domain::VisitBoardRow
+{
+  visitCode: String[1];
+  boxName: String[1];
+  observerName: String[1];
+  broodSize: Integer[1];
+  boardLabel: String[1];
+}

@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::lunarmeadow::store::CellarDatabase
+(
+  Schema dairy
+  (
+    Table wheel
+    (
+      wheel_id INTEGER PRIMARY KEY,
+      wheel_code VARCHAR(24) NOT NULL,
+      milk_type VARCHAR(16) NOT NULL,
+      rack_code VARCHAR(16) NOT NULL,
+      formed_on DATE NOT NULL,
+      weight_grams INTEGER NOT NULL
+    )
+
+    Table rack
+    (
+      rack_code VARCHAR(16) PRIMARY KEY,
+      chamber_code VARCHAR(16) NOT NULL,
+      maker_code VARCHAR(16) NOT NULL,
+      rack_tier INTEGER NOT NULL
+    )
+  )
+
+  Schema cellar
+  (
+    Table chamber
+    (
+      chamber_code VARCHAR(16) PRIMARY KEY,
+      chamber_name VARCHAR(32) NOT NULL,
+      humidity_pct INTEGER NOT NULL,
+      temp_celsius INTEGER NOT NULL
+    )
+  )
+
+  Schema roster
+  (
+    Table cheesemaker
+    (
+      maker_code VARCHAR(16) PRIMARY KEY,
+      maker_name VARCHAR(64) NOT NULL,
+      certified_on DATE NOT NULL
+    )
+  )
+
+  Join Wheel_Rack(dairy.wheel.rack_code = dairy.rack.rack_code)
+  Join Rack_Chamber(dairy.rack.chamber_code = cellar.chamber.chamber_code)
+  Join Rack_Maker(dairy.rack.maker_code = roster.cheesemaker.maker_code)
+)

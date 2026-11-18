@@ -1,0 +1,164 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlyvineyard2::mapping::TransitBaseMapping
+(
+  *test::kindlyvineyard2::domain::StopPoint[stop_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyvineyard2::relational::TransitDB]transit.stop_point.stop_id
+    )
+    ~mainTable [test::kindlyvineyard2::relational::TransitDB]transit.stop_point
+    stopId: [test::kindlyvineyard2::relational::TransitDB]transit.stop_point.stop_id,
+    stopCode: [test::kindlyvineyard2::relational::TransitDB]transit.stop_point.stop_code,
+    corridorId: [test::kindlyvineyard2::relational::TransitDB]transit.stop_point.corridor_id,
+    corridorCode: [test::kindlyvineyard2::relational::TransitDB]@Stop_Corridor | [test::kindlyvineyard2::relational::TransitDB]transit.corridor.corridor_code,
+    stopLabel: [test::kindlyvineyard2::relational::TransitDB]transit.stop_point.stop_label,
+    districtCode: [test::kindlyvineyard2::relational::TransitDB]@Stop_Corridor > @Corridor_Hub | [test::kindlyvineyard2::relational::TransitDB]support.hub.district_code,
+    runCodes: [test::kindlyvineyard2::relational::TransitDB]@Stop_Corridor > @Corridor_Run | [test::kindlyvineyard2::relational::TransitDB]transit.vehicle_run.run_code
+  }
+
+  *test::kindlyvineyard2::domain::TransitCorridor[corridor_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyvineyard2::relational::TransitDB]transit.corridor.corridor_id
+    )
+    ~mainTable [test::kindlyvineyard2::relational::TransitDB]transit.corridor
+    corridorId: [test::kindlyvineyard2::relational::TransitDB]transit.corridor.corridor_id,
+    corridorCode: [test::kindlyvineyard2::relational::TransitDB]transit.corridor.corridor_code,
+    hubId: [test::kindlyvineyard2::relational::TransitDB]transit.corridor.hub_id,
+    corridorLabel: [test::kindlyvineyard2::relational::TransitDB]transit.corridor.corridor_label
+  }
+
+  *test::kindlyvineyard2::domain::TransitHub[hub_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyvineyard2::relational::TransitDB]support.hub.hub_id
+    )
+    ~mainTable [test::kindlyvineyard2::relational::TransitDB]support.hub
+    hubId: [test::kindlyvineyard2::relational::TransitDB]support.hub.hub_id,
+    hubCode: [test::kindlyvineyard2::relational::TransitDB]support.hub.hub_code,
+    districtCode: [test::kindlyvineyard2::relational::TransitDB]support.hub.district_code
+  }
+
+  *test::kindlyvineyard2::domain::VehicleRun[run_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyvineyard2::relational::TransitDB]transit.vehicle_run.run_id
+    )
+    ~mainTable [test::kindlyvineyard2::relational::TransitDB]transit.vehicle_run
+    runId: [test::kindlyvineyard2::relational::TransitDB]transit.vehicle_run.run_id,
+    corridorId: [test::kindlyvineyard2::relational::TransitDB]transit.vehicle_run.corridor_id,
+    runCode: [test::kindlyvineyard2::relational::TransitDB]transit.vehicle_run.run_code,
+    riderCount: [test::kindlyvineyard2::relational::TransitDB]transit.vehicle_run.rider_count
+  }
+
+  test::kindlyvineyard2::domain::StopCorridor: Relational
+  {
+    AssociationMapping
+    (
+      stop[corridor, stop]: [test::kindlyvineyard2::relational::TransitDB]@Stop_Corridor,
+      corridor[stop, corridor]: [test::kindlyvineyard2::relational::TransitDB]@Stop_Corridor
+    )
+  }
+
+  testSuites:
+  [
+    stopReachSuite:
+    {
+      function: |test::kindlyvineyard2::domain::StopPoint.all()->project(
+        [
+          s|$s.stopCode,
+          s|$s.corridorCode,
+          s|$s.districtCode,
+          s|$s.stopLabel,
+          s|$s.runCodes
+        ],
+        [
+          'StopCode',
+          'CorridorCode',
+          'DistrictCode',
+          'StopLabel',
+          'RunCodes'
+        ]
+      )->sort([asc('StopCode')]);
+      tests:
+      [
+        twoStopsResolveTheirFarDistrict:
+        {
+          data:
+          [
+            test::kindlyvineyard2::relational::TransitDB:
+              Relational
+              #{
+                transit.stop_point:
+                  'stop_id,stop_code,corridor_id,stop_label\n'+
+                  '1,ST-ALPHA,10,Market Gate\n'+
+                  '2,ST-BETA,10,Library Walk\n';
+                transit.corridor:
+                  'corridor_id,corridor_code,hub_id,corridor_label\n'+
+                  '10,C-RED,100,Red Corridor\n';
+                transit.vehicle_run:
+                  'run_id,corridor_id,run_code,rider_count\n'+
+                  '1000,10,R-1,40\n';
+                support.hub:
+                  'hub_id,hub_code,district_code\n'+
+                  '100,HUB-CENTRAL,D-CENTER\n';
+              }#
+          ];
+          asserts:
+          [
+            farDistrictsAreMapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StopCode":"ST-ALPHA","CorridorCode":"C-RED","DistrictCode":"D-CENTER","StopLabel":"Market Gate","RunCodes":"R-1"},{"StopCode":"ST-BETA","CorridorCode":"C-RED","DistrictCode":"D-CENTER","StopLabel":"Library Walk","RunCodes":"R-1"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Mapping
+Mapping test::kindlyvineyard2::mapping::TransitMapping
+(
+  include mapping test::kindlyvineyard2::mapping::TransitBaseMapping
+
+  *test::kindlyvineyard2::domain::RouteDigest[digest_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyvineyard2::relational::TransitDB]support.route_digest.corridor_code,
+      [test::kindlyvineyard2::relational::TransitDB]support.route_digest.hub_code
+    )
+    ~mainTable [test::kindlyvineyard2::relational::TransitDB]support.route_digest
+    corridorCode: [test::kindlyvineyard2::relational::TransitDB]support.route_digest.corridor_code,
+    hubCode: [test::kindlyvineyard2::relational::TransitDB]support.route_digest.hub_code,
+    districtCode: [test::kindlyvineyard2::relational::TransitDB]support.route_digest.district_code,
+    stopCount: [test::kindlyvineyard2::relational::TransitDB]support.route_digest.stop_count,
+    riderTotal: [test::kindlyvineyard2::relational::TransitDB]support.route_digest.rider_total
+  }
+
+)

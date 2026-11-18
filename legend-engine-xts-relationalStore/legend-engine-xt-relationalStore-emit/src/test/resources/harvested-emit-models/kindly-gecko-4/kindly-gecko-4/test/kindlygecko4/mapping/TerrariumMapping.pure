@@ -1,0 +1,185 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlygecko4::mapping::TerrariumMapping
+(
+  *test::kindlygecko4::domain::TerrariumOccupant[occupantRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.occupant_code
+    )
+    ~mainTable [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record
+    occupantCode: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.occupant_code,
+    terrariumCode: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.terrarium_code,
+    speciesName: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.species_name,
+    snoutVentMm: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.snout_vent_mm,
+    massGrams: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.mass_grams,
+    careNote: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.care_note,
+    hatchedOn: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.hatched_on,
+    displayLabel: concat(concat(toUpper([test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.species_name), ' @ '), [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.terrarium_code),
+    registerLabel: 'HERPETARIUM_REGISTER',
+    lengthBand: case(
+        greaterThanEqual([test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.snout_vent_mm, 120),
+        'BAND_LONG',
+        case(
+          greaterThanEqual([test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.snout_vent_mm, 80),
+          'BAND_MEDIUM',
+          'BAND_SHORT'
+        )
+      ),
+    careNoteLength: length([test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.care_note)
+  }
+
+  test::kindlygecko4::domain::GeckoOccupant[geckoOccupant] extends [occupantRecord]: Relational
+  {
+    ~filter [test::kindlygecko4::store::HerpetariumDb]GeckoRows
+    ~primaryKey
+    (
+      [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.occupant_code
+    )
+    ~mainTable [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record
+    baskingLampCode: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.basking_lamp_code,
+    shedCycleDays: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.shed_cycle_days
+  }
+
+  test::kindlygecko4::domain::SkinkOccupant[skinkOccupant] extends [occupantRecord]: Relational
+  {
+    ~filter [test::kindlygecko4::store::HerpetariumDb]SkinkRows
+    ~primaryKey
+    (
+      [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.occupant_code
+    )
+    ~mainTable [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record
+    burrowSubstrate: [test::kindlygecko4::store::HerpetariumDb]herpetarium.occupant_record.burrow_substrate
+  }
+
+  testSuites:
+  [
+    processingWindowSuite:
+    {
+      function: |test::kindlygecko4::domain::TerrariumOccupant.all(%2026-05-01)->project(
+        [
+          o|$o.occupantCode,
+          o|$o.displayLabel,
+          o|$o.registerLabel,
+          o|$o.lengthBand,
+          o|$o.sizeBand(90),
+          o|$o.careNoteLength
+        ],
+        [
+          'Occupant',
+          'Label',
+          'Register',
+          'Band',
+          'SizeBand',
+          'NoteLength'
+        ]
+      )->sort(
+        [
+          asc('Occupant')
+        ]
+      );
+      tests:
+      [
+        onlyVersionsKnownAtTheProcessingDateSurface:
+        {
+          doc: 'Reads the processing-milestoned occupant relation as of one processing date, so the superseded version of the re-measured occupant is filtered out by the processing predicate while its current version stays, the arms of the snout-vent band chain are decoded off the shared relation, the literal register label is stamped onto every row and the derived size band is evaluated above and below its requested floor.';
+          data:
+          [
+            test::kindlygecko4::store::HerpetariumDb:
+              Relational
+              #{
+                herpetarium.occupant_record:
+                  'occupant_code,terrarium_code,species_name,record_kind,snout_vent_mm,mass_grams,shed_cycle_days,basking_lamp_code,burrow_substrate,care_note,hatched_on,in_z,out_z\n'+
+                  'OC-01,TR-NORTH,Crested gecko,GECKO,132,64,21,LAMP-A,,mist twice daily,2024-06-14,2026-04-01,9999-12-31\n'+
+                  'OC-02,TR-SOUTH,Sand skink,SKINK,84,41,,,FINE_SAND,deep sand burrow kept dry,2024-09-02,2026-04-01,9999-12-31\n'+
+                  'OC-03,TR-EAST,Leaf-tailed gecko,GECKO,58,19,28,LAMP-B,,,2025-01-20,2026-04-01,9999-12-31\n'+
+                  'OC-04,TR-WEST,Blue-tongued skink,SKINK,205,910,,,BARK_CHIP,retired from the display room,2023-03-11,2026-01-05,2026-02-10\n';
+              }#
+          ];
+          asserts:
+          [
+            supersededVersionIsAbsent:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Occupant":"OC-01","Label":"CRESTED GECKO @ TR-NORTH","Register":"HERPETARIUM_REGISTER","Band":"BAND_LONG","SizeBand":"AT_OR_ABOVE_90","NoteLength":16},{"Occupant":"OC-02","Label":"SAND SKINK @ TR-SOUTH","Register":"HERPETARIUM_REGISTER","Band":"BAND_MEDIUM","SizeBand":"BELOW_90","NoteLength":25},{"Occupant":"OC-03","Label":"LEAF-TAILED GECKO @ TR-EAST","Register":"HERPETARIUM_REGISTER","Band":"BAND_SHORT","SizeBand":"BELOW_90","NoteLength":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sharedRelationSpecialisationSuite:
+    {
+      function: |test::kindlygecko4::domain::GeckoOccupant.all(%2026-05-01)->project(
+        [
+          g|$g.occupantCode,
+          g|$g.speciesName,
+          g|$g.shedCycleDays,
+          g|$g.lampLabel('unlit'),
+          g|$g.registerLabel
+        ],
+        [
+          'Occupant',
+          'Species',
+          'ShedDays',
+          'Lamp',
+          'Register'
+        ]
+      )->sort(
+        [
+          asc('Occupant')
+        ]
+      );
+      tests:
+      [
+        onlyTheNarrowedRowsOfTheSharedRelationResolve:
+        {
+          doc: 'Narrows the very same occupant relation to its gecko specialisation, so the skink rows are excluded by the specialisation filter, the inherited columns and the literal register label of the parent implementation still resolve, the lamp column that only the specialisation maps is read, and the absent lamp of one gecko falls back to the requested label.';
+          data:
+          [
+            test::kindlygecko4::store::HerpetariumDb:
+              Relational
+              #{
+                herpetarium.occupant_record:
+                  'occupant_code,terrarium_code,species_name,record_kind,snout_vent_mm,mass_grams,shed_cycle_days,basking_lamp_code,burrow_substrate,care_note,hatched_on,in_z,out_z\n'+
+                  'OC-01,TR-NORTH,Crested gecko,GECKO,132,64,21,LAMP-A,,mist twice daily,2024-06-14,2026-04-01,9999-12-31\n'+
+                  'OC-02,TR-SOUTH,Sand skink,SKINK,84,41,,,FINE_SAND,deep sand burrow kept dry,2024-09-02,2026-04-01,9999-12-31\n'+
+                  'OC-05,TR-ANNEX,Day gecko,GECKO,96,33,26,,,moved off the lamp rack,2025-07-08,2026-04-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            skinkRowsAreExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Occupant":"OC-01","Species":"Crested gecko","ShedDays":21,"Lamp":"LAMP-A","Register":"HERPETARIUM_REGISTER"},{"Occupant":"OC-05","Species":"Day gecko","ShedDays":26,"Lamp":"UNLIT","Register":"HERPETARIUM_REGISTER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

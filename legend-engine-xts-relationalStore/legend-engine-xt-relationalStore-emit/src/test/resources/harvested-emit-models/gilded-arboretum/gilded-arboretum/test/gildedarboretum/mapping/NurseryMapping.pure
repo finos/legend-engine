@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedarboretum::mapping::NurseryMapping
+(
+  *test::gildedarboretum::domain::PropagationBatch[propagationBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch.batch_id
+    )
+    ~mainTable [test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch
+    batchCode: [test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch.batch_code,
+    batchLabel: concat('BATCH-', toUpper(trim([test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch.batch_code))),
+    cultivarTag: concat(substring(toUpper([test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch.cultivar_code), 1, 3), '/NURSERY'),
+    mediumCode: toUpper(trim([test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch.medium_code)),
+    codeLength: length(trim([test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch.batch_code)),
+    viabilityPct: [test::gildedarboretum::store::NurseryDatabase]nursery.propagation_batch.viability_pct
+  }
+
+  *test::gildedarboretum::domain::NurseryBed[nurseryBed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedarboretum::store::NurseryDatabase]nursery.nursery_bed.bed_code
+    )
+    ~mainTable [test::gildedarboretum::store::NurseryDatabase]nursery.nursery_bed
+    bedCode: [test::gildedarboretum::store::NurseryDatabase]nursery.nursery_bed.bed_code,
+    bedLabel: concat(toUpper(trim([test::gildedarboretum::store::NurseryDatabase]nursery.nursery_bed.bed_name)), ' BED'),
+    shadeFraction: [test::gildedarboretum::store::NurseryDatabase]nursery.nursery_bed.shade_fraction
+  }
+
+  testSuites:
+  [
+    propagationBatchSuite:
+    {
+      function: |test::gildedarboretum::domain::PropagationBatch.all()->graphFetch(
+        #{
+          test::gildedarboretum::domain::PropagationBatch
+          {
+            batchCode,
+            batchLabel,
+            cultivarTag,
+            mediumCode,
+            codeLength,
+            viabilityPct
+          }
+        }#
+      )->serialize(
+        #{
+          test::gildedarboretum::domain::PropagationBatch
+          {
+            batchCode,
+            batchLabel,
+            cultivarTag,
+            mediumCode,
+            codeLength,
+            viabilityPct
+          }
+        }#
+      );
+      tests:
+      [
+        everyStringFunctionTransform:
+        {
+          doc: 'One sown batch row proving each string-function transform: the prefixed upper-cased label, the truncated cultivar tag, the upper-cased medium code and the trimmed-code length.';
+          data:
+          [
+            test::gildedarboretum::store::NurseryDatabase:
+              Relational
+              #{
+                nursery.propagation_batch:
+                  'batch_id,batch_code,cultivar_code,medium_code,viability_pct,sown_count\n'+
+                  '1,pb-1,acerpalmatum,peat-perlite,87.5,240\n';
+              }#
+          ];
+          asserts:
+          [
+            transformedBatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"batchCode":"pb-1","batchLabel":"BATCH-PB-1","cultivarTag":"ACE/NURSERY","mediumCode":"PEAT-PERLITE","codeLength":4,"viabilityPct":87.5}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    nurseryBedSuite:
+    {
+      function: |test::gildedarboretum::domain::NurseryBed.all()->graphFetch(
+        #{
+          test::gildedarboretum::domain::NurseryBed
+          {
+            bedCode,
+            bedLabel,
+            shadeFraction
+          }
+        }#
+      )->serialize(
+        #{
+          test::gildedarboretum::domain::NurseryBed
+          {
+            bedCode,
+            bedLabel,
+            shadeFraction
+          }
+        }#
+      );
+      tests:
+      [
+        suffixedBedLabel:
+        {
+          doc: 'One bed row proving the suffixed upper-cased bed label and the passthrough shade fraction.';
+          data:
+          [
+            test::gildedarboretum::store::NurseryDatabase:
+              Relational
+              #{
+                nursery.nursery_bed:
+                  'bed_code,bed_name,shade_fraction\n'+
+                  'nb-1,north frame,0.35\n';
+              }#
+          ];
+          asserts:
+          [
+            labelledBed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"bedCode":"nb-1","bedLabel":"NORTH FRAME BED","shadeFraction":0.35}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

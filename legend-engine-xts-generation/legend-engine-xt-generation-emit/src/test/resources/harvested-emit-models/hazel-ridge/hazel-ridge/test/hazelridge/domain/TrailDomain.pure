@@ -1,0 +1,157 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::hazelridge::domain::*;
+
+Class test::hazelridge::domain::StewardshipCharter
+{
+  charterCode: String[1];
+  charterTitle: String[1];
+  adoptedOn: StrictDate[1];
+  reviewCycleMonths: Integer[1];
+  networks: TrailNetwork[*];
+  accessRules: AccessRule[*];
+}
+
+Class test::hazelridge::domain::TrailNetwork
+{
+  networkCode: String[1];
+  networkName: String[1];
+  totalLengthKm: Float[1];
+  managingBody: String[1];
+  segments: TrailSegment[*];
+  trailheads: Trailhead[*];
+}
+
+Class test::hazelridge::domain::TrailSegment
+{
+  segmentCode: String[1];
+  segmentName: String[1];
+  lengthKm: Float[1];
+  ascentMetres: Integer[1];
+  difficultyBand: String[1];
+  surface: SurfaceCondition[0..1];
+  waypoints: Waypoint[*];
+  signage: SignagePlacement[*];
+}
+
+Class test::hazelridge::domain::Trailhead
+{
+  trailheadCode: String[1];
+  trailheadName: String[1];
+  parkingBays: Integer[1];
+  wheelchairAccessible: Boolean[1];
+  openedOn: StrictDate[1];
+}
+
+Class test::hazelridge::domain::Waypoint
+{
+  waypointCode: String[1];
+  description: String[1];
+  distanceFromStartKm: Float[1];
+  elevationMetres: Integer[1];
+}
+
+Class test::hazelridge::domain::SurfaceCondition
+{
+  surfaceKind: String[1];
+  conditionGrade: String[1];
+  assessedOn: StrictDate[1];
+  drainageNote: String[0..1];
+}
+
+Class test::hazelridge::domain::AccessRule
+{
+  ruleCode: String[1];
+  ruleText: String[1];
+  appliesToSurfaceKind: String[0..1];
+  bicyclesPermitted: Boolean[1];
+  dogsPermitted: Boolean[1];
+  closures: SeasonalClosure[*];
+}
+
+Class test::hazelridge::domain::SeasonalClosure
+{
+  closureCode: String[1];
+  reason: String[1];
+  startsOn: StrictDate[1];
+  endsOn: StrictDate[1];
+}
+
+Class test::hazelridge::domain::MaintenanceTask
+{
+  taskCode: String[1];
+  taskSummary: String[1];
+  priorityBand: String[1];
+  estimatedHours: Float[1];
+  raisedOn: StrictDate[1];
+  segment: TrailSegment[0..1];
+  assignedParty: WorkParty[0..1];
+  equipment: EquipmentItem[*];
+}
+
+Class test::hazelridge::domain::WorkParty
+{
+  partyCode: String[1];
+  partyName: String[1];
+  meetingPoint: String[1];
+  scheduledOn: StrictDate[1];
+  volunteers: Volunteer[*];
+}
+
+Class test::hazelridge::domain::Volunteer
+{
+  volunteerCode: String[1];
+  displayName: String[1];
+  trainingLevel: String[1];
+  joinedOn: StrictDate[1];
+  toolCertified: Boolean[1];
+}
+
+Class test::hazelridge::domain::EquipmentItem
+{
+  itemCode: String[1];
+  itemName: String[1];
+  quantityHeld: Integer[1];
+  storedAt: String[1];
+  lastServicedOn: StrictDate[0..1];
+}
+
+Class test::hazelridge::domain::InspectionReport
+{
+  reportCode: String[1];
+  inspectedOn: StrictDate[1];
+  inspectorName: String[1];
+  passed: Boolean[1];
+  segment: TrailSegment[0..1];
+  hazards: HazardNote[*];
+}
+
+Class test::hazelridge::domain::HazardNote
+{
+  hazardCode: String[1];
+  hazardText: String[1];
+  severityBand: String[1];
+  clearedOn: StrictDate[0..1];
+}
+
+Class test::hazelridge::domain::SignagePlacement
+{
+  signCode: String[1];
+  signLegend: String[1];
+  installedOn: StrictDate[1];
+  distanceFromStartKm: Float[1];
+  replacementDue: Boolean[1];
+}

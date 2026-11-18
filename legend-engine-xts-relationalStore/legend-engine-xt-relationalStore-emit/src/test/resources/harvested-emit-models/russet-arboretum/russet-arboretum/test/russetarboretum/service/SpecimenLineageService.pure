@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetarboretum::service::SpecimenLineageService
+{
+  pattern: '/arboretum/v1/lineage';
+  title: 'Specimen Lineage Placement';
+  owners:
+  [
+    'collection-registrar',
+    'canopy-survey'
+  ];
+  documentation: 'Reports the bed and site placement of every non-retired specimen at an internally bound anchor date, together with the specimen it was propagated from, threading the same anchor through every milestoned hop.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |let anchor = %2024-06-01;
+      test::russetarboretum::domain::Specimen.all($anchor)->filter(
+        s|($s.stage != test::russetarboretum::domain::LifecycleStage.Retired) && ($s.accessionCode->in(['ARB-1001', 'ARB-1002', 'ARB-1004', 'ARB-1005'])) && ($s.plantingYear <= $anchor->year())
+      )->project(
+        [
+          s|$s.accessionCode,
+          s|$s.bed($anchor).bedCode,
+          s|$s.bed($anchor).site($anchor).siteName,
+          s|$s.propagatedFrom($anchor).bed($anchor).site($anchor).regionCode,
+          s|$s.plantingYear->toString()
+        ],
+        [
+          'Accession',
+          'Bed',
+          'Site',
+          'ParentRegion',
+          'PlantingYear'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Accession')
+        ]
+      );;
+    mapping: test::russetarboretum::mapping::ArboretumMapping;
+    runtime: test::russetarboretum::runtime::ArboretumRuntime;
+  }
+  testSuites:
+  [
+    lineageSuite:
+    {
+          data:
+          [
+            connections:
+            [
+              h2Connection:
+                Relational
+                #{
+                  arb.collection_site:
+                    'site_id,site_name,region_code,from_z,thru_z\n'+
+                    '1,Ridge Arboretum,NORTH,2023-01-01,9999-12-31\n'+
+                    '2,Fen Arboretum,SOUTH,2023-01-01,9999-12-31\n';
+                  arb.planting_bed:
+                    'bed_id,bed_code,habitat,site_id,from_z,thru_z\n'+
+                    '10,BED-A,woodland,1,2023-01-01,9999-12-31\n'+
+                    '11,BED-B,meadow,2,2023-01-01,9999-12-31\n'+
+                    '12,BED-C,woodland,1,2023-01-01,2024-01-01\n';
+                  arb.specimen:
+                    'specimen_id,accession_code,species_name,lifecycle_stage,planting_year,bed_id,parent_specimen_id,from_z,thru_z\n'+
+                    '100,ARB-1001,Quercus rubra,established,2015,10,,2023-01-01,9999-12-31\n'+
+                    '101,ARB-1002,Acer saccharum,established,2018,10,100,2023-01-01,9999-12-31\n'+
+                    '102,ARB-1003,Betula nigra,retired,2012,10,100,2023-01-01,9999-12-31\n'+
+                    '103,ARB-1004,Tilia cordata,planted,2021,11,101,2023-01-01,9999-12-31\n'+
+                    '104,ARB-1005,Fagus grandifolia,established,2019,12,100,2023-01-01,9999-12-31\n';
+                  arb.care_event:
+                    'event_id,specimen_id,event_kind,event_code,performed_on,crown_reduction_pct,height_cm,from_z,thru_z\n'+
+                    '500,100,pruning,PRN-500,2024-03-15,12,,2023-01-01,9999-12-31\n'+
+                    '501,100,survey,SRV-501,2024-04-20,,1450,2023-01-01,9999-12-31\n'+
+                    '502,101,pruning,PRN-502,2024-05-02,8,,2023-01-01,9999-12-31\n'+
+                    '503,102,survey,SRV-503,2024-02-11,,980,2023-01-01,9999-12-31\n'+
+                    '504,100,survey,SRV-504,2023-12-01,,1400,2023-01-01,2024-05-01\n';
+                }#
+            ]
+          ]
+      tests:
+      [
+        anchoredPlacement:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            placementRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"ARB-1001","Bed":"BED-A","Site":"Ridge Arboretum","ParentRegion":null,"PlantingYear":"2015"},{"Accession":"ARB-1002","Bed":"BED-A","Site":"Ridge Arboretum","ParentRegion":"NORTH","PlantingYear":"2018"},{"Accession":"ARB-1004","Bed":"BED-B","Site":"Fen Arboretum","ParentRegion":"NORTH","PlantingYear":"2021"},{"Accession":"ARB-1005","Bed":null,"Site":null,"ParentRegion":"NORTH","PlantingYear":"2019"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

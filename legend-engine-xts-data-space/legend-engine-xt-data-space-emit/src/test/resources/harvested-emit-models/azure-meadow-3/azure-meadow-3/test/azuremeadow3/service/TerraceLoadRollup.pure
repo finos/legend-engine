@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azuremeadow3::service::TerraceLoadRollup
+{
+  pattern: '/azuremeadow3/v1/terrace-load-rollup';
+  title: 'Alpine Meadow - Parcel And Plot Loads Folded By Terrace';
+  ownership: UserList { users: ['alpine-meadow-desk'] };
+  documentation: 'Reads the terrace fold the mapping computes behind the class, keeps the terraces the caller names so the terrace-less parcel never reaches the result, and returns the parcel tally and plot total of each named terrace in order.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query:
+    {
+      terraces: String[*]|
+      test::azuremeadow3::domain::TerraceLoad.all()->filter(
+        x|($x.terraceCode->in($terraces)) && ($x.parcelTally > 0)
+      )->project(
+        [
+          x|$x.terraceCode,
+          x|$x.parcelTally,
+          x|$x.plotTotal
+        ],
+        [
+          'Terrace',
+          'Parcels',
+          'Plots'
+        ]
+      )->sort(
+        [
+          asc('Terrace')
+        ]
+      )->limit(10)
+    };
+    mapping: test::azuremeadow3::mapping::MeadowRefMapping;
+    runtime: test::azuremeadow3::runtime::MeadowRefRuntime;
+  }
+  testSuites:
+  [
+    terraceLoadRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowConnection:
+            Reference
+            #{
+              test::azuremeadow3::data::MeadowTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        namedTerraces:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            terraces = ['T-1', 'T-2']
+          ]
+          asserts:
+          [
+            bothNamedTerracesFolded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Terrace":"T-1","Parcels":2,"Plots":6},{"Terrace":"T-2","Parcels":2,"Plots":9}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

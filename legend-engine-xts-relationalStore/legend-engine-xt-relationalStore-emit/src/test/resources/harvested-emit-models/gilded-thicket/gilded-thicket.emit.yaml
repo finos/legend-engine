@@ -1,0 +1,59 @@
+name: gilded-thicket
+title: "Gilded Thicket Greenway Canopy Survey — Deep Join Chains, Computed Enumerations and a Unioned Register"
+description: |
+  A municipal greenway canopy survey whose inspection records reach an
+  administrative borough across a five-hop cross-schema join chain and read a
+  ward name back out of a derived view. Four enumerations are sourced from
+  computed case expressions, an eight-arm condition band falls back to a null
+  sentinel, the survey location is folded in as an embedded mapping, and an
+  operation root unions the live register with the retired archive.
+modelSources:
+  model:
+    root: gilded-thicket
+    files:
+      - test/gildedthicket/domain/CanopyDomain.pure
+      - test/gildedthicket/mapping/CanopyEnumMappings.pure
+      - test/gildedthicket/mapping/CanopyMapping.pure
+      - test/gildedthicket/mapping/GreenwayBaseMapping.pure
+      - test/gildedthicket/store/CanopyStore.pure
+      - test/gildedthicket/store/GreenwayStore.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - canopy-survey
+  - cross-schema
+  - enum-of-expression
+  - h2
+  - mapping-test
+  - multi-hop-join
+  - operation-union
+  - relational
+  - urban-greenway
+  - view-backed

@@ -1,0 +1,175 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverfjord2::service::StationTideRollupMulti
+{
+  pattern: '/fjord/v1/stations-multi/{station}';
+  title: 'Silver Fjord - Station tide roll-up (multi-environment)';
+  owners:
+  [
+    'fjord-monitoring-platform',
+    'tide-gauge-eng'
+  ];
+  documentation: 'Multi-execution station roll-up that resolves an environment-keyed mapping/runtime binding at execution time. It keeps the reporting gauges of the requested station that recorded a positive tide and aggregates their wave and tide readings through a grouped projection.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {station: String[1]|test::silverfjord2::domain::GaugeReading.all()->filter(
+      g|(($g.stationCode == $station) && ($g.tideHeight > 0)) && (($g.gaugeStatus->in(['OPEN', 'ACTIVE'])) && (!($g.gaugeName->isEmpty())))
+    )->groupBy(
+      [
+        g|$g.stationCode
+      ],
+      [
+        agg(g|$g.waveCount, vals|$vals->sum()),
+        agg(g|$g.tideHeight, vals|$vals->max()),
+        agg(g|$g.tideHeight, vals|$vals->min()),
+        agg(g|$g.readingId, vals|$vals->count())
+      ],
+      [
+        'Station',
+        'TotalWaves',
+        'PeakTide',
+        'MinTide',
+        'GaugeCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Station')
+      ]
+    )->limit(100)};
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::silverfjord2::mapping::FjordMapping;
+      runtime: test::silverfjord2::runtime::FjordGaugeRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::silverfjord2::mapping::FjordMapping;
+      runtime: test::silverfjord2::runtime::FjordGaugeRuntime;
+    }
+  }
+}
+
+Service test::silverfjord2::service::StationTideRollup
+{
+  pattern: '/fjord/v1/stations/{station}';
+  title: 'Silver Fjord - Station tide roll-up';
+  owners:
+  [
+    'fjord-monitoring-platform',
+    'tide-gauge-eng'
+  ];
+  documentation: 'Single-execution counterpart carrying the tested suite. It returns the total wave count, the peak and lowest tide and the number of reporting gauges for the requested station.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {station: String[1]|test::silverfjord2::domain::GaugeReading.all()->filter(
+      g|(($g.stationCode == $station) && ($g.tideHeight > 0)) && (($g.gaugeStatus->in(['OPEN', 'ACTIVE'])) && (!($g.gaugeName->isEmpty())))
+    )->groupBy(
+      [
+        g|$g.stationCode
+      ],
+      [
+        agg(g|$g.waveCount, vals|$vals->sum()),
+        agg(g|$g.tideHeight, vals|$vals->max()),
+        agg(g|$g.tideHeight, vals|$vals->min()),
+        agg(g|$g.readingId, vals|$vals->count())
+      ],
+      [
+        'Station',
+        'TotalWaves',
+        'PeakTide',
+        'MinTide',
+        'GaugeCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Station')
+      ]
+    )->limit(100)};
+    mapping: test::silverfjord2::mapping::FjordMapping;
+    runtime: test::silverfjord2::runtime::FjordGaugeRuntime;
+  }
+  testSuites:
+  [
+    stationTideRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fjordConnection:
+            Relational
+            #{
+              fjord.tide_gauge:
+                'reading_id,gauge_name,station_code,gauge_status,tide_height,wave_count\n'+
+                '1,Outer Sill,NorthArm,OPEN,120,40\n'+
+                '2,Inner Sill,NorthArm,ACTIVE,80,60\n'+
+                '3,Dry Shelf,NorthArm,SEALED,0,10\n'+
+                '4,Far Head,SouthArm,OPEN,200,90\n'+
+                '5,Mid Reach,NorthArm,OPEN,140,20\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northArmRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            station = 'NorthArm'
+          ]
+          asserts:
+          [
+            reportingGaugesOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"NorthArm","TotalWaves":120,"PeakTide":140,"MinTide":80,"GaugeCount":3}]';
+                  }#;
+              }#
+          ]
+        },
+        southArmRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            station = 'SouthArm'
+          ]
+          asserts:
+          [
+            singleGaugeStation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"SouthArm","TotalWaves":90,"PeakTide":200,"MinTide":200,"GaugeCount":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

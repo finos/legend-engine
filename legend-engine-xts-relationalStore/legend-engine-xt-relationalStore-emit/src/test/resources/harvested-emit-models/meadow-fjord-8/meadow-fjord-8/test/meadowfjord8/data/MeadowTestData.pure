@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::meadowfjord8::data::MeadowTestData
+{
+  Relational
+  #{
+    meadowland.survey_plot:
+      'plot_code,plot_name,aspect_code,slope_percent\n'+
+      'PL-01,Larch Bench,AS-N,12.5\n'+
+      'PL-02,Scree Terrace,AS-E,18.0\n'+
+      'PL-03,Spring Hollow,AS-S,7.5\n'+
+      'PL-04,Ridge Shoulder,AS-W,22.0\n';
+    meadowland.bloom_count:
+      'count_code,plot_code,species_code,flower_count,cover_percent,counted_on\n'+
+      'BC-01,PL-01,SP-GENT,42,18.4,2026-06-11\n'+
+      'BC-02,PL-02,SP-SAXI,15,6.25,2026-06-12\n'+
+      'BC-03,PL-03,SP-GENT,63,27.75,2026-06-13\n'+
+      'BC-04,PL-04,SP-ANEM,28,11.2,2026-06-14\n';
+    meadowland.meadow_visit:
+      'visit_code,plot_code,crew_code,visited_on,hours_spent\n'+
+      'MV-01,PL-01,CR-A,2026-06-11,3.5\n'+
+      'MV-02,PL-02,CR-B,2026-06-12,2.25\n'+
+      'MV-03,PL-03,CR-A,2026-06-13,4.75\n'+
+      'MV-04,PL-04,CR-C,2026-06-20,1.5\n';
+  }#
+}

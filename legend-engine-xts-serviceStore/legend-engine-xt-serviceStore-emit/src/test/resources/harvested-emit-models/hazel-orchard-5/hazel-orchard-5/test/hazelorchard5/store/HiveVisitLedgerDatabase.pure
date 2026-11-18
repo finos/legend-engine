@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::hazelorchard5::store::HiveVisitLedgerDatabase
+(
+  Schema orchard
+  (
+    Table hive_visit
+    (
+      visit_id VARCHAR(60) PRIMARY KEY,
+      orchard_code VARCHAR(60),
+      season_label VARCHAR(60),
+      hive_code VARCHAR(60),
+      block_code VARCHAR(60),
+      row_code VARCHAR(60),
+      colony_code VARCHAR(60),
+      inspector_code VARCHAR(60),
+      observed_on_date VARCHAR(60),
+      started_at_time VARCHAR(60),
+      ended_at_time VARCHAR(60),
+      weather_label VARCHAR(60),
+      cloud_cover_label VARCHAR(60),
+      wind_label VARCHAR(60),
+      temperature_celsius DOUBLE,
+      humidity_percent DOUBLE,
+      visit_duration_minutes INTEGER,
+      frame_count INTEGER,
+      brood_frame_count INTEGER,
+      forager_count_per_minute INTEGER,
+      blossom_open_percent DOUBLE,
+      blossom_stage_label VARCHAR(60),
+      nectar_flow_label VARCHAR(60),
+      pollen_trap_grams DOUBLE,
+      hive_weight_kilograms DOUBLE,
+      queen_seen_flag BIT,
+      varroa_count_per_hundred DOUBLE,
+      disease_sign_label VARCHAR(60),
+      feed_given_litres DOUBLE,
+      equipment_label VARCHAR(60)
+    )
+  )
+)

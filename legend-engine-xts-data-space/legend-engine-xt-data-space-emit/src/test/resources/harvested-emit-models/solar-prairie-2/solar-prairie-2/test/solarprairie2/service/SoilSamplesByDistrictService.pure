@@ -1,0 +1,146 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarprairie2::service::SoilSamplesByDistrictService
+{
+  pattern: '/prairie/v1/soil-samples/{district}';
+  title: 'Soil Samples By District';
+  owners:
+  [
+    'prairie-field-station-team'
+  ];
+  documentation: 'Publishes the soil cores of one recognised management district whose acidity reading clears the reporting floor, projecting each core with the site name resolved across the site join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {district: String[1]|test::solarprairie2::domain::SoilSample.all()->filter(
+      s|($s.districtCode == $district) && ($s.districtCode->in(['DIS-NORTH', 'DIS-SOUTH', 'DIS-EAST', 'DIS-WEST']) && ($s.phReading >= 6.5))
+    )->project(
+      [
+        s|$s.soilCode,
+        s|$s.soilLabel->toUpper(),
+        s|$s.recordedOn,
+        s|$s.phReading,
+        s|$s.coreDepthCm,
+        s|$s.siteName
+      ],
+      [
+        'Sample',
+        'Label',
+        'Recorded',
+        'Ph',
+        'DepthCm',
+        'Site'
+      ]
+    )->sort(
+      [
+        asc('Sample')
+      ]
+    )};
+    mapping: test::solarprairie2::mapping::PrairieMapping;
+    runtime: test::solarprairie2::runtime::PrairieFieldRuntime;
+  }
+  testSuites:
+  [
+    districtSampleSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              prairie.prairie_site:
+                'site_code,site_name,district_code,hectares,established_year\n'+
+                'PS-01,North Ridge Prairie,DIS-NORTH,42.5,2015\n'+
+                'PS-02,South Draw Prairie,DIS-SOUTH,18.25,2019\n';
+              prairie.soil_sample:
+                'soil_code,site_code,soil_label,recorded_on,ph_reading,core_depth_cm\n'+
+                'SS-01,PS-01,Ridge Core One,2026-04-08,6.4,30\n'+
+                'SS-02,PS-01,Ridge Core Two,,6.9,45\n'+
+                'SS-03,PS-02,Draw Core One,2026-05-20,7.2,25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northDistrictSamples:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'DIS-NORTH'
+          ]
+          asserts:
+          [
+            onlyTheCoreAboveTheAcidityFloorIsPublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"SS-02","Label":"RIDGE CORE TWO","Recorded":null,"Ph":6.9,"DepthCm":45,"Site":"North Ridge Prairie"}]';
+                  }#;
+              }#
+          ]
+        },
+        southDistrictSamples:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'DIS-SOUTH'
+          ]
+          asserts:
+          [
+            theSouthernCoreResolvesItsOwnSite:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"SS-03","Label":"DRAW CORE ONE","Recorded":"2026-05-20","Ph":7.2,"DepthCm":25,"Site":"South Draw Prairie"}]';
+                  }#;
+              }#
+          ]
+        },
+        unmanagedDistrictSamples:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'DIS-EAST'
+          ]
+          asserts:
+          [
+            noCoresForADistrictWithoutSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

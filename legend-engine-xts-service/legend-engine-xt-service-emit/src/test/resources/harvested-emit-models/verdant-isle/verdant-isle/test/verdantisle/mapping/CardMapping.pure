@@ -1,0 +1,162 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantisle::mapping::CardMapping
+(
+  *test::verdantisle::domain::ReadingCard[readingCard]: Pure
+  {
+    ~src test::verdantisle::source::CardDocument
+    cardId: $src.attr_cardId,
+    shelfMark: $src.attr_shelfMark,
+    givenName: $src.text_readerName->substring(0, $src.text_readerName->indexOf(' ')),
+    familyName: $src.text_readerName->substring(($src.text_readerName->indexOf(' ') + 1), $src.text_readerName->length()),
+    note: $src.attr_note,
+    edition[cardEdition]: $src.elem_edition->toOne()
+  }
+
+  test::verdantisle::domain::CardEdition[cardEdition]: Pure
+  {
+    ~src test::verdantisle::source::EditionElement
+    code: $src.attr_editionCode,
+    language: $src.attr_langTag->toUpper()
+  }
+
+  testSuites:
+  [
+    cardTransformSuite:
+    {
+      function: |test::verdantisle::domain::ReadingCard.all()->graphFetch(
+        #{
+          test::verdantisle::domain::ReadingCard{
+            cardId,
+            givenName,
+            familyName,
+            note,
+            edition{
+              code,
+              language
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantisle::domain::ReadingCard{
+            cardId,
+            givenName,
+            familyName,
+            note,
+            edition{
+              code,
+              language
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        singleSeparator:
+        {
+          doc: 'A reader name with exactly one separator splits cleanly into the two target properties while the nested edition element is handed to the second class mapping by name.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantisle::source::CardDocument:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"attr_cardId":"RC-1001","attr_shelfMark":"SM-441","text_readerName":"Ada Lovelace","attr_note":"desk by the window","elem_edition":{"attr_editionCode":"ED-7","attr_langTag":"eng"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"cardId":"RC-1001","givenName":"Ada","familyName":"Lovelace","note":"desk by the window","edition":{"code":"ED-7","language":"ENG"}}';
+                  }#;
+              }#
+          ];
+        },
+        severalSeparators:
+        {
+          doc: 'With more than one separator the split still keys on the first occurrence, so everything after it lands in the second target property.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantisle::source::CardDocument:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"attr_cardId":"RC-1002","attr_shelfMark":"SM-118","text_readerName":"Ida Beth Kirkwood","attr_note":"map room","elem_edition":{"attr_editionCode":"ED-2","attr_langTag":"fra"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"cardId":"RC-1002","givenName":"Ida","familyName":"Beth Kirkwood","note":"map room","edition":{"code":"ED-2","language":"FRA"}}';
+                  }#;
+              }#
+          ];
+        },
+        optionalNoteAbsent:
+        {
+          doc: 'The pass-through of the optional source property yields an absent target property rather than a default.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantisle::source::CardDocument:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"attr_cardId":"RC-1003","attr_shelfMark":"SM-903","text_readerName":"Nora Halden","elem_edition":{"attr_editionCode":"ED-9","attr_langTag":"swe"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"cardId":"RC-1003","givenName":"Nora","familyName":"Halden","note":null,"edition":{"code":"ED-9","language":"SWE"}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

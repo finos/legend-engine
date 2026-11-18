@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+
+Mapping test::gildedlantern::mapping::ObservatoryMapping
+(
+  *test::gildedlantern::domain::ObservingSession[session]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedlantern::store::ObservatoryDB]sky.observing_session.session_id
+    )
+    ~mainTable [test::gildedlantern::store::ObservatoryDB]sky.observing_session
+    sessionId: [test::gildedlantern::store::ObservatoryDB]sky.observing_session.session_id,
+    sessionCode: [test::gildedlantern::store::ObservatoryDB]sky.observing_session.session_code,
+    siteCode: [test::gildedlantern::store::ObservatoryDB]sky.observing_session.site_code,
+    observedOn: [test::gildedlantern::store::ObservatoryDB]sky.observing_session.observed_on,
+    exposureSeconds: [test::gildedlantern::store::ObservatoryDB]sky.observing_session.exposure_seconds,
+    instrumentCode: [test::gildedlantern::store::ObservatoryDB]sky.observing_session.instrument_code,
+    skyQuality: [test::gildedlantern::store::ObservatoryDB]sky.observing_session.sky_quality
+  }
+
+  *test::gildedlantern::domain::TelescopeInstrument[instrument]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedlantern::store::ObservatoryDB]sky.telescope_instrument.instrument_id
+    )
+    ~mainTable [test::gildedlantern::store::ObservatoryDB]sky.telescope_instrument
+    instrumentId: [test::gildedlantern::store::ObservatoryDB]sky.telescope_instrument.instrument_id,
+    instrumentCode: [test::gildedlantern::store::ObservatoryDB]sky.telescope_instrument.instrument_code,
+    instrumentName: [test::gildedlantern::store::ObservatoryDB]sky.telescope_instrument.instrument_name,
+    apertureMeters: [test::gildedlantern::store::ObservatoryDB]sky.telescope_instrument.aperture_meters,
+    siteCode: [test::gildedlantern::store::ObservatoryDB]sky.telescope_instrument.site_code
+  }
+
+  testSuites:
+  [
+    observatoryMappingSuite:
+    {
+      function: |test::gildedlantern::domain::ObservingSession.all()->project(
+      [
+        x|$x.sessionCode,
+        x|$x.siteCode,
+        x|$x.observedOn,
+        x|$x.exposureSeconds,
+        x|$x.instrumentCode,
+        x|$x.skyQuality
+      ],
+      [
+        'Session',
+        'Site',
+        'ObservedOn',
+        'Exposure',
+        'Instrument',
+        'SkyQuality'
+      ]
+    )->sort([asc('Session')]);
+      tests:
+      [
+        everySessionAndInstrumentBinding:
+        {
+          doc: 'Reads the primary-keyed session rows through the aliased main table and verifies that each stored session field remains attached to its observatory record.';
+          data:
+          [
+            test::gildedlantern::store::ObservatoryDB:
+              Relational
+              #{
+                sky.observing_session:
+                  'session_id,session_code,site_code,observed_on,exposure_seconds,instrument_code,sky_quality\n'+
+                  '1,NS-ALPHA-01,MOUNTAIN,2026-07-14,1200.0,TE-RED,4\n'+
+                  '2,NS-BETA-02,COAST,2026-07-15,640.0,TE-BLUE,3\n';
+                sky.telescope_instrument:
+                  'instrument_id,instrument_code,instrument_name,aperture_meters,site_code\n'+
+                  '10,TE-RED,Red Aperture,0.42,MOUNTAIN\n'+
+                  '20,TE-BLUE,Blue Aperture,0.28,COAST\n';
+              }#
+          ];
+          asserts:
+          [
+            mappedSessionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session":"NS-ALPHA-01","Site":"MOUNTAIN","ObservedOn":"2026-07-14","Exposure":1200.0,"Instrument":"TE-RED","SkyQuality":4},{"Session":"NS-BETA-02","Site":"COAST","ObservedOn":"2026-07-15","Exposure":640.0,"Instrument":"TE-BLUE","SkyQuality":3}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

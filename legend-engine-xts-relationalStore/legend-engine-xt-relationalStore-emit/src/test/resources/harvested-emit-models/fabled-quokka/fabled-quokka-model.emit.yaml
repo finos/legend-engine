@@ -1,0 +1,43 @@
+name: fabled-quokka-model
+title: "Sanctuary Sightings - Enumeration Mapping behind a Filtered Service Projection"
+description: |
+  A wildlife-sanctuary sighting model whose enum-typed property is bound to an
+  integral column through a named enumeration mapping, so a service predicate
+  comparing the property to an enum literal resolves into a numeric column test
+  before three string attributes are projected. Both the mapping and the service
+  carry test suites that separate confirmed from provisional source rows.
+
+modelSources:
+  model:
+    root: fabled-quokka-model
+    files:
+      - test/fabledquokka/connection/SanctuaryH2Connection.pure
+      - test/fabledquokka/domain/SightingRecord.pure
+      - test/fabledquokka/domain/SurveyStatus.pure
+      - test/fabledquokka/mapping/SanctuaryMapping.pure
+      - test/fabledquokka/runtime/SanctuaryRuntime.pure
+      - test/fabledquokka/service/ConfirmedSightings.pure
+      - test/fabledquokka/store/SanctuaryDB.pure
+
+features:
+  - execution:service
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - enumeration-mapping
+  - h2
+  - relational
+  - service-test
+  - wildlife-survey

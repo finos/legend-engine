@@ -1,0 +1,174 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarprairie2::store::PrairieFieldDB
+(
+  Schema prairie
+  (
+    Table prairie_site
+    (
+      site_code VARCHAR(24) NOT NULL,
+      site_name VARCHAR(120) NOT NULL,
+      district_code VARCHAR(24) NOT NULL,
+      hectares DOUBLE NOT NULL,
+      established_year INTEGER NOT NULL
+    )
+
+    Table soil_sample
+    (
+      soil_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      soil_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      ph_reading DOUBLE NOT NULL,
+      core_depth_cm INTEGER NOT NULL
+    )
+
+    Table seed_mix
+    (
+      seed_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      seed_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      sow_rate_kg_ha DOUBLE NOT NULL,
+      species_count INTEGER NOT NULL
+    )
+
+    Table burn_event
+    (
+      burn_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      burn_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      burned_hectares DOUBLE NOT NULL,
+      crew_size INTEGER NOT NULL
+    )
+
+    Table grazing_round
+    (
+      grazing_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      grazing_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      stocking_rate DOUBLE NOT NULL,
+      head_count INTEGER NOT NULL
+    )
+
+    Table pollinator_count
+    (
+      pollinator_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      pollinator_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      visits_per_hour DOUBLE NOT NULL,
+      species_seen INTEGER NOT NULL
+    )
+
+    Table rain_gauge
+    (
+      rain_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      rain_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      rainfall_mm DOUBLE NOT NULL,
+      gauge_height_cm INTEGER NOT NULL
+    )
+
+    Table bird_transect
+    (
+      bird_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      bird_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      transect_length_m DOUBLE NOT NULL,
+      birds_counted INTEGER NOT NULL
+    )
+
+    Table weed_patch
+    (
+      weed_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      weed_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      cover_pct DOUBLE NOT NULL,
+      patch_count INTEGER NOT NULL
+    )
+
+    Table volunteer_crew
+    (
+      crew_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      crew_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      hours_worked DOUBLE NOT NULL,
+      member_count INTEGER NOT NULL
+    )
+
+    Table fence_segment
+    (
+      fence_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      fence_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      segment_length_m DOUBLE NOT NULL,
+      post_count INTEGER NOT NULL
+    )
+
+    Table wind_pump
+    (
+      pump_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      pump_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      flow_litres_min DOUBLE NOT NULL,
+      blade_count INTEGER NOT NULL
+    )
+
+    Table sign_post
+    (
+      sign_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      sign_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      post_height_m DOUBLE NOT NULL,
+      panel_count INTEGER NOT NULL
+    )
+
+    Table trail_section
+    (
+      trail_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      trail_label VARCHAR(120) NOT NULL,
+      recorded_on DATE,
+      section_length_km DOUBLE NOT NULL,
+      marker_count INTEGER NOT NULL
+    )
+  )
+
+  Join Site_SoilSample(prairie.prairie_site.site_code = prairie.soil_sample.site_code)
+  Join Site_SeedMix(prairie.prairie_site.site_code = prairie.seed_mix.site_code)
+  Join Site_BurnEvent(prairie.prairie_site.site_code = prairie.burn_event.site_code)
+  Join Site_GrazingRound(prairie.prairie_site.site_code = prairie.grazing_round.site_code)
+  Join Site_PollinatorCount(prairie.prairie_site.site_code = prairie.pollinator_count.site_code)
+  Join Site_RainGauge(prairie.prairie_site.site_code = prairie.rain_gauge.site_code)
+  Join Site_BirdTransect(prairie.prairie_site.site_code = prairie.bird_transect.site_code)
+  Join Site_WeedPatch(prairie.prairie_site.site_code = prairie.weed_patch.site_code)
+  Join Site_VolunteerCrew(prairie.prairie_site.site_code = prairie.volunteer_crew.site_code)
+  Join Site_FenceSegment(prairie.prairie_site.site_code = prairie.fence_segment.site_code)
+  Join Site_WindPump(prairie.prairie_site.site_code = prairie.wind_pump.site_code)
+  Join Site_SignPost(prairie.prairie_site.site_code = prairie.sign_post.site_code)
+  Join Site_TrailSection(prairie.prairie_site.site_code = prairie.trail_section.site_code)
+  Join Rain_Weed(prairie.rain_gauge.site_code = prairie.weed_patch.site_code)
+)

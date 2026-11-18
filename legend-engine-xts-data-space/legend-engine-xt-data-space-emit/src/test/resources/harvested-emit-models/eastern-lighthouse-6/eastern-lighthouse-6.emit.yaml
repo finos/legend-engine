@@ -1,0 +1,57 @@
+name: eastern-lighthouse-6
+title: "Eastern Lighthouse — wide upland seed vault accession register read straight through an aliased table and tallied per storage room for a collection year"
+description: |
+  An upland seed vault keeps one wide accession register: thirty-six typed columns — the
+  taxon, provenance, handling, storage and curation text recorded against an accession, the
+  four instants it was collected, received, tested and repacked, the four measured
+  quantities and the two counted ones — are each read straight through the aliased table
+  with no transform in between, so the type of every column is what flows into the
+  queries. The register is keyed explicitly, so the grain of every projection off it is the
+  accession. An endpoint tallies the packets held in each storage room for a named
+  collection year, extracting the year from the collection instant inside the predicate so
+  the comparison stays in the plan, and grouping the surviving rows so the published grain
+  is the room. Two physical estates are wired, differing only in the connection each
+  execution context resolves, and a governed entry point publishes the register against
+  both.
+modelSources:
+  model:
+    root: eastern-lighthouse-6
+    files:
+      - test/easternlighthouse6/connection/SeedVaultConnections.pure
+      - test/easternlighthouse6/data/SeedVaultTestData.pure
+      - test/easternlighthouse6/dataspace/SeedVaultDataSpace.pure
+      - test/easternlighthouse6/domain/SeedVaultDomain.pure
+      - test/easternlighthouse6/mapping/SeedVaultMapping.pure
+      - test/easternlighthouse6/runtime/SeedVaultRuntimes.pure
+      - test/easternlighthouse6/service/RoomPacketTally.pure
+      - test/easternlighthouse6/store/SeedVaultDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - accession-register
+  - data-space
+  - group-by
+  - h2
+  - relational
+  - seed-vault
+  - sqlserver

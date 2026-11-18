@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::amberreef::mapping::ReefMapping
+(
+  test::amberreef::domain::SurveyRecord[surveyRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberreef::store::ReefDB]reef.survey_record.survey_ref
+    )
+    ~mainTable [test::amberreef::store::ReefDB]reef.survey_record
+    surveyRef: [test::amberreef::store::ReefDB]reef.survey_record.survey_ref,
+    stationRef: [test::amberreef::store::ReefDB]reef.survey_record.station_ref,
+    coveragePercent: [test::amberreef::store::ReefDB]reef.survey_record.coverage_percent,
+    bleachingIndex: [test::amberreef::store::ReefDB]reef.survey_record.bleaching_index,
+    observedOn: [test::amberreef::store::ReefDB]reef.survey_record.observed_on,
+    conditionBand: case(isEmpty([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index), sqlNull(),
+      case(equal([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index, 0), 'pristine',
+        case(equal([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index, 1), toLower(trim('  Watch  ')),
+          case(equal([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index, 2), concat('early-', toLower(substring(trim('  Recovery  '), 1, 3))),
+            case(equal([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index, 3), concat('mixed-', toString(length(trim([test::amberreef::store::ReefDB]reef.survey_record.station_ref)))),
+              case(equal([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index, 4), toUpper('stressed'),
+                case(equal([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index, 5), coalesce(toLower([test::amberreef::store::ReefDB]reef.survey_record.station_ref), 'unstationed'),
+                  case(equal([test::amberreef::store::ReefDB]reef.survey_record.bleaching_index, 6), 'severe',
+                    'beyond-scale'))))))))
+  }
+
+  testSuites:
+  [
+    conditionBandSuite:
+    {
+      function: |test::amberreef::domain::SurveyRecord.all(%2026-04-01)->project(
+  [
+    x|$x.surveyRef,
+    x|$x.conditionBand,
+    x|$x.coveragePercent
+  ],
+  [
+    'Survey',
+    'Band',
+    'Coverage'
+  ]
+)->sort([asc('Survey')]);
+      tests:
+      [
+        everyBandArm:
+        {
+          doc: 'Point-in-time projection as of 2026-04-01 covering each arm of the condition-band conditional, its beyond-scale default and its absent-index fallback, while a survey whose business window closed earlier drops out.';
+          data:
+          [
+            test::amberreef::store::ReefDB:
+              Relational
+              #{
+                reef.survey_record:
+                  'survey_ref,station_ref,coverage_percent,bleaching_index,observed_on,from_z,thru_z\n'+
+                  'SR01,ST1,72,0,2026-03-01,2026-01-01,9999-12-31\n'+
+                  'SR02,ST1,64,1,2026-03-02,2026-01-01,9999-12-31\n'+
+                  'SR03,ST2,58,2,2026-03-03,2026-01-01,9999-12-31\n'+
+                  'SR04,ST2,51,3,2026-03-04,2026-01-01,9999-12-31\n'+
+                  'SR05,ST1,44,4,2026-03-05,2026-01-01,9999-12-31\n'+
+                  'SR06,ST2,37,5,2026-03-06,2026-01-01,9999-12-31\n'+
+                  'SR07,ST1,29,6,2026-03-07,2026-01-01,9999-12-31\n'+
+                  'SR08,ST2,18,9,2026-03-08,2026-01-01,9999-12-31\n'+
+                  'SR09,ST1,11,,2026-03-09,2026-01-01,9999-12-31\n'+
+                  'SR10,ST2,95,2,2026-02-01,2026-01-01,2026-02-15\n';
+              }#
+          ];
+          asserts:
+          [
+            nineLiveRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"SR01","Band":"pristine","Coverage":72},{"Survey":"SR02","Band":"watch","Coverage":64},{"Survey":"SR03","Band":"early-rec","Coverage":58},{"Survey":"SR04","Band":"mixed-3","Coverage":51},{"Survey":"SR05","Band":"STRESSED","Coverage":44},{"Survey":"SR06","Band":"st2","Coverage":37},{"Survey":"SR07","Band":"severe","Coverage":29},{"Survey":"SR08","Band":"beyond-scale","Coverage":18},{"Survey":"SR09","Band":null,"Coverage":11}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

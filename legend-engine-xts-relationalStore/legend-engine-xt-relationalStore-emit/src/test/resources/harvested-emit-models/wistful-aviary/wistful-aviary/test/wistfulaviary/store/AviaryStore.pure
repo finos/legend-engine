@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::wistfulaviary::store::AviaryStore
+(
+  Schema aviary
+  (
+    Table aviary_site
+    (
+      site_id INTEGER PRIMARY KEY,
+      site_name VARCHAR(200) NOT NULL,
+      region_code VARCHAR(20) NOT NULL,
+      habitat_code VARCHAR(20)
+    )
+
+    Table ringed_bird
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      bird_id INTEGER PRIMARY KEY,
+      ring_code VARCHAR(40) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      site_id INTEGER NOT NULL,
+      wing_mm INTEGER,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table observation
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      obs_id INTEGER PRIMARY KEY,
+      bird_id INTEGER NOT NULL,
+      observer VARCHAR(120) NOT NULL,
+      count_seen INTEGER NOT NULL,
+      condition_code VARCHAR(20),
+      observed_on DATE NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+  )
+
+  Join Bird_Site(aviary.ringed_bird.site_id = aviary.aviary_site.site_id)
+  Join Observation_Bird(aviary.observation.bird_id = aviary.ringed_bird.bird_id)
+)

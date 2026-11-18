@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltcanyon4::service::ArchiveSeasonRegister
+{
+  pattern: '/cobalt-canyon/v1/archive-season-register';
+  title: 'Cobalt Canyon - Archive season register';
+  ownership: UserList { users: ['canyon-patrol-desk', 'canyon-ranger-lead'] };
+  documentation: 'Lists archived patrol reports opened since mid season with their sector and as-of trail segment, dropping reports already marked archived and collapsing re-filed duplicates.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|let processingDate = now();
+    let businessDate = now();
+    test::cobaltcanyon4::domain::PatrolReport.all($processingDate)->filter(
+      r|$r.createdAt->isOnOrAfterDay(%2024-06-01)
+    )->project(
+      [
+        r|$r.reportCode,
+        r|$r.sector.sectorName,
+        r|$r.segment($businessDate).segmentName,
+        r|$r.archived,
+        r|'ARCHIVE'
+      ],
+      [
+        'Report',
+        'Sector',
+        'Segment',
+        'Archived',
+        'Source'
+      ]
+    )->filter(
+      row|!($row.getBoolean('Archived') == true)
+    )->distinct()->sort(
+      [
+        asc('Report')
+      ]
+    );};
+    mapping: test::cobaltcanyon4::mapping::CanyonArchiveMapping;
+    runtime: test::cobaltcanyon4::runtime::CanyonArchiveRuntime;
+  }
+  testSuites:
+  [
+    seasonRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          archiveConnection:
+            Reference
+            #{
+              test::cobaltcanyon4::data::CanyonPatrolData
+            }#
+        ]
+      ]
+      tests:
+      [
+        refiledReportCollapses:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            refiledReportCollapsesResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report":"AR-001","Sector":"Rim Sector","Segment":"Rim Switchbacks","Archived":false,"Source":"ARCHIVE"},{"Report":"AR-003","Sector":"Slot Sector","Segment":null,"Archived":null,"Source":"ARCHIVE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

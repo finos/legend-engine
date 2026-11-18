@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealwillow3::service::InspectionLogbookAsOfPair
+{
+  pattern: '/borealwillow3/inspections/{processingDate}/{businessDate}';
+  title: 'Inspection Logbook As Of A Processing And Season Instant';
+  documentation: 'Resolves the hive-inspection extent at an independent processing instant and season date, restricts the logbook to one hive and projects the folded inspector name, the decoded outcome and the constant review label.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'apiary-register-desk'
+  ];
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::borealwillow3::domain::HiveInspection.all($processingDate, $businessDate)->filter(
+      i|$i.hiveCode == 'H-01'
+    )->project(
+      [
+        i|$i.inspectionId,
+        i|$i.hiveCode,
+        i|$i.inspectorName,
+        i|$i.outcome,
+        i|$i.reviewLabel
+      ],
+      [
+        'Inspection',
+        'Hive',
+        'Inspector',
+        'Outcome',
+        'Review'
+      ]
+    )->sort([asc('Inspection')])};
+    mapping: test::borealwillow3::mapping::ApiaryMapping;
+    runtime: test::borealwillow3::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    inspectionLogbookSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryH2Connection:
+            Relational
+            #{
+              apiary.hive_inspection:
+                'inspection_id,hive_code,inspector_name,outcome_code,in_z,out_z,from_z,thru_z\n'+
+                '1,H-01,mira colt,QS,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,H-01,dane orrel,BO,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,H-01,fen ashby,NQ,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '4,H-01,rune keld,AB,2026-01-01,9999-12-31,2024-01-01,2025-01-01\n'+
+                '5,H-01,tal brimm,QS,2020-01-01,2021-01-01,2026-01-01,9999-12-31\n'+
+                '6,H-02,orla venn,BO,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        logbookAtInstantPair:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            currentBeliefAndSeason:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":1,"Hive":"H-01","Inspector":"MIRA COLT","Outcome":"QUEEN_SEEN","Review":"SEASON REVIEW"},{"Inspection":2,"Hive":"H-01","Inspector":"DANE ORREL","Outcome":"BROOD_ONLY","Review":"SEASON REVIEW"},{"Inspection":3,"Hive":"H-01","Inspector":"FEN ASHBY","Outcome":"QUEENLESS","Review":"SEASON REVIEW"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

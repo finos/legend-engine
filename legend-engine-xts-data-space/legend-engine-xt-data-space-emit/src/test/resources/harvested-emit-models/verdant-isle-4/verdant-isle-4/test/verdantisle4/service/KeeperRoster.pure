@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantisle4::service::KeeperRoster
+{
+  pattern: '/verdantisle4/v1/keeper-roster';
+  title: 'Island Nursery - Keeper Roster';
+  documentation: 'Walks each bench to the keeper tending it through the declared association and on to the rota that keeper follows, so the published roster is reached over a two-hop join path rather than a denormalised column. The house filter is a membership test over a literal collection.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'island-nursery-desk'
+  ];
+  execution: Single
+  {
+    query: {|test::verdantisle4::domain::Bench.all()->filter(
+      b|['HS-1', 'HS-2']->contains($b.houseCode)
+    )->project(
+      [
+        col(
+          b|$b.benchCode,
+          'Bench'
+        ),
+        col(
+          b|$b.benchName,
+          'BenchName'
+        ),
+        col(
+          b|if($b.keeper.keeperName->isEmpty(),
+            | 'UNASSIGNED',
+            | $b.keeper.keeperName->toOne()),
+          'Keeper'
+        ),
+        col(
+          b|if($b.keeper.rota.rotaName->isEmpty(),
+            | 'NO ROTA',
+            | $b.keeper.rota.rotaName->toOne()),
+          'Rota'
+        ),
+        col(
+          b|if($b.keeper.rota.cadenceCode->isEmpty(),
+            | 'NONE',
+            | $b.keeper.rota.cadenceCode->toOne()),
+          'Cadence'
+        )
+      ]
+    )->sort([asc('Bench')])};
+    mapping: test::verdantisle4::mapping::NurseryPublishedMapping;
+    runtime: test::verdantisle4::runtime::NurseryVerificationRuntime;
+  }
+  testSuites:
+  [
+    keeperRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryVerificationH2:
+            Relational
+            #{
+              benchreg.bench:
+                'bench_code,bench_name,house_code,keeper_code\n'+
+                'BN-01,North Bench,HS-1,KP-1\n'+
+                'BN-02,South Bench,HS-1,KP-2\n'+
+                'BN-03,Cold Frame,HS-3,KP-1\n'+
+                'BN-04,Propagation Bench,HS-2,KP-9\n';
+
+              benchreg.keeper:
+                'keeper_code,keeper_name,rota_code\n'+
+                'KP-1,Ana Bell,RT-1\n'+
+                'KP-2,Rui Ost,RT-9\n';
+
+              benchreg.keeper_rota:
+                'rota_code,rota_name,cadence_code\n'+
+                'RT-1,Morning Rota,DAILY\n'+
+                'RT-2,Evening Rota,WEEKLY\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosterReachedOverTwoHops:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            benchesInTheListedHouses:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bench":"BN-01","BenchName":"North Bench","Keeper":"Ana Bell","Rota":"Morning Rota","Cadence":"DAILY"},{"Bench":"BN-02","BenchName":"South Bench","Keeper":"Rui Ost","Rota":"NO ROTA","Cadence":"NONE"},{"Bench":"BN-04","BenchName":"Propagation Bench","Keeper":"UNASSIGNED","Rota":"NO ROTA","Cadence":"NONE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralcove2::store::ReefDB
+(
+  Schema reef
+  (
+    Table cove
+    (
+      cove_code VARCHAR(12) PRIMARY KEY,
+      cove_name VARCHAR(80) NOT NULL,
+      shoreline_code VARCHAR(12)
+    )
+
+    Table reef_site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(120) NOT NULL,
+      cove_code VARCHAR(12) NOT NULL,
+      depth_m INTEGER,
+      established_on DATE
+    )
+
+    Table transect
+    (
+      transect_code VARCHAR(16) PRIMARY KEY,
+      site_code VARCHAR(16) NOT NULL,
+      length_m INTEGER,
+      bearing_deg INTEGER
+    )
+
+    Table observer
+    (
+      observer_code VARCHAR(16) PRIMARY KEY,
+      observer_name VARCHAR(120) NOT NULL,
+      station_code VARCHAR(16)
+    )
+
+    Table station
+    (
+      station_code VARCHAR(16) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      cove_code VARCHAR(12)
+    )
+
+    Table survey_batch
+    (
+      batch_code VARCHAR(16) PRIMARY KEY,
+      version_no INTEGER PRIMARY KEY,
+      site_code VARCHAR(16) NOT NULL,
+      observer_code VARCHAR(16) NOT NULL,
+      surveyed_on DATE,
+      visibility_m INTEGER
+    )
+
+    Table coral_colony
+    (
+      colony_code VARCHAR(16) PRIMARY KEY,
+      batch_code VARCHAR(16) PRIMARY KEY,
+      species_code VARCHAR(16) NOT NULL,
+      diameter_cm INTEGER,
+      health_score INTEGER
+    )
+
+    Table species
+    (
+      species_code VARCHAR(16) PRIMARY KEY,
+      common_name VARCHAR(120) NOT NULL,
+      growth_form VARCHAR(40)
+    )
+
+    Table bleaching_event
+    (
+      event_code VARCHAR(16) PRIMARY KEY,
+      event_seq INTEGER PRIMARY KEY,
+      site_code VARCHAR(16) NOT NULL,
+      event_on DATE,
+      severity_code VARCHAR(12)
+    )
+
+    Table water_reading
+    (
+      reading_code VARCHAR(16) PRIMARY KEY,
+      site_code VARCHAR(16) NOT NULL,
+      taken_on DATE,
+      temperature_c INTEGER,
+      turbidity_ntu INTEGER
+    )
+  )
+
+  Join cove_site
+  (
+    reef.cove.cove_code = reef.reef_site.cove_code
+  )
+
+  Join site_transect
+  (
+    reef.reef_site.site_code = reef.transect.site_code
+  )
+
+  Join observer_batch
+  (
+    reef.observer.observer_code = reef.survey_batch.observer_code
+  )
+
+  Join site_reading
+  (
+    reef.reef_site.site_code = reef.water_reading.site_code
+  )
+
+  Join colony_species
+  (
+    reef.coral_colony.species_code = reef.species.species_code
+  )
+
+  Join observer_station
+  (
+    reef.observer.station_code = reef.station.station_code
+  )
+)

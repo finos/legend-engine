@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ExternalFormat
+Binding test::cedarvineyard::external::InboundBlockJsonBinding
+{
+  schemaSet: test::cedarvineyard::external::InboundBlockSchemas;
+  schemaId: inboundBlock;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::cedarvineyard::domain::InboundBlockRecord
+  ];
+}
+
+SchemaSet test::cedarvineyard::external::InboundBlockSchemas
+{
+  format: JSON;
+  schemas: [
+    {
+      id: inboundBlock;
+      location: 'InboundBlockRecord.json';
+      content: '{\n  "title": "test::cedarvineyard::domain::InboundBlockRecord",\n  "type": "object",\n  "required": ["blockRef", "parcelLabel"],\n  "properties": {\n    "blockRef":     { "type": "string" },\n    "parcelLabel":  { "type": "string" },\n    "trellisLabel": { "type": "string" }\n  }\n}';
+    }
+  ];
+}
+
+Binding test::cedarvineyard::external::CanopyReadingJsonBinding
+{
+  schemaSet: test::cedarvineyard::external::CanopyReadingSchemas;
+  schemaId: canopyReading;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::cedarvineyard::domain::CanopyReading
+  ];
+}
+
+SchemaSet test::cedarvineyard::external::CanopyReadingSchemas
+{
+  format: JSON;
+  schemas: [
+    {
+      id: canopyReading;
+      location: 'CanopyReading.json';
+      content: '{\n  "title": "test::cedarvineyard::domain::CanopyReading",\n  "type": "object",\n  "required": ["readingRef", "blockCode", "leafLayerCount", "shadedLeafPct", "readOn"],\n  "properties": {\n    "readingRef":     { "type": "string" },\n    "blockCode":      { "type": "string" },\n    "leafLayerCount": { "type": "integer" },\n    "shadedLeafPct":  { "type": "integer" },\n    "readOn":         { "type": "string", "format": "date" }\n  }\n}';
+    }
+  ];
+}

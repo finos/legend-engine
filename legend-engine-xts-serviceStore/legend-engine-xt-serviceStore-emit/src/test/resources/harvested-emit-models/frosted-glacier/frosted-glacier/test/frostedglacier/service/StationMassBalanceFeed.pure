@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedglacier::service::StationMassBalanceFeed
+{
+  pattern: '/glacier-feed/v1/stations/{stationCode}/mass-balance';
+  title: 'Frosted Glacier - Station Mass Balance Feed';
+  owners:
+  [
+    'cryosphere-network-platform',
+    'glaciology-eng'
+  ];
+  documentation: 'Single-execution model-to-model service that forwards the station code into the remote feed request, deserialises the returned records through the external-format binding and returns the classified mass-balance readings for that station whose regime could be resolved.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {stationCode: String[1]|test::frostedglacier::domain::MassBalanceReading.all()->filter(
+      r|$r.stationCode == $stationCode && $r.observers->isNotEmpty() && $r.observers->at(0) != 'unassigned' && $r.regimeLabel != 'Unclassified'
+    )->graphFetch(
+      #{
+        test::frostedglacier::domain::MassBalanceReading{
+          stationCode,
+          observedOn,
+          regime,
+          netBalanceCm
+        }
+      }#
+    )->serialize(
+      #{
+        test::frostedglacier::domain::MassBalanceReading{
+          stationCode,
+          observedOn,
+          regime,
+          netBalanceCm
+        }
+      }#
+    )};
+    mapping: test::frostedglacier::mapping::GlacierFeedM2M;
+    runtime: test::frostedglacier::runtime::GlacierFeedRuntime;
+  }
+  testSuites:
+  [
+    stationMassBalanceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"station":"GLC-014","massBalanceCode":"AC","ablationCm":12,"accumulationCm":140,"readAt":"2024-09-30","fieldTeam":["I. Frost"]},{"station":"GLC-027","massBalanceCode":"AB","ablationCm":210,"accumulationCm":40,"readAt":"2024-10-01","fieldTeam":["N. Vale"]},{"station":"GLC-014","readAt":"2024-10-08","fieldTeam":["S. Rime"]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        classifiedReadingsForOneStation:
+        {
+          parameters:
+          [
+            stationCode = 'GLC-014'
+          ]
+          asserts:
+          [
+            onlyTheClassifiedGlcOneFourReading:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"stationCode":"GLC-014","observedOn":"2024-09-30","regime":"Accumulation Dominant","netBalanceCm":128}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

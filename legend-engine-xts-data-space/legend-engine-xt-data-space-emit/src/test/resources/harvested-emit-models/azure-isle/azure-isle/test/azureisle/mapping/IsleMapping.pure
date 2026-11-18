@@ -1,0 +1,218 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azureisle::mapping::IsleMapping
+(
+  test::azureisle::domain::NestCount: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureisle::store::IsleDb]survey.nest_count.count_id,
+      [test::azureisle::store::IsleDb]survey.nest_count.in_z
+    )
+    ~mainTable [test::azureisle::store::IsleDb]survey.nest_count
+    countId: [test::azureisle::store::IsleDb]survey.nest_count.count_id,
+    plotCode: [test::azureisle::store::IsleDb]survey.nest_count.plot_code,
+    countedOn: [test::azureisle::store::IsleDb]survey.nest_count.counted_on,
+    nestTotal: [test::azureisle::store::IsleDb]survey.nest_count.nest_total,
+    chickTotal: [test::azureisle::store::IsleDb]survey.nest_count.chick_total,
+    weatherLabel: concat('WX-', if(equal([test::azureisle::store::IsleDb]survey.nest_count.weather_code, 'C'), 'CALM', if(equal([test::azureisle::store::IsleDb]survey.nest_count.weather_code, 'W'), 'WINDY', if(equal([test::azureisle::store::IsleDb]survey.nest_count.weather_code, 'R'), 'RAIN', if(equal([test::azureisle::store::IsleDb]survey.nest_count.weather_code, 'F'), 'FOG', if(isEmpty([test::azureisle::store::IsleDb]survey.nest_count.weather_code), 'UNRECORDED', 'OTHER')))))),
+    methodLabel: if(equal([test::azureisle::store::IsleDb]survey.nest_count.count_method, 'D'), 'DRONE', if(equal([test::azureisle::store::IsleDb]survey.nest_count.count_method, 'G'), 'GROUND', 'BOAT')),
+    breedingStatus: if(isEmpty([test::azureisle::store::IsleDb]survey.nest_count.chick_total), sqlNull(), if(equal([test::azureisle::store::IsleDb]survey.nest_count.chick_total, 0), 'FAILED', 'FLEDGING')),
+    countSeason: if(lessThanEqual(month([test::azureisle::store::IsleDb]survey.nest_count.counted_on), 6), 'EARLY', 'LATE'),
+    productivityBand: concat(if(greaterThan([test::azureisle::store::IsleDb]survey.nest_count.nest_total, 100), 'LARGE', 'SMALL'), '-', [test::azureisle::store::IsleDb]survey.nest_count.count_method),
+    habitatKind: [test::azureisle::store::IsleDb]@Count_Plot | survey.nest_plot.habitat_kind,
+    colonyName: [test::azureisle::store::IsleDb]@Count_Plot > @Plot_Colony | reserve.colony.colony_name,
+    islandName: [test::azureisle::store::IsleDb]@Count_Plot > @Plot_Colony > @Colony_Island | reserve.island.island_name,
+    reserveName: [test::azureisle::store::IsleDb]@Count_Plot > @Plot_Colony > @Colony_Island > @Island_Reserve | reserve.reserve_area.reserve_name,
+    speciesName: [test::azureisle::store::IsleDb]@Count_Plot > @Plot_Colony > @Colony_Species | reserve.species.common_name,
+    observerName: [test::azureisle::store::IsleDb]@Count_Observer | survey.observer_roster.observer_name
+  }
+
+  test::azureisle::domain::ColonyVisitSummary: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureisle::store::IsleDb]survey.colony_latest_visit.colony_code
+    )
+    ~mainTable [test::azureisle::store::IsleDb]survey.colony_latest_visit
+    colonyCode: [test::azureisle::store::IsleDb]survey.colony_latest_visit.colony_code,
+    latestVisitAt: [test::azureisle::store::IsleDb]survey.colony_latest_visit.latest_visit_at,
+    peakHeadcount: [test::azureisle::store::IsleDb]survey.colony_latest_visit.peak_headcount,
+    colonyName: [test::azureisle::store::IsleDb]@Visit_Colony | reserve.colony.colony_name
+  }
+
+  test::azureisle::domain::ObserverRosterEntry: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureisle::store::IsleDb]survey.observer_roster.observer_code
+    )
+    ~mainTable [test::azureisle::store::IsleDb]survey.observer_roster
+    observerCode: [test::azureisle::store::IsleDb]survey.observer_roster.observer_code,
+    observerName: [test::azureisle::store::IsleDb]survey.observer_roster.observer_name,
+    teamCode: [test::azureisle::store::IsleDb]survey.observer_roster.team_code
+  }
+
+  testSuites:
+  [
+    nestCountSuite:
+    {
+      function: |test::azureisle::domain::NestCount.all(%2026-09-01)->project([c|$c.countId, c|$c.plotCode, c|$c.weatherLabel, c|$c.methodLabel, c|$c.breedingStatus, c|$c.countSeason, c|$c.productivityBand, c|$c.habitatKind, c|$c.colonyName, c|$c.islandName, c|$c.reserveName, c|$c.speciesName, c|$c.observerName], ['Count', 'Plot', 'Weather', 'Method', 'Breeding', 'Season', 'Band', 'Habitat', 'Colony', 'Island', 'Reserve', 'Species', 'Observer'])->sort('Count');
+      tests:
+      [
+        everyClassificationArmAndJoinChain:
+        {
+          doc: 'Six counts are open on the processing day and hit every weather, method, breeding, season and band arm, including the unrecorded weather and the uncounted chicks. Count 7 was closed before the day and count 8 was loaded after it, so both are out of range. The plot of count 6 points at a missing colony, breaking the chain at the second hop, and the island of the East Stack colony points at a missing reserve, breaking it at the fourth hop. The repeated roster row of the first observer is collapsed by the distinct view, and the unknown observer reports empty.';
+          data:
+          [
+            test::azureisle::store::IsleDb:
+              Relational
+              #{
+                survey.nest_count:
+                  'count_id,plot_code,counted_on,nest_total,chick_total,observer_code,weather_code,count_method,in_z,out_z\n'+
+                  '1,P1,2026-05-02,120,40,O1,C,D,2026-05-03,9999-12-31\n'+
+                  '2,P1,2026-05-09,80,0,O1,W,G,2026-05-10,9999-12-31\n'+
+                  '3,P1,2026-06-01,95,,O2,R,B,2026-06-02,9999-12-31\n'+
+                  '4,P2,2026-07-03,60,12,O2,F,D,2026-07-04,9999-12-31\n'+
+                  '5,P2,2026-07-10,150,30,O1,,G,2026-07-11,9999-12-31\n'+
+                  '6,P3,2026-07-12,30,5,O9,S,B,2026-07-13,9999-12-31\n'+
+                  '7,P1,2026-04-20,70,10,O1,C,G,2026-04-21,2026-05-01\n'+
+                  '8,P1,2026-08-01,110,20,O3,W,D,2026-09-05,9999-12-31\n';
+                survey.nest_plot:
+                  'plot_code,colony_code,habitat_kind,slope_deg\n'+
+                  'P1,C1,grass,20\n'+
+                  'P2,C2,boulder,35\n'+
+                  'P3,C9,scree,10\n';
+                reserve.colony:
+                  'colony_code,colony_name,island_code,species_code,founded_on\n'+
+                  'C1,North Ledge,I1,SP1,2010-05-01\n'+
+                  'C2,East Stack,I2,SP2,2015-04-01\n';
+                reserve.island:
+                  'island_code,island_name,reserve_code,area_ha\n'+
+                  'I1,Gull Rock,R1,12\n'+
+                  'I2,Puffin Holm,R9,30\n';
+                reserve.reserve_area:
+                  'reserve_code,reserve_name,warden_team\n'+
+                  'R1,Azure Sound Reserve,North Wardens\n';
+                reserve.species:
+                  'species_code,common_name,conservation_tier\n'+
+                  'SP1,Atlantic Puffin,AMBER\n'+
+                  'SP2,Black Guillemot,GREEN\n';
+                survey.observer:
+                  'observer_code,observer_name,team_code\n'+
+                  'O1,Ada Wren,TEAM-A\n'+
+                  'O1,Ada Wren,TEAM-A\n'+
+                  'O2,Bo Tern,TEAM-B\n'+
+                  'O3,Cy Skua,RETIRED\n';
+              }#
+          ];
+          asserts:
+          [
+            everyArmIsHitOnce:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":1,"Plot":"P1","Weather":"WX-CALM","Method":"DRONE","Breeding":"FLEDGING","Season":"EARLY","Band":"LARGE-D","Habitat":"grass","Colony":"North Ledge","Island":"Gull Rock","Reserve":"Azure Sound Reserve","Species":"Atlantic Puffin","Observer":"Ada Wren"},{"Count":2,"Plot":"P1","Weather":"WX-WINDY","Method":"GROUND","Breeding":"FAILED","Season":"EARLY","Band":"SMALL-G","Habitat":"grass","Colony":"North Ledge","Island":"Gull Rock","Reserve":"Azure Sound Reserve","Species":"Atlantic Puffin","Observer":"Ada Wren"},{"Count":3,"Plot":"P1","Weather":"WX-RAIN","Method":"BOAT","Breeding":null,"Season":"EARLY","Band":"SMALL-B","Habitat":"grass","Colony":"North Ledge","Island":"Gull Rock","Reserve":"Azure Sound Reserve","Species":"Atlantic Puffin","Observer":"Bo Tern"},{"Count":4,"Plot":"P2","Weather":"WX-FOG","Method":"DRONE","Breeding":"FLEDGING","Season":"LATE","Band":"SMALL-D","Habitat":"boulder","Colony":"East Stack","Island":"Puffin Holm","Reserve":null,"Species":"Black Guillemot","Observer":"Bo Tern"},{"Count":5,"Plot":"P2","Weather":"WX-UNRECORDED","Method":"GROUND","Breeding":"FLEDGING","Season":"LATE","Band":"LARGE-G","Habitat":"boulder","Colony":"East Stack","Island":"Puffin Holm","Reserve":null,"Species":"Black Guillemot","Observer":"Ada Wren"},{"Count":6,"Plot":"P3","Weather":"WX-OTHER","Method":"BOAT","Breeding":"FLEDGING","Season":"LATE","Band":"SMALL-B","Habitat":"scree","Colony":null,"Island":null,"Reserve":null,"Species":null,"Observer":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    visitSummarySuite:
+    {
+      function: |test::azureisle::domain::ColonyVisitSummary.all()->project([v|$v.colonyCode, v|$v.latestVisitAt, v|$v.peakHeadcount, v|$v.colonyName], ['Colony', 'Latest Visit', 'Peak', 'Name'])->sort('Colony');
+      tests:
+      [
+        latestCompletedVisitPerColony:
+        {
+          doc: 'Each colony has two completed visits at different instants; the abandoned visit of North Ledge is removed by the named filter before grouping, so its later instant and empty headcount do not win.';
+          data:
+          [
+            test::azureisle::store::IsleDb:
+              Relational
+              #{
+                survey.census_visit:
+                  'visit_id,colony_code,visited_at,visit_status,headcount\n'+
+                  '1,C1,2026-05-01 08:00:00,DONE,400\n'+
+                  '2,C1,2026-06-01 08:00:00,VERIFIED,450\n'+
+                  '3,C1,2026-06-10 08:00:00,ABANDONED,0\n'+
+                  '4,C2,2026-05-15 09:00:00,DONE,120\n'+
+                  '5,C2,2026-06-05 09:00:00,DONE,90\n';
+                reserve.colony:
+                  'colony_code,colony_name,island_code,species_code,founded_on\n'+
+                  'C1,North Ledge,I1,SP1,2010-05-01\n'+
+                  'C2,East Stack,I2,SP2,2015-04-01\n';
+              }#
+          ];
+          asserts:
+          [
+            theAbandonedVisitIsIgnored:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Colony":"C1","Latest Visit":"2026-06-01T08:00:00.000000000+0000","Peak":450,"Name":"North Ledge"},{"Colony":"C2","Latest Visit":"2026-06-05T09:00:00.000000000+0000","Peak":120,"Name":"East Stack"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    observerRosterSuite:
+    {
+      function: |test::azureisle::domain::ObserverRosterEntry.all()->project([o|$o.observerCode, o|$o.observerName, o|$o.teamCode], ['Observer', 'Name', 'Team'])->sort('Observer');
+      tests:
+      [
+        repeatedAndRetiredRosterRows:
+        {
+          doc: 'The duplicated roster row of O1 is collapsed by the distinct view and the retired observer O3 is dropped by the inequality filter.';
+          data:
+          [
+            test::azureisle::store::IsleDb:
+              Relational
+              #{
+                survey.observer:
+                  'observer_code,observer_name,team_code\n'+
+                  'O1,Ada Wren,TEAM-A\n'+
+                  'O1,Ada Wren,TEAM-A\n'+
+                  'O2,Bo Tern,TEAM-B\n'+
+                  'O3,Cy Skua,RETIRED\n';
+              }#
+          ];
+          asserts:
+          [
+            oneRowPerActiveObserver:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observer":"O1","Name":"Ada Wren","Team":"TEAM-A"},{"Observer":"O2","Name":"Bo Tern","Team":"TEAM-B"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

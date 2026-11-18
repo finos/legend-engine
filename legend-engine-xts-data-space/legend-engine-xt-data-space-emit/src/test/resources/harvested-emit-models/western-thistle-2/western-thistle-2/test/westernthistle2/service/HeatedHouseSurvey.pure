@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernthistle2::service::HeatedHouseSurvey
+{
+  pattern: '/nursery/v1/heated-house-survey';
+  title: 'Propagation Nursery - Heated house survey';
+  documentation: 'Ranks the heated propagation houses by usable bench area with no caller parameters at all, so the third service body differs from both the keyed register and the grouped tally.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['nursery-propagation-desk'] };
+  execution: Single
+  {
+    query: {|test::westernthistle2::domain::PropagationHouse.all()->filter(
+      h|$h.heated
+    )->project(
+      [
+        h|$h.houseCode,
+        h|$h.houseName,
+        h|$h.glazingType,
+        h|$h.benchAreaSqm
+      ],
+      [
+        'House',
+        'Name',
+        'Glazing',
+        'BenchArea'
+      ]
+    )->sort(
+      [
+        desc('BenchArea')
+      ]
+    )->limit(2)};
+    mapping: test::westernthistle2::mapping::NurseryMapping;
+    runtime: test::westernthistle2::runtime::NurseryWarehouseRuntime;
+  }
+  testSuites:
+  [
+    heatedHouseSurveySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryWarehouse:
+            Reference
+              #{
+                test::westernthistle2::data::NurseryFixture
+              }#
+        ]
+      ]
+      tests:
+      [
+        heatedHousesRanked:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            theUnheatedHouseIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"House":"PH-1","Name":"Ridge Glasshouse","Glazing":"double-glazed","BenchArea":120.5},{"House":"PH-3","Name":"Orchard Frame House","Glazing":"single-glazed","BenchArea":45.25}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

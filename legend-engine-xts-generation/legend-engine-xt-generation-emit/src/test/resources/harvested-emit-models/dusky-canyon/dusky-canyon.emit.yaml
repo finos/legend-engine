@@ -1,0 +1,49 @@
+name: dusky-canyon
+title: "Canyon Strata Catalogue — Constrained Inheritance with Enumeration Mappings over Normalised Source Codes"
+description: |
+  A canyon geology corpus in which a wrapper-heavy inbound feed is narrowed
+  model-to-model onto a constrained target taxonomy. An abstract survey record
+  carries bound, presence and mutual-exclusion constraints that a strata sample
+  inherits and extends with a universally quantified bound over a collection,
+  while two enumeration mappings translate composite source codes normalised by
+  an expression. A JSON-schema file generation scoped to the whole package is
+  named by a generation specification.
+modelSources:
+  model:
+    root: dusky-canyon
+    files:
+      - test/duskycanyon/connection/SampleFeedConnection.pure
+      - test/duskycanyon/domain/CanyonProfile.pure
+      - test/duskycanyon/domain/Catalog.pure
+      - test/duskycanyon/domain/Enums.pure
+      - test/duskycanyon/domain/SourceFeed.pure
+      - test/duskycanyon/generation/CanyonGeneration.pure
+      - test/duskycanyon/mapping/CanyonMapping.pure
+      - test/duskycanyon/runtime/CanyonRuntime.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:constraint-function-call
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - class-inheritance
+  - constraints
+  - enumeration-mapping
+  - geology
+  - json-schema-generation
+  - m2m
+  - mapping-test
+  - store-less

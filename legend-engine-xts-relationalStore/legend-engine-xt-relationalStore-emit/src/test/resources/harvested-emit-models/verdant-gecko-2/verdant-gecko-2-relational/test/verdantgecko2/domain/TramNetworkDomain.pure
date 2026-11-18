@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantgecko2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A tram depot the lines of the network are stabled at.'} test::verdantgecko2::domain::Depot
+{
+  depotId: Integer[1];
+  depotName: String[1];
+  boroughName: String[1];
+  bayCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tram line of the network, stabled at one depot.'} test::verdantgecko2::domain::TramLine
+{
+  lineId: Integer[1];
+  lineCode: String[1];
+  lineName: String[1];
+  nightService: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stop of a tram line, standing in one sector of the network.'} test::verdantgecko2::domain::TramStop
+{
+  stopId: Integer[1];
+  stopName: String[1];
+  platformLengthM: Float[1];
+  openedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sector the stops of the network are grouped into for planning.'} test::verdantgecko2::domain::StopSector
+{
+  sectorId: Integer[1];
+  sectorName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sector group naming the parent planning concept a sector rolls up to.'} test::verdantgecko2::domain::SectorGroup
+{
+  groupId: Integer[1];
+  groupName: String[1];
+  parentGroupName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tram vehicle allocated to one line of the network.'} test::verdantgecko2::domain::TramVehicle
+{
+  vehicleId: Integer[1];
+  fleetNumber: String[1];
+  seatCount: Integer[1];
+  axleLoadT: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named timetable period the counts of the network are staged against.'} test::verdantgecko2::domain::ServicePeriod
+{
+  periodId: Integer[1];
+  periodName: String[1];
+  opensOn: StrictDate[1];
+  closesOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A staged passenger count for one stop in one timetable period, holding the paired boarding and alighting measures.'} test::verdantgecko2::domain::RidershipCount
+{
+  countId: Integer[1];
+  boardings: Integer[1];
+  alightings: Integer[1];
+  meanDwellSeconds: Float[1];
+  countedOn: StrictDate[1];
+  recordedBy: String[1];
+}
+
+Association test::verdantgecko2::domain::Line_Depot
+{
+  stabledLines: TramLine[*];
+  depot: Depot[1];
+}
+
+Association test::verdantgecko2::domain::Stop_Line
+{
+  lineStops: TramStop[*];
+  line: TramLine[1];
+}
+
+Association test::verdantgecko2::domain::Stop_Sector
+{
+  sectorStops: TramStop[*];
+  sector: StopSector[1];
+}
+
+Association test::verdantgecko2::domain::Sector_Group
+{
+  groupedSectors: StopSector[*];
+  sectorGroup: SectorGroup[1];
+}
+
+Association test::verdantgecko2::domain::Vehicle_Line
+{
+  allocatedVehicles: TramVehicle[*];
+  servedLine: TramLine[1];
+}
+
+Association test::verdantgecko2::domain::Count_Stop
+{
+  stopCounts: RidershipCount[*];
+  countedStop: TramStop[1];
+}
+
+Association test::verdantgecko2::domain::Count_Period
+{
+  periodCounts: RidershipCount[*];
+  countedPeriod: ServicePeriod[1];
+}

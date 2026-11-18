@@ -1,0 +1,62 @@
+name: wistful-thistle-3
+title: "Botanic Garden Living Collection — Multi-Table Relational Surfaces Behind A Two-Tier Data Space"
+description: |
+  The living collection of a botanic garden held in one warehouse database with
+  three unrelated surfaces: plant accessions, the beds they stand in and the
+  herbarium sheets pressed behind them. Each class is mapped onto its own driving
+  table alias with its own primary key and no join between them, and a curation
+  profile publishes the stereotypes and tagged values the garden governs the
+  records with. Two Snowflake warehouse connections — a curated one and an
+  archive one, both authenticated with a public-key strategy — back two engine
+  runtimes, and a data space wires the same mapping to both tiers with the
+  curated tier as the default. Two single-execution services carry the deep
+  predicates: an accession search over a collecting region, an enumerated set of
+  plant families and a fragment of the accepted botanical name, and a herbarium
+  cabinet tally over a cabinet code, a set of accessions and a duplicate floor.
+  Both services and both mapped surfaces carry test suites asserting the
+  projections against inline relational fixtures, including a family set that
+  excludes every row.
+modelSources:
+  model:
+    root: wistful-thistle-3
+    files:
+      - test/wistfulthistle3/connection/GardenWarehouseConnections.pure
+      - test/wistfulthistle3/dataspace/GardenDataSpace.pure
+      - test/wistfulthistle3/domain/GardenDomain.pure
+      - test/wistfulthistle3/mapping/GardenMapping.pure
+      - test/wistfulthistle3/profile/GardenProfiles.pure
+      - test/wistfulthistle3/runtime/GardenRuntimes.pure
+      - test/wistfulthistle3/service/AccessionSearch.pure
+      - test/wistfulthistle3/service/HerbariumCabinetTally.pure
+      - test/wistfulthistle3/store/GardenDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - botanic-garden
+  - collection-op
+  - data-space
+  - h2
+  - herbarium
+  - main-table-alias
+  - multi-table
+  - primary-key
+  - profile
+  - relational
+  - service-test
+  - snowflake

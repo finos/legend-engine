@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum {meta::pure::profiles::doc.doc = 'The lending tier a telescope booking was taken under.'} test::kindlyquarry4::domain::BookingTier
+{
+  STANDARD,
+  EXTENDED,
+  TUITION
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The optical family of the instrument that was lent out.'} test::kindlyquarry4::domain::OpticGrade
+{
+  REFRACTOR,
+  REFLECTOR,
+  CATADIOPTRIC
+}
+
+Class {meta::pure::profiles::doc.doc = 'One telescope lent from a community observatory branch, carrying the tier it was booked under and the optical family of the instrument.'} test::kindlyquarry4::domain::TelescopeBooking
+{
+  bookingCode: String[1];
+  branchCode: String[1];
+  instrumentCode: String[1];
+  bookingTier: test::kindlyquarry4::domain::BookingTier[1];
+  opticGrade: test::kindlyquarry4::domain::OpticGrade[1];
+  bookedOn: StrictDate[1];
+  collectedAt: DateTime[1];
+  nightsBooked: Integer[1];
+  apertureMm: Integer[1];
+}

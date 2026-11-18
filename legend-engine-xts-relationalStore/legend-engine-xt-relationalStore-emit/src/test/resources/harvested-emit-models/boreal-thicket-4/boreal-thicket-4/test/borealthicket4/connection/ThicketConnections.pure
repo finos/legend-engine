@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::borealthicket4::connection::ThicketH2Connection
+{
+  store: test::borealthicket4::store::ThicketDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists thicket;',
+      'create schema thicket;',
+      'create table thicket.snow_stake (stake_code varchar(16) not null, stake_name varchar(48) not null, stand_code varchar(16), species_code varchar(16), crew_code varchar(16), depth_cm double not null, density_pct integer not null, read_on date not null, valid_from date not null, valid_thru date not null, primary key (stake_code, valid_from));',
+      'create table thicket.stand_block (stand_code varchar(16) primary key, stand_name varchar(48) not null, stand_tier varchar(16) not null);',
+      'create table thicket.species_tag (species_code varchar(16) primary key, species_name varchar(48) not null);',
+      'create table thicket.survey_crew (crew_code varchar(16) primary key, crew_name varchar(48) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

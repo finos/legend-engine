@@ -1,0 +1,75 @@
+name: umber-quarry-5
+title: "Umber Quarry 5 — A Dimension-Stone Block Register Over Current and Business-Milestoned Store Families"
+description: |
+  A dimension-stone quarry records the blocks lifted from each bench of its pits, the yard lots sawn
+  from them and their stack tags. A reference store of stone types, finishes and districts is included
+  by the current store, which is in turn included by a business-milestoned history store. Block markings
+  are assembled by an eight-arm conditional over a part count that concatenates one to eight trimmed
+  parts and falls through to null; grades, shapes, bench levels and rock families map through
+  enumeration mappings applied to trimmed, sentinel-guarded and integer-parsed expressions, some reached
+  over joins; saw and face flags are case expressions over literal codes. Joins are composite, test
+  literal or-branches, wrap a column in a coalesce default and reach into the included store, and one
+  property follows a three-hop path with an explicit inner hop. A grouped view pivots the stack tags with
+  a max of a conditional, an operation mapping unions yard lots with offcuts, filtered class mappings use
+  named store filters, and the history mapping includes the current mapping with its store substituted
+  while mapping a business-temporal block version queried by date. A model-to-model digest of
+  pit-edge tally sheets applies the same enumeration mappings to trimmed, sentinel-guarded expressions.
+modelSources:
+  model:
+    root: umber-quarry-5
+    files:
+      - test/umberquarry5/domain/QuarryDomain.pure
+      - test/umberquarry5/mapping/QuarryCoreMapping.pure
+      - test/umberquarry5/mapping/QuarryDigestM2M.pure
+      - test/umberquarry5/mapping/QuarryHistMapping.pure
+      - test/umberquarry5/mapping/QuarryRefMapping.pure
+      - test/umberquarry5/payload/QuarryPayload.pure
+      - test/umberquarry5/store/QuarryDb.pure
+      - test/umberquarry5/store/QuarryHistDb.pure
+      - test/umberquarry5/store/QuarryRefDb.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - scaffolding:m2m-mapping
+  - mapping:mapping-include
+  - mapping:mapping-include-store-substitution
+  - mapping:operation-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-case-expression
+  - scaffolding:relational-mapping
+  - store:relational-filter
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-join-reached-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-class
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-store
+  - store:relational-composite-join
+  - store:relational-cross-store-join
+  - store:relational-dyna-function
+  - store:relational-join
+  - store:relational-join-literal-condition
+  - store:relational-cross-schema
+  - store:relational-store-include
+  - store:relational-view
+  - store:relational-view-aggregate
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - dimension-stone
+  - enumeration-mapping
+  - h2
+  - mapping-include
+  - operation-mapping
+  - quarry-register
+  - view-aggregate

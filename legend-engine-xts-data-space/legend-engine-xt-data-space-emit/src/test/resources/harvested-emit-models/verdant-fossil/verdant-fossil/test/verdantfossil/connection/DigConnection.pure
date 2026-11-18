@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::verdantfossil::connection::DigConnection
+{
+  store: test::verdantfossil::store::DigDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'EXAMPLE_DIG_REGISTER_DB';
+    account: 'example_dig_account';
+    warehouse: 'EXAMPLE_DIG_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'EXAMPLE_DIG_ROLE';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'example_dig_reader';
+    privateKeyVaultReference: 'example-dig-private-key';
+    passPhraseVaultReference: 'example-dig-pass-phrase';
+  };
+}

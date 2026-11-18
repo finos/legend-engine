@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::embercavern2::domain::ExpeditionStatus
+{
+  PLANNED,
+  UNDERGROUND,
+  SURFACED,
+  ABANDONED
+}
+
+Enum test::embercavern2::domain::SurveyGrade
+{
+  G1,
+  G2,
+  G3,
+  G4
+}
+
+Class <<temporal.businesstemporal>> test::embercavern2::domain::Expedition
+{
+  expeditionCode: String[1];
+  regionCode: String[1];
+  status: test::embercavern2::domain::ExpeditionStatus[1];
+  grade: test::embercavern2::domain::SurveyGrade[1];
+  isRescueCleared: Boolean[1];
+  leaderNote: String[0..1];
+  departedAt: DateTime[1];
+  dueBackAt: DateTime[0..1];
+  depthM: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> test::embercavern2::domain::Cave
+{
+  caveCode: String[1];
+  caveName: String[1];
+  entranceKind: String[1];
+}
+
+Class test::embercavern2::domain::Massif
+{
+  massifCode: String[1];
+  massifName: String[1];
+}
+
+Class test::embercavern2::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+}
+
+Class test::embercavern2::domain::Authority
+{
+  authorityCode: String[1];
+  authorityName: String[1];
+}
+
+Class test::embercavern2::domain::Caver
+{
+  caverCode: String[1];
+  caverName: String[1];
+  isDiver: Boolean[1];
+}
+
+Class test::embercavern2::domain::Kit
+{
+  kitCode: String[1];
+  kitKind: String[1];
+}
+
+Class test::embercavern2::domain::RopeKit extends test::embercavern2::domain::Kit
+{
+  ropeLengthM: Integer[1];
+}
+
+Class test::embercavern2::domain::LampKit extends test::embercavern2::domain::Kit
+{
+  lumens: Integer[1];
+}
+
+Association test::embercavern2::domain::Expedition_Cave
+{
+  expeditions: test::embercavern2::domain::Expedition[*];
+  cave: test::embercavern2::domain::Cave[0..1];
+}
+
+Association test::embercavern2::domain::Cave_Massif
+{
+  caves: test::embercavern2::domain::Cave[*];
+  massif: test::embercavern2::domain::Massif[0..1];
+}
+
+Association test::embercavern2::domain::Massif_District
+{
+  massifs: test::embercavern2::domain::Massif[*];
+  district: test::embercavern2::domain::District[0..1];
+}
+
+Association test::embercavern2::domain::District_Authority
+{
+  districts: test::embercavern2::domain::District[*];
+  authority: test::embercavern2::domain::Authority[0..1];
+}
+
+Association test::embercavern2::domain::Expedition_Caver
+{
+  expeditionsJoined: test::embercavern2::domain::Expedition[*];
+  members: test::embercavern2::domain::Caver[*];
+}
+
+Association test::embercavern2::domain::Expedition_RopeKit
+{
+  ropeExpeditions: test::embercavern2::domain::Expedition[*];
+  ropeKit: test::embercavern2::domain::Kit[0..1];
+}
+
+Association test::embercavern2::domain::Expedition_LampKit
+{
+  lampExpeditions: test::embercavern2::domain::Expedition[*];
+  lampKit: test::embercavern2::domain::Kit[0..1];
+}

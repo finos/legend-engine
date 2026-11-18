@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::emeraldestuary2::data::ReedCoverageData
+{
+  Relational
+  #{
+    estuary.reed_plot:
+      'plot_code,plot_seq,habitat_name,reed_cover_pct,primary_site_code,fallback_site_code,audit_site_code,synonym_code\n'+
+      'RP-01,1,Tidal reedbed,95,SS-1,SS-2,SS-3,SY-1\n'+
+      'RP-02,1,Upper marsh,80,SS-1,SS-2,SS-3,SY-2\n'+
+      'RP-03,1,Mid channel,65,SS-2,SS-1,SS-3,SY-1\n'+
+      'RP-04,1,Salt pan,50,SS-2,SS-3,SS-1,SY-2\n'+
+      'RP-05,1,Sand flat,35,SS-3,SS-1,SS-2,SY-1\n'+
+      'RP-06,1,Shell bank,20,SS-3,SS-2,SS-1,SY-2\n'+
+      'RP-07,1,Bare scrape,5,SS-1,SS-3,SS-2,SY-1\n'+
+      'RP-08,1,Stone spit,0,SS-1,SS-2,SS-3,SY-2\n'+
+      'RP-09,1,Lost creek,70,SS-9,SS-9,SS-9,SY-9\n';
+
+    siteref.survey_site:
+      'site_code,site_name,region_name\n'+
+      'SS-1,Outer Bar Station,Lower Estuary\n'+
+      'SS-2,Mill Creek Station,Mid Estuary\n'+
+      'SS-3,Reed Walk Station,Upper Estuary\n';
+
+    synref.species_synonym:
+      'synonym_code,accepted_name\n'+
+      'SY-1,Phragmites australis\n'+
+      'SY-2,Bolboschoenus maritimus\n';
+  }#
+}
+
+Data test::emeraldestuary2::data::SiteLinkData
+{
+  Relational
+  #{
+    estuary.reed_plot:
+      'plot_code,plot_seq,habitat_name,reed_cover_pct,primary_site_code,fallback_site_code,audit_site_code,synonym_code\n'+
+      'RP-01,1,Tidal reedbed,95,SS-1,SS-2,SS-3,SY-1\n'+
+      'RP-01,2,Tidal reedbed,55,SS-2,SS-3,SS-1,SY-1\n'+
+      'RP-09,1,Lost creek,70,SS-9,SS-9,SS-9,SY-9\n';
+
+    siteref.survey_site:
+      'site_code,site_name,region_name\n'+
+      'SS-1,Outer Bar Station,Lower Estuary\n'+
+      'SS-2,Mill Creek Station,Mid Estuary\n'+
+      'SS-3,Reed Walk Station,Upper Estuary\n';
+
+    synref.species_synonym:
+      'synonym_code,accepted_name\n'+
+      'SY-1,Phragmites australis\n';
+  }#
+}

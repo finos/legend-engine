@@ -1,0 +1,67 @@
+name: wistful-estuary
+title: "Wistful Estuary - A Remote Parcel Registry Refined Through A Model Chain Behind A Governed Data Space"
+description: |
+  An estuary reserve registry whose request-shaped store exposes a flat document feed and a
+  two-parameter lookup, both returning parcel envelopes bound through a schema-less JSON binding.
+  A model-chain connection lets a refinement layer consume those envelopes inside one runtime,
+  tiering the published parcel kind across eight arms with an unknown-kind fallback, pinning the
+  registry key to a constant and leaving four node properties unpopulated. A resolution layer of
+  standalone functions returns literal profile collections and folds a catalogue tree name through
+  nested conditionals, while a governed data space wires the mapping, runtime, diagram and featured
+  node together and a second declared remote store stays bound by no runtime.
+modelSources:
+  model:
+    root: wistful-estuary
+    files:
+      - test/wistfulestuary/binding/ParcelBindings.pure
+      - test/wistfulestuary/connection/RegistryConnections.pure
+      - test/wistfulestuary/dataspace/ReserveDataSpace.pure
+      - test/wistfulestuary/diagram/ReserveDiagram.pure
+      - test/wistfulestuary/domain/ParcelDomain.pure
+      - test/wistfulestuary/domain/ReserveDomain.pure
+      - test/wistfulestuary/function/ProfileResolution.pure
+      - test/wistfulestuary/mapping/ReserveDigestM2M.pure
+      - test/wistfulestuary/mapping/ReserveRegistryMapping.pure
+      - test/wistfulestuary/profile/RegistryProfile.pure
+      - test/wistfulestuary/runtime/ReserveRuntimes.pure
+      - test/wistfulestuary/service/ParcelTreeExport.pure
+      - test/wistfulestuary/service/ReserveNodeLookup.pure
+      - test/wistfulestuary/store/ArchiveApi.pure
+      - test/wistfulestuary/store/ParcelApi.pure
+features:
+  - scaffolding:service-store-connection
+  - execution:data-space
+  - execution:external-format-binding
+  - execution:mapping-test
+  - scaffolding:model-chain-connection
+  - execution:service
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:function
+  - grammar:profile
+  - mapping:cross-store
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-local-property
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:service-store-mapping
+  - query:filter
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - service-store
+complexity: advanced
+tags:
+  - conditional-transform
+  - cross-store
+  - data-space
+  - diagram
+  - external-format
+  - graph-fetch
+  - literal-defaulted
+  - model-chain
+  - model-to-model
+  - service-store

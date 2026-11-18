@@ -1,0 +1,71 @@
+name: verdant-meadow-4
+title: "Meadow Habitat Register — Banded, Decoded and Multi Hop Relational Derivations over an Inherited Domain"
+description: |
+  A grassland habitat register whose one relational store declares a plot table,
+  a meadow register spread over three lookup tables, a grouped inline view and a
+  derived tag view whose column is composed by store level functions. The domain
+  is a small inheritance tree: a survey record root, a habitat record beneath it,
+  and the plot, meadow, warden and plot summary extents beneath those, plus two
+  small classes that exist only as embedded blocks. One base mapping includes the
+  enumeration mappings and binds the plot extent behind a store filter with a
+  single column key and an explicit schema qualified main table: an eight armed
+  nested conditional bands the plot by species richness and falls through to a
+  database null, five arithmetic derivations multiply, subtract, add and divide
+  the count columns, three enumeration mappings decode the sward straight from
+  its raw column so an unlisted source value yields no member and decode the
+  grazing regime and the condition grade from case expressions, two embedded
+  blocks carry the seed plan and the warden contact with their own null
+  fallbacks, one property reaches the derived tag view, one reaches the region
+  over a two hop path and one reaches the zone over a three hop path, and a
+  complex property reaches the grouped view. A second mapping includes the base
+  mapping and adds the meadow and warden extents behind the second store filter,
+  composing a sector label across the same multi hop path. Both mappings assert
+  their derivations against embedded relational rows covering every conditional
+  arm, the null fallback, the unregistered meadow, the unknown warden and the
+  rows the two filters withhold.
+modelSources:
+  model:
+    root: verdant-meadow-4
+    files:
+      - test/verdantmeadow4/domain/MeadowDomain.pure
+      - test/verdantmeadow4/mapping/MeadowBaseMapping.pure
+      - test/verdantmeadow4/mapping/MeadowEnumMappings.pure
+      - test/verdantmeadow4/mapping/MeadowRegisterMapping.pure
+      - test/verdantmeadow4/store/MeadowDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - class-inheritance
+  - conditional-band-chain
+  - embedded-mapping
+  - enumeration-mapping
+  - h2
+  - inline-view
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - relational
