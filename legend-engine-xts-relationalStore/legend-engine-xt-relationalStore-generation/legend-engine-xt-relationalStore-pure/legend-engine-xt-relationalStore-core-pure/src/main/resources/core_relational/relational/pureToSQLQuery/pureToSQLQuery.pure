@@ -245,14 +245,14 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::applyPo
 
 function meta::relational::functions::pureToSqlQuery::toSQLQuery(vs:ValueSpecification[1], mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], state:State[1], extensions:Extension[*]):SQLQuery[1]
 {
-   $vs
+   meta::pure::functions::tracing::traceSpan(|$vs
       ->processQuery($state, $debug, $extensions)
       ->applyPostProcessingForTempTableAsDriver($state, $debug, $extensions)
       ->manageDeepMapClassColumns($vs, $debug, $state, $extensions)
       .select
       ->pushSavedFilteringOperation($extensions)
       ->pushExtraFilteringOperation($extensions)
-      ->orderImmediateChildNodeByJoinAliasDependencies();
+      ->orderImmediateChildNodeByJoinAliasDependencies(), 'relational: toSQLQuery');
 }
 
 function meta::relational::functions::pureToSqlQuery::toSelectWithCursor(functionExpression:FunctionExpression[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], execCtx: RelationalExecutionContext[0..1], debug:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
@@ -262,17 +262,19 @@ function meta::relational::functions::pureToSqlQuery::toSelectWithCursor(functio
 
 function meta::relational::functions::pureToSqlQuery::toSelectWithCursor(functionExpression:FunctionExpression[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], state:State[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-   let swc = $functionExpression
-      ->processQuery($state, $debug, $extensions)
-      ->applyPostProcessingForTempTableAsDriver($state, $debug, $extensions)
-      ->manageDeepMapClassColumns($functionExpression, $debug, $state, $extensions);
+   meta::pure::functions::tracing::traceSpan({|
+     let swc = $functionExpression
+        ->processQuery($state, $debug, $extensions)
+        ->applyPostProcessingForTempTableAsDriver($state, $debug, $extensions)
+        ->manageDeepMapClassColumns($functionExpression, $debug, $state, $extensions);
 
-   ^$swc(
-      select = $swc.select
-         ->pushSavedFilteringOperation($extensions)
-         ->pushExtraFilteringOperation($extensions)
-         ->orderImmediateChildNodeByJoinAliasDependencies()
-   );
+     ^$swc(
+        select = $swc.select
+           ->pushSavedFilteringOperation($extensions)
+           ->pushExtraFilteringOperation($extensions)
+           ->orderImmediateChildNodeByJoinAliasDependencies()
+     );
+   }, 'relational: toSQLQuery');
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::manageDeepMapClassColumns(sql:SelectWithCursor[1], vs:ValueSpecification[1], context:DebugContext[1], state:State[1], extensions:Extension[*]):SelectWithCursor[1]

@@ -153,13 +153,13 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
   let contextWithEnumPushDown = $context->meta::pure::executionPlan::featureFlag::addFlagToContext(  
        meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM);  
    let preProcessedFunction = meta::pure::executionPlan::preprocessFunction($f, $context, $extensions);
-   let routed = $preProcessedFunction->routeFunction($contextWithEnumPushDown, $extensions, $debugContext);
+   let routed = meta::pure::functions::tracing::traceSpan(|$preProcessedFunction->routeFunction($contextWithEnumPushDown, $extensions, $debugContext), 'plan: route');
    meta::pure::executionPlan::executionPlan($routed, $preProcessedFunction, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^meta::core::runtime::Runtime(), $context, $extensions, $debugContext);
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
-   let routed = $f->routeFunction($m, $runtime, $context, $extensions, $debugContext);
+   let routed = meta::pure::functions::tracing::traceSpan(|$f->routeFunction($m, $runtime, $context, $extensions, $debugContext), 'plan: route');
    meta::pure::executionPlan::executionPlan($routed, $f, $m, $runtime, $context, $extensions, $debugContext);
 }
 
@@ -177,7 +177,7 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
 {
    let functionParameters = $f->stubFuncParameters();
    print(if($debugContext.debug,|'\nGenerating Execution Plan:\n',|''));
-   let node = if ($clusters->size() == 1,
+   let node = meta::pure::functions::tracing::traceSpan(|if ($clusters->size() == 1,
        | print(if($debugContext.debug,|'Generating plan for cluster: '+$clusters->at(0)->meta::pure::router::printer::asString()+'\n',|''));
          $clusters->at(0)->plan($inScopeVars, $context, $extensions, ^$debugContext(space = $debugContext.space+'   '));,
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
@@ -197,7 +197,7 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
             resultSizeRange = $allNodes->last()->toOne().resultSizeRange,
             executionNodes = $allNodes
          );
-   );
+   ), 'plan: cluster nodes');
 
    let executionOptionParameters = $context->match([
                                                 p: meta::pure::executionPlan::ExecutionOptionContext[1] | $p->meta::pure::executionPlan::stubExecutionOptionParameters($extensions),
@@ -206,16 +206,17 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
 
    let updatedNode = addFunctionParametersValidationNode($node, $f, $functionParameters->concatenate($executionOptionParameters)->checkConflictingParameters(), $routedFunction, $context);
 
-   ^ExecutionPlan
-   (
-      func = $f,
-      mapping = $m,
-      runtime = $runtime,
-      rootExecutionNode = $updatedNode,
-      authDependent = false || $updatedNode->allNodes($extensions).authDependent->contains(true),
-      kerberos =  $updatedNode->allNodes($extensions).kerberos->first(),
-      processingTemplateFunctions = $updatedNode->allNodes($extensions).supportFunctions->removeDuplicates()
-   );
+   meta::pure::functions::tracing::traceSpan(|
+     ^ExecutionPlan
+     (
+        func = $f,
+        mapping = $m,
+        runtime = $runtime,
+        rootExecutionNode = $updatedNode,
+        authDependent = false || $updatedNode->allNodes($extensions).authDependent->contains(true),
+        kerberos =  $updatedNode->allNodes($extensions).kerberos->first(),
+        processingTemplateFunctions = $updatedNode->allNodes($extensions).supportFunctions->removeDuplicates()
+     ), 'plan: assemble');
 }
 
 function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], platformId:String[1], config:meta::pure::executionPlan::platformBinding::PlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]

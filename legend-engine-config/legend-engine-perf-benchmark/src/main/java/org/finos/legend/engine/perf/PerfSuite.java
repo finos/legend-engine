@@ -16,6 +16,8 @@ package org.finos.legend.engine.perf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +64,9 @@ public class PerfSuite
         double canaryMargin = Double.parseDouble(options.getOrDefault("canary-margin", "0.3"));
         long minDelta = Long.parseLong(options.getOrDefault("min-delta-ms", "25"));
         boolean allowImprovement = options.containsKey("allow-improvement");
+        boolean allExtensions = options.containsKey("allext");
+        String dumpPlans = options.get("dumpplans");
+        String comparePlans = options.get("compareplans");
 
         String record = options.get("record");
         if (record != null)
@@ -70,6 +75,16 @@ public class PerfSuite
         }
 
         List<BenchConfig> workloads = workloads(suiteName, iterations, warmup);
+        if (dumpPlans != null)
+        {
+            Files.createDirectories(Paths.get(dumpPlans));
+        }
+        for (BenchConfig config : workloads)
+        {
+            config.allExtensions = allExtensions;
+            config.dumpPlan = dumpPlans == null ? null : planFile(dumpPlans, config);
+            config.comparePlan = comparePlans == null ? null : planFile(comparePlans, config);
+        }
         System.out.println("suite '" + suiteName + "': " + workloads.size() + " workloads, "
                 + warmup + " warmup + " + iterations + " measured iterations each");
 
@@ -228,6 +243,11 @@ public class PerfSuite
         return configs;
     }
 
+    private static String planFile(String directory, BenchConfig config)
+    {
+        return Paths.get(directory, config.workloadId().replaceAll("[^A-Za-z0-9.+@-]", "_") + ".json").toString();
+    }
+
     private static BenchConfig workload(String query, int scale)
     {
         BenchConfig config = new BenchConfig();
@@ -292,7 +312,7 @@ public class PerfSuite
     {
         for (Map<String, Object> workload : workloads)
         {
-            if (workloadId.equals(workload.get("workload")))
+            if (workloadId.equals(String.valueOf(workload.get("workload")).replace("+allext", "")))
             {
                 Object value = PipelineBench.asMap(workload.get("warmMedianMs")).get(phase);
                 return value == null ? null : ((Number) value).doubleValue();
