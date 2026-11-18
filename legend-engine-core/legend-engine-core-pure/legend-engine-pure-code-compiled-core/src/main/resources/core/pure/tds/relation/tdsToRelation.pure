@@ -42,7 +42,12 @@ function meta::pure::tds::toRelation::transform(v:meta::protocols::pure::vX_X_X:
     a:AppliedFunction[1] | $a->transform($extensions),
     a:AppliedProperty[1] |
       if ($a.property->in(TDSRow.qualifiedProperties.name) && $a.parameters->size() == 2 && $a.parameters->at(1)->instanceOf(CString),
-          | property($a.parameters->at(1)->cast(@CString).value, $a.parameters->at(0)),
+          | let column = property($a.parameters->at(1)->cast(@CString).value, $a.parameters->at(0));
+            if ($a.property == 'isNull',
+              | appliedFunction(isEmpty_Any_$0_1$__Boolean_1_, $column),
+              | if ($a.property == 'isNotNull',
+                  | appliedFunction(isNotEmpty_Any_$0_1$__Boolean_1_, $column),
+                  | $column));,
           | $a),
     l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | ^$l(parameters = $l.parameters->map(p | $p->transform($extensions)->cast(@Variable)), body = $l.body->map(b | $b->transform($extensions))),
     c:Collection[1] | ^$c(values = $c.values->map(v | $v->transform($extensions))),
@@ -92,10 +97,6 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
             ->map(p | createColSpec($p.second, $p.first, []))
             ->createColSpecArrayInstance();
 
-        let groupBys = $names->slice(0, $groupByColumns->size())
-            ->map(n | createColSpec($n, [], []))
-            ->createColSpecArrayInstance();
-
         let aggregations = $names->slice($groupByColumns->size(), $names->size())->zip($aggs)
               ->map(p |
                 let agg = $p.second.aggregateFn->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
@@ -103,15 +104,12 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
               )->createColSpecArrayInstance();
 
 
-        appliedFunction(groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [
-          appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $projects]),
-          $groupBys,
-          $aggregations
-        ]);
+        appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $projects])
+          ->groupByOrAggregate($names->slice(0, $groupByColumns->size()), $aggregations);
     ),
     pair(groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
-        let groupBys = $a.parameters->at(1)->fromCollection()->cast(@CString).value->createColSpecArrayInstance();
+        let groupByNames = $a.parameters->at(1)->fromCollection()->cast(@CString).value;
         let aggs = $a.parameters->at(2)->fromCollection()->map(a |
           $a->match([
             c:ClassInstance[1] |
@@ -125,7 +123,7 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
           ])
         )->createColSpecArrayInstance();
 
-        appliedFunction(groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $groupBys, $aggs]);
+        $a.parameters->at(0)->transform($extensions)->groupByOrAggregate($groupByNames, $aggs);
     ),
     pair(sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
@@ -265,7 +263,7 @@ function meta::pure::tds::toRelation::colsToColSpecArrayInstance(params:meta::pr
   $params->fromCollection()->map(i | $i->match([
       c:ClassInstance[1] |
         let col = $c.value->cast(@TDSColumnInformation);
-        createColSpec($col.name, $col.columnFn, []);,
+        createColSpec($col.name, $col.columnFn->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction), []);,
       f:AppliedFunction[1] |
         createColSpec($f.parameters->at(1)->cast(@CString).value, $f.parameters->at(0)->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction), [])
     ]))->createColSpecArrayInstance();
@@ -396,8 +394,20 @@ function meta::pure::tds::toRelation::getOlapExtendFunction(v:meta::protocols::p
     ]);
 }
 
+function meta::pure::tds::toRelation::groupByOrAggregate(source:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1], groupByNames:String[*], aggregations:ClassInstance[1]):AppliedFunction[1]
+{
+  if ($groupByNames->isEmpty(),
+    | appliedFunction(aggregate_Relation_1__AggColSpecArray_1__Relation_1_, [$source, $aggregations]),
+    | appliedFunction(groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [$source, $groupByNames->createColSpecArrayInstance(), $aggregations])
+  );
+}
+
 function meta::pure::tds::toRelation::transformJoinColsToFunc(left:String[*], right:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
+  // TDS merges key columns with the same name on both sides into one; Relation join needs distinct names
+  let shared = $left->filter(c | $c->in($right));
+  assert($shared->isEmpty(), | 'conversion of join on column(s) ' + $shared->joinStrings('[', ', ', ']') + ' present on both sides is currently not supported, rename the column(s) on one side and join on separate left and right column lists');
+
   let func = $left->zip($right)->map(v |
           let lc = property($v.first, var('x'));
           let rc = property($v.second, var('y'));
@@ -448,6 +458,8 @@ function meta::pure::tds::toRelation::getJoinKind(joinType:meta::relational::met
 {
   [
     pair(meta::relational::metamodel::join::JoinType.LEFT_OUTER,  | meta::pure::functions::relation::JoinKind.LEFT),
+    pair(meta::relational::metamodel::join::JoinType.RIGHT_OUTER, | meta::pure::functions::relation::JoinKind.RIGHT),
+    pair(meta::relational::metamodel::join::JoinType.FULL_OUTER,  | meta::pure::functions::relation::JoinKind.FULL),
     pair(meta::relational::metamodel::join::JoinType.INNER, | meta::pure::functions::relation::JoinKind.INNER)
   ]->getValue($joinType, | fail('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
 }
