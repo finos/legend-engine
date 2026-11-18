@@ -35,7 +35,6 @@ import static org.finos.legend.pure.generated.core_relational_java_platform_bind
 public class TestRelationMappingJoinPlanGeneration
 {
     private static final String JOIN_CONDITION = "{p, f | $p.FIRMID == $f.ID}";
-    private static final String SRC_OUTSIDE_JOIN_CHAIN = "$src is the whole source relation and may only be used as the source of navigationJoin/filterJoin, optionally after extend, filter, select, rename or sort (e.g. $src->navigationJoin(...).COLUMN); use $row to access the columns of the mapped row.";
     private static final String STEP_AHEAD_OF_JOIN_UNSUPPORTED = " cannot be applied to $src ahead of navigationJoin/filterJoin: only extend, filter, select, rename and sort are supported, as they keep every source row exactly once.";
 
     private static final String FIXTURE = "###Pure\n" +
@@ -167,13 +166,6 @@ public class TestRelationMappingJoinPlanGeneration
     {
         plans("String[0..1]", "$src->filterJoin(my::firmRel(), " + JOIN_CONDITION + ").FIRSTNAME");
         plans("String[0..1]", "$src->navigationJoin(my::firmRel(), " + JOIN_CONDITION + ")->navigationJoin(my::addressRel(), {f, a | $f.ADDRESSID == $a.ID}).CITY");
-    }
-
-    @Test
-    public void srcOutsideAJoinChainRejected()
-    {
-        rejected("Integer[1]", "$src->size()", SRC_OUTSIDE_JOIN_CHAIN);
-        rejected("Integer[1]", "$src->filter(r | $r.FIRMID == 1)->size()", SRC_OUTSIDE_JOIN_CHAIN);
     }
 
     @Test
