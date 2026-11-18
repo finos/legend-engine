@@ -55,6 +55,12 @@ model size. Query shapes vary one dimension each:
 | `semiK` / `semiwK` / `semijoinK` | semi-structured path depth, access width, and width combined with join navigation |
 | `variantrel` | Variant functions through the relation path |
 | `m2mview` | a model-to-model view over the relational mapping |
+| `projnavW` | projection width with every column reached through one or two navigations |
+| `filterK` | number of `&&`-ed predicates in one filter, half of them across a navigation |
+| `existsK` | nesting depth of `exists` over the navigation chain |
+| `letK` | number of chained `let` bindings feeding the filter |
+| `fnK` | depth of a chain of user functions inlined into the filter |
+| `ifK` | number of projected columns computed with `if` |
 
 Mapping shape flags: `--nextmult 1|0..1` (chain multiplicity), `--union K` (Operation union over K
 set implementations), `--includes K` (K-deep mapping include chain), `--milestoning`
@@ -112,6 +118,21 @@ time per span name and the number of calls in one plan; suite results carry them
 
 Routing recurses, so a span can contain another of the same name; only the outermost one adds to
 that name's time. Spans of different names nest, so they do not sum to `planPure`.
+
+## Router sweeps
+
+`--suite router` runs sweeps that each vary one size: projection width (`proj`, `projnav`), join
+depth on `[0..1]` and `[1]` chains, graph-fetch depth, filter width, `exists` nesting, `let` and
+inlined-function chains, `if` columns, mapping include depth, model size and Operation unions. It is
+not part of the baseline check; it is for finding where a phase grows faster than its input:
+
+```bash
+java ... org.finos.legend.engine.perf.PipelineBench --suite router --allext --out router.json
+scripts/sweep_slopes.py router.json
+```
+
+`sweep_slopes.py` prints every sweep's phase and span medians and the growth slope between its two
+largest sizes (about 1 linear, about 2 quadratic).
 
 ## Full extension set
 

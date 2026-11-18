@@ -231,6 +231,38 @@ public class PerfSuite
             configs.add(workload("graph1", 30));
             configs.add(workload("graph4", 30));
         }
+        else if (suiteName.equals("router"))
+        {
+            sweep(configs, "proj", 30, 5, 10, 20, 40, 80);
+            sweep(configs, "projnav", 30, 5, 10, 20, 40, 80);
+            sweep(configs, "join", 30, 2, 4, 8, 16);
+            for (int depth : new int[]{2, 4, 8, 16})
+            {
+                BenchConfig config = workload("join" + depth, 30);
+                config.nextMultiplicity = "1";
+                configs.add(config);
+            }
+            sweep(configs, "graph", 30, 1, 2, 4, 8);
+            sweep(configs, "filter", 30, 2, 4, 8, 16, 32);
+            sweep(configs, "exists", 30, 1, 2, 4, 8);
+            sweep(configs, "let", 30, 2, 4, 8, 16, 32);
+            sweep(configs, "fn", 30, 1, 4, 16, 32);
+            sweep(configs, "if", 30, 2, 4, 8, 16, 32);
+            for (int includes : new int[]{1, 4, 16})
+            {
+                BenchConfig config = workload("join4", 30);
+                config.includes = includes;
+                configs.add(config);
+            }
+            for (int scale : new int[]{300, 3000})
+            {
+                configs.add(workload("join4", scale));
+            }
+            for (int sets : new int[]{2, 5, 10, 20})
+            {
+                configs.add(unionWorkload("join2", 10, sets));
+            }
+        }
         else
         {
             throw new IllegalArgumentException("Unknown suite: " + suiteName);
@@ -243,7 +275,15 @@ public class PerfSuite
         return configs;
     }
 
-    private static String planFile(String directory, BenchConfig config)
+    private static void sweep(List<BenchConfig> configs, String shape, int scale, int... sizes)
+    {
+        for (int size : sizes)
+        {
+            configs.add(workload(shape + size, scale));
+        }
+    }
+
+        private static String planFile(String directory, BenchConfig config)
     {
         return Paths.get(directory, config.workloadId().replaceAll("[^A-Za-z0-9.+@-]", "_") + ".json").toString();
     }
