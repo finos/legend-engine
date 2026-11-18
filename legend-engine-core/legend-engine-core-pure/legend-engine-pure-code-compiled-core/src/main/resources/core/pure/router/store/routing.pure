@@ -55,7 +55,7 @@ function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRun
     if($currentStoreMappingRoutingStrategy->isEmpty(),
       | getRoutingStrategy($modifiedMapping, $modifiedRuntime),
       | let newStoreMappingRoutingStrategy = $currentStoreMappingRoutingStrategy->toOne();
-        ^$newStoreMappingRoutingStrategy(mapping = $modifiedMapping, runtime = $modifiedRuntime, classMappingsByClass = $modifiedMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());
+        ^$newStoreMappingRoutingStrategy(mapping = $modifiedMapping, runtime = $modifiedRuntime, classMappingsByClass = $modifiedMapping->buildClassMappingsByClassMap(), classMappingsById = $modifiedMapping->buildUnresolvedClassMappingsById(), associationPropertyMappingsBySourceId = $modifiedMapping->buildAssociationPropertyMappingsBySourceId(), setsByDepth = ^Map<String, PermutationSet>());
     );
 }
 
@@ -337,6 +337,8 @@ function <<access.private>> meta::pure::router::store::routing::getRoutingStrate
     runtime = $runtime,
     setsByDepth = ^Map<String, PermutationSet>(),
     classMappingsByClass = $mapping->buildClassMappingsByClassMap(),
+    classMappingsById = $mapping->buildUnresolvedClassMappingsById(),
+    associationPropertyMappingsBySourceId = $mapping->buildAssociationPropertyMappingsBySourceId(),
     processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__Extension_MANY__DebugContext_1__RoutingState_1_,
     processRelationStoreAccessor = processRelationStoreAccessor_RelationStoreAccessor_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
     processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,

@@ -79,6 +79,16 @@ function meta::pure::mapping::buildClassMappingsById(mapping:Mapping[1]):Map<Str
    $mapping->classMappings()->groupBy(m|$m.id);
 }
 
+function meta::pure::mapping::buildUnresolvedClassMappingsById(mapping:Mapping[1]):Map<String,List<SetImplementation>>[1]
+{
+   $mapping->_allClassMappingsRecursive()->removeDuplicates()->groupBy(m|$m.id);
+}
+
+function meta::pure::mapping::buildAssociationPropertyMappingsBySourceId(mapping:Mapping[1]):Map<String,List<PropertyMapping>>[1]
+{
+   $mapping->_allAssociationMappingsRecursive()->map(a|$a->allPropertyMappings())->removeDuplicates()->groupBy(p|$p.sourceSetImplementationId);
+}
+
 function meta::pure::mapping::getClassMappingById(idToClassMapping: Map<String,List<SetImplementation>>[1], id: String[1]): SetImplementation[*]
 {
   $idToClassMapping->get($id).values;
@@ -196,6 +206,29 @@ function meta::pure::router::routing::getStoreFromSet(set: SetImplementation[1],
   $set->storeContractForSetImplementation($mapping, $extensions).second;
 }
 
+function <<access.private>> meta::pure::router::routing::classMappingsForTargetIds(mapping:Mapping[1], targetSetIds:String[*], routingStrategy:RoutingStrategy[1]):SetImplementation[*]
+{
+   let cached = $routingStrategy->match([
+      s:meta::pure::router::store::metamodel::StoreMappingRoutingStrategy[1] | if($s.mapping == $mapping && $s.classMappingsById->isNotEmpty() && $s.associationPropertyMappingsBySourceId->isNotEmpty() && $targetSetIds->size() == 1, |$s, |[]),
+      a:Any[1] | []
+   ])->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy);
+   if($cached->isEmpty(),
+      | $mapping->_classMappingByIdRecursive($targetSetIds)->map(x | $mapping->classMappingById($x.id)),
+      | let sameId = $cached.classMappingsById->toOne()->get($targetSetIds->toOne()).values;
+        $sameId->map(x | $sameId->toOne()->withAssociationPropertyMappings($cached.associationPropertyMappingsBySourceId->toOne()));
+   );
+}
+
+function <<access.private>> meta::pure::router::routing::withAssociationPropertyMappings(classMapping:SetImplementation[1], associationPropertyMappingsBySourceId:Map<String,List<PropertyMapping>>[1]):SetImplementation[1]
+{
+   $classMapping->match([
+      i:InstanceSetImplementation[1] |
+         let associationPropertyMappings = $associationPropertyMappingsBySourceId->get($i.id).values;
+         if($associationPropertyMappings->isEmpty(), |$i, |^$i(propertyMappings = $i.propertyMappings->concatenate($associationPropertyMappings)));,
+      s:SetImplementation[1] | $s
+   ]);
+}
+
 function meta::pure::router::routing::findMappingsFromProperty(p:AbstractProperty<Any>[1], mapping:Mapping[1], sourceMappings:SetImplementation[*], state:RoutingState[1], extensions:meta::pure::extension::Extension[*]):SetImplementation[*]
 {
    let c = $p->functionReturnType().rawType->toOne();
@@ -216,7 +249,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
                                             ^OperationSetImplementation(id='embedded_operation', root=true, class=$c->cast(@Class<Any>), parent=$mapping, parameters=$containers, operation=$sourceMappings->at(0)->cast(@OperationSetImplementation).operation);,
                                           | let targetSetIds = $sourceMappingOperationMap.targetSetImplementationId;
                                             if(!$targetSetIds->isEmpty(),
-                                               | let classMappingsById = $mapping->_classMappingByIdRecursive($targetSetIds)->map(x | $mapping->classMappingById($x.id));
+                                               | let classMappingsById = $mapping->classMappingsForTargetIds($targetSetIds, $state.routingStrategy);
                                                  if($classMappingsById->isEmpty(),
                                                     |$mapping->rootClassMappingByClass($c->cast(@Class<Any>))->potentiallyResolveOperation($mapping),
                                                     |$classMappingsById
