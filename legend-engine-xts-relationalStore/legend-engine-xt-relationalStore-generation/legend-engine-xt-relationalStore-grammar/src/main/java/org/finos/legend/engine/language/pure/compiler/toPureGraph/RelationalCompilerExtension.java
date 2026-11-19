@@ -122,10 +122,9 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Relational
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_DatabaseMapper_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_SchemaMapper_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableMapper_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor;
-import org.finos.legend.pure.generated.Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_sqlOptimizer_rules_ExtractSubQueriesAsCTEsPostProcessor;
+import org.finos.legend.pure.generated.Root_meta_relational_sqlOptimizer_rules_ExtractSubQueriesAsCTEsPostProcessor_Impl;
 import org.finos.legend.pure.generated.core_relational_relational_runtime_connection_postprocessor;
-import org.finos.legend.pure.generated.core_relational_relational_postprocessor_cteExtractionPostProcessor;
 import org.finos.legend.pure.m2.dsl.store.M2StorePaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
@@ -620,7 +619,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 p,
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraLegacyPostProcessors),
                                 context));
-                        List<Root_meta_relational_runtime_PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo);
+                        List<Root_meta_relational_runtime_PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo).select(Objects::nonNull);
                         relational._queryPostProcessorsWithParameter(Lists.mutable.withAll(postProcessorWithParameters).withAll(translatedForPlanGeneration));
                         relational._postProcessors(ListIterate.collect(pp, Pair::getOne));
                     }
@@ -821,10 +820,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             }
             else if (processor instanceof ExtractSubQueriesAsCTEsPostProcessor)
             {
-                Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor p = new Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor_Impl("", null, context.pureModel.getClass("meta::relational::postProcessor::cteExtraction::ExtractSubQueriesAsCTEsPostProcessor"));
-                Root_meta_relational_runtime_PostProcessorWithParameter f =
-                        core_relational_relational_postprocessor_cteExtractionPostProcessor.Root_meta_relational_postProcessor_cteExtraction_extractSubQueriesAsCTEsPostProcessor_ExtractSubQueriesAsCTEsPostProcessor_1__PostProcessorWithParameter_1_(p, context.pureModel.getExecutionSupport());
-                return Tuples.pair(p, f);
+                // Only marks the connection: the SQL optimizer's ExtractSubQueriesAsCTEs rule does the work, so no plan-time post processor
+                Root_meta_relational_sqlOptimizer_rules_ExtractSubQueriesAsCTEsPostProcessor p = new Root_meta_relational_sqlOptimizer_rules_ExtractSubQueriesAsCTEsPostProcessor_Impl("", null, context.pureModel.getClass("meta::relational::sqlOptimizer::rules::ExtractSubQueriesAsCTEsPostProcessor"));
+                return Tuples.pair(p, null);
             }
             return null;
         });

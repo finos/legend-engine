@@ -453,7 +453,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   }#;
   let query = {|Firm.all()->graphFetch($tree)->serialize($tree)};
 
-  assert(planString($query, ExplicitPrimaryKeyMapping)->contains('select "root"."CODE" as "pk_0"'));
+  meta::relational::functions::asserts::assertSQLContains('select "rfgf_pk_firm_2".CODE as "pk_0"', planString($query, ExplicitPrimaryKeyMapping));
 
   let result = execute($query, ExplicitPrimaryKeyMapping, meta::external::store::relational::tests::testRuntime(PkDB), meta::relational::extension::relationalExtensions());
 

@@ -48,6 +48,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
       selectSQLQueryProcessor = processSelectSQLQueryForSQLServer_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dataTypeToSqlText = dataTypeToSqlTextSqlServer_DataType_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslatorForSqlServer()
    );
@@ -58,20 +59,31 @@ function  meta::relational::functions::sqlQueryToString::sqlServer::processSelec
    $s->processSelectSQLQueryForSQLServer($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
+// T-SQL rejects ORDER BY in a derived table or CTE unless TOP or OFFSET is also given.
 function <<access.private>>  meta::relational::functions::sqlQueryToString::sqlServer::processSelectSQLQueryForSQLServer(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   assertEmpty($s.pivot, 'pivot is not supported');
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
-  $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') + processTop($s, $format, $dbConfig, $extensions) +
   processSelectColumnsSQLServer($s.columns, $dbConfig, $format->indent(), ^Config(), ', ', $dbConfig.dbExtension.isBooleanLiteralSupported, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
-  + processLimit($s, $dbConfig, $format, $extensions, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+  + processLimit($s, $dbConfig, $format, $extensions, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_)
+  + if($isSubSelect && $s.orderBy->isNotEmpty() && $s.fromRow->isEmpty() && $s.toRow->isEmpty(), | ' ' + $format.separator + 'offset 0 rows', | '');
+}
+
+// T-SQL has no DOUBLE type: its double precision type is FLOAT.
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::dataTypeToSqlTextSqlServer(type:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+  $type->match([
+    d:meta::relational::metamodel::datatype::Double[1] | 'FLOAT',
+    a:meta::relational::metamodel::datatype::DataType[1] | meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault($type)
+  ])
 }
 
 // mirrors oracle's processSelectColumnsOracle: wraps BOTH Alias and bare boolean operations as case-when

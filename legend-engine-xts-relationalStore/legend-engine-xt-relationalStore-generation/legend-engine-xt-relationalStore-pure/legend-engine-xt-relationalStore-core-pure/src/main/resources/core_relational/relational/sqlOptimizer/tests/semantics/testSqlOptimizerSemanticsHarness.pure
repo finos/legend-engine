@@ -1,0 +1,584 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::sqlOptimizer::semantics::SemanticsDb
+(
+  Schema SQLOPT
+  (
+    Table SQLOPT_T (ID INTEGER PRIMARY KEY, G VARCHAR(10), V INTEGER, W INTEGER)
+    Table SQLOPT_U (ID INTEGER PRIMARY KEY, TID INTEGER, X INTEGER, G VARCHAR(10))
+    View SQLOPT_UMAX
+    (
+      ~groupBy (SQLOPT.SQLOPT_U.TID)
+      TID : SQLOPT.SQLOPT_U.TID,
+      MAXX : max(SQLOPT.SQLOPT_U.X)
+    )
+  )
+  Join TtoU(SQLOPT.SQLOPT_T.ID = SQLOPT.SQLOPT_U.TID)
+  Join TgToUx(SQLOPT.SQLOPT_T.G = SQLOPT.SQLOPT_U.X)
+  Join TgToUg(SQLOPT.SQLOPT_T.G = SQLOPT.SQLOPT_U.G)
+  Join TtoUMax(SQLOPT.SQLOPT_T.ID = SQLOPT.SQLOPT_UMAX.TID)
+)
+
+###Pure
+import meta::relational::tests::sqlOptimizer::semantics::*;
+
+Class meta::relational::tests::sqlOptimizer::semantics::T
+{
+  id: Integer[0..1];
+  g: String[0..1];
+  v: Integer[0..1];
+  w: Integer[0..1];
+  maxX: Integer[0..1];
+  uWithId(id:Integer[1]) {$this.us->filter(u | $u.id == $id)->toOne()}:U[1];
+}
+
+Class meta::relational::tests::sqlOptimizer::semantics::U
+{
+  id: Integer[0..1];
+  tid: Integer[0..1];
+  x: Integer[0..1];
+  g: String[0..1];
+}
+
+Association meta::relational::tests::sqlOptimizer::semantics::TtoU
+{
+  t: T[0..1];
+  us: U[*];
+}
+
+Association meta::relational::tests::sqlOptimizer::semantics::TgToUx
+{
+  tsByX: T[*];
+  usByX: U[*];
+}
+
+Association meta::relational::tests::sqlOptimizer::semantics::TgToUg
+{
+  tsByG: T[*];
+  usByG: U[*];
+}
+
+Class meta::relational::tests::sqlOptimizer::semantics::Item
+{
+  id: Integer[0..1];
+  grp: String[0..1];
+  v: Integer[0..1];
+  one: Integer[1];
+  k: String[1];
+  five: Integer[1];
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::itemRelation():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->extend(~[ONE: x | 1, KK: x | 'k', FIVE: x | 5])
+}
+
+###Mapping
+import meta::relational::tests::sqlOptimizer::semantics::*;
+
+Mapping meta::relational::tests::sqlOptimizer::semantics::SemanticsMapping
+(
+  T: Relational
+  {
+    id: [SemanticsDb]SQLOPT.SQLOPT_T.ID,
+    g: [SemanticsDb]SQLOPT.SQLOPT_T.G,
+    v: [SemanticsDb]SQLOPT.SQLOPT_T.V,
+    w: [SemanticsDb]SQLOPT.SQLOPT_T.W,
+    maxX: [SemanticsDb]@TtoUMax | SQLOPT.SQLOPT_UMAX.MAXX
+  }
+  U: Relational
+  {
+    id: [SemanticsDb]SQLOPT.SQLOPT_U.ID,
+    tid: [SemanticsDb]SQLOPT.SQLOPT_U.TID,
+    x: [SemanticsDb]SQLOPT.SQLOPT_U.X,
+    g: [SemanticsDb]SQLOPT.SQLOPT_U.G
+  }
+  TtoU: Relational { AssociationMapping ( t: [SemanticsDb]@TtoU, us: [SemanticsDb]@TtoU ) }
+  TgToUx: Relational { AssociationMapping ( tsByX: [SemanticsDb]@TgToUx, usByX: [SemanticsDb]@TgToUx ) }
+  TgToUg: Relational { AssociationMapping ( tsByG: [SemanticsDb]@TgToUg, usByG: [SemanticsDb]@TgToUg ) }
+)
+
+Mapping meta::relational::tests::sqlOptimizer::semantics::ItemMapping
+(
+  *Item: Relation
+  {
+    ~func meta::relational::tests::sqlOptimizer::semantics::itemRelation():Relation<Any>[1]
+    id: ID,
+    grp: G,
+    v: V,
+    one: ONE,
+    k: KK,
+    five: FIVE
+  }
+)
+
+###Pure
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::sqlOptimizer::tree::*;
+import meta::relational::runtime::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+import meta::relational::tests::sqlOptimizer::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+
+Class meta::relational::tests::sqlOptimizer::semantics::Fixture
+{
+  t: Table[1];
+  u: Table[1];
+  connection: DatabaseConnection[1];
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::h2Connection():DatabaseConnection[1]
+{
+  meta::external::store::relational::tests::testRuntime(SemanticsDb).connectionStores.connection->toOne()->cast(@DatabaseConnection)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::semanticsTable(name:String[1]):Table[1]
+{
+  SemanticsDb->schema('SQLOPT')->toOne()->table($name)->toOne()
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::sharedFixture(connection:Connection[1]):Fixture[1]
+{
+  ^Fixture(t = semanticsTable('SQLOPT_T'), u = semanticsTable('SQLOPT_U'), connection = $connection->cast(@DatabaseConnection))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::fixture(suffix:String[1]):Fixture[1]
+{
+  fixture($suffix, h2Connection())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::fixture(suffix:String[1], connection:Connection[1]):Fixture[1]
+{
+  let t = semanticsTable('SQLOPT_T');
+  let u = semanticsTable('SQLOPT_U');
+  ^Fixture(t = ^$t(name = 'SQLOPT_T_' + $suffix), u = ^$u(name = 'SQLOPT_U_' + $suffix), connection = $connection->cast(@DatabaseConnection));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::dataVariants():String[*]
+{
+  ['nullsAndDuplicates', 'empty', 'ties', 'allNull']
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::rowsOf(variant:String[1]):Pair<String,String>[*]
+{
+  if($variant == 'nullsAndDuplicates',
+    | [pair('T', '1,a,1,10\n1,a,1,10\n2,a,,20\n3,,3,\n4,b,4,40\n5,b,,\n6,B,4,5'),
+       pair('U', '1,1,100,a\n2,1,100,a\n3,2,,\n4,,7,b\n5,9,9,z\n5,9,9,z\n6,4,4,b')],
+    | if($variant == 'ties',
+        | [pair('T', '1,a,1,1\n2,a,1,1\n3,a,1,2\n4,b,1,1'),
+           pair('U', '1,1,1,a\n2,3,1,a')],
+        | if($variant == 'allNull',
+            | [pair('T', ',,,'), pair('U', ',,,')],
+            | if($variant == 'numericStrings',
+                | [pair('T', '1,7,1,1\n2,12,2,2\n3,x,3,3\n4,,4,4'),
+                   pair('U', '1,1,1,7')],
+                | if($variant == 'coercibleStrings',
+                    | [pair('T', '1,01,1,1\n2,1,1,1\n3,001,1,1'),
+                       pair('U', '10,0,1,u\n11,0,2,u')],
+                    | []
+                  )
+              )
+          )
+      )
+  )
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::tableData(fixture:Fixture[1], variant:String[1]):Pair<Table,String>[*]
+{
+  let rows = rowsOf($variant);
+  [
+    pair($fixture.t, $rows->filter(r | $r.first == 'T').second->joinStrings('')),
+    pair($fixture.u, $rows->filter(r | $r.first == 'U').second->joinStrings(''))
+  ];
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::csvBlock(table:Table[1], rows:String[1]):String[1]
+{
+  $table.schema.name + '\n' + $table.name + '\n' + $table.columns->cast(@Column).name->joinStrings(',') + if($rows == '', | '', | '\n' + $rows) + '\n'
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::unconstrainedDatabase(tables:Table[*]):Database[1]
+{
+  ^Database(name = 'SqlOptimizerTestData', package = meta::relational::tests::sqlOptimizer::semantics,
+            schemas = ^Schema(name = $tables.schema.name->distinct()->toOne(), database = ^Database(name = 'SqlOptimizerTestData'), tables = $tables->map(t | ^$t(primaryKey = [], columns = $t.columns->cast(@Column)->map(c | ^$c(nullable = true))))))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::setUpNodes(connection:DatabaseConnection[1], data:Pair<Table,String>[*]):ExecutionNode[1]
+{
+  let database = unconstrainedDatabase($data.first);
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(element = $database, connection = $connection));
+  let setupDatabase = 'meta::relational::tests::pct::process::setupDatabase_String_MANY__Database_1__Runtime_1__DebugContext_1__SequenceExecutionNode_1_'
+    ->pathToElement()->cast(@Function<{String[*], Database[1], Runtime[1], meta::pure::tools::DebugContext[1]->SequenceExecutionNode[1]}>);
+  $setupDatabase->eval($data->map(d | csvBlock($d.first, $d.second)), $database, $runtime, meta::pure::tools::noDebug());
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::queryResult(sql:String[1], connection:DatabaseConnection[1], data:Pair<Table,String>[*]):String[*]
+{
+  let query = ^RelationalTdsInstantiationExecutionNode(
+    resultType = ^TDSResultType(genericType = ^GenericType(rawType = meta::pure::tds::TabularDataSet), tdsColumns = []),
+    executionNodes = ^SQLExecutionNode(sqlQuery = $sql, resultColumns = [], isResultColumnsDynamic = true, connection = $connection, resultType = ^ResultType(genericType = ^GenericType(rawType = Any)))
+  );
+  let plan = ^ExecutionPlan(
+    func = {|'sqlOptimizerTest'},
+    mapping = ^Mapping(package = meta::relational::tests::sqlOptimizer::semantics, name = 'NoMapping'),
+    runtime = ^Runtime(connectionStores = ^ConnectionStore(element = SemanticsDb, connection = $connection)),
+    rootExecutionNode = ^RelationalBlockExecutionNode(executionNodes = [setUpNodes($connection, $data), $query], resultType = $query.resultType),
+    authDependent = false
+  );
+  let json = $plan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::relational::extension::relationalExtensions())
+                  ->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
+  meta::legend::executePlanAsJSON($json, []->cast(@Pair<String, Any>), 'CSV')->split('\n')->map(l | $l->replace('\r', ''))->filter(l | $l->isNotEmpty());
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::resultRows(sql:String[1], fixture:Fixture[1], variant:String[1]):String[*]
+{
+  queryResult($sql, $fixture.connection, $fixture->tableData($variant))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::h2Context():SqlOptimizerContext[1]
+{
+  sqlOptimizerContext(DatabaseType.H2, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::optimizerContext(connection:DatabaseConnection[1]):SqlOptimizerContext[1]
+{
+  sqlOptimizerContext($connection.type, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::isSupportedOn(rule:SqlOptimizationRule[1], dbType:DatabaseType[1]):Boolean[1]
+{
+  $rule.databaseSupport.isDatabaseTypeSupported($dbType->toString())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::supportedRules(dbType:DatabaseType[1]):SqlOptimizationRule[*]
+{
+  allSqlOptimizationRules(meta::relational::extension::relationalExtensions())->filter(r | $r->isSupportedOn($dbType))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::trimming():SqlOptimizationRule[*]
+{
+  unusedColumnTrimmingRule()
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::elimination():SqlOptimizationRule[*]
+{
+  redundantSubSelectEliminationRule()
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::pushDown():SqlOptimizationRule[*]
+{
+  [joinFilterPushDownRule(), subQueryFilterPushDownRule()]
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::ruleSets(dbType:DatabaseType[1]):Pair<String, List<SqlOptimizationRule>>[*]
+{
+  [
+    pair('trimming', list(trimming())),
+    pair('elimination', list(elimination())),
+    pair('pushDown', list(pushDown())),
+    pair('all rules', list(defaultSqlOptimizationRules()->filter(r | $r.enabledByAll)))
+  ]->map(rs | pair($rs.first, list($rs.second.values->filter(r | $r->isSupportedOn($dbType)))))
+   ->filter(rs | $rs.second.values->isNotEmpty())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::optimized(query:SelectSQLQuery[1], rules:SqlOptimizationRule[*]):SelectSQLQuery[1]
+{
+  applySqlOptimizationRules($query, $rules, h2Context())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::printed(query:SelectSQLQuery[1]):String[1]
+{
+  $query->printedFor(DatabaseType.H2)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::printedFor(query:SelectSQLQuery[1], dbType:DatabaseType[1]):String[1]
+{
+  $query->meta::relational::functions::sqlQueryToString::sqlQueryToString($dbType, [], [], meta::relational::extension::relationalExtensions())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::optimizedSql(query:SelectSQLQuery[1], rules:SqlOptimizationRule[*]):String[1]
+{
+  $query->optimized($rules)->printed()
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertSameRows(fixture:Fixture[1], query:SelectSQLQuery[1], ordered:Boolean[1]):Boolean[1]
+{
+  assertSameRows($fixture, $query, $ordered, dataVariants())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertSameRows(fixture:Fixture[1], query:SelectSQLQuery[1], ordered:Boolean[1], variants:String[*]):Boolean[1]
+{
+  let dbType = $fixture.connection.type;
+  let context = optimizerContext($fixture.connection);
+  let candidates = ruleSets($dbType)->map(rs | pair($rs.first, applySqlOptimizationRules($query, $rs.second.values, $context)->printedFor($dbType)));
+  assertRulesReturnTheirInputAtTheFixedPoint($query, $context);
+  assertSameRows($fixture, $query->printedFor($dbType), $candidates, $ordered, $variants);
+}
+
+// The optimizer validates only what a rule changed, so a rule with nothing left to do must hand back the very same query (or a
+// rewrite the validator refuses, which the optimizer discards).
+function meta::relational::tests::sqlOptimizer::semantics::assertRulesReturnTheirInputAtTheFixedPoint(query:SelectSQLQuery[1], context:SqlOptimizerContext[1]):Boolean[1]
+{
+  let rules = defaultSqlOptimizationRules()->filter(r | $r.enabledByAll && $r->isSupportedOn($context.dbType));
+  let fixedPoint = applySqlOptimizationRules($query, $rules, $context);
+  $rules->forAll({r |
+    let result = $r.transform->eval($fixedPoint, $context);
+    assert(is($result.query, $fixedPoint) || $result->introducesProblems($fixedPoint), | $r.name + ' rebuilt a query it had nothing left to change on ' + $context.dbType->toString() + '\n  ' + $fixedPoint->printedFor($context.dbType));
+  });
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertSameRows(fixture:Fixture[1], before:String[1], candidates:Pair<String,String>[*], ordered:Boolean[1], variants:String[*]):Boolean[1]
+{
+  let changed = $candidates->filter(c | $c.second != $before);
+  assert($changed->isNotEmpty(), | 'no rule changed the query on ' + $fixture.connection.type->toString() + ', so its rows were never compared; use assertUnchanged if that is the intent\n  ' + $before);
+  $variants->map({variant |
+    let expected = $before->resultRows($fixture, $variant);
+    $changed->map({c |
+      let actual = $c.second->resultRows($fixture, $variant);
+      assertEquals($expected->sameRowsForm($ordered), $actual->sameRowsForm($ordered),
+        | $c.first + ' changed the result on ' + $variant + ' data (' + $fixture.connection.type->toString() + ')\n  before: ' + $before + '\n  after:  ' + $c.second);
+    });
+  });
+  true;
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::sameRowsForm(table:String[*], ordered:Boolean[1]):String[*]
+{
+  if($ordered || $table->isEmpty(), | $table, | $table->head()->concatenate($table->tail()->sort()))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::legacyH2ResultRows(sql:String[1], connection:DatabaseConnection[1]):String[*]
+{
+  executeInDb($sql, $connection).rows->map(r | $r.values->map(v | $v->match([n:SQLNull[1] | 'NULL', a:Any[1] | $a->toString()]))->joinStrings('|'))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::semanticsRuntime(connection:DatabaseConnection[1]):Runtime[1]
+{
+  ^Runtime(connectionStores = ^ConnectionStore(element = SemanticsDb, connection = $connection))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::planNode(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], runtime:Runtime[1], enabled:String[*], disabled:String[*]):SQLExecutionNode[1]
+{
+  let plan = meta::pure::executionPlan::executionPlan($query, $mapping, $runtime->withGenerationFeatures($enabled, $disabled), meta::relational::extension::relationalExtensions());
+  $plan.rootExecutionNode->meta::pure::executionPlan::allNodes(meta::relational::extension::relationalExtensions())->filter(n | $n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(n | $n.sqlQuery->toLower()->trim()->startsWith('select') || $n.sqlQuery->toLower()->trim()->startsWith('with'))->toOne();
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::planSql(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:DatabaseConnection[1], enabled:String[*], disabled:String[*]):String[1]
+{
+  planNode($query, $mapping, semanticsRuntime($connection), $enabled, $disabled).sqlQuery
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::unoptimizedPlanSql(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:DatabaseConnection[1]):String[1]
+{
+  planSql($query, $mapping, $connection, [], 'SQL_OPTIMIZATION_ALL')
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::featureSets():Pair<String, List<String>>[*]
+{
+  [
+    pair('default features', list([]->cast(@String))),
+    pair('SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING', list('SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING')),
+    pair('SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION', list('SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION')),
+    pair('SQL_OPTIMIZATION_ALL', list('SQL_OPTIMIZATION_ALL'))
+  ]
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::optimizedPlanSqls(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:DatabaseConnection[1]):Pair<String,String>[*]
+{
+  featureSets()->map(fs | pair($fs.first, planSql($query, $mapping, $connection, $fs.second.values, [])))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertSameRowsWithEveryFeature(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:Connection[1], ordered:Boolean[1], variants:String[*]):Boolean[1]
+{
+  let fixture = sharedFixture($connection);
+  assertSameRows($fixture, unoptimizedPlanSql($query, $mapping, $fixture.connection), optimizedPlanSqls($query, $mapping, $fixture.connection), $ordered, $variants);
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertUnchanged(fixture:Fixture[1], query:SelectSQLQuery[1]):Boolean[1]
+{
+  let dbType = $fixture.connection.type;
+  let before = $query->printedFor($dbType);
+  ruleSets($dbType)->map(rs | assertEquals($before, applySqlOptimizationRules($query, $rs.second.values, optimizerContext($fixture.connection))->printedFor($dbType), | $rs.first + ' changed the query on ' + $dbType->toString()));
+  true;
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertUnchangedWithEveryFeature(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:Connection[1]):Boolean[1]
+{
+  let fixture = sharedFixture($connection);
+  let before = unoptimizedPlanSql($query, $mapping, $fixture.connection);
+  optimizedPlanSqls($query, $mapping, $fixture.connection)->map(c | assertEquals($before, $c.second, | $c.first + ' changed the query on ' + $fixture.connection.type->toString()));
+  true;
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::pushDownFeatures():String[*]
+{
+  ['SQL_OPTIMIZATION_JOIN_FILTER_PUSH_DOWN', 'SQL_OPTIMIZATION_SUB_QUERY_FILTER_PUSH_DOWN']
+}
+
+// With every other rule off, any difference from the unoptimized plan's SQL is the push-down's doing.
+function meta::relational::tests::sqlOptimizer::semantics::pushDownSql(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:DatabaseConnection[1]):Pair<String,String>[1]
+{
+  pair(unoptimizedPlanSql($query, $mapping, $connection), planSql($query, $mapping, $connection, pushDownFeatures(), 'SQL_OPTIMIZATION_ALL'))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertPushesDown(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:Connection[1]):Boolean[1]
+{
+  let fixture = sharedFixture($connection);
+  let sql = pushDownSql($query, $mapping, $fixture.connection);
+  assert($sql.first != $sql.second, | 'push-down left the query unchanged on ' + $fixture.connection.type->toString() + '\n  ' + $sql.first);
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertDoesNotPushDown(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:Connection[1]):Boolean[1]
+{
+  let fixture = sharedFixture($connection);
+  let sql = pushDownSql($query, $mapping, $fixture.connection);
+  assert($sql.first == $sql.second, | 'push-down changed the query on ' + $fixture.connection.type->toString() + '\n  ' + $sql.second);
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::assertSameRowsWithCTEExtraction(query:FunctionDefinition<{->Any[*]}>[1], connection:Connection[1], extractsCTEs:Boolean[1], ordered:Boolean[1]):String[1]
+{
+  let fixture = sharedFixture($connection);
+  let extracted = planSql($query, SemanticsMapping, $fixture.connection, ['SQL_OPTIMIZATION_ALL', 'SQL_OPTIMIZATION_EXTRACT_SUB_QUERIES_AS_CTES'], []);
+  assertEquals($extractsCTEs, $extracted->toLower()->trim()->startsWith('with '), | 'CTE extraction on ' + $fixture.connection.type->toString() + ': ' + $extracted);
+  let before = unoptimizedPlanSql($query, SemanticsMapping, $fixture.connection);
+  if($extracted == $before && !$extractsCTEs, | true, | assertSameRows($fixture, $before, pair('SQL_OPTIMIZATION_ALL with CTE extraction', $extracted), $ordered, dataVariants()));
+  $extracted;
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::tableAlias(name:String[1], relation:RelationalOperationElement[1]):TableAlias[1]
+{
+  ^TableAlias(name = $name, relationalElement = $relation)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::ref(alias:TableAlias[1], name:String[1]):TableAliasColumn[1]
+{
+  let column = $alias.relationalElement->match([
+    t:Table[1] | $t->column($name)->toOne(),
+    o:Any[1] | ^Column(name = $name, type = ^meta::relational::metamodel::datatype::Integer())
+  ]);
+  ^TableAliasColumn(alias = $alias, column = $column);
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::named(element:RelationalOperationElement[1], name:String[1]):Alias[1]
+{
+  ^Alias(name = $name, relationalElement = $element)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::lit(value:Any[1]):Literal[1]
+{
+  ^Literal(value = $value)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::fn(name:String[1], parameters:RelationalOperationElement[*]):DynaFunction[1]
+{
+  ^DynaFunction(name = $name, parameters = $parameters)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::sqlEquals(left:RelationalOperationElement[1], right:RelationalOperationElement[1]):DynaFunction[1]
+{
+  fn('equal', [$left, $right])
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::columnName(name:String[1]):ColumnName[1]
+{
+  ^ColumnName(name = $name)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::root(alias:TableAlias[1]):RootJoinTreeNode[1]
+{
+  ^RootJoinTreeNode(alias = $alias)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::root(alias:TableAlias[1], joins:JoinTreeNode[*]):RootJoinTreeNode[1]
+{
+  ^RootJoinTreeNode(alias = $alias, childrenData = $joins)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::joined(parent:TableAlias[1], alias:TableAlias[1], condition:RelationalOperationElement[1], joinType:JoinType[1]):JoinTreeNode[1]
+{
+  ^JoinTreeNode(alias = $alias, database = SemanticsDb, joinName = 'j_' + $alias.name, joinType = $joinType,
+                join = ^Join(name = 'j_' + $alias.name, target = $alias, aliases = [pair($parent, $alias), pair($alias, $parent)], operation = $condition->cast(@meta::relational::metamodel::operation::Operation)))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::lateral(parent:TableAlias[1], alias:TableAlias[1]):JoinTreeNode[1]
+{
+  let node = joined($parent, $alias, sqlEquals(lit(1), lit(1)), JoinType.INNER);
+  ^$node(lateral = true);
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::sel(columns:RelationalOperationElement[*], data:RootJoinTreeNode[1]):SelectSQLQuery[1]
+{
+  ^SelectSQLQuery(columns = $columns, data = $data)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::unionAll(name:String[1], branches:SelectSQLQuery[*]):TableAlias[1]
+{
+  tableAlias($name, ^UnionAll(queries = $branches))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::orderAsc(element:RelationalOperationElement[1]):OrderBy[1]
+{
+  ^OrderBy(column = $element, direction = meta::relational::metamodel::SortDirection.ASC)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::orderDesc(element:RelationalOperationElement[1]):OrderBy[1]
+{
+  ^OrderBy(column = $element, direction = meta::relational::metamodel::SortDirection.DESC)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::subSelects(query:SelectSQLQuery[1]):SelectSQLQuery[*]
+{
+  $query->extractRelationalElements(true).elements->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)->filter(s | !is($s, $query))
+}
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::tds::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+
+function meta::relational::tests::sqlOptimizer::semantics::lateralOverALimitedRelation():FunctionDefinition<{->Any[*]}>[1]
+{
+  {|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->select(~[ID, G, V])->limit(100)->lateral(r | #>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->filter(u | $u.TID == $r.V)->select(~[X]))->select(~[G, X])}
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::lateralOverARenamedRelation():FunctionDefinition<{->Any[*]}>[1]
+{
+  {|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->rename(~V, ~vv)->lateral(r | #>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->filter(u | $u.TID == $r.vv)->select(~[X]))->select(~[G, X])}
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::itemsSortedByTheStringLiteralProperty():FunctionDefinition<{->Any[*]}>[1]
+{
+  {|Item.all()->sortBy(i | $i.k)->project([col(i | $i.grp, 'g'), col(i | $i.id, 'id')])}
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::itemsSortedByTheIntegerLiteralProperty():FunctionDefinition<{->Any[*]}>[1]
+{
+  {|Item.all()->sortBy(i | $i.five)->project([col(i | $i.grp, 'g'), col(i | $i.id, 'id')])}
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::startsWithAcrossAVarcharToIntegerJoin():FunctionDefinition<{->Any[*]}>[1]
+{
+  {|T.all()->filter(t | $t.g->startsWith('0'))->project([t | $t.id, t | $t.g, t | $t.usByX.id], ['id', 'g', 'uid'])}
+}

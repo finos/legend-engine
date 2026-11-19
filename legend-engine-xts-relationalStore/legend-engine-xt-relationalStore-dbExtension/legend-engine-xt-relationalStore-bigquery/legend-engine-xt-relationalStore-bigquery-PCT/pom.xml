@@ -126,6 +126,7 @@
                             <includes>
                                 <include>**/Test_Relational_BigQuery_PCT$*Functions.java</include>
                                 <include>**/TestPCTReportBigQuery.java</include>
+                                <include>**/Test_Relational_BigQuery_SqlOptimizer.java</include>
                             </includes>
                             <!-- Replaces surefire's default exclusion of nested classes, which are the scopes -->
                             <excludes>

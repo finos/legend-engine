@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::core::runtime::*;
+import meta::pure::tds::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionLeavesAQueryWithoutSubQueriesAlone(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithCTEExtraction({|T.all()->filter(t | $t.id == 1)->project([t | $t.id, t | $t.v], ['id', 'v'])}, $conn, false, false);
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfAViewKeepsTheFilterPushedIntoIt(conn:Connection[1]):Boolean[1]
+{
+  let sql = assertSameRowsWithCTEExtraction({|T.all()->filter(t | $t.id == 1)->project([t | $t.id, t | $t.v, t | $t.maxX], ['id', 'v', 'maxX'])}, $conn, true, false);
+  assertSQLContains('TID = 1', $sql);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfASubQueryFromOperations(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithCTEExtraction({|T.all()->project([t | $t.id, t | $t.v], ['id', 'v'])->sort('id')->limit(10)->filter(r | $r.getInteger('id') == 1)}, $conn, true, false);
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfNestedSubQueries(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithCTEExtraction({|T.all()->project([t | $t.id, t | $t.v], ['id', 'v'])->sort('id')->limit(5)->filter(r | $r.getInteger('id') < 5)->sort('id')->limit(3)->filter(r | $r.getInteger('id') < 3)}, $conn, true, false);
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfTwoJoinedSubQueries(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithCTEExtraction({|T.all()->project([t | $t.id, t | $t.v], ['id', 'v'])->join(U.all()->project([u | $u.tid, u | $u.g], ['id', 'ug']), JoinType.INNER, ['id'])}, $conn, true, false);
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfALimitedSubQueryJoinedToAnother(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithCTEExtraction({|T.all()->project([t | $t.id, t | $t.v], ['id', 'v'])->sort('id')->limit(5)->filter(r | $r.getInteger('id') < 5)->join(U.all()->project([u | $u.tid, u | $u.g], ['id', 'ug']), JoinType.INNER, ['id'])}, $conn, true, false);
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfAnIsolatedQualifiedPropertyJoin(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithCTEExtraction({|U.all()->project([u | $u.t.g, u | $u.t.uWithId(2).x], ['g', 'x'])}, $conn, true, false);
+  true;
+}

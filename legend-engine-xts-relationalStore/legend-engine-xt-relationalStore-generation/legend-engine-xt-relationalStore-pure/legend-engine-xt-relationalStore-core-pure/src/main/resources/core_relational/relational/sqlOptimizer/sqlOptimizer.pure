@@ -1,0 +1,299 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::relational::sqlOptimizer::*;
+
+Enum meta::relational::sqlOptimizer::EnableSqlOptimization
+{
+  ALL,
+  JOIN_FILTER_PUSH_DOWN,
+  SUB_QUERY_FILTER_PUSH_DOWN,
+  REDUNDANT_SUB_SELECT_ELIMINATION,
+  UNUSED_COLUMN_TRIMMING,
+  DUPLICATE_LEFT_JOIN_MERGE,
+  UNREAD_LEFT_JOIN_ELIMINATION,
+  EXTRACT_SUB_QUERIES_AS_CTES
+}
+
+Enum meta::relational::sqlOptimizer::DisableSqlOptimization
+{
+  ALL,
+  JOIN_FILTER_PUSH_DOWN,
+  SUB_QUERY_FILTER_PUSH_DOWN,
+  REDUNDANT_SUB_SELECT_ELIMINATION,
+  UNUSED_COLUMN_TRIMMING,
+  DUPLICATE_LEFT_JOIN_MERGE,
+  UNREAD_LEFT_JOIN_ELIMINATION,
+  EXTRACT_SUB_QUERIES_AS_CTES
+}
+
+Class meta::relational::sqlOptimizer::SqlOptimizerContext
+{
+  dbType: DatabaseType[1];
+  connection: DatabaseConnection[0..1];
+  exeCtx: meta::pure::runtime::ExecutionContext[1];
+  extensions: Extension[*];
+  platformOptionsOverride: List<String>[0..1];
+  inScopeRuleNames: List<String>[0..1];
+}
+
+Class <<access.private>> meta::relational::sqlOptimizer::DecisionLevel
+{
+  enabled: String[*];
+  disabled: String[*];
+}
+
+Class meta::relational::sqlOptimizer::OptimizedQuery
+{
+  hasChanged: Boolean[1];
+  query: SelectSQLQuery[1];
+}
+
+Class meta::relational::sqlOptimizer::ValidatedQuery
+{
+  query: SelectSQLQuery[1];
+  problems: String[*];
+  orderedSetOperands: Integer[1];
+}
+
+Class meta::relational::sqlOptimizer::SqlOptimizationRule
+{
+  name: String[1];
+  featureName: String[1];
+  enabledByDefault: Boolean[1];
+  databaseSupport: DatabaseSupport[1];
+  transform: Function<{SelectSQLQuery[1], SqlOptimizerContext[1] -> OptimizedQuery[1]}>[1];
+  runsOnceAfterFixedPoint: Boolean[1] = false;
+  enabledByAll: Boolean[1] = true;
+}
+
+function meta::relational::sqlOptimizer::allFeatureName(): String[1]
+{
+  'ALL'
+}
+
+function meta::relational::sqlOptimizer::generationFeaturePrefix(): String[1]
+{
+  'SQL_OPTIMIZATION_'
+}
+
+function meta::relational::sqlOptimizer::sqlOptimizationGenerationFeatureNames(): String[*]
+{
+  EnableSqlOptimization->enumValues()->map(e | generationFeaturePrefix() + $e->toString())
+}
+
+function meta::relational::sqlOptimizer::defaultSqlOptimizationRules(): SqlOptimizationRule[*]
+{
+  [
+    meta::relational::sqlOptimizer::rules::redundantSubSelectEliminationRule(),
+    meta::relational::sqlOptimizer::rules::joinFilterPushDownRule(),
+    meta::relational::sqlOptimizer::rules::subQueryFilterPushDownRule(),
+    meta::relational::sqlOptimizer::rules::unusedColumnTrimmingRule(),
+    meta::relational::sqlOptimizer::rules::duplicateLeftJoinMergeRule(),
+    meta::relational::sqlOptimizer::rules::unreadLeftJoinEliminationRule(),
+    meta::relational::sqlOptimizer::rules::extractSubQueriesAsCTEsRule()
+  ]
+}
+
+function meta::relational::sqlOptimizer::allSqlOptimizationRules(extensions: Extension[*]): SqlOptimizationRule[*]
+{
+  defaultSqlOptimizationRules()->concatenate($extensions->map(e | $e.moduleExtension('relational')->cast(@RelationalExtension).relational_sqlOptimizationRules))
+}
+
+function meta::relational::sqlOptimizer::sqlOptimizerContext(dbType: DatabaseType[1], connection: DatabaseConnection[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*]): SqlOptimizerContext[1]
+{
+  ^SqlOptimizerContext(
+    dbType = $dbType,
+    connection = $connection,
+    exeCtx = $exeCtx,
+    extensions = $extensions
+  )
+}
+
+function meta::relational::sqlOptimizer::isEnabled(rule: SqlOptimizationRule[1], ctx: SqlOptimizerContext[1]): Boolean[1]
+{
+  $rule->isEnabledAt($ctx, $ctx->decisionLevels())
+}
+
+// A rule's transform can depend on whether another rule runs too; the optimizer decides that once per query, not once per pass.
+function meta::relational::sqlOptimizer::isInScope(rule: SqlOptimizationRule[1], ctx: SqlOptimizerContext[1]): Boolean[1]
+{
+  if($ctx.inScopeRuleNames->isEmpty(), | $rule->isEnabled($ctx), | $rule.name->in($ctx.inScopeRuleNames->toOne().values))
+}
+
+function meta::relational::sqlOptimizer::inScopeRules(ctx: SqlOptimizerContext[1]): SqlOptimizationRule[*]
+{
+  let levels = $ctx->decisionLevels();
+  allSqlOptimizationRules($ctx.extensions)->filter(r | $r->isEnabledAt($ctx, $levels));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::isEnabledAt(rule: SqlOptimizationRule[1], ctx: SqlOptimizerContext[1], levels: DecisionLevel[*]): Boolean[1]
+{
+  $rule.databaseSupport.isDatabaseTypeSupported($ctx.dbType->toString())
+    && $levels->map(l | $rule->decide($l.enabled, $l.disabled))->first()->orElse($rule.enabledByDefault)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::decisionLevels(ctx: SqlOptimizerContext[1]): DecisionLevel[*]
+{
+  [
+    ^DecisionLevel(enabled = $ctx->platformLevel(true), disabled = $ctx->platformLevel(false)),
+    ^DecisionLevel(enabled = $ctx->queryLevelEnabled(), disabled = $ctx->queryLevelDisabled()),
+    ^DecisionLevel(enabled = $ctx->connectionLevelEnabled(), disabled = $ctx->connectionLevelDisabled())
+  ]
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::decide(rule: SqlOptimizationRule[1], enabled: String[*], disabled: String[*]): Boolean[0..1]
+{
+  if($rule.featureName->in($disabled),
+    | false,
+    | if($rule.featureName->in($enabled),
+        | true,
+        | if($rule.enabledByAll && allFeatureName()->in($disabled),
+            | false,
+            | if($rule.enabledByAll && allFeatureName()->in($enabled), | true, | [])
+          )
+      )
+  )
+}
+
+// Pure runtime options (-Dpure.options.DisableSqlOptimization_<FEATURE>) override every other level, as a per-process kill switch.
+function meta::relational::sqlOptimizer::platformOptionName(enable: Boolean[1], featureName: String[1]): String[1]
+{
+  if($enable, | 'EnableSqlOptimization_', | 'DisableSqlOptimization_') + $featureName
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::platformLevel(ctx: SqlOptimizerContext[1], enable: Boolean[1]): String[*]
+{
+  allSqlOptimizationRules($ctx.extensions).featureName->concatenate(allFeatureName())->removeDuplicates()
+    ->filter(f | $ctx->isPlatformOptionSet(platformOptionName($enable, $f)))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::isPlatformOptionSet(ctx: SqlOptimizerContext[1], option: String[1]): Boolean[1]
+{
+  if($ctx.platformOptionsOverride->isEmpty(), | meta::core::runtime::isOptionSet($option), | $option->in($ctx.platformOptionsOverride->toOne().values))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::queryLevelFlags(ctx: SqlOptimizerContext[1]): Enum[*]
+{
+  $ctx.exeCtx->getContexts()
+    ->filter(c | $c->instanceOf(ExecutionOptionContext))->cast(@ExecutionOptionContext).executionOptions
+    ->filter(o | $o->instanceOf(FeatureFlagOption))->cast(@FeatureFlagOption).flags
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::queryLevelEnabled(ctx: SqlOptimizerContext[1]): String[*]
+{
+  $ctx->queryLevelFlags()->filter(f | $f->instanceOf(EnableSqlOptimization))->map(f | $f->toString())
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::queryLevelDisabled(ctx: SqlOptimizerContext[1]): String[*]
+{
+  $ctx->queryLevelFlags()->filter(f | $f->instanceOf(DisableSqlOptimization))->map(f | $f->toString())
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::connectionLevelFeatures(ctx: SqlOptimizerContext[1]): GenerationFeaturesConfig[*]
+{
+  $ctx.connection.queryGenerationConfigs->filter(c | $c->instanceOf(GenerationFeaturesConfig))->cast(@GenerationFeaturesConfig)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::connectionLevelEnabled(ctx: SqlOptimizerContext[1]): String[*]
+{
+  $ctx->connectionLevelFeatures().enabled->stripGenerationFeaturePrefix()
+    ->concatenate(if($ctx.connection->meta::relational::sqlOptimizer::rules::requestsCTEExtraction(), | meta::relational::sqlOptimizer::rules::extractSubQueriesAsCTEsRule().featureName, | []))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::connectionLevelDisabled(ctx: SqlOptimizerContext[1]): String[*]
+{
+  $ctx->connectionLevelFeatures().disabled->stripGenerationFeaturePrefix()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::stripGenerationFeaturePrefix(features: String[*]): String[*]
+{
+  $features->filter(f | $f->startsWith(generationFeaturePrefix()))->map(f | $f->substring(generationFeaturePrefix()->length()))
+}
+
+function meta::relational::sqlOptimizer::optimizeSqlQuery(query: SQLQuery[1], ctx: SqlOptimizerContext[1]): SQLQuery[1]
+{
+  $query->match([
+    s: SelectSQLQuery[1] |
+      let rules = $ctx->inScopeRules();
+      if($rules->isEmpty(), | $s, | $s->applySqlOptimizationRules($rules, ^$ctx(inScopeRuleNames = list($rules.name))));,
+    q: SQLQuery[1] | $q
+  ])
+}
+
+function meta::relational::sqlOptimizer::optimizePostProcessedQuery(result: PostProcessorResult[1], connection: Connection[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*]): PostProcessorResult[1]
+{
+  $connection->match([
+    dbc: DatabaseConnection[1] | ^$result(query = $result.query->optimizeSqlQuery(sqlOptimizerContext($dbc.type, $dbc, $exeCtx, $extensions))),
+    a: Any[*] | $result
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::maxOptimizationIterations(): Integer[1]
+{
+  10
+}
+
+function meta::relational::sqlOptimizer::applySqlOptimizationRules(query: SelectSQLQuery[1], rules: SqlOptimizationRule[*], ctx: SqlOptimizerContext[1]): SelectSQLQuery[1]
+{
+  let fixedPoint = $query->validated()->optimizeTillFixedPoint($rules->filter(r | !$r.runsOnceAfterFixedPoint), $ctx, 1, maxOptimizationIterations());
+  $rules->filter(r | $r.runsOnceAfterFixedPoint)->fold({rule, v | $v->applyRule($rule, $ctx).second}, $fixedPoint).query;
+}
+
+// A rule's change report only drives the fixed point: any rewritten tree is validated, reported or not.
+function <<access.private>> meta::relational::sqlOptimizer::applyRule(current: ValidatedQuery[1], rule: SqlOptimizationRule[1], ctx: SqlOptimizerContext[1]): Pair<Boolean, ValidatedQuery>[1]
+{
+  let result = $rule.transform->eval($current.query, $ctx);
+  if(is($result.query, $current.query),
+    | pair(false, $current),
+    | let candidate = $result.query->validated();
+      if($candidate->introducesProblemsOver($current), | pair(false, $current), | pair($result.hasChanged, $candidate));
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::optimizeTillFixedPoint(current: ValidatedQuery[1], rules: SqlOptimizationRule[*], ctx: SqlOptimizerContext[1], iteration: Integer[1], maxIterations: Integer[1]): ValidatedQuery[1]
+{
+  let pass = $rules->fold({rule, agg |
+    let result = $agg.second->applyRule($rule, $ctx);
+    pair($agg.first || $result.first, $result.second);
+  }, pair(false, $current));
+
+  if($pass.first && ($iteration < $maxIterations),
+    | $pass.second->optimizeTillFixedPoint($rules, $ctx, $iteration + 1, $maxIterations),
+    | $pass.second
+  );
+}
+
+function meta::relational::sqlOptimizer::unchanged(query: SelectSQLQuery[1]): OptimizedQuery[1]
+{
+  ^OptimizedQuery(hasChanged = false, query = $query)
+}
+
+function meta::relational::sqlOptimizer::changedIf(query: SelectSQLQuery[1], hasChanged: Boolean[1]): OptimizedQuery[1]
+{
+  ^OptimizedQuery(hasChanged = $hasChanged, query = $query)
+}
