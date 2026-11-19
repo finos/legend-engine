@@ -53,6 +53,15 @@ function meta::external::store::relational::sqlDialectTranslation::utils::isKeyw
   $s->toLower()->in($sqlDialect.keywords->map(k | $k->toLower()))
 }
 
+function meta::external::store::relational::sqlDialectTranslation::utils::isKeyword(s:String[1], sqlDialect: SqlDialect[1], config: SqlDialectTranslationConfig[1]): Boolean[1]
+{
+  let lookups = $config->lookupsFor($sqlDialect);
+  if($lookups->isEmpty(),
+    | $s->isKeyword($sqlDialect),
+    | $lookups->toOne().lowerCaseKeywords->get($s->toLower())->isNotEmpty()
+  );
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::qualifiedName(sqlDialect: SqlDialect[1], qualifiedName: QualifiedName[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   qualifiedName($sqlDialect, $qualifiedName, $config.dbConfig.quoteIdentifiers, $state, $config);
