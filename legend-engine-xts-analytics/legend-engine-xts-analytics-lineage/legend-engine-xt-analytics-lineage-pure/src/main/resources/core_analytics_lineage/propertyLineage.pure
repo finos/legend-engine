@@ -413,7 +413,10 @@ function meta::analytics::lineage::property::buildNamedTransforms(fe:FunctionExp
     if($state.inReprocess,
     | $finalIncomingState,
     | let queryProps = $props->map( p |   let sourceCol = $finalIncomingState.lineageColumn->filter(c|$c.name->in($p.second.values.name));
-                                          let prop =  ^LineageProperty(ownerID='query',dataType=$sourceCol.dataType->at(0), propertyType=PropertyType.MODEL, name=$p.first, scope= 'IDENTITY',sourceProperties=$sourceCol);
+                                          let dataType = if($sourceCol->isNotEmpty(),
+                                                            | $sourceCol.dataType->at(0),
+                                                            | $transforms->filter(t|$t.name == $p.first)->first()->toOne().function->cast(@FunctionDefinition<Any>)->toOne()->functionReturnType().rawType.name->toOne());
+                                          let prop =  ^LineageProperty(ownerID='query',dataType=$dataType, propertyType=PropertyType.MODEL, name=$p.first, scope= 'IDENTITY',sourceProperties=$sourceCol);
                                           );
       let rootNode = ^meta::analytics::lineage::property::Query(name = $fe.func.name->toOne(), id='Query_'+$fe.func.name->toOne(),properties=$queryProps);  //TODO Add id# so we get unique ids for these
       let links =  $finalIncomingState.currentOwner->map(o| ^OwnerLink(source=$o.id, target = $rootNode.id ));
