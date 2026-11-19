@@ -1,0 +1,454 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+function demo::relation::classmappingextends::func::productRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], TYPE:String[0..1], NAME:String[0..1], STOCK_CLASS:String[0..1], ISSUER_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::classmappingextends::db::ExtendsDB.PRODUCT}#
+}
+
+function demo::relation::classmappingextends::func::stockRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], TYPE:String[0..1], NAME:String[0..1], STOCK_CLASS:String[0..1], ISSUER_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::classmappingextends::db::ExtendsDB.PRODUCT}#->filter(p | ($p.TYPE == 'COMMON') || ($p.TYPE == 'PREFERRED'))
+}
+
+function demo::relation::classmappingextends::func::commonStockRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], TYPE:String[0..1], NAME:String[0..1], STOCK_CLASS:String[0..1], ISSUER_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::classmappingextends::db::ExtendsDB.PRODUCT}#->filter(p | $p.TYPE == 'COMMON')
+}
+
+function demo::relation::classmappingextends::func::preferredStockRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], TYPE:String[0..1], NAME:String[0..1], STOCK_CLASS:String[0..1], ISSUER_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::classmappingextends::db::ExtendsDB.PRODUCT}#->filter(p | $p.TYPE == 'PREFERRED')
+}
+
+function demo::relation::classmappingextends::func::sharesRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], PRODUCT_ID:Integer[0..1], AMOUNT:Integer[0..1])>[1]
+{
+  #>{demo::relation::classmappingextends::db::ExtendsDB.SHARES}#
+}
+
+function demo::relation::classmappingextends::func::issuerRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[0..1])>[1]
+{
+  #>{demo::relation::classmappingextends::db::ExtendsDB.ISSUER}#
+}
+
+###Mapping
+import demo::relation::classmappingextends::*;
+import demo::relation::classmappingextends::func::*;
+
+Mapping demo::relation::classmappingextends::mapping::ExtendsMapping
+(
+  *Product[product]: Relation
+  {
+    ~func demo::relation::classmappingextends::func::productRel():Relation<Any>[1]
+    ~primaryKey: ID
+    id: ID,
+    name: NAME,
+    issuerName: $src->navigationJoin(issuerRel(), {p, i | $p.ISSUER_ID == $i.ID}).NAME,
+    knownIssuerId: $src->filterJoin(issuerRel(), {p, i | $p.ISSUER_ID == $i.ID}).ISSUER_ID,
+    listing
+    (
+      productType: TYPE
+    ),
+    classification () Inline [classification],
+    +productKey: Integer[1]: ID,
+    sharesOutstanding: modelJoin({p, s | $p.productKey == $s.productId})
+  }
+  *Stock: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(commonStock, preferredStock)
+  }
+  Stock[stock] extends [product]: Relation
+  {
+    ~func demo::relation::classmappingextends::func::stockRel():Relation<Any>[1]
+    ~primaryKey: ID
+    stockClass: STOCK_CLASS
+  }
+  *CommonStock[commonStock] extends [stock]: Relation
+  {
+    ~func demo::relation::classmappingextends::func::commonStockRel():Relation<Any>[1]
+    ~primaryKey: ID
+  }
+  *PreferredStock[preferredStock] extends [stock]: Relation
+  {
+    ~func demo::relation::classmappingextends::func::preferredStockRel():Relation<Any>[1]
+    ~primaryKey: ID
+    name: 'Preferred ' + $row.NAME->toOne()
+  }
+  *Classification[classification]: Relation
+  {
+    ~func demo::relation::classmappingextends::func::productRel():Relation<Any>[1]
+    code: STOCK_CLASS,
+    +issuerId: Integer[0..1]: ISSUER_ID,
+    issuer: modelJoin({c, i | $c.issuerId == $i.id})
+  }
+  *Issuer[issuer]: Relation
+  {
+    ~func demo::relation::classmappingextends::func::issuerRel():Relation<Any>[1]
+    id: ID,
+    name: NAME
+  }
+  *Shares[shares]: Relation
+  {
+    ~func demo::relation::classmappingextends::func::sharesRel():Relation<Any>[1]
+    ~primaryKey: ID
+    amount: AMOUNT,
+    +productId: Integer[0..1]: PRODUCT_ID
+  }
+
+  testSuites:
+  [
+    subTypeModelJoinSuite:
+    {
+      function: |demo::relation::classmappingextends::Product.all()->project(~[id: x | $x.id, amount: x | $x->subType(@demo::relation::classmappingextends::Stock).sharesOutstanding.amount])->sort([~id->ascending(), ~amount->ascending()]);
+      tests:
+      [
+        joinsTheInheritedModelJoinFromTheQueriedProduct:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"amount":100},{"id":1,"amount":150},{"id":2,"amount":200},{"id":3,"amount":300},{"id":4,"amount":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    subTypeFilterSuite:
+    {
+      function: |demo::relation::classmappingextends::Product.all()->filter(x | $x->subType(@demo::relation::classmappingextends::Stock).sharesOutstanding.amount == 200)->project(~[id: x | $x.id]);
+      tests:
+      [
+        filtersOnTheInheritedModelJoinOfTheQueriedProduct:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":2}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    subTypeInheritedPropertiesSuite:
+    {
+      function: |demo::relation::classmappingextends::Product.all()->project(~[id: x | $x.id, stockClass: x | $x->subType(@demo::relation::classmappingextends::Stock).stockClass, issuer: x | $x->subType(@demo::relation::classmappingextends::Stock).issuerName, knownIssuer: x | $x->subType(@demo::relation::classmappingextends::Stock).knownIssuerId])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheInheritedPropertiesOfTheQueriedProduct:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"stockClass":"A","issuer":"Acme","knownIssuer":10},{"id":2,"stockClass":"B","issuer":"Beta","knownIssuer":20},{"id":3,"stockClass":"C","issuer":"Acme","knownIssuer":10},{"id":4,"stockClass":"D","issuer":null,"knownIssuer":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    subTypeInlineModelJoinSuite:
+    {
+      function: |demo::relation::classmappingextends::Product.all()->project(~[id: x | $x.id, issuer: x | $x->subType(@demo::relation::classmappingextends::Stock).classification.issuer.name])->sort([~id->ascending()]);
+      tests:
+      [
+        joinsTheModelJoinOfTheInheritedInlineTargetFromTheQueriedProduct:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"issuer":"Acme"},{"id":2,"issuer":"Beta"},{"id":3,"issuer":"Acme"},{"id":4,"issuer":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    unionInlineModelJoinSuite:
+    {
+      function: |demo::relation::classmappingextends::Stock.all()->project(~[id: x | $x.id, issuer: x | $x.classification.issuer.name])->sort([~id->ascending()]);
+      tests:
+      [
+        joinsTheModelJoinOfTheInheritedInlineTargetFromEachLeaf:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"issuer":"Acme"},{"id":2,"issuer":"Beta"},{"id":4,"issuer":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    unionModelJoinSuite:
+    {
+      function: |demo::relation::classmappingextends::Stock.all()->project(~[id: x | $x.id, amount: x | $x.sharesOutstanding.amount])->sort([~id->ascending(), ~amount->ascending()]);
+      tests:
+      [
+        joinsTheInheritedModelJoinFromEachLeaf:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"amount":100},{"id":1,"amount":150},{"id":2,"amount":200},{"id":4,"amount":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    unionFilterSuite:
+    {
+      function: |demo::relation::classmappingextends::Stock.all()->filter(x | $x.sharesOutstanding.amount == 200)->project(~[id: x | $x.id, name: x | $x.name]);
+      tests:
+      [
+        filtersEachLeafOnTheInheritedModelJoin:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":2,"name":"Preferred Bravo"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    unionInheritedPropertiesSuite:
+    {
+      function: |demo::relation::classmappingextends::Stock.all()->project(~[id: x | $x.id, name: x | $x.name, issuer: x | $x.issuerName, knownIssuer: x | $x.knownIssuerId, productType: x | $x.listing.productType, classification: x | $x.classification.code, stockClass: x | $x.stockClass])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheInheritedAndOverriddenPropertiesOfEachLeaf:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"name":"Alpha","issuer":"Acme","knownIssuer":10,"productType":"COMMON","classification":"A","stockClass":"A"},{"id":2,"name":"Preferred Bravo","issuer":"Beta","knownIssuer":20,"productType":"PREFERRED","classification":"B","stockClass":"B"},{"id":4,"name":"Delta","issuer":null,"knownIssuer":null,"productType":"COMMON","classification":"D","stockClass":"D"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    leafSuite:
+    {
+      function: |demo::relation::classmappingextends::CommonStock.all()->project(~[id: x | $x.id, name: x | $x.name, issuer: x | $x.issuerName, knownIssuer: x | $x.knownIssuerId, productType: x | $x.listing.productType, classification: x | $x.classification.code, stockClass: x | $x.stockClass, amount: x | $x.sharesOutstanding.amount])->sort([~id->ascending(), ~amount->ascending()]);
+      tests:
+      [
+        readsThePropertiesTheLeafInheritsThroughTwoLevels:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"name":"Alpha","issuer":"Acme","knownIssuer":10,"productType":"COMMON","classification":"A","stockClass":"A","amount":100},{"id":1,"name":"Alpha","issuer":"Acme","knownIssuer":10,"productType":"COMMON","classification":"A","stockClass":"A","amount":150},{"id":4,"name":"Delta","issuer":null,"knownIssuer":null,"productType":"COMMON","classification":"D","stockClass":"D","amount":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    overridingLeafSuite:
+    {
+      function: |demo::relation::classmappingextends::PreferredStock.all()->project(~[id: x | $x.id, name: x | $x.name, issuer: x | $x.issuerName])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheLeafsOwnMappingOfAnInheritedProperty:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":2,"name":"Preferred Bravo","issuer":"Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    leafGraphFetchSuite:
+    {
+      function: |demo::relation::classmappingextends::CommonStock.all()->graphFetch(#{demo::relation::classmappingextends::CommonStock{id, name, issuerName, stockClass, sharesOutstanding{amount}}}#)->serialize(#{demo::relation::classmappingextends::CommonStock{id, name, issuerName, stockClass, sharesOutstanding{amount}}}#);
+      tests:
+      [
+        fetchesTheInheritedPropertiesAndModelJoinOfTheLeaf:
+        {
+          data:
+          [
+            demo::relation::classmappingextends::db::ExtendsDB:
+              Reference
+              #{
+                demo::relation::classmappingextends::data::ExtendsData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"name":"Alpha","issuerName":"Acme","stockClass":"A","sharesOutstanding":[{"amount":100},{"amount":150}]},{"id":4,"name":"Delta","issuerName":null,"stockClass":"D","sharesOutstanding":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

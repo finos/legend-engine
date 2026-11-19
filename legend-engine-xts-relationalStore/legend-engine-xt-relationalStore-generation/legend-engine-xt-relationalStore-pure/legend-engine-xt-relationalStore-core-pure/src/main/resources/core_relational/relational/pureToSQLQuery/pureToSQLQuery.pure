@@ -523,6 +523,11 @@ function meta::relational::functions::pureToSqlQuery::processVariableExpression(
                                           |$res
                                         );
 
+                            assert(!($v.name == 'src' && $res->isEmpty() && $state.functionReferenceScope->forAll(s | $s.resolveFunctionReferenceByName($v.name)->isEmpty())
+                                     && $state.relationVarScope->forAll(s | $s->get($v.name)->isEmpty())
+                                     && $currentPropertyMapping->exists(pm | $pm->instanceOf(RelationFunctionPropertyMapping))),
+                              | '$src is the whole source relation and can only be used as the root of a navigationJoin/filterJoin chain, optionally transformed first (e.g. $src->extend(...)->navigationJoin(...).COLUMN); use $row to access the columns of the mapped row.');
+
                             if($nres->isEmpty(),                                                   //true for function params e.g. $e in '[]->filter(e|$e...)'
                                        |$operation->match([ o:OperationWithParentPropertyMapping[1] | $o,
                                                              a:RelationalOperationElement[1] | ^OperationWithParentPropertyMapping(
@@ -997,9 +1002,13 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
           $foundColumn->toOne()->match([
             c:Column[1]|^TableAliasColumn(alias = $tableAlias->toOne(), column = $c),
             a:Alias[1]|if($isDiverging,
-                         |^TableAliasColumn(alias = $tableAlias->toOne(), column = ^Column(name = $colFuncName, type = $a.relationalElement->getRelationalTypeFromRelationalPropertyMapping()->toOne(
-                             'Cannot use computed target column \'' + $colFuncName + '\' in a navigationJoin/filterJoin join condition '
-                             + '- only plain (non-computed) target columns are currently supported here.'))),
+                         |let storedType = $a.relationalElement->getRelationalTypeFromRelationalPropertyMapping();
+                          let column = if($storedType->isNotEmpty(),
+                                          | ^Column(name = $colFuncName, type = $storedType->toOne()),
+                                          | ^Column(name = $colFuncName, type = $fe.genericType.rawType->map(t | meta::relational::mapping::pureTypeToDataType($t))
+                                                      ->toOne('Cannot determine the SQL type of the computed target column \'' + $colFuncName + '\' used in a navigationJoin/filterJoin join condition'))
+                                                    ->exposedColumnOnAlias($tableAlias->toOne()));
+                          ^TableAliasColumn(alias = $tableAlias->toOne(), column = $column);,
                          |$a.relationalElement
                        ),
             tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias->toOne())
@@ -1929,18 +1938,23 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::resolve
 // into each parameter's value and the body.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveRelationalLambda(lambda:RelationalLambda[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-   let resolvedParams = $lambda.parameters->map(p |
-      let paramSwc = $p.value->processColumnsInRelationalOperationElements(
-                        $state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
-      let resolvedValue = $state.inFilter->if(|$paramSwc.select.filteringOperation, |$paramSwc.select.columns)->toOne();
-      ^$p(value = $resolvedValue);
+   let paramResults = $lambda.parameters->map(p |
+      $p.value->processColumnsInRelationalOperationElements(
+         $state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions)
    );
-   let bodySwc = $lambda.body->processColumnsInRelationalOperationElements(
-                     $state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
-   let resolvedBody = $state.inFilter->if(|$bodySwc.select.filteringOperation, |$bodySwc.select.columns)->toOne();
-   let resolved = ^$lambda(parameters = $resolvedParams, body = $resolvedBody);
-   let sel = $bodySwc.select;
-   ^$bodySwc(select = $state.inFilter->if(|^$sel(filteringOperation = $resolved), |^$sel(columns = $resolved)));
+   let bodyResult = $lambda.body->processColumnsInRelationalOperationElements(
+                       $state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
+   let merged = $paramResults.select->concatenate($bodyResult.select)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+   let resolvedParts = $state.inFilter->if(|$merged.filteringOperation, |$merged.columns);
+   let paramCount = $lambda.parameters->size();
+   let resolvedParams = range($paramCount)->map(i | let p = $lambda.parameters->at($i); ^$p(value = $resolvedParts->at($i)););
+   let resolved = ^$lambda(parameters = $resolvedParams, body = $resolvedParts->at($paramCount));
+   let newSelect = $state.inFilter->if(|^$merged(filteringOperation = $resolved), |^$merged(columns = $resolved));
+   ^$srcOperation(
+     select = $newSelect,
+     currentTreeNode = $srcOperation.currentTreeNode->toOne()->findOneNode($srcOperation.select.data->toOne(), $newSelect.data->toOne()),
+     positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(), |[], |$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($srcOperation.select.data->toOne(), $newSelect.data->toOne()))
+   );
 }
 
 // Resolves placeholder TACs inside a RelationalLambdaParameter by recursing into its value.
@@ -1957,17 +1971,26 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::resolve
 // .separator, and .suffix sub-elements.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveJoinStrings(js:JoinStrings[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-  let resolve = {r:RelationalOperationElement[1] |
-    let swc = $r->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
-    $state.inFilter->if(|$swc.select.filteringOperation, |$swc.select.columns)->toOne();
-  };
-  let resolved = ^$js(
-    strings   = $js.strings->map(s | $resolve->eval($s)),
-    prefix    = $js.prefix->map(p | $resolve->eval($p)),
-    separator = $js.separator->map(p | $resolve->eval($p)),
-    suffix    = $js.suffix->map(p | $resolve->eval($p))
+  let parts = $js.strings->concatenate($js.prefix)->concatenate($js.separator)->concatenate($js.suffix);
+  let partResults = range($parts->size())->map(i |
+      $parts->at($i)->processColumnsInRelationalOperationElements($state, $srcOperation, buildNodeId($nodeId, '_js' + $i->toString()), $aggFromMap, $cancelJoinOnUnion, $context, $extensions)
   );
-   $srcOperation->wrapLeafRelop($resolved, $state);
+  let merged = $partResults.select->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+  let resolvedParts = $state.inFilter->if(|$merged.filteringOperation, |$merged.columns);
+  let afterStrings = $resolvedParts->drop($js.strings->size());
+  let afterPrefix = $afterStrings->drop($js.prefix->size());
+  let resolved = ^$js(
+    strings   = $resolvedParts->take($js.strings->size()),
+    prefix    = $afterStrings->take($js.prefix->size())->first(),
+    separator = $afterPrefix->take($js.separator->size())->first(),
+    suffix    = $afterPrefix->drop($js.separator->size())->first()
+  );
+  let newSelect = $state.inFilter->if(|^$merged(filteringOperation = $resolved), |^$merged(columns = $resolved));
+  ^$srcOperation(
+    select = $newSelect,
+    currentTreeNode = $srcOperation.currentTreeNode->toOne()->findOneNode($srcOperation.select.data->toOne(), $newSelect.data->toOne()),
+    positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(), |[], |$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($srcOperation.select.data->toOne(), $newSelect.data->toOne()))
+  );
 }
 
 // Places a leaf RelationalOperationElement (one with no column sub-references) onto
@@ -2059,7 +2082,10 @@ function meta::relational::functions::pureToSqlQuery::processPropertyMappingRetu
     $pm->match([
       rfpm: RelationFunctionPropertyMapping[1] |
         let transformedPm = $rfpm->transformRelationFunctionPropertyMappingToRelational($srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-        $transformedPm->buildPossibleEnumMappingPushDown(^$state(pushDownEnumTransformations = true));,
+        if($state.inGetterFlow == true,
+           | $transformedPm,
+           | $transformedPm->buildPossibleEnumMappingPushDown(^$state(pushDownEnumTransformations = true))
+        );,
       mjpm: ModelJoinPropertyMapping[1] |
         let sourceSet = $state->getClassMappingById($mjpm.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
         let targetSet = $state->getClassMappingById($mjpm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
@@ -2068,7 +2094,7 @@ function meta::relational::functions::pureToSqlQuery::processPropertyMappingRetu
           buildMappedModelJoinTargetSWC($targetSet, $srcOperation, $joinType, $nodeId + '_mj_tgt', $state, $context, $extensions), $targetSet,
           buildBranchSourceSWC($sourceSet, $srcOperation, $joinType, $nodeId + '_mj_src', $state, $context, $extensions),
           $mjpm.joinCondition, ['_mj_src', '_mj_tgt'], 'mj',
-          $mjpm.property->cast(@AbstractProperty<Any>), $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions
+          $mjpm.property->cast(@AbstractProperty<Any>), $srcOperation, $state, $joinType, $joinType, $nodeId, $aggFromMap, $context, $extensions
         );,
       pm: PropertyMapping[1] | $pm
     ])
@@ -2433,7 +2459,7 @@ Class <<access.private>> meta::relational::functions::pureToSqlQuery::RfpmValueF
 // these placeholders, producing TACs that processColumnsInRelationalOperationElements
 // resolves against the real (outer) source operation at navigation time.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::buildSyntheticRfCursor(
-   cm: RelationFunctionInstanceSetImplementation[1]
+   cm: RelationFunctionInstanceSetImplementation[1], milestoningContext: TemporalMilestoningContext[0..1]
 ): SelectWithCursor[1]
 {
   let allCols = $cm->meta::pure::mapping::relation::extractRelationColumns();
@@ -2455,8 +2481,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildSy
   let rfNode     = ^RootJoinTreeNode(alias = $rfAlias);
 
   ^SelectWithCursor(
-    select          = ^SelectSQLQuery(data = $rfNode),
-    currentTreeNode = $rfNode
+    select             = ^SelectSQLQuery(data = $rfNode),
+    currentTreeNode    = $rfNode,
+    milestoningContext = $milestoningContext
   );
 }
 
@@ -2475,7 +2502,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::evaluat
   // Build a synthetic cursor with placeholder RelationFunctionColumns.
   // processColumnFunctionExpression will find these via findColumn on the RelationFunction,
   // producing placeholder TACs that get resolved later by processColumnsInRelationalOperationElements.
-  let syntheticCursor = buildSyntheticRfCursor($cm);
+  let syntheticCursor = buildSyntheticRfCursor($cm, $oldSrcOperation.milestoningContext);
 
   // Bind the lambda parameter (conventionally $src) to the SYNTHETIC cursor.
   // updateFunctionParamScope reads the parameter name from the lambda's functionType,
@@ -3119,7 +3146,8 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
 
 function meta::relational::functions::pureToSqlQuery::processRelationMappingJoin(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  if($functionExpression->relationMappingJoinKind() == 'fj' || $functionExpression.parametersValues->at(0)->byPassRouterInfo()->evaluateAndDeactivate()->isRelationMappingJoinOperator(),
+  let source = $functionExpression->relationMappingJoinSource();
+  if($functionExpression->relationMappingJoinKind() == 'fj' || $source->isRelationMappingJoinOperator() || $source->isSteppedRelationMappingJoinSource(),
     | processRelationMappingJoinAsKeyedSubselect($functionExpression, $currentPropertyMapping, $operation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
     | // Single-hop navigationJoin: `$src` is an open variable with no SQL-gen binding, so the source is the
       // enclosing relation-function set rather than an evaluated operand.
@@ -3136,7 +3164,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationMappingJoin
         $sourceSet, $sourceSet.id, $targetSet.id, $targetSWC, $targetSet,
         buildBranchSourceSWC($sourceSet, $operation, $joinType, buildNodeId($nodeId, '_nj_src'), $state, $context, $extensions),
         $functionExpression->relationMappingJoinCondition(), ['_mj_src', '_mj_tgt'], 'nj',
-        $rfpm.property->cast(@AbstractProperty<Any>), $operation, $state, $resolvedJoinType, $hopNodeId, $aggFromMap, $context, $extensions
+        $rfpm.property->cast(@AbstractProperty<Any>), $operation, $state, $resolvedJoinType, JoinType.LEFT_OUTER, $hopNodeId, $aggFromMap, $context, $extensions
       ).relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode->toOne();
       let keptColumns = $targetValueSpec->relationExpressionColumns();
       assert($keptColumns->isNotEmpty(), | 'Relation-mapping join kept side \'' + $targetSet.id
@@ -3166,6 +3194,32 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isRelat
   ]);
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::relationMappingJoinSource(fe:FunctionExpression[1]):ValueSpecification[1]
+{
+  $fe.parametersValues->at(0)->dropSortSteps();
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::dropSortSteps(vs:ValueSpecification[1]):ValueSpecification[1]
+{
+  $vs->byPassRouterInfo()->evaluateAndDeactivate()->match([
+    fe:FunctionExpression[1] | if($fe.func->in([meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_]),
+                                  | $fe.parametersValues->at(0)->dropSortSteps(),
+                                  | ^$fe(parametersValues = $fe.parametersValues->at(0)->dropSortSteps()->concatenate($fe.parametersValues->tail()))),
+    a:ValueSpecification[1]  | $a
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isSteppedRelationMappingJoinSource(source:ValueSpecification[1]):Boolean[1]
+{
+  $source->instanceOf(FunctionExpression) && !$source->isRelationMappingJoinOperator();
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::relationMappingChainRootSource(fe:FunctionExpression[1]):ValueSpecification[1]
+{
+  let source = $fe->relationMappingJoinSource();
+  if($source->isRelationMappingJoinOperator(), | $source->cast(@FunctionExpression)->relationMappingChainRootSource(), | $source);
+}
+
 // Builds the (unmodeled) target of a navigationJoin/filterJoin as a synthetic
 // RelationFunctionInstanceSetImplementation wrapping the target expression as a zero-arg
 // LambdaFunction — LambdaFunction IS-A FunctionDefinition, so this works for any expression, not just
@@ -3180,14 +3234,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
 {
   let targetValueSpec = $fe.parametersValues->at(1)->byPassRouterInfo()->evaluateAndDeactivate();
   let relationFunction = ^LambdaFunction<{->meta::pure::metamodel::relation::Relation<Any>[1]}>(expressionSequence = $targetValueSpec);
-  // Keyed on the target's content, not the call-site hopNodeId, so mergeSQLQueryData's name-keyed trie
-  // merges textually identical targets (e.g. the same firmRel()->filter(...)) into one JOIN.
-  let targetId = $sourceSet.id + '_' + $joinKind + '_' + $targetValueSpec->match([
-    f:FunctionExpression[1] | if($f.func->instanceOf(PackageableElement) && $f.parametersValues->isEmpty(),
-                                 | $f.func->cast(@PackageableElement)->elementToPath(),
-                                 | $f->buildNameFromDeactivatedQualifierParameter()),
-    a:ValueSpecification[1] | $a->buildNameFromDeactivatedQualifierParameter()
-  ]);
+  // Keyed on the target's content, not the call-site hopNodeId so textually identical targets merge into one JOIN
+  let targetId = boundedName($sourceSet.id + '_' + $joinKind + '_' + $targetValueSpec->relationExpressionFingerprint());
   ^RelationFunctionInstanceSetImplementation(
     id               = $targetId,
     root             = false,
@@ -3195,6 +3243,51 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
     parent           = $sourceSet.parent,
     relationFunction = $relationFunction
   );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::relationExpressionFingerprint(vs:ValueSpecification[1]):String[1]
+{
+  $vs->byPassRouterInfo()->match([
+    fe:FunctionExpression[1] | $fe.func->functionFingerprint() + '(' + $fe.parametersValues->map(p | $p->relationExpressionFingerprint())->joinStrings(',') + ')',
+    iv:InstanceValue[1]      | if($iv.values->isEmpty(), | '@' + $iv.genericType->printGenericType(true), | '[' + $iv.values->map(v | $v->instanceFingerprint())->joinStrings(',') + ']'),
+    v:VariableExpression[1]  | '$' + $v.name,
+    a:ValueSpecification[1]  | $a->meta::pure::router::printer::asString()
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::functionFingerprint(f:meta::pure::metamodel::function::Function<Any>[1]):String[1]
+{
+  $f->match([
+    l:LambdaFunction<Any>[1]                                 | '{' + $l->functionType().parameters->evaluateAndDeactivate().name->joinStrings(',') + '|'
+                                                                   + $l.expressionSequence->evaluateAndDeactivate()->map(e | $e->relationExpressionFingerprint())->joinStrings(';') + '}',
+    c:meta::pure::metamodel::relation::Column<Nil,Any|*>[1] | '.' + $c.name->toOne(),
+    p:AbstractProperty<Any>[1]                               | '.' + $p.name->toOne(),
+    o:meta::pure::metamodel::function::Function<Any>[1]      | if($o->instanceOf(PackageableElement), | $o->cast(@PackageableElement)->elementToPath(), | $o.functionName->defaultIfEmpty('?')->toOne())
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::instanceFingerprint(i:Any[1]):String[1]
+{
+  $i->match([
+    s:String[1]                                                       | '\'' + $s->length()->toString() + ':' + $s + '\'',
+    vs:ValueSpecification[1]                                          | $vs->relationExpressionFingerprint(),
+    f:meta::pure::metamodel::function::Function<Any>[1]               | $f->functionFingerprint(),
+    e:Enum[1]                                                         | $e->type()->cast(@PackageableElement)->elementToPath() + '.' + $e.name,
+    r:meta::pure::store::RelationStoreAccessor<Any>[1]                | '#>{' + $r.store->elementToPath() + '.' + $r.sourceElement->instanceFingerprint() + '}' + $r.arguments->map(a | $a->relationExpressionFingerprint())->joinStrings('(', ',', ')'),
+    t:meta::relational::metamodel::relation::Table[1]                 | $t.schema.name + '.' + $t.name,
+    v:meta::relational::metamodel::relation::View[1]                  | $v.schema.name + '.' + $v.name,
+    f:meta::relational::metamodel::relation::TabularFunction[1]       | $f.schema.name + '.' + $f.name,
+    k:KeyExpression[1]                                                | $k.key->relationExpressionFingerprint() + '=' + $k.expression->relationExpressionFingerprint(),
+    c:meta::pure::metamodel::relation::ColSpec<Any>[1]                | '~' + $c.name,
+    c:meta::pure::metamodel::relation::ColSpecArray<Any>[1]           | '~[' + $c.names->joinStrings(',') + ']',
+    c:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]        | '~' + $c.name + ':' + $c.function->functionFingerprint(),
+    c:meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1]   | '~[' + $c.funcSpecs->map(x | $x->instanceFingerprint())->joinStrings(',') + ']',
+    c:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]     | '~' + $c.name + ':' + $c.map->functionFingerprint() + ':' + $c.reduce->functionFingerprint(),
+    c:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]| '~[' + $c.aggSpecs->map(x | $x->instanceFingerprint())->joinStrings(',') + ']',
+    s:meta::pure::functions::relation::SortInfo<Any>[1]               | 'sort(' + $s.column->instanceFingerprint() + ',' + $s.direction->instanceFingerprint() + $s.emptyOrder->map(o | ',' + $o->instanceFingerprint())->joinStrings() + ')',
+    p:PackageableElement[1]                                           | $p->elementToPath(),
+    a:Any[1]                                                          | $a->type().name->defaultIfEmpty('?')->toOne() + ':' + $a->toString()
+  ]);
 }
 
 // Columns of a Relation-typed value specification's own static type (none for a Relation<Any>). This
@@ -3269,27 +3362,28 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let joinKind = $functionExpression->relationMappingJoinKind();
   let keyedNodeId = buildNodeId($nodeId, '_' + $joinKind + '_keyed');
   let vars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
-  let sourceCopy = processRelationFunctionClassMapping($sourceSet, $vars, $state, $operation.milestoningContext, $joinType, $keyedNodeId, $context, $extensions);
+  let rootSource = $functionExpression->relationMappingChainRootSource();
+  let stepped = $rootSource->isSteppedRelationMappingJoinSource();
+  let sourceCopy = if($stepped,
+    | applyRelationMappingJoinSourceSteps($rootSource, $rfpm, $sourceSet, $vars, $operation, $state, $joinType, $keyedNodeId, $context, $extensions),
+    | processRelationFunctionClassMapping($sourceSet, $vars, $state, $operation.milestoningContext, $joinType, $keyedNodeId, $context, $extensions)
+  );
   let sourceCopyAlias = ^TableAlias(name = $sourceCopy.select.data->toOne().alias.name + '_' + $keyedNodeId, relationalElement = $sourceCopy.select->withoutIdentityProjection());
   let chain = buildKeyedJoinChain($functionExpression, $rfpm, $sourceSet, $sourceCopyAlias, $operation, $state, $joinType, $keyedNodeId, $aggFromMap, $context, $extensions);
 
   let keptColumns = $chain.keptColumns;
   let keyedSubselect = ^SelectSQLQuery(
     data    = $chain.tree->cast(@RootJoinTreeNode),
-    columns = $sourceSet.primaryKey->map(c | ^Alias(name = $c->relationJoinKeyName(), relationalElement = ^TableAliasColumn(alias = $sourceCopyAlias, column = $c->relationColumnAsColumn())))
-                ->concatenate($keptColumns->map(c | ^Alias(name = $c.name->toOne()->addQuotesIfNecessary(), relationalElement = ^TableAliasColumn(alias = $chain.keptAlias, column = $c->relationColumnAsColumn()))))
+    columns = $sourceSet.primaryKey->map(c | ^Alias(name = $c->relationJoinKeyName(), relationalElement = ^TableAliasColumn(alias = $sourceCopyAlias, column = $c->relationColumnOnAlias($sourceCopyAlias))))
+                ->concatenate($keptColumns->map(c | ^Alias(name = $c.name->toOne()->addQuotesIfNecessary(), relationalElement = ^TableAliasColumn(alias = $chain.keptAlias, column = $c->relationColumnOnAlias($chain.keptAlias)))))
   );
-  // Named from the compiled chain's own structural fingerprint (each hop's joinName is already
-  // content-stable — see compileModelJoinForBranch), not the property name or a positional node id,
-  // so two properties chaining through the exact same hops dedup in mergeSQLQueryData's trie instead
-  // of each producing their own copy of the sub-select.
-  let keyedAlias = ^TableAlias(name = $sourceSet.id + '_' + $chain.tree->cast(@RootJoinTreeNode)->buildUniqueName(false, true, $extensions), relationalElement = $keyedSubselect);
+  let keyedAlias = ^TableAlias(name = boundedName($sourceSet.id + if($stepped, | '_' + $rootSource->relationExpressionFingerprint(), | '') + '_' + $chain.tree->getAllNodes()->filter(n | $n->instanceOf(JoinTreeNode))->cast(@JoinTreeNode).joinName->joinStrings('_')), relationalElement = $keyedSubselect);
 
   let sourceAlias = buildBranchSourceSWC($sourceSet, $operation, $joinType, buildNodeId($nodeId, '_' + $joinKind + '_src'), $state, $context, $extensions).currentTreeNode->toOne().alias;
   let keyJoin = ^Join(
     name      = $keyedAlias.name,
     operation = $sourceSet.primaryKey->map(c | ^DynaFunction(name = 'nullSafeEqual', parameters = [
-                  ^TableAliasColumn(alias = $sourceAlias, column = $c->relationColumnAsColumn()),
+                  ^TableAliasColumn(alias = $sourceAlias, column = $c->relationColumnOnAlias($sourceAlias)),
                   ^TableAliasColumn(alias = $keyedAlias, column = ^$c(name = $c->relationJoinKeyName())->relationColumnAsColumn())
                 ]))->andFilters($extensions)->toOne()->cast(@Operation),
     target    = $keyedAlias,
@@ -3302,17 +3396,52 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   $operation->selectColumnsThroughJoin($keyJoinNode, $keyedAlias, $keptColumns);
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::applyRelationMappingJoinSourceSteps(steps:ValueSpecification[1], rfpm:RelationFunctionPropertyMapping[1], sourceSet:RelationFunctionInstanceSetImplementation[1], vars:Map<VariableExpression, ValueSpecification>[1], operation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  let steppedColumnNames = $steps->relationExpressionColumns().name->map(n | $n->toOne());
+  let missingKeys = if($steppedColumnNames->isEmpty(), | [], | $sourceSet.primaryKey.name->map(n | $n->toOne())->filter(n | !$n->in($steppedColumnNames)));
+  assert($missingKeys->isEmpty(), | 'Property \'' + $rfpm.property.name->toOne() + '\' joins from a transformed $src whose result has no primary key column '
+      + $missingKeys->joinStrings('\'', '\', \'', '\'') + ' of class mapping \'' + $sourceSet.id + '\' (its columns: ' + $steppedColumnNames->joinStrings(', ')
+      + '). The join result is matched back to the mapped row by the primary key, so the transformation must keep every primary key column.');
+
+  let sourceBody = $sourceSet.relationFunction->evaluateAndDeactivate().expressionSequence->evaluateAndDeactivate()->at(0);
+  let steppedSet = ^RelationFunctionInstanceSetImplementation(
+    id               = boundedName($sourceSet.id + '_' + $steps->relationExpressionFingerprint()),
+    root             = false,
+    class            = $sourceSet.class,
+    parent           = $sourceSet.parent,
+    primaryKey       = $sourceSet.primaryKey,
+    relationFunction = ^LambdaFunction<{->meta::pure::metamodel::relation::Relation<Any>[1]}>(expressionSequence = $steps->withRelationMappingJoinSource($sourceBody))
+  );
+  processRelationFunctionClassMapping($steppedSet, $vars, $state, $operation.milestoningContext, $joinType, $nodeId, $context, $extensions);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::withRelationMappingJoinSource(steps:ValueSpecification[1], source:ValueSpecification[1]):ValueSpecification[1]
+{
+  $steps->byPassRouterInfo()->evaluateAndDeactivate()->match([
+    v:VariableExpression[1]  | $source,
+    fe:FunctionExpression[1] | ^$fe(parametersValues = $fe.parametersValues->at(0)->withRelationMappingJoinSource($source)->concatenate($fe.parametersValues->tail())),
+    a:ValueSpecification[1]  | $a
+  ]);
+}
+
 // Builds the hops innermost-first. Each hop's condition is compiled against the alias the previous hop
 // kept (the source copy for the first hop or after a filterJoin), and the hop is attached under it.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::buildKeyedJoinChain(functionExpression:FunctionExpression[1], rfpm:RelationFunctionPropertyMapping[1], sourceSet:RelationFunctionInstanceSetImplementation[1], sourceCopyAlias:TableAlias[1], operation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):KeyedJoinChain[1]
 {
-  let source = $functionExpression.parametersValues->at(0)->byPassRouterInfo()->evaluateAndDeactivate();
+  let source = $functionExpression->relationMappingJoinSource();
   let joinKind = $functionExpression->relationMappingJoinKind();
   let hopNodeId = buildNodeId($nodeId, '_' + $joinKind);
 
   let previous = if($source->isRelationMappingJoinOperator(),
     | buildKeyedJoinChain($source->cast(@FunctionExpression), $rfpm, $sourceSet, $sourceCopyAlias, $operation, $state, $joinType, $hopNodeId, $aggFromMap, $context, $extensions),
-    | ^KeyedJoinChain(tree = ^RootJoinTreeNode(alias = $sourceCopyAlias), keptAlias = $sourceCopyAlias, keptId = $sourceSet.id, keptColumns = $sourceSet->meta::pure::mapping::relation::extractRelationColumns())
+    | let stepped = $source->isSteppedRelationMappingJoinSource();
+      ^KeyedJoinChain(
+        tree        = ^RootJoinTreeNode(alias = $sourceCopyAlias),
+        keptAlias   = $sourceCopyAlias,
+        keptId      = if($stepped, | boundedName($sourceSet.id + '_' + $source->relationExpressionFingerprint()), | $sourceSet.id),
+        keptColumns = if($stepped, | $source->relationExpressionColumns(), | $sourceSet->meta::pure::mapping::relation::extractRelationColumns())
+      );
   );
 
   let targetValueSpec = $functionExpression.parametersValues->at(1)->byPassRouterInfo()->evaluateAndDeactivate();
@@ -3325,28 +3454,30 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildKe
   let keptRoot = ^RootJoinTreeNode(alias = $previous.keptAlias);
   let joinTree = compileModelJoinForBranch(
     $sourceSet, $previous.keptId + '_src', $targetSet.id, $targetSWC, $targetSet,
-    ^SelectWithCursor(select = ^SelectSQLQuery(data = $keptRoot), currentTreeNode = $keptRoot, milestoningContext = $operation.milestoningContext),
+    ^SelectWithCursor(select = ^SelectSQLQuery(data = $keptRoot, columns = $previous->keptColumnsOnAlias()), currentTreeNode = $keptRoot, milestoningContext = $operation.milestoningContext),
     $functionExpression->relationMappingJoinCondition(), ['_mj_src', '_mj_tgt'], $joinKind,
-    $rfpm.property->cast(@AbstractProperty<Any>), $operation, $state, $resolvedJoinType, $hopNodeId, $aggFromMap, $context, $extensions
+    $rfpm.property->cast(@AbstractProperty<Any>), $operation, $state, $resolvedJoinType, JoinType.LEFT_OUTER, $hopNodeId, $aggFromMap, $context, $extensions
   ).relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode->toOne();
 
   let keepsTarget = $joinKind == 'nj';
   ^KeyedJoinChain(
-    tree        = $previous.tree->appendUnderAlias($previous.keptAlias.name, $joinTree->reanchorOnAlias($previous.keptAlias)->forceJoinTypeTree($resolvedJoinType)),
+    tree        = $previous.tree->appendUnderAlias($previous.keptAlias.name, $joinTree->forceJoinTypeTree($resolvedJoinType)),
     keptAlias   = if($keepsTarget, | getDeepestLeafAlias($joinTree), | $previous.keptAlias),
     keptId      = if($keepsTarget, | $targetSet.id, | $previous.keptId),
     keptColumns = if($keepsTarget, | $targetValueSpec->relationExpressionColumns(), | $previous.keptColumns)
   );
 }
 
-// A condition compiled against a sub-select-backed anchor resolves its columns to the sub-select's own
-// root alias (one scope too deep); point them at the anchor alias the hop actually joins from.
-function <<access.private>> meta::relational::functions::pureToSqlQuery::reanchorOnAlias(node:JoinTreeNode[1], anchor:TableAlias[1]):JoinTreeNode[1]
+// Resolved through the alias's sub-select, a computed column is inlined as its definition, which reads columns
+// the sub-select need not expose (an extend followed by a select).
+function <<access.private>> meta::relational::functions::pureToSqlQuery::keptColumnsOnAlias(chain:KeyedJoinChain[1]):Alias[*]
 {
-  $anchor.relationalElement->match([
-    s:SelectSQLQuery[1] | ^$node(join = reprocessJoin($node.join, [^OldAliasToNewAlias(first = $s.data->toOne().alias.name, second = $anchor)], [])),
-    r:RelationalOperationElement[1] | $node
-  ]);
+  let exposedNames = $chain.keptAlias->exposedColumnNames();
+  $chain.keptColumns->map(c |
+    let name = $c.name->toOne();
+    let column = $c->relationColumnAsColumn();
+    ^Alias(name = $name, relationalElement = ^TableAliasColumn(alias = $chain.keptAlias, column = ^$column(name = $exposedNames->filter(n | $n->quoteSafeEqual($name))->first()->orElse($name))));
+  );
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::appendUnderAlias(node:RelationalTreeNode[1], aliasName:String[1], newChild:JoinTreeNode[1]):RelationalTreeNode[1]
@@ -3406,6 +3537,32 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
   ^Column(name = $c.name->toOne(), type = meta::relational::mapping::pureTypeToDataType($c.classifierGenericType.typeArguments->at(1).rawType->toOne())->toOne());
 }
 
+// The column as the alias's sub-select exposes it: a computed column is exposed quoted, a
+// table column unquoted, and the reference has to match. An all-uppercase name is referenced unquoted
+// whichever way it is exposed, so the SQL of a reference to such a column does not change with how the
+// sub-select quotes it.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::relationColumnOnAlias(c:meta::pure::metamodel::relation::Column<Nil,Any|*>[1], alias:TableAlias[1]):Column[1]
+{
+  $c->relationColumnAsColumn()->exposedColumnOnAlias($alias);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::exposedColumnNames(alias:TableAlias[1]):String[*]
+{
+  $alias.relationalElement->match([
+    s:SelectSQLQuery[1]             | $s.columns->filter(x | $x->instanceOf(Alias))->cast(@Alias).name,
+    r:RelationalOperationElement[1] | []
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::exposedColumnOnAlias(column:Column[1], alias:TableAlias[1]):Column[1]
+{
+  let exposed = $alias->exposedColumnNames()->filter(n | $n->quoteSafeEqual($column.name))->first();
+  if($exposed->isEmpty(),
+    | $column,
+    | ^$column(name = if($exposed->toOne()->stripMatchingQuotes()->matches('[A-Z_][A-Z0-9_]*'), | $exposed->toOne()->stripMatchingQuotes(), | $exposed->toOne()))
+  );
+}
+
 // Each kept-side column is exposed as an Alias over a RelationalOperationElementWithJoin carrying the
 // join tree; the terminal `.col` picks one, and resolveJoinElement later applies the join onto the real
 // source (relation-mapping.md §9.5).
@@ -3414,7 +3571,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::selectC
   let baseSelect = $operation.select;
   ^$operation(select = ^$baseSelect(columns = $keptColumns->map(c | ^Alias(
     name              = $c.name->toOne()->addQuotesIfNecessary(),
-    relationalElement = ^RelationalOperationElementWithJoin(joinTreeNode = $joinTreeNode, relationalOperationElement = ^TableAliasColumn(alias = $keptAlias, column = $c->relationColumnAsColumn()))
+    relationalElement = ^RelationalOperationElementWithJoin(joinTreeNode = $joinTreeNode, relationalOperationElement = ^TableAliasColumn(alias = $keptAlias, column = $c->relationColumnOnAlias($keptAlias)))
   ))));
 }
 
@@ -4543,9 +4700,9 @@ function meta::relational::functions::pureToSqlQuery::processMultiIf(f:FunctionE
 
  let res = $pairs->reverse()->fold(
    {pair, acc |
-     let condSimpleExpression = $pair->cast(@SimpleFunctionExpression).parametersValues->cast(@InstanceValue).values->at(1)->cast(@KeyExpression).expression->byPassRouterInfo()
-     ->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence;
-     let pairElse = $pair->cast(@SimpleFunctionExpression).parametersValues->cast(@InstanceValue).values->at(2)->cast(@KeyExpression).expression->byPassRouterInfo();
+     let conditionAndValue = multiIfBranchConditionAndValue($pair->cast(@SimpleFunctionExpression));
+     let condSimpleExpression = $conditionAndValue.first->byPassRouterInfo()->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence;
+     let pairElse = $conditionAndValue.second->byPassRouterInfo();
 
      let ifElse = ^$f(
        func = if_Boolean_1__Function_1__Function_1__T_m_,
@@ -4561,6 +4718,16 @@ function meta::relational::functions::pureToSqlQuery::processMultiIf(f:FunctionE
  $else);
 
  processIf($res->cast(@FunctionExpression), $currentPropertyMapping, $operation, $vars, ^$state(inIf=true), $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+// Preevaluation turns a query's pair(..) calls into ^Pair(first=.., second=..); Relation property mappings are not preevaluated, so their pair(..) calls arrive as written.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::multiIfBranchConditionAndValue(branch:SimpleFunctionExpression[1]):Pair<ValueSpecification, ValueSpecification>[1]
+{
+  if($branch.func == pair_U_1__V_1__Pair_1_,
+    | pair($branch.parametersValues->at(0), $branch.parametersValues->at(1)),
+    | let keyExpressions = $branch.parametersValues->cast(@InstanceValue).values;
+      pair($keyExpressions->at(1)->cast(@KeyExpression).expression, $keyExpressions->at(2)->cast(@KeyExpression).expression);
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::processRelationAggColSpec(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -5946,7 +6113,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationFunctionCla
 {
    let mainRelation = $rf->meta::relational::mapping::resolveMainRelation()->processRelation($c, $joinType, $nodeId, $addPk, -1, $addAllColumns, $milestoningContext, $state, $context, $extensions);
    let currentNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $mainRelation));
-   let base = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode);
+   let base = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode, milestoningContext = $milestoningContext);
 
    let properties = if($addAllColumns,
                        | columnNamesWithRelationalElement($rf, $c, $base, $nodeId, $state, $context, $extensions)->map(col |
@@ -8460,11 +8627,17 @@ function meta::relational::functions::pureToSqlQuery::processRelationAsOfJoin(f:
   meta::relational::functions::pureToSqlQuery::processRelationJoin(true, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::withoutMilestoningDateColumnsOf(right:SelectSQLQuery[1], left:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  let leftColumnNames = $left.columns->filter(c | $c->instanceOf(Alias))->cast(@Alias).name->map(n | $n->stripMatchingQuotes());
+  let duplicatedDateColumnNames = [getProcessingDateAliasLiteral(), getBusinessDateAliasLiteral()]->filter(n | $n->in($leftColumnNames));
+  ^$right(columns = $right.columns->filter(c | !$c->match([a:Alias[1] | $a.name->stripMatchingQuotes()->in($duplicatedDateColumnNames), r:RelationalOperationElement[1] | false])));
+}
+
 function meta::relational::functions::pureToSqlQuery::processRelationJoin(asOfJoin:Boolean[1], f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let swc1 = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let swc2 = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d1'), $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
-   let query2 = $swc2.select->pushExtraFilteringOperation($extensions);
 
    let type = if($asOfJoin,
                 |JoinKind.LEFT,
@@ -8477,6 +8650,8 @@ function meta::relational::functions::pureToSqlQuery::processRelationJoin(asOfJo
               );
 
     let query1WithFilter = $swc1.select->pushExtraFilteringOperation($extensions);
+    let query2WithFilter = $swc2.select->pushExtraFilteringOperation($extensions);
+    let query2 = if($operation.milestoningContext->isEmpty(), | $query2WithFilter, | $query2WithFilter->withoutMilestoningDateColumnsOf($query1WithFilter));
     let Q1isVarSetPlaceHolder = $query1WithFilter.data.alias.relationalElement->toOne()->instanceOf(VarSetPlaceHolder);
     let query1 =  if($Q1isVarSetPlaceHolder,| $query1WithFilter.data.alias.relationalElement->cast(@VarSetPlaceHolder)->toOne(),|   $query1WithFilter);
     let leftTableAlias =    ^TableAlias(name='"joinleft_"'+$nodeId, relationalElement=$query1);
@@ -8983,9 +9158,9 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
    let merge = ^$newMainSelect(columns=[])->concatenate($processedFuncs)->concatenate($queryWithWindowCols->cast(@SelectSQLQuery))->mergeSQLQueryData($nodeId, $state, $context, $extensions);
 
    if ($state.insertDriverTablePkInTempTable->isEmpty(),
-       | let newColumns = if ($mainSelect.distinct == false,
-                        | $merge.columns,
-                        | reAliasAndRemoveTopLevelDynaFunctionColumns($merge, $newMainSelect.columns)
+       | let newColumns = if ($mainSelect.distinct == true,
+                        | reAliasAndRemoveTopLevelDynaFunctionColumns($merge, $newMainSelect.columns),
+                        | $merge.columns
                     );
 
          let possiblePKsWithUpdatedData = if($state.addDriverTablePkForProject == true,
@@ -9490,7 +9665,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
    let uniqueName = $elements->map(e | $e->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).pureToSQL_buildUniqueName)->map(f | $f->eval($alias, $selectColumns, $extensions))->concatenate(
       [
          n:RootJoinTreeNode[1]|$n->getAllNodes()->map(a|$a->match([j:RootJoinTreeNode[1]|if($alias,|$j.alias.name,|$j.alias.relationalElement->buildUniqueName($alias, $selectColumns, $extensions)),j:JoinTreeNode[1]|$j.joinName]))->makeString('_'),
-         s:SelectSQLQuery[1]|'s('+if($selectColumns,|$s.columns->buildUniqueName($alias, $selectColumns, $extensions)+',',|'')+$s.data->buildUniqueName($alias, $selectColumns, $extensions)+','+$s.filteringOperation->buildUniqueName($alias, $selectColumns, $extensions)+')',
+         s:SelectSQLQuery[1]|$s->selectUniqueName($alias, $selectColumns, $extensions),
          u:UnaryOperation[1]| $u->type()->toOne().name->toOne() + $u.nested->buildUniqueName($alias, $selectColumns, $extensions),
          i:BinaryOperation[1]|$i->type()->toOne().name->toOne() + '_' + $i.left->buildUniqueName($alias, $selectColumns, $extensions) + '_' + $i.right->buildUniqueName($alias, $selectColumns, $extensions),
          a:Alias[1]|if($alias,|$a.name,|$a.relationalElement->buildUniqueName($alias, $selectColumns, $extensions)),
@@ -9533,6 +9708,45 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
 
    let maxSize = 256;  // TODO: make this configurable
    if($uniqueName->length() > $maxSize, |$uniqueName->substring(0, $maxSize - 35) + '___' + $uniqueName->substring($maxSize - 35)->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5), |$uniqueName);
+}
+
+// Read through each column and filter reference to it, a sub-select is serialized once per reference, which makes the
+// name of a select over nested sub-selects cost the product of their column counts. Each sub-select behind one of the
+// select's own aliases is serialized once instead and read back from a literal holding that serialization, which
+// gives the same name.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::selectUniqueName(s:SelectSQLQuery[1], alias:Boolean[1], selectColumns:Boolean[1], extensions:Extension[*]):String[1]
+{
+   let subSelects = if($alias, |[], |$s.data->map(d | $d->getAllNodes()->cast(@RelationalTreeNode).alias.relationalElement)->filter(r | $r->instanceOf(SelectSQLQuery))->removeDuplicates({a, b | $a->is($b)}));
+   let serialized = $subSelects->map(r | pair($r, ^Literal(value = $r->buildUniqueName(false, $selectColumns, $extensions))));
+   let columns = if($selectColumns, |$s.columns->map(c | $c->readingSerializedSubSelects($serialized)), |[]);
+   let data = $s.data->map(d | ^$d(alias = $d.alias->readingSerializedSubSelect($serialized)));
+   's(' + if($selectColumns, |$columns->buildUniqueName($alias, $selectColumns, $extensions) + ',', |'')
+      + $data->buildUniqueName($alias, $selectColumns, $extensions) + ','
+      + $s.filteringOperation->map(f | $f->readingSerializedSubSelects($serialized))->buildUniqueName($alias, $selectColumns, $extensions) + ')';
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::readingSerializedSubSelects(e:RelationalOperationElement[1], serialized:Pair<RelationalOperationElement, Literal>[*]):RelationalOperationElement[1]
+{
+   if($serialized->isEmpty(),
+      | $e,
+      | $e->match([
+           c:TableAliasColumn[1]           | ^$c(alias = $c.alias->readingSerializedSubSelect($serialized)),
+           c:TableAliasColumnName[1]       | ^$c(alias = $c.alias->readingSerializedSubSelect($serialized)),
+           t:TableAlias[1]                 | $t->readingSerializedSubSelect($serialized),
+           a:Alias[1]                      | ^$a(relationalElement = $a.relationalElement->readingSerializedSubSelects($serialized)),
+           d:DynaFunction[1]               | ^$d(parameters = $d.parameters->map(p | $p->readingSerializedSubSelects($serialized))),
+           u:UnaryOperation[1]             | ^$u(nested = $u.nested->readingSerializedSubSelects($serialized)),
+           b:BinaryOperation[1]            | ^$b(left = $b.left->readingSerializedSubSelects($serialized), right = $b.right->readingSerializedSubSelects($serialized)),
+           v:VariableArityOperation[1]     | ^$v(args = $v.args->map(a | $a->readingSerializedSubSelects($serialized))),
+           r:RelationalOperationElement[1] | $r
+        ])
+   );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::readingSerializedSubSelect(a:TableAlias[1], serialized:Pair<RelationalOperationElement, Literal>[*]):TableAlias[1]
+{
+   let match = $serialized->filter(p | $p.first->is($a.relationalElement));
+   if($match->isEmpty(), | $a, | ^$a(relationalElement = $match->at(0).second));
 }
 
 function meta::relational::functions::pureToSqlQuery::incrementAliasRecursively(head:Alias[1], tail:Alias[*]):Pair<Alias,Alias>[*]
@@ -10197,6 +10411,25 @@ function meta::relational::functions::pureToSqlQuery::possiblyMergeIsolatedBranc
    );
 }
 
+function meta::relational::functions::pureToSqlQuery::possiblyMergeSubSelectColumns(commonNode:JoinTreeNode[1], childNode:JoinTreeNode[1], extensions:Extension[*]):JoinTreeNode[1]
+{
+   let common = $commonNode.alias.relationalElement;
+   let child  = $childNode.alias.relationalElement;
+   if ($common->instanceOf(SelectSQLQuery) && $child->instanceOf(SelectSQLQuery) && !$childNode.join.name->startsWith('__iso_'),
+      |  let commonSelect = $common->cast(@SelectSQLQuery);
+         let childSelect  = $child->cast(@SelectSQLQuery);
+         let sameInnerNodes = $commonSelect.data->isNotEmpty() && $childSelect.data->isNotEmpty() &&
+                              $childSelect.data->toOne()->getAllNodes()->cast(@RelationalTreeNode).alias.name->forAll(n | $n->in($commonSelect.data->toOne()->getAllNodes()->cast(@RelationalTreeNode).alias.name));
+         let commonColumnNames = $commonSelect.columns->map(c | $c->match([a:Alias[1] | $a.name, a:Any[1] | []]));
+         let missingColumns = $childSelect.columns->filter(c | $c->instanceOf(Alias) && !$commonColumnNames->exists(n | $n->quoteSafeEqual($c->cast(@Alias).name)));
+         if ($sameInnerNodes && $missingColumns->isNotEmpty(),
+             | $commonNode->replaceTreeNodeRelationalElement(^$commonSelect(columns += $missingColumns), false, $extensions)->cast(@JoinTreeNode),
+             | $commonNode
+         );,
+      |  $commonNode
+   );
+}
+
 function meta::relational::functions::pureToSqlQuery::possiblyMergeUnions(commonNode:RelationalTreeNode[1], childNode:RelationalTreeNode[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):RelationalTreeNode[1]
 {
    if ($commonNode.alias.relationalElement->instanceOf(Union) && $childNode.alias.relationalElement->instanceOf(Union),
@@ -10322,7 +10555,8 @@ function meta::relational::functions::pureToSqlQuery::merge(parentTargetTreeNode
                         );
                      ,
                      |  let possiblyModifiedCommonNode = $commonNode->toOne()->possiblyMergeIsolatedBranches($childNode, $nodeId, ^$state(shouldIsolate=false), $context, $extensions)
-                                                           ->possiblyMergeUnions($childNode, $nodeId, $state, $context, $extensions)->cast(@JoinTreeNode);
+                                                           ->possiblyMergeUnions($childNode, $nodeId, $state, $context, $extensions)->cast(@JoinTreeNode)
+                                                           ->possiblyMergeSubSelectColumns($childNode, $extensions);
 
                         let replace = ^OldAliasToNewAlias(first=$commonNode->toOne().alias.name, second=$possiblyModifiedCommonNode.alias);
 

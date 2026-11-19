@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data demo::relation::filteredtarget::data::FilteredTargetData
+{
+  Relation
+  #{
+    default.PERSON:
+      ID,NAME,FIRM_CODE,GROUP_CODE
+      1,Alice,A,g1
+      2,Bob,B,g1
+      3,Carl,,g2
+      4,Dina,Z,g2
+      5,Eve,H,g3;
+    default.FIRM:
+      ID,CODE,NAME,ACTIVE,GROUP_CODE,HQ_ID
+      10,A,Acme,Y,g1,1
+      11,B,Bolt,Y,g1,2
+      12,C,Cobalt,Y,g1,
+      13,H,Hidden,N,g3,1
+      14,D,Delta,Y,g2,1;
+    default.HQ:
+      ID,CITY
+      1,Paris
+      2,Rome;
+    default.PROCESSING_PERSON:
+      ID,NAME,FIRM_CODE,GROUP_CODE,IN_Z,OUT_Z
+      1,Alice,A,g1,2020-01-01 00:00:00,9999-12-31 00:00:00
+      1,AliceOld,A,g1,2019-01-01 00:00:00,2020-01-01 00:00:00
+      2,Bob,B,g1,2020-01-01 00:00:00,9999-12-31 00:00:00
+      3,Carl,,g2,2020-01-01 00:00:00,9999-12-31 00:00:00
+      4,Fay,G,g2,2020-01-01 00:00:00,9999-12-31 00:00:00
+      5,Eve,H,g3,2020-01-01 00:00:00,9999-12-31 00:00:00;
+    default.PROCESSING_FIRM:
+      ID,CODE,NAME,ACTIVE,GROUP_CODE,IN_Z,OUT_Z
+      10,A,Acme,Y,g1,2020-01-01 00:00:00,9999-12-31 00:00:00
+      10,A,AcmeOld,Y,g1,2019-01-01 00:00:00,2020-01-01 00:00:00
+      11,B,Bolt,Y,g1,2020-01-01 00:00:00,9999-12-31 00:00:00
+      12,H,Hidden,N,g3,2020-01-01 00:00:00,9999-12-31 00:00:00
+      13,G,Gone,Y,g2,2018-01-01 00:00:00,2021-01-01 00:00:00;
+  }#
+}

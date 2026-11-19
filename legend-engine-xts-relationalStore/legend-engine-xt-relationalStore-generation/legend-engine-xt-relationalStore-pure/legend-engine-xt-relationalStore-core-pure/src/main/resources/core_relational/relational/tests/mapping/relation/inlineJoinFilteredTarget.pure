@@ -1,0 +1,291 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB
+(
+  Table PersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    FIRMCODE VARCHAR(10),
+    GROUPCODE VARCHAR(10)
+  )
+  Table FirmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    CODE VARCHAR(10) NOT NULL,
+    NAME VARCHAR(100) NOT NULL,
+    ACTIVE VARCHAR(1) NOT NULL,
+    GROUPCODE VARCHAR(10),
+    HQID INTEGER
+  )
+  Table HqTable
+  (
+    ID INTEGER PRIMARY KEY,
+    CITY VARCHAR(50) NOT NULL
+  )
+  Table ProcessingPersonTable
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    FIRMCODE VARCHAR(10),
+    GROUPCODE VARCHAR(10),
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL
+  )
+  Table ProcessingFirmTable
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    ID INTEGER PRIMARY KEY,
+    CODE VARCHAR(10) NOT NULL,
+    NAME VARCHAR(100) NOT NULL,
+    ACTIVE VARCHAR(1) NOT NULL,
+    GROUPCODE VARCHAR(10),
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL
+  )
+  Join PersonFirmByCode(PersonTable.FIRMCODE = FirmTable.CODE)
+  Join PersonFirmByGroup(PersonTable.GROUPCODE = FirmTable.GROUPCODE)
+  Join FirmHq(FirmTable.HQID = HqTable.ID)
+  Join ProcessingPersonFirmByCode(ProcessingPersonTable.FIRMCODE = ProcessingFirmTable.CODE)
+  Join ProcessingPersonFirmByGroup(ProcessingPersonTable.GROUPCODE = ProcessingFirmTable.GROUPCODE)
+  Filter ActiveFirm(FirmTable.ACTIVE = 'Y')
+  Filter ActiveProcessingFirm(ProcessingFirmTable.ACTIVE = 'Y')
+)
+
+###Pure
+Class meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::Hq
+{
+  city: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::Firm
+{
+  name: String[1];
+  code: String[1];
+  hq: meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::Hq[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::Person
+{
+  name: String[1];
+  firm: meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::Firm[0..1];
+  firms: meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::Firm[*];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::ProcessingFirm
+{
+  name: String[1];
+  code: String[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::ProcessingPerson
+{
+  name: String[1];
+  firm: meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::ProcessingFirm[0..1];
+  firms: meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::ProcessingFirm[*];
+}
+
+function meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::personRel():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB.PersonTable}#
+}
+
+function meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::processingPersonRel():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB.ProcessingPersonTable}#
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::*;
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetMapping
+(
+  Person: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::personRel():Relation<Any>[1]
+    ~primaryKey: [ID]
+    name: NAME,
+    firm: modelJoin({p, f | $p.firmKey == $f.code}),
+    firms: modelJoin({p, f | $p.groupKey == $f.group}),
+    +firmKey: String[0..1]: FIRMCODE,
+    +groupKey: String[0..1]: GROUPCODE
+  }
+
+  Firm: Relational
+  {
+    ~filter [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]ActiveFirm
+    ~mainTable [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]FirmTable
+    name: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]FirmTable.NAME,
+    code: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]FirmTable.CODE,
+    +group: String[0..1]: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]FirmTable.GROUPCODE,
+    hq: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]@FirmHq
+  }
+
+  Hq: Relational
+  {
+    ~mainTable [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]HqTable
+    city: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]HqTable.CITY
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::ProcessingFilteredTargetMapping
+(
+  ProcessingPerson: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::processingPersonRel():Relation<Any>[1]
+    ~primaryKey: [ID, IN_Z]
+    name: NAME,
+    firm: modelJoin({p, f | $p.firmKey == $f.code}),
+    firms: modelJoin({p, f | $p.groupKey == $f.group}),
+    +firmKey: String[0..1]: FIRMCODE,
+    +groupKey: String[0..1]: GROUPCODE
+  }
+
+  ProcessingFirm: Relational
+  {
+    ~filter [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]ActiveProcessingFirm
+    ~mainTable [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]ProcessingFirmTable
+    name: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]ProcessingFirmTable.NAME,
+    code: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]ProcessingFirmTable.CODE,
+    +group: String[0..1]: [meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::FilteredTargetDB]ProcessingFirmTable.GROUPCODE
+  }
+)
+
+###Pure
+import meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
+
+function <<access.private>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::sqlOf(query:FunctionDefinition<Any>[1], mapping:meta::pure::mapping::Mapping[1]):String[1]
+{
+  executionPlan($query, $mapping, meta::external::store::relational::tests::testRuntime(FilteredTargetDB), meta::relational::extension::relationalExtensions())
+    .rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::planOf(query:FunctionDefinition<Any>[1], mapping:meta::pure::mapping::Mapping[1]):String[1]
+{
+  executionPlan($query, $mapping, meta::external::store::relational::tests::testRuntime(FilteredTargetDB), meta::relational::extension::relationalExtensions())
+    ->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testProjectingTheTargetNameKeepsTheTargetFilterInTheJoinedSubSelect():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_0".NAME as "person", "firmtable_0".NAME as "firm" from (select "persontable_1".ID as ID, "persontable_1".NAME as NAME, "persontable_1".FIRMCODE as FIRMCODE, "persontable_1".GROUPCODE as GROUPCODE from PersonTable as "persontable_1") as "persontable_0" left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".CODE as CODE, "root".NAME as NAME from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" on ("persontable_0"."FIRMCODE" = "firmtable_0".CODE)',
+    sqlOf({|Person.all()->project([p | $p.name, p | $p.firm.name], ['person', 'firm'])}, FilteredTargetMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testProjectingTargetNameAndTargetAssociationKeepsEveryColumnTheJoinNeeds():Boolean[1]
+{
+  assertSameSQL(
+    'select "firmtable_0".NAME as "firm", "hqtable_0".CITY as "city" from (select "persontable_1".ID as ID, "persontable_1".NAME as NAME, "persontable_1".FIRMCODE as FIRMCODE, "persontable_1".GROUPCODE as GROUPCODE from PersonTable as "persontable_1") as "persontable_0" left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".CODE as CODE, "root".NAME as NAME, "root".HQID as HQID from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" on ("persontable_0"."FIRMCODE" = "firmtable_0".CODE) left outer join HqTable as "hqtable_0" on ("firmtable_0".HQID = "hqtable_0".ID)',
+    sqlOf({|Person.all()->project([p | $p.firm.name, p | $p.firm.hq.city], ['firm', 'city'])}, FilteredTargetMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testFilteringOnTheTargetNameReadsTheFilteredSubSelect():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_0".NAME as "person" from (select "persontable_1".ID as ID, "persontable_1".NAME as NAME, "persontable_1".FIRMCODE as FIRMCODE, "persontable_1".GROUPCODE as GROUPCODE from PersonTable as "persontable_1") as "persontable_0" left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".CODE as CODE, "root".NAME as NAME from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" on ("persontable_0"."FIRMCODE" = "firmtable_0".CODE) where "firmtable_0".NAME = \'Acme\'',
+    sqlOf({|Person.all()->filter(p | $p.firm.name == 'Acme')->project([p | $p.name], ['person'])}, FilteredTargetMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testTargetIsEmptyReadsTheFilteredSubSelect():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_0".NAME as "person" from (select "persontable_1".ID as ID, "persontable_1".NAME as NAME, "persontable_1".FIRMCODE as FIRMCODE, "persontable_1".GROUPCODE as GROUPCODE from PersonTable as "persontable_1") as "persontable_0" where not exists (select 1 from (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".CODE as CODE from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" where "persontable_0"."FIRMCODE" = "firmtable_0".CODE)',
+    sqlOf({|Person.all()->filter(p | $p.firm->isEmpty())->project([p | $p.name], ['person'])}, FilteredTargetMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testToManyTargetFilterReadsTheFilteredSubSelect():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_0".NAME as "person" from (select "persontable_1".ID as ID, "persontable_1".NAME as NAME, "persontable_1".FIRMCODE as FIRMCODE, "persontable_1".GROUPCODE as GROUPCODE from PersonTable as "persontable_1") as "persontable_0" left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".GROUPCODE as GROUPCODE, "root".NAME as NAME from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" on ("persontable_0"."GROUPCODE" is not distinct from "firmtable_0".GROUPCODE) where "firmtable_0".NAME = \'Acme\'',
+    sqlOf({|Person.all()->filter(p | $p.firms.name == 'Acme')->project([p | $p.name], ['person'])}, FilteredTargetMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testGraphFetchOfTheTargetReadsTheColumnsTheSubSelectExposes():Boolean[1]
+{
+  let tree = #{Person {name, firm {name}}}#;
+  let plan = planOf({|Person.all()->graphFetch($tree)->serialize($tree)}, FilteredTargetMapping);
+  assertSQLContains(
+    'select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "firmtable_0".ID as "pk_0", "firmtable_0".NAME as "name" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "persontable_1".ID as "ID", "persontable_1".NAME as "NAME", "persontable_1".FIRMCODE as "FIRMCODE", "persontable_1".GROUPCODE as "GROUPCODE" from (select "persontable_2".ID as ID, "persontable_2".NAME as NAME, "persontable_2".FIRMCODE as FIRMCODE, "persontable_2".GROUPCODE as GROUPCODE from PersonTable as "persontable_2") as "persontable_1") as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".CODE as CODE, "root".ID as ID, "root".NAME as NAME from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" on ("root"."FIRMCODE" = "firmtable_0".CODE) where "firmtable_0".ID is not null',
+    $plan
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testGraphFetchOfTheNestedTargetReadsTheColumnsTheSubSelectExposes():Boolean[1]
+{
+  let tree = #{Person {name, firm {name, hq {city}}}}#;
+  let plan = planOf({|Person.all()->graphFetch($tree)->serialize($tree)}, FilteredTargetMapping);
+  assertSQLContains(
+    'select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "firmtable_0".ID as "pk_0", "firmtable_0".NAME as "name" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "persontable_1".ID as "ID", "persontable_1".NAME as "NAME", "persontable_1".FIRMCODE as "FIRMCODE", "persontable_1".GROUPCODE as "GROUPCODE" from (select "persontable_2".ID as ID, "persontable_2".NAME as NAME, "persontable_2".FIRMCODE as FIRMCODE, "persontable_2".GROUPCODE as GROUPCODE from PersonTable as "persontable_2") as "persontable_1") as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".CODE as CODE, "root".ID as ID, "root".NAME as NAME from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" on ("root"."FIRMCODE" = "firmtable_0".CODE) where "firmtable_0".ID is not null',
+    $plan
+  );
+  assertSQLContains(
+    'select distinct "temp_table_node_2_0".pk_0 as "parent_key_gen_0", "hqtable_0".ID as "pk_0", "hqtable_0".CITY as "city" from (select * from (${temp_table_node_2}) as "root") as "temp_table_node_2_0" inner join FirmTable as "root" on ("temp_table_node_2_0".pk_0 = "root".ID) left outer join HqTable as "hqtable_0" on ("root".HQID = "hqtable_0".ID) where "hqtable_0".ID is not null and "root".ACTIVE = \'Y\'',
+    $plan
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testGraphFetchOfTheToManyTargetReadsTheColumnsTheSubSelectExposes():Boolean[1]
+{
+  let tree = #{Person {name, firms {name}}}#;
+  let plan = planOf({|Person.all()->graphFetch($tree)->serialize($tree)}, FilteredTargetMapping);
+  assertSQLContains(
+    'select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "firmtable_0".ID as "pk_0", "firmtable_0".NAME as "name" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "persontable_1".ID as "ID", "persontable_1".NAME as "NAME", "persontable_1".FIRMCODE as "FIRMCODE", "persontable_1".GROUPCODE as "GROUPCODE" from (select "persontable_2".ID as ID, "persontable_2".NAME as NAME, "persontable_2".FIRMCODE as FIRMCODE, "persontable_2".GROUPCODE as GROUPCODE from PersonTable as "persontable_2") as "persontable_1") as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", "root".GROUPCODE as GROUPCODE, "root".ID as ID, "root".NAME as NAME from FirmTable as "root" where "root".ACTIVE = \'Y\') as "firmtable_0" on ("root"."GROUPCODE" is not distinct from "firmtable_0".GROUPCODE) where "firmtable_0".ID is not null',
+    $plan
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testProcessingTemporalTargetFilterReadsTheFilteredSubSelect():Boolean[1]
+{
+  assertSameSQL(
+    'select "processingpersontable_0".NAME as "person" from (select "processingpersontable_1".ID as ID, "processingpersontable_1".NAME as NAME, "processingpersontable_1".FIRMCODE as FIRMCODE, "processingpersontable_1".GROUPCODE as GROUPCODE, "processingpersontable_1".IN_Z as IN_Z, "processingpersontable_1".OUT_Z as OUT_Z, \'2024-01-01\' as "k_processingDate" from ProcessingPersonTable as "processingpersontable_1" where "processingpersontable_1".IN_Z <= DATE\'2024-01-01\' and "processingpersontable_1".OUT_Z > DATE\'2024-01-01\') as "processingpersontable_0" left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", \'2024-01-01\' as "k_processingDate", "root".CODE as CODE, "root".NAME as NAME from ProcessingFirmTable as "root" where "root".ACTIVE = \'Y\' and "root".IN_Z <= DATE\'2024-01-01\' and "root".OUT_Z > DATE\'2024-01-01\') as "processingfirmtable_0" on ("processingpersontable_0"."FIRMCODE" = "processingfirmtable_0".CODE) where "processingfirmtable_0".NAME = \'Acme\'',
+    sqlOf({|ProcessingPerson.all(%2024-01-01)->filter(p | $p.firm(%2024-01-01).name == 'Acme')->project([p | $p.name], ['person'])}, ProcessingFilteredTargetMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testProcessingTemporalTargetIsEmptyReadsTheFilteredSubSelect():Boolean[1]
+{
+  assertSameSQL(
+    'select "processingpersontable_0".NAME as "person" from (select "processingpersontable_1".ID as ID, "processingpersontable_1".NAME as NAME, "processingpersontable_1".FIRMCODE as FIRMCODE, "processingpersontable_1".GROUPCODE as GROUPCODE, "processingpersontable_1".IN_Z as IN_Z, "processingpersontable_1".OUT_Z as OUT_Z, \'2024-01-01\' as "k_processingDate" from ProcessingPersonTable as "processingpersontable_1" where "processingpersontable_1".IN_Z <= DATE\'2024-01-01\' and "processingpersontable_1".OUT_Z > DATE\'2024-01-01\') as "processingpersontable_0" where not exists (select 1 from (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", \'2024-01-01\' as "k_processingDate", "root".CODE as CODE from ProcessingFirmTable as "root" where "root".ACTIVE = \'Y\' and "root".IN_Z <= DATE\'2024-01-01\' and "root".OUT_Z > DATE\'2024-01-01\') as "processingfirmtable_0" where "processingpersontable_0"."FIRMCODE" = "processingfirmtable_0".CODE)',
+    sqlOf({|ProcessingPerson.all(%2024-01-01)->filter(p | $p.firm(%2024-01-01)->isEmpty())->project([p | $p.name], ['person'])}, ProcessingFilteredTargetMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::filteredTarget::testGraphFetchOfTheProcessingTemporalTargetReadsTheMilestoningColumnsTheSubSelectExposes():Boolean[1]
+{
+  let tree = #{ProcessingPerson {name, firm(%2024-01-01) {name}}}#;
+  let plan = planOf({|ProcessingPerson.all(%2024-01-01)->graphFetch($tree)->serialize($tree)}, ProcessingFilteredTargetMapping);
+  assertSQLContains(
+    'select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "temp_table_node_0_0".pk_1 as "parent_key_gen_1", "processingfirmtable_0".ID as "pk_0", "processingfirmtable_0".IN_Z as "pk_1", "processingfirmtable_0".NAME as "name", \'2024-01-01\' as "k_processingDate" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "processingpersontable_1".ID as "ID", "processingpersontable_1".NAME as "NAME", "processingpersontable_1".FIRMCODE as "FIRMCODE", "processingpersontable_1".GROUPCODE as "GROUPCODE", "processingpersontable_1".IN_Z as "IN_Z", "processingpersontable_1".OUT_Z as "OUT_Z" from (select "processingpersontable_2".ID as ID, "processingpersontable_2".NAME as NAME, "processingpersontable_2".FIRMCODE as FIRMCODE, "processingpersontable_2".GROUPCODE as GROUPCODE, "processingpersontable_2".IN_Z as IN_Z, "processingpersontable_2".OUT_Z as OUT_Z from ProcessingPersonTable as "processingpersontable_2" where "processingpersontable_2".IN_Z <= DATE\'2024-01-01\' and "processingpersontable_2".OUT_Z > DATE\'2024-01-01\') as "processingpersontable_1") as "root" on ("temp_table_node_0_0".pk_1 = "root"."IN_Z" and "temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select "root".NAME as "name", "root".CODE as "code", "root".GROUPCODE as "group", \'2024-01-01\' as "k_processingDate", "root".CODE as CODE, "root".ID as ID, "root".IN_Z as IN_Z, "root".NAME as NAME from ProcessingFirmTable as "root" where "root".ACTIVE = \'Y\' and "root".IN_Z <= DATE\'2024-01-01\' and "root".OUT_Z > DATE\'2024-01-01\') as "processingfirmtable_0" on ("root"."FIRMCODE" = "processingfirmtable_0".CODE) where "processingfirmtable_0".IN_Z is not null and "processingfirmtable_0".ID is not null',
+    $plan
+  );
+}

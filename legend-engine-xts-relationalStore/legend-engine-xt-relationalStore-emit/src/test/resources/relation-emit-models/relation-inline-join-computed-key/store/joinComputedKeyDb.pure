@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::relation::joincomputedkey::db::JoinComputedKeyDB
+(
+  Table PERSON
+  (
+    ID          INTEGER PRIMARY KEY,
+    FIRM_ID     INTEGER,
+    OLD_FIRM_ID INTEGER
+  )
+  Table FIRM
+  (
+    ID            INTEGER PRIMARY KEY,
+    NAME          VARCHAR(100) NOT NULL,
+    COUNTRY_ID    INTEGER,
+    HQ_COUNTRY_ID INTEGER
+  )
+  Table COUNTRY
+  (
+    ID   INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+
+  Table ORD_PERSON
+  (
+    ID           INTEGER PRIMARY KEY,
+    FIRM_ORDINAL INTEGER
+  )
+  Table ORD_FIRM
+  (
+    ID              INTEGER PRIMARY KEY,
+    NAME            VARCHAR(100) NOT NULL,
+    COUNTRY_ORDINAL INTEGER
+  )
+  Table ORD_COUNTRY
+  (
+    ID   INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+
+  Join Person_Firm(case(isNull(PERSON.FIRM_ID), PERSON.OLD_FIRM_ID, PERSON.FIRM_ID) = FIRM.ID)
+  Join Firm_Country(FIRM.COUNTRY_ID = COUNTRY.ID)
+  Join Firm_HomeCountry(case(isNull(FIRM.COUNTRY_ID), FIRM.HQ_COUNTRY_ID, FIRM.COUNTRY_ID) = COUNTRY.ID)
+  Join OrdPerson_OrdFirm(ORD_PERSON.FIRM_ORDINAL = add(ORD_FIRM.ID, 1))
+  Join OrdFirm_OrdCountry(ORD_FIRM.COUNTRY_ORDINAL = add(ORD_COUNTRY.ID, 1))
+)

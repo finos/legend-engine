@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A ###Relational property cannot put a join type on its first join, so ladderViaInnerKey uses the same join as ladder.
+
+###Mapping
+Mapping demo::relation::joingraphfetch::mapping::RelationalJoinGraphFetchMapping
+(
+  *demo::relation::joingraphfetch::Listing[listing]: Relational
+  {
+    ~mainTable [demo::relation::joingraphfetch::db::JoinGraphFetchDB]LISTING
+    id: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]LISTING.ID,
+    name: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]LISTING.NAME,
+    ladder[ladder]: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]@Listing_Ladder,
+    ladderViaInnerKey[ladder]: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]@Listing_Ladder,
+    divisionLadder[ladder]: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]@Listing_Division > (INNER) [demo::relation::joingraphfetch::db::JoinGraphFetchDB]@Division_Ladder
+  }
+
+  *demo::relation::joingraphfetch::Ladder[ladder]: Relational
+  {
+    ~mainTable [demo::relation::joingraphfetch::db::JoinGraphFetchDB]LADDER
+    id: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]LADDER.ID,
+    name: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]LADDER.NAME,
+    tickSize: [demo::relation::joingraphfetch::db::JoinGraphFetchDB]LADDER.TICK_SIZE
+  }
+
+  testSuites:
+  [
+    modelJoinKeyedOnNavigationJoinSuite:
+    {
+      function: |demo::relation::joingraphfetch::Listing.all()->graphFetch(#{demo::relation::joingraphfetch::Listing{name, ladder{id, name, tickSize}}}#)->serialize(#{demo::relation::joingraphfetch::Listing{name, ladder{id, name, tickSize}}}#);
+      tests:
+      [
+        fetchesTheLadderOfEachListing:
+        {
+          data:
+          [
+            demo::relation::joingraphfetch::db::JoinGraphFetchDB:
+              Reference
+              #{
+                demo::relation::joingraphfetch::data::JoinGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","ladder":{"id":10,"name":"Tick10","tickSize":1}},{"name":"Bravo","ladder":null},{"name":"Charlie","ladder":null},{"name":"Delta","ladder":{"id":10,"name":"Tick10","tickSize":1}},{"name":"Echo","ladder":{"id":20,"name":"Tick20","tickSize":5}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    modelJoinKeyedOnInnerNavigationJoinSuite:
+    {
+      function: |demo::relation::joingraphfetch::Listing.all()->graphFetch(#{demo::relation::joingraphfetch::Listing{name, ladderViaInnerKey{id, name, tickSize}}}#)->serialize(#{demo::relation::joingraphfetch::Listing{name, ladderViaInnerKey{id, name, tickSize}}}#);
+      tests:
+      [
+        fetchesTheLadderNotTheListing:
+        {
+          data:
+          [
+            demo::relation::joingraphfetch::db::JoinGraphFetchDB:
+              Reference
+              #{
+                demo::relation::joingraphfetch::data::JoinGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","ladderViaInnerKey":{"id":10,"name":"Tick10","tickSize":1}},{"name":"Bravo","ladderViaInnerKey":null},{"name":"Charlie","ladderViaInnerKey":null},{"name":"Delta","ladderViaInnerKey":{"id":10,"name":"Tick10","tickSize":1}},{"name":"Echo","ladderViaInnerKey":{"id":20,"name":"Tick20","tickSize":5}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    modelJoinKeyedOnTwoHopInnerNavigationJoinSuite:
+    {
+      function: |demo::relation::joingraphfetch::Listing.all()->graphFetch(#{demo::relation::joingraphfetch::Listing{name, divisionLadder{id, name, tickSize}}}#)->serialize(#{demo::relation::joingraphfetch::Listing{name, divisionLadder{id, name, tickSize}}}#);
+      tests:
+      [
+        fetchesTheLadderReachedThroughTheDivision:
+        {
+          data:
+          [
+            demo::relation::joingraphfetch::db::JoinGraphFetchDB:
+              Reference
+              #{
+                demo::relation::joingraphfetch::data::JoinGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","divisionLadder":{"id":10,"name":"Tick10","tickSize":1}},{"name":"Bravo","divisionLadder":null},{"name":"Charlie","divisionLadder":null},{"name":"Delta","divisionLadder":{"id":10,"name":"Tick10","tickSize":1}},{"name":"Echo","divisionLadder":{"id":10,"name":"Tick10","tickSize":1}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    allKeyedModelJoinsInOneFetchSuite:
+    {
+      function: |demo::relation::joingraphfetch::Listing.all()->graphFetch(#{demo::relation::joingraphfetch::Listing{name, ladder{name}, ladderViaInnerKey{name}, divisionLadder{name}}}#)->serialize(#{demo::relation::joingraphfetch::Listing{name, ladder{name}, ladderViaInnerKey{name}, divisionLadder{name}}}#);
+      tests:
+      [
+        fetchesEachLadderThroughItsOwnKey:
+        {
+          data:
+          [
+            demo::relation::joingraphfetch::db::JoinGraphFetchDB:
+              Reference
+              #{
+                demo::relation::joingraphfetch::data::JoinGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alpha","ladder":{"name":"Tick10"},"ladderViaInnerKey":{"name":"Tick10"},"divisionLadder":{"name":"Tick10"}},{"name":"Bravo","ladder":null,"ladderViaInnerKey":null,"divisionLadder":null},{"name":"Charlie","ladder":null,"ladderViaInnerKey":null,"divisionLadder":null},{"name":"Delta","ladder":{"name":"Tick10"},"ladderViaInnerKey":{"name":"Tick10"},"divisionLadder":{"name":"Tick10"}},{"name":"Echo","ladder":{"name":"Tick20"},"ladderViaInnerKey":{"name":"Tick20"},"divisionLadder":{"name":"Tick10"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

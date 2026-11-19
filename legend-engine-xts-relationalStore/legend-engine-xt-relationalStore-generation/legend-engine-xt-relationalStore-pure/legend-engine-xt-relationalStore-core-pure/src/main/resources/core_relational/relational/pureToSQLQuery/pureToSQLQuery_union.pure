@@ -433,9 +433,10 @@ function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSe
                                                              let mainTable = $r->meta::relational::mapping::resolveMainRelation();
                                                              $allTacs->filter(a|$a.alias.relationalElement == $mainTable).column->removeDuplicates();,
                                                           rf:RelationFunctionInstanceSetImplementation[1] |
+                                                             // An embedded set's join ends are tagged with the embedded set, not with its owner (see getRelation).
                                                              $allTacs->filter(a |
                                                                 $a.alias.relationalElement->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction)
-                                                                && $a.alias.relationalElement->cast(@meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction).owner.id == $rf.id
+                                                                && $a.alias.relationalElement->cast(@meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction).owner.id == $setId
                                                              ).column->removeDuplicatesBy(c | $c.name);
                                                       ]);
                                            let r = $cols->map(c|let rpm = $setImplementation->allPropertyMappings()->filter(c|$c->instanceOf(RelationalPropertyMapping))
