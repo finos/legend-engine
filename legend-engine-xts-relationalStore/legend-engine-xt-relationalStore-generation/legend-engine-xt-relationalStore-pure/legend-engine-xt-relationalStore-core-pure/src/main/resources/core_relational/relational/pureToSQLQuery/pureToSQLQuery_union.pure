@@ -688,7 +688,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
     if($j->isEmpty(),
        |[],
        |let plists = $j->map(o|pair($o.first, $o.second->extractLine()->list()))->sort({a,b|$b.second.values->size() - $a.second.values->size()});
-        let lists = $plists->removeDuplicates({a,b|$a.second.values->size() == $b.second.values->size() && $a.second.values->buildUniqueName(true, $extensions) == $b.second.values->buildUniqueName(true, $extensions) && ($a.first.sourceSetImplementationId == $b.first.sourceSetImplementationId) && ($a.first.targetSetImplementationId == $b.first.targetSetImplementationId)});
+        let lists = $plists->map(p | pair($p, $p.second.values->buildUniqueName(true, $extensions)))
+                           ->removeDuplicates({a,b|$a.first.second.values->size() == $b.first.second.values->size() && $a.second == $b.second && ($a.first.first.sourceSetImplementationId == $b.first.first.sourceSetImplementationId) && ($a.first.first.targetSetImplementationId == $b.first.first.targetSetImplementationId)})
+                           .first;
         let orderedJoinLine = $lists->head().second.values;
         let joinsAcrossListsPerJoinInJoinLine = $orderedJoinLine->map({j |
           $lists->map({l |
