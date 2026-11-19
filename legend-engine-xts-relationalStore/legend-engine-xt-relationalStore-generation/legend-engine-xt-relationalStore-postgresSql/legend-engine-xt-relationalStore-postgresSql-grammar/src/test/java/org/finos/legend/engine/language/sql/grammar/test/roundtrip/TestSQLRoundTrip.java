@@ -656,6 +656,74 @@ public class TestSQLRoundTrip
         }
     }
 
+    @Test
+    public void testSimpleCaseOperandSeparatedFromWhen()
+    {
+        check("SELECT CASE revenue.billing WHEN '00' THEN 'None' WHEN '01' THEN 'January' ELSE NULL END FROM myTable AS revenue");
+        check("SELECT CASE a.IsSelfLed WHEN 0 THEN 'false' WHEN 1 THEN 'true' END FROM myTable AS a");
+        check("SELECT CASE upper(col1) WHEN 'A' THEN 1 END FROM myTable");
+        check("SELECT CASE 'x' WHEN 'x' THEN 1 END FROM myTable");
+        check("SELECT max(CASE PARENT_ROLE WHEN 'Matter Owner' THEN KERBEROS_ID END) FROM myTable");
+    }
+
+    @Test
+    public void testAllColumnsPrefixIsQuoted()
+    {
+        check("SELECT \"Base Table\".* FROM myTable AS \"Base Table\"");
+        check("SELECT t.* FROM myTable AS t");
+        check("SELECT s.\"Base Table\".* FROM s.\"Base Table\"");
+        check("SELECT \"IN\".* FROM myTable AS \"IN\"");
+    }
+
+    @Test
+    public void testFullJoinIsPrinted()
+    {
+        check("SELECT * FROM a FULL OUTER JOIN b ON (a.id = b.id)");
+        check("SELECT * FROM a FULL JOIN b ON (a.id = b.id)", "SELECT * FROM a FULL OUTER JOIN b ON (a.id = b.id)");
+    }
+
+    @Test
+    public void testSpecialCharIdentifiersAreQuoted()
+    {
+        check("SELECT R.\"PROJECT_ID$\" AS matterId FROM myTable AS R");
+        check("SELECT Entity_Id AS \"Entity.Id\", x AS \"MONTH-TO-DATE\" FROM myTable");
+    }
+
+    @Test
+    public void testReservedWordIdentifiersAreQuoted()
+    {
+        for (String word : new String[]{"IN", "index", "end", "GROUP", "column", "function", "FUNCTION", "desc", "order"})
+        {
+            String sql = "select BASE.\"" + word + "\" AS \"" + word + "\" from myTable AS BASE where BASE.\"" + word + "\" = 1 group by BASE.\"" + word + "\" order by \"" + word + "\" ASC";
+            String result = render(sql);
+            Assert.assertEquals(sql, result);
+            Assert.assertEquals(result, render(result));
+        }
+    }
+
+    @Test
+    public void testPlainAndNonReservedIdentifiersStayUnquoted()
+    {
+        Assert.assertEquals("select D.name, D.type, D.status, D.user AS key from myTable AS D", render("SELECT D.name, D.type, D.status, D.user AS key FROM myTable AS D"));
+        Assert.assertEquals("select \"a$b\", \"c-d\" AS \"MONTH-TO-DATE\" from \"my/table\"", render("SELECT \"a$b\", \"c-d\" AS \"MONTH-TO-DATE\" FROM \"my/table\""));
+    }
+
+    @Test
+    public void testQuoteIdentifier()
+    {
+        Assert.assertEquals("abc", SQLGrammarComposer.quoteIdentifier("abc"));
+        Assert.assertEquals("\"IN\"", SQLGrammarComposer.quoteIdentifier("IN"));
+        Assert.assertEquals("\"end\"", SQLGrammarComposer.quoteIdentifier("end"));
+        Assert.assertEquals("\"a b\"", SQLGrammarComposer.quoteIdentifier("a b"));
+        Assert.assertEquals("\"a\"\"b\"", SQLGrammarComposer.quoteIdentifier("a\"b"));
+        Assert.assertEquals("timestamp", SQLGrammarComposer.quoteIdentifier("timestamp"));
+    }
+
+    private String render(String sql)
+    {
+        return SQLGrammarComposer.newInstance().renderNode(SQLGrammarParser.newInstance().parseStatement(sql));
+    }
+
     private void check(String sql)
     {
         check(sql, sql);
