@@ -1,0 +1,463 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::relation::filteredtarget::mapping::RelationalFilteredTargetMapping
+(
+  demo::relation::filteredtarget::Person: Relational
+  {
+    ~mainTable [demo::relation::filteredtarget::db::FilteredTargetDB]PERSON
+    name: [demo::relation::filteredtarget::db::FilteredTargetDB]PERSON.NAME,
+    firm: [demo::relation::filteredtarget::db::FilteredTargetDB]@Person_Firm,
+    firms: [demo::relation::filteredtarget::db::FilteredTargetDB]@Person_GroupFirms
+  }
+
+  demo::relation::filteredtarget::Firm: Relational
+  {
+    ~filter [demo::relation::filteredtarget::db::FilteredTargetDB]ActiveFirm
+    ~mainTable [demo::relation::filteredtarget::db::FilteredTargetDB]FIRM
+    name: [demo::relation::filteredtarget::db::FilteredTargetDB]FIRM.NAME,
+    code: [demo::relation::filteredtarget::db::FilteredTargetDB]FIRM.CODE,
+    hq: [demo::relation::filteredtarget::db::FilteredTargetDB]@Firm_Hq
+  }
+
+  demo::relation::filteredtarget::Hq: Relational
+  {
+    ~mainTable [demo::relation::filteredtarget::db::FilteredTargetDB]HQ
+    city: [demo::relation::filteredtarget::db::FilteredTargetDB]HQ.CITY
+  }
+
+  demo::relation::filteredtarget::ProcessingPerson: Relational
+  {
+    ~mainTable [demo::relation::filteredtarget::db::FilteredTargetDB]PROCESSING_PERSON
+    name: [demo::relation::filteredtarget::db::FilteredTargetDB]PROCESSING_PERSON.NAME,
+    firm: [demo::relation::filteredtarget::db::FilteredTargetDB]@ProcessingPerson_Firm,
+    firms: [demo::relation::filteredtarget::db::FilteredTargetDB]@ProcessingPerson_GroupFirms
+  }
+
+  demo::relation::filteredtarget::ProcessingFirm: Relational
+  {
+    ~filter [demo::relation::filteredtarget::db::FilteredTargetDB]ActiveProcessingFirm
+    ~mainTable [demo::relation::filteredtarget::db::FilteredTargetDB]PROCESSING_FIRM
+    name: [demo::relation::filteredtarget::db::FilteredTargetDB]PROCESSING_FIRM.NAME,
+    code: [demo::relation::filteredtarget::db::FilteredTargetDB]PROCESSING_FIRM.CODE
+  }
+
+  testSuites:
+  [
+    projectsTheFilteredTargetSuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->project(~[person: x | $x.name, firm: x | $x.firm.name])->sort([~person->ascending()]);
+      tests:
+      [
+        readsOnlyTheActiveFirm:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Alice","firm":"Acme"},{"person":"Bob","firm":"Bolt"},{"person":"Carl","firm":null},{"person":"Dina","firm":null},{"person":"Eve","firm":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    projectsTheTargetAndItsAssociationSuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->project(~[firm: x | $x.firm.name, city: x | $x.firm.hq.city])->sort([~firm->ascending()]);
+      tests:
+      [
+        readsTheColumnsTheTargetJoinNeeds:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firm":null,"city":null},{"firm":null,"city":null},{"firm":null,"city":null},{"firm":"Acme","city":"Paris"},{"firm":"Bolt","city":"Rome"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filtersOnTheTargetNameSuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->filter(x | $x.firm.name == 'Acme')->project(~[person: x | $x.name]);
+      tests:
+      [
+        keepsThePersonOfTheNamedFirm:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Alice"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filtersOnTheTargetBeingEmptySuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->filter(x | $x.firm->isEmpty())->project(~[person: x | $x.name])->sort([~person->ascending()]);
+      tests:
+      [
+        keepsThePersonsWithoutAnActiveFirm:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Carl"},{"person":"Dina"},{"person":"Eve"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filtersOnTheTargetBeingNotEmptySuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->filter(x | $x.firm->isNotEmpty())->project(~[person: x | $x.name])->sort([~person->ascending()]);
+      tests:
+      [
+        keepsThePersonsWithAnActiveFirm:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Alice"},{"person":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filtersOnTheToManyTargetSuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->filter(x | $x.firms.name == 'Cobalt')->project(~[person: x | $x.name])->sort([~person->ascending()]);
+      tests:
+      [
+        keepsThePersonsOfTheGroupWithTheNamedFirm:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Alice"},{"person":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchesTheFilteredTargetSuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->graphFetch(#{demo::relation::filteredtarget::Person{name, firm{name}}}#)->serialize(#{demo::relation::filteredtarget::Person{name, firm{name}}}#);
+      tests:
+      [
+        readsOnlyTheActiveFirm:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","firm":{"name":"Acme"}},{"name":"Bob","firm":{"name":"Bolt"}},{"name":"Carl","firm":null},{"name":"Dina","firm":null},{"name":"Eve","firm":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchesTheNestedTargetSuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->graphFetch(#{demo::relation::filteredtarget::Person{name, firm{name, hq{city}}}}#)->serialize(#{demo::relation::filteredtarget::Person{name, firm{name, hq{city}}}}#);
+      tests:
+      [
+        readsTheAssociationOfTheActiveFirm:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","firm":{"name":"Acme","hq":{"city":"Paris"}}},{"name":"Bob","firm":{"name":"Bolt","hq":{"city":"Rome"}}},{"name":"Carl","firm":null},{"name":"Dina","firm":null},{"name":"Eve","firm":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchesTheToManyTargetSuite:
+    {
+      function: |demo::relation::filteredtarget::Person.all()->graphFetch(#{demo::relation::filteredtarget::Person{name, firms{name}}}#)->serialize(#{demo::relation::filteredtarget::Person{name, firms{name}}}#);
+      tests:
+      [
+        readsTheActiveFirmsOfTheGroup:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","firms":[{"name":"Acme"},{"name":"Bolt"},{"name":"Cobalt"}]},{"name":"Bob","firms":[{"name":"Acme"},{"name":"Bolt"},{"name":"Cobalt"}]},{"name":"Carl","firms":[{"name":"Delta"}]},{"name":"Dina","firms":[{"name":"Delta"}]},{"name":"Eve","firms":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    processingProjectsTheFilteredTargetSuite:
+    {
+      function: |demo::relation::filteredtarget::ProcessingPerson.all(%2024-01-01)->project(~[person: x | $x.name, firm: x | $x.firm(%2024-01-01).name])->sort([~person->ascending()]);
+      tests:
+      [
+        readsOnlyTheActiveFirmCurrentAtTheDate:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Alice","firm":"Acme"},{"person":"Bob","firm":"Bolt"},{"person":"Carl","firm":null},{"person":"Eve","firm":null},{"person":"Fay","firm":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    processingFiltersOnTheTargetNameSuite:
+    {
+      function: |demo::relation::filteredtarget::ProcessingPerson.all(%2024-01-01)->filter(x | $x.firm(%2024-01-01).name == 'Acme')->project(~[person: x | $x.name]);
+      tests:
+      [
+        ignoresTheExpiredFirmVersion:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Alice"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    processingFiltersOnTheTargetBeingEmptySuite:
+    {
+      function: |demo::relation::filteredtarget::ProcessingPerson.all(%2024-01-01)->filter(x | $x.firm(%2024-01-01)->isEmpty())->project(~[person: x | $x.name])->sort([~person->ascending()]);
+      tests:
+      [
+        keepsThePersonsWhoseFirmIsHiddenOrExpired:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"person":"Carl"},{"person":"Eve"},{"person":"Fay"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    processingGraphFetchesTheFilteredTargetSuite:
+    {
+      function: |demo::relation::filteredtarget::ProcessingPerson.all(%2024-01-01)->graphFetch(#{demo::relation::filteredtarget::ProcessingPerson{name, firm(%2024-01-01){name}}}#)->serialize(#{demo::relation::filteredtarget::ProcessingPerson{name, firm(%2024-01-01){name}}}#);
+      tests:
+      [
+        readsOnlyTheActiveFirmCurrentAtTheDate:
+        {
+          data:
+          [
+            demo::relation::filteredtarget::db::FilteredTargetDB:
+              Reference
+              #{
+                demo::relation::filteredtarget::data::FilteredTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","firm(2024-01-01)":{"name":"Acme"}},{"name":"Bob","firm(2024-01-01)":{"name":"Bolt"}},{"name":"Carl","firm(2024-01-01)":null},{"name":"Eve","firm(2024-01-01)":null},{"name":"Fay","firm(2024-01-01)":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

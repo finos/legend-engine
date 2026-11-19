@@ -26,9 +26,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJo
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -140,6 +142,65 @@ public class TestRelationFunctionMappingJoinCompilation extends TestCompilationF
         PropertyMapping pm = pms.detect(p -> propertyName.equals(p._property()._name()));
         assertNotNull("No property mapping for '" + propertyName + "' in set '" + set._id() + "'", pm);
         return pm;
+    }
+
+    private static MutableList<String> joinSourceSteps(String propertyMapping)
+    {
+        PureModel pureModel = compileOk(personMappingWithProperties(propertyMapping));
+        String property = propertyMapping.trim().substring(1, propertyMapping.trim().indexOf(':'));
+        RelationFunctionPropertyMapping pm = (RelationFunctionPropertyMapping) pmByProperty(relSet(pureModel, "my::testMapping", "person"), property);
+        ValueSpecification value = pm._valueFn()._expressionSequence().getFirst();
+        SimpleFunctionExpression call = (SimpleFunctionExpression) value;
+        ValueSpecification source = call._propertyName() == null ? call : call._parametersValues().getFirst();
+        MutableList<String> steps = Lists.mutable.empty();
+        boolean pastJoins = false;
+        while (source instanceof SimpleFunctionExpression)
+        {
+            String name = ((SimpleFunctionExpression) source)._functionName();
+            name = name.substring(name.lastIndexOf(':') + 1);
+            if (pastJoins)
+            {
+                steps.add(name);
+            }
+            else if (!"navigationJoin".equals(name) && !"filterJoin".equals(name))
+            {
+                steps.add(name);
+                pastJoins = true;
+            }
+            source = ((SimpleFunctionExpression) source)._parametersValues().getFirst();
+        }
+        assertTrue("The innermost source must be $src", source instanceof VariableExpression && "src".equals(((VariableExpression) source)._name()));
+        return steps;
+    }
+
+    private static String variantJoinMapping(String property)
+    {
+        return "###Pure\n" +
+                "Class my::Owner\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "}\n" +
+                "function my::ownerRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1])>[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(ID:Integer[1])>);\n" +
+                "}\n" +
+                "function my::docRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], PAYLOAD:meta::pure::metamodel::variant::Variant[0..1])>[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(ID:Integer[1], PAYLOAD:meta::pure::metamodel::variant::Variant[0..1])>);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "import my::*;\n" +
+                "import meta::pure::functions::variant::convert::*;\n" +
+                "import meta::pure::functions::variant::navigation::*;\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Owner[owner]: Relation\n" +
+                "  {\n" +
+                "    ~func my::ownerRel():Relation<Any>[1]\n" +
+                "    id: ID,\n" +
+                "    " + property + "\n" +
+                "  }\n" +
+                ")\n";
     }
 
     // ==================================================================
@@ -661,22 +722,54 @@ public class TestRelationFunctionMappingJoinCompilation extends TestCompilationF
                 "}\n");
     }
 
-    @Ignore("ToFix: a transformed $src (here a filter) before a join operator is not supported yet; the source must be $src or another join")
     @Test
     public void testFilteredSourceBeforeJoinCompiles()
     {
-        compileOk(FIXTURE +
-                        "###Mapping\n" +
-                        "import my::*;\n" +
-                        "Mapping my::testMapping\n" +
-                        "(\n" +
-                        "  *my::Person[person]: Relation\n" +
-                        "  {\n" +
-                        "    ~func my::personRel():Relation<Any>[1]\n" +
-                        "    ~primaryKey: [FIRSTNAME]\n" +
-                        "    +firmName: String[1]: $src->filter(r | $r.FIRMID > 0)->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME\n" +
-                        "  }\n" +
-                        ")\n");
+        assertEquals(Lists.mutable.with("filter"), joinSourceSteps("    +firmName: String[1]: $src->filter(r | $r.FIRMID > 0)->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME\n"));
+    }
+
+    @Test
+    public void testExtendedSourceBeforeJoinCompilesAndTheConditionSeesTheExtendedColumn()
+    {
+        assertEquals(Lists.mutable.with("extend"), joinSourceSteps("    +firmName: String[1]: $src->extend(~K: x | $x.FIRMID + 1)->navigationJoin(my::firmRel(), {p, f | $p.K == $f.ID}).LEGALNAME\n"));
+    }
+
+    @Test
+    public void testStepsAheadOfTheFirstJoinCompileInTheOrderWritten()
+    {
+        assertEquals(Lists.mutable.with("sort", "rename", "select", "filter", "extend"),
+                joinSourceSteps("    +firmName: String[1]: $src->extend(~K: x | $x.FIRMID + 1)->filter(x | $x.K > 0)->select(~[FIRSTNAME, K, ADDRESSID])->rename(~K, ~FIRMKEY)->sort(~FIRMKEY->ascending())->navigationJoin(my::firmRel(), {p, f | $p.FIRMKEY == $f.ID}).LEGALNAME\n"));
+    }
+
+    @Test
+    public void testStepsBeforeFilterJoinCompile()
+    {
+        assertEquals(Lists.mutable.with("filter"), joinSourceSteps("    +gatedFirstName: String[1]: $src->filter(r | $r.FIRMID > 0)->filterJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).FIRSTNAME\n"));
+    }
+
+    @Test
+    public void testStepsBeforeTheFirstJoinOfAChainCompile()
+    {
+        assertEquals(Lists.mutable.with("filter"), joinSourceSteps("    +firmCity: String[1]: $src->filter(r | $r.FIRMID > 0)->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID})->navigationJoin(my::addressRel(), {f, a | $f.ADDRESSID == $a.ID}).CITY\n"));
+    }
+
+    @Test
+    public void testStepsBeforeJoinCompileInsideAnExpression()
+    {
+        compileOk(personMappingWithProperties("    +worksAtAcme: Boolean[1]: if($src->filter(r | $r.FIRMID > 0)->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME == 'Acme', | true, | false)\n"));
+    }
+
+    @Test
+    public void testStepLambdaBindingItsOwnRowAndSrcNamesCompiles()
+    {
+        assertEquals(Lists.mutable.with("filter"), joinSourceSteps("    +firmName: String[1]: $src->filter(x | [1, 2]->exists(row | $row == $x.FIRMID))->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME\n"));
+        assertEquals(Lists.mutable.with("filter"), joinSourceSteps("    +firmName: String[1]: $src->filter(x | [1, 2]->exists(src | $src == $x.FIRMID))->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME\n"));
+    }
+
+    @Test
+    public void testSrcInsideANestedLambdaThatDoesNotBindItIsAJoinChainRoot()
+    {
+        compileOk(personMappingWithProperties("    +firmNames: String[*]: [1, 2]->map(i | $src->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME)\n"));
     }
 
     @Test
@@ -803,6 +896,26 @@ public class TestRelationFunctionMappingJoinCompilation extends TestCompilationF
                         "  my::firmRel()->filter(r | $r.LEGALNAME == 'x').LEGALNAME\n" +
                         "}\n",
                 "LEGALNAME");
+    }
+
+    @Test
+    public void testColOnJoinChainCompilesInsideAnExpression()
+    {
+        PureModel pureModel = compileOk(FIXTURE +
+                "###Mapping\n" +
+                "import my::*;\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personRel():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    +worksAtAcme: Boolean[1]: if($src->navigationJoin(my::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME == 'Acme', | true, | false)\n" +
+                "  }\n" +
+                ")\n");
+
+        RelationFunctionPropertyMapping worksAtAcme = (RelationFunctionPropertyMapping) pmByProperty(relSet(pureModel, "my::testMapping", "person"), "worksAtAcme");
+        assertEquals("Boolean", worksAtAcme._valueFn()._expressionSequence().getLast()._genericType()._rawType()._name());
     }
 
     @Test
@@ -1170,4 +1283,15 @@ public class TestRelationFunctionMappingJoinCompilation extends TestCompilationF
         assertEquals("firm", pmByProperty(relSet(model, "my::testMapping", "person"), "firm")._targetSetImplementationId());
     }
 
+    @Test
+    public void testVariantColumnOfAJoinHeadingAFilterCompiles()
+    {
+        compileOk(variantJoinMapping("+tags: Integer[1]: $src->navigationJoin(my::docRel(), {o, d | $o.ID == $d.ID}).PAYLOAD->get('tags')->toMany(@String)->filter(t | $t->length() > 3)->size()"));
+    }
+
+    @Test
+    public void testVariantColumnOfAJoinHeadingAMapCompiles()
+    {
+        compileOk(variantJoinMapping("+tags: Integer[1]: $src->navigationJoin(my::docRel(), {o, d | $o.ID == $d.ID}).PAYLOAD->get('tags')->toMany(@String)->map(t | $t)->size()"));
+    }
 }

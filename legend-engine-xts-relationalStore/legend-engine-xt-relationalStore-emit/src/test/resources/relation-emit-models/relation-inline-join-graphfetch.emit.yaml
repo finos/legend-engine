@@ -1,0 +1,55 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-join-graphfetch
+title: "Relation Function Mapping — graphFetch Through an Inline modelJoin Keyed on a navigationJoin"
+description: |
+  graphFetch of a class-typed property whose inline modelJoin is keyed on a local property computed by a
+  navigationJoin: a single-hop LEFT key, a single-hop JoinKind.INNER key and a two-hop key with an INNER last
+  hop. A ###Relational twin expects the same rows.
+
+modelSources:
+  model:
+    root: relation-inline-join-graphfetch
+    files:
+      - store/joinGraphFetchDb.pure
+      - data/joinGraphFetchData.pure
+      - mapping/joinGraphFetchMapping.pure
+      - mapping/relationalJoinGraphFetchMapping.pure
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-inline-model-join
+  - mapping:relation-local-property
+  - mapping:relation-navigation-join
+  - mapping:relation-src
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - duckdb
+  - mapping-test
+  - relation
+  - graph-fetch
+  - navigationjoin
+  - modeljoin

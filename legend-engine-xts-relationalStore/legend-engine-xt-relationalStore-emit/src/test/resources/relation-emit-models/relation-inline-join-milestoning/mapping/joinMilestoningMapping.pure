@@ -1,0 +1,480 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<temporal.processingtemporal>> demo::relation::joinmilestoning::ProcessingProduct
+{
+  name: String[1];
+  market: String[0..1];
+  exchangeName: String[0..1];
+  listedName: String[0..1];
+  exchangeNameViaJoinedTarget: String[0..1];
+  lseMarketViaFilteredTarget: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::relation::joinmilestoning::BusinessProduct
+{
+  name: String[1];
+  market: String[0..1];
+  exchangeName: String[0..1];
+}
+
+Class <<temporal.bitemporal>> demo::relation::joinmilestoning::BiTemporalProduct
+{
+  name: String[1];
+  market: String[0..1];
+}
+
+function demo::relation::joinmilestoning::func::processingProductRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], IN_Z:DateTime[1], OUT_Z:DateTime[1])>[1]
+{
+  #>{demo::relation::joinmilestoning::db::JoinMilestoningDB.PROCESSING_PRODUCT}#
+}
+
+function demo::relation::joinmilestoning::func::processingListingRel(): meta::pure::metamodel::relation::Relation<(PRODUCT_ID:Integer[1], MARKET:String[1], EXCHANGE_ID:Integer[1], IN_Z:DateTime[1], OUT_Z:DateTime[1])>[1]
+{
+  #>{demo::relation::joinmilestoning::db::JoinMilestoningDB.PROCESSING_LISTING}#
+}
+
+function demo::relation::joinmilestoning::func::businessProductRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], FROM_Z:StrictDate[1], THRU_Z:StrictDate[1])>[1]
+{
+  #>{demo::relation::joinmilestoning::db::JoinMilestoningDB.BUSINESS_PRODUCT}#
+}
+
+function demo::relation::joinmilestoning::func::businessListingRel(): meta::pure::metamodel::relation::Relation<(PRODUCT_ID:Integer[1], MARKET:String[1], EXCHANGE_ID:Integer[1], FROM_Z:StrictDate[1], THRU_Z:StrictDate[1])>[1]
+{
+  #>{demo::relation::joinmilestoning::db::JoinMilestoningDB.BUSINESS_LISTING}#
+}
+
+function demo::relation::joinmilestoning::func::biTemporalProductRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], IN_Z:DateTime[1], OUT_Z:DateTime[1], FROM_Z:StrictDate[1], THRU_Z:StrictDate[1])>[1]
+{
+  #>{demo::relation::joinmilestoning::db::JoinMilestoningDB.BITEMPORAL_PRODUCT}#
+}
+
+function demo::relation::joinmilestoning::func::biTemporalListingRel(): meta::pure::metamodel::relation::Relation<(PRODUCT_ID:Integer[1], MARKET:String[1], IN_Z:DateTime[1], OUT_Z:DateTime[1], FROM_Z:StrictDate[1], THRU_Z:StrictDate[1])>[1]
+{
+  #>{demo::relation::joinmilestoning::db::JoinMilestoningDB.BITEMPORAL_LISTING}#
+}
+
+function demo::relation::joinmilestoning::func::exchangeRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], EXCHANGE_NAME:String[1])>[1]
+{
+  #>{demo::relation::joinmilestoning::db::JoinMilestoningDB.EXCHANGE}#
+}
+
+###Mapping
+import demo::relation::joinmilestoning::func::*;
+
+Mapping demo::relation::joinmilestoning::mapping::JoinMilestoningMapping
+(
+  *demo::relation::joinmilestoning::ProcessingProduct: Relation
+  {
+    ~src demo::relation::joinmilestoning::func::processingProductRel()
+    name: NAME,
+    market: $src->navigationJoin(processingListingRel(), {p, l | $p.ID == $l.PRODUCT_ID}).MARKET,
+    exchangeName: $src->navigationJoin(processingListingRel(), {p, l | $p.ID == $l.PRODUCT_ID})->navigationJoin(exchangeRel(), {l, e | $l.EXCHANGE_ID == $e.ID}).EXCHANGE_NAME,
+    listedName: $src->filterJoin(processingListingRel(), {p, l | $p.ID == $l.PRODUCT_ID}).NAME,
+    exchangeNameViaJoinedTarget: $src->navigationJoin(#>{demo::relation::joinmilestoning::db::JoinMilestoningDB.EXCHANGE}#->join(#>{demo::relation::joinmilestoning::db::JoinMilestoningDB.PROCESSING_LISTING}#, meta::pure::functions::relation::JoinKind.INNER, {e, l | $e.ID == $l.EXCHANGE_ID}), {p, t | $p.ID == $t.PRODUCT_ID}).EXCHANGE_NAME,
+    lseMarketViaFilteredTarget: $src->navigationJoin(processingListingRel()->filter(l | $l.EXCHANGE_ID == 1), {p, l | $p.ID == $l.PRODUCT_ID}).MARKET
+  }
+
+  *demo::relation::joinmilestoning::BusinessProduct: Relation
+  {
+    ~src demo::relation::joinmilestoning::func::businessProductRel()
+    name: NAME,
+    market: $src->navigationJoin(businessListingRel(), {p, l | $p.ID == $l.PRODUCT_ID}).MARKET,
+    exchangeName: $src->navigationJoin(businessListingRel(), {p, l | $p.ID == $l.PRODUCT_ID})->navigationJoin(exchangeRel(), {l, e | $l.EXCHANGE_ID == $e.ID}).EXCHANGE_NAME
+  }
+
+  *demo::relation::joinmilestoning::BiTemporalProduct: Relation
+  {
+    ~src demo::relation::joinmilestoning::func::biTemporalProductRel()
+    name: NAME,
+    market: $src->navigationJoin(biTemporalListingRel(), {p, l | $p.ID == $l.PRODUCT_ID}).MARKET
+  }
+
+  testSuites:
+  [
+    processingLatestSuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%latest)->project(~[name: x | $x.name, market: x | $x.market, exchange: x | $x.exchangeName])->sort([~name->ascending()]);
+      tests:
+      [
+        readsTheCurrentListing:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","market":null,"exchange":null},{"name":"Widget","market":"New Market","exchange":"NYSE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    processingPointInTimeSuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%2022-06-01)->project(~[name: x | $x.name, market: x | $x.market, exchange: x | $x.exchangeName])->sort([~name->ascending()]);
+      tests:
+      [
+        readsTheListingCurrentAtTheDate:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","market":"Gadget Market","exchange":"LSE"},{"name":"Widget","market":"Old Market","exchange":"LSE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    processingFilterOnJoinPropertySuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%latest)->filter(x | $x.market == 'Old Market')->project(~[name: x | $x.name]);
+      tests:
+      [
+        ignoresListingsThatAreNoLongerCurrent:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    businessPointInTimeSuite:
+    {
+      function: |demo::relation::joinmilestoning::BusinessProduct.all(%2022-06-01)->project(~[name: x | $x.name, market: x | $x.market, exchange: x | $x.exchangeName])->sort([~name->ascending()]);
+      tests:
+      [
+        readsTheListingValidAtTheDate:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","market":"Gadget Market","exchange":"LSE"},{"name":"Widget","market":"Old Market","exchange":"LSE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    businessLatestSuite:
+    {
+      function: |demo::relation::joinmilestoning::BusinessProduct.all(%latest)->project(~[name: x | $x.name, market: x | $x.market, exchange: x | $x.exchangeName])->sort([~name->ascending()]);
+      tests:
+      [
+        readsTheListingValidNow:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","market":null,"exchange":null},{"name":"Widget","market":"New Market","exchange":"NYSE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    biTemporalLatestProcessingSuite:
+    {
+      function: |demo::relation::joinmilestoning::BiTemporalProduct.all(%latest, %2022-06-01)->project(~[name: x | $x.name, market: x | $x.market])->sort([~name->ascending()]);
+      tests:
+      [
+        readsTheCorrectedListing:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","market":"Gadget Market"},{"name":"Widget","market":"Corrected Market"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    biTemporalPointInTimeSuite:
+    {
+      function: |demo::relation::joinmilestoning::BiTemporalProduct.all(%2022-06-01, %2024-06-01)->project(~[name: x | $x.name, market: x | $x.market])->sort([~name->ascending()]);
+      tests:
+      [
+        readsTheListingRecordedAtTheProcessingDate:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","market":null},{"name":"Widget","market":"Original Market"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchPointInTimeSuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%2022-06-01)->graphFetch(#{demo::relation::joinmilestoning::ProcessingProduct{name, market}}#)->serialize(#{demo::relation::joinmilestoning::ProcessingProduct{name, market}}#);
+      tests:
+      [
+        fetchesTheListingCurrentAtTheDate:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Widget","market":"Old Market"},{"name":"Gadget","market":"Gadget Market"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterJoinLatestSuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%latest)->project(~[name: x | $x.name, listedName: x | $x.listedName])->sort([~name->ascending()]);
+      tests:
+      [
+        gatesOnTheCurrentListing:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","listedName":null},{"name":"Widget","listedName":"Widget"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterJoinPointInTimeSuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%2022-06-01)->project(~[name: x | $x.name, listedName: x | $x.listedName])->sort([~name->ascending()]);
+      tests:
+      [
+        gatesOnTheListingCurrentAtTheDate:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","listedName":"Gadget"},{"name":"Widget","listedName":"Widget"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    accessorNestedInTargetLatestSuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%latest)->project(~[name: x | $x.name, exchange: x | $x.exchangeNameViaJoinedTarget, lseMarket: x | $x.lseMarketViaFilteredTarget])->sort([~name->ascending()]);
+      tests:
+      [
+        milestonesEveryAccessorOfTheTarget:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","exchange":null,"lseMarket":null},{"name":"Widget","exchange":"NYSE","lseMarket":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    accessorNestedInTargetPointInTimeSuite:
+    {
+      function: |demo::relation::joinmilestoning::ProcessingProduct.all(%2022-06-01)->project(~[name: x | $x.name, exchange: x | $x.exchangeNameViaJoinedTarget, lseMarket: x | $x.lseMarketViaFilteredTarget])->sort([~name->ascending()]);
+      tests:
+      [
+        milestonesEveryAccessorOfTheTargetAtTheDate:
+        {
+          data:
+          [
+            demo::relation::joinmilestoning::db::JoinMilestoningDB:
+              Reference
+              #{
+                demo::relation::joinmilestoning::data::JoinMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Gadget","exchange":"LSE","lseMarket":"Gadget Market"},{"name":"Widget","exchange":"LSE","lseMarket":"Old Market"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

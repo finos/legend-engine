@@ -824,7 +824,7 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
    let pureToSqlState = ^State(inScopeVars = $inScopeVars, mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth=0, inProjectFunctions=false,  processingProjectionThread=false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=buildClassMappingsById($mapping));
    let base           = $setImpls->buildBaseQueryForChild($pureToSqlState, $mc, $extensions, $debug);
 
-   let res = if ($isQualified,
+   let unisolated = if ($isQualified,
                 {|
                    let newVars       = newVarsForMilestoningContext($propTree, $inScopeVars);
                    let mcForProperty = milestoningContextFromPropertyTree($propTree, $parentTree, $mc, ^$pureToSqlState(inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars)), $debug->indent(), $extensions);
@@ -849,9 +849,18 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
                {|
                   processPropertyMapping($propTree.propertyMapping, $parentTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>), $base, ^$pureToSqlState(inGetterFlow = true), JoinType.LEFT_OUTER, '_gftp', ^List<ColumnGroup>(), $debug, $extensions)->cast(@SelectWithCursor)
                }
-   )->manageIsolation([], '_gftmp', false, ^$pureToSqlState(shouldIsolate=true), $debug, $extensions);
+   );
 
    let targetSetImplementation    = $propTree.sets->cast(@InstanceSetImplementation)->toOne();
+
+   // A Relation class mapping's columns are found by name on the current node. Isolating an INNER join
+   // here would make that node a sub-select exposing only the source's columns, so a target column
+   // sharing a source column's name would read the source's. The key and property queries below are
+   // isolated as they are merged, once each has selected its column.
+   let res = if ($targetSetImplementation->instanceOf(RelationFunctionInstanceSetImplementation),
+                 | $unisolated,
+                 | $unisolated->manageIsolation([], '_gftmp', false, ^$pureToSqlState(shouldIsolate=true), $debug, $extensions)
+             );
 
    let properties = $targetSetImplementation->match([
       rf: RelationFunctionInstanceSetImplementation[1] |

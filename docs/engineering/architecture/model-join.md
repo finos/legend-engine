@@ -629,7 +629,7 @@ rooted at the source class):
 | **C. Compile lambda body** | Bind `_mj_src → branchSrcSWC`, `_mj_tgt → withPlaceholder` in a `FunctionParamScope`, then `processValueSpecification(lambda.body[0], …)` with `shouldIsolate = false`, so an enclosing filter context (e.g. `isNotEmpty`) cannot trigger isolation of these trees. The condition's own parameters are always already named `_mj_src`/`_mj_tgt` by this point for every caller — classic/inline `modelJoin` rewrite to those names at compile time (`ModelJoinLambdaRewriteVisitor`), `navigationJoin`/`filterJoin` at SQL-gen time (`withJoinSideSentinels`, positional) — so `compileModelJoinForBranch`'s `conditionVariableNames` parameter is always the literal `['_mj_src', '_mj_tgt']`, never read off the condition itself. | `resultSWC` containing compiled `Operation` |
 | **D. Extract** | Pull the compiled condition (`select.columns` or `filteringOperation`); locate the placeholder JTN in the result tree and the source-side intermediates that compilation may have added (e.g. for `$_mj_src.region.code`). | `compiledCondition`, `placeholderJTN`, `sourceIntermediates` |
 | **E. Build the real join** | `^Join(operation = compiledCondition, target = compiledTgtAlias, aliases = [(parentOfTarget, tgt), (tgt, parentOfTarget)])`. `parentOfTarget` is the deepest source intermediate (or the branch source alias if no chain). | `realJoin` |
-| **F. Materialise target if needed** (`materializeTargetAsSubselect`) | If the target side accumulated children (nested target navigation), or the target class mapping has filter / groupBy / distinct, wrap target as a `SelectSQLQuery` exposing only the columns referenced by the ON clause; rewrite `realJoin.operation` aliases to point at the subselect. | `targetJTN` |
+| **F. Materialise target if needed** (`materializeTargetAsSubselect`) | If the target side accumulated children (nested target navigation), or the target class mapping has filter / groupBy / distinct, wrap target as a `SelectSQLQuery` exposing only the columns referenced by the ON clause; rewrite `realJoin.operation` aliases to point at the subselect. The target's own select is built with `inFilter = false`, so a `filter`/`isEmpty` over the property resolves the target columns into `columns`, not into the enclosing filter. | `targetJTN` |
 | **G. Stitch chain** | If the source side accumulated intermediates, append `targetJTN` at their deepest leaf. | `fullChainJTN` |
 | **H. Wrap as RPM** | `^RelationalPropertyMapping{relationalOperationElement = RelationalOperationElementWithJoin{joinTreeNode = fullChainJTN}, sourceSetImplementationId, targetSetImplementationId}`. | synthetic RPM |
 
@@ -870,7 +870,10 @@ regression here.
    exactly the TACs that the ON clause references on the target side, plus rename
    collisions handled by `buildColumnRenameMap`. Do **not** project the whole inner
    tree — the outer ON clause TACs are then rewritten via `reprocessAliases` to point
-   at the subselect alias.
+   at the subselect alias. A property read that needs another physical column of the
+   target (a nested association's join key, the name a `graphFetch` child selects, a
+   milestoning column) adds it to this subselect on demand, and `mergeSQLQueryData`
+   keeps the columns each merged tree added (`possiblyMergeSubSelectColumns`).
 
 5. **Sentinel uniqueness.** The `_mj_src` / `_mj_tgt` strings are protocol-level
    constants set by the Pure compiler (`MODEL_JOIN_SOURCE_VAR` /

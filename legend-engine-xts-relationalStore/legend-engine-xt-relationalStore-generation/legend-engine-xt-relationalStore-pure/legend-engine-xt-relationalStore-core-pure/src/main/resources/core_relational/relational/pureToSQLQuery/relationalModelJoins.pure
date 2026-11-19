@@ -76,6 +76,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   oldSrcOperation:SelectWithCursor[1],
   state:State[1],
   joinType:JoinType[1],
+  placeholderJoinType:JoinType[1],
   nodeId:String[1],
   aggFromMap:List<ColumnGroup>[1],
   context:DebugContext[1],
@@ -92,7 +93,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   // B. Target placeholder (reuse existing helper)
   // Use the join-kind suffix to ensure unique alias names when both sides are RelationFunction mappings
   let placeholderName = $sourceId + '_' + $targetId + '_' + $joinKind + '_ph';
-  let withPlaceholder = buildModelJoinPlaceholder($targetSWC, $branchSrcAlias, $placeholderName, $branchSrcSWC, $joinType, $nodeId + '_' + $joinKind + '_tgt', $state, $context, $extensions);
+  let withPlaceholder = buildModelJoinPlaceholder($targetSWC, $branchSrcAlias, $placeholderName, $branchSrcSWC, $placeholderJoinType, $nodeId + '_' + $joinKind + '_tgt', $state, $context, $extensions);
 
   // C. Compile condition against branch-specific SWCs
   let vars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
@@ -127,16 +128,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   );
   let sourceAliasReconciliation = ^OldAliasToNewAlias(first = $branchSrcAlias.name, second = $parentOfTargetAlias);
   let reconciledCompiledCondition = $compiledCondition->reprocessAliases([$sourceAliasReconciliation]);
-  // Fold the condition's own structural fingerprint into the name — not just source/target ids —
-  // so mergeSQLQueryData's name-keyed trie dedups two occurrences of the identical join (shared
-  // across property mappings, the way a classic ###Relational @join is shared by construction)
-  // instead of (a) treating two DIFFERENT conditions to the same target as the same join (silently
-  // keeping only the first one's condition) or (b) treating two occurrences of the SAME condition
-  // as different joins (an unnecessary duplicate JOIN). alias=false recurses into each alias's
-  // underlying table/column rather than its call-site-derived name, so the fingerprint is the same
-  // regardless of which synthetic alias names a given call site happened to generate.
   let realJoin = ^Join(
-    name      = $sourceId + '_' + $targetId + '_' + $joinKind + '_' + $joinType->toString() + '_' + $reconciledCompiledCondition->buildUniqueName(false, $extensions) + '_ModelJoin',
+    name      = modelJoinName($sourceId, $targetId, $joinKind, $joinType, $reconciledCompiledCondition,
+                  joinSideRoleAliases($branchSrcAlias, 'S', $sourceIntermediates->cast(@JoinTreeNode)),
+                  joinSideRoleAliases($compiledTgtAlias, 'T', $placeholderJTN->children()->cast(@JoinTreeNode)),
+                  $oldSrcOperation.milestoningContext, $extensions),
     operation = $reconciledCompiledCondition->cast(@Operation),
     target    = $compiledTgtAlias,
     aliases   = [pair($parentOfTargetAlias, $compiledTgtAlias), pair($compiledTgtAlias, $parentOfTargetAlias)]
@@ -193,6 +189,45 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
     sourceSetImplementationId  = $sourceId,
     targetSetImplementationId  = $targetId
   );
+}
+
+// An alias name both sides use is left to expansion, since its role is ambiguous. The milestoning context is part
+// of the name because both sides' relations are milestoned by it: the same property read at two dates is two joins.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::modelJoinName(sourceId:String[1], targetId:String[1], joinKind:String[1], joinType:JoinType[1], condition:RelationalOperationElement[1], sourceRoles:OldAliasToNewAlias[*], targetRoles:OldAliasToNewAlias[*], milestoningContext:TemporalMilestoningContext[0..1], extensions:Extension[*]):String[1]
+{
+  let namesOnBothSides = $sourceRoles.first->filter(n | $n->in($targetRoles.first));
+  let roles = $sourceRoles->concatenate($targetRoles)->filter(r | !$r.first->in($namesOnBothSides))->removeDuplicatesBy(r | $r.first);
+  let byRole = {e:RelationalOperationElement[*] | $e->reprocessAliases($roles)->buildUniqueName(false, $extensions)};
+  let milestoning = $milestoningContext->map(m | $m.currentMilestoningStrategy->type().name->toOne() + $m.currentProcessingState->map(s | '_' + $s->toString())->joinStrings()
+                      + '_p' + $byRole->eval($m.processingDate) + '_b' + $byRole->eval($m.businessDate) + '_s' + $byRole->eval($m.startDate) + '_e' + $byRole->eval($m.endDate))->joinStrings();
+  boundedName($sourceId + '_' + $targetId + '_' + $joinKind + '_' + $joinType->toString() + '_' + $byRole->eval($condition) + '_' + $milestoning + '_ModelJoin');
+}
+
+// A side's own alias is its role. A condition that resolves a column through a sub-select-backed side reads the
+// sub-select's root alias, and an alias reached by navigating further from a side is the role followed by the
+// join names leading to it.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::joinSideRoleAliases(sideAlias:TableAlias[1], role:String[1], navigated:JoinTreeNode[*]):OldAliasToNewAlias[*]
+{
+  roleAlias($sideAlias.name, $role)
+    ->concatenate($sideAlias.relationalElement->match([
+        s:SelectSQLQuery[1]             | $s.data->map(d | roleAlias($d.alias.name, $role + '^')),
+        r:RelationalOperationElement[1] | []
+      ]))
+    ->concatenate($navigated->map(n | joinSideRoleAliases($n.alias, $role + '/' + $n.joinName, $n->children()->cast(@JoinTreeNode))));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::roleAlias(aliasName:String[1], role:String[1]):OldAliasToNewAlias[1]
+{
+  ^OldAliasToNewAlias(first = $aliasName, second = ^TableAlias(name = $role, relationalElement = ^Literal(value = '{' + $role + '}.')));
+}
+
+// The name can end up inside a quoted SQL alias (addSelfJoin's 'gen_' alias, the keyed sub-select's alias), so it
+// carries no double quote.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::boundedName(name:String[1]):String[1]
+{
+  let maxSize = 256;
+  let unquoted = $name->replace('"', '');
+  if($unquoted->length() > $maxSize, | $unquoted->substring(0, $maxSize - 35) + '___' + $unquoted->substring($maxSize - 35)->hash(HashType.MD5), | $unquoted);
 }
 
 // Creates a minimal SWC rooted at a specific branch's raw table.
@@ -380,7 +415,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::materia
   // subselect propagates those renames to downstream property navigations.
   let getAllSelect = $targetSet->match([
     r:RootRelationalInstanceSetImplementation[1] |
-      processRelationalMappingSpecification($r, $r.class, $joinType, $nodeId, false, -1, true, $milestoningContext, $state, $context, $extensions)->cast(@SelectWithCursor).select,
+      processRelationalMappingSpecification($r, $r.class, $joinType, $nodeId, false, -1, true, $milestoningContext, ^$state(inFilter = false), $context, $extensions)->cast(@SelectWithCursor).select,
     r:RelationFunctionInstanceSetImplementation[1] |
       $tgtAlias.relationalElement->cast(@SelectSQLQuery);
   ]);

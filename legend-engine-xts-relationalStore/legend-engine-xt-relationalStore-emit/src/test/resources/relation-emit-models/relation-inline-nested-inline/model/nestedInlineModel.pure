@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::relation::nestedinline::Trade
+{
+  id: Integer[1];
+  details: demo::relation::nestedinline::TradeDetails[0..1];
+}
+
+Class demo::relation::nestedinline::TradeDetails
+{
+  desk: String[1];
+  contact: demo::relation::nestedinline::Contact[0..1];
+}
+
+Class demo::relation::nestedinline::Contact
+{
+  counterpartyId: Integer[0..1];
+  counterparty: demo::relation::nestedinline::Firm[0..1];
+}
+
+Class demo::relation::nestedinline::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+function demo::relation::nestedinline::func::tradeRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], DESK:String[1], CPTY_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::nestedinline::db::NestedInlineDB.TRADE}#
+}
+
+function demo::relation::nestedinline::func::lowTradeRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], DESK:String[1], CPTY_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::nestedinline::db::NestedInlineDB.TRADE}#->filter(r | $r.ID < 3)
+}
+
+function demo::relation::nestedinline::func::highTradeRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], DESK:String[1], CPTY_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::nestedinline::db::NestedInlineDB.TRADE}#->filter(r | $r.ID >= 3)
+}
+
+function demo::relation::nestedinline::func::firmRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1])>[1]
+{
+  #>{demo::relation::nestedinline::db::NestedInlineDB.FIRM}#
+}

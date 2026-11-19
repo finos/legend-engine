@@ -233,7 +233,11 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
       print(if($debug.debug,|$debug.space+'  Looking up propertyMapping for property "'+$propertyName+'" from "'+$s.id+'" to "'+$targetIds->joinStrings('[', ',', ']')+'"',|''));
 
       // 1. Direct property mapping by name+targetId (most common case — explicit mapping in the set)
-      let resByProperty = $targetIds->map(targetId|$s->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetIdWithInlineResolution($propertyName, $targetId))->first();
+      let directPropertyMapping = $targetIds->map(targetId|$s->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetIdWithInlineResolution($propertyName, $targetId))->first();
+      let resByProperty = if($directPropertyMapping->isEmpty(),
+        | $s->cast(@InstanceSetImplementation)->inlineEmbeddedRelationFunctionPropertyMapping($propertyName, $t.id)->first(),
+        | $directPropertyMapping
+      );
 
       // 2. Fallback: association property mappings (property defined via Association, not inline in the class mapping)
       let resWithAssoc = if($resByProperty->isEmpty(),
@@ -309,6 +313,26 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
   );
 }
 
+// An inline embedded relation function set records its inline target as its targetSetImplementationId, so the
+// set the router resolves it to is found by the set's own id.
+function <<access.private>> meta::pure::router::store::routing::inlineEmbeddedRelationFunctionPropertyMapping(source:InstanceSetImplementation[1], propertyName:String[1], targetId:String[1]):PropertyMapping[0..1]
+{
+  $source->_propertyMappingsByPropertyName($propertyName)->filter(pm | $pm->instanceOf(meta::pure::mapping::relation::EmbeddedRelationFunctionSetImplementation) && $pm->cast(@EmbeddedSetImplementation).id == $targetId)->first();
+}
+
+// An inline embedded set holds its target's property mappings under its owner's id, as the classic inline does; the
+// leaves of a union that inherit one Inline property each resolve their own copy of it, under the same id.
+// A property mapping inherited through `extends` keeps the id of the set that declares it, so its condition is routed
+// against that set, the way a classic inherited join belongs to the mapping that declares it.
+function <<access.private>> meta::pure::router::store::routing::modelJoinSourceSet(routedSets:SetImplementation[*], sourceSetId:String[1], propertyName:String[1], mapping:Mapping[1]):SetImplementation[1]
+{
+  let declaring = $routedSets->filter(s|$s.id == $sourceSetId || $s->match([e:EmbeddedSetImplementation[1] | $e.sourceSetImplementationId == $sourceSetId, a:SetImplementation[1] | false]));
+  if($declaring->isEmpty(),
+    | $routedSets->filter(s|$s->instanceOf(PropertyMappingsImplementation))->map(s|$s->cast(@PropertyMappingsImplementation)->allSuperSetImplementations($mapping))->filter(s|$s.id == $sourceSetId)->removeDuplicates()->cast(@SetImplementation)->toOne('Expected exactly one source set \'' + $sourceSetId + '\' to declare the join for property \'' + $propertyName + '\' among the routed sets [' + $routedSets.id->joinStrings(', ') + ']'),
+    | $declaring->removeDuplicatesBy(s|$s.id)->toOne('Expected exactly one source set \'' + $sourceSetId + '\' to declare the join for property \'' + $propertyName + '\' among the routed sets [' + $routedSets.id->joinStrings(', ') + ']')
+  );
+}
+
 function <<access.private>> meta::pure::router::store::routing::potentiallyRoutePropertyMapping(pm:PropertyMapping[1], sourceRoutedVS:StoreMappingRoutedValueSpecification[1], propertyRoutedVS:StoreMappingRoutedValueSpecification[1], executionContext:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):PropertyMapping[1]
 {
   $pm->match(
@@ -325,7 +349,7 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
         let tgtPermSet = $routingStrategy.sets->filter(ps| $ps.id->toString() == $propertyRoutedVS.id)->first()->toOne();
 
         // For the target side, resolve to the specific sub-impl that this ModelJoinPropertyMapping targets.
-        let srcSetImpl = $srcPermSet.sets->map(s|$s->resolveOperationPreservingRouting($sourceRoutedVS.mapping))->filter(s|$s.id == $m.sourceSetImplementationId)->toOne();
+        let srcSetImpl = $srcPermSet.sets->map(s|$s->resolveOperationPreservingRouting($sourceRoutedVS.mapping))->modelJoinSourceSet($m.sourceSetImplementationId, $m.property.name->toOne(), $sourceRoutedVS.mapping);
         let tgtSetImpl = $tgtPermSet.sets->map(s|$s->resolveOperationPreservingRouting($sourceRoutedVS.mapping))->filter(s|$s.id == $m.targetSetImplementationId)->toOne();
         let resolvedSrcPermSet = ^$srcPermSet(sets = $srcSetImpl);
         let resolvedTgtPermSet = ^$tgtPermSet(sets = $tgtSetImpl);

@@ -1,0 +1,515 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::relation::joincomputedkey::Person
+{
+  id: Integer[1];
+  firmName: String[0..1];
+  firmCountryName: String[0..1];
+  knownFirmId: Integer[0..1];
+  firmHomeCountryName: String[0..1];
+}
+
+function demo::relation::joincomputedkey::func::personRel(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::joincomputedkey::db::JoinComputedKeyDB.PERSON}#
+    ->extend(~FIRM_KEY: p | if($p.FIRM_ID->isEmpty(), | $p.OLD_FIRM_ID, | $p.FIRM_ID))
+    ->select(~[ID, FIRM_KEY])
+    ->distinct()
+}
+
+Class demo::relation::joincomputedkey::Employee
+{
+  id: Integer[1];
+  firmKey: Integer[0..1];
+  firmName: String[0..1];
+  firmCountryName: String[0..1];
+  knownFirmId: Integer[0..1];
+  firm: demo::relation::joincomputedkey::Firm[0..1];
+}
+
+Class demo::relation::joincomputedkey::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+function demo::relation::joincomputedkey::func::employeeRel(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::joincomputedkey::db::JoinComputedKeyDB.PERSON}#
+    ->extend(~firmKey: p | if($p.FIRM_ID->isEmpty(), | $p.OLD_FIRM_ID, | $p.FIRM_ID))
+    ->select(~[ID, firmKey])
+    ->distinct()
+}
+
+function demo::relation::joincomputedkey::func::firmRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], COUNTRY_ID:Integer[0..1], HQ_COUNTRY_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::joincomputedkey::db::JoinComputedKeyDB.FIRM}#
+}
+
+function demo::relation::joincomputedkey::func::countryRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1])>[1]
+{
+  #>{demo::relation::joincomputedkey::db::JoinComputedKeyDB.COUNTRY}#
+}
+
+Class demo::relation::joincomputedkey::OrdinalPerson
+{
+  id: Integer[1];
+  firmName: String[0..1];
+  firmCountryName: String[0..1];
+  knownFirmOrdinal: Integer[0..1];
+  firm: demo::relation::joincomputedkey::OrdinalFirm[0..1];
+}
+
+Class demo::relation::joincomputedkey::OrdinalFirm
+{
+  id: Integer[1];
+  name: String[1];
+  ordinal: Integer[1];
+}
+
+function demo::relation::joincomputedkey::func::ordinalPersonRel(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::joincomputedkey::db::JoinComputedKeyDB.ORD_PERSON}#
+}
+
+function demo::relation::joincomputedkey::func::ordinalFirmRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], COUNTRY_ORDINAL:Integer[0..1])>[1]
+{
+  #>{demo::relation::joincomputedkey::db::JoinComputedKeyDB.ORD_FIRM}#
+}
+
+function demo::relation::joincomputedkey::func::ordinalCountryRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1])>[1]
+{
+  #>{demo::relation::joincomputedkey::db::JoinComputedKeyDB.ORD_COUNTRY}#
+}
+
+###Mapping
+import demo::relation::joincomputedkey::func::*;
+
+Mapping demo::relation::joincomputedkey::mapping::JoinComputedKeyMapping
+(
+  *demo::relation::joincomputedkey::Person: Relation
+  {
+    ~func demo::relation::joincomputedkey::func::personRel():Relation<Any>[1]
+    id: ID,
+    firmName: $src->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).NAME,
+    firmCountryName: $src->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID})->navigationJoin(countryRel(), {f, c | $f.COUNTRY_ID == $c.ID}).NAME,
+    knownFirmId: $src->filterJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).FIRM_KEY,
+    firmHomeCountryName: $src->navigationJoin(firmRel()->extend(~HOME_COUNTRY_ID: f | if($f.COUNTRY_ID->isEmpty(), | $f.HQ_COUNTRY_ID, | $f.COUNTRY_ID))->select(~[ID, HOME_COUNTRY_ID]), {p, f | $p.FIRM_KEY == $f.ID})->navigationJoin(countryRel(), {f, c | $f.HOME_COUNTRY_ID == $c.ID}).NAME
+  }
+
+  testSuites:
+  [
+    firmNameSuite:
+    {
+      function: |demo::relation::joincomputedkey::Person.all()->project(~[id: x | $x.id, firm: x | $x.firmName])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheFirmOfTheKeyOrOfItsFallback:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":"Beta"},{"id":3,"firm":null},{"id":4,"firm":null},{"id":5,"firm":"Gamma"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    firmCountryNameSuite:
+    {
+      function: |demo::relation::joincomputedkey::Person.all()->project(~[id: x | $x.id, country: x | $x.firmCountryName])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheCountryReachedThroughTheFirmOfTheKey:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"country":"UK"},{"id":2,"country":null},{"id":3,"country":null},{"id":4,"country":null},{"id":5,"country":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    knownFirmIdSuite:
+    {
+      function: |demo::relation::joincomputedkey::Person.all()->project(~[id: x | $x.id, knownFirm: x | $x.knownFirmId])->sort([~id->ascending()]);
+      tests:
+      [
+        keepsTheKeyOnlyWhenAFirmMatchesIt:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"knownFirm":10},{"id":2,"knownFirm":20},{"id":3,"knownFirm":null},{"id":4,"knownFirm":null},{"id":5,"knownFirm":30}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    firmHomeCountryNameSuite:
+    {
+      function: |demo::relation::joincomputedkey::Person.all()->project(~[id: x | $x.id, homeCountry: x | $x.firmHomeCountryName])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheCountryReachedThroughTheFirmsComputedCountry:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"homeCountry":"UK"},{"id":2,"homeCountry":"France"},{"id":3,"homeCountry":null},{"id":4,"homeCountry":null},{"id":5,"homeCountry":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    allPropertiesSuite:
+    {
+      function: |demo::relation::joincomputedkey::Person.all()->project(~[id: x | $x.id, firm: x | $x.firmName, country: x | $x.firmCountryName, knownFirm: x | $x.knownFirmId, homeCountry: x | $x.firmHomeCountryName])->sort([~id->ascending()]);
+      tests:
+      [
+        readsEveryJoinedPropertyInOneQuery:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme","country":"UK","knownFirm":10,"homeCountry":"UK"},{"id":2,"firm":"Beta","country":null,"knownFirm":20,"homeCountry":"France"},{"id":3,"firm":null,"country":null,"knownFirm":null,"homeCountry":null},{"id":4,"firm":null,"country":null,"knownFirm":null,"homeCountry":null},{"id":5,"firm":"Gamma","country":null,"knownFirm":30,"homeCountry":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Mapping
+import demo::relation::joincomputedkey::func::*;
+
+Mapping demo::relation::joincomputedkey::mapping::JoinMixedCaseKeyMapping
+(
+  *demo::relation::joincomputedkey::Employee: Relation
+  {
+    ~func demo::relation::joincomputedkey::func::employeeRel():Relation<Any>[1]
+    id: ID,
+    firmKey: firmKey,
+    firmName: $src->navigationJoin(firmRel(), {p, f | $p.firmKey == $f.ID}).NAME,
+    firmCountryName: $src->navigationJoin(firmRel(), {p, f | $p.firmKey == $f.ID})->navigationJoin(countryRel(), {f, c | $f.COUNTRY_ID == $c.ID}).NAME,
+    knownFirmId: $src->filterJoin(firmRel(), {p, f | $p.firmKey == $f.ID}).firmKey,
+    firm: modelJoin({e, f | $e.firmKey == $f.id})
+  }
+
+  *demo::relation::joincomputedkey::Firm[firm]: Relation
+  {
+    ~func demo::relation::joincomputedkey::func::firmRel():Relation<Any>[1]
+    id: ID,
+    name: NAME
+  }
+
+  testSuites:
+  [
+    allPropertiesSuite:
+    {
+      function: |demo::relation::joincomputedkey::Employee.all()->project(~[id: x | $x.id, firm: x | $x.firmName, country: x | $x.firmCountryName, knownFirm: x | $x.knownFirmId, modelFirm: x | $x.firm.name])->sort([~id->ascending()]);
+      tests:
+      [
+        readsEveryJoinThroughTheMixedCaseKey:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme","country":"UK","knownFirm":10,"modelFirm":"Acme"},{"id":2,"firm":"Beta","country":null,"knownFirm":20,"modelFirm":"Beta"},{"id":3,"firm":null,"country":null,"knownFirm":null,"modelFirm":null},{"id":4,"firm":null,"country":null,"knownFirm":null,"modelFirm":null},{"id":5,"firm":"Gamma","country":null,"knownFirm":30,"modelFirm":"Gamma"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterSuite:
+    {
+      function: |demo::relation::joincomputedkey::Employee.all()->filter(x | $x.firm.name->in(['Acme', 'Gamma']))->project(~[id: x | $x.id])->sort([~id->ascending()]);
+      tests:
+      [
+        keepsTheEmployeesWhoseKeyMatchesAKnownFirm:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1},{"id":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    keyedFilterSuite:
+    {
+      function: |demo::relation::joincomputedkey::Employee.all()->filter(x | $x.knownFirmId == 20 || $x.firmCountryName == 'UK')->project(~[id: x | $x.id])->sort([~id->ascending()]);
+      tests:
+      [
+        filtersOnTheFilterJoinAndTheChain:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1},{"id":2}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchSuite:
+    {
+      function: |demo::relation::joincomputedkey::Employee.all()->graphFetch(#{demo::relation::joincomputedkey::Employee{id, firmKey, firmName, firmCountryName, knownFirmId, firm{id, name}}}#)->serialize(#{demo::relation::joincomputedkey::Employee{id, firmKey, firmName, firmCountryName, knownFirmId, firm{id, name}}}#);
+      tests:
+      [
+        fetchesEveryJoinThroughTheMixedCaseKey:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firmKey":10,"firmName":"Acme","firmCountryName":"UK","knownFirmId":10,"firm":{"id":10,"name":"Acme"}},{"id":2,"firmKey":20,"firmName":"Beta","firmCountryName":null,"knownFirmId":20,"firm":{"id":20,"name":"Beta"}},{"id":3,"firmKey":null,"firmName":null,"firmCountryName":null,"knownFirmId":null,"firm":null},{"id":4,"firmKey":99,"firmName":null,"firmCountryName":null,"knownFirmId":null,"firm":null},{"id":5,"firmKey":30,"firmName":"Gamma","firmCountryName":null,"knownFirmId":30,"firm":{"id":30,"name":"Gamma"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    tdsSuite:
+    {
+      function: |demo::relation::joincomputedkey::Employee.all()->sortBy(x | $x.id)->project([x | $x.id, x | $x.firmName, x | $x.firmCountryName, x | $x.knownFirmId, x | $x.firm.name], ['id', 'firm', 'country', 'knownFirm', 'modelFirm']);
+      tests:
+      [
+        readsEveryJoinThroughTheMixedCaseKeyAsATds:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedKeyData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme","country":"UK","knownFirm":10,"modelFirm":"Acme"},{"id":2,"firm":"Beta","country":null,"knownFirm":20,"modelFirm":"Beta"},{"id":3,"firm":null,"country":null,"knownFirm":null,"modelFirm":null},{"id":4,"firm":null,"country":null,"knownFirm":null,"modelFirm":null},{"id":5,"firm":"Gamma","country":null,"knownFirm":30,"modelFirm":"Gamma"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Mapping
+import demo::relation::joincomputedkey::func::*;
+
+Mapping demo::relation::joincomputedkey::mapping::JoinComputedTargetMapping
+(
+  *demo::relation::joincomputedkey::OrdinalPerson: Relation
+  {
+    ~func demo::relation::joincomputedkey::func::ordinalPersonRel():Relation<Any>[1]
+    id: ID,
+    +firmOrdinal: Integer[0..1]: FIRM_ORDINAL,
+    firmName: $src->navigationJoin(ordinalFirmRel()->extend(~ORDINAL: f | $f.ID + 1), {p, f | $p.FIRM_ORDINAL == $f.ORDINAL}).NAME,
+    firmCountryName: $src->navigationJoin(ordinalFirmRel()->extend(~ORDINAL: f | $f.ID + 1), {p, f | $p.FIRM_ORDINAL == $f.ORDINAL})->navigationJoin(ordinalCountryRel()->extend(~ORDINAL: c | $c.ID + 1), {f, c | $f.COUNTRY_ORDINAL == $c.ORDINAL}).NAME,
+    knownFirmOrdinal: $src->filterJoin(ordinalFirmRel()->extend(~ORDINAL: f | $f.ID + 1), {p, f | $p.FIRM_ORDINAL == $f.ORDINAL}).FIRM_ORDINAL,
+    firm: modelJoin({p, f | $p.firmOrdinal == $f.ordinal})
+  }
+
+  *demo::relation::joincomputedkey::OrdinalFirm[ordinalFirm]: Relation
+  {
+    ~func demo::relation::joincomputedkey::func::ordinalFirmRel():Relation<Any>[1]
+    ~primaryKey: ID
+    id: ID,
+    name: NAME,
+    ordinal: $row.ID + 1
+  }
+
+  testSuites:
+  [
+    targetKeySuite:
+    {
+      function: |demo::relation::joincomputedkey::OrdinalPerson.all()->project(~[id: x | $x.id, firm: x | $x.firmName, country: x | $x.firmCountryName, knownFirm: x | $x.knownFirmOrdinal, modelFirm: x | $x.firm.name])->sort([~id->ascending()]);
+      tests:
+      [
+        readsEveryJoinThroughTheKeyTheTargetComputes:
+        {
+          data:
+          [
+            demo::relation::joincomputedkey::db::JoinComputedKeyDB:
+              Reference
+              #{
+                demo::relation::joincomputedkey::data::JoinComputedTargetData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme","country":"UK","knownFirm":11,"modelFirm":"Acme"},{"id":2,"firm":"Beta","country":"France","knownFirm":21,"modelFirm":"Beta"},{"id":3,"firm":null,"country":null,"knownFirm":null,"modelFirm":null},{"id":4,"firm":null,"country":null,"knownFirm":null,"modelFirm":null},{"id":5,"firm":"Gamma","country":null,"knownFirm":31,"modelFirm":"Gamma"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

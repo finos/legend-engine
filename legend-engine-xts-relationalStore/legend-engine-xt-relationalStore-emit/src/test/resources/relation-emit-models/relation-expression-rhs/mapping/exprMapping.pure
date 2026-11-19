@@ -21,6 +21,11 @@ function demo::relation::func::salariedEmployees(): meta::pure::metamodel::relat
     ->filter(r | $r.SALARY->isNotEmpty())
 }
 
+function demo::relation::func::allEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
+}
+
 ###Mapping
 import demo::relation::func::*;
 
@@ -114,6 +119,93 @@ Mapping demo::relation::mapping::EmployeeExpressionMapping
                   #{
                     contentType: 'application/json';
                     data: '[{"Greeting":"Hello, Alice Green"},{"Greeting":"Hello, Bob Smith"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping demo::relation::mapping::EmployeeMultiIfMapping
+(
+  *demo::relation::domain::ExtendedEmployee: Relation
+  {
+    ~func demo::relation::func::allEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    staffCategory: if([pair(|$row.ACTIVE == 0, |'Inactive'), pair(|$row.EMP_TYPE == 'FULL_TIME', |'Staff')], |'Contractor')
+  }
+
+  testSuites:
+  [
+    multiIfProjectSuite:
+    {
+      function: |demo::relation::domain::ExtendedEmployee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.staffCategory],
+                    ['First Name', 'Category']
+                  );
+      tests:
+      [
+        firstMatchingBranchWins:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldPickFirstMatchingBranchOrElse:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Category":"Staff"},{"First Name":"Bob","Category":"Contractor"},{"First Name":"Carol","Category":"Inactive"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    multiIfFilterSuite:
+    {
+      function: |demo::relation::domain::ExtendedEmployee.all()
+                  ->filter(x | $x.staffCategory == 'Staff')
+                  ->project(
+                    [x | $x.firstName],
+                    ['First Name']
+                  );
+      tests:
+      [
+        filterOnMultiIfProperty:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldKeepOnlyRowsWhoseFirstMatchingBranchIsStaff:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice"}]';
                   }#;
               }#
           ];

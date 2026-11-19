@@ -18,13 +18,14 @@ description: |
   Exercises expression-RHS property mapping: arithmetic on a nullable column via
   ->toOne() coercion (salaryDoubled = SALARY->toOne() * 2.0) and string concat
   (fullGreeting = 'Hello, ' + FIRST_NAME + ' ' + LAST_NAME). Asserts that computed
-  values are correctly projected through the full pipeline.
+  values are correctly projected through the full pipeline. EmployeeMultiIfMapping
+  maps staffCategory with a multi-branch if([pair(..), pair(..)], ..), projected and filtered on.
 
 modelSources:
   model:
     root: relation-expression-rhs
     files:
-      - mapping/exprMapping.pure   # ###Pure (salariedEmployees func) + ###Mapping + testSuites
+      - mapping/exprMapping.pure   # ###Pure (salariedEmployees, allEmployees funcs) + ###Mapping + testSuites
   dependencies:
     - source: relation-shared-data.emit.yaml
 
