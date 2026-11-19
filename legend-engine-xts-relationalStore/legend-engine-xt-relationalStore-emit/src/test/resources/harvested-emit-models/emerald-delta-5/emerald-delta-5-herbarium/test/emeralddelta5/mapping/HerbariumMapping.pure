@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeralddelta5::mapping::HerbariumMapping
+(
+  *test::emeralddelta5::domain::SpecimenSheet: Relational
+  {
+    sheetCode: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.sheet_code,
+    cabinetCode: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.cabinet_code,
+    familyName: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.family_name,
+    genusName: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.genus_name,
+    speciesEpithet: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.species_epithet,
+    collectorCode: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.collector_code,
+    localityCode: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.locality_code,
+    conditionGrade: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.condition_grade,
+    mountedHeightCm: [test::emeralddelta5::store::HerbariumDb]herbarium.specimen_sheet.mounted_height_cm
+  }
+
+  testSuites:
+  [
+    specimenSheetSuite:
+    {
+      function: |test::emeralddelta5::domain::SpecimenSheet.all(%2026-06-15T00:00:00)->project(
+  [
+    s|$s.sheetCode,
+    s|$s.cabinetCode,
+    s|$s.familyName,
+    s|$s.genusName,
+    s|$s.speciesEpithet,
+    s|$s.collectorCode,
+    s|$s.localityCode,
+    s|$s.conditionGrade,
+    s|$s.mountedHeightCm
+  ],
+  [
+    'SheetCode',
+    'CabinetCode',
+    'FamilyName',
+    'GenusName',
+    'SpeciesEpithet',
+    'CollectorCode',
+    'LocalityCode',
+    'ConditionGrade',
+    'MountedHeightCm'
+  ]
+)->sort(
+  [
+    asc('SheetCode')
+  ]
+);
+      tests:
+      [
+        sheetsInForceOnBusinessDate:
+        {
+          doc: 'Projects the milestoned sheet register as of a determination date, keeping the two rows whose business window is open on that date.';
+          data:
+          [
+            test::emeralddelta5::store::HerbariumDb:
+              Relational
+              #{
+                herbarium.specimen_sheet:
+                  'sheet_code,cabinet_code,family_name,genus_name,species_epithet,collector_code,locality_code,condition_grade,mounted_height_cm,valid_from,valid_thru\n'+
+                  'SH-ALDER,CB-NORTH,Betulaceae,Alnus,glutinosa,CL-WREN,LC-MARSHEDGE,A,41.5,2026-05-01,9999-12-31\n'+
+                  'SH-SEDGE,CB-SOUTH,Cyperaceae,Carex,pendula,CL-HERON,LC-FENWALK,B,33.0,2026-04-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            bothOpenSheetsSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SheetCode":"SH-ALDER","CabinetCode":"CB-NORTH","FamilyName":"Betulaceae","GenusName":"Alnus","SpeciesEpithet":"glutinosa","CollectorCode":"CL-WREN","LocalityCode":"LC-MARSHEDGE","ConditionGrade":"A","MountedHeightCm":41.5},{"SheetCode":"SH-SEDGE","CabinetCode":"CB-SOUTH","FamilyName":"Cyperaceae","GenusName":"Carex","SpeciesEpithet":"pendula","CollectorCode":"CL-HERON","LocalityCode":"LC-FENWALK","ConditionGrade":"B","MountedHeightCm":33.0}]';
+                  }#;
+              }#
+          ];
+        },
+        sheetSupersededBeforeBusinessDateIsDropped:
+        {
+          doc: 'Adds a superseded determination whose business window closed before the requested date, so the out-of-range row is filtered out by the milestoning predicate.';
+          data:
+          [
+            test::emeralddelta5::store::HerbariumDb:
+              Relational
+              #{
+                herbarium.specimen_sheet:
+                  'sheet_code,cabinet_code,family_name,genus_name,species_epithet,collector_code,locality_code,condition_grade,mounted_height_cm,valid_from,valid_thru\n'+
+                  'SH-ALDER,CB-NORTH,Betulaceae,Alnus,glutinosa,CL-WREN,LC-MARSHEDGE,A,41.5,2026-05-01,9999-12-31\n'+
+                  'SH-SEDGE,CB-SOUTH,Cyperaceae,Carex,pendula,CL-HERON,LC-FENWALK,B,33.0,2026-04-01,9999-12-31\n'+
+                  'SH-WILLOW,CB-EAST,Salicaceae,Salix,fragilis,CL-PLOVER,LC-OSIERBED,C,28.25,2026-03-01,2026-06-01\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyOpenSheetsSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SheetCode":"SH-ALDER","CabinetCode":"CB-NORTH","FamilyName":"Betulaceae","GenusName":"Alnus","SpeciesEpithet":"glutinosa","CollectorCode":"CL-WREN","LocalityCode":"LC-MARSHEDGE","ConditionGrade":"A","MountedHeightCm":41.5},{"SheetCode":"SH-SEDGE","CabinetCode":"CB-SOUTH","FamilyName":"Cyperaceae","GenusName":"Carex","SpeciesEpithet":"pendula","CollectorCode":"CL-HERON","LocalityCode":"LC-FENWALK","ConditionGrade":"B","MountedHeightCm":33.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::fabledvineyard::store::VineyardDb
+(
+  Schema vineyard
+  (
+    Table vine_block
+    (
+      block_code VARCHAR(24),
+      block_name VARCHAR(80),
+      row_spacing_m DOUBLE,
+      vine_count INTEGER,
+      planted_on DATE,
+      last_walked_at TIMESTAMP
+    )
+    Table trellis_run
+    (
+      run_code VARCHAR(24),
+      run_label VARCHAR(80),
+      wire_height_m DOUBLE,
+      post_count INTEGER,
+      installed_on DATE,
+      inspected_at TIMESTAMP
+    )
+    Table canopy_reading
+    (
+      reading_code VARCHAR(24),
+      observer_name VARCHAR(80),
+      leaf_area_m2 DOUBLE,
+      shoot_count INTEGER,
+      reading_on DATE,
+      recorded_at TIMESTAMP
+    )
+    Table irrigation_pulse
+    (
+      pulse_code VARCHAR(24),
+      zone_name VARCHAR(80),
+      litres_delivered DOUBLE,
+      valve_count INTEGER,
+      pulse_on DATE,
+      started_at TIMESTAMP
+    )
+  )
+)

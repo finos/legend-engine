@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::embermeadow3::diagram::RingingDiagram
+{
+  classView siteView
+  {
+    class: test::embermeadow3::domain::RingingSite;
+    position: (120.0,100.0);
+    rectangle: (240.0,120.0);
+  }
+  classView ringerView
+  {
+    class: test::embermeadow3::domain::Ringer;
+    position: (760.0,100.0);
+    rectangle: (240.0,110.0);
+  }
+  classView individualView
+  {
+    class: test::embermeadow3::domain::MarkedIndividual;
+    position: (440.0,620.0);
+    rectangle: (260.0,110.0);
+  }
+  classView captureView
+  {
+    class: test::embermeadow3::domain::Capture;
+    position: (440.0,300.0);
+    rectangle: (280.0,160.0);
+  }
+  classView mistNetView
+  {
+    class: test::embermeadow3::domain::MistNetCapture;
+    position: (120.0,480.0);
+    rectangle: (240.0,110.0);
+  }
+  classView cannonNetView
+  {
+    class: test::embermeadow3::domain::CannonNetCapture;
+    position: (800.0,480.0);
+    rectangle: (250.0,110.0);
+  }
+  classView recaptureView
+  {
+    class: test::embermeadow3::domain::Recapture;
+    position: (120.0,700.0);
+    rectangle: (250.0,110.0);
+  }
+  propertyView
+  {
+    property: test::embermeadow3::domain::Site_Capture.siteCaptures;
+    source: siteView;
+    target: captureView;
+    points: [(240.0,160.0),(580.0,380.0)];
+  }
+  propertyView
+  {
+    property: test::embermeadow3::domain::Ringer_Capture.ringerCaptures;
+    source: ringerView;
+    target: captureView;
+    points: [(880.0,155.0),(580.0,380.0)];
+  }
+  propertyView
+  {
+    property: test::embermeadow3::domain::Individual_Capture.captureHistory;
+    source: individualView;
+    target: captureView;
+    points: [(570.0,675.0),(580.0,380.0)];
+  }
+  generalizationView
+  {
+    source: mistNetView;
+    target: captureView;
+    points: [(240.0,535.0),(580.0,380.0)];
+  }
+  generalizationView
+  {
+    source: cannonNetView;
+    target: captureView;
+    points: [(925.0,535.0),(580.0,380.0)];
+  }
+  generalizationView
+  {
+    source: recaptureView;
+    target: mistNetView;
+    points: [(245.0,755.0),(240.0,535.0)];
+  }
+}

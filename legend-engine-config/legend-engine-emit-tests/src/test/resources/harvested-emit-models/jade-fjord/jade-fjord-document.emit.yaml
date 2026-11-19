@@ -1,0 +1,33 @@
+name: jade-fjord-document
+title: "Jade Fjord — Document-Oriented Plankton Survey Store with a JSON Binding"
+description: |
+  A marine-biology plankton survey modelled against a document-oriented store
+  rather than tables and columns. Two survey classes are described once as Pure
+  types and once as document collections carrying their own JSON schema and a
+  strict validator, so the same logical shape is expressed in both the model and
+  the collection contract. A JSON external-format binding pins the sample class
+  to a schema identifier in the schema set, giving the model a serialization
+  surface that is independent of the store shape.
+
+modelSources:
+  model:
+    root: jade-fjord-document
+    files:
+      - test/jadefjord/domain/FjordSurvey.pure
+      - test/jadefjord/external/SurveyBinding.pure
+      - test/jadefjord/store/FjordDocumentDB.pure
+
+features:
+  - execution:external-format-binding
+  - scaffolding:class
+  - store:document-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - document-store
+  - external-format
+  - json-binding
+  - marine-biology
+  - plankton-survey
+  - schema-validation

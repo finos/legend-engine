@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonglacier2::mapping::RainfallMapping
+(
+  test::crimsonglacier2::domain::GaugeStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonglacier2::store::RainfallDb]rainfall.gauge_station.station_code
+    )
+    ~mainTable [test::crimsonglacier2::store::RainfallDb]rainfall.gauge_station
+    stationCode: [test::crimsonglacier2::store::RainfallDb]rainfall.gauge_station.station_code,
+    stationName: [test::crimsonglacier2::store::RainfallDb]rainfall.gauge_station.station_name,
+    regionCode: [test::crimsonglacier2::store::RainfallDb]rainfall.gauge_station.region_code,
+    altitudeMetres: [test::crimsonglacier2::store::RainfallDb]rainfall.gauge_station.altitude_metres
+  }
+
+  test::crimsonglacier2::domain::RainfallReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonglacier2::store::RainfallDb]rainfall.rain_reading.reading_id
+    )
+    ~mainTable [test::crimsonglacier2::store::RainfallDb]rainfall.rain_reading
+    readingId: [test::crimsonglacier2::store::RainfallDb]rainfall.rain_reading.reading_id,
+    readingDate: [test::crimsonglacier2::store::RainfallDb]rainfall.rain_reading.reading_date,
+    millimetres: [test::crimsonglacier2::store::RainfallDb]rainfall.rain_reading.millimetres,
+    qualityFlag: [test::crimsonglacier2::store::RainfallDb]rainfall.rain_reading.quality_flag
+  }
+
+  test::crimsonglacier2::domain::Station_Reading: Relational
+  {
+    AssociationMapping
+    (
+      gaugeStation[reading, station]: [test::crimsonglacier2::store::RainfallDb]@Reading_Station,
+      readings[station, reading]: [test::crimsonglacier2::store::RainfallDb]@Reading_Station
+    )
+  }
+)

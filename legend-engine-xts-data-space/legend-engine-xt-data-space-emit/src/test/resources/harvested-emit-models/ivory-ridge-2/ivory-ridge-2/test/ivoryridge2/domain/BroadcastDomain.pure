@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ivoryridge2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A community radio station with its own transmitter site.'} test::ivoryridge2::domain::RadioStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  transmitterKw: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A presenter rostered to host broadcast slots.'} test::ivoryridge2::domain::Presenter
+{
+  presenterCode: String[1];
+  presenterName: String[1];
+  studioCity: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A recurring programme carried by one station.'} test::ivoryridge2::domain::Programme
+{
+  programmeCode: String[1];
+  programmeName: String[1];
+  genreCode: String[1];
+  station: RadioStation[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One aired occurrence of a programme, counted by its measured audience.'} test::ivoryridge2::domain::BroadcastSlot
+{
+  slotCode: String[1];
+  airedOn: StrictDate[1];
+  slotSeq: Integer[1];
+  listeners: Integer[1];
+  durationMinutes: Integer[1];
+  live: Boolean[0..1];
+  programme: Programme[0..1];
+  presenter: Presenter[0..1];
+
+  listenerMinutes() {$this.listeners * $this.durationMinutes}: Integer[1];
+  audienceBand(threshold: Integer[1])
+  {
+    if($this.listeners >= $threshold, |'WIDE', |'LOCAL')
+  }: String[1];
+  slotLabel()
+  {
+    if($this.programme->isEmpty(), |'UNASSIGNED', |$this.programme.programmeName->toOne()->toUpper()) + ' / ' + $this.slotCode
+  }: String[1];
+}

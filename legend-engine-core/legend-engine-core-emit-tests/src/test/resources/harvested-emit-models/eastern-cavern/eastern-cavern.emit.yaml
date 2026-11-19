@@ -1,0 +1,40 @@
+name: eastern-cavern
+title: "Karst Cavern Survey Reference Model — Inheritance, Associations and Mixed Milestoning"
+description: |
+  A store-less reference model over karst cavern surveying. An abstract
+  business-milestoned root feeds a two-level inheritance lattice whose subtypes
+  inherit both their temporal semantics and their association ends, while a
+  smaller set of processing-milestoned classes records when observations became
+  known. Associations cover optional, exactly-one and to-many ends and cross
+  between business-milestoned, processing-milestoned and non-milestoned classes,
+  and a locally declared profile plus platform documentation tags annotate
+  classes, properties, association ends, enumerations and individual enum values.
+modelSources:
+  model:
+    root: eastern-cavern
+    files:
+      - test/easterncavern/domain/CavernAnnotations.pure
+      - test/easterncavern/domain/CavernDomain.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:business-temporal
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - business-temporal
+  - cavern
+  - class-inheritance
+  - enumeration
+  - karst
+  - milestoning
+  - processing-temporal
+  - profile
+  - reference-data
+  - store-less
+  - tagged-values

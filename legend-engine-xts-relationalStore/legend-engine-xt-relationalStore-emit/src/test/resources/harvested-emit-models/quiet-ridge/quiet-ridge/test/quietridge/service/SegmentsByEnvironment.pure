@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietridge::service::SegmentsByEnvironment
+{
+  pattern: '/quietridge/v1/segments/{processingDate}/{minGain}';
+  title: 'Quiet Ridge - Trail Segments By Environment';
+  owners:
+  [
+    'ridge-patrol-platform',
+    'trail-registry-eng'
+  ];
+  documentation: 'Returns the trail segments the registry knew at a processing instant whose elevation gain clears a threshold, whose surface is one of the walked-surface kinds and which carry at least one severe or icy hazard, unioned with a second projection of the exposed ridge-line segments reached through a polymorphic subtype navigation. One shared query body is bound to an environment-keyed pair of mapping and runtime executions.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {processingDate: DateTime[1], minGain: Integer[1]|test::quietridge::domain::TrailSegment.all($processingDate)->filter(
+      s|($s.elevationGainM >= $minGain) && ((($s.surfaceKind == 'ROCK') || ($s.surfaceKind == 'SCREE')) || ($s.surfaceKind == 'TURF')) && ($s.hazards->exists(h|($h.severityLevel > 2) || ($h.hazardKind == 'ICE')))
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.trailName,
+        s|$s.patrolZone,
+        s|if($s.elevationGainM > 500, |'ALPINE', |'SUBALPINE')
+      ],
+      [
+        'Code',
+        'Trail',
+        'Zone',
+        'Band'
+      ]
+    )->concatenate(
+      test::quietridge::domain::TrailSegment.all($processingDate)->filter(
+        s|$s.surfaceKind == 'ROCK'
+      )->project(
+        [
+          s|$s.segmentCode,
+          s|$s.trailName,
+          s|$s.patrolZone,
+          s|if($s->subType(@test::quietridge::domain::RidgeSegment).exposureRating > 3, |'EXPOSURE-HIGH', |'EXPOSURE-LOW')
+        ],
+        [
+          'Code',
+          'Trail',
+          'Zone',
+          'Band'
+        ]
+      )
+    )->sort(
+      [
+        asc('Code'),
+        asc('Band')
+      ]
+    )->limit(20)};
+    key: 'environment';
+    executions['upland']:
+    {
+      mapping: test::quietridge::mapping::RidgeMapping;
+      runtime: test::quietridge::runtime::RidgeRuntime;
+    }
+    executions['lowland']:
+    {
+      mapping: test::quietridge::mapping::RidgeMapping;
+      runtime: test::quietridge::runtime::RidgeRuntime;
+    }
+  }
+}

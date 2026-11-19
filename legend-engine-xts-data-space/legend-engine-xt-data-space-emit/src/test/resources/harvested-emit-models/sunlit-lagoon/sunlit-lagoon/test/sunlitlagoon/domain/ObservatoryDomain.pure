@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class test::sunlitlagoon::domain::Observation
+{
+  obsRef: String[1];
+  targetName: String[1];
+  capturedOn: StrictDate[1];
+  seeingArcsec: Float[0..1];
+  exposureSeconds: Integer[1];
+  programCode: String[1];
+  qualityBand() {if($this.seeingArcsec->isEmpty(), | 'UNKNOWN', | if($this.seeingArcsec->toOne() < 1.0, | 'PRISTINE', | if($this.seeingArcsec->toOne() < 2.0, | 'GOOD', | 'POOR')))}: String[1];
+  longExposure() {$this.exposureSeconds >= 600}: Boolean[1];
+  exposureBand(floorSeconds: Integer[1]) {if($this.exposureSeconds >= $floorSeconds, | 'DEEP', | 'SHALLOW')}: String[1];
+  displayLabel() {$this.obsRef->toUpper()->trim() + ' / ' + $this.targetName->toUpper()->trim()}: String[1];
+}
+
+Class test::sunlitlagoon::domain::Telescope
+{
+  telescopeCode: String[1];
+  telescopeName: String[1];
+  apertureMm: Integer[1];
+  apertureClass() {if($this.apertureMm >= 900, | 'LARGE', | if($this.apertureMm >= 500, | 'MEDIUM', | 'SMALL'))}: String[1];
+}
+
+Class test::sunlitlagoon::domain::Site
+{
+  siteCode: String[1];
+  siteName: String[1];
+  altitudeM: Integer[1];
+  statusCode: String[1];
+  altitudeBand() {if($this.altitudeM >= 2000, | 'HIGH', | if($this.altitudeM >= 1000, | 'MID', | 'LOW'))}: String[1];
+}
+
+Class test::sunlitlagoon::domain::Steward
+{
+  stewardId: Integer[1];
+  stewardName: String[1];
+  contactCode: String[1];
+}
+
+Class test::sunlitlagoon::domain::ServiceVisit
+{
+  visitRef: String[1];
+  visitKind: String[1];
+  durationMinutes: Integer[1];
+}
+
+Association test::sunlitlagoon::domain::Observation_Telescope
+{
+  observationsOfTelescope: test::sunlitlagoon::domain::Observation[*];
+  telescopeOfObservation: test::sunlitlagoon::domain::Telescope[0..1];
+}
+
+Association test::sunlitlagoon::domain::Telescope_Site
+{
+  telescopesOfSite: test::sunlitlagoon::domain::Telescope[*];
+  siteOfTelescope: test::sunlitlagoon::domain::Site[0..1];
+}
+
+Association test::sunlitlagoon::domain::Site_Steward
+{
+  sitesOfSteward: test::sunlitlagoon::domain::Site[*];
+  stewardOfSite: test::sunlitlagoon::domain::Steward[0..1];
+}
+
+Association test::sunlitlagoon::domain::Visit_Site
+{
+  visitsOfSite: test::sunlitlagoon::domain::ServiceVisit[*];
+  siteOfVisit: test::sunlitlagoon::domain::Site[0..1];
+}

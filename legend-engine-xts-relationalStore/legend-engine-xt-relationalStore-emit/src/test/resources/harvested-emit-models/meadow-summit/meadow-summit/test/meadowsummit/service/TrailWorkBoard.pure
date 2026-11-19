@@ -1,0 +1,183 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowsummit::service::TrailWorkBoard
+{
+  pattern: '/meadowsummit/v1/trail-work-board';
+  title: 'Meadow Summit - Trail Work Board';
+  owners:
+  [
+    'meadow-trail-upkeep',
+    'summit-warden-office'
+  ];
+  documentation: 'Lists maintenance visits above an hours threshold with the crew reached in one hop, the holding depot reached across the two-hop crew-to-depot path, and the owning segment reached through the association, so the labelled visit kinds and the segment surface arms are asserted together.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minHours: Float[1]|test::meadowsummit::domain::MaintenanceVisit.all()->filter(
+      v|$v.workHours >= $minHours
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.visitKindLabel,
+        v|$v.crewName,
+        v|$v.depotName,
+        v|$v.segment.segmentCode,
+        v|$v.segment.surfaceLabel,
+        v|$v.workHours,
+        v|$v.noteLabel
+      ],
+      [
+        'Visit',
+        'Kind',
+        'Crew',
+        'Depot',
+        'Segment',
+        'Surface',
+        'Hours',
+        'Note'
+      ]
+    )->sort(
+      [
+        asc('Visit')
+      ]
+    )};
+    mapping: test::meadowsummit::mapping::SummitMapping;
+    runtime: test::meadowsummit::runtime::SummitRuntime;
+  }
+  testSuites:
+  [
+    trailWorkBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          summitConnection:
+            Reference
+            #{
+              test::meadowsummit::data::SummitFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        wholeSeasonBoard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minHours = 0.0
+          ]
+          asserts:
+          [
+            everyVisitRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"MV-1","Kind":"meadow mowing","Crew":"North Meadow Crew","Depot":"Larch Depot","Segment":"TS-01","Surface":"gravel","Hours":4.5,"Note":"spring cut"},{"Visit":"MV-10","Kind":"condition survey","Crew":"North Meadow Crew","Depot":"Larch Depot","Segment":"TS-09","Surface":null,"Hours":1.0,"Note":"no visit note"},{"Visit":"MV-11","Kind":"scree clearing","Crew":"Ridge Relief Crew","Depot":"Ridge Depot","Segment":"TS-01","Surface":"gravel","Hours":3.5,"Note":"no visit note"},{"Visit":"MV-12","Kind":"drain clearing","Crew":"North Meadow Crew","Depot":"Larch Depot","Segment":"TS-02","Surface":"stone pitch","Hours":2.0,"Note":"drain flush"},{"Visit":"MV-2","Kind":"drain clearing","Crew":"South Corrie Crew","Depot":"Corrie Depot","Segment":"TS-01","Surface":"gravel","Hours":3.0,"Note":"no visit note"},{"Visit":"MV-3","Kind":"step repair","Crew":"South Corrie Crew","Depot":"Corrie Depot","Segment":"TS-02","Surface":"stone pitch","Hours":6.0,"Note":"step rebuild"},{"Visit":"MV-4","Kind":"boardwalk repair","Crew":"North Meadow Crew","Depot":"Larch Depot","Segment":"TS-03","Surface":"boardwalk","Hours":5.5,"Note":"no visit note"},{"Visit":"MV-5","Kind":"meadow mowing","Crew":"Ridge Relief Crew","Depot":"Ridge Depot","Segment":"TS-04","Surface":"turf","Hours":2.5,"Note":"turf trim"},{"Visit":"MV-6","Kind":"condition survey","Crew":"North Meadow Crew","Depot":"Larch Depot","Segment":"TS-05","Surface":"compacted earth","Hours":1.5,"Note":"no visit note"},{"Visit":"MV-7","Kind":"scree clearing","Crew":"Ridge Relief Crew","Depot":"Ridge Depot","Segment":"TS-06","Surface":"rock scree","Hours":7.0,"Note":"scree clearing"},{"Visit":"MV-8","Kind":"boardwalk repair","Crew":"South Corrie Crew","Depot":"Corrie Depot","Segment":"TS-07","Surface":"duckboard","Hours":4.0,"Note":"no visit note"},{"Visit":"MV-9","Kind":"mesh pinning","Crew":"Ridge Relief Crew","Depot":"Ridge Depot","Segment":"TS-08","Surface":"mesh matting","Hours":2.0,"Note":"mesh pinning"}]';
+                  }#;
+              }#
+          ]
+        },
+        longVisitsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minHours = 4.0
+          ]
+          asserts:
+          [
+            thresholdRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"MV-1","Kind":"meadow mowing","Crew":"North Meadow Crew","Depot":"Larch Depot","Segment":"TS-01","Surface":"gravel","Hours":4.5,"Note":"spring cut"},{"Visit":"MV-3","Kind":"step repair","Crew":"South Corrie Crew","Depot":"Corrie Depot","Segment":"TS-02","Surface":"stone pitch","Hours":6.0,"Note":"step rebuild"},{"Visit":"MV-4","Kind":"boardwalk repair","Crew":"North Meadow Crew","Depot":"Larch Depot","Segment":"TS-03","Surface":"boardwalk","Hours":5.5,"Note":"no visit note"},{"Visit":"MV-7","Kind":"scree clearing","Crew":"Ridge Relief Crew","Depot":"Ridge Depot","Segment":"TS-06","Surface":"rock scree","Hours":7.0,"Note":"scree clearing"},{"Visit":"MV-8","Kind":"boardwalk repair","Crew":"South Corrie Crew","Depot":"Corrie Depot","Segment":"TS-07","Surface":"duckboard","Hours":4.0,"Note":"no visit note"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::meadowsummit::service::TrailWorkBoardByDistrict
+{
+  pattern: '/meadowsummit/v1/trail-work-board/{district}';
+  title: 'Meadow Summit - Trail Work Board Keyed By District';
+  owners:
+  [
+    'meadow-trail-upkeep',
+    'summit-warden-office'
+  ];
+  documentation: 'District-keyed counterpart of the work board: the same projection over the crew, depot and segment hops is planned against one execution stack per warden district, with two of the three districts resolving onto the same runtime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {minHours: Float[1]|test::meadowsummit::domain::MaintenanceVisit.all()->filter(
+      v|$v.workHours >= $minHours
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.visitKindLabel,
+        v|$v.crewName,
+        v|$v.depotName,
+        v|$v.segment.segmentCode,
+        v|$v.segment.surfaceLabel,
+        v|$v.workHours,
+        v|$v.noteLabel
+      ],
+      [
+        'Visit',
+        'Kind',
+        'Crew',
+        'Depot',
+        'Segment',
+        'Surface',
+        'Hours',
+        'Note'
+      ]
+    )->sort(
+      [
+        asc('Visit')
+      ]
+    )};
+    key: 'district';
+    executions['north-corrie']:
+    {
+      mapping: test::meadowsummit::mapping::SummitMapping;
+      runtime: test::meadowsummit::runtime::SummitRuntime;
+    }
+    executions['south-corrie']:
+    {
+      mapping: test::meadowsummit::mapping::SummitMapping;
+      runtime: test::meadowsummit::runtime::SummitReliefRuntime;
+    }
+    executions['summit-relief']:
+    {
+      mapping: test::meadowsummit::mapping::SummitMapping;
+      runtime: test::meadowsummit::runtime::SummitReliefRuntime;
+    }
+  }
+}

@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::frostedquarry2::dataspace::FrostQuarryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'The only execution context - the frost quarry store bound through the single mapping and its warehouse runtime, which is also what the featured endpoints and the mapping suites execute against.';
+      mapping: test::frostedquarry2::mapping::FrostQuarryMapping;
+      defaultRuntime: test::frostedquarry2::runtime::FrostQuarryRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Frosted Quarry Ice Extraction And Cold Chain';
+  description: 'A consumer-facing entry point over the glacial ice extraction estate: quarries and their extraction panels, the harvest cycles worked on each panel, the blocks those cycles yield with their clarity grades and melt audits, and the sled runs that carry blocks into cold storage. It publishes the mapping and runtime pair consumers should execute against, the two curated layouts of the class graph, and the four featured endpoints that demonstrate the projection, pre-projection filtering and post-projection screening shapes the model supports.';
+  diagrams:
+  [
+    {
+      title: 'Extraction Graph';
+      diagram: test::frostedquarry2::diagram::ExtractionDiagram;
+    },
+    {
+      title: 'Cold Chain Logistics';
+      diagram: test::frostedquarry2::diagram::LogisticsDiagram;
+    }
+  ];
+  elements:
+  [
+    test::frostedquarry2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Ice block register';
+      description: 'Featured endpoint projecting every mapped block with its mass and melt-loss ratio.';
+      executable: test::frostedquarry2::service::BlockRegister;
+    },
+    {
+      id: 2;
+      title: 'Panel pick list';
+      description: 'Featured endpoint narrowing panels to the northern region before projecting them.';
+      executable: test::frostedquarry2::service::PanelPickList;
+    },
+    {
+      id: 3;
+      title: 'Grade and cycle match';
+      description: 'Featured endpoint screening projected block rows on a grade and a cycle together.';
+      executable: test::frostedquarry2::service::GradeMatchLookup;
+    },
+    {
+      id: 4;
+      title: 'Melt audit threshold scan';
+      description: 'Featured endpoint screening projected audit rows on an exact loss ratio.';
+      executable: test::frostedquarry2::service::MeltThresholdScan;
+    }
+  ];
+  supportInfo: Combined
+  {
+    emails: ['frost-quarry-extraction-desk', 'frost-quarry-stewards'];
+  };
+}

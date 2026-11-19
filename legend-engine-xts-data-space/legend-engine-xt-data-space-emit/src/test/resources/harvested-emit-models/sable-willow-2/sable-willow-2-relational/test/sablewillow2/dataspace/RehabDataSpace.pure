@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::sablewillow2::profile::RehabProfile.governedView>> {test::sablewillow2::profile::RehabProfile.taxonomyNode = 'welfare/wildlife/rehabilitation', test::sablewillow2::profile::RehabProfile.stewardTeam = 'Wildlife Rehabilitation', meta::pure::profiles::doc.doc = 'Governed entry point over the wildlife rehabilitation intake register.'} test::sablewillow2::dataspace::RehabDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'register';
+      description: 'Register tier - the curated warehouse namespaces the intake and facility schemas are remapped onto.';
+      mapping: test::sablewillow2::mapping::RehabMapping;
+      defaultRuntime: test::sablewillow2::runtime::RehabRuntime;
+    },
+    {
+      name: 'reporting';
+      description: 'Reporting tier - the same logical model resolved against the reporting namespaces.';
+      mapping: test::sablewillow2::mapping::RehabMapping;
+      defaultRuntime: test::sablewillow2::runtime::RehabReportingRuntime;
+    }
+  ];
+  defaultExecutionContext: 'register';
+  title: 'Wildlife Rehabilitation Intake Register';
+  description: 'A governed entry point over the rehabilitation domain - admissions corrected over processing time, the nested enclosures that house them, the care rotas that handle them and the species reference register they are matched against - wiring the mapping, the two runtimes and the endpoints consumers should start from.';
+  elements:
+  [
+    test::sablewillow2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Cases for a care rota';
+      description: 'Featured endpoint returning the live admissions of one rota with their multi-hop habitat species.';
+      executable: test::sablewillow2::service::CasesForTeam;
+    },
+    {
+      id: 2;
+      title: 'Species reference roster';
+      description: 'Featured endpoint returning the untimelined species reference register.';
+      executable: test::sablewillow2::service::SpeciesRoster;
+    }
+  ];
+  supportInfo: Email {
+    address: 'wildlife-rehabilitation@example.invalid';
+  };
+}

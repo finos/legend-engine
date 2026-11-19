@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::azureisle::connection::IsleFieldConnection
+{
+  store: test::azureisle::store::IsleDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'ISLE_FIELD_DB';
+    account: 'isle_survey_account';
+    warehouse: 'ISLE_SURVEY_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    role: 'ISLE_SURVEY_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'isle_survey_oauth_key';
+    scopeName: 'session:role-isle-survey-reader';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'survey'; to: 'FIELD_SURVEY';},
+        schema {from: 'reserve'; to: 'FIELD_RESERVE';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::azureisle::connection::IsleReviewConnection
+{
+  store: test::azureisle::store::IsleDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'ISLE_REVIEW_DB';
+    account: 'isle_survey_account';
+    warehouse: 'ISLE_SURVEY_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'ISLE_SURVEY_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'isle_survey_oauth_key';
+    scopeName: 'session:role-isle-survey-reader';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'survey'; to: 'REVIEW_SURVEY';},
+        schema {from: 'reserve'; to: 'REVIEW_RESERVE';}
+      ];
+    }
+  ];
+}

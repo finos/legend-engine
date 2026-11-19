@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealcove3::mapping::SeedDepotMapping
+(
+  *test::borealcove3::domain::SeedLot[seed_lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove3::store::SeedDepotDb]meadow.seed_lot.lot_code,
+      [test::borealcove3::store::SeedDepotDb]meadow.seed_lot.from_z
+    )
+    ~mainTable [test::borealcove3::store::SeedDepotDb]meadow.seed_lot
+    lotCode: [test::borealcove3::store::SeedDepotDb]meadow.seed_lot.lot_code,
+    taxonName: [test::borealcove3::store::SeedDepotDb]meadow.seed_lot.taxon_name,
+    seedGrams: [test::borealcove3::store::SeedDepotDb]meadow.seed_lot.seed_grams,
+    lotState: EnumerationMapping LotStateRegister: [test::borealcove3::store::SeedDepotDb]meadow.seed_lot.state_code
+  }
+
+  *test::borealcove3::domain::MeadowPlot[meadow_plot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove3::store::SeedDepotDb]meadow.meadow_plot.plot_code,
+      [test::borealcove3::store::SeedDepotDb]meadow.meadow_plot.from_z
+    )
+    ~mainTable [test::borealcove3::store::SeedDepotDb]meadow.meadow_plot
+    plotCode: [test::borealcove3::store::SeedDepotDb]meadow.meadow_plot.plot_code,
+    plotName: [test::borealcove3::store::SeedDepotDb]meadow.meadow_plot.plot_name,
+    habitatCode: [test::borealcove3::store::SeedDepotDb]meadow.meadow_plot.habitat_code,
+    habitatClass: EnumerationMapping HabitatClassRegister: [test::borealcove3::store::SeedDepotDb]meadow.meadow_plot.habitat_code
+  }
+
+  *test::borealcove3::domain::SeedKeeper[seed_keeper]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove3::store::SeedDepotDb]meadow.seed_keeper.keeper_code
+    )
+    ~mainTable [test::borealcove3::store::SeedDepotDb]meadow.seed_keeper
+    keeperCode: [test::borealcove3::store::SeedDepotDb]meadow.seed_keeper.keeper_code,
+    keeperName: [test::borealcove3::store::SeedDepotDb]meadow.seed_keeper.keeper_name,
+    contactNote: [test::borealcove3::store::SeedDepotDb]meadow.seed_keeper.contact_note
+  }
+
+  *test::borealcove3::domain::GerminationTrial[germination_trial]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealcove3::store::SeedDepotDb]meadow.germination_trial.trial_code
+    )
+    ~mainTable [test::borealcove3::store::SeedDepotDb]meadow.germination_trial
+    trialCode: [test::borealcove3::store::SeedDepotDb]meadow.germination_trial.trial_code,
+    trialCrew: [test::borealcove3::store::SeedDepotDb]meadow.germination_trial.trial_crew
+  }
+
+  test::borealcove3::domain::LotState: EnumerationMapping LotStateRegister
+  {
+    ACTIVE: ['AC'],
+    RESTED: ['RE'],
+    WITHDRAWN: ['WD']
+  }
+
+  test::borealcove3::domain::HabitatClass: EnumerationMapping HabitatClassRegister
+  {
+    DUNE: ['DU'],
+    FEN: ['FE'],
+    HEATH: ['HE']
+  }
+
+  test::borealcove3::domain::Lot_Plot: Relational
+  {
+    AssociationMapping
+    (
+      plot[seed_lot, meadow_plot]: [test::borealcove3::store::SeedDepotDb]@Lot_Plot,
+      lots[meadow_plot, seed_lot]: [test::borealcove3::store::SeedDepotDb]@Lot_Plot
+    )
+  }
+
+  test::borealcove3::domain::Plot_Keeper: Relational
+  {
+    AssociationMapping
+    (
+      keeper[meadow_plot, seed_keeper]: [test::borealcove3::store::SeedDepotDb]@Plot_Keeper,
+      keeperPlots[seed_keeper, meadow_plot]: [test::borealcove3::store::SeedDepotDb]@Plot_Keeper
+    )
+  }
+
+  test::borealcove3::domain::Plot_Trials: Relational
+  {
+    AssociationMapping
+    (
+      trials[meadow_plot, germination_trial]: [test::borealcove3::store::SeedDepotDb]@Plot_Trial,
+      trialPlot[germination_trial, meadow_plot]: [test::borealcove3::store::SeedDepotDb]@Plot_Trial
+    )
+  }
+)

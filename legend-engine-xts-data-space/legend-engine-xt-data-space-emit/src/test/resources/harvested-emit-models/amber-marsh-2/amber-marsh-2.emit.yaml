@@ -1,0 +1,66 @@
+name: amber-marsh-2
+title: "Amber Marsh 2 — A Wide Join-Free Moorland Register Estate Published Through Two Governed Tiers and Five Arithmetic Boards"
+description: |
+  A peatland restoration estate keeps twenty independent registers — probe depths, dipwells, erosion
+  pins, quadrats, flux chambers, plug batches, gully blocks, reprofiled grips, brash and stone
+  deliveries, crew visits and the rest — and every one of them is a wide flat table addressed by its
+  own class through its own main-table alias and its own single-column primary key. Nothing joins:
+  the estate's shape is width and repetition rather than depth, so one relational mapping carries
+  twenty root class mappings over one store, one connection and one runtime, and the only two pieces
+  of non-column mapping logic are an enumeration mapping translating a four-value restoration stage
+  from a stored two-letter label and a literal marker stamped onto the donor-site register. Two data
+  spaces cut the same estate into a delivery tier and a monitoring tier, each naming ten of the
+  twenty registers and the boards that read them. Five parameterised services then project tabular
+  results out of five different registers, each filtering on a caller-supplied threshold plus an
+  optional narrowing token, and three of them close their windows with date arithmetic — a rolling
+  year and a ninety-day window built by adjusting the requested instant, a two-season window, and
+  reading ages measured in days and months back from that instant. The projections themselves stay
+  arithmetic: depth per probe, exposure rescaled to an annual rate, plugs rounded up into whole
+  trays, slope-weighted patch area, and case-normalised composite labels.
+modelSources:
+  model:
+    root: amber-marsh-2
+    files:
+      - test/ambermarsh2/connection/MoorlandConnections.pure
+      - test/ambermarsh2/dataspace/MoorlandDataSpaces.pure
+      - test/ambermarsh2/domain/MoorlandDomain.pure
+      - test/ambermarsh2/mapping/MoorlandMapping.pure
+      - test/ambermarsh2/runtime/MoorlandRuntimes.pure
+      - test/ambermarsh2/service/BarePeatStageBoard.pure
+      - test/ambermarsh2/service/ErosionPinExposureBoard.pure
+      - test/ambermarsh2/service/PeatDepthProfileBoard.pure
+      - test/ambermarsh2/service/PlugPlantingBoard.pure
+      - test/ambermarsh2/service/WaterTableTrendBoard.pure
+      - test/ambermarsh2/store/MoorlandDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - date-arithmetic
+  - enumeration-mapping
+  - join-free
+  - main-table-alias
+  - peatland-restoration
+  - postgres
+  - primary-key
+  - relational-literal
+  - tabular-projection
+  - wide-register-estate

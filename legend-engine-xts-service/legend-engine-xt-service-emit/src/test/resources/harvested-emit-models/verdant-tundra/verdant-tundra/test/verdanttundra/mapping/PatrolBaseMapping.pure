@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdanttundra::mapping::PatrolBaseMapping
+(
+  *test::verdanttundra::domain::PatrolEvent[patrolEvent]: Pure
+  {
+    ~src test::verdanttundra::domain::PatrolRecord
+    +patrolShift: String[1]: if(test::verdanttundra::function::parseCount($src.loggedOn->substring(8, 10)) <= 15, | 'first-half', | 'second-half'),
+    patrolTag: test::verdanttundra::function::patrolTag('PT', $src.recordRef),
+    rangerName: $src.rangerName->trim(),
+    trailCode: test::verdanttundra::function::normalizeCode($src.trailCode),
+    trailKind: EnumerationMapping TrailKindMapping: [if($src.trailCode->trim()->toUpper()->in(['RIDGE', 'RDG', 'VALLEY', 'VLY', 'LAKESHORE', 'LKS', 'MEADOW', 'MDW']), | $src.trailCode->trim()->toUpper(), | 'UNKNOWN')],
+    eventKind: EnumerationMapping EventKindMapping: [if($src.eventCode->trim()->toUpper()->in(['ARRIVAL', 'ARR', 'DEPARTURE', 'DEP', 'SIGHTING', 'SGT', 'REPAIR', 'RPR']), | $src.eventCode->trim()->toUpper(), | 'UNKNOWN')],
+    loggedOn: $src.loggedOn->trim(),
+    logYear: test::verdanttundra::function::logYear($src.loggedOn),
+    distanceKm: test::verdanttundra::function::parseCount($src.distanceText),
+    effortBand: test::verdanttundra::function::effortBand(test::verdanttundra::function::parseCount($src.distanceText)),
+    sightingCount: test::verdanttundra::function::parseCount($src.sightingText)
+  }
+
+  test::verdanttundra::domain::TrailKind: EnumerationMapping TrailKindMapping
+  {
+    RIDGE: ['RIDGE', 'RDG'],
+    VALLEY: ['VALLEY', 'VLY'],
+    LAKESHORE: ['LAKESHORE', 'LKS'],
+    MEADOW: ['MEADOW', 'MDW'],
+    OTHER: ['OTHER', 'UNKNOWN']
+  }
+
+  test::verdanttundra::domain::EventKind: EnumerationMapping EventKindMapping
+  {
+    ARRIVAL: ['ARRIVAL', 'ARR'],
+    DEPARTURE: ['DEPARTURE', 'DEP'],
+    SIGHTING: ['SIGHTING', 'SGT'],
+    REPAIR: ['REPAIR', 'RPR'],
+    OTHER: ['OTHER', 'UNKNOWN']
+  }
+
+  testSuites:
+  [
+    patrolEventSuite:
+    {
+      function: |test::verdanttundra::domain::PatrolEvent.all()->graphFetch(
+        #{
+          test::verdanttundra::domain::PatrolEvent{
+            patrolTag,
+            rangerName,
+            trailCode,
+            trailKind,
+            eventKind,
+            logYear,
+            distanceKm,
+            effortBand,
+            sightingCount
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdanttundra::domain::PatrolEvent{
+            patrolTag,
+            rangerName,
+            trailCode,
+            trailKind,
+            eventKind,
+            logYear,
+            distanceKm,
+            effortBand,
+            sightingCount
+          }
+        }#
+      );
+      tests:
+      [
+        everyEffortBandArm:
+        {
+          doc: 'One intake record per effort-band arm, one record whose distance falls below every threshold so the band collapses to the empty fallback, and one record whose trail and event codes are outside both enumeration mappings so the computed source value folds onto the catch-all enumeration member.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdanttundra::domain::PatrolRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordRef":"r-001","rangerName":" Wren Halloway ","trailCode":"ridge","eventCode":"arr","loggedOn":"2025-04-02","distanceText":"44","sightingText":"11"},{"recordRef":"r-002","rangerName":"Iris Fenwick","trailCode":"vly","eventCode":"dep","loggedOn":"2025-04-09","distanceText":"34","sightingText":"7"},{"recordRef":"r-003","rangerName":"Owen Marsden","trailCode":"lakeshore","eventCode":"sgt","loggedOn":"2025-05-14","distanceText":"28","sightingText":"9"},{"recordRef":"r-004","rangerName":"Nell Askew","trailCode":"mdw","eventCode":"rpr","loggedOn":"2025-05-21","distanceText":"22","sightingText":"4"},{"recordRef":"r-005","rangerName":"Cade Aldersey","trailCode":"rdg","eventCode":"arrival","loggedOn":"2024-06-03","distanceText":"16","sightingText":"5"},{"recordRef":"r-006","rangerName":"Tessa Bramble","trailCode":"valley","eventCode":"departure","loggedOn":"2024-06-18","distanceText":"11","sightingText":"3"},{"recordRef":"r-007","rangerName":"Piers Lowick","trailCode":"lks","eventCode":"sighting","loggedOn":"2024-07-07","distanceText":"6","sightingText":"2"},{"recordRef":"r-008","rangerName":"Ada Quillon","trailCode":"meadow","eventCode":"repair","loggedOn":"2024-07-22","distanceText":"2","sightingText":"1"},{"recordRef":"r-009","rangerName":"Bram Oakley","trailCode":"ridge","eventCode":"arr","loggedOn":"2023-08-30","distanceText":"0","sightingText":"0"},{"recordRef":"r-010","rangerName":"Sana Underhill","trailCode":"peatbog","eventCode":"escort","loggedOn":"2023-09-12","distanceText":"12","sightingText":"6"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            tenNormalisedEvents:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"patrolTag":"PT-R-001","rangerName":"Wren Halloway","trailCode":"RIDGE","trailKind":"RIDGE","eventKind":"ARRIVAL","logYear":2025,"distanceKm":44,"effortBand":"summit-push","sightingCount":11},{"patrolTag":"PT-R-002","rangerName":"Iris Fenwick","trailCode":"VLY","trailKind":"VALLEY","eventKind":"DEPARTURE","logYear":2025,"distanceKm":34,"effortBand":"long-haul","sightingCount":7},{"patrolTag":"PT-R-003","rangerName":"Owen Marsden","trailCode":"LAKESHORE","trailKind":"LAKESHORE","eventKind":"SIGHTING","logYear":2025,"distanceKm":28,"effortBand":"ridge-run","sightingCount":9},{"patrolTag":"PT-R-004","rangerName":"Nell Askew","trailCode":"MDW","trailKind":"MEADOW","eventKind":"REPAIR","logYear":2025,"distanceKm":22,"effortBand":"steady-day","sightingCount":4},{"patrolTag":"PT-R-005","rangerName":"Cade Aldersey","trailCode":"RDG","trailKind":"RIDGE","eventKind":"ARRIVAL","logYear":2024,"distanceKm":16,"effortBand":"half-day","sightingCount":5},{"patrolTag":"PT-R-006","rangerName":"Tessa Bramble","trailCode":"VALLEY","trailKind":"VALLEY","eventKind":"DEPARTURE","logYear":2024,"distanceKm":11,"effortBand":"short-loop","sightingCount":3},{"patrolTag":"PT-R-007","rangerName":"Piers Lowick","trailCode":"LKS","trailKind":"LAKESHORE","eventKind":"SIGHTING","logYear":2024,"distanceKm":6,"effortBand":"gate-check","sightingCount":2},{"patrolTag":"PT-R-008","rangerName":"Ada Quillon","trailCode":"MEADOW","trailKind":"MEADOW","eventKind":"REPAIR","logYear":2024,"distanceKm":2,"effortBand":"yard-walk","sightingCount":1},{"patrolTag":"PT-R-009","rangerName":"Bram Oakley","trailCode":"RIDGE","trailKind":"RIDGE","eventKind":"ARRIVAL","logYear":2023,"distanceKm":0,"effortBand":null,"sightingCount":0},{"patrolTag":"PT-R-010","rangerName":"Sana Underhill","trailCode":"PEATBOG","trailKind":"OTHER","eventKind":"OTHER","logYear":2023,"distanceKm":12,"effortBand":"short-loop","sightingCount":6}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

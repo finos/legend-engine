@@ -1,0 +1,58 @@
+name: boreal-willow-2
+title: "Boreal Willow — A Coppice Cut Register Read Across Two Association Hops By One Keyed Multi-Execution Service And Two Single-Execution Scans"
+description: |
+  A river-basket workshop publishes the willow cuts taken off its coppice beds. One relational
+  store carries the cut log beside the bed register and the crew register, and one relational
+  mapping binds three flat classes over explicit primary keys and main tables, chaining the cut to
+  its bed and the bed to the crew that works it through two association mappings over declared
+  joins. A keyed multi-execution service plans the same relation query and mapping under two
+  estates that differ only in runtime and connection: it narrows the cuts to a caller-supplied set
+  of beds, keeps a booked cut that either clears the caller-supplied bundle floor or is a long
+  fine-grade cut, derives a rod span on the projected relation and republishes a narrower column
+  set. Two single-execution services read the same model in relation grammar — one digests the
+  cuts of a caller-supplied set of crews reached two hops out while holding back a voided cut, and
+  one scans the beds of a single soil classification for long rods, folding the grade and the
+  classification into one label before de-duplicating. Every suite asserts a populated and an
+  empty result so the membership, disjunctive and held-back arms are separately observable.
+modelSources:
+  model:
+    root: boreal-willow-2
+    files:
+      - test/borealwillow2/connection/WillowConnections.pure
+      - test/borealwillow2/domain/WillowDomain.pure
+      - test/borealwillow2/mapping/WillowCutMapping.pure
+      - test/borealwillow2/runtime/WillowRuntimes.pure
+      - test/borealwillow2/service/WillowServices.pure
+      - test/borealwillow2/store/WillowCoppiceDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-traversal
+  - collection-membership
+  - coppice-register
+  - duckdb
+  - h2
+  - keyed-execution
+  - multi-execution-service
+  - relation-grammar
+  - relational-mapping
+  - service

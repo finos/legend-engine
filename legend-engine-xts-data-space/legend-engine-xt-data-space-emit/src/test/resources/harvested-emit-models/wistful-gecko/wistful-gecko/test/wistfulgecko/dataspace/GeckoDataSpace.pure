@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::wistfulgecko::dataspace::GeckoSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'local';
+      description: 'Local estate binding the field store to the survey mapping and the embedded test runtime.';
+      mapping: test::wistfulgecko::mapping::GeckoMapping;
+      defaultRuntime: test::wistfulgecko::runtime::GeckoH2Runtime;
+    },
+    {
+      name: 'warehouse';
+      description: 'Warehouse estate binding the same mapping to the key-pair authenticated cloud connection.';
+      mapping: test::wistfulgecko::mapping::GeckoMapping;
+      defaultRuntime: test::wistfulgecko::runtime::GeckoWarehouseRuntime;
+    },
+    {
+      name: 'archive';
+      description: 'Archive estate exposing the retired sighting rows under their own processing window.';
+      mapping: test::wistfulgecko::mapping::GeckoArchiveMapping;
+      defaultRuntime: test::wistfulgecko::runtime::GeckoArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'local';
+  title: 'Wistful Gecko Nocturnal Survey';
+  description: 'Entry point over the nocturnal gecko survey: habitat patches, the business-temporal sighting register widened over observer and habitat joins, and the corrected canopy surveys.';
+  elements:
+  [
+    test::wistfulgecko::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Sighting board for the local estate';
+      description: 'The featured endpoint projecting joined sighting rows as of an effective date.';
+      executable: test::wistfulgecko::service::SightingBoardsLocal;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'nocturnal-survey-office@example.invalid';
+  };
+}

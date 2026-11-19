@@ -1,0 +1,47 @@
+name: western-meadow-shared
+title: "Western Meadow — Volunteer Roster Domain, Milestoned Store and the Two Mappings Bound Over It"
+description: |
+  Scaffolding the access layer runs against: a roster graph whose header and
+  membership ends are effective over business time and whose habitat reference
+  version is corrected over processing time as well, the two-schema database
+  they are mapped onto, and the two mappings that cover it — a wide
+  reference-data mapping for the habitat version and a roster list mapping that
+  includes it and carries both association ends. The membership end declares a
+  bi-temporally parameterised qualified property that delegates to the
+  milestoned reference hop, so a caller reads a habitat version by naming one
+  processing and one business instant. Nothing here is executable on its own.
+
+modelSources:
+  model:
+    root: western-meadow-shared
+    files:
+      - test/westernmeadow/domain/MeadowDomain.pure
+      - test/westernmeadow/mapping/HabitatLakeMapping.pure
+      - test/westernmeadow/mapping/RosterListMapping.pure
+      - test/westernmeadow/store/MeadowDB.pure
+
+features:
+  - grammar:association
+  - grammar:qualified-property
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - business-temporal
+  - cross-schema
+  - mapping-include
+  - qualified-property
+  - reference-data
+  - shared-domain
+  - volunteer-roster

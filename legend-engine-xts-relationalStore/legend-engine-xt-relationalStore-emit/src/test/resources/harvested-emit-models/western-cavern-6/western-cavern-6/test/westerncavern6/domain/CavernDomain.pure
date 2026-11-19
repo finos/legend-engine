@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum {meta::pure::profiles::doc.doc = 'Access state of a surveyed cavern.'} test::westerncavern6::domain::CavernStatus
+{
+  OPEN,
+  GATED,
+  FLOODED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Water regime observed along a passage.'} test::westerncavern6::domain::PassageFlow
+{
+  DRY,
+  DAMP,
+  STREAM,
+  SUMP
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Morphology of a surveyed chamber.'} test::westerncavern6::domain::ChamberKind
+{
+  HALL,
+  GROTTO,
+  SHAFT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Dominant floor material of a chamber.'} test::westerncavern6::domain::FloorType
+{
+  MUD,
+  ROCK,
+  SAND
+}
+
+Class {meta::pure::profiles::doc.doc = 'Volunteer steward responsible for a cavern entrance.'} test::westerncavern6::domain::Steward
+{
+  stewardName: String[0..1];
+  stewardPhone: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Where a cavern sits in the karst register: its massif, region and the authority that licenses access.'} test::westerncavern6::domain::Locality
+{
+  massifName: String[0..1];
+  regionName: String[0..1];
+  authorityName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A registered cavern of the western karst.'} test::westerncavern6::domain::Cavern
+{
+  cavernCode: String[1];
+  cavernName: String[1];
+  status: test::westerncavern6::domain::CavernStatus[0..1];
+  entranceAltitude: Integer[0..1];
+  altitudeBand: String[1];
+  registrySource: String[1];
+  surveyYear: Integer[0..1];
+  displayLabel: String[1];
+  steward: test::westerncavern6::domain::Steward[0..1];
+  locality: test::westerncavern6::domain::Locality[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surveyed passage leading on from a cavern entrance.'} test::westerncavern6::domain::Passage
+{
+  passageCode: String[1];
+  lengthM: Integer[1];
+  gradeLabel: String[1];
+  flow: test::westerncavern6::domain::PassageFlow[0..1];
+  nextPassageCode: String[0..1];
+  nextPassageLength: Integer[0..1];
+  authorityName: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A chamber of a cavern, re-plumbed over business time.'} test::westerncavern6::domain::Chamber
+{
+  chamberCode: String[1];
+  cavernCode: String[1];
+  depthM: Integer[0..1];
+  depthBand: String[1];
+  kind: test::westerncavern6::domain::ChamberKind[0..1];
+  floor: test::westerncavern6::domain::FloorType[0..1];
+  cavernName: String[0..1];
+  surveyMonth: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field note logged against a cavern by either the rescue team or the bat count.'} test::westerncavern6::domain::CaveNote
+{
+  noteCode: String[1];
+  cavernCode: String[1];
+  noteText: String[1];
+  loggedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Trips and hours spent underground per cavern.'} test::westerncavern6::domain::TripSummary
+{
+  cavernCode: String[1];
+  tripCount: Integer[1];
+  totalHours: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A team that has visited a cavern at least once.'} test::westerncavern6::domain::TeamVisit
+{
+  teamCode: String[1];
+  cavernCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey sheet as filled in underground: status, flow and floor are written as free wording rather than register codes.'} test::westerncavern6::domain::RawSurveySheet
+{
+  sheetCode: String[1];
+  cavernCode: String[1];
+  statusText: String[1];
+  flowText: String[1];
+  floorText: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey sheet lifted onto the register enumerations, with a composed sheet label.'} test::westerncavern6::domain::SurveySheet
+{
+  sheetCode: String[1];
+  sheetLabel: String[1];
+  status: test::westerncavern6::domain::CavernStatus[1];
+  flow: test::westerncavern6::domain::PassageFlow[1];
+  floor: test::westerncavern6::domain::FloorType[1];
+}
+
+Association test::westerncavern6::domain::Cavern_Passages
+{
+  cavern: test::westerncavern6::domain::Cavern[0..1];
+  passages: test::westerncavern6::domain::Passage[*];
+}
+
+Association test::westerncavern6::domain::Cavern_Trips
+{
+  tripCavern: test::westerncavern6::domain::Cavern[0..1];
+  trips: test::westerncavern6::domain::TripSummary[0..1];
+}

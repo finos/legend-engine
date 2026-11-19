@@ -1,0 +1,151 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'What moves a locomotive of the heritage narrow-gauge line.'} test::goldenotter7::domain::PowerSource
+{
+  STEAM,
+  DIESEL,
+  ELECTRIC
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where a vehicle currently sits in the running plan.'} test::goldenotter7::domain::ServiceState
+{
+  ACTIVE,
+  STORED,
+  WORKSHOP
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The track gauge family a vehicle is built to run on.'} test::goldenotter7::domain::TrackGauge
+{
+  NARROW,
+  METRE,
+  STANDARD
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How a passenger carriage is laid out inside.'} test::goldenotter7::domain::CarriageLayout
+{
+  SALOON,
+  COMPARTMENT,
+  OBSERVATION,
+  BRAKE_END
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The verdict a workshop inspection ends with.'} test::goldenotter7::domain::InspectionOutcome
+{
+  PASSED,
+  ADVISORY,
+  FAILED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How far an inspector has progressed through the workshop ticket.'} test::goldenotter7::domain::InspectorGrade
+{
+  SENIOR,
+  ROUTINE,
+  TRAINEE
+}
+
+Class <<temporal.businesstemporal, test::goldenotter7::profile::FleetMeta.heritageRegister>> {meta::pure::profiles::doc.doc = 'A locomotive of the heritage line, whose recorded fabric is effective over business time.', test::goldenotter7::profile::FleetMeta.custodianTeam = 'running-shed'} test::goldenotter7::domain::Locomotive
+{
+  locoCode: String[1];
+  locoName: String[1];
+  gaugeMm: Integer[1];
+  gauge: test::goldenotter7::domain::TrackGauge[1];
+  powerSource: test::goldenotter7::domain::PowerSource[1];
+  serviceState: test::goldenotter7::domain::ServiceState[1];
+  tractiveEffortKn: Float[1];
+  liveryTitle: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A painting scheme a locomotive is turned out in, repainted from time to time and therefore effective over business time.'} test::goldenotter7::domain::LiveryScheme
+{
+  liveryCode: String[1];
+  liveryName: String[1];
+  baseColour: String[1];
+}
+
+Class <<temporal.processingtemporal, test::goldenotter7::profile::MaintenanceRules.ruleChecked>> {meta::pure::profiles::doc.doc = 'One workshop inspection ticket as it was landed by a load batch, so a restated ticket keeps its earlier landed picture readable.', test::goldenotter7::profile::MaintenanceRules.ruleFamily = 'workshop-ticket'} test::goldenotter7::domain::InspectionTicket
+{
+  ticketCode: String[1];
+  locoCode: String[1];
+  outcome: test::goldenotter7::domain::InspectionOutcome[1];
+  inspectedOn: StrictDate[1];
+  labourHours: Float[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A workshop inspector, landed by the same load batches that carry the tickets they sign off.'} test::goldenotter7::domain::Inspector
+{
+  inspectorCode: String[1];
+  inspectorName: String[1];
+  grade: test::goldenotter7::domain::InspectorGrade[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Anything hauled behind a locomotive: the shared identity, name and running gear of a vehicle.'} test::goldenotter7::domain::HauledVehicle
+{
+  vehicleCode: String[1];
+  vehicleName: String[1];
+  axleCount: Integer[1];
+  depotTitle: String[0..1];
+  regionTitle: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A passenger carriage, adding its seating and internal layout to the shared hauled-vehicle identity.'} test::goldenotter7::domain::Carriage extends test::goldenotter7::domain::HauledVehicle
+{
+  seatCount: Integer[1];
+  layout: test::goldenotter7::domain::CarriageLayout[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A goods wagon, adding its load rating and body style to the shared hauled-vehicle identity.'} test::goldenotter7::domain::Wagon extends test::goldenotter7::domain::HauledVehicle
+{
+  payloadTonnes: Float[1];
+  bodyStyle: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A depot the vehicles are allocated to, which may itself be sub-shed to a parent depot.'} test::goldenotter7::domain::Depot
+{
+  depotCode: String[1];
+  depotName: String[1];
+  parentDepotName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The operating region a depot belongs to, together with the network the region reports into.'} test::goldenotter7::domain::RegionProfile
+{
+  regionCode: String[1];
+  regionName: String[1];
+  networkName: String[1];
+}
+
+Association test::goldenotter7::domain::Loco_Livery
+{
+  liveriedLocomotives: test::goldenotter7::domain::Locomotive[*];
+  livery: test::goldenotter7::domain::LiveryScheme[0..1];
+}
+
+Association test::goldenotter7::domain::Ticket_Inspector
+{
+  signedTickets: test::goldenotter7::domain::InspectionTicket[*];
+  inspector: test::goldenotter7::domain::Inspector[0..1];
+}
+
+Association test::goldenotter7::domain::Carriage_Depot
+{
+  allocatedCarriages: test::goldenotter7::domain::Carriage[*];
+  depot: test::goldenotter7::domain::Depot[0..1];
+}
+
+Association test::goldenotter7::domain::Depot_Region
+{
+  depots: test::goldenotter7::domain::Depot[*];
+  region: test::goldenotter7::domain::RegionProfile[0..1];
+}

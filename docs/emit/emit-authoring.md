@@ -98,6 +98,8 @@ Apply the rule from `emit.md` §3.2:
 | A Service over an M2M mapping | `legend-engine-xts-service/legend-engine-xt-service-emit`, as above |
 | File / model generation | `legend-engine-xts-generation/legend-engine-xt-generation-emit` |
 | External format / binding | The format's `-emit` module under `legend-engine-core-external-format` or its `xts-*` peer (e.g. `legend-engine-xts-json/legend-engine-external-format-jsonSchema-emit`) |
+| Data space over its mappings, runtimes and services | `legend-engine-xts-data-space/legend-engine-xt-data-space-emit` |
+| Service store | `legend-engine-xts-serviceStore/legend-engine-xt-serviceStore-emit` |
 | Flat-data store | `legend-engine-xts-flatdata/legend-engine-xt-flatdata-emit` |
 | Persistence (service-output target, ingestion tests) | `legend-engine-xts-persistence/legend-engine-xt-persistence-emit` |
 
@@ -502,6 +504,47 @@ throw `IllegalArgumentException` for an unknown name.
 An EMIT test module can be as simple as a single suite file with all the YAML
 in one directory tree, or it can have multiple suite files — each targeting a
 different sub-tree (a distinct root) or an explicit set of named models.
+
+### 8.1 Harvested corpora
+
+Some modules also host harvested corpora: EMIT models harvested from real
+models rather than written for the module. They follow their own convention,
+so they never mix with the module's own models:
+
+- They live under a dedicated root, `src/test/resources/harvested-emit-models/`,
+  one directory per project: `<project>/<descriptor>.emit.yaml` beside
+  `<project>/<root>/…`, so relative `root:` and `source:` paths resolve within
+  the project. A project's name (`teal-otter-3`) is opaque; its descriptors'
+  `title` carries the meaning.
+- Each project has its own runner class, named after the project, in the
+  package `<module's EMIT test package>.harvested.<project>` (the project name
+  in lower case without hyphens). It passes the project's directory as the
+  root:
+
+  ```java
+  public class TealOtter3EMITTests
+  {
+      @TestFactory
+      Stream<DynamicContainer> emit()
+      {
+          return EMITTestSuiteBuilder.testContainers("harvested-emit-models/teal-otter-3");
+      }
+  }
+  ```
+
+  The root resolves as a classpath directory, so `teal-otter` never picks up
+  `teal-otter-3`, and the module's other runners never see these models
+  because their roots differ.
+- The `harvested` package segment selects or excludes the whole corpus:
+  `mvn test -pl <module> -Dtest='**/harvested/**/*EMITTests'`. It is also the
+  lever for spreading the corpus over Surefire forks or CI jobs.
+- Every harvested model runs all of its tests and follows the same rules as
+  any other model: each `.pure` file carries the Apache header, deployment
+  identifiers are the placeholder `'000000'`, `features` come from the
+  `emit.md` §6.2 taxonomy, and `complexity` follows from them.
+- One `src/test/resources/harvested-emit-models` entry in the server pom's
+  `includedRelativeSubpaths` puts every module's harvested corpus in the
+  coverage report (`emit.md` §5.4).
 
 ---
 

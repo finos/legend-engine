@@ -1,0 +1,65 @@
+name: jade-willow-nursery
+title: "Jade Willow — Hardy Plant Propagation Register (Nullable Relational Store, Data Space, Diagram)"
+description: |
+  A hardy-plant propagation register published as a curated relational corpus.
+  Two domain classes are bound to a two-table store held in a single schema
+  whose non-key columns are all nullable across string, integer,
+  floating-point, date and timestamp families, so every mapped property is
+  optional and the generated SQL has to tolerate nulls in each projected
+  column. The mapping carries only bare column bindings — transform depth
+  stays at one — and resolves the batch-to-bed property across a declared
+  join. A Snowflake-typed connection with quoted identifiers and an engine
+  runtime close the mapping-store-connection triangle, and a
+  substrate-parameterised single-execution service projects the batches over
+  them. A layout element pins both classes and the property that relates them.
+  The data space catalogues the mapping, runtime, domain elements, the layout
+  element and the service as a packageable executable, and carries an e-mail
+  support contact. Both the mapping and the service carry test suites over
+  embedded relational fixtures, including fully populated and null-bearing
+  rows and an empty-result scenario.
+
+modelSources:
+  model:
+    root: jade-willow-nursery
+    files:
+      - test/jadewillow/connection/NurseryConnection.pure
+      - test/jadewillow/dataspace/NurseryDataSpace.pure
+      - test/jadewillow/diagram/NurseryDiagram.pure
+      - test/jadewillow/domain/NurseryDomain.pure
+      - test/jadewillow/mapping/NurseryMapping.pure
+      - test/jadewillow/runtime/NurseryRuntime.pure
+      - test/jadewillow/service/BatchesBySubstrateService.pure
+      - test/jadewillow/store/NurseryDatabase.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - diagram
+  - h2
+  - horticulture
+  - main-table-alias
+  - nullable-columns
+  - primary-key
+  - project
+  - propagation-nursery
+  - relational
+  - service-test
+  - snowflake

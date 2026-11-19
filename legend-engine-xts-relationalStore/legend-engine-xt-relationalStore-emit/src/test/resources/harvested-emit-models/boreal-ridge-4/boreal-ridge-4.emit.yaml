@@ -1,0 +1,72 @@
+name: boreal-ridge-4
+title: "Boreal Ridge 4 — Fire Lookout Towers, Watch Postings And A Substituted Replica Store"
+description: |
+  A ridge-line fire lookout network keeps its watch crews in one store and its towers,
+  fire regions, districts and land agencies in a second store that includes the first
+  across three schemas. Towers are read from a store view that uppercases the tower
+  name, reaches the region through a join whose predicate combines a key equality
+  with an open-or-unset status, and renders the elevation as text. The tower class
+  mapping uses the view as its main table, bands the elevation through eight nested
+  case arms with a null fallback, follows a self join on the view to the parent tower,
+  embeds the siting and inlines a beacon class mapping. Watch postings carry a
+  two-column key, read their crew through a join restricted to active crews and reach
+  the district and land agency through three and four inner hops, while an
+  association links each posting to its tower card. A replica mapping reuses the
+  posting mapping through a store substitution, a model-to-model mapping turns tower
+  sheets into digests with three expression-sourced enumeration mappings, and three
+  engine runtimes each wrap one mapping with an embedded H2 connection.
+modelSources:
+  model:
+    root: boreal-ridge-4
+    files:
+      - test/borealridge4/domain/LookoutDomain.pure
+      - test/borealridge4/mapping/LookoutAllMapping.pure
+      - test/borealridge4/mapping/LookoutPostingMapping.pure
+      - test/borealridge4/mapping/LookoutReplicaMapping.pure
+      - test/borealridge4/mapping/LookoutTowerMapping.pure
+      - test/borealridge4/mapping/TowerDigestM2M.pure
+      - test/borealridge4/runtime/LookoutRuntimes.pure
+      - test/borealridge4/store/CrewRosterDb.pure
+      - test/borealridge4/store/LookoutNetworkDb.pure
+      - test/borealridge4/store/LookoutReplicaDb.pure
+features:
+  - mapping:mapping-include-store-substitution
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - scaffolding:relational-mapping
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-inline-embedded
+  - mapping:relational-join-path
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-composite-join
+  - store:relational-dyna-function
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-join-literal-condition
+  - store:relational-multi-column-primary-key
+  - store:relational-cross-schema
+  - store:relational-self-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: basic
+tags:
+  - association
+  - duckdb
+  - embedded
+  - enum-of-expression
+  - fire-lookout
+  - inline-embedded
+  - m2m
+  - multi-hop-join
+  - self-join
+  - store-include
+  - store-substitution
+  - view

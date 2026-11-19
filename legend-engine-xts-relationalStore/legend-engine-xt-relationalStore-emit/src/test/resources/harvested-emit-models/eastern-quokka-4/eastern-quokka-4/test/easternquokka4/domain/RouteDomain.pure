@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::easternquokka4::domain::RouteAssignment
+{
+  assignmentCode: String[1];
+  routeCode: String[1];
+  schoolCode: String[1];
+  driverCode: String[1];
+  riderCount: Integer[1];
+  serviceBand: String[1];
+  inDate: StrictDate[1];
+  outDate: StrictDate[1];
+}
+
+Class test::easternquokka4::domain::RosterEntry
+{
+  assignmentCode: String[1];
+  routeCode: String[1];
+  schoolCode: String[1];
+  driverCode: String[1];
+  riderCount: Integer[1];
+  serviceBand: String[1];
+  rosterLabel: String[0..1];
+  schoolRoute: String[1];
+  driverRoute: String[1];
+  priority: Integer[1];
+}
+
+Class test::easternquokka4::domain::RawRouteFeed
+{
+  assignmentCode: String[1];
+  routeCode: String[1];
+  schoolCode: String[1];
+  driverCode: String[1];
+  riderCount: Integer[1];
+  serviceBand: String[1];
+}

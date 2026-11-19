@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::tealotter2::domain::*;
+
+Class {doc.doc = 'One screened otter sighting. The mandatory tag identifier is bounded on both sides by class-level constraints, so an instance is valid only inside a closed width window, and the two enum-typed attributes classify the raft the animal belongs to and the screening decision taken on the record, so constraint evaluation and enum resolution happen on the same instance.'} test::tealotter2::domain::OtterSighting
+[
+  tagIdentifierMinWidth: $this.tagIdentifier->trim()->length() >= 8,
+  tagIdentifierMaxWidth: $this.tagIdentifier->trim()->length() <= 16,
+  observerNoteMinWidth: $this.observerNote->isEmpty() || ($this.observerNote->toOne()->trim()->length() >= 4)
+]
+{
+  {doc.doc = 'Required flipper-tag identifier the width window is asserted against.'} tagIdentifier: String[1];
+  {doc.doc = 'Originating classification of the raft the animal belongs to.'} raftOrigin: RaftOrigin[1];
+  {doc.doc = 'Screening decision recorded against the sighting.'} screeningOutcome: ScreeningOutcome[1];
+  {doc.doc = 'Free-text remark left by the observer, absent on an unannotated sighting.'} observerNote: String[0..1];
+  {doc.doc = 'Pups counted alongside the tagged adult, absent when the raft was not approached closely enough to count.'} pupCount: Integer[0..1];
+}
+
+Class {doc.doc = 'A bankside holt whose entrances are watched across a survey season, holding the sightings recorded at it as a to-many reference.'} test::tealotter2::domain::HoltSite
+{
+  {doc.doc = 'Survey code of the holt.'} siteCode: String[1];
+  {doc.doc = 'Local name of the holt.'} siteName: String[1];
+  {doc.doc = 'Bank aspect the entrances face.'} bankAspect: String[1];
+  {doc.doc = 'Depth of the bank undercut in centimetres, absent where the undercut could not be measured safely.'} undercutDepthCm: Integer[0..1];
+  {doc.doc = 'Sightings recorded at this holt.'} sightings: OtterSighting[*];
+}
+
+Class {doc.doc = 'A walked survey transect along one reach, holding the holts that fall inside it as a to-many reference.'} test::tealotter2::domain::SurveyTransect
+{
+  {doc.doc = 'Survey code of the transect.'} transectCode: String[1];
+  {doc.doc = 'Name of the reach the transect follows.'} reachName: String[1];
+  {doc.doc = 'Walked length of the transect in metres.'} walkedLengthM: Integer[1];
+  {doc.doc = 'Observer who led the walk, absent on an unattributed historic walk.'} leadObserver: String[0..1];
+  {doc.doc = 'Holts falling inside the transect.'} holts: HoltSite[*];
+}

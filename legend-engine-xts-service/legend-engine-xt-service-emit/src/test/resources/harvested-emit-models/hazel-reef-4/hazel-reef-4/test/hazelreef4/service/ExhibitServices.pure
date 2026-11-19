@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelreef4::service::ExhibitCards
+{
+  pattern: '/hazelreef4/v1/exhibit-cards';
+  title: 'Hazel Reef Exhibit Cards';
+  documentation: 'Projects museum exhibit requests into deterministic curator cards using the M2M mapping and Relation query grammar.';
+  ownership: UserList { users: ['museum-curation'] };
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query:
+      |test::hazelreef4::domain::ExhibitCard.all()->graphFetch(
+        #{
+          test::hazelreef4::domain::ExhibitCard{
+            cardCode,
+            exhibitLabel,
+            priorityLabel,
+            noteLabel,
+            displayLabel,
+            audienceTags
+          }
+        }#
+      )->serialize(
+        #{
+          test::hazelreef4::domain::ExhibitCard{
+            cardCode,
+            exhibitLabel,
+            priorityLabel,
+            noteLabel,
+            displayLabel,
+            audienceTags
+          }
+        }#
+      );
+    mapping: test::hazelreef4::mapping::ExhibitCardMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::hazelreef4::mapping::ExhibitCardMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          exhibitConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::hazelreef4::domain::ExhibitRequest;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    exhibitSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          exhibitConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"requestCode":"R-1","exhibitCode":"EX-1","exhibitTitle":"Tide Pool","urgencyCode":"U1","curatorNote":"watch glass"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        projectedCard:
+        {
+          asserts:
+          [
+            oneCard:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"cardCode":"CARD-R-1","exhibitLabel":"EX-1 / Tide Pool","priorityLabel":"IMMEDIATE","noteLabel":"watch glass","displayLabel":"MUSEUM EXHIBIT CARD","audienceTags":["PUBLIC","CURATORIAL"]}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

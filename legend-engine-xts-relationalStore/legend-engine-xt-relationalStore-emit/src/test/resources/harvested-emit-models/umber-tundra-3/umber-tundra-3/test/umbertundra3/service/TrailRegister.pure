@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::umbertundra3::service::TrailRegister
+{
+  pattern: '/umbertundra3/trails/{archive}';
+  title: 'Trail Register';
+  owners: ['trail-observers'];
+  documentation: 'Returns marked trail notes from the selected archive.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    key: 'archive';
+    query: {asOf: StrictDate[1]|test::umbertundra3::domain::TrailNote.all($asOf)->filter(x|(($x.markerCode->trim()->toUpper()->startsWith('M')) && ($x.markerCount > 0)) && (($x.trailName->isNotEmpty()) || ($x.noteCode->in(['TN-01', 'TN-02', 'TN-03']))))->project([x|test::umbertundra3::function::canonicalCode($x.noteCode), x|$x.trailName, x|$x.observedOn->year(), x|$x.archiveLabel], ['Note', 'Trail', 'Year', 'Archive'])->distinct()->sort([asc('Note')])};
+    executions['field']: {mapping: test::umbertundra3::mapping::TrailMapping; runtime: test::umbertundra3::runtime::TrailPrimaryRuntime;}
+    executions['reserve']: {mapping: test::umbertundra3::mapping::TrailMapping; runtime: test::umbertundra3::runtime::TrailArchiveRuntime;}
+  }
+  testSuites:
+  [
+    trailRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          survey:
+            Relational
+            #{
+              survey.trail_note:
+                'note_code,trail_name,marker_code,marker_count,observed_on,archive_label\n'+
+                'TN-01,North Loop,M-ALPHA,3,2026-01-10,FIELD\n'+
+                'TN-02,North Loop,M-BETA,0,2026-01-11,FIELD\n'+
+                'TN-03,South Spur,M-GAMMA,2,2026-02-05,RESERVE\n'+
+                'TN-04,Hidden Cut,X-DELTA,4,2026-02-06,RESERVE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothArchives:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['field', 'reserve'];
+          parameters: [asOf = %2026-06-01]
+          asserts:
+          [
+            selectedNotes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Note":"TN-01","Trail":"North Loop","Year":2026,"Archive":"FIELD"},{"Note":"TN-03","Trail":"South Spur","Year":2026,"Archive":"RESERVE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::russetcanyon2::store::CanyonDatabase
+(
+  Schema canyon
+  (
+    Table trail_head
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      trail_code VARCHAR(24) PRIMARY KEY,
+      trail_name VARCHAR(120) NOT NULL,
+      elevation_m INTEGER NOT NULL,
+      access_note VARCHAR(240),
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table trail_segment
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      segment_code VARCHAR(24) PRIMARY KEY,
+      trail_code VARCHAR(24) NOT NULL,
+      surface_type VARCHAR(60) NOT NULL,
+      length_m INTEGER NOT NULL,
+      grade_percent INTEGER NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+
+    Table rock_layer
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      layer_code VARCHAR(24) PRIMARY KEY,
+      segment_code VARCHAR(24) NOT NULL,
+      layer_name VARCHAR(120) NOT NULL,
+      thickness_m INTEGER NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+  )
+
+  Join Head_Segment_J(canyon.trail_head.trail_code = canyon.trail_segment.trail_code)
+  Join Segment_Layer_J(canyon.trail_segment.segment_code = canyon.rock_layer.segment_code)
+)

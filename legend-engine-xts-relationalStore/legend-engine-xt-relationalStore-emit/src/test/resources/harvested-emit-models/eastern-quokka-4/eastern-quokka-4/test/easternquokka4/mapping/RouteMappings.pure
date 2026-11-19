@@ -1,0 +1,217 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternquokka4::mapping::RouteRelationalMapping
+(
+  *test::easternquokka4::domain::RouteAssignment[assignment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternquokka4::store::RouteDb]district.route_assignment.assignment_code
+    )
+    ~mainTable [test::easternquokka4::store::RouteDb]district.route_assignment
+    assignmentCode: [test::easternquokka4::store::RouteDb]district.route_assignment.assignment_code,
+    routeCode: [test::easternquokka4::store::RouteDb]district.route_assignment.route_code,
+    schoolCode: [test::easternquokka4::store::RouteDb]district.route_assignment.school_code,
+    driverCode: [test::easternquokka4::store::RouteDb]district.route_assignment.driver_code,
+    riderCount: [test::easternquokka4::store::RouteDb]district.route_assignment.rider_count,
+    serviceBand: [test::easternquokka4::store::RouteDb]district.route_assignment.service_band,
+    inDate: [test::easternquokka4::store::RouteDb]district.route_assignment.in_date,
+    outDate: [test::easternquokka4::store::RouteDb]district.route_assignment.out_date
+  }
+  testSuites:
+  [
+    routeRelationalSuite:
+    {
+      function: |test::easternquokka4::domain::RouteAssignment.all(%2026-02-01)->filter(
+        r|$r.riderCount > 10 && $r.serviceBand->in(['CORE', 'FLEX', 'QUIET'])
+      )->project(
+        ~[
+          Code: r|$r.assignmentCode,
+          Route: r|test::easternquokka4::function::schoolRoute($r.schoolCode, $r.routeCode),
+          Riders: r|test::easternquokka4::function::riderCount($r.riderCount),
+          Label: r|test::easternquokka4::function::routeLabel($r.serviceBand)
+        ]
+      );
+      tests:
+      [
+        activeAssignmentsExcludeExpired:
+        {
+          data:
+          [
+            test::easternquokka4::store::RouteDb:
+              Relation
+              #{
+                district.route_assignment:
+                  assignment_code,route_code,school_code,driver_code,rider_count,service_band,in_date,out_date
+                  RA-01,ROUTE-7,SCHOOL-A,DRIVER-4,28,CORE,2026-01-01,9999-12-31
+                  RA-02,ROUTE-9,SCHOOL-B,DRIVER-8,16,FLEX,2026-01-01,9999-12-31
+                  RA-03,ROUTE-4,SCHOOL-C,DRIVER-2,11,QUIET,2026-03-01,9999-12-31
+                  RA-04,ROUTE-2,SCHOOL-D,DRIVER-6,7,CORE,2026-01-01,9999-12-31;
+              }#
+          ];
+          asserts:
+          [
+            activeRows:
+              Relation
+              #{
+                Code,Route,Riders,Label
+                RA-01,SCHOOL-A/ROUTE-7,56,core-route
+                RA-02,SCHOOL-B/ROUTE-9,19,flex-route;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Mapping
+Mapping test::easternquokka4::mapping::RosterM2MMapping
+(
+  *test::easternquokka4::domain::RosterEntry[entry]: Pure
+  {
+    ~src test::easternquokka4::domain::RawRouteFeed
+    assignmentCode: $src.assignmentCode,
+    routeCode: $src.routeCode,
+    schoolCode: $src.schoolCode,
+    driverCode: $src.driverCode,
+    riderCount: test::easternquokka4::function::riderCount($src.riderCount),
+    serviceBand: $src.serviceBand,
+    rosterLabel: test::easternquokka4::function::labelForBand($src.serviceBand),
+    schoolRoute: test::easternquokka4::function::schoolRoute($src.schoolCode, $src.routeCode),
+    driverRoute: test::easternquokka4::function::driverRoute($src.driverCode, $src.routeCode),
+    priority: test::easternquokka4::function::routePriority($src.serviceBand)
+  }
+  testSuites:
+  [
+    rosterTransformSuite:
+    {
+      function: |test::easternquokka4::domain::RosterEntry.all()->graphFetch(
+        #{
+          test::easternquokka4::domain::RosterEntry
+          {
+            assignmentCode,
+            schoolRoute,
+            riderCount,
+            rosterLabel,
+            priority
+          }
+        }#
+      )->serialize(
+        #{
+          test::easternquokka4::domain::RosterEntry
+          {
+            assignmentCode,
+            schoolRoute,
+            riderCount,
+            rosterLabel,
+            priority
+          }
+        }#
+      );
+      tests:
+      [
+        coreArmOne:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternquokka4::domain::RawRouteFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"assignmentCode":"RAW-01","routeCode":"ROUTE-1","schoolCode":"SCHOOL-X","driverCode":"DRIVER-X","riderCount":20,"serviceBand":"CORE"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"assignmentCode":"RAW-01","schoolRoute":"SCHOOL-X/ROUTE-1","riderCount":40,"rosterLabel":"core-route","priority":1}';
+                  }#;
+              }#
+          ];
+        },
+        flexArmTwo:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternquokka4::domain::RawRouteFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"assignmentCode":"RAW-02","routeCode":"ROUTE-2","schoolCode":"SCHOOL-Y","driverCode":"DRIVER-Y","riderCount":12,"serviceBand":"FLEX"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"assignmentCode":"RAW-02","schoolRoute":"SCHOOL-Y/ROUTE-2","riderCount":15,"rosterLabel":"flex-route","priority":2}';
+                  }#;
+              }#
+          ];
+        },
+        fallbackNull:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternquokka4::domain::RawRouteFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"assignmentCode":"RAW-03","routeCode":"ROUTE-3","schoolCode":"SCHOOL-Z","driverCode":"DRIVER-Z","riderCount":8,"serviceBand":"NIGHT"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"assignmentCode":"RAW-03","schoolRoute":"SCHOOL-Z/ROUTE-3","riderCount":11,"rosterLabel":null,"priority":3}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

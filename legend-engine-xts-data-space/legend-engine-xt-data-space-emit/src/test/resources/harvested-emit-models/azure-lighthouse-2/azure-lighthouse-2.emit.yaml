@@ -1,0 +1,62 @@
+name: azure-lighthouse-2
+title: "Azure Lighthouse 2 — catalogued coast-beacon network over a multi-table relational store with plan-generating tabular endpoints"
+description: |
+  A coastal beacon network mapped relationally: five independent tables of one
+  store back five model classes, and every class mapping names its own main table
+  and declares an explicit primary key, so each mapped class scopes its own FROM
+  clause and row identity. Single-execution endpoints project those classes into
+  tabular results — cased labels, scaled ratings and nested classification arms —
+  and each carries the mapping and the warehouse-backed engine runtime that
+  resolves it into relational instantiation and SQL plan nodes rather than merely
+  compiling. A data space groups the mapping, the default runtime and two featured
+  endpoints into one catalogued execution context with an email support target,
+  while two diagrams record the visual layout of the same classes without adding
+  execution semantics. Mapping and service test suites pin the projected rows
+  against embedded relational fixtures.
+modelSources:
+  model:
+    root: azure-lighthouse-2
+    files:
+      - test/azurelighthouse2/connection/LighthouseWarehouseConnection.pure
+      - test/azurelighthouse2/dataspace/LighthouseDataSpace.pure
+      - test/azurelighthouse2/diagram/LighthouseDiagrams.pure
+      - test/azurelighthouse2/domain/LighthouseDomain.pure
+      - test/azurelighthouse2/mapping/LighthouseMapping.pure
+      - test/azurelighthouse2/runtime/LighthouseRuntime.pure
+      - test/azurelighthouse2/service/RotationWatchService.pure
+      - test/azurelighthouse2/service/StationClassService.pure
+      - test/azurelighthouse2/service/SupplyLoadService.pure
+      - test/azurelighthouse2/store/LighthouseDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:conditional-projection
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - diagram
+  - h2
+  - lighthouse
+  - main-table-alias
+  - multi-table
+  - plan-generation
+  - relational
+  - service-test
+  - snowflake
+  - tabular-data-set

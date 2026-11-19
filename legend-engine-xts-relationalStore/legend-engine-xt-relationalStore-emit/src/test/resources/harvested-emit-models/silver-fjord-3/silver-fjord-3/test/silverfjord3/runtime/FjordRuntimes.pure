@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::silverfjord3::runtime::GaugeRuntime
+{
+  mappings:
+  [
+    test::silverfjord3::mapping::GaugeMapping
+  ];
+  connections:
+  [
+    test::silverfjord3::store::GaugeDb:
+    [
+      gaugeConn: test::silverfjord3::connection::GaugeConnection
+    ]
+  ];
+}
+
+Runtime test::silverfjord3::runtime::ArchiveRuntime
+{
+  mappings:
+  [
+    test::silverfjord3::mapping::ArchiveMapping
+  ];
+  connections:
+  [
+    test::silverfjord3::store::ArchiveDb:
+    [
+      archiveConn: test::silverfjord3::connection::ArchiveConnection
+    ]
+  ];
+}
+
+Runtime test::silverfjord3::runtime::RegionRuntime
+{
+  mappings:
+  [
+    test::silverfjord3::mapping::RegionMapping
+  ];
+  connections:
+  [
+    test::silverfjord3::store::RegionDb:
+    [
+      regionConn: test::silverfjord3::connection::RegionConnection
+    ]
+  ];
+}
+
+Runtime test::silverfjord3::runtime::NetworkGaugeRuntime
+{
+  mappings:
+  [
+    test::silverfjord3::mapping::FjordNetworkMapping
+  ];
+  connections:
+  [
+    test::silverfjord3::store::GaugeDb:
+    [
+      networkGaugeConn: test::silverfjord3::connection::GaugeConnection
+    ]
+  ];
+}
+
+Runtime test::silverfjord3::runtime::NetworkArchiveRuntime
+{
+  mappings:
+  [
+    test::silverfjord3::mapping::FjordRegisterMapping
+  ];
+  connections:
+  [
+    test::silverfjord3::store::ArchiveDb:
+    [
+      networkArchiveConn: test::silverfjord3::connection::ArchiveConnection
+    ]
+  ];
+}

@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenarboretum3::mapping::NurseryReferenceMapping
+(
+  *test::goldenarboretum3::domain::SpeciesReference[species]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref.species_code
+    )
+    ~mainTable [test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref
+    speciesCode: [test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref.species_code,
+    speciesName: [test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref.species_name,
+    familyName: toUpper([test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref.family_name),
+    nativeRange: [test::goldenarboretum3::store::NurseryReferenceDb]reference.species_ref.native_range
+  }
+
+  *test::goldenarboretum3::domain::SubstrateReference[substrate]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum3::store::NurseryReferenceDb]reference.substrate_ref.substrate_code
+    )
+    ~mainTable [test::goldenarboretum3::store::NurseryReferenceDb]reference.substrate_ref
+    substrateCode: [test::goldenarboretum3::store::NurseryReferenceDb]reference.substrate_ref.substrate_code,
+    substrateName: [test::goldenarboretum3::store::NurseryReferenceDb]reference.substrate_ref.substrate_name,
+    drainageClass: case(
+                     equal([test::goldenarboretum3::store::NurseryReferenceDb]reference.substrate_ref.drainage_class, 'FREE'),
+                     'FREE DRAINING',
+                     [test::goldenarboretum3::store::NurseryReferenceDb]reference.substrate_ref.drainage_class
+                   )
+  }
+
+  *test::goldenarboretum3::domain::ZoneReference[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum3::store::NurseryReferenceDb]reference.zone_ref.zone_code
+    )
+    ~mainTable [test::goldenarboretum3::store::NurseryReferenceDb]reference.zone_ref
+    zoneCode: [test::goldenarboretum3::store::NurseryReferenceDb]reference.zone_ref.zone_code,
+    zoneName: [test::goldenarboretum3::store::NurseryReferenceDb]reference.zone_ref.zone_name,
+    shelterClass: toLower([test::goldenarboretum3::store::NurseryReferenceDb]reference.zone_ref.shelter_class)
+  }
+
+  testSuites:
+  [
+    referenceCurationSuite:
+    {
+      function: |test::goldenarboretum3::domain::SubstrateReference.all()->project(
+  [
+    s|$s.substrateCode,
+    s|$s.substrateName,
+    s|$s.drainageClass
+  ],
+  [
+    'Substrate',
+    'Name',
+    'Drainage'
+  ]
+)->sort(
+  [
+    asc('Substrate')
+  ]
+);
+      tests:
+      [
+        drainageRewriteAndPassthrough:
+        {
+          doc: 'Reads the curated substrate extent so the two-arm drainage conditional both rewrites the matching class and passes the column through unchanged on the other rows, including a row whose drainage class is absent.';
+          data:
+          [
+            test::goldenarboretum3::store::NurseryReferenceDb:
+              Relational
+              #{
+                reference.substrate_ref:
+                  'substrate_code,substrate_name,drainage_class\n'+
+                  'SUB-BARK,Composted bark,FREE\n'+
+                  'SUB-GRIT,Sharp grit blend,VERY FREE\n'+
+                  'SUB-LOAM,Sieved loam,\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSubstrates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Substrate":"SUB-BARK","Name":"Composted bark","Drainage":"FREE DRAINING"},{"Substrate":"SUB-GRIT","Name":"Sharp grit blend","Drainage":"VERY FREE"},{"Substrate":"SUB-LOAM","Name":"Sieved loam","Drainage":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

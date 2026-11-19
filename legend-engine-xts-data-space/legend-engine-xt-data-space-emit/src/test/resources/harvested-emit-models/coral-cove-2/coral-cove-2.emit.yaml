@@ -1,0 +1,73 @@
+name: coral-cove-2
+title: "Coral Cove 2 — A Wide Relational Reef Monitoring Store Published Through Tabular Services And A Data Space"
+description: |
+  A reef monitoring network whose physical layer is one relational store of sibling tables in a
+  single schema, each explicitly typed with a declared key, joined to its neighbours by named
+  equality joins that the mapping layer reuses rather than restating per property.
+
+  Every mapped class pins its main table alias explicitly, so column references, keys and join
+  origins all resolve against one aliased table among the many similarly shaped ones, and every
+  class mapping declares its own primary key: the survey pass, the colony and the bleaching
+  episode declare composite keys over an identifier plus a version or sequence boundary column,
+  so the same domain identifier recurring across versions yields one instance per key tuple.
+  Properties are either direct column reads under the alias or single-hop join-reached reads,
+  and the optional properties resolve to null where the column is unpopulated.
+
+  Four associations connect class pairs with navigable ends and are implemented relationally
+  against the named joins, so traversal generates the join in either direction, a to-many end
+  multiplies rows and an unmatched end is simply empty.
+
+  The consumer surface is a family of tabular services whose bodies retrieve a class extent,
+  optionally filter it and project properties into named columns, plus a data space that names
+  the mapping and runtime pair a consumer executes against, the domain elements it covers and
+  three of the services as featured executables. The runtime binds the mapping to a warehouse
+  connection with a delegated authentication strategy, which fixes the dialect the generated
+  plan targets; a second runtime over a local connection stands the schema up from its own
+  setup statements so the mapping and service tests execute.
+
+modelSources:
+  model:
+    root: coral-cove-2
+    files:
+      - test/coralcove2/connection/ReefConnections.pure
+      - test/coralcove2/dataspace/ReefDataSpace.pure
+      - test/coralcove2/domain/ReefDomain.pure
+      - test/coralcove2/mapping/ReefMapping.pure
+      - test/coralcove2/runtime/ReefRuntimes.pure
+      - test/coralcove2/service/ConditionServices.pure
+      - test/coralcove2/service/SiteServices.pure
+      - test/coralcove2/service/SurveyServices.pure
+      - test/coralcove2/store/ReefDatabase.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - composite-primary-key
+  - data-space
+  - h2
+  - main-table-alias
+  - mapping-test
+  - named-join
+  - reef-monitoring-network
+  - service-test
+  - snowflake
+  - snowflake-connection
+  - tabular-projection

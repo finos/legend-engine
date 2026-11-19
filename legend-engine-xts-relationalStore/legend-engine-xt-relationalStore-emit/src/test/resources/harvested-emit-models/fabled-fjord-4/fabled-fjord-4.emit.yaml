@@ -1,0 +1,28 @@
+name: fabled-fjord-4
+title: "Fabled Fjord Tide Reading Mapping"
+description: |
+  A tide-observation mapping that binds a compact relational reading register
+  into cleaned digest records. The mapping combines nested label functions,
+  relation projections, float measurements, and a concrete mapped-output test.
+modelSources:
+  model:
+    root: fabled-fjord-4
+    files:
+      - test/fabledfjord4/domain/TideDomain.pure
+      - test/fabledfjord4/function/TideFunctions.pure
+      - test/fabledfjord4/mapping/TideMapping.pure
+      - test/fabledfjord4/store/TideDatabase.pure
+features:
+  - execution:mapping-test
+  - mapping:m2m-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - duckdb
+  - fjord-tides
+  - mapping-test
+  - tide-observations

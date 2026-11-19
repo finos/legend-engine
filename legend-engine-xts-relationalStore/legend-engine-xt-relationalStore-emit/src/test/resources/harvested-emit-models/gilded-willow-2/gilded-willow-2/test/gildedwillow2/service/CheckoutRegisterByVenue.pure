@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedwillow2::service::CheckoutRegisterByVenue
+{
+  pattern: '/gildedwillow2/v1/checkout-register-by-venue';
+  title: 'School Instrument Lending - checkout register by venue';
+  ownership: DID { identifier: 'school-instrument-lending' };
+  documentation: 'Venue-keyed register of instrument checkouts live on the processing timeline: one shared statement declared against two execution alternatives, so the supplied key selects the mapping-and-runtime binding that plans and executes it.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {processingDate: StrictDate[1], asOfDate: StrictDate[1], families: String[*]|test::gildedwillow2::domain::InstrumentCheckout.all($processingDate)->filter(
+      l|((($l.checkedOutOn->isEmpty() || ($l.checkedOutOn->toOne() >= $asOfDate->adjust(-60, meta::pure::functions::date::DurationUnit.DAYS))) && ($l.returnedDate->isEmpty() || ($l.returnedDate->toOne() <= $asOfDate))) && $l.familyCode->in($families)) && ($l.serviceHours->isEmpty() || ($l.serviceHours->toOne() >= 0.0))
+    )->project(
+      [
+        l|$l.checkoutCode,
+        l|$l.programName,
+        l|$l.instrumentLabel,
+        l|$l.familyCode,
+        l|$l.roomName,
+        l|$l.overdueBand,
+        l|$l.wearLabel,
+        l|$l.hoursPerCheckout
+      ],
+      [
+        'CheckoutCode',
+        'Programme',
+        'Instrument',
+        'Family',
+        'Room',
+        'OverdueBand',
+        'WearLabel',
+        'HoursPerCheckout'
+      ]
+    )->filter(
+      r|$r.getString('Programme') == 'SCHOOL-INSTRUMENT-LENDING'
+    )->sort([asc('CheckoutCode')])};
+    key: 'venue';
+    executions['rehearsal']:
+    {
+      mapping: test::gildedwillow2::mapping::LendingMapping;
+      runtime: test::gildedwillow2::runtime::LendingRehearsalRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::gildedwillow2::mapping::LendingMapping;
+      runtime: test::gildedwillow2::runtime::LendingArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    checkoutRegisterByVenueSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lendingRehearsal:
+            Reference
+            #{
+              test::gildedwillow2::data::LendingTestData
+            }#,
+          lendingArchive:
+            Reference
+            #{
+              test::gildedwillow2::data::LendingTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothVenuesAgreeOnTheWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['rehearsal', 'archive'];
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            asOfDate = %2026-03-01,
+            families = ['BRASS', 'REED']
+          ]
+          asserts:
+          [
+            sameTwoCheckoutsFromEachVenue:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckoutCode":"LN-0001","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Tenor Horn","Family":"BRASS","Room":"Brass Room","OverdueBand":"OVERDUE-LONG","WearLabel":"REPAIR-QUEUE","HoursPerCheckout":2.0},{"CheckoutCode":"LN-0002","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Bass Clarinet","Family":"REED","Room":"Reed Room","OverdueBand":"OVERDUE-SHORT","WearLabel":"WORN","HoursPerCheckout":1.2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

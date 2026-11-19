@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyhatchery::store::HatcheryDB
+(
+  Schema hatchery
+  (
+    Table rearing_pond
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      pond_code VARCHAR(20) NOT NULL,
+      pond_name VARCHAR(120) NOT NULL,
+      site_code VARCHAR(20) NOT NULL,
+      volume_litres INTEGER NOT NULL,
+      aerated BIT NOT NULL,
+      commissioned_on DATE NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    Table hatchery_site
+    (
+      site_code VARCHAR(20) PRIMARY KEY,
+      site_name VARCHAR(120) NOT NULL,
+      watershed VARCHAR(80) NOT NULL,
+      elevation_metres INTEGER NOT NULL
+    )
+
+    Table species_stock
+    (
+      stock_code VARCHAR(20) PRIMARY KEY,
+      pond_code VARCHAR(20) NOT NULL,
+      species_name VARCHAR(120) NOT NULL,
+      fry_count INTEGER NOT NULL,
+      mean_grams DOUBLE NOT NULL,
+      stocked_at TIMESTAMP NOT NULL
+    )
+
+    Table feed_batch
+    (
+      batch_code VARCHAR(20) PRIMARY KEY,
+      pond_code VARCHAR(20) NOT NULL,
+      feed_type VARCHAR(40) NOT NULL,
+      kilograms DOUBLE NOT NULL,
+      delivered_on DATE NOT NULL,
+      supplier_note VARCHAR(200)
+    )
+
+    Table water_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      pond_code VARCHAR(20) NOT NULL,
+      temperature_c DOUBLE NOT NULL,
+      oxygen_mgl DOUBLE NOT NULL,
+      recorded_at TIMESTAMP NOT NULL,
+      compliant BIT NOT NULL
+    )
+  )
+
+  Join Pond_Site
+  (
+    hatchery.rearing_pond.site_code = hatchery.hatchery_site.site_code
+  )
+
+  Join Pond_Stock
+  (
+    hatchery.rearing_pond.pond_code = hatchery.species_stock.pond_code
+  )
+
+  Join Pond_Feed
+  (
+    hatchery.rearing_pond.pond_code = hatchery.feed_batch.pond_code
+  )
+
+  Join Pond_Reading
+  (
+    hatchery.rearing_pond.pond_code = hatchery.water_reading.pond_code
+  )
+)

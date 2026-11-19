@@ -1,0 +1,173 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantcavern2::mapping::GaugeReadingM2M
+(
+  *test::verdantcavern2::domain::GaugeReadingRecord[gaugeReadingRecordSet]: Pure
+  {
+    ~src test::verdantcavern2::domain::GaugeReadingIntake
+    readingRef: $src.readingRef,
+    stationName: $src.stationName,
+    chamberCode: $src.chamberCode,
+    observerName: $src.observerName,
+    recordedOn: $src.recordedOn,
+    depthMetres: $src.depthMetres,
+    flowRate: $src.flowRate,
+    sampleCount: $src.sampleCount,
+    sealedChamber: $src.sealedChamber,
+    condition: $src.condition,
+    quality: $src.quality
+  }
+
+  testSuites:
+  [
+    fullSelectionSuite:
+    {
+      function: |test::verdantcavern2::domain::GaugeReadingRecord.all()->graphFetch(
+        #{
+          test::verdantcavern2::domain::GaugeReadingRecord
+          {
+            readingRef,
+            stationName,
+            chamberCode,
+            observerName,
+            recordedOn,
+            depthMetres,
+            flowRate,
+            sampleCount,
+            sealedChamber,
+            condition,
+            quality
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantcavern2::domain::GaugeReadingRecord
+          {
+            readingRef,
+            stationName,
+            chamberCode,
+            observerName,
+            recordedOn,
+            depthMetres,
+            flowRate,
+            sampleCount,
+            sealedChamber,
+            condition,
+            quality
+          }
+        }#
+      );
+      tests:
+      [
+        everyPropertyDistinctPerRow:
+        {
+          doc: 'Four intake instances that differ in every copied property, including both closed value sets, asserted through a selection that names all eleven mapped properties so a per-property mispairing cannot be masked. The rows between them cover every chamber condition and every reading quality constant.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantcavern2::domain::GaugeReadingIntake:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"readingRef":"GR-0001","stationName":"north shaft","chamberCode":"CH-N-01","observerName":"a hollins","recordedOn":"2031-03-04","depthMetres":12.25,"flowRate":0.75,"sampleCount":3,"sealedChamber":true,"condition":"DRY","quality":"VERIFIED"},{"readingRef":"GR-0002","stationName":"south gallery","chamberCode":"CH-S-14","observerName":"b larkspur","recordedOn":"2031-03-05","depthMetres":4.5,"flowRate":18.125,"sampleCount":11,"sealedChamber":false,"condition":"DAMP","quality":"PROVISIONAL"},{"readingRef":"GR-0003","stationName":"west sump","chamberCode":"CH-W-07","observerName":"c medlar","recordedOn":"2031-03-06","depthMetres":31.0,"flowRate":6.5,"sampleCount":7,"sealedChamber":true,"condition":"SEEPING","quality":"SUSPECT"},{"readingRef":"GR-0004","stationName":"east rift","chamberCode":"CH-E-22","observerName":"d nettlebed","recordedOn":"2031-03-07","depthMetres":0.5,"flowRate":44.0,"sampleCount":1,"sealedChamber":false,"condition":"FLOODED","quality":"VERIFIED"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            elevenPropertyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"readingRef":"GR-0001","stationName":"north shaft","chamberCode":"CH-N-01","observerName":"a hollins","recordedOn":"2031-03-04","depthMetres":12.25,"flowRate":0.75,"sampleCount":3,"sealedChamber":true,"condition":"DRY","quality":"VERIFIED"},{"readingRef":"GR-0002","stationName":"south gallery","chamberCode":"CH-S-14","observerName":"b larkspur","recordedOn":"2031-03-05","depthMetres":4.5,"flowRate":18.125,"sampleCount":11,"sealedChamber":false,"condition":"DAMP","quality":"PROVISIONAL"},{"readingRef":"GR-0003","stationName":"west sump","chamberCode":"CH-W-07","observerName":"c medlar","recordedOn":"2031-03-06","depthMetres":31.0,"flowRate":6.5,"sampleCount":7,"sealedChamber":true,"condition":"SEEPING","quality":"SUSPECT"},{"readingRef":"GR-0004","stationName":"east rift","chamberCode":"CH-E-22","observerName":"d nettlebed","recordedOn":"2031-03-07","depthMetres":0.5,"flowRate":44.0,"sampleCount":1,"sealedChamber":false,"condition":"FLOODED","quality":"VERIFIED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    narrowSelectionSuite:
+    {
+      function: |test::verdantcavern2::domain::GaugeReadingRecord.all()->filter(r|($r.sampleCount >= 1) && $r.readingRef->startsWith('GR-'))->graphFetch(
+        #{
+          test::verdantcavern2::domain::GaugeReadingRecord
+          {
+            readingRef,
+            stationName,
+            observerName,
+            depthMetres,
+            sampleCount,
+            sealedChamber,
+            condition,
+            quality
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantcavern2::domain::GaugeReadingRecord
+          {
+            readingRef,
+            stationName,
+            observerName,
+            depthMetres,
+            sampleCount,
+            sealedChamber,
+            condition,
+            quality
+          }
+        }#
+      );
+      tests:
+      [
+        selectionOmitsMappedProperties:
+        {
+          doc: 'The same copy asserted through a selection that omits three properties the mapping still populates, so the assertion pins the graph-fetch selection rather than only the transform. The extent is guarded by a predicate that holds for every supplied instance, so the copy stays one asserted target instance per supplied source instance and the guard exercises the extent traversal sitting inside the selections rather than reducing the rows.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantcavern2::domain::GaugeReadingIntake:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"readingRef":"GR-0001","stationName":"north shaft","chamberCode":"CH-N-01","observerName":"a hollins","recordedOn":"2031-03-04","depthMetres":12.25,"flowRate":0.75,"sampleCount":3,"sealedChamber":true,"condition":"DRY","quality":"VERIFIED"},{"readingRef":"GR-0002","stationName":"south gallery","chamberCode":"CH-S-14","observerName":"b larkspur","recordedOn":"2031-03-05","depthMetres":4.5,"flowRate":18.125,"sampleCount":11,"sealedChamber":false,"condition":"DAMP","quality":"PROVISIONAL"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            eightPropertyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"readingRef":"GR-0001","stationName":"north shaft","observerName":"a hollins","depthMetres":12.25,"sampleCount":3,"sealedChamber":true,"condition":"DRY","quality":"VERIFIED"},{"readingRef":"GR-0002","stationName":"south gallery","observerName":"b larkspur","depthMetres":4.5,"sampleCount":11,"sealedChamber":false,"condition":"DAMP","quality":"PROVISIONAL"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

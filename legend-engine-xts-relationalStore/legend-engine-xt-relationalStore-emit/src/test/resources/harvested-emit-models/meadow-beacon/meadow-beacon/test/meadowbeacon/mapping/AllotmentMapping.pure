@@ -1,0 +1,311 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowbeacon::mapping::AllotmentMapping
+(
+  *test::meadowbeacon::domain::PlotAllocation[plotAllocation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.allocation_code
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw
+    allocationCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.allocation_code,
+    plotCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.plot_code,
+    siteCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.site_code,
+    seasonOn: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.season_on,
+    groupCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.group_code,
+    unitCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.unit_code,
+    holderCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.holder_code,
+    recordNumber: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.record_number,
+    bodyCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.body_code,
+    milestoneMarker: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.milestone_marker,
+    bedQuantity: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.bed_quantity,
+    validFrom: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.valid_from,
+    validThru: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.valid_thru,
+    cropCode: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.crop_code,
+    statusLabel: [test::meadowbeacon::store::AllotmentComposedDb]meadow.plot_allocation_vw.status_label,
+    entryLabel: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry | plotreg.plot_entry.entry_label,
+    entryRegisteredOn: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry | plotreg.plot_entry.registered_on,
+    entryBedTally: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry | plotreg.plot_entry.bed_tally,
+    entryCropCode: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry | plotreg.plot_entry.crop_code,
+    entryRecordNumber: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry | plotreg.plot_entry.record_number,
+    entryBodyCode: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry | plotreg.plot_entry.body_code,
+    holderLabel: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry > @PlotEntry_HolderMaster | holderrec.holder_master.holder_label,
+    holderJoinedOn: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry > @PlotEntry_HolderMaster | holderrec.holder_master.joined_on,
+    holderCropCode: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry > @PlotEntry_HolderMaster | holderrec.holder_master.crop_code
+  }
+
+  *test::meadowbeacon::domain::PlotEntry[plotEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.plot_code
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry
+    plotCode: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.plot_code,
+    siteCode: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.site_code,
+    seasonOn: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.season_on,
+    recordNumber: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.record_number,
+    bodyCode: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.body_code,
+    cropCode: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.crop_code,
+    bedTally: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.bed_tally,
+    entryLabel: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.entry_label,
+    registeredOn: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.plot_entry.registered_on,
+    masterHolderLabel: [test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster | holderrec.holder_master.holder_label,
+    masterHolderCode: [test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster | holderrec.holder_master.holder_code,
+    masterJoinedOn: [test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster | holderrec.holder_master.joined_on,
+    primarySynonymText: trim([test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster > @HolderMaster_CropSynonym | cropref.crop_synonym.synonym_text),
+    primarySynonymStartedOn: [test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster > @HolderMaster_CropSynonym | cropref.crop_synonym.started_on,
+    primarySynonymKey: [test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster > @HolderMaster_CropSynonym | cropref.crop_synonym.synonym_key
+  }
+
+  *test::meadowbeacon::domain::SiteEntry[siteEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]plotreg.site_entry.site_code
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]plotreg.site_entry
+    siteCode: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.site_entry.site_code,
+    siteLabel: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.site_entry.site_label,
+    zoneCategory: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.site_entry.zone_category,
+    zoneMarker: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.site_entry.zone_marker,
+    openedOn: [test::meadowbeacon::store::AllotmentComposedDb]plotreg.site_entry.opened_on
+  }
+
+  *test::meadowbeacon::domain::HolderMaster[holderMaster]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master.record_number
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master
+    recordNumber: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master.record_number,
+    bodyCode: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master.body_code,
+    holderCode: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master.holder_code,
+    holderLabel: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master.holder_label,
+    cropCode: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master.crop_code,
+    joinedOn: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_master.joined_on,
+    synonymText: [test::meadowbeacon::store::AllotmentComposedDb]@HolderMaster_CropSynonym | cropref.crop_synonym.synonym_text,
+    synonymType: [test::meadowbeacon::store::AllotmentComposedDb]@HolderMaster_CropSynonym | cropref.crop_synonym.synonym_type,
+    synonymStartedOn: [test::meadowbeacon::store::AllotmentComposedDb]@HolderMaster_CropSynonym | cropref.crop_synonym.started_on
+  }
+
+  *test::meadowbeacon::domain::HolderContact[holderContact]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_contact.contact_key
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_contact
+    contactKey: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_contact.contact_key,
+    recordNumber: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_contact.record_number,
+    contactLabel: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_contact.contact_label,
+    contactKind: [test::meadowbeacon::store::AllotmentComposedDb]holderrec.holder_contact.contact_kind
+  }
+
+  *test::meadowbeacon::domain::CropSynonym[cropSynonym]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym.synonym_key
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym
+    synonymKey: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym.synonym_key,
+    cropCode: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym.crop_code,
+    synonymType: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym.synonym_type,
+    synonymText: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym.synonym_text,
+    startedOn: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym.started_on,
+    endedOn: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_synonym.ended_on
+  }
+
+  *test::meadowbeacon::domain::CropCode[cropCode]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_code.crop_code
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_code
+    cropCode: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_code.crop_code,
+    cropLabel: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_code.crop_label,
+    familyLabel: [test::meadowbeacon::store::AllotmentComposedDb]cropref.crop_code.family_label
+  }
+
+  *test::meadowbeacon::domain::ZoneLookup[zoneLookup]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowbeacon::store::AllotmentComposedDb]zoneref.zone_lookup.zone_category,
+      [test::meadowbeacon::store::AllotmentComposedDb]zoneref.zone_lookup.zone_marker
+    )
+    ~mainTable [test::meadowbeacon::store::AllotmentComposedDb]zoneref.zone_lookup
+    zoneCategory: [test::meadowbeacon::store::AllotmentComposedDb]zoneref.zone_lookup.zone_category,
+    zoneMarker: [test::meadowbeacon::store::AllotmentComposedDb]zoneref.zone_lookup.zone_marker,
+    zoneLabel: [test::meadowbeacon::store::AllotmentComposedDb]zoneref.zone_lookup.zone_label
+  }
+
+  test::meadowbeacon::domain::PlotEntry_PlotAllocation: Relational
+  {
+    AssociationMapping
+    (
+      coveredAllocations[plotEntry, plotAllocation]: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry,
+      registerEntries[plotAllocation, plotEntry]: [test::meadowbeacon::store::AllotmentComposedDb]@Allocation_PlotEntry
+    )
+  }
+
+  test::meadowbeacon::domain::PlotEntry_HolderMasterLink: Relational
+  {
+    AssociationMapping
+    (
+      holderRecord[plotEntry, holderMaster]: [test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster,
+      registeredEntries[holderMaster, plotEntry]: [test::meadowbeacon::store::AllotmentComposedDb]@PlotEntry_HolderMaster
+    )
+  }
+
+  test::meadowbeacon::domain::HolderMaster_CropSynonymLink: Relational
+  {
+    AssociationMapping
+    (
+      openSynonym[holderMaster, cropSynonym]: [test::meadowbeacon::store::AllotmentComposedDb]@HolderMaster_CropSynonym,
+      synonymHolder[cropSynonym, holderMaster]: [test::meadowbeacon::store::AllotmentComposedDb]@HolderMaster_CropSynonym
+    )
+  }
+
+  testSuites:
+  [
+    allocationPathSuite:
+    {
+      function: |test::meadowbeacon::domain::PlotAllocation.all()->project(
+        [
+          a|$a.allocationCode,
+          a|$a.plotCode,
+          a|$a.groupCode,
+          a|$a.entryLabel,
+          a|$a.entryBedTally,
+          a|$a.holderLabel,
+          a|$a.holderJoinedOn
+        ],
+        [
+          'Allocation',
+          'Plot',
+          'Group',
+          'EntryLabel',
+          'EntryBeds',
+          'HolderLabel',
+          'HolderJoined'
+        ]
+      )->sort([asc('Allocation')]);
+      tests:
+      [
+        allocationsAcrossIncludedStores:
+        {
+          doc: 'Walks the composed store from the local view onto the register table and on into the record-master table, with one allocation whose register row is absent so both hops empty.';
+          data:
+          [
+            test::meadowbeacon::store::AllotmentComposedDb:
+              Relational
+              #{
+                meadow.plot_allocation_vw:
+                  'allocation_code,plot_code,site_code,season_on,group_code,unit_code,holder_code,record_number,body_code,milestone_marker,bed_quantity,valid_from,valid_thru,crop_code,status_label\n'+
+                  'AL-01,PL-01,ST-01,2026-03-01,GRP-A,BED,HD-01,101,BODY-1,CURRENT,12.50,2026-03-01,2026-12-31,CR-01,ACTIVE\n'+
+                  'AL-02,PL-02,ST-01,2026-03-01,,BED,HD-02,102,BODY-1,CURRENT,8.00,2026-03-01,2026-12-31,CR-02,ACTIVE\n'+
+                  'AL-03,PL-09,ST-02,2026-04-01,GRP-B,,HD-03,109,BODY-2,PENDING,4.25,2026-04-01,2026-11-30,CR-01,PENDING\n';
+                plotreg.plot_entry:
+                  'plot_code,site_code,season_on,record_number,body_code,crop_code,bed_tally,entry_label,registered_on\n'+
+                  'PL-01,ST-01,2026-03-01,101,BODY-1,CR-01,6,north row beds,2026-02-20\n'+
+                  'PL-02,ST-01,2026-03-01,102,BODY-1,CR-02,,south row beds,2026-02-21\n';
+                holderrec.holder_master:
+                  'record_number,body_code,holder_code,holder_label,crop_code,joined_on\n'+
+                  '101,BODY-1,HD-01,Ridge Growers Circle,CR-01,2024-05-01\n';
+              }#
+          ];
+          asserts:
+          [
+            threeAllocationsWithOneMissingPath:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Allocation":"AL-01","Plot":"PL-01","Group":"GRP-A","EntryLabel":"north row beds","EntryBeds":6,"HolderLabel":"Ridge Growers Circle","HolderJoined":"2024-05-01"},{"Allocation":"AL-02","Plot":"PL-02","Group":null,"EntryLabel":"south row beds","EntryBeds":null,"HolderLabel":null,"HolderJoined":null},{"Allocation":"AL-03","Plot":"PL-09","Group":"GRP-B","EntryLabel":null,"EntryBeds":null,"HolderLabel":null,"HolderJoined":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    synonymPathSuite:
+    {
+      function: |test::meadowbeacon::domain::PlotEntry.all()->project(
+        [
+          e|$e.plotCode,
+          e|$e.masterHolderLabel,
+          e|$e.primarySynonymText,
+          e|$e.primarySynonymStartedOn
+        ],
+        [
+          'Plot',
+          'HolderLabel',
+          'Synonym',
+          'SynonymFrom'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        twoHopSynonymPathWithExpiredRow:
+        {
+          doc: 'Reaches the reference-data synonym two joins away from the register table, trimming the padded stored value, with one entry whose only synonym row is expired and one whose synonym type does not match the join restriction.';
+          data:
+          [
+            test::meadowbeacon::store::AllotmentComposedDb:
+              Relational
+              #{
+                plotreg.plot_entry:
+                  'plot_code,site_code,season_on,record_number,body_code,crop_code,bed_tally,entry_label,registered_on\n'+
+                  'PL-01,ST-01,2026-03-01,101,BODY-1,CR-01,6,north row beds,2026-02-20\n'+
+                  'PL-02,ST-01,2026-03-01,102,BODY-1,CR-02,4,south row beds,2026-02-21\n'+
+                  'PL-03,ST-02,2026-03-01,103,BODY-2,CR-03,2,east row beds,2026-02-22\n';
+                holderrec.holder_master:
+                  'record_number,body_code,holder_code,holder_label,crop_code,joined_on\n'+
+                  '101,BODY-1,HD-01,Ridge Growers Circle,CR-01,2024-05-01\n'+
+                  '102,BODY-1,HD-02,Fen Growers Circle,CR-02,2024-06-01\n'+
+                  '103,BODY-2,HD-03,Moor Growers Circle,CR-03,2024-07-01\n';
+                cropref.crop_synonym:
+                  'synonym_key,crop_code,synonym_type,synonym_text,started_on,ended_on\n'+
+                  '1,CR-01,PRIMARY,  broad bean  ,2024-01-01,\n'+
+                  '2,CR-02,PRIMARY,summer squash,2024-01-01,2025-12-31\n'+
+                  '3,CR-03,ALTERNATE,winter kale,2024-01-01,\n';
+              }#
+          ];
+          asserts:
+          [
+            oneTrimmedHitAndTwoEmptyPaths:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PL-01","HolderLabel":"Ridge Growers Circle","Synonym":"broad bean","SynonymFrom":"2024-01-01"},{"Plot":"PL-02","HolderLabel":"Fen Growers Circle","Synonym":null,"SynonymFrom":null},{"Plot":"PL-03","HolderLabel":"Moor Growers Circle","Synonym":null,"SynonymFrom":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

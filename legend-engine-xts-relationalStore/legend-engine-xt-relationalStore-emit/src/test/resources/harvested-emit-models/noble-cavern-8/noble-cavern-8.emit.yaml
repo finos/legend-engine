@@ -1,0 +1,74 @@
+name: noble-cavern-8
+title: "Noble Cavern 8 — a cave survey register spread over two included relational stores and a five-mapping include chain"
+description: |
+  A cave survey register built from two relational stores and five mappings that include one another
+  in a chain. The reference store holds the cave systems, the permits admitting to them and a karst
+  gazetteer in a second schema; the survey store includes the reference store and adds the survey
+  runs, the passage legs measured on them, the station readings taken along each leg, and the survey
+  crews in their own schema, so the join set reaches across both the schema and the store boundary.
+  The mappings layer up: a reference mapping with the permit association, a crew mapping, a survey
+  mapping that includes both and adds the run and leg sets together with the run-to-crew,
+  run-to-system and run-to-leg association implementations, a station mapping that includes the
+  survey mapping and adds the reading set with its association, and a register mapping that includes
+  the station mapping and carries the mapping test.
+  The mapping test projects the single measured passage leg together with the run it belongs to, the
+  crew reached across the crew schema and the cave system reached across the reference schema, so
+  every inner join in the register chain is exercised and asserted in one row.
+  A sketch store includes the survey store and adds a sketch schema whose plan sketches and survey
+  markers are read only through two store views; a sketch mapping includes the station mapping and
+  binds both classes to those views as their main relations, reaching the passage legs and station
+  readings over view-to-table joins and the survey crews over composite joins that pair the crew code
+  with an open-version sentinel. Its two suites assert that open rows reach their crew while
+  superseded rows sharing the same crew code do not, and that the nested string transforms on the
+  view columns render the expected labels.
+modelSources:
+  model:
+    root: noble-cavern-8
+    files:
+      - test/noblecavern8/domain/CavernDomain.pure
+      - test/noblecavern8/domain/CavernSketchDomain.pure
+      - test/noblecavern8/mapping/CavernCrewMapping.pure
+      - test/noblecavern8/mapping/CavernRefMapping.pure
+      - test/noblecavern8/mapping/CavernRegisterMapping.pure
+      - test/noblecavern8/mapping/CavernSketchMapping.pure
+      - test/noblecavern8/mapping/CavernStationMapping.pure
+      - test/noblecavern8/mapping/CavernSurveyMapping.pure
+      - test/noblecavern8/store/CavernRefDb.pure
+      - test/noblecavern8/store/CavernSketchDb.pure
+      - test/noblecavern8/store/CavernSurveyDb.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-join-path
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-source
+  - execution:test-suite
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-composite-join
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-store-include
+  - store:relational-view
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - cave-survey
+  - composite-join
+  - cross-schema
+  - h2
+  - inner-join
+  - mapping-include
+  - mapping-test
+  - store-include
+  - view-source

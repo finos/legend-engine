@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class <<temporal.processingtemporal>> {doc.doc = 'One bird held in a walk-through aviary, versioned on the processing timeline so a corrected holding record supersedes the row it replaces rather than overwriting it.'} test::umberaviary2::domain::BirdHolding
+{
+  holdingCode: String[1];
+  ringId: String[0..1];
+  speciesCode: String[0..1];
+  houseCode: String[0..1];
+  clutchSize: Integer[0..1];
+}
+
+Class {doc.doc = 'A bird house inside the aviary and the keeper responsible for it.'} test::umberaviary2::domain::BirdHouse
+{
+  houseCode: String[1];
+  houseName: String[0..1];
+  keeperName: String[0..1];
+}
+
+Class {doc.doc = 'The reference species a held bird is recorded against, with the taxon it belongs to.'} test::umberaviary2::domain::SpeciesRef
+{
+  speciesCode: String[1];
+  speciesName: String[0..1];
+  taxonName: String[0..1];
+}

@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarsummit::service::TrayLookupService
+{
+  pattern: '/nursery/v1/tr-2204/{trayCode}/{shelfLabel}';
+  title: 'Greenhouse Network - Single Propagation Tray';
+  documentation: 'Selects one remote propagation tray by tray code and shelf label, where the shelf request parameter is composed by the mapping from a literal prefix and the mapped property, then serialises the fetched attributes with absent values and empty collections removed.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['greenhouse-network', 'bench-audit'] };
+  execution: Single
+  {
+    query: {trayCode: String[1], shelfLabel: String[1]|test::cedarsummit::domain::TrayRecord.all()->filter(
+      t|($t.trayCode == $trayCode) && ($t.shelfLabel == $shelfLabel)
+    )->toOne()->graphFetch(
+      #{
+        test::cedarsummit::domain::TrayRecord
+        {
+          trayCode,
+          shelfLabel,
+          seedCount
+        }
+      }#
+    )->serialize(
+      #{
+        test::cedarsummit::domain::TrayRecord
+        {
+          trayCode,
+          shelfLabel,
+          seedCount
+        }
+      }#,
+      ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+        typeKeyName = '@type',
+        includeType = false,
+        includeEnumType = false,
+        removePropertiesWithNullValues = true,
+        removePropertiesWithEmptySets = true,
+        fullyQualifiedTypePath = false
+      )
+    )};
+    mapping: test::cedarsummit::mapping::SeedlingLookupMapping;
+    runtime: test::cedarsummit::runtime::NorthNurseryRuntime;
+  }
+  testSuites:
+  [
+    trayLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northNurseryConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/nursery/trays/TR-4410?shelf=SH-BENCH-3';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"trayCode":"TR-4410","shelfLabel":"BENCH-3","seedCount":144}';
+                      }#;
+                  };
+                },
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/nursery/trays/TR-4499?shelf=SH-BENCH-9';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"trayCode":"TR-4499","shelfLabel":"BENCH-9"}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        trayWithSeedCount:
+        {
+          parameters:
+          [
+            trayCode = 'TR-4410',
+            shelfLabel = 'BENCH-3'
+          ]
+          asserts:
+          [
+            trayDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"trayCode":"TR-4410","shelfLabel":"BENCH-3","seedCount":144}}';
+                  }#;
+              }#
+          ]
+        },
+        trayWithAbsentSeedCount:
+        {
+          parameters:
+          [
+            trayCode = 'TR-4499',
+            shelfLabel = 'BENCH-9'
+          ]
+          asserts:
+          [
+            absentSeedCountDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"trayCode":"TR-4499","shelfLabel":"BENCH-9"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberlantern2::service::GlazeRecipeCatalogueAsOf
+{
+  pattern: '/emberlantern2/v1/glazeRecipes/{processingDate}';
+  title: 'Ember Lantern - Glaze Recipe Catalogue As Of';
+  ownership: UserList { users: ['lantern-workshop-records', 'glassworks-operations'] };
+  documentation: 'Reads the second store through its own mapping and runtime at the requested instant and keeps the recipes at or above a blend floor, so the catalogue view is independent of the workshop store while sharing the temporal idiom.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], minBlend: Float[1]|test::emberlantern2::domain::GlazeRecipe.all($processingDate)->filter(
+      r|$r.blendRatio >= $minBlend
+    )->project(
+      [
+        r|$r.wickGrade,
+        r|$r.recipeName,
+        r|$r.blendRatio
+      ],
+      [
+        'Wick Grade',
+        'Recipe Name',
+        'Blend Ratio'
+      ]
+    )->sort(
+      [
+        asc('Wick Grade')
+      ]
+    )};
+    mapping: test::emberlantern2::mapping::CatalogueGlazeMapping;
+    runtime: test::emberlantern2::runtime::CatalogueRuntime;
+  }
+  testSuites:
+  [
+    glazeRecipeCatalogueAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogueH2:
+            Relational
+            #{
+      catalogue.glaze_recipe:
+        'recipe_id,wick_grade,recipe_name,blend_ratio,in_z,out_z\n'+
+        '1,G1,Amber Wash,0.45,2026-01-01,9999-12-31\n'+
+        '2,G2,Slate Wash,0.3,2026-01-01,9999-12-31\n'+
+        '3,G3,Retired Wash,0.1,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        retiredRecipeExcluded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-04-01,
+            minBlend = 0.2
+          ]
+          asserts:
+          [
+            recipeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Wick Grade":"G1","Recipe Name":"Amber Wash","Blend Ratio":0.45},{"Wick Grade":"G2","Recipe Name":"Slate Wash","Blend Ratio":0.3}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstantSeesRetiredRecipe:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-01-15,
+            minBlend = 0.05
+          ]
+          asserts:
+          [
+            earlierRecipeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Wick Grade":"G1","Recipe Name":"Amber Wash","Blend Ratio":0.45},{"Wick Grade":"G2","Recipe Name":"Slate Wash","Blend Ratio":0.3},{"Wick Grade":"G3","Recipe Name":"Retired Wash","Blend Ratio":0.1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,185 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silverdelta::service::RingedBirdCondition
+{
+  pattern: '/delta/v1/ringed-birds/condition/{observationDate}';
+  title: 'Delta - Ringed Bird Condition As Of';
+  owners:
+  [
+    'delta-ringing-scheme',
+    'wetland-monitoring'
+  ];
+  documentation: 'Point-in-time read of the ringed-bird register: birds in force on the observation instant whose station sits on one of the requested delta arms, whose wing length clears the requested floor and which carry at least one good-condition capture worked over a minimum net effort. A condition band is derived per bird from the mass-to-wing ratio, then the projection is narrowed again on the derived band and the age class before ordering and truncation.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {observationDate: StrictDate[1], deltaArms: String[*], minWingMm: Float[1], minNetHours: Float[1]|let asOf = $observationDate;
+      test::silverdelta::domain::RingedBird.all($asOf)->filter(
+        b|$b.station.deltaArm->in($deltaArms) && ($b.wingLengthMm >= $minWingMm) && $b.captures->exists(
+          c|($c.conditionCode == 'GOOD') && ($c.netHours >= $minNetHours)
+        )
+      )->project(
+        [
+          b|$b.ringCode,
+          b|$b.species.commonName,
+          b|$b.species.migrationStrategy,
+          b|$b.station.stationName,
+          b|$b.ageClass,
+          b|$b.wingLengthMm,
+          b|$b.massGrams,
+          b|if(($b.massGrams / ($b.wingLengthMm + 1.0)) > 0.35, |'DENSE', |'LEAN')
+        ],
+        [
+          'Bird/Ring',
+          'Species/Common',
+          'Species/Strategy',
+          'Station/Name',
+          'Bird/AgeClass',
+          'Bird/WingMm',
+          'Bird/MassGrams',
+          'Bird/ConditionBand'
+        ]
+      )->filter(
+        r|($r.getString('Bird/AgeClass')->toUpper() != 'PULLUS') && ($r.getString('Bird/ConditionBand') == 'DENSE')
+      )->sort(
+        [
+          asc('Bird/Ring')
+        ]
+      )->limit(25);};
+    mapping: test::silverdelta::mapping::DeltaMapping;
+    runtime: test::silverdelta::runtime::DeltaRuntime;
+  }
+  testSuites:
+  [
+    conditionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              ringing.ringing_station:
+                'station_id,station_code,station_name,delta_arm,staffed_all_season\n'+
+                '1,RS-01,Reedbed Platform,East Arm,true\n'+
+                '2,RS-02,Sandbar Hide,West Arm,false\n';
+
+              ringing.species_taxon:
+                'species_id,species_code,common_name,migration_strategy\n'+
+                '1,SP-01,Sedge Piper,LONG_DISTANCE\n'+
+                '2,SP-02,Reed Warbler,PARTIAL\n';
+
+              ringing.ringed_bird:
+                'bird_id,ring_code,age_class,wing_length_mm,mass_grams,station_id,species_id,from_z,thru_z\n'+
+                '1,RB-0001,ADULT,82.0,30.0,1,1,2026-01-01,9999-12-31\n'+
+                '2,RB-0002,ADULT,80.0,20.0,1,2,2026-01-01,9999-12-31\n'+
+                '3,RB-0003,PULLUS,79.0,29.0,1,1,2026-01-01,9999-12-31\n'+
+                '4,RB-0004,ADULT,60.0,25.0,1,1,2026-01-01,9999-12-31\n'+
+                '5,RB-0005,ADULT,85.0,33.0,1,1,2025-02-01,2025-09-30\n'+
+                '6,RB-0006,ADULT,84.0,32.0,2,1,2026-01-01,9999-12-31\n'+
+                '7,RB-0007,ADULT,83.0,31.0,1,2,2026-01-01,9999-12-31\n';
+
+              ringing.capture_event:
+                'event_id,event_code,captured_on,net_hours,observer_name,condition_code,bird_id\n'+
+                '1,CE-01,2026-02-04,4.0,H Wren,GOOD,1\n'+
+                '2,CE-02,2026-02-04,4.0,H Wren,GOOD,2\n'+
+                '3,CE-03,2026-02-05,5.0,I Snipe,GOOD,3\n'+
+                '4,CE-04,2026-02-05,5.0,I Snipe,GOOD,4\n'+
+                '5,CE-05,2026-02-06,6.0,J Egret,GOOD,5\n'+
+                '6,CE-06,2026-02-06,6.0,J Egret,GOOD,6\n'+
+                '7,CE-07,2026-02-07,1.0,K Bittern,GOOD,7\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        denseAdultsOnEastArm:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observationDate = %2026-03-01,
+            deltaArms = ['East Arm'],
+            minWingMm = 70.0,
+            minNetHours = 2.5
+          ]
+          asserts:
+          [
+            onlyDenseInForceAdults:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bird/Ring":"RB-0001","Species/Common":"Sedge Piper","Species/Strategy":"LONG_DISTANCE","Station/Name":"Reedbed Platform","Bird/AgeClass":"ADULT","Bird/WingMm":82.0,"Bird/MassGrams":30.0,"Bird/ConditionBand":"DENSE"}]';
+                  }#;
+              }#
+          ]
+        },
+        bothArmsAdmitTheWestArmBird:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observationDate = %2026-03-01,
+            deltaArms = ['East Arm', 'West Arm'],
+            minWingMm = 70.0,
+            minNetHours = 2.5
+          ]
+          asserts:
+          [
+            eastAndWestDenseAdults:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bird/Ring":"RB-0001","Species/Common":"Sedge Piper","Species/Strategy":"LONG_DISTANCE","Station/Name":"Reedbed Platform","Bird/AgeClass":"ADULT","Bird/WingMm":82.0,"Bird/MassGrams":30.0,"Bird/ConditionBand":"DENSE"},{"Bird/Ring":"RB-0006","Species/Common":"Sedge Piper","Species/Strategy":"LONG_DISTANCE","Station/Name":"Sandbar Hide","Bird/AgeClass":"ADULT","Bird/WingMm":84.0,"Bird/MassGrams":32.0,"Bird/ConditionBand":"DENSE"}]';
+                  }#;
+              }#
+          ]
+        },
+        theRestatedBirdIsVisibleInsideItsOwnWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observationDate = %2025-06-01,
+            deltaArms = ['East Arm'],
+            minWingMm = 70.0,
+            minNetHours = 2.5
+          ]
+          asserts:
+          [
+            onlyTheClosedBirdRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bird/Ring":"RB-0005","Species/Common":"Sedge Piper","Species/Strategy":"LONG_DISTANCE","Station/Name":"Reedbed Platform","Bird/AgeClass":"ADULT","Bird/WingMm":85.0,"Bird/MassGrams":33.0,"Bird/ConditionBand":"DENSE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

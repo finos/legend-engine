@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::duskydelta::domain::Hive
+{
+  hiveCode: String[1];
+  frameCount: Integer[1];
+  broodScore: Integer[1];
+  varroaCount: Integer[1];
+  queenLabel: String[0..1];
+  healthBand: String[0..1];
+  registerKind: String[1];
+  siteName: String[0..1];
+  forageName: String[0..1];
+  keeperName: String[0..1];
+}
+
+Class test::duskydelta::domain::ApiarySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  terrainClass: String[1];
+}
+
+Class test::duskydelta::domain::ForageZone
+{
+  forageCode: String[1];
+  forageName: String[1];
+  bloomClass: String[1];
+  nectarIndex: Integer[1];
+}
+
+Class test::duskydelta::domain::Keeper
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+  roundLabel: String[1];
+}
+
+Association test::duskydelta::domain::Hive_Site
+{
+  hives: test::duskydelta::domain::Hive[*];
+  site: test::duskydelta::domain::ApiarySite[0..1];
+}
+
+Association test::duskydelta::domain::Site_Forage
+{
+  sites: test::duskydelta::domain::ApiarySite[*];
+  forage: test::duskydelta::domain::ForageZone[0..1];
+}

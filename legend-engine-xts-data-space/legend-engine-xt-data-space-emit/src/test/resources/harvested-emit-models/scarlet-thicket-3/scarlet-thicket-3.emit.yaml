@@ -1,0 +1,79 @@
+name: scarlet-thicket-3
+title: "Scarlet Thicket — Propagation Nursery With Inline Lot Details, A Narrowable Cultivar and Six Endpoints Over One Catalogued Context"
+description: |
+  One relational store of a dozen typed tables across two schemas, whose class
+  mappings are distributed across them and reach descriptive names through nine
+  named equality joins rather than restating predicates. Two of the mapped
+  classes are not entities at all but complex-typed details of the seed lot,
+  bound inline onto the same row with their own nested property sets - one code
+  from the lot row, one name across the detail's own join. The general cultivar
+  is narrowable to a grafted kind that adds a rootstock name and is selected by a
+  store filter, so a caller has to narrow the type in the query body before that
+  name is reachable. Four associations connect the mapped classes so query bodies
+  navigate rather than join by hand, two diagrams record the layout without
+  affecting execution, and one data space names the mapping, the default runtime
+  and three featured endpoints so a consumer can run them without naming any of
+  it. Six endpoints cover the shapes: a deep five-operand predicate with a prefix
+  test, two negations, a set membership and a lower bound computed by shifting the
+  execution date, then a projection with the subtype narrowing and duplicate
+  collapse; two grouped aggregations, one keyed partly on a joined name and one
+  keyed on an inline detail code; and three projections over computed date windows.
+modelSources:
+  model:
+    root: scarlet-thicket-3
+    files:
+      - test/scarletthicket3/connection/ThicketConnection.pure
+      - test/scarletthicket3/data/ThicketFixture.pure
+      - test/scarletthicket3/dataspace/ThicketDataSpace.pure
+      - test/scarletthicket3/diagram/ThicketDiagrams.pure
+      - test/scarletthicket3/domain/ThicketDomain.pure
+      - test/scarletthicket3/mapping/ThicketMapping.pure
+      - test/scarletthicket3/runtime/ThicketRuntime.pure
+      - test/scarletthicket3/service/GraftedLotAudit.pure
+      - test/scarletthicket3/service/ThicketRollupServices.pure
+      - test/scarletthicket3/service/ThicketWindowServices.pure
+      - test/scarletthicket3/store/ThicketDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-navigation
+  - computed-date-bound
+  - data-space
+  - diagram
+  - embedded-relational-mapping
+  - grouped-aggregation
+  - h2
+  - join-reached-column
+  - multi-table-store
+  - propagation-nursery
+  - reusable-test-data
+  - snowflake
+  - snowflake-oauth
+  - subtype-narrowing

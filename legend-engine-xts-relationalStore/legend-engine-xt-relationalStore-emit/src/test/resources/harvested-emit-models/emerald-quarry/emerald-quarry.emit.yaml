@@ -1,0 +1,43 @@
+name: emerald-quarry
+title: "Emerald Quarry — Defensive Constraint Blocks over Stereotype-Only Processing Temporality"
+description: |
+  A dimension-stone quarry validation model. Eleven flat classes carry no associations and no
+  inheritance; four of them add named constraint blocks built entirely from function calls on a
+  property — a presence predicate applied directly, and a length call whose result is compared
+  against a physical-width ceiling. Temporality is applied purely as the platform temporal
+  stereotype rather than an explicit milestoning declaration, so three classes acquire a system
+  time dimension that makes every constraint evaluate per version. Two near-duplicate relational
+  tiers hold the table families and the two declared correlation joins, and a mapping test reads
+  the versioned extent at one processing instant so the out-of-range versions drop out.
+modelSources:
+  model:
+    root: emerald-quarry
+    files:
+      - test/emeraldquarry/domain/QuarryDomain.pure
+      - test/emeraldquarry/mapping/QuarryFaceMapping.pure
+      - test/emeraldquarry/store/QuarryAppendStore.pure
+      - test/emeraldquarry/store/QuarryYardStore.pure
+features:
+  - execution:mapping-test
+  - grammar:constraint
+  - grammar:constraint-function-call
+  - grammar:profile
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - constraints
+  - h2
+  - length-ceiling
+  - mapping-test
+  - point-in-time
+  - processing-temporal
+  - quarry
+  - relational
+  - stereotype

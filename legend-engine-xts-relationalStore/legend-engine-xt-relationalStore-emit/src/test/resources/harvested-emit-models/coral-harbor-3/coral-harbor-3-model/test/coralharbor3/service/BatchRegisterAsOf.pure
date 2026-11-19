@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralharbor3::service::BatchRegisterAsOf
+{
+  pattern: '/coralharbor3/v1/batch-register/{asOf}';
+  title: 'Coral Harbor - Propagation Batch Register As Of';
+  documentation: 'Resolves the propagation batches valid at the requested date through the milestoned accessor and publishes them as a thirteen-column aliased projection with no further narrowing, so the point-in-time predicate is the only restriction in the generated select.';
+  ownership: DID { identifier: '000000' };
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::coralharbor3::domain::PlantBatch.all($asOf)->project(
+      [
+        b|$b.batchCode,
+        b|$b.cultivar,
+        b|$b.sownOn,
+        b|$b.stage,
+        b|$b.irrigation,
+        b|$b.benchCode,
+        b|$b.propagator,
+        b|$b.pottedOn,
+        b|$b.trayCount,
+        b|$b.heightCm,
+        b|$b.mediumCode,
+        b|$b.houseCode,
+        b|$b.seedLot
+      ],
+      [
+        'Batch',
+        'Cultivar',
+        'Sown',
+        'Stage',
+        'Watering',
+        'Bench',
+        'Propagator',
+        'Potted',
+        'Trays',
+        'HeightCm',
+        'Medium',
+        'House',
+        'Lot'
+      ]
+    )};
+    mapping: test::coralharbor3::mapping::NurseryMapping;
+    runtime: test::coralharbor3::runtime::NurseryRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryConnection:
+            Relational
+            #{
+              nursery.plant_batch:
+                'batch_id,batch_code,cultivar,sown_on,stage_code,irrigation_code,bench_code,propagator,potted_on,tray_count,height_cm,medium_code,house_code,seed_lot,germination_rate,hardened_on,label_note,bus_from_z,bus_thru_z\n'+
+                '1,PB-0001,Alba Fern,2026-02-01,SDL,DRP,B-1,Iris Calder,2026-03-01,12,8.5,PEAT,GH-1,LOT-1,0.82,2026-04-01,spring sowing,2026-01-01,2026-05-01\n'+
+                '1,PB-0001,Alba Fern,2026-02-01,VEG,DRP,B-1,Iris Calder,2026-06-01,12,9.5,PEAT,GH-1,LOT-1,0.82,2026-04-01,spring sowing,2026-05-01,9999-12-31\n'+
+                '2,PB-0002,Coral Sedge,2026-02-15,VEG,MST,B-2,Nadia Ferrow,2026-03-10,8,14.25,COIR,GH-1,LOT-2,0.74,2026-04-15,bench two,2026-01-01,9999-12-31\n'+
+                '3,PB-0003,Dune Aster,2026-03-05,FLW,FLD,B-3,Oren Vale,2026-03-20,20,22.5,BARK,GH-2,LOT-3,0.66,2026-05-01,late batch,2026-01-01,9999-12-31\n'+
+                '4,PB-0004,Ember Moss,2026-01-10,DRM,MAN,B-1,Iris Calder,2026-02-01,4,3.75,PEAT,GH-2,LOT-4,0.51,2026-03-01,overwintered,2027-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAtJune:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            currentVersionsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"PB-0001","Cultivar":"Alba Fern","Sown":"2026-02-01","Stage":"VEGETATIVE","Watering":"DRIP","Bench":"B-1","Propagator":"Iris Calder","Potted":"2026-06-01","Trays":12,"HeightCm":9.5,"Medium":"PEAT","House":"GH-1","Lot":"LOT-1"},{"Batch":"PB-0002","Cultivar":"Coral Sedge","Sown":"2026-02-15","Stage":"VEGETATIVE","Watering":"MIST","Bench":"B-2","Propagator":"Nadia Ferrow","Potted":"2026-03-10","Trays":8,"HeightCm":14.25,"Medium":"COIR","House":"GH-1","Lot":"LOT-2"},{"Batch":"PB-0003","Cultivar":"Dune Aster","Sown":"2026-03-05","Stage":"FLOWERING","Watering":"FLOOD","Bench":"B-3","Propagator":"Oren Vale","Potted":"2026-03-20","Trays":20,"HeightCm":22.5,"Medium":"BARK","House":"GH-2","Lot":"LOT-3"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+name: gilded-prairie
+title: "Prairie Restoration Register — Bi-Temporal Plot Hierarchy Behind Milestoned Associations"
+description: |
+  A grassland restoration register whose interest is a closed-vocabulary type graph
+  laid over a single milestoning strategy. An abstract bi-temporal plot record is
+  specialised by a seed-increase plot and a restoration plot, four enumerations type
+  properties on the milestoned classes rather than appearing only as query literals,
+  and three associations connect the milestoned classes so navigation carries the
+  business and processing windows of both ends and a lot attaches to a plot only
+  where the two windows overlap.
+modelSources:
+  model:
+    root: gilded-prairie
+    files:
+      - test/gildedprairie/domain/Associations.pure
+      - test/gildedprairie/domain/Plots.pure
+      - test/gildedprairie/domain/Vocabularies.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - milestoning:bi-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association-graph
+  - bi-temporal
+  - enumeration
+  - inheritance
+  - milestoned-association
+  - prairie-restoration
+  - seed-provenance

@@ -1,0 +1,49 @@
+name: meadow-wharf
+title: "Meadow Wharf - Harbour Tide-Gauge Reads Through One Remote Endpoint"
+description: |
+  A harbour tide-gauge observation network whose readings are held behind a single remote
+  endpoint rather than a warehouse. One flat, almost entirely optional-valued reading class
+  is bound to that endpoint's document response by a schema-less JSON binding that derives
+  its shape from the included model itself, so the absent stage, height and observation
+  attributes and the empty inspector-note collection are observable in the serialised
+  document. The class mapping builds the request from a literal-prefixed station reference,
+  a basin constant supplied by the mapping rather than the query, and a gauge parameter that
+  falls back to a placeholder when the label is absent. One single-execution service filters
+  on equality against both request-bound properties, fetches the whole reading graph and
+  re-serialises it, and its suites pair a reply carrying a populated and an unpopulated
+  reading with a gauge that selects nothing at all.
+
+modelSources:
+  model:
+    root: meadow-wharf
+    files:
+      - test/meadowwharf/binding/GaugeBindings.pure
+      - test/meadowwharf/connection/GaugeConnections.pure
+      - test/meadowwharf/domain/GaugeDomain.pure
+      - test/meadowwharf/mapping/GaugeReadingMapping.pure
+      - test/meadowwharf/runtime/GaugeRuntimes.pure
+      - test/meadowwharf/service/StationReadingFeed.pure
+      - test/meadowwharf/store/HarbourGaugeApi.pure
+
+features:
+  - scaffolding:service-store-connection
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - mapping:service-store-mapping
+  - query:filter
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - service-store
+complexity: intermediate
+tags:
+  - external-format-binding
+  - graph-fetch
+  - harbour-observation
+  - optional-value-serialisation
+  - request-constant
+  - service-store

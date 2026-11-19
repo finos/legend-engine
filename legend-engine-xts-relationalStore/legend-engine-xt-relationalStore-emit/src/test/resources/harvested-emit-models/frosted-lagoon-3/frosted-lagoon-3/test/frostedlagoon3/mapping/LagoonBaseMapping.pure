@@ -1,0 +1,293 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedlagoon3::mapping::LagoonBaseMapping
+(
+  include mapping test::frostedlagoon3::mapping::LagoonGradeMappings
+
+  *test::frostedlagoon3::domain::OysterTray[tray]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.tray_code
+    )
+    ~mainTable [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray
+    trayCode: [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.tray_code,
+    trayName: [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.tray_name,
+    shellLengthMm: [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm,
+    shellBand: case(
+                 lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 30),
+                 'SIZE-01',
+                 case(
+                   lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 40),
+                   'SIZE-02',
+                   case(
+                     lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 50),
+                     'SIZE-03',
+                     case(
+                       lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 60),
+                       'SIZE-04',
+                       case(
+                         lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 70),
+                         'SIZE-05',
+                         case(
+                           lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 80),
+                           'SIZE-06',
+                           case(
+                             lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 90),
+                             'SIZE-07',
+                             case(
+                               lessThan([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm, 100),
+                               'SIZE-08',
+                               sqlNull()
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    grade: EnumerationMapping GradeSource: substring(
+                                             toUpper(trim([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.grade_code)),
+                                             0,
+                                             1
+                                           ),
+    trestleName: [test::frostedlagoon3::store::LagoonDb]@Tray_Trestle | [test::frostedlagoon3::store::LagoonDb]lagoon.trestle.trestle_name,
+    bedName: [test::frostedlagoon3::store::LagoonDb]@Tray_Trestle > @Trestle_Bed | [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_bed.bed_name,
+    zoneName: [test::frostedlagoon3::store::LagoonDb]@Tray_Trestle > @Trestle_Bed > @Bed_Zone | [test::frostedlagoon3::store::LagoonDb]lagoon.lagoon_zone.zone_name,
+    notesLine: case(
+                 equal([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.notes_text, 'NONE'),
+                 sqlNull(),
+                 [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.notes_text
+               )
+  }
+
+  *test::frostedlagoon3::domain::TrayBasketTally[basket_tally]: Relational
+  {
+    ~groupBy
+    (
+      [test::frostedlagoon3::store::LagoonDb]lagoon.basket_entry.tray_code
+    )
+    ~primaryKey
+    (
+      [test::frostedlagoon3::store::LagoonDb]lagoon.basket_entry.tray_code
+    )
+    ~mainTable [test::frostedlagoon3::store::LagoonDb]lagoon.basket_entry
+    trayCode: [test::frostedlagoon3::store::LagoonDb]lagoon.basket_entry.tray_code,
+    basketTally: count([test::frostedlagoon3::store::LagoonDb]lagoon.basket_entry.entry_id),
+    heaviestBasketKg: max([test::frostedlagoon3::store::LagoonDb]lagoon.basket_entry.basket_kg),
+    totalBasketKg: sum([test::frostedlagoon3::store::LagoonDb]lagoon.basket_entry.basket_kg)
+  }
+
+  *test::frostedlagoon3::domain::TrestleTrayTally[trestle_tally]: Relational
+  {
+    ~groupBy
+    (
+      [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.trestle_code
+    )
+    ~primaryKey
+    (
+      [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.trestle_code
+    )
+    ~mainTable [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray
+    trestleCode: [test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.trestle_code,
+    trayTally: count([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.tray_id),
+    longestShellMm: max([test::frostedlagoon3::store::LagoonDb]lagoon.oyster_tray.shell_length_mm)
+  }
+
+  testSuites:
+  [
+    trayRegisterSuite:
+    {
+      function: |test::frostedlagoon3::domain::OysterTray.all()->project(
+        [
+          t|$t.trayCode,
+          t|$t.shellBand,
+          t|$t.grade,
+          t|$t.trestleName,
+          t|$t.bedName,
+          t|$t.zoneName,
+          t|$t.notesLine
+        ],
+        [
+          'Tray',
+          'Band',
+          'Grade',
+          'Trestle',
+          'Bed',
+          'Zone',
+          'Notes'
+        ]
+      )->sort([asc('Tray')]);
+      tests:
+      [
+        allShellBandArms:
+        {
+          doc: 'Covers all eight arms of the nested shell-size conditional and the oversized tray that falls through to no band, the expression-sourced grade enumeration including a code that maps to no member, the sentinel-driven null note, and the one-, two- and three-hop join paths where the trestle without a bed and the bed without a zone truncate the path.';
+          data:
+          [
+            test::frostedlagoon3::store::LagoonDb:
+              Relational
+              #{
+                lagoon.oyster_tray:
+                  'tray_id,tray_code,tray_name,trestle_code,grade_code,shell_length_mm,notes_text\n'+
+                  '1,LT-01,Spat Ledge Tray,TR-1,p,26,spat settled early\n'+
+                  '2,LT-02,Weed Line Tray,TR-1,r,34,NONE\n'+
+                  '3,LT-03,Channel Edge Tray,TR-1,c,44,shell chipped\n'+
+                  '4,LT-04,Sand Flat Tray,TR-2,s,55,tray relaid\n'+
+                  '5,LT-05,Eel Grass Tray,TR-2,z,66,mesh renewed\n'+
+                  '6,LT-06,Cockle Bar Tray,TR-2,p,74,weed cleared\n'+
+                  '7,LT-07,Mussel Rope Tray,TR-2,r,85,trestle levelled\n'+
+                  '8,LT-08,Salt Pool Tray,TR-2,c,96,basket tally checked\n'+
+                  '9,LT-09,Storm Beach Tray,TR-3,s,130,bed marker lost\n';
+
+                lagoon.trestle:
+                  'trestle_code,trestle_name,bed_code\n'+
+                  'TR-1,North Trestle Run,LB-1\n'+
+                  'TR-2,South Trestle Run,LB-2\n'+
+                  'TR-3,West Trestle Run,LB-ABSENT\n';
+
+                lagoon.oyster_bed:
+                  'bed_code,bed_name,zone_code\n'+
+                  'LB-1,Oyster Bed North,LZ-1\n'+
+                  'LB-2,Oyster Bed South,LZ-ABSENT\n';
+
+                lagoon.lagoon_zone:
+                  'zone_code,zone_name\n'+
+                  'LZ-1,Upper Lagoon Zone\n';
+              }#
+          ];
+          asserts:
+          [
+            trayRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tray":"LT-01","Band":"SIZE-01","Grade":"PRIME","Trestle":"North Trestle Run","Bed":"Oyster Bed North","Zone":"Upper Lagoon Zone","Notes":"spat settled early"},{"Tray":"LT-02","Band":"SIZE-02","Grade":"ROCKPOOL","Trestle":"North Trestle Run","Bed":"Oyster Bed North","Zone":"Upper Lagoon Zone","Notes":null},{"Tray":"LT-03","Band":"SIZE-03","Grade":"CULL","Trestle":"North Trestle Run","Bed":"Oyster Bed North","Zone":"Upper Lagoon Zone","Notes":"shell chipped"},{"Tray":"LT-04","Band":"SIZE-04","Grade":"SPAT","Trestle":"South Trestle Run","Bed":"Oyster Bed South","Zone":null,"Notes":"tray relaid"},{"Tray":"LT-05","Band":"SIZE-05","Grade":null,"Trestle":"South Trestle Run","Bed":"Oyster Bed South","Zone":null,"Notes":"mesh renewed"},{"Tray":"LT-06","Band":"SIZE-06","Grade":"PRIME","Trestle":"South Trestle Run","Bed":"Oyster Bed South","Zone":null,"Notes":"weed cleared"},{"Tray":"LT-07","Band":"SIZE-07","Grade":"ROCKPOOL","Trestle":"South Trestle Run","Bed":"Oyster Bed South","Zone":null,"Notes":"trestle levelled"},{"Tray":"LT-08","Band":"SIZE-08","Grade":"CULL","Trestle":"South Trestle Run","Bed":"Oyster Bed South","Zone":null,"Notes":"basket tally checked"},{"Tray":"LT-09","Band":null,"Grade":"SPAT","Trestle":"West Trestle Run","Bed":null,"Zone":null,"Notes":"bed marker lost"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    trayBasketTallySuite:
+    {
+      function: |test::frostedlagoon3::domain::TrayBasketTally.all()->project(
+        [
+          b|$b.trayCode,
+          b|$b.basketTally,
+          b|$b.heaviestBasketKg,
+          b|$b.totalBasketKg
+        ],
+        [
+          'Tray',
+          'Baskets',
+          'Heaviest',
+          'Total'
+        ]
+      )->sort([asc('Tray')]);
+      tests:
+      [
+        basketsGroupedPerTray:
+        {
+          doc: 'Groups the basket entries onto their tray, covering a tray with two entries whose weights differ and two trays with a single entry each, so the tally, the maximum and the sum are all distinguishable.';
+          data:
+          [
+            test::frostedlagoon3::store::LagoonDb:
+              Relational
+              #{
+                lagoon.basket_entry:
+                  'entry_id,tray_code,basket_kg,gathered_on\n'+
+                  '1,LT-01,18.5,2026-04-02\n'+
+                  '2,LT-01,21.25,2026-04-09\n'+
+                  '3,LT-02,9.25,2026-04-02\n'+
+                  '4,LT-03,4.75,2026-04-16\n';
+              }#
+          ];
+          asserts:
+          [
+            basketTallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tray":"LT-01","Baskets":2,"Heaviest":21.25,"Total":39.75},{"Tray":"LT-02","Baskets":1,"Heaviest":9.25,"Total":9.25},{"Tray":"LT-03","Baskets":1,"Heaviest":4.75,"Total":4.75}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    trestleTrayTallySuite:
+    {
+      function: |test::frostedlagoon3::domain::TrestleTrayTally.all()->project(
+        [
+          r|$r.trestleCode,
+          r|$r.trayTally,
+          r|$r.longestShellMm
+        ],
+        [
+          'Trestle',
+          'Trays',
+          'LongestShell'
+        ]
+      )->sort([asc('Trestle')]);
+      tests:
+      [
+        traysGroupedPerTrestle:
+        {
+          doc: 'Groups the trays onto their trestle, covering trestles carrying three, five and one tray so the tally differs per group and the longest shell is taken from a different tray in each.';
+          data:
+          [
+            test::frostedlagoon3::store::LagoonDb:
+              Relational
+              #{
+                lagoon.oyster_tray:
+                  'tray_id,tray_code,tray_name,trestle_code,grade_code,shell_length_mm,notes_text\n'+
+                  '1,LT-01,Spat Ledge Tray,TR-1,p,26,spat settled early\n'+
+                  '2,LT-02,Weed Line Tray,TR-1,r,34,NONE\n'+
+                  '3,LT-03,Channel Edge Tray,TR-1,c,44,shell chipped\n'+
+                  '4,LT-04,Sand Flat Tray,TR-2,s,55,tray relaid\n'+
+                  '5,LT-05,Eel Grass Tray,TR-2,z,66,mesh renewed\n'+
+                  '6,LT-06,Cockle Bar Tray,TR-2,p,74,weed cleared\n'+
+                  '7,LT-07,Mussel Rope Tray,TR-2,r,85,trestle levelled\n'+
+                  '8,LT-08,Salt Pool Tray,TR-2,c,96,basket tally checked\n'+
+                  '9,LT-09,Storm Beach Tray,TR-3,s,130,bed marker lost\n';
+              }#
+          ];
+          asserts:
+          [
+            trestleTallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trestle":"TR-1","Trays":3,"LongestShell":44},{"Trestle":"TR-2","Trays":5,"LongestShell":96},{"Trestle":"TR-3","Trays":1,"LongestShell":130}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

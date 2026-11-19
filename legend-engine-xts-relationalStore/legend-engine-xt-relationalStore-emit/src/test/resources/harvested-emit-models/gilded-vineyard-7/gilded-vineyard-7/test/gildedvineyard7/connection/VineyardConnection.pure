@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::gildedvineyard7::connection::VineyardConnection
+{
+  store: test::gildedvineyard7::store::VineyardDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists vineyard;',
+      'create schema vineyard;',
+      'create table vineyard.block_harvest (harvest_id integer primary key, block_code varchar(50) not null, parcel_code varchar(50) not null, harvest_status varchar(20) not null, cluster_count integer not null, basket_weight_kg integer not null, pick_crew varchar(50) not null);',
+      'create table vineyard.pruning_pass (pass_id integer primary key, block_code varchar(50) not null, parcel_code varchar(50) not null, pass_status varchar(20) not null, cane_count integer not null, hours_logged integer not null, crew_lead varchar(50) not null);',
+      'insert into vineyard.block_harvest values (1, \'BLK-01\', \'PAR-NORTH\', \'PICKED\', 320, 480, \'CREW-SUNRISE\');',
+      'insert into vineyard.block_harvest values (2, \'BLK-02\', \'PAR-NORTH\', \'PICKED\', 280, 410, \'CREW-SUNRISE\');',
+      'insert into vineyard.block_harvest values (3, \'BLK-03\', \'PAR-NORTH\', \'SKIPPED\', 0, 0, \'CREW-SUNRISE\');',
+      'insert into vineyard.block_harvest values (4, \'BLK-04\', \'PAR-SOUTH\', \'PICKED\', 500, 760, \'CREW-RIDGE\');',
+      'insert into vineyard.block_harvest values (5, \'BLK-05\', \'PAR-NORTH\', \'SORTING\', 150, 220, \'CREW-RIDGE\');',
+      'insert into vineyard.pruning_pass values (1, \'BLK-01\', \'PAR-NORTH\', \'OPEN\', 120, 6, \'LEAD-ASH\');',
+      'insert into vineyard.pruning_pass values (2, \'BLK-02\', \'PAR-NORTH\', \'ACTIVE\', 90, 4, \'LEAD-ASH\');',
+      'insert into vineyard.pruning_pass values (3, \'BLK-03\', \'PAR-NORTH\', \'CLOSED\', 0, 0, \'LEAD-ASH\');',
+      'insert into vineyard.pruning_pass values (4, \'BLK-04\', \'PAR-SOUTH\', \'OPEN\', 140, 8, \'LEAD-BIRCH\');',
+      'insert into vineyard.pruning_pass values (5, \'BLK-05\', \'PAR-NORTH\', \'OPEN\', 110, 5, \'LEAD-BIRCH\');'
+      ];
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlymarsh::mapping::MarshMapping
+(
+  *test::kindlymarsh::domain::BirdCount[bird]: Relational
+  {
+    ~primaryKey ([test::kindlymarsh::store::MarshDb]WETLAND.BIRD_COUNT.COUNT_ID)
+    ~mainTable [test::kindlymarsh::store::MarshDb]WETLAND.BIRD_COUNT
+    birdCode: [test::kindlymarsh::store::MarshDb]WETLAND.BIRD_COUNT.BIRD_CODE,
+    countedOn: [test::kindlymarsh::store::MarshDb]WETLAND.BIRD_COUNT.COUNTED_ON,
+    flockSize: [test::kindlymarsh::store::MarshDb]WETLAND.BIRD_COUNT.FLOCK_SIZE,
+    wingSpan: [test::kindlymarsh::store::MarshDb]WETLAND.BIRD_COUNT.WING_SPAN
+  }
+  *test::kindlymarsh::domain::Observer[observer]: Relational
+  {
+    ~primaryKey ([test::kindlymarsh::store::MarshDb]WETLAND.OBSERVER.OBSERVER_ID)
+    ~mainTable [test::kindlymarsh::store::MarshDb]WETLAND.OBSERVER
+    observerCode: [test::kindlymarsh::store::MarshDb]WETLAND.OBSERVER.OBSERVER_CODE,
+    observerName: [test::kindlymarsh::store::MarshDb]WETLAND.OBSERVER.OBSERVER_NAME
+  }
+  testSuites:
+  [
+    pointInTime:
+    {
+      function: |test::kindlymarsh::domain::BirdCount.all(%2026-06-01)->project(~[Bird: b|$b.birdCode, Size: b|$b.flockSize]);
+      tests:
+      [
+        window:
+        {
+          data: [test::kindlymarsh::store::MarshDb: Reference #{test::kindlymarsh::data::MarshData}#];
+          asserts:
+          [
+            expected: EqualToJson #{expected: ExternalFormat #{contentType: 'application/json'; data: '[{"Bird":"HER-101","Size":7}]';}#;}#
+          ];
+        }
+      ];
+    }
+  ]
+)

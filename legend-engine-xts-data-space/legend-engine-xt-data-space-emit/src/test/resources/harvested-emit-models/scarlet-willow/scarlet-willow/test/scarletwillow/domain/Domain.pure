@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletwillow::domain::*;
+
+Class test::scarletwillow::domain::Tree
+{
+  treeTag: String[1];
+  plantedOn: StrictDate[1];
+  heightMeters: Float[1];
+  zoneName: String[0..1];
+  activeSiteName: String[0..1];
+}
+
+Class test::scarletwillow::domain::Site
+{
+  siteCode: String[1];
+  siteName: String[1];
+}
+
+Class test::scarletwillow::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+}
+
+Class test::scarletwillow::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+}
+
+Class test::scarletwillow::domain::Species
+{
+  commonName: String[1];
+}
+
+Class test::scarletwillow::domain::SpeciesGroup
+{
+  groupCode: String[1];
+  groupName: String[1];
+}
+
+Class test::scarletwillow::domain::TreeStatus
+{
+  treeTag: String[1];
+  lifecycleStatus: String[1];
+}
+
+Association test::scarletwillow::domain::Tree_Site
+{
+  site: Site[1];
+  trees: Tree[*];
+}
+
+Association test::scarletwillow::domain::Site_District
+{
+  district: District[1];
+  sites: Site[*];
+}
+
+Association test::scarletwillow::domain::District_Region
+{
+  region: Region[1];
+  districts: District[*];
+}
+
+Association test::scarletwillow::domain::Tree_Species
+{
+  species: Species[1];
+  specimens: Tree[*];
+}
+
+Association test::scarletwillow::domain::Species_Group
+{
+  group: SpeciesGroup[1];
+  members: Species[*];
+}

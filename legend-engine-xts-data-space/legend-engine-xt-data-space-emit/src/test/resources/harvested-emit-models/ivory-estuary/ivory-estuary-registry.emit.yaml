@@ -1,0 +1,56 @@
+name: ivory-estuary-registry
+title: "Ivory Estuary — Tidal Wetland Monitoring Registry (Relational Mapping, Service, Data Space, Diagram)"
+description: |
+  A tidal-wetland monitoring network published as a curated relational corpus.
+  Two domain classes are bound to a two-table store through a mapping that
+  anchors each class on a named main-table alias with an explicit primary key
+  and resolves the station-to-wetland property across a declared join; the
+  bound columns span text, temporal, decimal, floating-point and boolean
+  families. A threshold-parameterised single-execution service projects the
+  active stations over a Snowflake-typed connection and an engine runtime, and
+  a layout element pins both classes and the property that relates them. The
+  data space gathers the mapping, runtime, layout element and the service as a
+  featured packageable executable, and carries an e-mail support contact. Both
+  the mapping and the service carry test suites over embedded relational
+  fixtures.
+
+modelSources:
+  model:
+    root: ivory-estuary-registry
+    files:
+      - test/ivoryestuary/connection/EstuaryConnection.pure
+      - test/ivoryestuary/dataspace/EstuaryDataSpace.pure
+      - test/ivoryestuary/diagram/EstuaryDiagram.pure
+      - test/ivoryestuary/domain/EstuaryDomain.pure
+      - test/ivoryestuary/mapping/EstuaryMapping.pure
+      - test/ivoryestuary/runtime/EstuaryRuntime.pure
+      - test/ivoryestuary/service/StationsByTidalRangeService.pure
+      - test/ivoryestuary/store/EstuaryDatabase.pure
+
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - diagram
+  - h2
+  - main-table-alias
+  - primary-key
+  - project
+  - relational
+  - service-test
+  - snowflake
+  - tidal-wetland
+  - wildlife-monitoring

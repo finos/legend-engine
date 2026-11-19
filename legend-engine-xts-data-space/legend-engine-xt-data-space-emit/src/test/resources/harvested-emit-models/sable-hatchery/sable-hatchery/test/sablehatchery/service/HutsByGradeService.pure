@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sablehatchery::service::HutsByGradeService
+{
+  pattern: '/hut-network/v1/huts/{valley}/{grade}';
+  owners:
+  [
+    'hut-network-office'
+  ];
+  documentation: 'List the huts of one valley at one access grade with their bunk capacity and walk-in time.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {valley: String[1], grade: String[1]|test::sablehatchery::domain::TrailHut.all()->filter(
+      h|($h.valleyName == $valley) && ($h.accessGrade == $grade)
+    )->project(
+      [
+        x|$x.hutCode,
+        x|$x.hutName->toUpper(),
+        x|$x.bunkCount,
+        x|$x.walkInHours
+      ],
+      [
+        'Hut',
+        'Name',
+        'Bunks',
+        'WalkInHours'
+      ]
+    )};
+    mapping: test::sablehatchery::mapping::HutNetworkMapping;
+    runtime: test::sablehatchery::runtime::HutNetworkRuntime;
+  }
+  testSuites:
+  [
+    gradedHutSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              hutnet.trail_hut:
+                'hut_code,hut_name,valley_name,access_grade,season_label,custodian_name,surface_type,water_source,bunk_count,walk_in_hours,water_tank_kl\n'+
+                'TH-01,Kastel Hut,Ober Valley,alpine,high-season,Ines Marta,granite,spring,24,3.5,12.50\n'+
+                'TH-02,Ridge Shelter,Ober Valley,alpine,early-season,Bo Lindt,scree,cistern,12,2.25,4.25\n'+
+                'TH-03,Larch Cabin,Unter Valley,forest,high-season,Tam Ruiz,loam,stream,18,1.75,6.75\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        alpineHutsOfOneValley:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            valley = 'Ober Valley',
+            grade = 'alpine'
+          ]
+          asserts:
+          [
+            bothAlpineHutsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hut":"TH-01","Name":"KASTEL HUT","Bunks":24,"WalkInHours":3.5},{"Hut":"TH-02","Name":"RIDGE SHELTER","Bunks":12,"WalkInHours":2.25}]';
+                  }#;
+              }#
+          ]
+        },
+        forestHutsOfTheOtherValley:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            valley = 'Unter Valley',
+            grade = 'forest'
+          ]
+          asserts:
+          [
+            onlyTheForestHutKept:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hut":"TH-03","Name":"LARCH CABIN","Bunks":18,"WalkInHours":1.75}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

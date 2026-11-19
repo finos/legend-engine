@@ -1,0 +1,221 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedvineyard6::mapping::TrailMapping
+(
+  *test::gildedvineyard6::domain::Region[regionSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard6::store::TrailNetworkDB]trails.region.region_code
+    )
+    ~mainTable [test::gildedvineyard6::store::TrailNetworkDB]trails.region
+    code: [test::gildedvineyard6::store::TrailNetworkDB]trails.region.region_code,
+    name: [test::gildedvineyard6::store::TrailNetworkDB]trails.region.region_name
+  }
+
+  *test::gildedvineyard6::domain::Trailhead[trailheadSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard6::store::TrailNetworkDB]trails.trailhead.trailhead_id
+    )
+    ~mainTable [test::gildedvineyard6::store::TrailNetworkDB]trails.trailhead
+    id: [test::gildedvineyard6::store::TrailNetworkDB]trails.trailhead.trailhead_id,
+    code: [test::gildedvineyard6::store::TrailNetworkDB]trails.trailhead.trailhead_code,
+    name: [test::gildedvineyard6::store::TrailNetworkDB]trails.trailhead.trailhead_name,
+    elevationMetres: [test::gildedvineyard6::store::TrailNetworkDB]trails.trailhead.elevation_m
+  }
+
+  *test::gildedvineyard6::domain::TrailSegment[segmentSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard6::store::TrailNetworkDB]trails.trail_segment.segment_id
+    )
+    ~mainTable [test::gildedvineyard6::store::TrailNetworkDB]trails.trail_segment
+    id: [test::gildedvineyard6::store::TrailNetworkDB]trails.trail_segment.segment_id,
+    code: [test::gildedvineyard6::store::TrailNetworkDB]trails.trail_segment.segment_code,
+    lengthKm: [test::gildedvineyard6::store::TrailNetworkDB]trails.trail_segment.length_km,
+    difficultyCode: [test::gildedvineyard6::store::TrailNetworkDB]trails.trail_segment.difficulty_code,
+    trailheadName: [test::gildedvineyard6::store::TrailNetworkDB]@Segment_Trailhead | trails.trailhead.trailhead_name
+  }
+
+  *test::gildedvineyard6::domain::Shelter[shelterSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard6::store::TrailNetworkDB]trails.shelter.shelter_id
+    )
+    ~mainTable [test::gildedvineyard6::store::TrailNetworkDB]trails.shelter
+    id: [test::gildedvineyard6::store::TrailNetworkDB]trails.shelter.shelter_id,
+    code: [test::gildedvineyard6::store::TrailNetworkDB]trails.shelter.shelter_code,
+    name: [test::gildedvineyard6::store::TrailNetworkDB]trails.shelter.shelter_name,
+    bunkCount: [test::gildedvineyard6::store::TrailNetworkDB]trails.shelter.bunk_count,
+    segmentCode: [test::gildedvineyard6::store::TrailNetworkDB]@Shelter_Segment | trails.trail_segment.segment_code
+  }
+
+  *test::gildedvineyard6::domain::PatrolVisit[visitSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedvineyard6::store::TrailNetworkDB]trails.patrol_visit.visit_id
+    )
+    ~mainTable [test::gildedvineyard6::store::TrailNetworkDB]trails.patrol_visit
+    id: [test::gildedvineyard6::store::TrailNetworkDB]trails.patrol_visit.visit_id,
+    code: [test::gildedvineyard6::store::TrailNetworkDB]trails.patrol_visit.visit_code,
+    visitedOn: [test::gildedvineyard6::store::TrailNetworkDB]trails.patrol_visit.visited_on,
+    conditionCode: [test::gildedvineyard6::store::TrailNetworkDB]trails.patrol_visit.condition_code,
+    shelterName: [test::gildedvineyard6::store::TrailNetworkDB]@Visit_Shelter | trails.shelter.shelter_name
+  }
+
+  test::gildedvineyard6::domain::Trailhead_Segments: Relational
+  {
+    AssociationMapping
+    (
+      startsAt[segmentSet,trailheadSet]: [test::gildedvineyard6::store::TrailNetworkDB]@Segment_Trailhead,
+      segments[trailheadSet,segmentSet]: [test::gildedvineyard6::store::TrailNetworkDB]@Segment_Trailhead
+    )
+  }
+
+  test::gildedvineyard6::domain::Segment_Shelters: Relational
+  {
+    AssociationMapping
+    (
+      onSegment[shelterSet,segmentSet]: [test::gildedvineyard6::store::TrailNetworkDB]@Shelter_Segment,
+      shelters[segmentSet,shelterSet]: [test::gildedvineyard6::store::TrailNetworkDB]@Shelter_Segment
+    )
+  }
+
+  test::gildedvineyard6::domain::Shelter_Visits: Relational
+  {
+    AssociationMapping
+    (
+      atShelter[visitSet,shelterSet]: [test::gildedvineyard6::store::TrailNetworkDB]@Visit_Shelter,
+      visits[shelterSet,visitSet]: [test::gildedvineyard6::store::TrailNetworkDB]@Visit_Shelter
+    )
+  }
+
+  testSuites:
+  [
+    segmentJoinSuite:
+    {
+      function: |test::gildedvineyard6::domain::TrailSegment.all()->project(
+  [
+    s|$s.code,
+    s|$s.lengthKm,
+    s|$s.difficultyCode,
+    s|$s.trailheadName
+  ],
+  [
+    'Segment',
+    'LengthKm',
+    'Difficulty',
+    'Trailhead'
+  ]
+)->sort([asc('Segment')]);
+      tests:
+      [
+        segmentTrailheadResolved:
+        {
+          doc: 'Projects trail segments together with the trailhead name reached through the single-hop segment-to-trailhead join, including a segment whose difficulty grading is unrecorded.';
+          data:
+          [
+            test::gildedvineyard6::store::TrailNetworkDB:
+              Relational
+              #{
+                trails.trailhead:
+                  'trailhead_id,trailhead_code,trailhead_name,region_code,elevation_m\n'+
+                  '1,TH-01,Larch Gate,RG-N,880\n'+
+                  '2,TH-02,Fern Gate,RG-S,640\n';
+
+                trails.trail_segment:
+                  'segment_id,segment_code,trailhead_id,length_km,difficulty_code\n'+
+                  '1,SEG-01,1,4.5,HARD\n'+
+                  '2,SEG-02,1,2.25,EASY\n'+
+                  '3,SEG-03,2,7.0,\n';
+              }#
+          ];
+          asserts:
+          [
+            trailheadNamesResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"SEG-01","LengthKm":4.5,"Difficulty":"HARD","Trailhead":"Larch Gate"},{"Segment":"SEG-02","LengthKm":2.25,"Difficulty":"EASY","Trailhead":"Larch Gate"},{"Segment":"SEG-03","LengthKm":7.0,"Difficulty":null,"Trailhead":"Fern Gate"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    visitJoinSuite:
+    {
+      function: |test::gildedvineyard6::domain::PatrolVisit.all()->project(
+  [
+    v|$v.code,
+    v|$v.visitedOn,
+    v|$v.conditionCode,
+    v|$v.shelterName
+  ],
+  [
+    'Visit',
+    'VisitedOn',
+    'Condition',
+    'Shelter'
+  ]
+)->sort([asc('Visit')]);
+      tests:
+      [
+        visitShelterResolved:
+        {
+          doc: 'Projects patrol visits with the shelter name reached through the visit-to-shelter join, including a visit whose condition grading is unrecorded.';
+          data:
+          [
+            test::gildedvineyard6::store::TrailNetworkDB:
+              Relational
+              #{
+                trails.shelter:
+                  'shelter_id,shelter_code,shelter_name,segment_id,bunk_count\n'+
+                  '1,SH-01,Larch Hut,1,6\n'+
+                  '2,SH-02,Fern Hut,3,4\n';
+
+                trails.patrol_visit:
+                  'visit_id,visit_code,shelter_id,visited_on,condition_code\n'+
+                  '1,PV-01,1,2026-04-02,GOOD\n'+
+                  '2,PV-02,2,2026-05-11,\n';
+              }#
+          ];
+          asserts:
+          [
+            shelterNamesResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"PV-01","VisitedOn":"2026-04-02","Condition":"GOOD","Shelter":"Larch Hut"},{"Visit":"PV-02","VisitedOn":"2026-05-11","Condition":null,"Shelter":"Fern Hut"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

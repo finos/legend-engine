@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternlighthouse6::mapping::SeedVaultMapping
+(
+  *test::easternlighthouse6::domain::SeedAccession[seedAccession]: Relational
+  {
+    ~primaryKey
+    (
+      [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.ACCESSION_CODE
+    )
+    ~mainTable [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION
+    accessionCode: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.ACCESSION_CODE,
+    taxonName: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.TAXON_NAME,
+    commonName: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.COMMON_NAME,
+    familyName: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.FAMILY_NAME,
+    collectionCode: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.COLLECTION_CODE,
+    storageRoomCode: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.STORAGE_ROOM_CODE,
+    shelfCode: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.SHELF_CODE,
+    trayCode: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.TRAY_CODE,
+    packetCode: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.PACKET_CODE,
+    seedLotCode: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.SEED_LOT_CODE,
+    collectorName: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.COLLECTOR_NAME,
+    collectorTeam: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.COLLECTOR_TEAM,
+    habitatNote: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.HABITAT_NOTE,
+    soilNote: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.SOIL_NOTE,
+    weatherNote: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.WEATHER_NOTE,
+    provenanceRegion: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.PROVENANCE_REGION,
+    provenanceDistrict: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.PROVENANCE_DISTRICT,
+    provenanceSite: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.PROVENANCE_SITE,
+    viabilityGrade: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.VIABILITY_GRADE,
+    germinationNote: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.GERMINATION_NOTE,
+    dormancyClass: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.DORMANCY_CLASS,
+    cleaningMethod: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.CLEANING_METHOD,
+    dryingMethod: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.DRYING_METHOD,
+    packagingType: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.PACKAGING_TYPE,
+    curationNote: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.CURATION_NOTE,
+    curatorName: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.CURATOR_NAME,
+    collectedAt: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.COLLECTED_AT,
+    receivedAt: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.RECEIVED_AT,
+    testedAt: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.TESTED_AT,
+    repackedAt: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.REPACKED_AT,
+    seedMassG: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.SEED_MASS_G,
+    moisturePct: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.MOISTURE_PCT,
+    germinationRatePct: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.GERMINATION_RATE_PCT,
+    thousandSeedMassG: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.THOUSAND_SEED_MASS_G,
+    packetCount: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.PACKET_COUNT,
+    viabilityScore: [test::easternlighthouse6::store::SeedVaultDb]vault.SEED_ACCESSION.VIABILITY_SCORE
+  }
+
+  testSuites:
+  [
+    seedAccessionSuite:
+    {
+      function: |test::easternlighthouse6::domain::SeedAccession.all()->project([a|$a.accessionCode, a|$a.taxonName, a|$a.storageRoomCode, a|$a.curationNote, a|$a.viabilityScore, a|$a.packetCount], ['AccessionCode', 'TaxonName', 'StorageRoomCode', 'CurationNote', 'ViabilityScore', 'PacketCount'])->sort([asc('AccessionCode')]);
+      tests:
+      [
+        typedColumnsReadThroughTheAliasedTable:
+        {
+          doc: 'Two accessions sharing a storage room and one kept in a second room are read straight through the aliased table, and the accession whose curation note and viability score were never recorded carries no value for either.';
+          data:
+          [
+            test::easternlighthouse6::store::SeedVaultDb:
+              Relational
+              #{
+                vault.SEED_ACCESSION:
+      'ACCESSION_CODE,TAXON_NAME,COMMON_NAME,FAMILY_NAME,COLLECTION_CODE,STORAGE_ROOM_CODE,SHELF_CODE,TRAY_CODE,PACKET_CODE,SEED_LOT_CODE,COLLECTOR_NAME,COLLECTOR_TEAM,HABITAT_NOTE,SOIL_NOTE,WEATHER_NOTE,PROVENANCE_REGION,PROVENANCE_DISTRICT,PROVENANCE_SITE,VIABILITY_GRADE,GERMINATION_NOTE,DORMANCY_CLASS,CLEANING_METHOD,DRYING_METHOD,PACKAGING_TYPE,CURATION_NOTE,CURATOR_NAME,COLLECTED_AT,RECEIVED_AT,TESTED_AT,REPACKED_AT,SEED_MASS_G,MOISTURE_PCT,GERMINATION_RATE_PCT,THOUSAND_SEED_MASS_G,PACKET_COUNT,VIABILITY_SCORE\n'+
+      'SA-01,Silene upland,upland catchfly,Caryophyllaceae,COL-1,R-1,SH-1,TR-1,PK-1,LOT-1,Ada Fern,upland survey,scree ledge,thin loam,dry and clear,North Uplands,Slate Fell,High Ledge,A,steady,PHYSIOLOGICAL,hand sieve,silica,foil packet,held in room one,Bea Moss,2026-04-01 09:00:00,2026-04-03 11:30:00,2026-05-01 08:15:00,2026-05-02 14:00:00,18.5000,6.2500,88.0000,1.9000,4,9\n'+
+      'SA-02,Carex ridge,ridge sedge,Cyperaceae,COL-1,R-1,SH-2,TR-2,PK-2,LOT-2,Ada Fern,upland survey,ridge flush,peat,,North Uplands,Slate Fell,Long Ridge,B,,PHYSICAL,air column,silica,foil packet,,Bea Moss,2026-04-08 10:00:00,2026-04-10 09:45:00,,,7.2500,5.5000,72.5000,0.8500,2,\n'+
+      'SA-03,Juncus mire,mire rush,Juncaceae,COL-2,R-2,SH-3,TR-3,PK-3,LOT-3,Cal Reed,mire survey,mire margin,waterlogged peat,wet and still,East Mires,Reed Flat,Low Mire,A,slow,MORPHOLOGICAL,water float,warm room,glass vial,held in room two,Dev Sedge,2025-09-12 07:30:00,2025-09-15 12:00:00,2025-10-01 08:00:00,,11.0000,7.0000,65.0000,1.2000,5,7\n';
+              }#
+          ];
+          asserts:
+          [
+            accessionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AccessionCode":"SA-01","TaxonName":"Silene upland","StorageRoomCode":"R-1","CurationNote":"held in room one","ViabilityScore":9,"PacketCount":4},{"AccessionCode":"SA-02","TaxonName":"Carex ridge","StorageRoomCode":"R-1","CurationNote":null,"ViabilityScore":null,"PacketCount":2},{"AccessionCode":"SA-03","TaxonName":"Juncus mire","StorageRoomCode":"R-2","CurationNote":"held in room two","ViabilityScore":7,"PacketCount":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

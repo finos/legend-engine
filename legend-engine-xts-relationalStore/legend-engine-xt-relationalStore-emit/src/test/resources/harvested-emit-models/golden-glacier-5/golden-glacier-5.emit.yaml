@@ -1,0 +1,40 @@
+name: golden-glacier-5
+title: "Golden Glacier 5 — moraine ridge stations with enumeration-mapped code columns and a join-reached basin name"
+description: |
+  A moraine ridge monitoring register whose station class carries two enumerated properties fed
+  from short code columns, each translated by its own enumeration mapping, plus a basin name
+  reached through a declared store join rather than a column of the station table. Two closed
+  enumerations back the coded properties and one station row deliberately carries a code outside
+  the mapped set, so the translation of an unmatched source value is asserted alongside the
+  translated members. A second relational mapping binds the drainage basin table on its own so
+  the basin projection is asserted independently of the station projection, and each mapping is
+  paired with its own local H2 connection and engine runtime.
+modelSources:
+  model:
+    root: golden-glacier-5
+    files:
+      - test/goldenglacier5/connection/MoraineConnections.pure
+      - test/goldenglacier5/domain/MoraineDomain.pure
+      - test/goldenglacier5/mapping/DrainageBasinMapping.pure
+      - test/goldenglacier5/mapping/MoraineStationMapping.pure
+      - test/goldenglacier5/runtime/MoraineRuntimes.pure
+      - test/goldenglacier5/store/MoraineDatabase.pure
+features:
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - enumeration-mapping
+  - h2
+  - join-reached-column
+  - mapping-test
+  - moraine-monitoring
+  - relational
+  - unmapped-enum-value

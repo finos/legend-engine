@@ -1,0 +1,243 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenarboretum2::mapping::ArboretumMapping
+(
+  *test::goldenarboretum2::domain::GroveZone[zoneSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum2::store::ArboretumDB]grove.grove_zone.grove_code
+    )
+    ~mainTable [test::goldenarboretum2::store::ArboretumDB]grove.grove_zone
+    groveCode: [test::goldenarboretum2::store::ArboretumDB]grove.grove_zone.grove_code,
+    groveName: [test::goldenarboretum2::store::ArboretumDB]grove.grove_zone.grove_name,
+    curatorName: [test::goldenarboretum2::store::ArboretumDB]grove.grove_zone.curator_name
+  }
+
+  *test::goldenarboretum2::domain::GroveBed[bedSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum2::store::ArboretumDB]grove.grove_bed.bed_code
+    )
+    ~mainTable [test::goldenarboretum2::store::ArboretumDB]grove.grove_bed
+    bedCode: [test::goldenarboretum2::store::ArboretumDB]grove.grove_bed.bed_code,
+    bedName: [test::goldenarboretum2::store::ArboretumDB]grove.grove_bed.bed_name,
+    soilType: [test::goldenarboretum2::store::ArboretumDB]grove.grove_bed.soil_type
+  }
+
+  *test::goldenarboretum2::domain::Cultivar[cultivarSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum2::store::ArboretumDB]grove.cultivar.cultivar_code
+    )
+    ~mainTable [test::goldenarboretum2::store::ArboretumDB]grove.cultivar
+    cultivarCode: [test::goldenarboretum2::store::ArboretumDB]grove.cultivar.cultivar_code,
+    cultivarName: [test::goldenarboretum2::store::ArboretumDB]grove.cultivar.cultivar_name,
+    leafHabit: [test::goldenarboretum2::store::ArboretumDB]grove.cultivar.leaf_habit
+  }
+
+  *test::goldenarboretum2::domain::TreeSpecimen[specimenSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum2::store::ArboretumDB]grove.tree_specimen.specimen_code
+    )
+    ~mainTable [test::goldenarboretum2::store::ArboretumDB]grove.tree_specimen
+    specimenCode: [test::goldenarboretum2::store::ArboretumDB]grove.tree_specimen.specimen_code,
+    heightCm: [test::goldenarboretum2::store::ArboretumDB]grove.tree_specimen.height_cm,
+    girthMm: [test::goldenarboretum2::store::ArboretumDB]grove.tree_specimen.girth_mm,
+    conditionCode: [test::goldenarboretum2::store::ArboretumDB]grove.tree_specimen.condition_code,
+    bedName: [test::goldenarboretum2::store::ArboretumDB]@Specimen_Bed | [test::goldenarboretum2::store::ArboretumDB]grove.grove_bed.bed_name,
+    soilType: [test::goldenarboretum2::store::ArboretumDB]@Specimen_Bed | [test::goldenarboretum2::store::ArboretumDB]grove.grove_bed.soil_type,
+    groveName: [test::goldenarboretum2::store::ArboretumDB]@Specimen_Bed > @Bed_Zone | [test::goldenarboretum2::store::ArboretumDB]grove.grove_zone.grove_name,
+    cultivarName: [test::goldenarboretum2::store::ArboretumDB]@Specimen_Cultivar | [test::goldenarboretum2::store::ArboretumDB]grove.cultivar.cultivar_name
+  }
+
+  *test::goldenarboretum2::domain::CanopySurvey[surveySet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenarboretum2::store::ArboretumDB]grove.canopy_survey.survey_code
+    )
+    ~mainTable [test::goldenarboretum2::store::ArboretumDB]grove.canopy_survey
+    surveyCode: [test::goldenarboretum2::store::ArboretumDB]grove.canopy_survey.survey_code,
+    canopyM2: [test::goldenarboretum2::store::ArboretumDB]grove.canopy_survey.canopy_m2,
+    surveyYear: [test::goldenarboretum2::store::ArboretumDB]grove.canopy_survey.survey_year
+  }
+
+  test::goldenarboretum2::domain::Specimen_Survey: Relational
+  {
+    AssociationMapping
+    (
+      surveys[specimenSet, surveySet]: [test::goldenarboretum2::store::ArboretumDB]@Survey_Specimen,
+      specimen[surveySet, specimenSet]: [test::goldenarboretum2::store::ArboretumDB]@Survey_Specimen
+    )
+  }
+
+  testSuites:
+  [
+    specimenAliasColumnSuite:
+    {
+      function: |test::goldenarboretum2::domain::TreeSpecimen.all()->project(
+  [
+    s|$s.specimenCode,
+    s|$s.heightCm,
+    s|$s.girthMm,
+    s|$s.conditionCode,
+    s|$s.bedName,
+    s|$s.soilType,
+    s|$s.groveName,
+    s|$s.cultivarName
+  ],
+  [
+    'Specimen',
+    'Height',
+    'Girth',
+    'Condition',
+    'Bed',
+    'Soil',
+    'Grove',
+    'Cultivar'
+  ]
+)->sort(
+  [
+    asc('Specimen')
+  ]
+);
+      tests:
+      [
+        aliasQualifiedColumnsAcrossJoinPaths:
+        {
+          doc: 'Reads every specimen with the bed attributes reached over one join hop, the grove name reached over two hops and the cultivar name reached over a second single hop, so alias qualification is exercised on the main table and on three distinct join paths at once.';
+          data:
+          [
+            test::goldenarboretum2::store::ArboretumDB:
+              Relational
+              #{
+                grove.grove_zone:
+                  'grove_code,grove_name,curator_name\n'+
+                  'GZ-1,North Grove,Ash Curator\n';
+
+                grove.grove_bed:
+                  'bed_code,bed_name,grove_code,soil_type\n'+
+                  'GB-1,Ridge Bed,GZ-1,LOAM\n'+
+                  'GB-2,Hollow Bed,GZ-1,CLAY\n';
+
+                grove.cultivar:
+                  'cultivar_code,cultivar_name,leaf_habit\n'+
+                  'CV-1,Golden Ash,DECIDUOUS\n'+
+                  'CV-2,Silver Fir,EVERGREEN\n';
+
+                grove.tree_specimen:
+                  'specimen_code,bed_code,cultivar_code,height_cm,girth_mm,condition_code\n'+
+                  'TS-01,GB-1,CV-1,820,240,HEALTHY\n'+
+                  'TS-02,GB-1,CV-2,410,120,MONITOR\n'+
+                  'TS-03,GB-2,CV-1,150,60,HEALTHY\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSpecimensWithJoinedAttributes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen":"TS-01","Height":820,"Girth":240,"Condition":"HEALTHY","Bed":"Ridge Bed","Soil":"LOAM","Grove":"North Grove","Cultivar":"Golden Ash"},{"Specimen":"TS-02","Height":410,"Girth":120,"Condition":"MONITOR","Bed":"Ridge Bed","Soil":"LOAM","Grove":"North Grove","Cultivar":"Silver Fir"},{"Specimen":"TS-03","Height":150,"Girth":60,"Condition":"HEALTHY","Bed":"Hollow Bed","Soil":"CLAY","Grove":"North Grove","Cultivar":"Golden Ash"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveyTraversalSuite:
+    {
+      function: |test::goldenarboretum2::domain::CanopySurvey.all()->project(
+  [
+    c|$c.surveyCode,
+    c|$c.canopyM2,
+    c|$c.surveyYear,
+    c|$c.specimen.specimenCode,
+    c|$c.specimen.cultivarName
+  ],
+  [
+    'Survey',
+    'Canopy',
+    'Year',
+    'Specimen',
+    'Cultivar'
+  ]
+)->sort(
+  [
+    asc('Survey')
+  ]
+);
+      tests:
+      [
+        surveysReachSpecimenAndItsJoinedCultivar:
+        {
+          doc: 'Walks each canopy measurement onto the specimen it was recorded against and then onto that specimen alias-qualified cultivar column, so a traversal and a join-path column resolve inside one projection.';
+          data:
+          [
+            test::goldenarboretum2::store::ArboretumDB:
+              Relational
+              #{
+                grove.grove_zone:
+                  'grove_code,grove_name,curator_name\n'+
+                  'GZ-1,North Grove,Ash Curator\n';
+
+                grove.grove_bed:
+                  'bed_code,bed_name,grove_code,soil_type\n'+
+                  'GB-1,Ridge Bed,GZ-1,LOAM\n';
+
+                grove.cultivar:
+                  'cultivar_code,cultivar_name,leaf_habit\n'+
+                  'CV-1,Golden Ash,DECIDUOUS\n'+
+                  'CV-2,Silver Fir,EVERGREEN\n';
+
+                grove.tree_specimen:
+                  'specimen_code,bed_code,cultivar_code,height_cm,girth_mm,condition_code\n'+
+                  'TS-01,GB-1,CV-1,820,240,HEALTHY\n'+
+                  'TS-02,GB-1,CV-2,410,120,MONITOR\n';
+
+                grove.canopy_survey:
+                  'survey_code,specimen_code,canopy_m2,survey_year\n'+
+                  'CS-01,TS-01,18.5,2026\n'+
+                  'CS-02,TS-01,20.25,2027\n'+
+                  'CS-03,TS-02,9.25,2026\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSurveysWithTheirSpecimen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"CS-01","Canopy":18.5,"Year":2026,"Specimen":"TS-01","Cultivar":"Golden Ash"},{"Survey":"CS-02","Canopy":20.25,"Year":2027,"Specimen":"TS-01","Cultivar":"Golden Ash"},{"Survey":"CS-03","Canopy":9.25,"Year":2026,"Specimen":"TS-02","Cultivar":"Silver Fir"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

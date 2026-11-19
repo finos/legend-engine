@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarprairie3::service::CrewStewardshipExtract
+{
+  pattern: '/cedarprairie/v1/crew/stewardship';
+  title: 'Crew Stewardship Extract';
+  owners:
+  [
+    'prairie-restoration'
+  ];
+  documentation: 'Walks the cross-schema crew association from the plots a caller selects by minimum native cover, groups the reached plots by crew and depot and reports the tended area, the crew size and the seed mixes behind the work, so a caller can see which depot carries which share of the register.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minNative: Integer[1]|test::cedarprairie3::domain::PrairiePlot.all()->filter(
+      p|($p.nativePct >= $minNative) && ($p.crew.crewCode->isNotEmpty())
+    )->project(
+      [
+        p|$p.crew.crewCode,
+        p|$p.crew.depotCode,
+        p|$p.crew.staffedCount,
+        p|$p.plotCode,
+        p|$p.lot.mixName,
+        p|$p.lot.viabilityScore,
+        p|$p.areaHa
+      ],
+      [
+        'Crew',
+        'Depot',
+        'Staffed',
+        'Plot',
+        'Mix',
+        'Viability',
+        'Area'
+      ]
+    )->sort([asc('Crew'), asc('Plot')])};
+    mapping: test::cedarprairie3::mapping::PrairieNetworkMapping;
+    runtime: test::cedarprairie3::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    crewExtractSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          registerConnection: Reference
+            #{
+              test::cedarprairie3::data::PrairieNetworkData
+            }#
+        ]
+      ]
+      tests:
+      [
+        crewsReachedFromPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minNative = 20
+          ]
+          asserts:
+          [
+            crewRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Crew":"C-1","Depot":"RIDGE","Staffed":6,"Plot":"P-01","Mix":"UPLAND TALLGRASS MIX","Viability":85.5,"Area":12},{"Crew":"C-1","Depot":"RIDGE","Staffed":6,"Plot":"P-02","Mix":"UPLAND TALLGRASS MIX","Viability":85.5,"Area":9},{"Crew":"C-2","Depot":"HOLLOW","Staffed":4,"Plot":"P-03","Mix":"MESIC FORB MIX","Viability":72,"Area":7},{"Crew":"C-2","Depot":"HOLLOW","Staffed":4,"Plot":"P-04","Mix":"MESIC FORB MIX","Viability":72,"Area":6},{"Crew":"C-2","Depot":"HOLLOW","Staffed":4,"Plot":"P-05","Mix":"WET MEADOW MIX","Viability":56,"Area":4},{"Crew":"C-3","Depot":"VERGE","Staffed":3,"Plot":"P-06","Mix":"WET MEADOW MIX","Viability":56,"Area":3},{"Crew":"C-3","Depot":"VERGE","Staffed":3,"Plot":"P-07","Mix":"SHADE SEDGE MIX","Viability":45,"Area":5},{"Crew":"C-3","Depot":"VERGE","Staffed":3,"Plot":"P-08","Mix":"SHADE SEDGE MIX","Viability":45,"Area":2}]';
+                  }#;
+              }#
+          ]
+        },
+        thresholdAboveEveryPlot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minNative = 99
+          ]
+          asserts:
+          [
+            emptyExtract:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

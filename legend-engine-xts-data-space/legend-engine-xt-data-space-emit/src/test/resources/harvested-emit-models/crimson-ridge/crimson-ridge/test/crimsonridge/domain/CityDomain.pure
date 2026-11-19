@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonridge::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Planning category assigned to a public green space.'} test::crimsonridge::domain::ParkCategory
+{
+  POCKET,
+  COMMUNITY,
+  REGIONAL
+}
+
+Class {meta::pure::profiles::doc.doc = 'An administrative planning district.'} test::crimsonridge::domain::District
+{
+  code: String[1];
+  name: String[1];
+  plannerCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A neighborhood inside a planning district.'} test::crimsonridge::domain::Neighborhood
+{
+  code: String[1];
+  name: String[1];
+  residentCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A public green space managed by the city.'} test::crimsonridge::domain::Park
+{
+  code: String[1];
+  name: String[1];
+  category: ParkCategory[1];
+  areaHectares: Float[1];
+  openedOn: StrictDate[1];
+  fenced: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A surface transit stop serving a neighborhood.'} test::crimsonridge::domain::TransitStop
+{
+  code: String[1];
+  name: String[1];
+  shelterSeats: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A built amenity installed inside a park.'} test::crimsonridge::domain::Amenity
+{
+  code: String[1];
+  kind: String[1];
+  installedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A grounds-maintenance crew assigned to a district.'} test::crimsonridge::domain::MaintenanceCrew
+{
+  code: String[1];
+  crewName: String[1];
+  headcount: Integer[1];
+}
+
+Association test::crimsonridge::domain::DistrictNeighborhoods
+{
+  district: District[1];
+  neighborhoods: Neighborhood[*];
+}
+
+Association test::crimsonridge::domain::NeighborhoodParks
+{
+  parkNeighborhood: Neighborhood[1];
+  parks: Park[*];
+}
+
+Association test::crimsonridge::domain::NeighborhoodStops
+{
+  stopNeighborhood: Neighborhood[1];
+  transitStops: TransitStop[*];
+}
+
+Association test::crimsonridge::domain::ParkAmenities
+{
+  amenityPark: Park[1];
+  amenities: Amenity[*];
+}
+
+Association test::crimsonridge::domain::DistrictCrews
+{
+  crewDistrict: District[1];
+  crews: MaintenanceCrew[*];
+}

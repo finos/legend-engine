@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sunlitorchard::store::OrchardDB
+(
+  Schema grove
+  (
+    Table orchard
+    (
+      orchard_code VARCHAR(12) PRIMARY KEY,
+      orchard_name VARCHAR(120) NOT NULL,
+      region VARCHAR(60) NOT NULL,
+      hectares DOUBLE NOT NULL
+    )
+    Table block
+    (
+      block_code VARCHAR(12) PRIMARY KEY,
+      block_name VARCHAR(120) NOT NULL,
+      row_count INTEGER NOT NULL,
+      orchard_code VARCHAR(12) NOT NULL,
+      variety_code VARCHAR(12) NOT NULL
+    )
+    Table variety
+    (
+      variety_code VARCHAR(12) PRIMARY KEY,
+      common_name VARCHAR(120) NOT NULL,
+      rootstock VARCHAR(60) NOT NULL
+    )
+    Table harvest_batch
+    (
+      batch_code VARCHAR(12) PRIMARY KEY,
+      picked_on DATE NOT NULL,
+      crate_count INTEGER NOT NULL,
+      block_code VARCHAR(12) NOT NULL
+    )
+  )
+
+  Join BlockOrchard(grove.block.orchard_code = grove.orchard.orchard_code)
+  Join BlockVariety(grove.block.variety_code = grove.variety.variety_code)
+  Join BlockHarvestBatch(grove.block.block_code = grove.harvest_batch.block_code)
+)

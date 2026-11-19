@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigoglacier2::mapping::IceArchiveMapping
+(
+  *test::indigoglacier2::domain::ReadingHistory: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceArchiveDb]CurrentReadingFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceArchiveDb]archive.reading_history.reading_code,
+      [test::indigoglacier2::store::IceArchiveDb]archive.reading_history.archived_at
+    )
+    ~mainTable [test::indigoglacier2::store::IceArchiveDb]archive.reading_history
+    readingCode: [test::indigoglacier2::store::IceArchiveDb]archive.reading_history.reading_code,
+    archivedAt: [test::indigoglacier2::store::IceArchiveDb]archive.reading_history.archived_at,
+    stakeCode: [test::indigoglacier2::store::IceArchiveDb]archive.reading_history.stake_code,
+    exposedCm: [test::indigoglacier2::store::IceArchiveDb]archive.reading_history.exposed_cm
+  }
+
+  *test::indigoglacier2::domain::CoreHistory: Relational
+  {
+    ~filter [test::indigoglacier2::store::IceArchiveDb]ShelvedCoreFilter
+    ~primaryKey
+    (
+      [test::indigoglacier2::store::IceArchiveDb]archive.core_history.core_code,
+      [test::indigoglacier2::store::IceArchiveDb]archive.core_history.archived_on
+    )
+    ~mainTable [test::indigoglacier2::store::IceArchiveDb]archive.core_history
+    coreCode: [test::indigoglacier2::store::IceArchiveDb]archive.core_history.core_code,
+    archivedOn: [test::indigoglacier2::store::IceArchiveDb]archive.core_history.archived_on,
+    coreLengthM: [test::indigoglacier2::store::IceArchiveDb]archive.core_history.core_length_m,
+    shelfLabel: [test::indigoglacier2::store::IceArchiveDb]archive.core_history.shelf_label
+  }
+
+  testSuites:
+  [
+    shelvedCoreSuite:
+    {
+      function: |test::indigoglacier2::domain::CoreHistory.all()->project(
+        [
+          h|$h.coreCode,
+          h|$h.archivedOn,
+          h|$h.coreLengthM,
+          h|$h.shelfLabel
+        ],
+        [
+          'CoreCode',
+          'ArchivedOn',
+          'CoreLengthM',
+          'ShelfLabel'
+        ]
+      )->sort([asc('CoreCode'), asc('ArchivedOn')]);
+      tests:
+      [
+        shelvedLongCoresOnly:
+        {
+          doc: 'Archived cores need a shelf label and at least a metre of length; the same core archived twice keeps both dated rows.';
+          data:
+          [
+            test::indigoglacier2::store::IceArchiveDb:
+              Relational
+              #{
+                archive.core_history:
+                  'core_code,archived_on,core_length_m,shelf_label\n'+
+                  'IC-1,2026-04-01,2.25,Freezer A3\n'+
+                  'IC-1,2026-05-01,2.25,Freezer B1\n'+
+                  'IC-2,2026-04-01,0.5,Freezer A4\n'+
+                  'IC-3,2026-04-02,3.0,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoShelvedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CoreCode":"IC-1","ArchivedOn":"2026-04-01","CoreLengthM":2.25,"ShelfLabel":"Freezer A3"},{"CoreCode":"IC-1","ArchivedOn":"2026-05-01","CoreLengthM":2.25,"ShelfLabel":"Freezer B1"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

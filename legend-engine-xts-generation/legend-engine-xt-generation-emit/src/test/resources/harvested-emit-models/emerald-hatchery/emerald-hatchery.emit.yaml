@@ -1,0 +1,38 @@
+name: emerald-hatchery
+title: "Alpine Hut Booking Feed — Profile-Annotated Contract Records and a Standalone Schema Generation"
+description: |
+  A published consumer-side feed contract for an alpine hut booking exchange.
+  Six narrow record types — hut summary, bunk allocation, stay reservation,
+  arriving party, shuttle leg and weather window — are flat bags of optional
+  scalars with no collections and no cross-record navigation, so the class graph
+  is the simplest possible shape while carrying dense per-property annotation. A
+  single profile supplies the annotation vocabulary: one publication stereotype
+  and four tags recording the wire scalar type, whether the field is example
+  bearing, a consumer-facing note and the field's ordering hint. Every annotated
+  property also carries the platform documentation tag, so two profiles annotate
+  the same property at once. A schema generation scoped at the record package
+  emits a plain-YAML OpenAPI-flavoured specification and is the model's only
+  generation-side element: no generation specification sequences it, so the
+  generation is exercised standalone while still resolving the whole annotated
+  package transitively.
+modelSources:
+  model:
+    root: emerald-hatchery
+    files:
+      - test/emeraldhatchery/domain/HutFeedContract.pure
+      - test/emeraldhatchery/generation/HutFeedSchema.pure
+features:
+  - execution:file-generation
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - contract-records
+  - file-generation
+  - hut-booking
+  - json-schema
+  - openapi
+  - profile
+  - stereotypes
+  - tagged-values

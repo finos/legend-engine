@@ -1,0 +1,37 @@
+name: umber-tundra-3
+title: "Umber Tundra 3 - ranger trail register"
+description: |
+  A ranger trail register that classifies marked routes from two equivalent field
+  archives. The service filters, projects, de-duplicates, and orders route notes
+  while selecting its execution by archive key.
+modelSources:
+  model:
+    root: umber-tundra-3
+    files:
+      - test/umbertundra3/connection/TrailConnections.pure
+      - test/umbertundra3/domain/TrailDomain.pure
+      - test/umbertundra3/function/TrailFunctions.pure
+      - test/umbertundra3/mapping/TrailMapping.pure
+      - test/umbertundra3/runtime/TrailRuntimes.pure
+      - test/umbertundra3/service/TrailRegister.pure
+      - test/umbertundra3/store/TrailDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - archive-routing
+  - date-arithmetic
+  - field-register
+  - h2
+  - multi-execution
+  - route-classification
+  - trail-observation

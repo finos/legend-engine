@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::scarletvineyard::domain::*;
+
+Class <<test::scarletvineyard::profile::NurseryProfile.curated>> {test::scarletvineyard::profile::NurseryProfile.steward = 'nursery-grounds'} test::scarletvineyard::domain::PropagationBed
+{
+  code: String[1];
+  name: String[1];
+  bedArea: Float[1];
+  soilMix: String[1];
+}
+
+Class <<test::scarletvineyard::profile::NurseryProfile.published>> {test::scarletvineyard::profile::NurseryProfile.steward = 'nursery-propagation'} test::scarletvineyard::domain::SeedlingLot
+{
+  code: String[1];
+  cultivar: String[1];
+  seedlingCount: Integer[1];
+  sownOn: StrictDate[1];
+}

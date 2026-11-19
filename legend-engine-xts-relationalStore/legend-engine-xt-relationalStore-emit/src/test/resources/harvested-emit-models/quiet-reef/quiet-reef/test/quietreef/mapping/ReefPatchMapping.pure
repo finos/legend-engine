@@ -1,0 +1,227 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietreef::mapping::ReefPatchMapping
+(
+  include mapping test::quietreef::mapping::ReefBaseMapping
+
+  *test::quietreef::domain::CoralPatch[patch]: Relational
+  {
+    ~filter [test::quietreef::store::ReefDB]@Patch_Reef | [test::quietreef::store::ReefDB]OpenReef
+    ~primaryKey
+    (
+      [test::quietreef::store::ReefDB]reefs.coral_patch.patch_id
+    )
+    ~mainTable [test::quietreef::store::ReefDB]reefs.coral_patch
+    patchCode: [test::quietreef::store::ReefDB]reefs.coral_patch.patch_code,
+    patchName: [test::quietreef::store::ReefDB]reefs.coral_patch.patch_name,
+    coverPct: [test::quietreef::store::ReefDB]reefs.coral_patch.cover_pct,
+    tierLabel: case(
+                 equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 1),
+                 'TIER-PRISTINE',
+                 case(
+                   equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 2),
+                   'TIER-STRONG',
+                   case(
+                     equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 3),
+                     'TIER-FAIR',
+                     case(
+                       equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 4),
+                       'TIER-PATCHY',
+                       case(
+                         equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 5),
+                         'TIER-THIN',
+                         case(
+                           equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 6),
+                           'TIER-STRESSED',
+                           case(
+                             equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 7),
+                             'TIER-BLEACHED',
+                             case(
+                               equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 8),
+                               'TIER-RUBBLE',
+                               'TIER-UNRANKED'
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    healthLabel: case(
+                   equal([test::quietreef::store::ReefDB]reefs.coral_patch.health_grade, 'GOOD'),
+                   'HEALTH-GOOD',
+                   case(
+                     equal([test::quietreef::store::ReefDB]reefs.coral_patch.health_grade, 'FAIR'),
+                     'HEALTH-FAIR',
+                     case(
+                       equal([test::quietreef::store::ReefDB]reefs.coral_patch.health_grade, 'POOR'),
+                       'HEALTH-POOR',
+                       'HEALTH-UNRANKED'
+                     )
+                   )
+                 ),
+    patchTrail: case(
+                  equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 1),
+                  [test::quietreef::store::ReefDB]reefs.coral_patch.patch_code,
+                  case(
+                    equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 2),
+                    concat(
+                      [test::quietreef::store::ReefDB]reefs.coral_patch.patch_code,
+                      '/',
+                      [test::quietreef::store::ReefDB]@Patch_Reef | [test::quietreef::store::ReefDB]reefs.reef.reef_name
+                    ),
+                    case(
+                      equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 3),
+                      concat(
+                        [test::quietreef::store::ReefDB]reefs.coral_patch.patch_code,
+                        '/',
+                        [test::quietreef::store::ReefDB]@Patch_Reef | [test::quietreef::store::ReefDB]reefs.reef.reef_name,
+                        '/',
+                        [test::quietreef::store::ReefDB]@Patch_Reef > @Reef_Zone | [test::quietreef::store::ReefDB]reefs.reef_zone.zone_name
+                      ),
+                      case(
+                        equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 4),
+                        concat(
+                          [test::quietreef::store::ReefDB]reefs.coral_patch.patch_code,
+                          '/',
+                          [test::quietreef::store::ReefDB]@Patch_Reef | [test::quietreef::store::ReefDB]reefs.reef.reef_name,
+                          '/',
+                          [test::quietreef::store::ReefDB]@Patch_Reef > @Reef_Zone | [test::quietreef::store::ReefDB]reefs.reef_zone.zone_name,
+                          '/',
+                          [test::quietreef::store::ReefDB]@Patch_Reef > @Reef_Zone > @Zone_District | [test::quietreef::store::ReefDB]reefs.reef_district.district_name
+                        ),
+                        concat(
+                          [test::quietreef::store::ReefDB]reefs.coral_patch.patch_code,
+                          '/',
+                          'UNTRACED'
+                        )
+                      )
+                    )
+                  )
+                ),
+    districtName: [test::quietreef::store::ReefDB]@Patch_Reef > @Reef_Zone > @Zone_District | [test::quietreef::store::ReefDB]reefs.reef_district.district_name,
+    zoneName: [test::quietreef::store::ReefDB]@Patch_Reef > @Reef_Zone | [test::quietreef::store::ReefDB]reefs.reef_zone.zone_name,
+    coverBand: [test::quietreef::store::ReefDB]@Patch_CoverBand | [test::quietreef::store::ReefDB]reefs.patch_cover_band.cover_band,
+    noteLabel: case(
+                 equal([test::quietreef::store::ReefDB]reefs.coral_patch.tier_code, 99),
+                 'NOTE-RESERVED',
+                 [test::quietreef::store::ReefDB]reefs.coral_patch.note_text
+               ),
+    surveyCount: [test::quietreef::store::ReefDB]@Patch_Summary | [test::quietreef::store::ReefDB]reefs.patch_survey_summary.survey_count,
+    lastSurveyedAt: [test::quietreef::store::ReefDB]@Patch_Summary | [test::quietreef::store::ReefDB]reefs.patch_survey_summary.last_taken_at
+  }
+
+  testSuites:
+  [
+    patchRegisterSuite:
+    {
+      function: |test::quietreef::domain::CoralPatch.all()->project(
+        [
+          p|$p.patchCode,
+          p|$p.patchName,
+          p|$p.coverPct,
+          p|$p.tierLabel,
+          p|$p.healthLabel,
+          p|$p.patchTrail,
+          p|$p.districtName,
+          p|$p.zoneName,
+          p|$p.coverBand,
+          p|$p.noteLabel,
+          p|$p.surveyCount,
+          p|$p.lastSurveyedAt
+        ],
+        [
+          'Patch',
+          'Name',
+          'Cover',
+          'Tier',
+          'Health',
+          'Trail',
+          'District',
+          'Zone',
+          'Band',
+          'Note',
+          'Surveys',
+          'LastSurveyedAt'
+        ]
+      )->sort([asc('Patch')]);
+      tests:
+      [
+        everyTierArmAndTrailDepth:
+        {
+          doc: 'Hits all eight tier arms and the unranked fallback, all three health arms and their fallback, the four trail-building arms across the one, two and three hop join paths and their untraced fallback, the grouped cover-band and survey views, and the null note that falls through the reserved-note arm; the two patches on the closed reef are dropped by the cross-table store filter.';
+          data:
+          [
+            test::quietreef::store::ReefDB:
+              Relational
+              #{
+                reefs.coral_patch:
+                  'patch_id,patch_code,patch_name,reef_code,tier_code,health_grade,cover_pct,note_text\n'+
+                  '1,CP-01,Outer Ribbon Crest,RF-01,1,GOOD,80,annual watch\n'+
+                  '2,CP-02,Ribbon Back Slope,RF-01,2,FAIR,65,silt noted\n'+
+                  '3,CP-03,Ribbon Spur,RF-01,3,POOR,40,bleach patch\n'+
+                  '4,CP-04,Bommie Head,RF-03,4,GOOD,55,seastar cluster\n'+
+                  '5,CP-05,Bommie Skirt,RF-03,5,FAIR,30,algae rise\n'+
+                  '6,CP-06,Ribbon Gutter,RF-01,6,POOR,20,storm scar\n'+
+                  '7,CP-07,Channel Ledge,RF-03,7,UNKNOWN,10,survey due\n'+
+                  '8,CP-08,Ribbon Rubble Flat,RF-01,8,GOOD,5,rubble field\n'+
+                  '9,CP-09,Channel Sand Gap,RF-03,9,FAIR,0,\n'+
+                  '10,CP-10,Ribbon North Crest,RF-01,2,UNKNOWN,70,ribbon crest\n'+
+                  '11,CP-11,Lagoon Shelf Head,RF-02,1,GOOD,90,closed reef\n'+
+                  '12,CP-12,Lagoon Shelf Toe,RF-02,3,FAIR,45,closed reef\n';
+
+                reefs.reef:
+                  'reef_id,reef_code,reef_name,zone_code,reef_state\n'+
+                  '1,RF-01,Outer Ribbon Reef,ZN-01,OPEN\n'+
+                  '2,RF-02,Lagoon Shelf Reef,ZN-02,CLOSED\n'+
+                  '3,RF-03,Channel Bommie Reef,ZN-02,OPEN\n';
+
+                reefs.reef_zone:
+                  'zone_id,zone_code,zone_name,district_code\n'+
+                  '1,ZN-01,Northern Ribbon Zone,DS-01\n'+
+                  '2,ZN-02,Southern Lagoon Zone,DS-02\n';
+
+                reefs.reef_district:
+                  'district_id,district_code,district_name\n'+
+                  '1,DS-01,North Marine District\n'+
+                  '2,DS-02,South Marine District\n';
+
+                reefs.patch_survey:
+                  'survey_id,patch_code,diver_name,taken_at\n'+
+                  '1,CP-01,Nadia Roth,2026-04-08 09:15:00\n'+
+                  '2,CP-01,Nadia Roth,2026-05-11 10:30:00\n'+
+                  '3,CP-04,Emil Fars,2026-06-02 07:45:00\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch":"CP-01","Name":"Outer Ribbon Crest","Cover":80,"Tier":"TIER-PRISTINE","Health":"HEALTH-GOOD","Trail":"CP-01","District":"North Marine District","Zone":"Northern Ribbon Zone","Band":"COVERED","Note":"annual watch","Surveys":2,"LastSurveyedAt":"2026-05-11T10:30:00.000000000+0000"},{"Patch":"CP-02","Name":"Ribbon Back Slope","Cover":65,"Tier":"TIER-STRONG","Health":"HEALTH-FAIR","Trail":"CP-02/Outer Ribbon Reef","District":"North Marine District","Zone":"Northern Ribbon Zone","Band":"COVERED","Note":"silt noted","Surveys":null,"LastSurveyedAt":null},{"Patch":"CP-03","Name":"Ribbon Spur","Cover":40,"Tier":"TIER-FAIR","Health":"HEALTH-POOR","Trail":"CP-03/Outer Ribbon Reef/Northern Ribbon Zone","District":"North Marine District","Zone":"Northern Ribbon Zone","Band":"COVERED","Note":"bleach patch","Surveys":null,"LastSurveyedAt":null},{"Patch":"CP-04","Name":"Bommie Head","Cover":55,"Tier":"TIER-PATCHY","Health":"HEALTH-GOOD","Trail":"CP-04/Channel Bommie Reef/Southern Lagoon Zone/South Marine District","District":"South Marine District","Zone":"Southern Lagoon Zone","Band":"COVERED","Note":"seastar cluster","Surveys":1,"LastSurveyedAt":"2026-06-02T07:45:00.000000000+0000"},{"Patch":"CP-05","Name":"Bommie Skirt","Cover":30,"Tier":"TIER-THIN","Health":"HEALTH-FAIR","Trail":"CP-05/UNTRACED","District":"South Marine District","Zone":"Southern Lagoon Zone","Band":"COVERED","Note":"algae rise","Surveys":null,"LastSurveyedAt":null},{"Patch":"CP-06","Name":"Ribbon Gutter","Cover":20,"Tier":"TIER-STRESSED","Health":"HEALTH-POOR","Trail":"CP-06/UNTRACED","District":"North Marine District","Zone":"Northern Ribbon Zone","Band":"COVERED","Note":"storm scar","Surveys":null,"LastSurveyedAt":null},{"Patch":"CP-07","Name":"Channel Ledge","Cover":10,"Tier":"TIER-BLEACHED","Health":"HEALTH-UNRANKED","Trail":"CP-07/UNTRACED","District":"South Marine District","Zone":"Southern Lagoon Zone","Band":"COVERED","Note":"survey due","Surveys":null,"LastSurveyedAt":null},{"Patch":"CP-08","Name":"Ribbon Rubble Flat","Cover":5,"Tier":"TIER-RUBBLE","Health":"HEALTH-GOOD","Trail":"CP-08/UNTRACED","District":"North Marine District","Zone":"Northern Ribbon Zone","Band":"COVERED","Note":"rubble field","Surveys":null,"LastSurveyedAt":null},{"Patch":"CP-09","Name":"Channel Sand Gap","Cover":0,"Tier":"TIER-UNRANKED","Health":"HEALTH-FAIR","Trail":"CP-09/UNTRACED","District":"South Marine District","Zone":"Southern Lagoon Zone","Band":"BARE","Note":null,"Surveys":null,"LastSurveyedAt":null},{"Patch":"CP-10","Name":"Ribbon North Crest","Cover":70,"Tier":"TIER-STRONG","Health":"HEALTH-UNRANKED","Trail":"CP-10/Outer Ribbon Reef","District":"North Marine District","Zone":"Northern Ribbon Zone","Band":"COVERED","Note":"ribbon crest","Surveys":null,"LastSurveyedAt":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

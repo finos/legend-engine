@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealhatchery2::service::WarmPondBoard
+{
+  pattern: '/tealhatchery2/v1/warm-pond-board';
+  title: 'Teal Hatchery 2 - Ponds Carrying A Warm Water Reading';
+  ownership: UserList { users: ['pond-rearing-desk'] };
+  documentation: 'Publishes the rearing ponds that carry at least one water reading at or above the requested temperature, so the pond-to-reading association decides which ponds reach the board, in pond order and capped.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minTemperatureC: Float[1]|test::tealhatchery2::domain::RearingPond.all()->filter(
+      p|$p.readings->exists(
+        r|$r.temperatureC >= $minTemperatureC
+      )
+    )->project(
+      [
+        p|$p.pondCode,
+        p|$p.pondName,
+        p|$p.volumeLitres,
+        p|$p.siteName
+      ],
+      [
+        'Pond/Code',
+        'Pond/Name',
+        'Pond/VolumeLitres',
+        'Pond/Site'
+      ]
+    )->sort(
+      [
+        asc('Pond/Code')
+      ]
+    )->limit(10)};
+    mapping: test::tealhatchery2::mapping::PondRegisterMapping;
+    runtime: test::tealhatchery2::runtime::PondRuntime;
+  }
+  testSuites:
+  [
+    warmPondSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          pondConnection:
+            Relational
+            #{
+              pond.rearing_pond:
+                'pond_id,pond_code,pond_name,volume_litres,site_name\n'+
+                '1,PD-1,Reed Pond,24000,Lower Marsh\n'+
+                '2,PD-2,Sedge Pond,18000,Lower Marsh\n'+
+                '3,PD-3,Willow Pond,12000,Upper Marsh\n';
+              pond.water_reading:
+                'reading_id,reading_code,pond_code,temperature_c,oxygen_mg_l,read_on\n'+
+                '1,WR-1,PD-1,15.5,8.5,2026-05-01\n'+
+                '2,WR-2,PD-1,11.0,9.0,2026-05-02\n'+
+                '3,WR-3,PD-2,10.5,9.5,2026-05-01\n'+
+                '4,WR-4,PD-3,14.0,8.0,2026-05-03\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyPondsWithAWarmReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minTemperatureC = 14.0
+          ]
+          asserts:
+          [
+            twoWarmPonds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Pond/Code":"PD-1","Pond/Name":"Reed Pond","Pond/VolumeLitres":24000,"Pond/Site":"Lower Marsh"},{"Pond/Code":"PD-3","Pond/Name":"Willow Pond","Pond/VolumeLitres":12000,"Pond/Site":"Upper Marsh"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealhatchery2::service::LarvaBatchRegister
+{
+  pattern: '/tealhatchery2/v1/larva-batch-register';
+  title: 'Teal Hatchery 2 - Standing And Archived Larva Batches';
+  ownership: UserList { users: ['pond-rearing-desk'] };
+  documentation: 'Publishes every larva batch the register holds, standing or archived, through the operation mapping that unions the two landed batch tables, carrying the survival index the class derives from the stocked and mortality tallies, in batch order.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::tealhatchery2::domain::LarvaBatch.all()->project(
+      [
+        b|$b.batchCode,
+        b|$b.pondCode,
+        b|$b.speciesName,
+        b|$b.countStocked,
+        b|$b.survivalIndex()
+      ],
+      [
+        'Batch/Code',
+        'Batch/Pond',
+        'Batch/Species',
+        'Batch/Stocked',
+        'Batch/SurvivalIndex'
+      ]
+    )->sort(
+      [
+        asc('Batch/Code')
+      ]
+    )};
+    mapping: test::tealhatchery2::mapping::PondRegisterMapping;
+    runtime: test::tealhatchery2::runtime::PondRuntime;
+  }
+  testSuites:
+  [
+    larvaBatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          pondConnection:
+            Relational
+            #{
+              pond.larva_batch:
+                'batch_id,batch_code,pond_code,species_name,count_stocked,mortality_count,stocked_on\n'+
+                '1,LB-1,PD-1,Crested newt,200,20,2026-04-01\n'+
+                '2,LB-2,PD-2,Smooth newt,150,15,2026-04-05\n';
+              pond.larva_batch_archive:
+                'batch_id,batch_code,pond_code,species_name,count_stocked,mortality_count,stocked_on\n'+
+                '1,LB-9,PD-3,Palmate newt,100,50,2025-04-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        standingAndArchivedBatchesUnioned:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeUnionedBatches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch/Code":"LB-1","Batch/Pond":"PD-1","Batch/Species":"Crested newt","Batch/Stocked":200,"Batch/SurvivalIndex":90.0},{"Batch/Code":"LB-2","Batch/Pond":"PD-2","Batch/Species":"Smooth newt","Batch/Stocked":150,"Batch/SurvivalIndex":90.0},{"Batch/Code":"LB-9","Batch/Pond":"PD-3","Batch/Species":"Palmate newt","Batch/Stocked":100,"Batch/SurvivalIndex":50.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

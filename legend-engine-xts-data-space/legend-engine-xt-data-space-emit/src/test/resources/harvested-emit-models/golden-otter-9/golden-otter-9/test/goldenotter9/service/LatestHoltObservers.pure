@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter9::service::LatestHoltObservers
+{
+  pattern: '/goldenotter9/v1/holts/latest-observer';
+  title: 'Otter Sanctuary - Latest Holt Observers';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists every holt with the observer of its latest sighting, narrowing the to-many sightings to the latest row inside the projection path before reading the to-one observer.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::goldenotter9::domain::Holt.all()->project(
+      [
+        h|$h.holtCode,
+        h|$h.sightings->filter(s|$s.isLatest == true).observer.observerName
+      ],
+      [
+        'HoltCode',
+        'LatestObserver'
+      ]
+    )->sort([asc('HoltCode')]);
+    mapping: test::goldenotter9::mapping::SanctuaryMapping;
+    runtime: test::goldenotter9::runtime::SanctuaryRuntime;
+  }
+  testSuites:
+  [
+    latestHoltObserversSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryWarehouse:
+            Reference
+            #{
+              test::goldenotter9::data::SanctuaryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestObserverPerHolt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            unsightedHoltIsNull:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HoltCode":"HT-1","LatestObserver":"Liv Penn"},{"HoltCode":"HT-2","LatestObserver":"Tom Vale"},{"HoltCode":"HT-3","LatestObserver":"Liv Penn"},{"HoltCode":"HT-4","LatestObserver":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

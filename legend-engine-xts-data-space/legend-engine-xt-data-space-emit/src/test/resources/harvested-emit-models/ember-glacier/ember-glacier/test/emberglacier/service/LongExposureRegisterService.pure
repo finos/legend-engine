@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberglacier::service::LongExposureRegisterService
+{
+  pattern: '/emberglacier/v1/long-exposure-register';
+  title: 'Ember Glacier - Long Exposure Register';
+  ownership: UserList { users: ['skywatch-night-desk'] };
+  documentation: 'Runs exposed past a lower bound on targets drawn from either spelling of one catalogue, so a numeric comparison and a membership test are conjoined in the same predicate.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minExposureS: Integer[1]|test::emberglacier::domain::ObservingSession.all()->filter(
+      s|($s.exposureS > $minExposureS) && ($s.target.catalogCode->in(['NGC', 'ngc']))
+    )->project(
+      [
+        s|$s.sessionCode,
+        s|$s.exposureS,
+        s|$s.target.targetCode
+      ],
+      [
+        'Session',
+        'ExposureS',
+        'Target'
+      ]
+    )->sort([asc('Session')])};
+    mapping: test::emberglacier::mapping::SkywatchMapping;
+    runtime: test::emberglacier::runtime::SkywatchRuntime;
+  }
+  testSuites:
+  [
+    longExposureRegisterServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skywatchConnection:
+            Relational
+            #{
+              skywatch.telescope:
+                'telescope_id,telescope_code,dome_id,mirror_cm,mount_kind\n'+
+                '1,TS-01,1,90,EQUATORIAL\n'+
+                '2,TS-02,2,60,ALTAZ\n'+
+                '3,TS-03,3,40,ALTAZ\n';
+              skywatch.instrument:
+                'instrument_id,instrument_code,telescope_id,band_name,pixel_scale\n'+
+                '1,IS-01,1,BROADBAND,0.32\n'+
+                '2,IS-02,1,NARROWBAND,0.28\n'+
+                '3,IS-03,3,BROADBAND,0.55\n';
+              skywatch.observer:
+                'observer_id,observer_code,observer_name,cohort_code\n'+
+                '1,OV-01,Aster Vale,COHORT-N1\n'+
+                '2,OV-02,Bramble Quint,COHORT-N2\n'+
+                '3,OV-03,Cinder Rowe,\n';
+              skywatch.sky_target:
+                'target_id,target_code,target_name,catalog_code,magnitude\n'+
+                '1,TG-01,Kite Nebula,NGC,8.4\n'+
+                '2,TG-02,Anvil Cluster,ngc,6.1\n'+
+                '3,TG-03,Ribbon Galaxy,IC,11.2\n'+
+                '4,TG-900,Drift Comet,NGC,9.0\n';
+              skywatch.observing_session:
+                'session_id,session_code,telescope_id,observer_id,target_id,instrument_id,started_at,exposure_s,frames_kept,session_state,logged_on\n'+
+                '1,SS-01,1,1,1,1,2026-05-04 21:30:00,120,48,COMPLETE,2026-05-05\n'+
+                '2,SS-02,1,2,2,2,2026-05-06 22:15:00,240,96,COMPLETE,2026-05-07\n'+
+                '3,SS-03,3,3,3,3,2026-05-08 20:45:00,60,12,COMPLETE,2026-05-09\n'+
+                '4,SS-04,2,1,4,1,2026-05-10 23:05:00,180,45,COMPLETE,2026-05-11\n'+
+                '5,SS-05,1,2,1,2,2026-05-12 21:00:00,300,162,ABANDONED,2026-05-13\n'+
+                '6,SS-06,3,1,2,3,2026-05-14 19:50:00,90,18,,2026-05-15\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        runsPastTheLowerBound:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minExposureS = 100
+          ]
+          asserts:
+          [
+            fourLongRuns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session":"SS-01","ExposureS":120,"Target":"TG-01"},{"Session":"SS-02","ExposureS":240,"Target":"TG-02"},{"Session":"SS-04","ExposureS":180,"Target":"TG-900"},{"Session":"SS-05","ExposureS":300,"Target":"TG-01"}]';
+                  }#;
+              }#
+          ]
+        },
+        aBoundNoRunReaches:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minExposureS = 400
+          ]
+          asserts:
+          [
+            noLongRuns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'Governed entry point over the apiary colony register.'} test::borealwillow3::dataspace::ApiaryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'register';
+      title: 'Colony Register Tier';
+      description: 'Register tier - the apiary store bound to the in-process runtime the model tests execute against.';
+      mapping: test::borealwillow3::mapping::ApiaryMapping;
+      defaultRuntime: test::borealwillow3::runtime::ApiaryH2Runtime;
+    },
+    {
+      name: 'steward';
+      title: 'Steward Review Tier';
+      description: 'Steward tier - the same mapping bound to the warehouse runtime the steward role reads through.';
+      mapping: test::borealwillow3::mapping::ApiaryMapping;
+      defaultRuntime: test::borealwillow3::runtime::ApiaryRegisterRuntime;
+    }
+  ];
+  defaultExecutionContext: 'register';
+  title: 'Apiary Colony And Swarm Register';
+  description: 'A curated entry point over the apiary operations domain - colonies versioned over the seasons they stood, inspections corrected over processing time, yard walk-round snapshots, bait hives set for swarms and the yards, stewards and forage classes behind them.';
+  elements:
+  [
+    test::borealwillow3::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Colony roster as of a season date';
+      description: 'Featured endpoint resolving the colony extent effective at one season date with decoded strain, temper and mite pressure.';
+      executable: test::borealwillow3::service::ColonyRosterAsOf;
+    },
+    {
+      id: 2;
+      title: 'Inspection logbook as of a processing and season instant';
+      description: 'Featured endpoint resolving the bitemporal inspection logbook at an independent belief instant and season date.';
+      executable: test::borealwillow3::service::InspectionLogbookAsOfPair;
+    },
+    {
+      id: 3;
+      title: 'Swarm watch register for one yard';
+      description: 'Featured endpoint banding bait-hive catch outcomes for a single stand.';
+      executable: test::borealwillow3::service::SwarmWatchRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'apiary-register-desk@apiary-register.invalid';
+  };
+}

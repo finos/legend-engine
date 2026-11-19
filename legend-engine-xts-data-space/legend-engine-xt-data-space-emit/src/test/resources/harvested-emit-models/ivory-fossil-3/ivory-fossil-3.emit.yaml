@@ -1,0 +1,55 @@
+name: ivory-fossil-3
+title: "Ivory Fossil 3 — fossil collection register with routed union and graded field tags"
+description: |
+  A non-financial fossil collection register. Catalogued and archived specimens are routed
+  onto one extent by a union operation over filtered relational class mappings with
+  multi-column keys, an eight-arm kind classifier with a null fallback, an enumeration
+  mapping fed by a case expression, an embedded measurement and a two-hop site lookup.
+  Field tags are graded by model-to-model expressions. Snowflake and Sybase connections
+  with mapper post-processors back two multi-context data spaces with diagrams.
+modelSources:
+  model:
+    root: ivory-fossil-3
+    files:
+      - test/ivoryfossil3/connection/FossilConnections.pure
+      - test/ivoryfossil3/dataspace/FossilDataSpaces.pure
+      - test/ivoryfossil3/diagram/FossilDiagrams.pure
+      - test/ivoryfossil3/domain/FossilDomain.pure
+      - test/ivoryfossil3/mapping/FieldTagMapping.pure
+      - test/ivoryfossil3/mapping/FossilBaseMapping.pure
+      - test/ivoryfossil3/mapping/FossilMapping.pure
+      - test/ivoryfossil3/runtime/FossilRuntimes.pure
+      - test/ivoryfossil3/store/FieldDb.pure
+      - test/ivoryfossil3/store/VaultDb.pure
+features:
+  - connection:mapper-postprocessor
+  - connection:snowflake
+  - connection:sybase
+  - execution:data-space
+  - execution:mapping-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-embedded
+  - store:relational-filter
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-column-primary-key
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - fossil
+  - h2
+  - m2m
+  - relational
+  - union

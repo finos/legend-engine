@@ -1,0 +1,34 @@
+name: hazel-reef-4
+title: "Hazel Reef Museum Exhibit Requests"
+description: |
+  Museum curation model that transforms exhibit requests into exhibit cards through a
+  many-to-many mapping. Eight priority branches plus a null fallback, constant display
+  metadata, literal audience lists, and graph-fetch serialization are covered by mapping
+  and service assertions.
+modelSources:
+  model:
+    root: hazel-reef-4
+    files:
+      - test/hazelreef4/domain/ExhibitDomain.pure
+      - test/hazelreef4/mapping/ExhibitCardMapping.pure
+      - test/hazelreef4/service/ExhibitServices.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - mapping:m2m-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-literal-list
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores:
+  []
+complexity: basic
+tags:
+  - conditional-branches
+  - exhibit-requests
+  - museum
+  - relation-query

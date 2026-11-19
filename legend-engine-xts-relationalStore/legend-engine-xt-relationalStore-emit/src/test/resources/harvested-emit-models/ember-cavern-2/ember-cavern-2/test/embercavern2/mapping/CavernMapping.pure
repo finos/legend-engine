@@ -1,0 +1,194 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::embercavern2::mapping::CavernMapping
+(
+  test::embercavern2::domain::ExpeditionStatus: EnumerationMapping StatusCodes
+  {
+    PLANNED: ['PLN'],
+    UNDERGROUND: ['UND'],
+    SURFACED: ['SRF'],
+    ABANDONED: ['ABN']
+  }
+
+  test::embercavern2::domain::SurveyGrade: EnumerationMapping GradeCodes
+  {
+    G1: ['1'],
+    G2: ['2'],
+    G3: ['3'],
+    G4: ['4']
+  }
+
+  *test::embercavern2::domain::Expedition[expedition]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embercavern2::store::CavernDb]survey.expedition.expedition_id
+    )
+    ~mainTable [test::embercavern2::store::CavernDb]survey.expedition
+    expeditionCode: [test::embercavern2::store::CavernDb]survey.expedition.expedition_code,
+    regionCode: [test::embercavern2::store::CavernDb]survey.expedition.region_code,
+    status: EnumerationMapping StatusCodes: [test::embercavern2::store::CavernDb]survey.expedition.status_code,
+    grade: EnumerationMapping GradeCodes: [test::embercavern2::store::CavernDb]survey.expedition.grade_code,
+    isRescueCleared: [test::embercavern2::store::CavernDb]survey.expedition.rescue_cleared,
+    leaderNote: [test::embercavern2::store::CavernDb]survey.expedition.leader_note,
+    departedAt: [test::embercavern2::store::CavernDb]survey.expedition.departed_at,
+    dueBackAt: [test::embercavern2::store::CavernDb]survey.expedition.due_back_at,
+    depthM: [test::embercavern2::store::CavernDb]survey.expedition.depth_m
+  }
+
+  *test::embercavern2::domain::Cave[cave]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embercavern2::store::CavernDb]survey.cave.cave_id
+    )
+    ~mainTable [test::embercavern2::store::CavernDb]survey.cave
+    caveCode: [test::embercavern2::store::CavernDb]survey.cave.cave_code,
+    caveName: [test::embercavern2::store::CavernDb]survey.cave.cave_name,
+    entranceKind: [test::embercavern2::store::CavernDb]survey.cave.entrance_kind
+  }
+
+  *test::embercavern2::domain::Massif[massif]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embercavern2::store::CavernDb]registry.massif.massif_code
+    )
+    ~mainTable [test::embercavern2::store::CavernDb]registry.massif
+    massifCode: [test::embercavern2::store::CavernDb]registry.massif.massif_code,
+    massifName: [test::embercavern2::store::CavernDb]registry.massif.massif_name
+  }
+
+  *test::embercavern2::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embercavern2::store::CavernDb]registry.district.district_code
+    )
+    ~mainTable [test::embercavern2::store::CavernDb]registry.district
+    districtCode: [test::embercavern2::store::CavernDb]registry.district.district_code,
+    districtName: [test::embercavern2::store::CavernDb]registry.district.district_name
+  }
+
+  *test::embercavern2::domain::Authority[authority]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embercavern2::store::CavernDb]registry.authority.authority_code
+    )
+    ~mainTable [test::embercavern2::store::CavernDb]registry.authority
+    authorityCode: [test::embercavern2::store::CavernDb]registry.authority.authority_code,
+    authorityName: [test::embercavern2::store::CavernDb]registry.authority.authority_name
+  }
+
+  *test::embercavern2::domain::Caver[caver]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embercavern2::store::CavernDb]registry.caver.caver_code
+    )
+    ~mainTable [test::embercavern2::store::CavernDb]registry.caver
+    caverCode: [test::embercavern2::store::CavernDb]registry.caver.caver_code,
+    caverName: [test::embercavern2::store::CavernDb]registry.caver.caver_name,
+    isDiver: [test::embercavern2::store::CavernDb]registry.caver.diver_flag
+  }
+
+  *test::embercavern2::domain::Kit[kit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embercavern2::store::CavernDb]registry.kit.kit_code
+    )
+    ~mainTable [test::embercavern2::store::CavernDb]registry.kit
+    kitCode: [test::embercavern2::store::CavernDb]registry.kit.kit_code,
+    kitKind: [test::embercavern2::store::CavernDb]registry.kit.kit_kind
+  }
+
+  *test::embercavern2::domain::RopeKit[ropeKit] extends [kit]: Relational
+  {
+    ~filter [test::embercavern2::store::CavernDb]RopeKind
+    ropeLengthM: [test::embercavern2::store::CavernDb]registry.kit.rope_length_m
+  }
+
+  *test::embercavern2::domain::LampKit[lampKit] extends [kit]: Relational
+  {
+    ~filter [test::embercavern2::store::CavernDb]LampKind
+    lumens: [test::embercavern2::store::CavernDb]registry.kit.lumens
+  }
+
+  test::embercavern2::domain::Expedition_Cave: Relational
+  {
+    AssociationMapping
+    (
+      cave[expedition, cave]: [test::embercavern2::store::CavernDb]@Expedition_Cave,
+      expeditions[cave, expedition]: [test::embercavern2::store::CavernDb]@Expedition_Cave
+    )
+  }
+
+  test::embercavern2::domain::Cave_Massif: Relational
+  {
+    AssociationMapping
+    (
+      massif[cave, massif]: [test::embercavern2::store::CavernDb]@Cave_Massif,
+      caves[massif, cave]: [test::embercavern2::store::CavernDb]@Cave_Massif
+    )
+  }
+
+  test::embercavern2::domain::Massif_District: Relational
+  {
+    AssociationMapping
+    (
+      district[massif, district]: [test::embercavern2::store::CavernDb]@Massif_District,
+      massifs[district, massif]: [test::embercavern2::store::CavernDb]@Massif_District
+    )
+  }
+
+  test::embercavern2::domain::District_Authority: Relational
+  {
+    AssociationMapping
+    (
+      authority[district, authority]: [test::embercavern2::store::CavernDb]@District_Authority,
+      districts[authority, district]: [test::embercavern2::store::CavernDb]@District_Authority
+    )
+  }
+
+  test::embercavern2::domain::Expedition_Caver: Relational
+  {
+    AssociationMapping
+    (
+      members[expedition, caver]: [test::embercavern2::store::CavernDb]@Expedition_Member > [test::embercavern2::store::CavernDb]@Member_Caver,
+      expeditionsJoined[caver, expedition]: [test::embercavern2::store::CavernDb]@Member_Caver > [test::embercavern2::store::CavernDb]@Expedition_Member
+    )
+  }
+
+  test::embercavern2::domain::Expedition_RopeKit: Relational
+  {
+    AssociationMapping
+    (
+      ropeKit[expedition, ropeKit]: [test::embercavern2::store::CavernDb]@Expedition_RopeKit,
+      ropeExpeditions[ropeKit, expedition]: [test::embercavern2::store::CavernDb]@Expedition_RopeKit
+    )
+  }
+
+  test::embercavern2::domain::Expedition_LampKit: Relational
+  {
+    AssociationMapping
+    (
+      lampKit[expedition, lampKit]: [test::embercavern2::store::CavernDb]@Expedition_LampKit,
+      lampExpeditions[lampKit, expedition]: [test::embercavern2::store::CavernDb]@Expedition_LampKit
+    )
+  }
+)

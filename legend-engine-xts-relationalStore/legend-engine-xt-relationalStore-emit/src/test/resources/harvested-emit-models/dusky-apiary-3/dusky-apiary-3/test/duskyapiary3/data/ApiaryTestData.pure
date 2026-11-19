@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::duskyapiary3::data::ApiaryTestData
+{
+  Relational
+  #{
+    apiary.hive:
+      'hive_id,hive_code,hive_name,yard_id,yard_code,population,status_code\n'+
+      '1,HV-01,Sunrise Hive,10,YD-10,180,A\n'+
+      '2,HV-02,Meadow Hive,20,YD-20,95,R\n'+
+      '3,HV-03,Quiet Hive,10,YD-10,0,E\n';
+    apiary.yard:
+      'yard_id,yard_code,yard_name,plot_id\n'+
+      '10,YD-10,North Yard,100\n'+
+      '20,YD-20,South Yard,200\n';
+    apiary.forage_plot:
+      'plot_id,plot_code,plot_name,bloom_note\n'+
+      '100,PL-100,Clover Bend,early bloom\n'+
+      '200,PL-200,Willow Rise,late bloom\n';
+    apiary.inspection:
+      'inspection_id,hive_id,inspector_name,inspection_note\n'+
+      '1000,1,Rowan Field,steady brood\n'+
+      '2000,2,Indigo Field,quiet colony\n'+
+      '3000,3,Rowan Field,empty frames';
+  }#
+}

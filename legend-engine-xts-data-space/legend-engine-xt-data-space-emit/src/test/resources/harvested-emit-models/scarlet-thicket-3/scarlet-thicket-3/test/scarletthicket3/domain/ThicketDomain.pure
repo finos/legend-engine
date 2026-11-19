@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletthicket3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One collected batch of seed held in the propagation nursery, carrying its own grades and counts plus two complex-typed details that live on the same row.'} test::scarletthicket3::domain::SeedLot
+{
+  lotCode: String[1];
+  seasonCode: String[1];
+  gradeCode: String[1];
+  statusCode: String[1];
+  quantityGrams: Float[1];
+  viabilityPct: Integer[1];
+  collectedOn: StrictDate[1];
+  origin: LotOrigin[0..1];
+  handling: HandlingSpec[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Where and in what habitat a batch of seed was gathered; a detail of the lot rather than an entity of its own, so it is bound inline onto the lot row and one joined reference row.'} test::scarletthicket3::domain::LotOrigin
+{
+  siteCode: String[1];
+  siteName: String[0..1];
+  habitatCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'How a batch of seed is prepared and stored; also an inline detail of the lot, reaching its descriptive name across a join while its codes come from the lot row.'} test::scarletthicket3::domain::HandlingSpec
+{
+  treatmentCode: String[1];
+  treatmentName: String[0..1];
+  storageBandCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bed in the propagation house that holds lots and is worked by one grower team.'} test::scarletthicket3::domain::NurseryBed
+{
+  bedCode: String[1];
+  bedLabel: String[1];
+  blockLabel: String[0..1];
+  capacityUnits: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named cultivar, with its botanical family reached across a join.'} test::scarletthicket3::domain::Cultivar
+{
+  cultivarCode: String[1];
+  cultivarName: String[1];
+  familyName: String[0..1];
+  habitCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A cultivar propagated on a rootstock rather than on its own roots; the extra rootstock name is only reachable once a caller narrows the general cultivar to this kind.'} test::scarletthicket3::domain::GraftedCultivar extends Cultivar
+{
+  rootstockCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A crew accountable for beds and for stewarding cultivars, with its depot reached across a join.'} test::scarletthicket3::domain::GrowerTeam
+{
+  teamCode: String[1];
+  teamName: String[1];
+  depotName: String[0..1];
+}
+
+Association test::scarletthicket3::domain::Lot_Bed
+{
+  heldLots: SeedLot[*];
+  bed: NurseryBed[0..1];
+}
+
+Association test::scarletthicket3::domain::Lot_Cultivar
+{
+  cultivarLots: SeedLot[*];
+  cultivar: Cultivar[0..1];
+}
+
+Association test::scarletthicket3::domain::Bed_Team
+{
+  workedBeds: NurseryBed[*];
+  team: GrowerTeam[0..1];
+}
+
+Association test::scarletthicket3::domain::Cultivar_Team
+{
+  stewardedCultivars: Cultivar[*];
+  stewardTeam: GrowerTeam[0..1];
+}

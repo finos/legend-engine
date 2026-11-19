@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::indigothicket::dataspace::ThicketDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'survey';
+      description: 'Survey tier - the warehouse the ringing endpoints are planned against day to day.';
+      mapping: test::indigothicket::mapping::ThicketMapping;
+      defaultRuntime: test::indigothicket::runtime::ThicketSurveyRuntime;
+    },
+    {
+      name: 'audit';
+      description: 'Audit tier - the same curated mapping bound to the reviewer warehouse, so an endpoint can be replanned against the audited surface.';
+      mapping: test::indigothicket::mapping::ThicketMapping;
+      defaultRuntime: test::indigothicket::runtime::ThicketAuditRuntime;
+    }
+  ];
+  defaultExecutionContext: 'survey';
+  title: 'Woodland Thicket Ringing Catalogue';
+  description: 'A curated entry point over the woodland thicket ringing records, the sites they are keyed to and the sightings recorded against them, packaging the cohort register, the per-site tally and the retrap digest so the endpoints are consumed as one catalogue rather than individually.';
+  elements:
+  [
+    test::indigothicket::domain::RecordSighting,
+    test::indigothicket::domain::RingingRecord,
+    test::indigothicket::domain::RingingSite
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Ringing cohort register';
+      description: 'The adult first-capture cohort of a supplied instant window, with the cohort key and wing band computed after the rows return.';
+      executable: test::indigothicket::service::ThicketCohortRegister;
+    },
+    {
+      id: 2;
+      title: 'Site tally';
+      description: 'One row per ringing site with the summed masses and the widest recorded wing.';
+      executable: test::indigothicket::service::ThicketSiteTally;
+    },
+    {
+      id: 3;
+      title: 'Retrap digest';
+      description: 'The retraps a requested observer role has sighted, digested to one row per site and guild.';
+      executable: test::indigothicket::service::ThicketRetrapDigest;
+    }
+  ];
+  diagrams:
+  [
+    {
+      title: 'Record, Site And Sighting';
+      diagram: test::indigothicket::diagram::ThicketDiagram;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'thicket-ringing-office@example.invalid';
+  };
+}

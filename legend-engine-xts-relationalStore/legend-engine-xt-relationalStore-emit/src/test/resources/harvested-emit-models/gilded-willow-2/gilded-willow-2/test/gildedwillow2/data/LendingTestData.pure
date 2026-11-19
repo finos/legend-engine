@@ -1,0 +1,36 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::gildedwillow2::data::LendingTestData
+{
+  Relational
+  #{
+    lending.instrument_checkout:
+      'checkout_id,checkout_code,instrument_id,room_id,borrower_kind,condition_code,active_flag,checked_out_on,due_date,returned_date,overdue_days,service_hours,case_code,case_label,case_grade,in_z,out_z\n'+
+      '1,LN-0001,1,1,STU,RPR,Y,2026-02-01,2026-02-20,,44,8.0,CS-01,Hard Case,a,2026-01-01,9999-12-31\n'+
+      '2,LN-0002,2,2,STA,WRN,Y,2026-02-05,2026-02-20,2026-02-25,12,6.0,CS-02,Soft Case,b,2026-01-01,9999-12-31\n'+
+      '3,LN-0003,1,1,ENS,SVC,Y,2025-10-01,2025-11-01,,3,4.0,CS-03,Gig Bag,c,2026-01-01,9999-12-31\n'+
+      '4,LN-0004,2,2,STU,NEW,Y,2026-02-10,2026-03-10,2026-04-10,0,5.0,CS-04,Flight Case,d,2026-01-01,9999-12-31\n'+
+      '5,LN-0005,1,1,STU,WRN,N,2026-02-11,2026-03-11,,6,2.0,CS-05,Soft Case,e,2026-01-01,9999-12-31\n';
+    lending.instrument_model:
+      'instrument_id,model_code,model_label,family_code,list_hours\n'+
+      '1,IM-01,Tenor Horn,brass,4.0\n'+
+      '2,IM-02,Bass Clarinet,reed,5.0\n';
+    lending.rehearsal_room:
+      'room_id,room_code,room_name,wing_name\n'+
+      '1,RM-01,Brass Room,North Wing\n'+
+      '2,RM-02,Reed Room,South Wing\n';
+  }#
+}

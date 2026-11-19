@@ -1,0 +1,20 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Text
+Text test::oliveharbor::doc::ScopeNote
+{
+  type: markdown;
+  content: '# Ferry Sailing Notice Scope\n\nThis model describes the intended scope of the ferry sailing-notice\nnormalisation surface for a coastal passenger terminal.\n\n* A sailing notice arrives as a single delimited text payload composed of\n  labelled sections: the terminal identifier, an optional advisory note and a\n  list-valued berth allocation.\n* The published surface is one document-returning endpoint. It carries no\n  store binding: the payload itself is the source, and the normalised JSON\n  document is the response.\n* Section labels are case-insensitive on input and normalised to upper case on\n  output, so a notice re-issued with different casing produces an identical\n  document.\n* Berth entries that carry no code are dropped rather than published as empty\n  members, and an absent advisory section is published as an explicit null.\n\nNothing in this element is executed; it exists so that the compiled element\nset carries the scope statement alongside the endpoint it describes.';
+}

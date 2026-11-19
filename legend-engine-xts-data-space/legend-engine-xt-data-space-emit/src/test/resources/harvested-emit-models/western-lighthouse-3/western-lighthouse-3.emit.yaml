@@ -1,0 +1,57 @@
+name: western-lighthouse-3
+title: "Harbour Navigation Lights — Processing-Temporal Store, Association Implementations, Diagrams and a Data Space"
+description: |
+  A harbour navigation-light maintenance model whose processing-temporal light class
+  is mapped over a multi-table relational store with a main-table alias, an explicit
+  primary key and two association implementations resolved through inner joins.
+  Two single-execution services project the join-reached station and lamp detail of a
+  processing slice under date-arithmetic filters, and a data space binds the mappings,
+  runtimes, diagrams and services into one curated entry point.
+modelSources:
+  model:
+    root: western-lighthouse-3
+    files:
+      - test/westernlighthouse3/connection/HarbourConnections.pure
+      - test/westernlighthouse3/dataspace/HarbourLightDataSpace.pure
+      - test/westernlighthouse3/diagram/HarbourLightDiagrams.pure
+      - test/westernlighthouse3/domain/HarbourLightDomain.pure
+      - test/westernlighthouse3/mapping/HarbourLightMapping.pure
+      - test/westernlighthouse3/runtime/HarbourRuntimes.pure
+      - test/westernlighthouse3/service/LampRefitSchedule.pure
+      - test/westernlighthouse3/service/LightWatchList.pure
+      - test/westernlighthouse3/store/HarbourLightDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - data-space
+  - date-arithmetic
+  - diagram
+  - h2
+  - inner-join
+  - processing-temporal
+  - relational
+  - service-test
+  - snowflake

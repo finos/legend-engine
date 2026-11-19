@@ -1,0 +1,69 @@
+name: noble-lantern
+title: "Harbour Lantern Station And Keeper Watch Registers — Two Keyed Class Mappings Over One Multi-Table Store, Published As Four Projections Behind A Data Space, A Class Diagram And An OAuth Warehouse Connection"
+description: |
+  A coastal lantern-keeping register held in one relational store: the lantern
+  stations on the harbour approaches and the keeper watches logged at those
+  stations, each mapped column-per-property off its own alias-qualified main
+  table with the register code as the primary key.
+
+  Two of the four published services carry a deliberately deep predicate — the
+  district or keeper name is normalised before a prefix or substring test, the
+  optic class or station code is checked against an accepted set, and a numeric
+  reporting floor is applied — before the projection is narrowed a second time
+  on the projected rows, ordered and capped. The remaining two services publish
+  flat digests, one of which assembles a banner from two mapped string columns.
+
+  The model group also carries a class diagram over both classes and a data
+  space that publishes the mapping, the warehouse runtime and the northern
+  station register as its executable, over a Snowflake connection authenticated
+  with an OAuth scope.
+modelSources:
+  model:
+    root: noble-lantern
+    files:
+      - test/noblelantern/connection/HarborLightConnection.pure
+      - test/noblelantern/dataspace/HarborLightDataSpace.pure
+      - test/noblelantern/diagram/HarborLightDiagram.pure
+      - test/noblelantern/domain/HarborLightDomain.pure
+      - test/noblelantern/mapping/HarborLightMapping.pure
+      - test/noblelantern/runtime/HarborLightRuntime.pure
+      - test/noblelantern/service/StationDigestService.pure
+      - test/noblelantern/service/StationRegisterService.pure
+      - test/noblelantern/service/WatchDigestService.pure
+      - test/noblelantern/service/WatchLogService.pure
+      - test/noblelantern/store/HarborLightDatabase.pure
+features:
+  - connection:oauth-authentication
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:string-function
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - class-diagram
+  - data-space
+  - h2
+  - harbor-light
+  - keeper-watch
+  - oauth
+  - primary-key
+  - projection
+  - snowflake
+  - station-register

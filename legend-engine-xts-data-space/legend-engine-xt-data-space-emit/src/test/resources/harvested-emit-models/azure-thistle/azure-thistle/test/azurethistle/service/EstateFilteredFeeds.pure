@@ -1,0 +1,605 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azurethistle::service::ParkTerrainTurbineFeed
+{
+  pattern: '/estate/v1/turbines/park-terrain/{terrainClass}';
+  title: 'Upland Turbine Estate - Turbines By Park And Terrain';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the turbines of one park standing on one terrain class, conjoining a park equality stated against a literal with a terrain equality stated against the supplied parameter.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {terrainClass: String[1]|test::azurethistle::domain::TurbineRecord.all()
+      ->filter(
+        t|($t.parkCode == 'PARK-A') && ($t.terrainClass == $terrainClass)
+      )
+      ->project(
+        [
+          t|$t.assetCode,
+          t|$t.parkCode,
+          t|$t.terrainClass,
+          t|$t.curtailmentLabel
+        ],
+        [
+          'AssetCode',
+          'ParkCode',
+          'TerrainClass',
+          'CurtailmentLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('AssetCode')
+        ]
+      )};
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    parkTerrainSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        peatTurbinesOfTheFirstPark:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            terrainClass = 'peat'
+          ]
+          asserts:
+          [
+            twoPeatTurbines:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AssetCode":"TB-01","ParkCode":"PARK-A","TerrainClass":"peat","CurtailmentLabel":"CURTAILED-TB-01"},{"AssetCode":"TB-07","ParkCode":"PARK-A","TerrainClass":"peat","CurtailmentLabel":null}]';
+                  }#;
+              }#
+          ]
+        },
+        moraineTurbinesOfTheFirstPark:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            terrainClass = 'moraine'
+          ]
+          asserts:
+          [
+            oneMoraineTurbine:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AssetCode":"TB-05","ParkCode":"PARK-A","TerrainClass":"moraine","CurtailmentLabel":"FREE-TB-05"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::MastNacelleFeed
+{
+  pattern: '/estate/v1/nacelle-readings/mast/{assetCode}';
+  title: 'Upland Turbine Estate - Nacelle Readings Against One Mast';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the nacelle readings of one turbine compared against the first met mast, conjoining a mast equality stated against a literal with an asset equality whose supplied parameter is stated on the left of the comparison.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {assetCode: String[1]|test::azurethistle::domain::NacelleReading.all()
+      ->filter(
+        n|($n.mastCode == 'MST-1') && ($assetCode == $n.assetCode)
+      )
+      ->project(
+        [
+          n|$n.assetCode,
+          n|$n.mastCode,
+          n|$n.alarmLabel
+        ],
+        [
+          'AssetCode',
+          'MastCode',
+          'AlarmLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('AssetCode')
+        ]
+      )};
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    mastNacelleSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        theFirstTurbineAgainstTheFirstMast:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            assetCode = 'TB-01'
+          ]
+          asserts:
+          [
+            oneNacelleRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AssetCode":"TB-01","MastCode":"MST-1","AlarmLabel":"ALARM"}]';
+                  }#;
+              }#
+          ]
+        },
+        aTurbineReadAgainstAnotherMast:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            assetCode = 'TB-02'
+          ]
+          asserts:
+          [
+            noNacelleRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::GradedBladeFeed
+{
+  pattern: '/estate/v1/blade-inspections/graded/{leadingEdgeGrade}';
+  title: 'Upland Turbine Estate - Graded Inspection Of One Blade Set';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the inspection of the first blade set at one leading-edge grade, conjoining a grade equality stated against the supplied parameter with a blade-set equality whose literal is stated on the left of the comparison.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {leadingEdgeGrade: String[1]|test::azurethistle::domain::BladeInspection.all()
+      ->filter(
+        b|($b.leadingEdgeGrade == $leadingEdgeGrade) && ('BLD-01' == $b.bladeSetCode)
+      )
+      ->project(
+        [
+          b|$b.bladeSetCode,
+          b|$b.leadingEdgeGrade,
+          b|$b.repairLabel
+        ],
+        [
+          'BladeSetCode',
+          'LeadingEdgeGrade',
+          'RepairLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('BladeSetCode')
+        ]
+      )};
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateStandbyRuntime;
+  }
+  testSuites:
+  [
+    gradedBladeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateStandbyConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        theFirstBladeSetAtItsOwnGrade:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            leadingEdgeGrade = 'LE-1'
+          ]
+          asserts:
+          [
+            oneBladeRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BladeSetCode":"BLD-01","LeadingEdgeGrade":"LE-1","RepairLabel":"REPAIR-DUE-BLD-01"}]';
+                  }#;
+              }#
+          ]
+        },
+        theFirstBladeSetAtAnotherGrade:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            leadingEdgeGrade = 'LE-2'
+          ]
+          asserts:
+          [
+            noBladeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::SubstationFeederIslandFeed
+{
+  pattern: '/estate/v1/feeders/islanding/{substationName}';
+  title: 'Upland Turbine Estate - Islanding Of One Substation Feeder';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the islanding state of the first feeder when it is read against one substation, conjoining a substation equality stated against the supplied parameter with a feeder equality stated against a literal.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {substationName: String[1]|test::azurethistle::domain::SubstationFeeder.all()
+      ->filter(
+        f|($f.substationName == $substationName) && ($f.feederCode == 'FDR-1')
+      )
+      ->project(
+        [
+          f|$f.feederCode,
+          f|$f.substationName,
+          f|$f.islandingLabel
+        ],
+        [
+          'FeederCode',
+          'SubstationName',
+          'IslandingLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('FeederCode')
+        ]
+      )};
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    substationFeederSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        theFirstFeederAtItsOwnSubstation:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            substationName = 'Corrie Substation'
+          ]
+          asserts:
+          [
+            oneFeederRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"FeederCode":"FDR-1","SubstationName":"Corrie Substation","IslandingLabel":"ISLANDED"}]';
+                  }#;
+              }#
+          ]
+        },
+        theFirstFeederAtAnotherSubstation:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            substationName = 'Glen Substation'
+          ]
+          asserts:
+          [
+            noFeederRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::MastTrackFeed
+{
+  pattern: '/estate/v1/access-tracks/mast/{mastCode}';
+  title: 'Upland Turbine Estate - Named Track Passing One Mast';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the named hill track when it passes one met mast, conjoining a mast equality stated against the supplied parameter with a track-name equality stated against a literal.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {mastCode: String[1]|test::azurethistle::domain::AccessTrack.all()
+      ->filter(
+        k|($k.mastCode == $mastCode) && ($k.trackName == 'Track 2')
+      )
+      ->project(
+        [
+          k|$k.trackCode,
+          k|$k.trackName,
+          k|$k.mastCode,
+          k|$k.passabilityLabel
+        ],
+        [
+          'TrackCode',
+          'TrackName',
+          'MastCode',
+          'PassabilityLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('TrackCode')
+        ]
+      )};
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateStandbyRuntime;
+  }
+  testSuites:
+  [
+    mastTrackSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateStandbyConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        theNamedTrackAtItsOwnMast:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mastCode = 'MST-2'
+          ]
+          asserts:
+          [
+            oneTrackRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TrackCode":"TRK-2","TrackName":"Track 2","MastCode":"MST-2","PassabilityLabel":"IMPASSABLE-TRK-2"}]';
+                  }#;
+              }#
+          ]
+        },
+        theNamedTrackAtAnotherMast:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mastCode = 'MST-1'
+          ]
+          asserts:
+          [
+            noTrackRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::IcingMastFeed
+{
+  pattern: '/estate/v1/met-masts/icing/{mastName}';
+  title: 'Upland Turbine Estate - Icing State Of One Named Mast';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the icing state of the third met mast when it is read under one name, conjoining a mast equality whose literal is stated on the left of the comparison with a name equality stated against the supplied parameter.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {mastName: String[1]|test::azurethistle::domain::MetMast.all()
+      ->filter(
+        m|('MST-3' == $m.mastCode) && ($m.mastName == $mastName)
+      )
+      ->project(
+        [
+          m|$m.mastCode,
+          m|$m.mastName,
+          m|$m.icingLabel
+        ],
+        [
+          'MastCode',
+          'MastName',
+          'IcingLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('MastCode')
+        ]
+      )};
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    icingMastSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        theThirdMastUnderItsOwnName:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mastName = 'Mast 3'
+          ]
+          asserts:
+          [
+            oneMastRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MastCode":"MST-3","MastName":"Mast 3","IcingLabel":null}]';
+                  }#;
+              }#
+          ]
+        },
+        theThirdMastUnderAnotherName:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            mastName = 'Mast 1'
+          ]
+          asserts:
+          [
+            noMastRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

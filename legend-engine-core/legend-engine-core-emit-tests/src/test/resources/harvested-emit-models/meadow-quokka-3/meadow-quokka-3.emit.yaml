@@ -1,0 +1,34 @@
+name: meadow-quokka-3
+title: "Meadow Quokka - Botanic Nursery Propagation Object Layer (inheritance, reference properties, bidirectional associations)"
+description: |
+  A store-less Pure object layer for a botanic garden propagation nursery. The
+  shapes are deliberately plain typed classes carrying scalar and reference
+  properties with explicit multiplicities, so that property resolution and
+  navigation are the only things under test. Seed lots form a two-level
+  hierarchy: the shared lot contract declares accession and viability
+  properties, and each subtype adds the properties that only a wild collection
+  or a garden-raised cross can carry, so a subtype instance still satisfies the
+  supertype contract. Two bidirectional associations attach lots to the
+  germination trials run on them and to the nursery bed they were sown into, so
+  navigation stays valid from either end and for either lot subtype.
+modelSources:
+  model:
+    root: meadow-quokka-3
+    files:
+      - test/meadowquokka3/domain/Associations.pure
+      - test/meadowquokka3/domain/Lots.pure
+      - test/meadowquokka3/domain/Sites.pure
+      - test/meadowquokka3/domain/Trials.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - inheritance
+  - nursery-propagation
+  - object-layer
+  - reference-property
+  - store-less

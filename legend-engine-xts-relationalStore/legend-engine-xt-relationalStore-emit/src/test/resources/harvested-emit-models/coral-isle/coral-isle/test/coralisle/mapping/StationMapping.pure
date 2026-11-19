@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralisle::mapping::StationMapping
+(
+  *test::coralisle::domain::SurveyStation[surveyStation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralisle::store::ReefSurveyDb]survey.survey_station.station_code
+    )
+    ~mainTable [test::coralisle::store::ReefSurveyDb]survey.survey_station
+    stationCode: [test::coralisle::store::ReefSurveyDb]survey.survey_station.station_code,
+    stationName: [test::coralisle::store::ReefSurveyDb]survey.survey_station.station_name,
+    shoreZone: [test::coralisle::store::ReefSurveyDb]survey.survey_station.shore_zone,
+    depthMeters: [test::coralisle::store::ReefSurveyDb]survey.survey_station.depth_meters,
+    monitored: [test::coralisle::store::ReefSurveyDb]survey.survey_station.monitored,
+    commissionedOn: [test::coralisle::store::ReefSurveyDb]survey.survey_station.commissioned_on,
+    habitatNotes: [test::coralisle::store::ReefSurveyDb]survey.survey_station.habitat_notes
+  }
+
+  testSuites:
+  [
+    monitoredStationSuite:
+    {
+      function: |test::coralisle::domain::SurveyStation.all()->filter(
+  s|$s.monitored == true
+)->project(
+  [
+    s|$s.stationCode,
+    s|$s.stationName,
+    s|$s.shoreZone,
+    s|$s.depthMeters,
+    s|$s.habitatNotes
+  ],
+  [
+    'Station',
+    'Station Name',
+    'Shore Zone',
+    'Depth',
+    'Habitat'
+  ]
+)->sort(
+  [
+    asc('Station')
+  ]
+);
+      tests:
+      [
+        monitoredStationsOnly:
+        {
+          doc: 'Every station property resolves through an alias-qualified column of the aliased main table, and the retired station is excluded by the monitored predicate.';
+          data:
+          [
+            test::coralisle::store::ReefSurveyDb:
+              Relational
+              #{
+                survey.survey_station:
+                  'station_code,station_name,shore_zone,depth_meters,monitored,commissioned_on,habitat_notes,reef_sector,tide_window,retired_on\n'+
+                  'ST-01,Lantern Flat,Upper intertidal,3,true,2026-01-05 07:00:00,Rubble with turf algae,North Sector,Morning low,2099-12-31 00:00:00\n'+
+                  'ST-02,Basalt Ledge,Lower intertidal,7,true,2026-01-09 07:30:00,Boulder field with sponges,North Sector,Midday low,2099-12-31 00:00:00\n'+
+                  'ST-03,Sandspit Pool,Back reef,1,false,2025-11-20 08:00:00,Shifting sand with seagrass,South Sector,Evening low,2026-02-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            twoMonitoredStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-01","Station Name":"Lantern Flat","Shore Zone":"Upper intertidal","Depth":3,"Habitat":"Rubble with turf algae"},{"Station":"ST-02","Station Name":"Basalt Ledge","Shore Zone":"Lower intertidal","Depth":7,"Habitat":"Boulder field with sponges"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

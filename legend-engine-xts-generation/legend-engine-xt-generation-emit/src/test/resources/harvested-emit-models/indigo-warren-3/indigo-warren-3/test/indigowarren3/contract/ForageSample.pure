@@ -1,0 +1,24 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A forage sample taken at one plot on a survey; declared outside the import-aware section so every reference here is fully qualified.'} test::indigowarren3::contract::ForageSample
+{
+  <<test::indigowarren3::vocabulary::ContractDoc.keyField>> {test::indigowarren3::vocabulary::ContractDoc.description = 'Label written on the sample bag.'} sampleLabel: String[0..1];
+  {test::indigowarren3::vocabulary::ContractDoc.description = 'Plant taxon the sample was cut from.'} taxonName: String[0..1];
+  {test::indigowarren3::vocabulary::ContractDoc.description = 'Dry mass of the cut sample.', test::indigowarren3::vocabulary::ContractDoc.unitLabel = 'grams'} dryMassG: Float[0..1];
+  {test::indigowarren3::vocabulary::ContractDoc.description = 'Share of the plot the taxon covered.'} coverShare: Float[0..1];
+  {test::indigowarren3::vocabulary::ContractDoc.description = 'Date the sample was cut.'} collectedOn: StrictDate[0..1];
+  {test::indigowarren3::vocabulary::ContractDoc.description = 'Whether the sample was sent for laboratory drying.'} sentToLabFlag: Boolean[0..1];
+}

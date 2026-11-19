@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::quietarboretum2::connection::AccessionWarehouseConnection
+{
+  store: test::quietarboretum2::store::AccessionDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'EXAMPLE_ACCESSION_DB';
+    account: 'example_arbor_account';
+    warehouse: 'EXAMPLE_ARBOR_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'EXAMPLE_ARBOR_READER_ROLE';
+  };
+  auth: OAuth
+  {
+    scopeName: 'session:role:EXAMPLE_ARBOR_READER_ROLE';
+    oauthKey: 'exampleArborOauthKey';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::quietarboretum2::connection::AccessionH2Connection
+{
+  store: test::quietarboretum2::store::AccessionDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists arbor;',
+      'create schema arbor;',
+      'create table arbor.accession_record (accession_code varchar(24) not null, taxon_name varchar(128) not null, bed_code varchar(16) not null, curator_name varchar(64) not null, specimen_count integer not null, height_cm integer, spread_cm integer, propagation_count integer not null, planted_on date not null, verified_on date, surveyed_at timestamp, updated_at timestamp, in_z date not null, out_z date, primary key (accession_code, in_z));'
+      ];
+  };
+  auth: DefaultH2;
+}

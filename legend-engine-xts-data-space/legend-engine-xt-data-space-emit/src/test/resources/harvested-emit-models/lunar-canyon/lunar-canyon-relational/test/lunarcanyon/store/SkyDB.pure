@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::lunarcanyon::store::SkyDB
+(
+  Schema sky
+  (
+    Table sky_session
+    (
+      session_code VARCHAR(24) PRIMARY KEY,
+      telescope_code VARCHAR(24),
+      observer_code VARCHAR(24),
+      observed_on DATE NOT NULL,
+      started_at TIMESTAMP,
+      catalogue_code VARCHAR(24) NOT NULL,
+      seeing_index FLOAT,
+      exposure_count INTEGER NOT NULL,
+      filter_code VARCHAR(24),
+      log_note VARCHAR(200)
+    )
+
+    Table telescope
+    (
+      telescope_code VARCHAR(24) PRIMARY KEY,
+      telescope_name VARCHAR(80),
+      mirror_cm FLOAT,
+      mount_kind VARCHAR(24),
+      dome_code VARCHAR(24)
+    )
+
+    Table observer
+    (
+      observer_code VARCHAR(24) PRIMARY KEY,
+      observer_name VARCHAR(80),
+      certifications VARCHAR(120),
+      home_site VARCHAR(80)
+    )
+  )
+
+  Join Session_Telescope_J(sky.sky_session.telescope_code = sky.telescope.telescope_code)
+  Join Session_Observer_J(sky.sky_session.observer_code = sky.observer.observer_code)
+)

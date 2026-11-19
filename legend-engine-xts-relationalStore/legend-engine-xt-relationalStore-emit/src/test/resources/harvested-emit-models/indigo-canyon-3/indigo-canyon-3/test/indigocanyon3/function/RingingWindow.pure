@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::functions::date::*;
+
+function {meta::pure::profiles::doc.doc = 'Reference date the rolling ringing-season window is shifted from.'} test::indigocanyon3::function::seasonReference(): StrictDate[1]
+{
+  %2026-03-01
+}
+
+function {meta::pure::profiles::doc.doc = 'Inclusive lower bound of the rolling ringing-season window.'} test::indigocanyon3::function::seasonWindowStart(): Date[1]
+{
+  test::indigocanyon3::function::seasonReference()->adjust(-6, DurationUnit.MONTHS)
+}
+
+function {meta::pure::profiles::doc.doc = 'Exclusive upper bound of the rolling ringing-season window.'} test::indigocanyon3::function::seasonWindowEnd(): Date[1]
+{
+  test::indigocanyon3::function::seasonReference()->adjust(1, DurationUnit.MONTHS)
+}
+
+function {meta::pure::profiles::doc.doc = 'The wetland ringing stations whose records are published.'} test::indigocanyon3::function::surveyedStations(): String[*]
+{
+  ['REEDBED', 'SALTMARSH', 'OXBOW', 'FEN', 'DELTA-FLAT']
+}
+
+function {meta::pure::profiles::doc.doc = 'The ringing schemes whose records are published.'} test::indigocanyon3::function::publishedSchemes(): String[*]
+{
+  ['RS-ALPHA', 'RS-BRAVO', 'RS-CHARLIE', 'RS-DELTA', 'RS-ECHO', 'RS-FOXTROT', 'RS-GOLF', 'RS-HOTEL', 'RS-INDIA', 'RS-JULIET', 'RS-KILO']
+}

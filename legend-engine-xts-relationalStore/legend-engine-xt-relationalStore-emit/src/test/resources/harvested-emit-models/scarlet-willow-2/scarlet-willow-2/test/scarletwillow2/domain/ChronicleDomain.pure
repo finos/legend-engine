@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::scarletwillow2::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'One holding line of a treatment chronicle. Its extent is assembled algebraically from two parallel relations, so a line is only distinguishable by the constant classification its own relation assigns.'} test::scarletwillow2::domain::HoldingLine
+{
+  {meta::pure::profiles::doc.doc = 'Code of the holding line.'} lineCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Treatment record number as held on the line, recorded as text.'} recordNoText: String[1];
+  {meta::pure::profiles::doc.doc = 'Code of the unit of work the line was assessed under.'} unitCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Code of the department charged.'} entityCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Constant classification assigned by the contributing relation.'} shelvable: ShelvableKind[0..1];
+  {meta::pure::profiles::doc.doc = 'Kind of identifier the line publishes.'} identifierKind: IdentifierKind[0..1];
+  {meta::pure::profiles::doc.doc = 'Programme the line was recorded under; the physical layer has no column for it, so it is supplied as a literal by the mapping.'} programCode: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Measure the line carries, either a counted quantity or a measured extent depending on the relation.'} measureValue: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'The unit of work, reached through a named store join.'} unit: UnitRateRef[0..1];
+  {meta::pure::profiles::doc.doc = 'The treatment record, reached by parsing the text record number.'} record: RecordRef[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'The supertype of everything recorded in the conservation chronicle. It is never mapped directly: a query against it is resolved to the implementations of its subtypes.'} test::scarletwillow2::domain::ConservationEntry
+{
+  {meta::pure::profiles::doc.doc = 'Code of the entry.'} entryCode: String[1];
+  {meta::pure::profiles::doc.doc = 'State the entry is published in.'} status: RecordStatus[0..1];
+  {meta::pure::profiles::doc.doc = 'Date the entry was recorded.'} recordedOn: StrictDate[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A conservation entry that describes treatment work. Also never mapped directly - it resolves to the wet and dry implementations beneath it.'} test::scarletwillow2::domain::TreatmentEntry extends ConservationEntry
+{
+  {meta::pure::profiles::doc.doc = 'Code of the treatment the entry belongs to.'} treatmentCode: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A treatment entry recorded against a wet, timed process.'} test::scarletwillow2::domain::WetTreatmentEntry extends TreatmentEntry
+{
+  {meta::pure::profiles::doc.doc = 'Minutes the item spent in the bath.'} bathMinutes: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A treatment entry recorded against a dry, pressed process.'} test::scarletwillow2::domain::DryTreatmentEntry extends TreatmentEntry
+{
+  {meta::pure::profiles::doc.doc = 'Weight the item was pressed under.'} pressGrams: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A conservation entry that records a review rather than treatment work.'} test::scarletwillow2::domain::AuditEntry extends ConservationEntry
+{
+  {meta::pure::profiles::doc.doc = 'Label of the reviewer who signed the entry off.'} auditorLabel: String[1];
+}

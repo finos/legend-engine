@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::kindlycanyon::dataspace::PatrolDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'trail';
+      description: 'Binds the two-schema trail store to the patrol mapping and the trail runtime used by the condition board.';
+      mapping: test::kindlycanyon::mapping::PatrolMapping;
+      defaultRuntime: test::kindlycanyon::runtime::CanyonTrailRuntime;
+    }
+  ];
+  defaultExecutionContext: 'trail';
+  title: 'Kindly Canyon Patrol Register';
+  description: 'A curated entry point over the canyon patrol domain - walked patrols, the three kinds of patrol post resolved out of one shared table, the segments they stand on and the wardens published in the roster schema.';
+  elements:
+  [
+    test::kindlycanyon::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Patrol condition board';
+      description: 'The featured endpoint that unions the long walks with the wet-trail reports and ranks them inside each segment.';
+      executable: test::kindlycanyon::service::PatrolConditionBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'patrol-support@canyon-trails.invalid';
+    documentationUrl: 'https://canyon-trails.invalid/docs/patrol-condition-board';
+  };
+}
+
+###DataSpace
+DataSpace test::kindlycanyon::dataspace::VisitDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'visit';
+      description: 'Binds the two-schema visitor store to the visit mapping and the visitor runtime used by the tally board.';
+      mapping: test::kindlycanyon::mapping::VisitMapping;
+      defaultRuntime: test::kindlycanyon::runtime::CanyonVisitRuntime;
+    }
+  ];
+  defaultExecutionContext: 'visit';
+  title: 'Kindly Canyon Visitor Tally Register';
+  description: 'A curated entry point over the visitor side of the canyon - staffed stations, the guides published in the roster schema of that store and the counted tallies each station holds.';
+  elements:
+  [
+    test::kindlycanyon::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Visitor tally board';
+      description: 'The featured endpoint that keeps the stations holding a qualifying tally inside the computed window.';
+      executable: test::kindlycanyon::service::VisitTallyBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'visitor-support@canyon-trails.invalid';
+    documentationUrl: 'https://canyon-trails.invalid/docs/visit-tally-board';
+  };
+}

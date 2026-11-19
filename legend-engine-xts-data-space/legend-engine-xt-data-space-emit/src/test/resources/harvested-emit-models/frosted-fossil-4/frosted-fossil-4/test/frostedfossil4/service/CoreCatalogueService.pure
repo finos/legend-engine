@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedfossil4::service::CoreCatalogueService
+{
+  pattern: '/frostedfossil4/v1/core-catalogue/{processingDate}';
+  title: 'Ice Archive - Core Catalogue';
+  documentation: 'The unfiltered catalogue of the cores standing at a processing instant, carrying the stored site key beside the site name and region reached across the drill site join so an unresolvable key stays visible as an empty pair.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::frostedfossil4::domain::IceCore.all($processingDate)->project(
+      [
+        c|$c.coreCode,
+        c|$c.siteCode,
+        c|$c.siteRegion,
+        c|$c.drillSite.siteName,
+        c|$c.drillDepthMetres
+      ],
+      [
+        'Core Code',
+        'Site Code',
+        'Site Region',
+        'Site Name',
+        'Drill Depth'
+      ]
+    )->sort(
+      [
+        asc('Core Code')
+      ]
+    )};
+    mapping: test::frostedfossil4::mapping::IceArchiveMapping;
+    runtime: test::frostedfossil4::runtime::IceArchiveRuntime;
+  }
+  testSuites:
+  [
+    coreCatalogueSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          iceArchiveWarehouseConnection: Reference
+            #{
+              test::frostedfossil4::data::IceArchiveData
+            }#
+        ]
+      ]
+      tests:
+      [
+        catalogueAtCurrentInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          asserts:
+          [
+            catalogueRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Core Code":"IC-1","Site Code":"DS-1","Site Region":"North Plateau","Site Name":"Frosted Saddle Station","Drill Depth":180.5},{"Core Code":"IC-2","Site Code":"DS-2","Site Region":"South Basin","Site Name":"Cirque Camp","Drill Depth":60.0},{"Core Code":"IC-4","Site Code":"DS-9","Site Region":null,"Site Name":null,"Drill Depth":90.0},{"Core Code":"IC-5","Site Code":"DS-2","Site Region":"South Basin","Site Name":"Cirque Camp","Drill Depth":300.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

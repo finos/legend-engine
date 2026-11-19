@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::zephyrlagoon2::store::LagoonDB
+(
+  Schema lagoon
+  (
+    Table water_sample
+    (
+      sample_code VARCHAR(24) PRIMARY KEY,
+      site_code VARCHAR(16) NOT NULL,
+      catchment_code VARCHAR(24) NOT NULL,
+      season_year INTEGER NOT NULL,
+      season_month INTEGER NOT NULL,
+      litres_drawn FLOAT NOT NULL,
+      method_code VARCHAR(24) NOT NULL,
+      grade_code VARCHAR(16) NOT NULL
+    )
+
+    Table site_register
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_label VARCHAR(120) NOT NULL,
+      zone_code VARCHAR(16) NOT NULL,
+      steward_team VARCHAR(48) NOT NULL,
+      in_z DATE,
+      out_z DATE
+    )
+  )
+
+  Schema reference_data
+  (
+    Table zone_register
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      zone_code VARCHAR(16) PRIMARY KEY,
+      zone_label VARCHAR(120) NOT NULL,
+      tier_one_code VARCHAR(16) NOT NULL,
+      tier_two_code VARCHAR(16) NOT NULL,
+      tier_three_code VARCHAR(16) NOT NULL,
+      tier_four_code VARCHAR(16),
+      in_z DATE,
+      out_z DATE
+    )
+  )
+
+  Join Sample_Site
+  (
+    lagoon.water_sample.site_code = lagoon.site_register.site_code
+  )
+
+  Join Site_Zone
+  (
+    lagoon.site_register.zone_code = reference_data.zone_register.zone_code
+  )
+)

@@ -1,0 +1,223 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantwarren::service::HedgerowKitRank
+{
+  pattern: '/verdantwarren/v1/kits/{asOf}';
+  title: 'Verdant Warren Hedgerow Kit Rank';
+  owners:
+  [
+    'warren-survey-desk'
+  ];
+  documentation: 'Resolves the processing-milestoned burrow-survey register at a caller-supplied instant, keeps the surveys of a requested collection of meadow bands, ranks the survivors by the kits counted and reports only the leading rows.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], bands: String[*]|test::verdantwarren::domain::BurrowSurvey.all($asOf)->filter(
+      s|($s.meadowBand->trim()->toUpper()->in($bands)) && ($s.entranceCount >= 1)
+    )->project(
+      [
+        s|$s.surveyCode,
+        s|$s.hedgerowName,
+        s|$s.soilLabel(),
+        s|$s.kitsCounted
+      ],
+      [
+        'Survey',
+        'Hedgerow',
+        'Soil',
+        'Kits'
+      ]
+    )->sort(
+      [
+        desc('Kits'),
+        asc('Survey')
+      ]
+    )->limit(2)};
+    mapping: test::verdantwarren::mapping::WarrenMapping;
+    runtime: test::verdantwarren::runtime::WarrenH2Runtime;
+  }
+  testSuites:
+  [
+    hedgerowKitRankSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              warren.burrow_survey:
+                'survey_key,survey_code,hedgerow_name,meadow_band,surveyor_name,entrance_count,kits_counted,soil_note,in_z,out_z\n'+
+                '1,BS-01,Blackthorn Row,NORTH MEADOW,Nadia Bloom,4,12,dry chalk,2026-01-01,9999-12-31\n'+
+                '2,BS-02,Hazel Row,NORTH MEADOW,Nadia Bloom,5,5,,2026-01-01,9999-12-31\n'+
+                '3,BS-03,Elder Row,SOUTH MEADOW,Tomas Fell,2,9,damp loam,2026-01-01,9999-12-31\n'+
+                '4,BS-04,Blackthorn Row,NORTH MEADOW,Nadia Bloom,3,3,dry chalk,2025-01-01,2025-06-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northMeadowRankAsOfMarch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01,
+            bands = ['NORTH MEADOW']
+          ]
+          asserts:
+          [
+            supersededSurveyIsExcludedAndTheUnrecordedNoteFallsToTheSentinel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"BS-01","Hedgerow":"Blackthorn Row","Soil":"DRY CHALK","Kits":12},{"Survey":"BS-02","Hedgerow":"Hazel Row","Soil":"UNRECORDED","Kits":5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::verdantwarren::service::CrowdedBurrowRegister
+{
+  pattern: '/verdantwarren/v1/crowding/{asOf}';
+  title: 'Verdant Warren Crowded Burrow Register';
+  owners:
+  [
+    'warren-survey-desk'
+  ];
+  documentation: 'Resolves the burrow-survey register at a caller-supplied instant and reports the surveys whose kits-per-entrance crowding clears a caller-supplied floor.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minCrowding: Float[1]|test::verdantwarren::domain::BurrowSurvey.all($asOf)->filter(
+      s|($s.crowdingIndex() >= $minCrowding) && ($s.surveyorName->trim()->length() > 0)
+    )->project(
+      [
+        s|$s.surveyCode,
+        s|$s.hedgerowName,
+        s|$s.entranceCount,
+        s|$s.kitsCounted
+      ],
+      [
+        'Survey',
+        'Hedgerow',
+        'Entrances',
+        'Kits'
+      ]
+    )->sort(
+      [
+        asc('Survey')
+      ]
+    )->limit(5)};
+    mapping: test::verdantwarren::mapping::WarrenMapping;
+    runtime: test::verdantwarren::runtime::WarrenH2Runtime;
+  }
+  testSuites:
+  [
+    crowdedBurrowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              warren.burrow_survey:
+                'survey_key,survey_code,hedgerow_name,meadow_band,surveyor_name,entrance_count,kits_counted,soil_note,in_z,out_z\n'+
+                '1,BS-01,Blackthorn Row,NORTH MEADOW,Nadia Bloom,4,12,dry chalk,2026-01-01,9999-12-31\n'+
+                '2,BS-02,Hazel Row,NORTH MEADOW,Nadia Bloom,5,5,,2026-01-01,9999-12-31\n'+
+                '3,BS-03,Elder Row,SOUTH MEADOW,Tomas Fell,2,9,damp loam,2026-01-01,9999-12-31\n'+
+                '4,BS-04,Blackthorn Row,NORTH MEADOW,Nadia Bloom,3,3,dry chalk,2025-01-01,2025-06-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        crowdingFloorAsOfMarch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01,
+            minCrowding = 2.0
+          ]
+          asserts:
+          [
+            onlyTheCrowdedHedgerows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"BS-01","Hedgerow":"Blackthorn Row","Entrances":4,"Kits":12},{"Survey":"BS-03","Hedgerow":"Elder Row","Entrances":2,"Kits":9}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::verdantwarren::service::SurveyorCrowdingBoard
+{
+  pattern: '/verdantwarren/v1/surveyors/{asOf}';
+  title: 'Verdant Warren Surveyor Crowding Board';
+  owners:
+  [
+    'warren-survey-desk'
+  ];
+  documentation: 'Resolves the burrow-survey register at a caller-supplied instant and reports the crowding index and soil label each surveyor filed, leading with the busiest hedgerows.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::verdantwarren::domain::BurrowSurvey.all($asOf)->filter(
+      s|($s.kitsCounted > 0) && ($s.meadowBand->trim()->toUpper() != 'UNSURVEYED')
+    )->project(
+      [
+        s|$s.surveyorName,
+        s|$s.surveyCode,
+        s|$s.crowdingIndex(),
+        s|$s.soilLabel()
+      ],
+      [
+        'Surveyor',
+        'Survey',
+        'Crowding',
+        'Soil'
+      ]
+    )->sort(
+      [
+        asc('Surveyor'),
+        desc('Crowding')
+      ]
+    )->limit(10)};
+    mapping: test::verdantwarren::mapping::WarrenMapping;
+    runtime: test::verdantwarren::runtime::WarrenH2Runtime;
+  }
+}

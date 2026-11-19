@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::zephyrwillow2::data::NetworkTestData
+{
+  Relational
+  #{
+      network.authority:
+        'authority_code,authority_name\n'+
+        'A-1,Metro Waste Authority\n';
+      network.collection_round:
+        'round_id,container_code,collected_on,gross_kg,moisture_pct,contamination_code,grade_code,crew_code,active_flag\n'+
+        'R-01,C-1,2026-03-02,940.5,18.5,LO,PA,CR-1,Y\n'+
+        'R-02,C-1,2026-03-09,640.25,20.5,LO,GL,CR-1,Y\n'+
+        'R-03,C-1,2026-03-16,420.5,22.5,LO,PA,CR-2,Y\n'+
+        'R-04,C-1,2026-03-23,180.5,44.5,LO,PA,CR-2,Y\n'+
+        'R-05,C-2,2026-04-06,120.25,26.5,LO,GL,CR-2,Y\n'+
+        'R-06,C-2,2026-04-13,90.5,12.5,HI,PA,CR-1,Y\n'+
+        'R-07,C-3,2026-04-20,80.5,10.5,LO,MX,CR-1,Y\n'+
+        'R-08,C-3,2026-05-04,70.25,9.5,LO,GL,CR-3,Y\n'+
+        'R-09,C-4,2026-05-11,60.5,8.5,LO,GL,CR-2,Y\n'+
+        'R-10,C-4,2026-06-01,55.25,7.5,LO,PA,CR-2,Y\n'+
+        'R-11,C-1,2026-03-05,990.5,30.5,LO,PA,CR-1,N\n';
+      network.container:
+        'container_code,site_code,container_kind,capacity_l\n'+
+        'C-1,S-1,WHEELED,1100\n'+
+        'C-2,S-1,SKIP,3200\n'+
+        'C-3,S-2,WHEELED,1100\n'+
+        'C-4,S-3,BALER,5000\n';
+      network.depot_site:
+        'site_code,site_name,ward_code,tier_code\n'+
+        'S-1,Northgate Depot,W-1,T-1\n'+
+        'S-2,Eastfield Depot,W-1,T-2\n'+
+        'S-3,Southbank Depot,W-2,T-2\n';
+      network.district:
+        'district_code,district_name,authority_code\n'+
+        'D-1,Central District,A-1\n';
+      network.ward:
+        'ward_code,ward_name,district_code\n'+
+        'W-1,Riverside Ward,D-1\n'+
+        'W-2,Hillcrest Ward,D-1\n';
+  }#
+}
+
+###Data
+Data test::zephyrwillow2::data::GradeReferenceTestData
+{
+  Relational
+  #{
+      reference.material_grade:
+        'grade_code,grade_name,recyclable_flag\n'+
+        'GL,Glass,1\n'+
+        'MX,Mixed Residual,0\n'+
+        'PA,Paper And Card,1\n';
+      reference.service_tier:
+        'tier_code,tier_name,visits_per_month\n'+
+        'T-1,Weekly,4\n'+
+        'T-2,Fortnightly,2\n';
+  }#
+}
+
+###Data
+Data test::zephyrwillow2::data::DraftStagingTestData
+{
+  Relational
+  #{
+      staging.draft_round:
+        'draft_id,container_code,collected_on,gross_kg,grade_code,review_state\n'+
+        'D-01,C-1,2026-03-02,410.5,PA,DRAFT\n'+
+        'D-02,C-3,2026-03-04,120.25,GL,REVIEW\n'+
+        'D-03,C-4,2026-03-06,88.5,MX,DRAFT\n';
+  }#
+}

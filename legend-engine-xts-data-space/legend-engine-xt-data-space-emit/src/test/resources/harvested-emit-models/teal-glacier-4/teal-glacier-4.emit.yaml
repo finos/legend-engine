@@ -1,0 +1,71 @@
+name: teal-glacier-4
+title: "Glacier monitoring field record and archive over two OAuth warehouses"
+description: |
+  A glacier monitoring network kept as two parallel families: a live field record of
+  glaciers, ablation stake readings and processing-temporal crevasse surveys, and an
+  archive with the same shapes. Each family has its own store of quoted-identifier
+  tables, its own OAuth warehouse connection, mapping and runtime, and a data space
+  exposes both as execution contexts. Glaciers are keyed by code and range, so stake
+  readings reach their glacier through a composite join that also implements the
+  glacier-to-reading association. An eight-band melt class with an empty fallback and
+  a missing-depth sentinel are computed in the mapping. Parameterised services filter
+  by path parameters, list membership and a date window ORed with membership.
+modelSources:
+  model:
+    root: teal-glacier-4
+    files:
+      - test/tealglacier4/connection/GlacierConnections.pure
+      - test/tealglacier4/dataspace/GlacierDataSpace.pure
+      - test/tealglacier4/domain/GlacierDomain.pure
+      - test/tealglacier4/mapping/GlacierArchiveMapping.pure
+      - test/tealglacier4/mapping/GlacierFieldMapping.pure
+      - test/tealglacier4/profile/GlacierProfile.pure
+      - test/tealglacier4/runtime/GlacierRuntimes.pure
+      - test/tealglacier4/service/GlacierServices.pure
+      - test/tealglacier4/store/GlacierStores.pure
+features:
+  - connection:oauth-authentication
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-path-parameter
+  - execution:service-test
+  - grammar:association
+  - grammar:profile
+  - grammar:quoted-identifier
+  - grammar:tagged-value
+  - mapping:relational-association-implementation
+  - mapping:relational-case-expression
+  - mapping:relational-join-path
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:date-range-comparison
+  - query:filter
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-composite-join
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - case-expression
+  - composite-join
+  - data-space
+  - duckdb
+  - glacier-monitoring
+  - membership-filter
+  - processing-temporal
+  - quoted-identifier
+  - relation-project
+  - snowflake
+  - snowflake-oauth

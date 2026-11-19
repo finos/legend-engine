@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitwarren2::mapping::BurrowBaseMapping
+(
+  *test::sunlitwarren2::domain::Burrow[burrow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitwarren2::store::WarrenDb]warrens.burrow.burrow_id
+    )
+    ~mainTable [test::sunlitwarren2::store::WarrenDb]warrens.burrow
+    burrowCode: [test::sunlitwarren2::store::WarrenDb]warrens.burrow.burrow_code,
+    keeperCode: [test::sunlitwarren2::store::WarrenDb]warrens.burrow.keeper_code,
+    zoneCode: [test::sunlitwarren2::store::WarrenDb]warrens.burrow.zone_code,
+    chamberCount: [test::sunlitwarren2::store::WarrenDb]warrens.burrow.chamber_count,
+    burrowLabel: concat(toUpper([test::sunlitwarren2::store::WarrenDb]warrens.burrow.burrow_code), concat('-', toLower(coalesce([test::sunlitwarren2::store::WarrenDb]@Burrow_Keeper | [test::sunlitwarren2::store::WarrenDb]warrens.keeper.keeper_name, 'unstaffed'))))
+  }
+
+  *test::sunlitwarren2::domain::Warren[warren]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitwarren2::store::WarrenDb]warrens.warren.warren_code
+    )
+    ~mainTable [test::sunlitwarren2::store::WarrenDb]warrens.warren
+    warrenCode: [test::sunlitwarren2::store::WarrenDb]warrens.warren.warren_code,
+    warrenName: [test::sunlitwarren2::store::WarrenDb]warrens.warren.warren_name
+  }
+)

@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One cut of willow rods taken off a coppice bed by a river-basket workshop, keyed on the cut reference the cutter books it under.'} test::borealwillow2::domain::WillowCut
+{
+  cutRef: String[1];
+  cutRound: Integer[1];
+  rodBundles: Integer[1];
+  rodLengthCm: Integer[1];
+  cutGrade: String[1];
+  cutState: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One coppice bed the workshop cuts willow from, standing on its own soil classification.'} test::borealwillow2::domain::WillowBed
+{
+  bedCode: String[1];
+  bedName: String[1];
+  soilCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One cutting crew a coppice bed is worked by, reporting from a named rod depot.'} test::borealwillow2::domain::CutterCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  depotName: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a booked cut to the coppice bed the rods were taken off.'} test::borealwillow2::domain::CutBed
+{
+  cuts: test::borealwillow2::domain::WillowCut[*];
+  bed: test::borealwillow2::domain::WillowBed[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a coppice bed to the cutting crew that works it.'} test::borealwillow2::domain::BedCrew
+{
+  beds: test::borealwillow2::domain::WillowBed[*];
+  crew: test::borealwillow2::domain::CutterCrew[0..1];
+}

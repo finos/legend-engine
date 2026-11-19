@@ -1,0 +1,68 @@
+name: lunar-canyon-relational
+title: "Hill Observatory Observing Log - Bidirectional Associations Implemented Over Store Joins, Deep Parameterised Predicates, And A Diagram Over The Documented Domain"
+description: |
+  A relational corpus over a hill observatory observing log. One store holds
+  independent session, instrument and observer tables in a single schema, two
+  declared equality joins connect a subset of them, and two associations rather
+  than class properties carry the session-to-instrument and session-to-observer
+  relationships, each implemented from both ends through the same store join so
+  navigation resolves in either direction and a session whose instrument key has
+  no counterpart keeps its own columns while every navigated column reads null.
+  One session property is bound through a join hop rather
+  than its own table, so the class mapping mixes bare column bindings with a
+  join-reached one. Two services sit on top: one fans a predicate out into a
+  literal-set membership test, a closed date window and an emptiness test over
+  an optional column before a wide projection, the other applies an existence
+  test over the rostered observer's certification list, orders the projected
+  rows and caps them. A data space catalogues the classes and both services
+  through one execution context, and a diagram lays the three classes out with
+  connectors for both association ends.
+modelSources:
+  model:
+    root: lunar-canyon-relational
+    files:
+      - test/lunarcanyon/connection/SkyWarehouseConnection.pure
+      - test/lunarcanyon/dataspace/SkyDataSpace.pure
+      - test/lunarcanyon/diagram/SkyDiagram.pure
+      - test/lunarcanyon/domain/SkyDomain.pure
+      - test/lunarcanyon/mapping/SkyMapping.pure
+      - test/lunarcanyon/runtime/SkyRuntime.pure
+      - test/lunarcanyon/service/SessionCertificationService.pure
+      - test/lunarcanyon/service/SessionWindowService.pure
+      - test/lunarcanyon/store/SkyDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - collection-operator
+  - data-space
+  - diagram
+  - h2
+  - inner-join
+  - multi-table-store
+  - observatory-log
+  - relational
+  - service-test
+  - snowflake
+  - sort-limit
+  - tabular-data-set

@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::crimsonridge::store::CityDatabase
+(
+  Schema city
+  (
+    Table district
+    (
+      district_id INTEGER PRIMARY KEY,
+      district_code VARCHAR(16) NOT NULL,
+      district_name VARCHAR(200) NOT NULL,
+      planner_count INTEGER NOT NULL
+    )
+    Table neighborhood
+    (
+      neighborhood_id INTEGER PRIMARY KEY,
+      neighborhood_code VARCHAR(16) NOT NULL,
+      neighborhood_name VARCHAR(200) NOT NULL,
+      resident_count INTEGER NOT NULL,
+      district_id INTEGER NOT NULL
+    )
+    Table park
+    (
+      park_id INTEGER PRIMARY KEY,
+      park_code VARCHAR(16) NOT NULL,
+      park_name VARCHAR(200) NOT NULL,
+      category_code VARCHAR(4) NOT NULL,
+      area_hectares FLOAT NOT NULL,
+      opened_on DATE NOT NULL,
+      fenced_flag BIT NOT NULL,
+      neighborhood_id INTEGER NOT NULL
+    )
+    Table transit_stop
+    (
+      stop_id INTEGER PRIMARY KEY,
+      stop_code VARCHAR(16) NOT NULL,
+      stop_name VARCHAR(200) NOT NULL,
+      shelter_seats INTEGER NOT NULL,
+      neighborhood_id INTEGER NOT NULL
+    )
+    Table amenity
+    (
+      amenity_id INTEGER PRIMARY KEY,
+      amenity_code VARCHAR(16) NOT NULL,
+      amenity_kind VARCHAR(80) NOT NULL,
+      installed_on DATE NOT NULL,
+      park_id INTEGER NOT NULL
+    )
+    Table crew
+    (
+      crew_id INTEGER PRIMARY KEY,
+      crew_code VARCHAR(16) NOT NULL,
+      crew_name VARCHAR(200) NOT NULL,
+      headcount INTEGER NOT NULL,
+      district_id INTEGER NOT NULL
+    )
+  )
+
+  Join Neighborhood_District(city.neighborhood.district_id = city.district.district_id)
+  Join Park_Neighborhood(city.park.neighborhood_id = city.neighborhood.neighborhood_id)
+  Join Stop_Neighborhood(city.transit_stop.neighborhood_id = city.neighborhood.neighborhood_id)
+  Join Amenity_Park(city.amenity.park_id = city.park.park_id)
+  Join Crew_District(city.crew.district_id = city.district.district_id)
+)

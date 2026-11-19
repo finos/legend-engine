@@ -1,0 +1,37 @@
+name: quiet-estuary-m2m
+title: "Quiet Estuary — store-less union of two gauge feeds behind an as-of service"
+description: |
+  A store-less estuary monitoring model. Two inbound gauge feeds — shoreline and channel — are
+  transformed onto a single published reading class by two set implementations of one
+  model-to-model mapping, so the published extent is the union of both feeds. A service filters
+  that union to the readings whose explicit observation window contains the supplied instant and
+  whose station is in the requested collection, then projects the derived station label and tide
+  band as a tabular result. The executed test suite seeds both feeds, including a reading whose
+  window closed before the queried instant.
+modelSources:
+  model:
+    root: quiet-estuary-m2m
+    files:
+      - test/quietestuary/connection/ReadingConnections.pure
+      - test/quietestuary/domain/GaugeReading.pure
+      - test/quietestuary/function/ReadingBand.pure
+      - test/quietestuary/mapping/EstuaryReadings.pure
+      - test/quietestuary/runtime/EstuaryRuntime.pure
+      - test/quietestuary/service/ReadingsAsOf.pure
+      - test/quietestuary/source/IncomingReadings.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:union
+stores: []
+complexity: intermediate
+tags:
+  - as-of
+  - collection-op
+  - estuary
+  - m2m
+  - service-test
+  - store-less
+  - union

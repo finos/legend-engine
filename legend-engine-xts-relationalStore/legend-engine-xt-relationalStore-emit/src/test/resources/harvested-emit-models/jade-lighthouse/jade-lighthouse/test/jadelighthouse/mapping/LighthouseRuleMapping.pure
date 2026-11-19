@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadelighthouse::mapping::LighthouseRuleMapping
+(
+  include mapping test::jadelighthouse::mapping::LighthouseDetailMapping
+
+  *test::jadelighthouse::domain::AidRecord[aidRecord]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(currentAidRecord, heritageAidRecord)
+  }
+
+  test::jadelighthouse::domain::AidRecord[currentAidRecord]: Relational
+  {
+    ~filter [test::jadelighthouse::store::LighthouseDB]OpenStation
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.station.station_id
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.station
+    aidCode: [test::jadelighthouse::store::LighthouseDB]coast.station.station_code,
+    aidName: rtrim([test::jadelighthouse::store::LighthouseDB]coast.station.station_name),
+    regionCode: [test::jadelighthouse::store::LighthouseDB]coast.station.region_code,
+    recordKind: 'CURRENT'
+  }
+
+  test::jadelighthouse::domain::AidRecord[heritageAidRecord]: Relational
+  {
+    ~filter [test::jadelighthouse::store::LighthouseDB]ListedHeritage
+    ~primaryKey
+    (
+      [test::jadelighthouse::store::LighthouseDB]coast.heritage_station.station_id
+    )
+    ~mainTable [test::jadelighthouse::store::LighthouseDB]coast.heritage_station
+    aidCode: [test::jadelighthouse::store::LighthouseDB]coast.heritage_station.station_code,
+    aidName: concat('HERITAGE ', rtrim([test::jadelighthouse::store::LighthouseDB]coast.heritage_station.station_name)),
+    regionCode: [test::jadelighthouse::store::LighthouseDB]@Heritage_Roster | [test::jadelighthouse::store::LighthouseDB]coast.heritage_roster_vw.region_code,
+    recordKind: 'HERITAGE'
+  }
+
+  testSuites:
+  [
+    aidRecordSuite:
+    {
+      function: |test::jadelighthouse::domain::AidRecord.all()->project(
+        [
+          a|$a.aidCode,
+          a|$a.aidName,
+          a|$a.regionCode,
+          a|$a.recordKind
+        ],
+        [
+          'Aid',
+          'Name',
+          'Region',
+          'Kind'
+        ]
+      )->sort([asc('Aid')]);
+      tests:
+      [
+        unionedRegister:
+        {
+          doc: 'Routes the aid register across both backing populations through the union operation, defaulting the record kind to a literal on each side and reading the heritage region code from a view; the closed rows on both sides are dropped by their store filters.';
+          data:
+          [
+            test::jadelighthouse::store::LighthouseDB:
+              Relational
+              #{
+                coast.station:
+                  'station_id,station_code,station_name,region_code,station_type,status_code,tower_height_m,keeper_note,lamp_id\n'+
+                  '1,JL-101,Gull Point Light,R-01,major,A,38,lens cleaned,1\n'+
+                  '2,JL-102,Cobble Head Light,R-01,minor,B,21,routine visit,2\n'+
+                  '3,JL-110,Closed Light,R-01,minor,X,5,decommissioned,3\n';
+
+                coast.heritage_station:
+                  'station_id,station_code,station_name,region_code,station_type,status_code,tower_height_m,lamp_id\n'+
+                  '1,JL-201,Chapel Rock Light,R-02,major,H,29,4\n'+
+                  '2,JL-202,Retired Light,R-02,minor,X,12,5\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Aid":"JL-101","Name":"Gull Point Light","Region":"R-01","Kind":"CURRENT"},{"Aid":"JL-102","Name":"Cobble Head Light","Region":"R-01","Kind":"CURRENT"},{"Aid":"JL-201","Name":"HERITAGE Chapel Rock Light","Region":"R-02","Kind":"HERITAGE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

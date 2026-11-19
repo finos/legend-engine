@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietdelta3::mapping::GreenhouseMapping
+(
+  include mapping test::quietdelta3::mapping::GreenhouseSharedMapping
+
+  *test::quietdelta3::domain::BloomLog[bloomLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.log_id
+    )
+    ~mainTable [test::quietdelta3::store::GreenhouseDb]nursery.bloom_log
+    logId: [test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.log_id,
+    benchCode: [test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.bench_code,
+    houseCode: [test::quietdelta3::store::GreenhouseDb]@Bloom_Bench | nursery.bench_row.house_code,
+    siteOpenedAt: [test::quietdelta3::store::GreenhouseDb]@Bloom_Bench > @Bench_House > @House_Site | nursery.grow_site.opened_at,
+    stageLabel: case(isNull(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.stage_code, '_', '-')), sqlNull(), case(equal(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.stage_code, '_', '-'), 'bud-tight'), 'bud', case(equal(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.stage_code, '_', '-'), 'spike-up'), 'spike', case(equal(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.stage_code, '_', '-'), 'first-open'), 'opening', case(equal(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.stage_code, '_', '-'), 'full-open'), 'peak', case(equal(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.stage_code, '_', '-'), 'petal-drop'), 'fading', case(equal(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.stage_code, '_', '-'), 'pod-set'), 'seeding', sqlNull()))))))),
+    noteFlag: case(isNull(replace([test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.note_text, '_', ' ')), 'silent', 'noted'),
+    petalCount: [test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.petal_count,
+    vigour: EnumerationMapping VigourCodes: [test::quietdelta3::store::GreenhouseDb]nursery.bloom_log.vigour_code
+  }
+
+  testSuites:
+  [
+    bloomLogSuite:
+    {
+      function: |test::quietdelta3::domain::BloomLog.all()->project(
+  [
+    b|$b.logId,
+    b|$b.benchCode,
+    b|$b.houseCode,
+    b|$b.siteOpenedAt,
+    b|$b.stageLabel,
+    b|$b.noteFlag,
+    b|$b.petalCount,
+    b|$b.vigour
+  ],
+  [
+    'LogId',
+    'Bench',
+    'House',
+    'SiteOpenedAt',
+    'Stage',
+    'Note',
+    'Petals',
+    'Vigour'
+  ]
+)->sort(
+  [
+    asc('LogId')
+  ]
+);
+      tests:
+      [
+        everyStageAndJoinHop:
+        {
+          doc: 'Each of the six normalised stage codes lands on its own label, an unknown code and a missing code are null, and benches reach their site opening time over three hops while an unplaced bench misses every hop.';
+          data:
+          [
+            test::quietdelta3::store::GreenhouseDb: Reference
+              #{
+                test::quietdelta3::data::GreenhouseFixtureData
+              }#
+          ];
+          asserts:
+          [
+            stagesAndHopsResolve:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LogId":1,"Bench":"B1","House":"H1","SiteOpenedAt":"2025-03-01T08:00:00.000000000+0000","Stage":"bud","Note":"noted","Petals":0,"Vigour":"Robust"},{"LogId":2,"Bench":"B1","House":"H1","SiteOpenedAt":"2025-03-01T08:00:00.000000000+0000","Stage":"spike","Note":"silent","Petals":0,"Vigour":"Steady"},{"LogId":3,"Bench":"B2","House":"H1","SiteOpenedAt":"2025-03-01T08:00:00.000000000+0000","Stage":"opening","Note":"noted","Petals":2,"Vigour":"Robust"},{"LogId":4,"Bench":"B2","House":"H1","SiteOpenedAt":"2025-03-01T08:00:00.000000000+0000","Stage":"peak","Note":"silent","Petals":5,"Vigour":"Weak"},{"LogId":5,"Bench":"B3","House":"H2","SiteOpenedAt":"2025-09-15T07:30:00.000000000+0000","Stage":"fading","Note":"noted","Petals":3,"Vigour":"Steady"},{"LogId":6,"Bench":"B3","House":"H2","SiteOpenedAt":"2025-09-15T07:30:00.000000000+0000","Stage":"seeding","Note":"silent","Petals":0,"Vigour":null},{"LogId":7,"Bench":"B9","House":null,"SiteOpenedAt":null,"Stage":null,"Note":"noted","Petals":4,"Vigour":"Weak"},{"LogId":8,"Bench":"B3","House":"H2","SiteOpenedAt":"2025-09-15T07:30:00.000000000+0000","Stage":null,"Note":"silent","Petals":1,"Vigour":"Robust"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    growSiteSuite:
+    {
+      function: |test::quietdelta3::domain::GrowSite.all()->project(
+  [
+    s|$s.siteCode,
+    s|$s.siteName
+  ],
+  [
+    'Site',
+    'Name'
+  ]
+)->sort(
+  [
+    asc('Site')
+  ]
+);
+      tests:
+      [
+        siteNamesLoseUnderscores:
+        {
+          doc: 'Site names come through the shared mapping with underscores turned into spaces.';
+          data:
+          [
+            test::quietdelta3::store::GreenhouseDb: Reference
+              #{
+                test::quietdelta3::data::GreenhouseFixtureData
+              }#
+          ];
+          asserts:
+          [
+            namesAreSpaced:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"S1","Name":"Lower Terrace"},{"Site":"S2","Name":"Ridge Annex"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,201 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenquokka2::store::SpeciesRefDb
+(
+  Schema ref
+  (
+    Table species_reference
+    (
+      species_code VARCHAR(20) PRIMARY KEY,
+      common_name VARCHAR(80) NOT NULL,
+      family_name VARCHAR(80) NOT NULL
+    )
+  )
+)
+
+###Relational
+Database test::goldenquokka2::store::WardenRefDb
+(
+  Schema staff
+  (
+    Table warden
+    (
+      warden_code VARCHAR(20) PRIMARY KEY,
+      warden_name VARCHAR(80) NOT NULL
+    )
+  )
+)
+
+###Relational
+Database test::goldenquokka2::store::SectorRefDb
+(
+  Schema estate
+  (
+    Table reserve_sector
+    (
+      sector_code VARCHAR(20) PRIMARY KEY,
+      sector_name VARCHAR(80) NOT NULL,
+      region_name VARCHAR(80) NOT NULL
+    )
+    Table reserve_gate
+    (
+      gate_code VARCHAR(20) PRIMARY KEY,
+      sector_code VARCHAR(20) NOT NULL,
+      gate_name VARCHAR(80) NOT NULL
+    )
+  )
+)
+
+###Relational
+Database test::goldenquokka2::store::ReserveDb
+(
+  include test::goldenquokka2::store::SpeciesRefDb
+  include test::goldenquokka2::store::WardenRefDb
+  include test::goldenquokka2::store::SectorRefDb
+
+  Schema north
+  (
+    Table burrow
+    (
+      burrow_code VARCHAR(20) PRIMARY KEY,
+      burrow_name VARCHAR(80) NOT NULL,
+      zone_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      sector_code VARCHAR(20) NOT NULL,
+      condition_code VARCHAR(4) NOT NULL,
+      entrance_count INTEGER NOT NULL,
+      silt_note VARCHAR(80)
+    )
+    Table habitat_zone
+    (
+      zone_code VARCHAR(20) PRIMARY KEY,
+      zone_name VARCHAR(80) NOT NULL,
+      kind_code VARCHAR(4) NOT NULL,
+      hectares DOUBLE NOT NULL
+    )
+    Table burrow_inspection
+    (
+      inspection_code VARCHAR(20) PRIMARY KEY,
+      burrow_code VARCHAR(20) NOT NULL,
+      warden_code VARCHAR(20) NOT NULL,
+      warden_grade_code VARCHAR(4) NOT NULL,
+      inspected_on DATE NOT NULL,
+      depth_cm DOUBLE NOT NULL
+    )
+    Table forage_record
+    (
+      record_code VARCHAR(20) PRIMARY KEY,
+      burrow_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      quality_code VARCHAR(4) NOT NULL,
+      grams DOUBLE NOT NULL
+    )
+  )
+
+  Schema south
+  (
+    Table burrow
+    (
+      burrow_code VARCHAR(20) PRIMARY KEY,
+      burrow_name VARCHAR(80) NOT NULL,
+      zone_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      sector_code VARCHAR(20) NOT NULL,
+      condition_code VARCHAR(4) NOT NULL,
+      entrance_count INTEGER NOT NULL,
+      silt_note VARCHAR(80)
+    )
+    Table habitat_zone
+    (
+      zone_code VARCHAR(20) PRIMARY KEY,
+      zone_name VARCHAR(80) NOT NULL,
+      kind_code VARCHAR(4) NOT NULL,
+      hectares DOUBLE NOT NULL
+    )
+    Table burrow_inspection
+    (
+      inspection_code VARCHAR(20) PRIMARY KEY,
+      burrow_code VARCHAR(20) NOT NULL,
+      warden_code VARCHAR(20) NOT NULL,
+      warden_grade_code VARCHAR(4) NOT NULL,
+      inspected_on DATE NOT NULL,
+      depth_cm DOUBLE NOT NULL
+    )
+    Table forage_record
+    (
+      record_code VARCHAR(20) PRIMARY KEY,
+      burrow_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      quality_code VARCHAR(4) NOT NULL,
+      grams DOUBLE NOT NULL
+    )
+  )
+
+  Schema east
+  (
+    Table burrow
+    (
+      burrow_code VARCHAR(20) PRIMARY KEY,
+      burrow_name VARCHAR(80) NOT NULL,
+      zone_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      sector_code VARCHAR(20) NOT NULL,
+      condition_code VARCHAR(4) NOT NULL,
+      entrance_count INTEGER NOT NULL,
+      silt_note VARCHAR(80)
+    )
+    Table habitat_zone
+    (
+      zone_code VARCHAR(20) PRIMARY KEY,
+      zone_name VARCHAR(80) NOT NULL,
+      kind_code VARCHAR(4) NOT NULL,
+      hectares DOUBLE NOT NULL
+    )
+    Table burrow_inspection
+    (
+      inspection_code VARCHAR(20) PRIMARY KEY,
+      burrow_code VARCHAR(20) NOT NULL,
+      warden_code VARCHAR(20) NOT NULL,
+      warden_grade_code VARCHAR(4) NOT NULL,
+      inspected_on DATE NOT NULL,
+      depth_cm DOUBLE NOT NULL
+    )
+    Table forage_record
+    (
+      record_code VARCHAR(20) PRIMARY KEY,
+      burrow_code VARCHAR(20) NOT NULL,
+      species_code VARCHAR(20) NOT NULL,
+      quality_code VARCHAR(4) NOT NULL,
+      grams DOUBLE NOT NULL
+    )
+  )
+
+  Join North_Burrow_Inspection(north.burrow.burrow_code = north.burrow_inspection.burrow_code)
+  Join North_Burrow_Species(north.burrow.species_code = ref.species_reference.species_code)
+  Join North_Inspection_Warden(north.burrow_inspection.warden_code = staff.warden.warden_code)
+  Join North_Forage_Species(north.forage_record.species_code = ref.species_reference.species_code)
+
+  Join South_Burrow_Inspection(south.burrow.burrow_code = south.burrow_inspection.burrow_code)
+  Join South_Burrow_Species(south.burrow.species_code = ref.species_reference.species_code)
+  Join South_Inspection_Warden(south.burrow_inspection.warden_code = staff.warden.warden_code)
+  Join South_Forage_Species(south.forage_record.species_code = ref.species_reference.species_code)
+
+  Join East_Burrow_Inspection(east.burrow.burrow_code = east.burrow_inspection.burrow_code)
+  Join East_Burrow_Species(east.burrow.species_code = ref.species_reference.species_code)
+  Join East_Inspection_Warden(east.burrow_inspection.warden_code = staff.warden.warden_code)
+  Join East_Forage_Species(east.forage_record.species_code = ref.species_reference.species_code)
+
+)

@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantisle4::domain::*;
+import test::verdantisle4::profile::*;
+
+Class <<NurseryProfile.curated>> {NurseryProfile.steward = 'island-nursery-desk', NurseryProfile.reviewCadence = 'weekly'} test::verdantisle4::domain::SeedLot
+{
+  lotCode: String[1];
+  lotState: String[1];
+  seedCount: Integer[1];
+  viabilityPct: Float[1];
+  sownOn: StrictDate[1];
+  benchCode: String[1];
+  keeperCode: String[1];
+}
+
+Class <<NurseryProfile.curated>> {NurseryProfile.steward = 'island-nursery-desk'} test::verdantisle4::domain::Cultivar
+{
+  cultivarCode: String[1];
+  cultivarName: String[1];
+  speciesGroup: String[1];
+  germinationDays: Integer[1];
+}
+
+Class test::verdantisle4::domain::Bench
+{
+  benchCode: String[1];
+  benchName: String[1];
+  houseCode: String[1];
+}
+
+Class test::verdantisle4::domain::Keeper
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+  rota: KeeperRota[0..1];
+}
+
+Class test::verdantisle4::domain::KeeperRota
+{
+  rotaCode: String[1];
+  rotaName: String[1];
+  cadenceCode: String[1];
+}
+
+Class test::verdantisle4::domain::IslandZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  islandName: String[1];
+}
+
+Class <<NurseryProfile.provisional>> {NurseryProfile.reviewCadence = 'daily'} test::verdantisle4::domain::DispatchRecord
+{
+  dispatchCode: String[1];
+  dispatchState: String[1];
+  trayCount: Integer[1];
+  dispatchedOn: StrictDate[1];
+  zoneRef: String[1];
+  lot: SeedLot[0..1];
+  zone: IslandZone[0..1];
+  bench: Bench[0..1];
+}
+
+Class test::verdantisle4::domain::DispatchTag
+{
+  tagCode: String[1];
+  dispatchCode: String[1];
+  tagState: String[1];
+}
+
+Class test::verdantisle4::domain::BenchWatch
+{
+  benchCode: String[1];
+  watchState: String[1];
+}
+
+Association test::verdantisle4::domain::Lot_Cultivar
+{
+  lots: SeedLot[*];
+  cultivar: Cultivar[0..1];
+}
+
+Association test::verdantisle4::domain::Bench_Keeper
+{
+  benches: Bench[*];
+  keeper: Keeper[0..1];
+}

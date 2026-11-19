@@ -1,0 +1,159 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::emeraldmeadow2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Shared supertype of everything the tram depot keeps an item register entry for: the depot item identity, its home depot, its operating state and every inspection recorded against it.'} test::emeraldmeadow2::domain::DepotItem
+[
+  itemCodeWellFormed
+  (
+    ~function: $this.itemCode->startsWith('TD-') && ($this.itemCode->length() >= 8)
+    ~enforcementLevel: Error
+    ~message: 'Item code must be a TD- register code of at least eight characters: ' + $this.itemCode
+  ),
+  withdrawnItemsCarryANote
+  (
+    ~function: ($this.state != ServiceState.WITHDRAWN) || $this.withdrawalNote->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'Withdrawn depot item ' + $this.itemCode + ' must record why it left service'
+  ),
+  unremediedFindingsKeepTheItemOffService
+  (
+    ~function: ($this.inspections->filter(i | $i.findings->filter(f | ($f.severity == SeverityBand.SEVERE) && $f.remediedOn->isEmpty())->size() > 0)->map(i | $i.entryId)->distinct()->size() == 0) || ($this.state != ServiceState.IN_SERVICE)
+    ~enforcementLevel: Error
+    ~message: 'Depot item ' + $this.itemCode + ' carries an unremedied severe finding and cannot be in service'
+  ),
+  inspectionMeterReadingsRise
+  (
+    ~function: $this.inspections->filter(i | $i.meterReadingKm < 0.0)->isEmpty()
+    ~enforcementLevel: Error
+    ~message: 'Depot item ' + $this.itemCode + ' has an inspection with a negative meter reading'
+  )
+]
+{
+  itemCode: String[1];
+  homeDepot: DepotRef[1];
+  broughtIntoUse: StrictDate[1];
+  state: ServiceState[1];
+  withdrawalNote: String[0..1];
+  inspections: InspectionEntry[*];
+  openFindingCount() {$this.inspections->filter(i | $i.findings->filter(f | $f.remediedOn->isEmpty())->size() > 0)->map(i | $i.findings)->filter(f | $f.remediedOn->isEmpty())->size()}: Integer[1];
+  outstandingRepairHours() {$this.inspections->map(i | $i.findings)->filter(f | $f.remediedOn->isEmpty())->map(f | $f.estimatedHours)->sum()}: Float[1];
+  worstOpenSeverity() {if($this.inspections->map(i | $i.findings)->filter(f | $f.remediedOn->isEmpty() && ($f.severity == SeverityBand.SEVERE))->isNotEmpty(), | 'SEVERE', | if($this.inspections->map(i | $i.findings)->filter(f | $f.remediedOn->isEmpty())->isNotEmpty(), | 'OPEN', | 'CLEAR'))}: String[1];
+  latestInspectionOutcomes() {$this.inspections->sortBy(i | $i.inspectedOn)->map(i | $i.outcome)->distinct()}: InspectionOutcome[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tram in the fleet, extending the shared item register entry with the traction mode, the body configuration and the accumulated running distance.'} test::emeraldmeadow2::domain::TramVehicle extends DepotItem
+{
+  fleetNumber: String[1];
+  tractionMode: TractionMode[1];
+  articulationCount: Integer[1];
+  seatedCapacity: Integer[1];
+  standingCapacity: Integer[1];
+  odometerKm: Float[1];
+  totalCapacity() {$this.seatedCapacity + $this.standingCapacity}: Integer[1];
+  wireIndependent() {$this.tractionMode != TractionMode.OVERHEAD_WIRE}: Boolean[1];
+  kilometresSinceLastInspection() {$this.odometerKm - $this.inspections->map(i | $i.meterReadingKm)->sort()->last()->toOne()}: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A length of running rail between two junctions, extending the shared item register entry with the alignment and the permitted speed.'} test::emeraldmeadow2::domain::TrackSection extends DepotItem
+{
+  sectionLabel: String[1];
+  lengthMetres: Float[1];
+  permittedSpeedKph: Integer[1];
+  streetRunning: Boolean[1];
+  gradientPercent: Float[1];
+  slowSection() {$this.permittedSpeedKph <= 20}: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One inspection of a depot item, holding the outcome the inspector reached and every finding raised at the visit.'} test::emeraldmeadow2::domain::InspectionEntry
+[
+  entryIdWellFormed
+  (
+    ~function: $this.entryId->startsWith('INS-') && ($this.entryId->length() >= 9)
+    ~enforcementLevel: Error
+    ~message: 'Inspection entry identifier must be an INS- code of at least nine characters: ' + $this.entryId
+  ),
+  defectOutcomeRaisesAFinding
+  (
+    ~function: ($this.outcome != InspectionOutcome.DEFECT) || $this.findings->filter(f | $f.severity != SeverityBand.MINOR)->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'Inspection ' + $this.entryId + ' records a defect outcome without a finding above minor severity'
+  ),
+  passOutcomeRaisesNoSevereFinding
+  (
+    ~function: ($this.outcome != InspectionOutcome.PASS) || $this.findings->filter(f | $f.severity == SeverityBand.SEVERE)->isEmpty()
+    ~enforcementLevel: Error
+    ~message: 'Inspection ' + $this.entryId + ' passed the depot item while raising a severe finding'
+  )
+]
+{
+  entryId: String[1];
+  inspectedOn: StrictDate[1];
+  inspectorName: String[1];
+  outcome: InspectionOutcome[1];
+  meterReadingKm: Float[1];
+  findings: InspectionFinding[*];
+  openFindings() {$this.findings->filter(f | $f.remediedOn->isEmpty())}: InspectionFinding[*];
+  severityLabels() {$this.findings->map(f | $f.severity->toString())->distinct()->sort()}: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single finding raised at an inspection, graded into a severity band and closed by a remediation date once the work is done.'} test::emeraldmeadow2::domain::InspectionFinding
+[
+  severeFindingsAreDescribed
+  (
+    ~function: ($this.severity != SeverityBand.SEVERE) || ($this.description->length() >= 20)
+    ~enforcementLevel: Error
+    ~message: 'Severe finding ' + $this.findingCode + ' must carry a description of at least twenty characters'
+  ),
+  estimatedHoursArePositive
+  (
+    ~function: $this.estimatedHours > 0.0
+    ~enforcementLevel: Error
+    ~message: 'Finding ' + $this.findingCode + ' must estimate a positive number of repair hours'
+  )
+]
+{
+  findingCode: String[1];
+  severity: SeverityBand[1];
+  description: String[1];
+  raisedOn: StrictDate[1];
+  remediedOn: StrictDate[0..1];
+  estimatedHours: Float[1];
+  open() {$this.remediedOn->isEmpty()}: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A planned depot task that closes out a set of findings, with the team booked to do the work.'} test::emeraldmeadow2::domain::MaintenanceTask
+[
+  taskCoversAtLeastOneFinding
+  (
+    ~function: $this.coveredFindings->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'Maintenance task ' + $this.taskCode + ' must cover at least one finding'
+  ),
+  bookedHoursCoverTheEstimate
+  (
+    ~function: $this.bookedHours >= $this.coveredFindings->filter(f | $f.remediedOn->isEmpty())->map(f | $f.estimatedHours)->sum()
+    ~enforcementLevel: Error
+    ~message: 'Maintenance task ' + $this.taskCode + ' books fewer hours than its open findings estimate'
+  )
+]
+{
+  taskCode: String[1];
+  plannedFor: StrictDate[1];
+  bookedHours: Float[1];
+  assignedTeam: TeamRef[1];
+  coveredFindings: InspectionFinding[*];
+  severeCoverage() {$this.coveredFindings->filter(f | $f.severity == SeverityBand.SEVERE)->map(f | $f.findingCode)->distinct()->size()}: Integer[1];
+}

@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'Closed set of ways an otter raft came to occupy the surveyed reach.'} test::tealotter2::domain::RaftOrigin
+{
+  COASTAL_RAFT,
+  RIVERINE_RAFT,
+  TRANSLOCATED_RAFT
+}
+
+Enum {doc.doc = 'Closed set of outcomes a sighting record can be given once the survey coordinator has screened it.'} test::tealotter2::domain::ScreeningOutcome
+{
+  ACCEPTED,
+  DEFERRED,
+  REJECTED
+}

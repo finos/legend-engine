@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::copperestuary3::mapping::KilnLogMapping
+(
+  *test::copperestuary3::domain::KilnFiring: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperestuary3::store::KilnLogDb]kiln.firing_log.firing_code
+    )
+    ~mainTable [test::copperestuary3::store::KilnLogDb]kiln.firing_log
+    firingCode: [test::copperestuary3::store::KilnLogDb]kiln.firing_log.firing_code,
+    kilnName: [test::copperestuary3::store::KilnLogDb]kiln.firing_log.kiln_name,
+    clayBody: [test::copperestuary3::store::KilnLogDb]kiln.firing_log.clay_body,
+    glazeNote: [test::copperestuary3::store::KilnLogDb]kiln.firing_log.glaze_note,
+    coneNumber: [test::copperestuary3::store::KilnLogDb]kiln.firing_log.cone_number,
+    peakTempC: [test::copperestuary3::store::KilnLogDb]kiln.firing_log.peak_temp_c,
+    startedAt: [test::copperestuary3::store::KilnLogDb]kiln.firing_log.started_at
+  }
+)
+
+###Mapping
+Mapping test::copperestuary3::mapping::KilnArchiveMapping
+(
+  *test::copperestuary3::domain::KilnFiring: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.firing_code
+    )
+    ~mainTable [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive
+    firingCode: [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.firing_code,
+    kilnName: [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.kiln_name,
+    clayBody: [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.clay_body,
+    glazeNote: [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.glaze_note,
+    coneNumber: [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.cone_number,
+    peakTempC: [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.peak_temp_c,
+    startedAt: [test::copperestuary3::store::KilnArchiveDb]archive.firing_archive.started_at
+  }
+)

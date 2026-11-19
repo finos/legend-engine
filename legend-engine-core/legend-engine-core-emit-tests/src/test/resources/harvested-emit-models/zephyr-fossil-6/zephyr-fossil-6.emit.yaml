@@ -1,0 +1,48 @@
+name: zephyr-fossil-6
+title: "Zephyr Fossil 6 — A Dig-Site Specimen Catalogue Resolved By Enumeration Mappings Of Computed Source Values Over A Nine-Outcome Grade Ladder"
+description: |
+  A store-less dig-site specimen catalogue whose whole behaviour lives in one model-to-model
+  mapping: three enumerated readings are resolved by enumeration mappings whose source values are
+  computed expressions rather than raw fields, a nine-outcome grade ladder walks free-text wording,
+  a crack count, and a completeness ratio in a fixed order, and the completeness and crack figures
+  are derived arithmetically with an explicit guard for the sheet that never counted its parts.
+
+  The grade ladder yields an unassessed reading for an uncounted sheet, separates articulated from
+  associated wording, sends a heavily cracked block to the shattered reading ahead of any ratio
+  arm, walks two completeness bands, reads fragmentary wording, and finally splits a scrap block on
+  the rock it was lifted in. Wording and rock names that the sheet leaves unrecognised resolve to
+  the explicit indeterminate and unknown-matrix readings rather than failing.
+
+  Eleven assertion-backed mapping tests over JSON payloads cover every ladder arm, the uncounted
+  fallback, unrecognised sheet wording, and a two-sheet payload transformed in one pass.
+modelSources:
+  model:
+    root: zephyr-fossil-6
+    files:
+      - test/zephyrfossil6/domain/SpecimenDomain.pure
+      - test/zephyrfossil6/mapping/SpecimenEnumMappings.pure
+      - test/zephyrfossil6/mapping/SpecimenMapping.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:mapping-include
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - arithmetic-transform
+  - condition-ladder
+  - conditional-fallback
+  - enum-of-expression
+  - enumeration-mapping
+  - json-external-format
+  - mapping-include
+  - mapping-test
+  - model-to-model
+  - specimen-catalogue
+  - string-function-transform

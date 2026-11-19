@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::duskywillow::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Where a lending record stands: out with a borrower, back on the shelf, past its due day, or not stated on the slip.'} test::duskywillow::domain::CoppiceState
+{
+  Issued,
+  Returned,
+  Overdue,
+  Unrecorded
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The bench a tool belongs to in the lending library: hand bench, powered bench, garden bench, or unclassified.'} test::duskywillow::domain::ToolClass
+{
+  HandTool,
+  PowerTool,
+  GardenTool,
+  Unrecorded
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lending slip exactly as the counter volunteers wrote it, with the coppice state and the tool bench still recorded as free text and the deposit optional.'} test::duskywillow::domain::RawCoppiceNote
+{
+  noteRef: String[1];
+  borrowerName: String[1];
+  toolName: String[1];
+  stateText: String[1];
+  classText: String[1];
+  daysOut: Integer[1];
+  depositPence: Integer[0..1];
+
+  normalizedRef() {$this.noteRef->toUpper()}: String[1];
+  overdueDays() {if($this.daysOut > 14, |$this.daysOut - 14, |0)}: Integer[1];
+  depositLabel()
+  {
+    if($this.depositPence->isEmpty(),
+       | 'no deposit held',
+       | if($this.depositPence->toOne() >= 1000,
+            | 'deposit held',
+            | 'nominal deposit'))
+  }: String[1];
+  handlingIndex() {((($this.daysOut + 1) * 2) + (($this.daysOut + 3) * 2)) * (($this.daysOut + 5) + 1)}: Integer[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Common shape of every record kept by the lending library: its own reference and the desk that stands behind it.'} test::duskywillow::domain::LibraryRecord
+[
+  recordRefPresent: $this.recordRef->isNotEmpty(),
+  stewardNamed: $this.steward->isNotEmpty()
+]
+{
+  recordRef: String[1];
+  steward: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lending slip after the counter vocabulary has been resolved: banded deposit wording, an overdue remainder, a handling index and the coppice state and tool bench as enumerated members.'} test::duskywillow::domain::CoppiceDigest extends test::duskywillow::domain::LibraryRecord
+{
+  noteRef: String[1];
+  borrowerLabel: String[1];
+  toolLabel: String[1];
+  overdueDays: Integer[1];
+  depositLabel: String[1];
+  handlingIndex: Integer[1];
+  state: CoppiceState[1];
+  toolClass: ToolClass[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A numbered bay on the lending shelf, where returned tools stand until the next borrower asks for them.'} test::duskywillow::domain::ShelfBay extends test::duskywillow::domain::LibraryRecord
+{
+  bayCode: String[1];
+  bayLabel: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Which bay a resolved lending slip is shelved into, and everything currently written against that bay.'} test::duskywillow::domain::DigestShelving
+{
+  shelvedIn: test::duskywillow::domain::ShelfBay[0..1];
+  shelvedDigests: test::duskywillow::domain::CoppiceDigest[*];
+}

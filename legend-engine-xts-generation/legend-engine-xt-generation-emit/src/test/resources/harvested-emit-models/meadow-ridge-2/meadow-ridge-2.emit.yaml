@@ -1,0 +1,63 @@
+name: meadow-ridge-2
+title: "Meadow Ridgeway Waymark Posts — Joined Parent/Leaf Document Service with Schema Generation"
+description: |
+  A two-table relational store — one path table with two maximum-width character
+  columns and one waymark-post table with two short bounded character columns —
+  wired together by a single named inner join. Two classes sit on top: the leaf
+  post carrying two mandatory text properties and a mandatory floating-point
+  identifier that doubles as the mapped key column, and the parent path carrying
+  two mandatory text properties plus a zero-or-more post collection resolved
+  through the store join with an explicit target-set qualifier. Both class
+  mappings pin an explicit store-qualified main-table alias and a single-column
+  floating-point primary key. The runtime declares its H2 connection inline and
+  self-seeds the two tables, so the legacy mapping test over the nested
+  parent/leaf graph fetch and the service tests read the same fixture shape.
+  One service exposes the leaf as a three-property graph-fetched and serialised
+  document behind a floating-point path parameter, carries a platform
+  specification-generation stereotype and tagged value, and keeps its filter as
+  a redundant explicit conjunction around the identifier equality. A schema
+  generation element scoped at the domain package emits a plain-YAML
+  specification flavour with constraint-function schemas and a schema collection,
+  and a generation specification wraps that single element.
+modelSources:
+  model:
+    root: meadow-ridge-2
+    files:
+      - test/meadowridge2/domain/RidgewayDomain.pure
+      - test/meadowridge2/generation/RidgewayGeneration.pure
+      - test/meadowridge2/mapping/RidgewayMapping.pure
+      - test/meadowridge2/runtime/RidgewayRuntime.pure
+      - test/meadowridge2/service/WaymarkPostDocument.pure
+      - test/meadowridge2/store/RidgewayDatabase.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - embedded-connection
+  - file-generation
+  - float-identifier
+  - graph-fetch
+  - h2
+  - inner-join
+  - mapping-test
+  - relational
+  - service-test

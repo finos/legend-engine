@@ -1,0 +1,307 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::goldenharbor::*;
+
+Class {meta::pure::profiles::doc.doc = 'A rock pool left behind by the falling tide along a surveyed shore section.'} demo::goldenharbor::TidePool
+{
+  {meta::pure::profiles::doc.doc = 'Pool marker painted on the rock.'} poolCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Shore section the pool belongs to.'} shoreSection: String[1];
+  {meta::pure::profiles::doc.doc = 'Deepest point measured at low water, in centimetres.'} depthCm: Float[0..1];
+  surveyedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One creature tally recorded in a pool on a numbered visit.'} demo::goldenharbor::Sighting
+{
+  {meta::pure::profiles::doc.doc = 'Visit number within the season.'} visitNo: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Common name of the creature.'} creature: String[1];
+  headCount: Integer[0..1];
+  fieldNote: String[0..1];
+}
+
+Association demo::goldenharbor::PoolSightings
+{
+  pool: TidePool[0..1];
+  sightings: Sighting[*];
+}
+
+###Relational
+Database demo::goldenharbor::HarborDb
+(
+  Schema survey
+  (
+    Table tide_pool
+    (
+      pool_code VARCHAR(20) PRIMARY KEY,
+      shore_section VARCHAR(20) PRIMARY KEY,
+      depth_cm DOUBLE,
+      surveyed_on DATE
+    )
+    Table sighting
+    (
+      pool_code VARCHAR(20) PRIMARY KEY,
+      shore_section VARCHAR(20) PRIMARY KEY,
+      visit_no INTEGER PRIMARY KEY,
+      creature VARCHAR(40),
+      head_count INTEGER,
+      field_note VARCHAR(80)
+    )
+  )
+
+  Join Pool_Sighting(survey.tide_pool.pool_code = survey.sighting.pool_code and survey.tide_pool.shore_section = survey.sighting.shore_section)
+)
+
+###Data
+Data demo::goldenharbor::HarborRows
+{
+Relational
+#{
+  survey.tide_pool:
+    'pool_code,shore_section,depth_cm,surveyed_on\n'+
+    'P1,North,42.5,2026-05-02\n'+
+    'P1,South,18.0,2026-05-03\n'+
+    'P2,North,,\n';
+  survey.sighting:
+    'pool_code,shore_section,visit_no,creature,head_count,field_note\n'+
+    'P1,North,1,Hermit crab,6,Under the ledge\n'+
+    'P1,North,2,Sea anemone,3,\n'+
+    'P1,South,1,Periwinkle,,Clustered on weed\n'+
+    'P9,North,1,Blenny,1,Stray tally\n';
+}#
+}
+
+###Mapping
+Mapping demo::goldenharbor::HarborMapping
+(
+  *demo::goldenharbor::TidePool[pool]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::goldenharbor::HarborDb]survey.tide_pool.pool_code,
+      [demo::goldenharbor::HarborDb]survey.tide_pool.shore_section
+    )
+    ~mainTable [demo::goldenharbor::HarborDb]survey.tide_pool
+    poolCode: [demo::goldenharbor::HarborDb]survey.tide_pool.pool_code,
+    shoreSection: [demo::goldenharbor::HarborDb]survey.tide_pool.shore_section,
+    depthCm: [demo::goldenharbor::HarborDb]survey.tide_pool.depth_cm,
+    surveyedOn: [demo::goldenharbor::HarborDb]survey.tide_pool.surveyed_on
+  }
+
+  *demo::goldenharbor::Sighting[sighting]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::goldenharbor::HarborDb]survey.sighting.pool_code,
+      [demo::goldenharbor::HarborDb]survey.sighting.shore_section,
+      [demo::goldenharbor::HarborDb]survey.sighting.visit_no
+    )
+    ~mainTable [demo::goldenharbor::HarborDb]survey.sighting
+    visitNo: [demo::goldenharbor::HarborDb]survey.sighting.visit_no,
+    creature: [demo::goldenharbor::HarborDb]survey.sighting.creature,
+    headCount: [demo::goldenharbor::HarborDb]survey.sighting.head_count,
+    fieldNote: [demo::goldenharbor::HarborDb]survey.sighting.field_note
+  }
+
+  demo::goldenharbor::PoolSightings: Relational
+  {
+    AssociationMapping
+    (
+      pool[sighting, pool]: [demo::goldenharbor::HarborDb]@Pool_Sighting,
+      sightings[pool, sighting]: [demo::goldenharbor::HarborDb]@Pool_Sighting
+    )
+  }
+
+  testSuites:
+  [
+    poolSuite:
+    {
+      function: |demo::goldenharbor::TidePool.all()->project([p|$p.poolCode, p|$p.shoreSection, p|$p.sightings.creature], ['Pool', 'Section', 'Creature'])->distinct()->sort([asc('Pool'), asc('Section'), asc('Creature')]);
+      tests:
+      [
+        poolsWithCreatures:
+        {
+          data: [demo::goldenharbor::HarborDb: Reference #{demo::goldenharbor::HarborRows}#];
+          asserts:
+          [
+            everyPoolListed: EqualToJson
+            #{
+              expected: ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"Pool":"P1","Section":"North","Creature":"Hermit crab"},{"Pool":"P1","Section":"North","Creature":"Sea anemone"},{"Pool":"P1","Section":"South","Creature":"Periwinkle"},{"Pool":"P2","Section":"North","Creature":null}]';
+              }#;
+            }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+###Connection
+RelationalDatabaseConnection demo::goldenharbor::HarborConnection
+{
+  store: demo::goldenharbor::HarborDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'HARBOR_DB';
+    account: 'harbor_survey';
+    warehouse: 'HARBOR_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'HARBOR_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'harbor_reader';
+    privateKeyVaultReference: 'harbor-key';
+    passPhraseVaultReference: 'harbor-phrase';
+  };
+}
+
+###Runtime
+Runtime demo::goldenharbor::HarborRuntime
+{
+  mappings: [demo::goldenharbor::HarborMapping];
+  connections:
+  [
+    demo::goldenharbor::HarborDb:
+    [
+      harborConnection: demo::goldenharbor::HarborConnection
+    ]
+  ];
+}
+
+###Service
+Service demo::goldenharbor::PoolDirectory
+{
+  pattern: '/goldenharbor/pools';
+  ownership: DID {identifier: '000000'};
+  documentation: 'Lists every tide pool with its depth and survey date.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |demo::goldenharbor::TidePool.all()->project([p|$p.poolCode, p|$p.shoreSection, p|$p.depthCm, p|$p.surveyedOn], ['Pool', 'Section', 'Depth', 'Surveyed'])->sort([asc('Pool'), asc('Section')]);
+    mapping: demo::goldenharbor::HarborMapping;
+    runtime: demo::goldenharbor::HarborRuntime;
+  }
+  testSuites:
+  [
+    poolSuite:
+    {
+      data:
+      [
+        connections: [harborConnection: Reference #{demo::goldenharbor::HarborRows}#]
+      ]
+      tests:
+      [
+        allPools:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            poolRows: EqualToJson
+            #{
+              expected: ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"Pool":"P1","Section":"North","Depth":42.5,"Surveyed":"2026-05-02"},{"Pool":"P1","Section":"South","Depth":18.0,"Surveyed":"2026-05-03"},{"Pool":"P2","Section":"North","Depth":null,"Surveyed":null}]';
+              }#;
+            }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::goldenharbor::SightingLog
+{
+  pattern: '/goldenharbor/sightings';
+  ownership: DID {identifier: '000000'};
+  documentation: 'Lists creature tallies with the pool they were recorded in, keeping stray tallies.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |demo::goldenharbor::Sighting.all()->project([s|$s.pool.poolCode, s|$s.visitNo, s|$s.creature, s|$s.headCount, s|$s.fieldNote], ['Pool', 'Visit', 'Creature', 'Count', 'Note'])->sort([asc('Creature')]);
+    mapping: demo::goldenharbor::HarborMapping;
+    runtime: demo::goldenharbor::HarborRuntime;
+  }
+  testSuites:
+  [
+    sightingSuite:
+    {
+      data:
+      [
+        connections: [harborConnection: Reference #{demo::goldenharbor::HarborRows}#]
+      ]
+      tests:
+      [
+        allSightings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            sightingRows: EqualToJson
+            #{
+              expected: ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"Pool":null,"Visit":1,"Creature":"Blenny","Count":1,"Note":"Stray tally"},{"Pool":"P1","Visit":1,"Creature":"Hermit crab","Count":6,"Note":"Under the ledge"},{"Pool":"P1","Visit":1,"Creature":"Periwinkle","Count":null,"Note":"Clustered on weed"},{"Pool":"P1","Visit":2,"Creature":"Sea anemone","Count":3,"Note":null}]';
+              }#;
+            }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###DataSpace
+DataSpace demo::goldenharbor::HarborSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'survey';
+      description: 'Tide-pool survey mapping over the warehouse runtime.';
+      mapping: demo::goldenharbor::HarborMapping;
+      defaultRuntime: demo::goldenharbor::HarborRuntime;
+    }
+  ];
+  defaultExecutionContext: 'survey';
+  title: 'Tide Pool Survey';
+  description: 'Documented tide pools, their creature tallies and the published survey services.';
+  elements: [demo::goldenharbor::TidePool, demo::goldenharbor::Sighting];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Pool directory';
+      description: 'Every surveyed pool.';
+      executable: demo::goldenharbor::PoolDirectory;
+      executionContextKey: 'survey';
+    },
+    {
+      id: 2;
+      title: 'Sighting log';
+      description: 'Creature tallies with their pools.';
+      executable: demo::goldenharbor::SightingLog;
+      executionContextKey: 'survey';
+    }
+  ];
+  supportInfo: Email {address: 'desk@harbor';};
+}

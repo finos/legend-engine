@@ -1,0 +1,32 @@
+name: zephyr-cavern-2
+title: "Zephyr Cavern 2 — Bat Roost Survey Mapping"
+description: |
+  A cave survey model with business-temporal roost observations, a
+  cross-property cave label constraint, associations, and a JSON mapping test.
+modelSources:
+  model:
+    root: zephyr-cavern-2
+    files:
+      - test/zephyrcavern2/domain/RoostDomain.pure
+      - test/zephyrcavern2/mapping/RoostMapping.pure
+      - test/zephyrcavern2/store/RoostStore.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - grammar:constraint
+  - scaffolding:m2m-mapping
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: intermediate
+tags:
+  - bat-roost
+  - business-temporal
+  - cave-survey
+  - constraint
+  - m2m
+  - mapping-test
+  - milestoned-association
+  - store-less

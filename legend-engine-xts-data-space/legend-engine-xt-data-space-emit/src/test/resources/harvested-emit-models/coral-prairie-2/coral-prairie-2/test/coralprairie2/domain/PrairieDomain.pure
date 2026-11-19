@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::coralprairie2::domain::*;
+
+Class test::coralprairie2::domain::MeadowPlot
+{
+  plotCode: String[1];
+  plotName: String[1];
+  batchId: Integer[1];
+  hectares: Float[1];
+  swardBand: String[0..1];
+  regionName: String[0..1];
+  rainfallMillimetres: Integer[0..1];
+  surveyProgramme: String[1];
+}
+
+Class test::coralprairie2::domain::SwardSample
+{
+  sampleId: Integer[1];
+  batchId: Integer[1];
+  speciesCount: Integer[1];
+  biomassKilograms: Float[1];
+  sampledOn: StrictDate[1];
+}
+
+Class test::coralprairie2::domain::GrasslandRegion
+{
+  regionCode: String[1];
+  regionName: String[1];
+  biome: String[1];
+}
+
+Association test::coralprairie2::domain::Plot_Sample
+{
+  samples: SwardSample[*];
+  plot: MeadowPlot[0..1];
+}
+
+Association test::coralprairie2::domain::Plot_Region
+{
+  plots: MeadowPlot[*];
+  region: GrasslandRegion[0..1];
+}

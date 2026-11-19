@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::scarletwillow::store::PlanningDatabase
+(
+  Schema inventory
+  (
+    Table TREE
+    (
+      tree_id INTEGER PRIMARY KEY,
+      tree_tag VARCHAR(40) NOT NULL,
+      planted_on DATE NOT NULL,
+      height_meters FLOAT NOT NULL,
+      retired_code VARCHAR(20),
+      site_id INTEGER NOT NULL,
+      species_id INTEGER NOT NULL
+    )
+
+    View TREE_STATUS_VW
+    (
+      treeId: inventory.TREE.tree_id PRIMARY KEY,
+      treeTag: inventory.TREE.tree_tag,
+      lifecycleStatus: case(isNull(inventory.TREE.retired_code), 'ACTIVE', inventory.TREE.retired_code)
+    )
+  )
+
+  Schema sites
+  (
+    Table SITE
+    (
+      site_id INTEGER PRIMARY KEY,
+      site_code VARCHAR(40) NOT NULL,
+      site_name VARCHAR(200) NOT NULL,
+      site_status VARCHAR(20) NOT NULL,
+      district_id INTEGER NOT NULL
+    )
+  )
+
+  Schema reference
+  (
+    Table DISTRICT
+    (
+      district_id INTEGER PRIMARY KEY,
+      district_code VARCHAR(40) NOT NULL,
+      district_name VARCHAR(200) NOT NULL,
+      region_id INTEGER NOT NULL
+    )
+    Table REGION
+    (
+      region_id INTEGER PRIMARY KEY,
+      region_code VARCHAR(40) NOT NULL,
+      region_name VARCHAR(200) NOT NULL,
+      zone_id INTEGER NOT NULL
+    )
+    Table ZONE
+    (
+      zone_id INTEGER PRIMARY KEY,
+      zone_name VARCHAR(200) NOT NULL
+    )
+    Table SPECIES
+    (
+      species_id INTEGER PRIMARY KEY,
+      common_name VARCHAR(200) NOT NULL,
+      group_id INTEGER NOT NULL
+    )
+    Table SPECIES_GROUP
+    (
+      group_id INTEGER PRIMARY KEY,
+      group_code VARCHAR(40) NOT NULL,
+      group_name VARCHAR(200) NOT NULL
+    )
+  )
+
+  Join Tree_Site(inventory.TREE.site_id = sites.SITE.site_id)
+  Join Tree_ActiveSite(inventory.TREE.site_id = sites.SITE.site_id and sites.SITE.site_status = 'ACTIVE')
+  Join Site_District(sites.SITE.district_id = reference.DISTRICT.district_id)
+  Join District_Region(reference.DISTRICT.region_id = reference.REGION.region_id)
+  Join Region_Zone(reference.REGION.zone_id = reference.ZONE.zone_id)
+  Join Tree_Species(inventory.TREE.species_id = reference.SPECIES.species_id)
+  Join Species_Group(reference.SPECIES.group_id = reference.SPECIES_GROUP.group_id)
+)

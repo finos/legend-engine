@@ -1,0 +1,37 @@
+name: gilded-arboretum
+title: "Gilded Arboretum - Propagation Register With String-Function Column Transforms"
+description: |
+  A propagation-nursery register whose single relational store carries a sown
+  batch table and a bed table in one schema. One relational mapping binds both
+  classes to their aliased main tables through declared primary keys, and every
+  derived property is a string-function transform over a physical column: a
+  prefixed upper-cased batch label, a cultivar tag truncated out of an
+  upper-cased code, an upper-cased trimmed medium code and the length of the
+  trimmed batch code. Two mapping testSuites graph-fetch each class over a
+  deterministic relational fixture and assert the transformed shape.
+modelSources:
+  model:
+    root: gilded-arboretum
+    files:
+      - test/gildedarboretum/domain/NurseryDomain.pure
+      - test/gildedarboretum/mapping/NurseryMapping.pure
+      - test/gildedarboretum/store/NurseryDatabase.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - nursery
+  - propagation
+  - relational
+  - string-functions

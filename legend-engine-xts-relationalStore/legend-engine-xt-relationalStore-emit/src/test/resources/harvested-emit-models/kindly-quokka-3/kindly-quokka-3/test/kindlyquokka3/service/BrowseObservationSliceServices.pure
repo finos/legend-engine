@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyquokka3::service::BrowseSightingSlice
+{
+  pattern: '/kindlyquokka3/browse/sightingSlice';
+  ownership: UserList { users: ['sanctuary-browse-log'] };
+  documentation: 'Narrow sighting-count projection of the browse-observation row.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::kindlyquokka3::domain::BrowseObservation.all()->project(
+      [
+        o|$o.observationRef,
+        o|$o.quokkaCount,
+        o|$o.pouchYoungCount,
+        o|$o.sightedAt
+      ],
+      [
+        'observationRef',
+        'quokkaCount',
+        'pouchYoungCount',
+        'sightedAt'
+      ]
+    )->sort([asc('observationRef')])};
+    mapping: test::kindlyquokka3::mapping::BrowseObservationMapping;
+    runtime: test::kindlyquokka3::runtime::SanctuaryFieldRuntime;
+  }
+  testSuites:
+  [
+    sightingSliceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryH2Connection:
+            Relational
+            #{
+              fieldlog.browse_observation:
+                'obs_ref,col_lbl,sanct_nm,hab_bnd,shltr_cd,brws_spc_cd,frg_stg,obsvr_init,wthr_summ,moon_phs_lbl,trk_surf_knd,obs_dt,sght_ts,qkka_cnt,pch_yng_cnt,brws_cov_pct,trnsct_len_m,notes_txt\n'+
+                'QK-01,North Ridge Colony,Wattle Hollow Reserve,RIDGE,SH-01,SP-ACAC,EARLY,RJ,clear,WAXING,SAND,2026-03-02,2026-03-02 06:45:00,12,3,24.75,120.5,browse heavily cropped\n'+
+                'QK-02,,,,,,,,,,,,,,,,,\n'+
+                'QK-03,South Gully Colony,Wattle Hollow Reserve,GULLY,SH-03,SP-MELA,LATE,TM,overcast,WANING,LOAM,2026-03-05,2026-03-05 05:30:00,7,1,18.5,95.0,fresh scats near shelter\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sightingRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"observationRef":"QK-01","quokkaCount":12,"pouchYoungCount":3,"sightedAt":"2026-03-02T06:45:00.000000000+0000"},{"observationRef":"QK-02","quokkaCount":null,"pouchYoungCount":null,"sightedAt":null},{"observationRef":"QK-03","quokkaCount":7,"pouchYoungCount":1,"sightedAt":"2026-03-05T05:30:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::kindlyquokka3::service::BrowseCountSlice
+{
+  pattern: '/kindlyquokka3/browse/countSlice';
+  ownership: UserList { users: ['sanctuary-browse-log'] };
+  documentation: 'Two-column browse-observation projection truncated to the leading rows.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::kindlyquokka3::domain::BrowseObservation.all()->project(
+      [
+        o|$o.observationRef,
+        o|$o.quokkaCount
+      ],
+      [
+        'observationRef',
+        'quokkaCount'
+      ]
+    )->sort([asc('observationRef')])->limit(2)};
+    mapping: test::kindlyquokka3::mapping::BrowseObservationMapping;
+    runtime: test::kindlyquokka3::runtime::SanctuaryFieldRuntime;
+  }
+  testSuites:
+  [
+    countSliceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryH2Connection:
+            Relational
+            #{
+              fieldlog.browse_observation:
+                'obs_ref,col_lbl,sanct_nm,hab_bnd,shltr_cd,brws_spc_cd,frg_stg,obsvr_init,wthr_summ,moon_phs_lbl,trk_surf_knd,obs_dt,sght_ts,qkka_cnt,pch_yng_cnt,brws_cov_pct,trnsct_len_m,notes_txt\n'+
+                'QK-01,North Ridge Colony,Wattle Hollow Reserve,RIDGE,SH-01,SP-ACAC,EARLY,RJ,clear,WAXING,SAND,2026-03-02,2026-03-02 06:45:00,12,3,24.75,120.5,browse heavily cropped\n'+
+                'QK-02,,,,,,,,,,,,,,,,,\n'+
+                'QK-03,South Gully Colony,Wattle Hollow Reserve,GULLY,SH-03,SP-MELA,LATE,TM,overcast,WANING,LOAM,2026-03-05,2026-03-05 05:30:00,7,1,18.5,95.0,fresh scats near shelter\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        leadingCountRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"observationRef":"QK-01","quokkaCount":12},{"observationRef":"QK-02","quokkaCount":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

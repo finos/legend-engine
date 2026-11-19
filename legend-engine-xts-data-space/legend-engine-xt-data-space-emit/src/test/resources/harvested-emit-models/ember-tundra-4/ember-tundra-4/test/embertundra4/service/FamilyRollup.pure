@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::embertundra4::service::FamilyRollup
+{
+  pattern: '/ember-tundra-4/v1/family-rollup/{processingDate}/{businessDate}';
+  title: 'Herbarium - Family Sheet Rollup';
+  documentation: 'Keeps the specimens stored in a reading-room cabinet or not yet condition-assessed, drops sheets with no pressed sheet, derives a stature column from the sheet height and rolls the sheets up per family and stature with a sheet total, a specimen count and the tallest sheet.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['herbarium-cabinet-desk'] };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::embertundra4::domain::Specimen.all($processingDate, $businessDate)->filter(s|$s.cabinet->exists(c|$c.roomCode->startsWith('RM')) || $s.conditionCode->isEmpty())->project([s|$s.familyCode, s|$s.sheetCount, s|$s.heightCm], ['Family', 'Sheets', 'Height'])->filter(r|$r.getInteger('Sheets') > 0)->extend([col(r:TDSRow[1]|if($r.getFloat('Height') >= 40.0, |'TALL', |'SHORT'), 'Stature')])->groupBy(['Family', 'Stature'], [agg('TotalSheets', x|$x.getInteger('Sheets'), y|$y->sum()), agg('Specimens', x|$x.getString('Family'), y|$y->count()), agg('Tallest', x|$x.getFloat('Height'), y|$y->max())])->sort([asc('Family'), asc('Stature')])};
+    mapping: test::embertundra4::mapping::HerbariumMapping;
+    runtime: test::embertundra4::runtime::HerbariumConformanceRuntime;
+  }
+  testSuites:
+  [
+    familyRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          herbariumConformance:
+            Relational
+            #{
+              herbarium.specimen:
+                'specimen_id,specimen_code,taxon_name,family_code,sheet_count,height_cm,collected_on,condition_code,cabinet_id,in_z,out_z,from_z,thru_z\n'+
+                '1,FR-01,Rosa canina,ROS,2,45.5,2024-01-01,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,FR-02,Rosa arvensis,ROS,3,52.25,2024-01-02,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,FR-03,Rosa gallica,ROS,1,20.5,2024-01-03,G,2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '4,FR-04,Rosa majalis,ROS,4,30.5,2024-01-04,,2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '5,FR-05,Aster amellus,AST,0,60.5,2024-01-05,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '6,FR-06,Aster tripolium,AST,5,35.75,2024-01-06,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '7,FR-07,Aster linosyris,AST,2,33.25,2024-01-07,G,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '8,FR-08,Aster sedifolius,AST,6,70.5,2024-01-08,G,1,2026-01-01,9999-12-31,2025-01-01,2026-01-01\n'+
+                '9,FR-09,Aster alpinus,AST,1,41.5,2024-01-09,G,,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+              herbarium.cabinet:
+                'cabinet_id,cabinet_code,room_code,shelf_count,from_z,thru_z\n'+
+                '1,CB-1,RM-1,12,2026-01-01,9999-12-31\n'+
+                '2,CB-2,ST-9,8,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rollupPerFamilyAndStature:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            businessDate = %2026-06-01
+          ]
+          asserts:
+          [
+            threeFamilyStatureGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Family":"AST","Stature":"SHORT","TotalSheets":7,"Specimens":2,"Tallest":35.75},{"Family":"ROS","Stature":"SHORT","TotalSheets":4,"Specimens":1,"Tallest":30.5},{"Family":"ROS","Stature":"TALL","TotalSheets":5,"Specimens":2,"Tallest":52.25}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

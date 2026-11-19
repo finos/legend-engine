@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::silverwarren::domain::*;
+
+Class test::silverwarren::domain::TrailSegmentReference
+{
+  segmentCode: String[1];
+  expiryKey: Integer[1];
+  segmentName: String[0..1];
+  corridorCode: String[0..1];
+  corridorName: String[0..1];
+  surfaceKind: String[0..1];
+  surfaceGrade: String[0..1];
+  districtCode: String[0..1];
+  districtName: String[0..1];
+  lengthMetres: Integer[0..1];
+  ascentMetres: Integer[0..1];
+  widthCentimetres: Integer[0..1];
+  accessNote: String[0..1];
+  stewardTeam: String[0..1];
+  inspectionCycle: String[0..1];
+  createdOn: DateTime[1];
+  updatedOn: DateTime[0..1];
+}
+
+Class test::silverwarren::domain::TrailheadReference
+{
+  trailheadCode: String[1];
+  expiryKey: Integer[1];
+  trailheadName: String[0..1];
+  corridorCode: String[0..1];
+  parkingKind: String[0..1];
+  bayCount: Integer[0..1];
+  openedOn: DateTime[1];
+  createdOn: DateTime[1];
+  updatedOn: DateTime[0..1];
+}

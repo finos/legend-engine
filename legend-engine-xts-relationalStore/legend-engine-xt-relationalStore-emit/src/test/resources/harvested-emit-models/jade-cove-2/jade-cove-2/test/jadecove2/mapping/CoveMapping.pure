@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadecove2::mapping::CoveMapping
+(
+  *test::jadecove2::domain::TidePool[tidePool]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadecove2::store::CoveDb]shore.tide_pool.pool_id
+    )
+    ~mainTable [test::jadecove2::store::CoveDb]shore.tide_pool
+    poolCode: [test::jadecove2::store::CoveDb]shore.tide_pool.pool_code,
+    shoreCode: [test::jadecove2::store::CoveDb]shore.tide_pool.shore_code,
+    reachName: [test::jadecove2::store::CoveDb]@Pool_Reach | shore.shore_reach.reach_name,
+    wardenName: [test::jadecove2::store::CoveDb]@Pool_Reach | shore.shore_reach.warden_name,
+    salinityPpt: [test::jadecove2::store::CoveDb]shore.tide_pool.salinity_ppt,
+    waterDepthCm: [test::jadecove2::store::CoveDb]shore.tide_pool.water_depth_cm,
+    substrateCode: [test::jadecove2::store::CoveDb]shore.tide_pool.substrate_code,
+    surveyorCode: [test::jadecove2::store::CoveDb]shore.tide_pool.surveyor_code
+  }
+
+  testSuites:
+  [
+    tidePoolSuite:
+    {
+      function: |test::jadecove2::domain::TidePool.all()->graphFetch(#{test::jadecove2::domain::TidePool{poolCode, shoreCode, reachName, wardenName, salinityPpt, waterDepthCm, substrateCode, surveyorCode}}#)->serialize(#{test::jadecove2::domain::TidePool{poolCode, shoreCode, reachName, wardenName, salinityPpt, waterDepthCm, substrateCode, surveyorCode}}#);
+      tests:
+      [
+        poolsReachTheirShoreReach:
+        {
+          doc: 'Each rock pool resolves the reach name and the warden of its shore across a single join out of the main table, so the joined columns are read through the join rather than off the pool row.';
+          data:
+          [
+            test::jadecove2::store::CoveDb:
+              Relational
+              #{
+                shore.tide_pool:
+                  'pool_id,pool_code,shore_code,salinity_ppt,water_depth_cm,substrate_code,surveyor_code\n'+
+                  '1,TP-0001,SH-NORTH,34.25,42,BOULDER,SV-01\n'+
+                  '2,TP-0002,SH-SOUTH,31.50,18,COBBLE,SV-02\n';
+
+                shore.shore_reach:
+                  'reach_id,shore_code,reach_name,warden_name\n'+
+                  '1,SH-NORTH,North Reach,Ada Kelp\n'+
+                  '2,SH-SOUTH,South Reach,Bram Limpet\n';
+              }#
+          ];
+          asserts:
+          [
+            joinedPoolRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"poolCode":"TP-0001","shoreCode":"SH-NORTH","reachName":"North Reach","wardenName":"Ada Kelp","salinityPpt":34.25,"waterDepthCm":42,"substrateCode":"BOULDER","surveyorCode":"SV-01"},{"poolCode":"TP-0002","shoreCode":"SH-SOUTH","reachName":"South Reach","wardenName":"Bram Limpet","salinityPpt":31.50,"waterDepthCm":18,"substrateCode":"COBBLE","surveyorCode":"SV-02"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

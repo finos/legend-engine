@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarharbor3::mapping::HarbourBaseMapping
+(
+  include mapping test::lunarharbor3::mapping::HarbourEnumMappings
+
+  *test::lunarharbor3::domain::MooringLog[mooringLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.log_code
+    )
+    ~mainTable [test::lunarharbor3::store::HarbourDB]harbourside.mooring_log
+    logCode: [test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.log_code,
+    vesselName: [test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.vessel_name,
+    keelDepthCm: [test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.keel_depth_cm,
+    loggedOn: [test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.logged_on,
+    vesselLabel: concat(
+                   concat(
+                     toUpper(rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.vessel_name)),
+                     '-'
+                   ),
+                   [test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.log_code
+                 ),
+    hull: EnumerationMapping HullKindMapping: rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.hull_code),
+    lineState: EnumerationMapping LineStateMapping: case(
+                 equal(rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.state_code), 'RL'),
+                 'RL',
+                 case(
+                   greaterThanEqual([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.keel_depth_cm, 150),
+                   'MF',
+                   'SK'
+                 )
+               ),
+    lantern: EnumerationMapping LanternGradeMapping: case(
+               isNull([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.lantern_code),
+               'DK',
+               rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.lantern_code)
+             ),
+    berthNote: case(
+                 greaterThanEqual([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.keel_depth_cm, 180),
+                 'DEEP KEEL LANE',
+                 case(
+                   greaterThanEqual([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.keel_depth_cm, 140),
+                   'MID KEEL LANE',
+                   case(
+                     greaterThanEqual(parseInteger([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.tide_reading), 400),
+                     'SPRING TIDE LANE',
+                     case(
+                       equal(rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.hull_code), 'WB'),
+                       'WORKBOAT LANE',
+                       case(
+                         equal(rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.hull_code), 'RW'),
+                         'ROWED LANE',
+                         case(
+                           equal(rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.state_code), 'RL'),
+                           'RELEASED LANE',
+                           case(
+                             equal(rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.lantern_code), 'DK'),
+                             'DARK HEAD LANE',
+                             case(
+                               greaterThan(length(toUpper(rtrim([test::lunarharbor3::store::HarbourDB]harbourside.mooring_log.vessel_name))), 14),
+                               'LONG HULL LANE',
+                               sqlNull()
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    reachName: case(
+                 isNull([test::lunarharbor3::store::HarbourDB]@Log_Pontoon > @Pontoon_Quay | [test::lunarharbor3::store::HarbourDB]harbourside.quay.quay_name),
+                 [test::lunarharbor3::store::HarbourDB]@Log_Pontoon | [test::lunarharbor3::store::HarbourDB]harbourside.pontoon.pontoon_name,
+                 [test::lunarharbor3::store::HarbourDB]@Log_Pontoon > @Pontoon_Quay | [test::lunarharbor3::store::HarbourDB]harbourside.quay.quay_name
+               ),
+    pontoonName: [test::lunarharbor3::store::HarbourDB]@Log_Pontoon | [test::lunarharbor3::store::HarbourDB]harbourside.pontoon.pontoon_name,
+    quayName: [test::lunarharbor3::store::HarbourDB]@Log_Pontoon > @Pontoon_Quay | [test::lunarharbor3::store::HarbourDB]harbourside.quay.quay_name,
+    stationName: [test::lunarharbor3::store::HarbourDB]@Log_Pontoon > @Pontoon_Quay > @Quay_Station | [test::lunarharbor3::store::HarbourDB]harbourside.watch_station.station_name
+  }
+
+  *test::lunarharbor3::domain::Pontoon[pontoonSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarharbor3::store::HarbourDB]harbourside.pontoon.pontoon_code
+    )
+    ~mainTable [test::lunarharbor3::store::HarbourDB]harbourside.pontoon
+    pontoonCode: [test::lunarharbor3::store::HarbourDB]harbourside.pontoon.pontoon_code,
+    pontoonName: [test::lunarharbor3::store::HarbourDB]harbourside.pontoon.pontoon_name
+  }
+
+  *test::lunarharbor3::domain::Quay[quaySet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarharbor3::store::HarbourDB]harbourside.quay.quay_code
+    )
+    ~mainTable [test::lunarharbor3::store::HarbourDB]harbourside.quay
+    quayCode: [test::lunarharbor3::store::HarbourDB]harbourside.quay.quay_code,
+    quayName: [test::lunarharbor3::store::HarbourDB]harbourside.quay.quay_name
+  }
+
+  *test::lunarharbor3::domain::WatchStation[watchStationSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarharbor3::store::HarbourDB]harbourside.watch_station.station_code
+    )
+    ~mainTable [test::lunarharbor3::store::HarbourDB]harbourside.watch_station
+    stationCode: [test::lunarharbor3::store::HarbourDB]harbourside.watch_station.station_code,
+    stationName: [test::lunarharbor3::store::HarbourDB]harbourside.watch_station.station_name
+  }
+)

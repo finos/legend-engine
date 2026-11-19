@@ -1,0 +1,382 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrmeadow::mapping::FieldMapping
+(
+  test::zephyrmeadow::domain::SeverityBand: EnumerationMapping SeverityMapping
+  {
+    MINOR: ['MIN/BAND'],
+    MODERATE: ['MOD/BAND'],
+    SEVERE: ['SEV/BAND'],
+    'VERY SEVERE': ['VSV/BAND']
+  }
+
+  test::zephyrmeadow::domain::FindingStatus: EnumerationMapping StatusMapping
+  {
+    OPEN: ['OPEN'],
+    'IN REVIEW': ['REVIEW'],
+    'CLOSED OUT': ['CLOSED OUT'],
+    WITHDRAWN: ['WITHDRAWN']
+  }
+
+  test::zephyrmeadow::domain::InterventionAppetite: EnumerationMapping AppetiteMapping
+  {
+    'LOW APPETITE': ['LOW'],
+    'MEDIUM APPETITE': ['MED'],
+    'HIGH APPETITE': ['HIGH']
+  }
+
+  test::zephyrmeadow::domain::ManagementRegime: EnumerationMapping RegimeMapping
+  {
+    GRAZED: ['GRAZED'],
+    'CUT MEADOW': ['CUT'],
+    UNMANAGED: ['UNMANAGED']
+  }
+
+  test::zephyrmeadow::domain::WorkflowStage: EnumerationMapping StageMapping
+  {
+    PLANNED: ['PLANNED'],
+    'IN PROGRESS': ['PROGRESS'],
+    COMPLETE: ['COMPLETE']
+  }
+
+  *test::zephyrmeadow::domain::RestorationSite[site]: Relational
+  {
+    ~filter [test::zephyrmeadow::store::MeadowFieldStore]ManagedSite
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.restoration_site.site_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.restoration_site
+    siteCode: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.restoration_site.site_code,
+    siteName: toUpper(trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.restoration_site.site_name)),
+    regime: EnumerationMapping RegimeMapping: trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.restoration_site.regime_code),
+    regionName: [test::zephyrmeadow::store::MeadowFieldStore]@SiteToRegion | fieldlab.meadow_region.region_name,
+    stewardTeamName: [test::zephyrmeadow::store::MeadowFieldStore]@SiteToRegion > @RegionToSteward | fieldlab.steward_team.team_name
+  }
+
+  *test::zephyrmeadow::domain::SurveyVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.survey_visit.visit_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.survey_visit
+    visitCode: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.survey_visit.visit_code,
+    visitedOn: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.survey_visit.visited_on,
+    stage: EnumerationMapping StageMapping: trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.survey_visit.stage_code),
+    siteLabel: [test::zephyrmeadow::store::MeadowFieldStore]@VisitToSite | toUpper(trim(fieldlab.restoration_site.site_name))
+  }
+
+  *test::zephyrmeadow::domain::HabitatFinding[finding]: Relational
+  {
+    ~filter [test::zephyrmeadow::store::MeadowFieldStore]LiveFinding
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding
+    findingCode: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_code,
+    findingSummary: trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_summary),
+    displayLabel: case(
+                    isNotEmpty([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_summary),
+                    substring(
+                      toUpper(
+                        trim(
+                          concat(
+                            [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_code,
+                            concat(' - ', [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_summary)
+                          )
+                        )
+                      ),
+                      0,
+                      28
+                    ),
+                    'UNSUMMARISED FINDING'
+                  ),
+    severity: EnumerationMapping SeverityMapping: concat(trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.severity_code), '/BAND'),
+    status: EnumerationMapping StatusMapping: trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.status_code),
+    appetite: EnumerationMapping AppetiteMapping: toUpper(trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.appetite_code)),
+    stewardTeamName: [test::zephyrmeadow::store::MeadowFieldStore]@FindingToVisit > @VisitToSite > @SiteToRegion > @RegionToSteward | fieldlab.steward_team.team_name
+  }
+
+  *test::zephyrmeadow::domain::EscalatedFinding[escalatedFinding]: Relational
+  {
+    ~filter [test::zephyrmeadow::store::MeadowFieldStore]EscalatedLiveFinding
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding
+    findingCode: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.finding_code,
+    severity: EnumerationMapping SeverityMapping: concat(trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.severity_code), '/BAND'),
+    escalationNote: trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.habitat_finding.escalation_note)
+  }
+
+  *test::zephyrmeadow::domain::MeadowRegion[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.meadow_region.region_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.meadow_region
+    regionCode: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.meadow_region.region_code,
+    regionName: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.meadow_region.region_name
+  }
+
+  *test::zephyrmeadow::domain::StewardTeam[steward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.steward_team.steward_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.steward_team
+    stewardCode: [test::zephyrmeadow::store::MeadowFieldStore]fieldlab.steward_team.steward_code,
+    teamName: trim([test::zephyrmeadow::store::MeadowFieldStore]fieldlab.steward_team.team_name)
+  }
+
+  test::zephyrmeadow::domain::Site_Visit: Relational
+  {
+    AssociationMapping
+    (
+      visits[site, visit]: [test::zephyrmeadow::store::MeadowFieldStore]@SiteToVisit,
+      site[visit, site]: [test::zephyrmeadow::store::MeadowFieldStore]@VisitToSite
+    )
+  }
+
+  test::zephyrmeadow::domain::Visit_Finding: Relational
+  {
+    AssociationMapping
+    (
+      findings[visit, finding]: [test::zephyrmeadow::store::MeadowFieldStore]@VisitToFinding,
+      recordedVisit[finding, visit]: [test::zephyrmeadow::store::MeadowFieldStore]@FindingToVisit
+    )
+  }
+
+  test::zephyrmeadow::domain::Visit_ReviewFinding: Relational
+  {
+    AssociationMapping
+    (
+      reviewedFindings[visit, finding]: [test::zephyrmeadow::store::MeadowFieldStore]@VisitToReviewFinding,
+      reviewVisit[finding, visit]: [test::zephyrmeadow::store::MeadowFieldStore]@FindingToReviewVisit
+    )
+  }
+
+  test::zephyrmeadow::domain::Region_Site: Relational
+  {
+    AssociationMapping
+    (
+      sites[region, site]: [test::zephyrmeadow::store::MeadowFieldStore]@RegionToSite,
+      region[site, region]: [test::zephyrmeadow::store::MeadowFieldStore]@SiteToRegion
+    )
+  }
+
+  test::zephyrmeadow::domain::Region_Steward: Relational
+  {
+    AssociationMapping
+    (
+      stewardTeam[region, steward]: [test::zephyrmeadow::store::MeadowFieldStore]@RegionToSteward,
+      regions[steward, region]: [test::zephyrmeadow::store::MeadowFieldStore]@StewardToRegion
+    )
+  }
+
+  testSuites:
+  [
+    fieldFindingSuite:
+    {
+      function: |test::zephyrmeadow::domain::HabitatFinding.all(%2026-06-01)->project(
+        [
+          f|$f.findingCode,
+          f|$f.displayLabel,
+          f|$f.severity,
+          f|$f.status,
+          f|$f.appetite,
+          f|if($f.stewardTeamName->isNotEmpty(), | $f.stewardTeamName->toOne(), | 'UNSTEWARDED'),
+          f|if($f.recordedVisit(%2026-06-01)->isNotEmpty(), | $f.recordedVisit(%2026-06-01).visitCode->toOne(), | 'UNVISITED'),
+          f|if($f.reviewVisit(%2026-06-01)->isNotEmpty(), | $f.reviewVisit(%2026-06-01).visitCode->toOne(), | 'UNREVIEWED')
+        ],
+        [
+          'Finding',
+          'Label',
+          'Severity',
+          'Status',
+          'Appetite',
+          'Steward',
+          'Visit',
+          'Review'
+        ]
+      )->sort([asc('Finding')]);
+      tests:
+      [
+        liveFindings:
+        {
+          doc: 'Both terminal statuses are excluded by the store filter, a superseded version is outside the queried processing instant, a padded severity code still resolves through the trimmed enumeration source while an unknown code resolves to no member, and the surviving findings reach the stewarding team four hops away and both visit roles.';
+          data:
+          [
+            test::zephyrmeadow::store::MeadowFieldStore:
+              Relational
+              #{
+                fieldlab.habitat_finding:
+                  'finding_code,visit_code,review_visit_code,severity_code,status_code,appetite_code,finding_summary,escalation_note,in_z,out_z\n'+
+                  'HF-1,SV-1,,SEV,OPEN,HIGH,scrub encroachment on the south embankment,urgent cut needed,2026-01-01,9999-12-31\n'+
+                  'HF-2,SV-1,SV-2, MOD ,REVIEW,MED,,,2026-01-01,9999-12-31\n'+
+                  'HF-3,SV-2,,ZZ,OPEN,LOW,ragwort spreading,,2026-01-01,9999-12-31\n'+
+                  'HF-4,SV-1,,VSV,CLOSED OUT,HIGH,drainage collapse,,2026-01-01,9999-12-31\n'+
+                  'HF-5,SV-1,,MIN,WITHDRAWN,LOW,duplicate report,,2026-01-01,9999-12-31\n'+
+                  'HF-6,SV-9,,SEV,OPEN,HIGH,superseded version,,2025-01-01,2026-03-01\n';
+                fieldlab.survey_visit:
+                  'visit_code,site_code,stage_code,visited_on,in_z,out_z\n'+
+                  'SV-1,RS-1,COMPLETE,2026-04-02,2026-01-01,9999-12-31\n'+
+                  'SV-2,RS-2,PROGRESS,2026-04-19,2026-01-01,9999-12-31\n';
+                fieldlab.restoration_site:
+                  'site_code,site_name,region_code,regime_code,in_z,out_z\n'+
+                  'RS-1, upper hay meadow ,MR-1,GRAZED,2026-01-01,9999-12-31\n'+
+                  'RS-2,Lower Fen Meadow,MR-2,CUT,2026-01-01,9999-12-31\n';
+                fieldlab.meadow_region:
+                  'region_code,region_name,steward_code\n'+
+                  'MR-1,Chalk Downs,ST-1\n'+
+                  'MR-2,Wet Moor,\n';
+                fieldlab.steward_team:
+                  'steward_code,team_name\n'+
+                  'ST-1,Downs Meadow Volunteers\n';
+              }#
+          ];
+          asserts:
+          [
+            liveFindingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Finding":"HF-1","Label":"HF-1 - SCRUB ENCROACHMENT ON","Severity":"SEVERE","Status":"OPEN","Appetite":"HIGH APPETITE","Steward":"Downs Meadow Volunteers","Visit":"SV-1","Review":"UNREVIEWED"},{"Finding":"HF-2","Label":"UNSUMMARISED FINDING","Severity":"MODERATE","Status":"IN REVIEW","Appetite":"MEDIUM APPETITE","Steward":"Downs Meadow Volunteers","Visit":"SV-1","Review":"SV-2"},{"Finding":"HF-3","Label":"HF-3 - RAGWORT SPREADING","Severity":null,"Status":"OPEN","Appetite":"LOW APPETITE","Steward":"UNSTEWARDED","Visit":"SV-2","Review":"UNREVIEWED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    fieldSiteSuite:
+    {
+      function: |test::zephyrmeadow::domain::RestorationSite.all(%2026-06-01)->project(
+        [
+          s|$s.siteCode,
+          s|$s.siteName,
+          s|$s.regime,
+          s|if($s.regionName->isNotEmpty(), | $s.regionName->toOne(), | 'UNREGIONED'),
+          s|if($s.stewardTeamName->isNotEmpty(), | $s.stewardTeamName->toOne(), | 'UNSTEWARDED')
+        ],
+        [
+          'Site',
+          'Name',
+          'Regime',
+          'Region',
+          'Steward'
+        ]
+      )->sort([asc('Site')]);
+      tests:
+      [
+        managedSites:
+        {
+          doc: 'The unmanaged meadow is removed by the set implementation filter and the retired version by the processing instant, while the surviving meadows normalise a padded name, translate the regime code and differ in whether the two-hop steward lookup finds a team.';
+          data:
+          [
+            test::zephyrmeadow::store::MeadowFieldStore:
+              Relational
+              #{
+                fieldlab.restoration_site:
+                  'site_code,site_name,region_code,regime_code,in_z,out_z\n'+
+                  'RS-1, upper hay meadow ,MR-1,GRAZED,2026-01-01,9999-12-31\n'+
+                  'RS-2,Lower Fen Meadow,MR-2,CUT,2026-01-01,9999-12-31\n'+
+                  'RS-3,Fallow Verge,MR-1,UNMANAGED,2026-01-01,9999-12-31\n'+
+                  'RS-4,Old Orchard Meadow,MR-1,GRAZED,2025-01-01,2026-03-01\n';
+                fieldlab.meadow_region:
+                  'region_code,region_name,steward_code\n'+
+                  'MR-1,Chalk Downs,ST-1\n'+
+                  'MR-2,Wet Moor,\n';
+                fieldlab.steward_team:
+                  'steward_code,team_name\n'+
+                  'ST-1,Downs Meadow Volunteers\n';
+              }#
+          ];
+          asserts:
+          [
+            managedSiteRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"RS-1","Name":"UPPER HAY MEADOW","Regime":"GRAZED","Region":"Chalk Downs","Steward":"Downs Meadow Volunteers"},{"Site":"RS-2","Name":"LOWER FEN MEADOW","Regime":"CUT MEADOW","Region":"Wet Moor","Steward":"UNSTEWARDED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    fieldRegionSuite:
+    {
+      function: |test::zephyrmeadow::domain::MeadowRegion.all()->project(
+        [
+          r|$r.regionCode,
+          r|$r.regionName,
+          r|if($r.stewardTeam->isNotEmpty(), | $r.stewardTeam.teamName->toOne(), | 'UNSTEWARDED')
+        ],
+        [
+          'Region',
+          'Name',
+          'Steward'
+        ]
+      )->sort([asc('Region')]);
+      tests:
+      [
+        regionStewards:
+        {
+          doc: 'Traverses the unversioned reference relations in the region-to-team direction, with one region whose steward key matches no team.';
+          data:
+          [
+            test::zephyrmeadow::store::MeadowFieldStore:
+              Relational
+              #{
+                fieldlab.meadow_region:
+                  'region_code,region_name,steward_code\n'+
+                  'MR-1,Chalk Downs,ST-1\n'+
+                  'MR-2,Wet Moor,ST-9\n';
+                fieldlab.steward_team:
+                  'steward_code,team_name\n'+
+                  'ST-1,Downs Meadow Volunteers\n'+
+                  'ST-2,Moorland Hay Group\n';
+              }#
+          ];
+          asserts:
+          [
+            regionStewardRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"MR-1","Name":"Chalk Downs","Steward":"Downs Meadow Volunteers"},{"Region":"MR-2","Name":"Wet Moor","Steward":"UNSTEWARDED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

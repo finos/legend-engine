@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelwharf::mapping::WharfMapping
+(
+  test::hazelwharf::domain::BerthStatus: EnumerationMapping BerthStatusMapping
+  {
+    OPERATIONAL: ['OPERATIONAL'],
+    RESTRICTED: ['RESTRICTED'],
+    CLOSED: ['CLOSED']
+  }
+
+  *test::hazelwharf::domain::MooringBerth[mooringBerth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwharf::store::WharfDatabase]marine.berth.berth_id
+    )
+    ~mainTable [test::hazelwharf::store::WharfDatabase]marine.berth
+    berthCode: [test::hazelwharf::store::WharfDatabase]marine.berth.berth_code,
+    berthLabel: [test::hazelwharf::store::WharfDatabase]marine.berth.berth_label,
+    status: EnumerationMapping BerthStatusMapping: [test::hazelwharf::store::WharfDatabase]marine.berth.berth_status,
+    visits[mooringVisit]: [test::hazelwharf::store::WharfDatabase]@Berth_Visit,
+    steward[berthSteward]: [test::hazelwharf::store::WharfDatabase]@Berth_Steward
+  }
+
+  *test::hazelwharf::domain::MooringVisit[mooringVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwharf::store::WharfDatabase]marine.mooring_visit.visit_id
+    )
+    ~mainTable [test::hazelwharf::store::WharfDatabase]marine.mooring_visit
+    visitCode: [test::hazelwharf::store::WharfDatabase]marine.mooring_visit.visit_code,
+    visitKind: [test::hazelwharf::store::WharfDatabase]marine.mooring_visit.visit_kind,
+    lots[sampleLot]: [test::hazelwharf::store::WharfDatabase]@Visit_Lot
+  }
+
+  *test::hazelwharf::domain::SampleLot[sampleLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwharf::store::WharfDatabase]marine.sample_lot.lot_id
+    )
+    ~mainTable [test::hazelwharf::store::WharfDatabase]marine.sample_lot
+    lotCode: [test::hazelwharf::store::WharfDatabase]marine.sample_lot.lot_code,
+    crateTag: [test::hazelwharf::store::WharfDatabase]marine.sample_lot.crate_tag,
+    visit[mooringVisit]: [test::hazelwharf::store::WharfDatabase]@Visit_Lot
+  }
+
+  *test::hazelwharf::domain::BerthSteward[berthSteward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwharf::store::WharfDatabase]marine.berth_steward.steward_id
+    )
+    ~mainTable [test::hazelwharf::store::WharfDatabase]marine.berth_steward
+    stewardName: [test::hazelwharf::store::WharfDatabase]marine.berth_steward.steward_name,
+    station[monitoringStation]: [test::hazelwharf::store::WharfDatabase]@Steward_Station
+  }
+
+  *test::hazelwharf::domain::MonitoringStation[monitoringStation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwharf::store::WharfDatabase]marine.monitoring_station.station_id
+    )
+    ~mainTable [test::hazelwharf::store::WharfDatabase]marine.monitoring_station
+    stationName: [test::hazelwharf::store::WharfDatabase]marine.monitoring_station.station_name,
+    registry[stationRegistry]: [test::hazelwharf::store::WharfDatabase]@Station_Registry
+  }
+
+  *test::hazelwharf::domain::StationRegistry[stationRegistry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwharf::store::WharfDatabase]marine.station_registry.registry_id
+    )
+    ~mainTable [test::hazelwharf::store::WharfDatabase]marine.station_registry
+    registryCode: [test::hazelwharf::store::WharfDatabase]marine.station_registry.registry_code,
+    registryName: [test::hazelwharf::store::WharfDatabase]marine.station_registry.registry_name
+  }
+)

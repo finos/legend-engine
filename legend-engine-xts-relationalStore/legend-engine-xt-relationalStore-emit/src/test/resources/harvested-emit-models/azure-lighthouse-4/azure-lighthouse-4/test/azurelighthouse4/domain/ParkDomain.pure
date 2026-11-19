@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::azurelighthouse4::domain::*;
+import test::azurelighthouse4::profile::*;
+
+Class <<ParkGovernance.published, ParkClassification.outdoorPark>> {ParkGovernance.owner = 'skatepark-upkeep', ParkClassification.surface = 'poured-concrete'} test::azurelighthouse4::domain::InspectionVisit
+{
+  visitCode: String[1];
+  parkCode: String[1];
+  wardName: String[1];
+  routeKind: String[1];
+  visitGrade: String[1];
+  rampCount: Integer[1];
+  repairPoints: Integer[1];
+  walkedOn: StrictDate[1];
+}
+
+Class <<ParkInspection.walkedRoute>> {ParkGovernance.steward = 'upkeep-crew', ParkInspection.inspectedBy = 'ward-inspector'} test::azurelighthouse4::domain::VisitFinding
+{
+  findingCode: String[1];
+  visitCode: String[1];
+  findingGrade: String[1];
+  crackMetres: Float[1];
+}
+
+Association test::azurelighthouse4::domain::Visit_Finding
+{
+  findings: VisitFinding[*];
+  walkedVisit: InspectionVisit[1];
+}

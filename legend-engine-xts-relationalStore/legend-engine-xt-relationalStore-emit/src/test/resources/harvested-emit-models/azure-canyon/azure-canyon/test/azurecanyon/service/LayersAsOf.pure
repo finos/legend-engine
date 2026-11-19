@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azurecanyon::service::LayersAsOf
+{
+  pattern: '/canyon/v1/layers/{processingDate}/{businessDate}';
+  title: 'Rock Layers As Of';
+  owners:
+  [
+    'canyon-survey',
+    'strata-ops'
+  ];
+  documentation: 'Returns rock layers and their formation as of the requested processing and business dates, exercising bitemporal milestoning and the relational association over the in-process H2 CanyonRuntime.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::azurecanyon::domain::RockLayer.all($processingDate, $businessDate)->project(
+      [
+        x|$x.name,
+        x|$x.thicknessM,
+        x|$x.formation.name
+      ],
+      [
+        'Layer',
+        'ThicknessM',
+        'Formation'
+      ]
+    )->sort(
+      [
+        asc('Layer')
+      ]
+    )};
+    mapping: test::azurecanyon::mapping::CanyonMapping;
+    runtime: test::azurecanyon::runtime::CanyonRuntime;
+  }
+  testSuites:
+  [
+    layersAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              canyon.formation:
+                'formation_id,formation_name\n'+
+                '1,Sunset Sandstone\n';
+              canyon.rock_layer:
+                'layer_id,layer_name,thickness_m,formation_id,in_z,out_z,from_z,thru_z\n'+
+                '1,Ochre Band,12.5,1,2023-01-01,9999-12-31,2023-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        midYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2023-06-01,
+            businessDate = %2023-06-01
+          ]
+          asserts:
+          [
+            oneLayer:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Layer":"Ochre Band","ThicknessM":12.5,"Formation":"Sunset Sandstone"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

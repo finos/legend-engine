@@ -1,0 +1,413 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azurethistle::mapping::TurbineEstateMapping
+(
+  *test::azurethistle::domain::TurbineRecord[turbine]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.reading_date,
+      [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.asset_code
+    )
+    ~mainTable [test::azurethistle::store::TurbineEstateDb]estate.turbine_record
+    readingDate: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.reading_date,
+    assetCode: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.asset_code,
+    turbineName: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.turbine_name,
+    parkCode: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.park_code,
+    feederCode: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.feeder_code,
+    trackCode: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.track_code,
+    mastCode: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.mast_code,
+    bladeSetCode: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.blade_set_code,
+    modelCode: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.model_code,
+    hubHeightM: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.hub_height_m,
+    rotorDiameterM: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.rotor_diameter_m,
+    ratedOutputKw: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.rated_output_kw,
+    generatedKwh: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.generated_kwh,
+    availableHours: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.available_hours,
+    downtimeHours: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.downtime_hours,
+    rotorSpeedRpm: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.rotor_speed_rpm,
+    pitchAngleDeg: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.pitch_angle_deg,
+    nacelleBearingDeg: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.nacelle_bearing_deg,
+    windSpeedMs: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.wind_speed_ms,
+    ambientTempC: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.ambient_temp_c,
+    commissionedOn: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.commissioned_on,
+    lastServiceOn: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.last_service_on,
+    loggedAt: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.logged_at,
+    serviceCrew: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.service_crew,
+    terrainClass: [test::azurethistle::store::TurbineEstateDb]estate.turbine_record.terrain_class,
+    curtailmentLabel: case(
+                        isNull([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.curtailment_flag),
+                        sqlNull(),
+                        case(
+                          equal([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.curtailment_flag, 1),
+                          concat('CURTAILED-', toUpper([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.asset_code)),
+                          concat('FREE-', toUpper([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.asset_code))
+                        )
+                      ),
+    yawFaultLabel: case(
+                     isNull([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.yaw_fault_flag),
+                     sqlNull(),
+                     case(
+                       equal([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.yaw_fault_flag, 1),
+                       'YAW-FAULT',
+                       'YAW-OK'
+                     )
+                   ),
+    deiceLabel: case(
+                  isNull([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.deice_flag),
+                  sqlNull(),
+                  case(
+                    equal([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.deice_flag, 1),
+                    'DEICE-ON',
+                    'DEICE-OFF'
+                  )
+                ),
+    serviceLockLabel: case(
+                        isNull([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.service_lock_flag),
+                        sqlNull(),
+                        case(
+                          equal([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.service_lock_flag, 1),
+                          concat('LOCKED-', toUpper([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.terrain_class)),
+                          concat('OPEN-', toUpper([test::azurethistle::store::TurbineEstateDb]estate.turbine_record.terrain_class))
+                        )
+                      )
+  }
+
+  *test::azurethistle::domain::NacelleReading[nacelle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.reading_date,
+      [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.asset_code,
+      [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.reading_seq
+    )
+    ~mainTable [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading
+    readingDate: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.reading_date,
+    assetCode: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.asset_code,
+    readingSeq: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.reading_seq,
+    gearboxTempC: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.gearbox_temp_c,
+    generatorTempC: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.generator_temp_c,
+    vibrationMms: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.vibration_mms,
+    oilPressureBar: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.oil_pressure_bar,
+    mastCode: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.mast_code,
+    alarmLabel: case(
+                  isNull([test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.alarm_flag),
+                  sqlNull(),
+                  case(
+                    equal([test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.alarm_flag, 1),
+                    'ALARM',
+                    'CLEAR'
+                  )
+                ),
+    loggedAt: [test::azurethistle::store::TurbineEstateDb]estate.nacelle_reading.logged_at
+  }
+
+  *test::azurethistle::domain::BladeInspection[blade]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.inspection_date,
+      [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.blade_set_code
+    )
+    ~mainTable [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection
+    inspectionDate: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.inspection_date,
+    bladeSetCode: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.blade_set_code,
+    assetCode: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.asset_code,
+    inspectorName: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.inspector_name,
+    defectCount: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.defect_count,
+    leadingEdgeGrade: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.leading_edge_grade,
+    rootBoltTorqueNm: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.root_bolt_torque_nm,
+    repairLabel: case(
+                   isNull([test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.repair_flag),
+                   sqlNull(),
+                   case(
+                     equal([test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.repair_flag, 1),
+                     concat('REPAIR-DUE-', toUpper([test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.blade_set_code)),
+                     'REPAIR-NONE'
+                   )
+                 ),
+    loggedAt: [test::azurethistle::store::TurbineEstateDb]estate.blade_inspection.logged_at
+  }
+
+  *test::azurethistle::domain::SubstationFeeder[feeder]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.reading_date,
+      [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.feeder_code
+    )
+    ~mainTable [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder
+    readingDate: [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.reading_date,
+    feederCode: [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.feeder_code,
+    substationName: [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.substation_name,
+    exportCapacityKw: [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.export_capacity_kw,
+    voltageKv: [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.voltage_kv,
+    trackCode: [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.track_code,
+    islandingLabel: case(
+                      isNull([test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.islanded_flag),
+                      sqlNull(),
+                      case(
+                        equal([test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.islanded_flag, 1),
+                        'ISLANDED',
+                        'GRID-TIED'
+                      )
+                    ),
+    loggedAt: [test::azurethistle::store::TurbineEstateDb]estate.substation_feeder.logged_at
+  }
+
+  *test::azurethistle::domain::AccessTrack[track]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurethistle::store::TurbineEstateDb]estate.access_track.survey_date,
+      [test::azurethistle::store::TurbineEstateDb]estate.access_track.track_code
+    )
+    ~mainTable [test::azurethistle::store::TurbineEstateDb]estate.access_track
+    surveyDate: [test::azurethistle::store::TurbineEstateDb]estate.access_track.survey_date,
+    trackCode: [test::azurethistle::store::TurbineEstateDb]estate.access_track.track_code,
+    trackName: [test::azurethistle::store::TurbineEstateDb]estate.access_track.track_name,
+    lengthKm: [test::azurethistle::store::TurbineEstateDb]estate.access_track.length_km,
+    gradientPct: [test::azurethistle::store::TurbineEstateDb]estate.access_track.gradient_pct,
+    mastCode: [test::azurethistle::store::TurbineEstateDb]estate.access_track.mast_code,
+    passabilityLabel: case(
+                        isNull([test::azurethistle::store::TurbineEstateDb]estate.access_track.passable_flag),
+                        sqlNull(),
+                        case(
+                          equal([test::azurethistle::store::TurbineEstateDb]estate.access_track.passable_flag, 1),
+                          'PASSABLE',
+                          concat('IMPASSABLE-', toUpper([test::azurethistle::store::TurbineEstateDb]estate.access_track.track_code))
+                        )
+                      ),
+    loggedAt: [test::azurethistle::store::TurbineEstateDb]estate.access_track.logged_at
+  }
+
+  *test::azurethistle::domain::MetMast[mast]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurethistle::store::TurbineEstateDb]estate.met_mast.reading_date,
+      [test::azurethistle::store::TurbineEstateDb]estate.met_mast.mast_code
+    )
+    ~mainTable [test::azurethistle::store::TurbineEstateDb]estate.met_mast
+    readingDate: [test::azurethistle::store::TurbineEstateDb]estate.met_mast.reading_date,
+    mastCode: [test::azurethistle::store::TurbineEstateDb]estate.met_mast.mast_code,
+    mastName: [test::azurethistle::store::TurbineEstateDb]estate.met_mast.mast_name,
+    heightM: [test::azurethistle::store::TurbineEstateDb]estate.met_mast.height_m,
+    meanWindMs: [test::azurethistle::store::TurbineEstateDb]estate.met_mast.mean_wind_ms,
+    turbulencePct: [test::azurethistle::store::TurbineEstateDb]estate.met_mast.turbulence_pct,
+    icingLabel: case(
+                  isNull([test::azurethistle::store::TurbineEstateDb]estate.met_mast.icing_flag),
+                  sqlNull(),
+                  case(
+                    equal([test::azurethistle::store::TurbineEstateDb]estate.met_mast.icing_flag, 1),
+                    'ICING',
+                    'ICE-FREE'
+                  )
+                ),
+    loggedAt: [test::azurethistle::store::TurbineEstateDb]estate.met_mast.logged_at
+  }
+
+  test::azurethistle::domain::TurbineRecord_NacelleReading: Relational
+  {
+    AssociationMapping
+    (
+      nacelleReadings[turbine, nacelle]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Nacelle,
+      nacelleTurbine[nacelle, turbine]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Nacelle
+    )
+  }
+
+  test::azurethistle::domain::TurbineRecord_BladeInspection: Relational
+  {
+    AssociationMapping
+    (
+      bladeInspections[turbine, blade]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Blade,
+      bladeTurbine[blade, turbine]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Blade
+    )
+  }
+
+  test::azurethistle::domain::SubstationFeeder_TurbineRecord: Relational
+  {
+    AssociationMapping
+    (
+      feederTurbines[feeder, turbine]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Feeder,
+      exportFeeder[turbine, feeder]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Feeder
+    )
+  }
+
+  test::azurethistle::domain::AccessTrack_TurbineRecord: Relational
+  {
+    AssociationMapping
+    (
+      trackTurbines[track, turbine]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Track,
+      reachedAlongTrack[turbine, track]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Track
+    )
+  }
+
+  test::azurethistle::domain::MetMast_TurbineRecord: Relational
+  {
+    AssociationMapping
+    (
+      mastTurbines[mast, turbine]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Mast,
+      referenceMast[turbine, mast]: [test::azurethistle::store::TurbineEstateDb]@Turbine_Mast
+    )
+  }
+
+  test::azurethistle::domain::MetMast_NacelleReading: Relational
+  {
+    AssociationMapping
+    (
+      mastNacelleReadings[mast, nacelle]: [test::azurethistle::store::TurbineEstateDb]@Nacelle_Mast,
+      readingMast[nacelle, mast]: [test::azurethistle::store::TurbineEstateDb]@Nacelle_Mast
+    )
+  }
+
+  test::azurethistle::domain::NacelleReading_BladeInspection: Relational
+  {
+    AssociationMapping
+    (
+      readingBladeInspections[nacelle, blade]: [test::azurethistle::store::TurbineEstateDb]@Blade_Nacelle,
+      inspectionReading[blade, nacelle]: [test::azurethistle::store::TurbineEstateDb]@Blade_Nacelle
+    )
+  }
+
+  test::azurethistle::domain::SubstationFeeder_AccessTrack: Relational
+  {
+    AssociationMapping
+    (
+      feederTracks[feeder, track]: [test::azurethistle::store::TurbineEstateDb]@Feeder_Track,
+      trackFeeder[track, feeder]: [test::azurethistle::store::TurbineEstateDb]@Feeder_Track
+    )
+  }
+
+  test::azurethistle::domain::MetMast_AccessTrack: Relational
+  {
+    AssociationMapping
+    (
+      mastTracks[mast, track]: [test::azurethistle::store::TurbineEstateDb]@Track_Mast,
+      passedMast[track, mast]: [test::azurethistle::store::TurbineEstateDb]@Track_Mast
+    )
+  }
+
+  testSuites:
+  [
+    turbineOperatingLabelSuite:
+    {
+      function: |test::azurethistle::domain::TurbineRecord.all()->project(
+  [
+    t|$t.assetCode,
+    t|$t.readingDate,
+    t|$t.parkCode,
+    t|$t.terrainClass,
+    t|$t.curtailmentLabel,
+    t|$t.yawFaultLabel,
+    t|$t.deiceLabel,
+    t|$t.serviceLockLabel
+  ],
+  [
+    'AssetCode',
+    'ReadingDate',
+    'ParkCode',
+    'TerrainClass',
+    'CurtailmentLabel',
+    'YawFaultLabel',
+    'DeiceLabel',
+    'ServiceLockLabel'
+  ]
+)->sort(
+  [
+    asc('AssetCode')
+  ]
+);
+      tests:
+      [
+        everyOperatingArmAndTheAbsentFlagFallback:
+        {
+          doc: 'Covers both arms of each of the four turbine operating conditionals - curtailment, yaw fault, de-icing and service lock - and the null sentinel each one falls back to when its flag column is absent, alongside the direct column bindings resolved through the main-table alias and its declared composite primary key.';
+          data:
+          [
+            test::azurethistle::store::TurbineEstateDb:
+              Reference
+              #{
+                test::azurethistle::data::TurbineEstateData
+              }#
+          ];
+          asserts:
+          [
+            tenTurbineRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AssetCode":"TB-01","ReadingDate":"2026-03-01","ParkCode":"PARK-A","TerrainClass":"peat","CurtailmentLabel":"CURTAILED-TB-01","YawFaultLabel":"YAW-FAULT","DeiceLabel":"DEICE-ON","ServiceLockLabel":"LOCKED-PEAT"},{"AssetCode":"TB-02","ReadingDate":"2026-03-02","ParkCode":"PARK-B","TerrainClass":"moraine","CurtailmentLabel":"FREE-TB-02","YawFaultLabel":"YAW-OK","DeiceLabel":"DEICE-OFF","ServiceLockLabel":"OPEN-MORAINE"},{"AssetCode":"TB-03","ReadingDate":"2026-03-03","ParkCode":"PARK-A","TerrainClass":"scree","CurtailmentLabel":null,"YawFaultLabel":null,"DeiceLabel":null,"ServiceLockLabel":null},{"AssetCode":"TB-04","ReadingDate":"2026-03-04","ParkCode":"PARK-B","TerrainClass":"peat","CurtailmentLabel":"CURTAILED-TB-04","YawFaultLabel":"YAW-OK","DeiceLabel":"DEICE-ON","ServiceLockLabel":"OPEN-PEAT"},{"AssetCode":"TB-05","ReadingDate":"2026-03-05","ParkCode":"PARK-A","TerrainClass":"moraine","CurtailmentLabel":"FREE-TB-05","YawFaultLabel":"YAW-FAULT","DeiceLabel":"DEICE-OFF","ServiceLockLabel":"LOCKED-MORAINE"},{"AssetCode":"TB-06","ReadingDate":"2026-03-06","ParkCode":"PARK-B","TerrainClass":"scree","CurtailmentLabel":"CURTAILED-TB-06","YawFaultLabel":null,"DeiceLabel":"DEICE-OFF","ServiceLockLabel":null},{"AssetCode":"TB-07","ReadingDate":"2026-03-07","ParkCode":"PARK-A","TerrainClass":"peat","CurtailmentLabel":null,"YawFaultLabel":"YAW-FAULT","DeiceLabel":null,"ServiceLockLabel":"OPEN-PEAT"},{"AssetCode":"TB-08","ReadingDate":"2026-03-08","ParkCode":"PARK-B","TerrainClass":"moraine","CurtailmentLabel":"FREE-TB-08","YawFaultLabel":"YAW-OK","DeiceLabel":"DEICE-ON","ServiceLockLabel":"LOCKED-MORAINE"},{"AssetCode":"TB-09","ReadingDate":"2026-03-09","ParkCode":"PARK-A","TerrainClass":"scree","CurtailmentLabel":"CURTAILED-TB-09","YawFaultLabel":"YAW-FAULT","DeiceLabel":"DEICE-OFF","ServiceLockLabel":"OPEN-SCREE"},{"AssetCode":"TB-10","ReadingDate":"2026-03-10","ParkCode":"PARK-B","TerrainClass":"peat","CurtailmentLabel":null,"YawFaultLabel":"YAW-OK","DeiceLabel":"DEICE-ON","ServiceLockLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    feederIslandingSuite:
+    {
+      function: |test::azurethistle::domain::SubstationFeeder.all()->project(
+  [
+    f|$f.feederCode,
+    f|$f.readingDate,
+    f|$f.substationName,
+    f|$f.islandingLabel
+  ],
+  [
+    'FeederCode',
+    'ReadingDate',
+    'SubstationName',
+    'IslandingLabel'
+  ]
+)->sort(
+  [
+    asc('FeederCode')
+  ]
+);
+      tests:
+      [
+        islandedGridTiedAndAbsentFlag:
+        {
+          doc: 'Reads the feeder class through its own main-table alias, so the reading-date and track-code columns it shares by name with the turbine and track tables resolve against the feeder table only, and covers both islanding arms plus the absent-flag sentinel.';
+          data:
+          [
+            test::azurethistle::store::TurbineEstateDb:
+              Reference
+              #{
+                test::azurethistle::data::TurbineEstateData
+              }#
+          ];
+          asserts:
+          [
+            threeFeederRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"FeederCode":"FDR-1","ReadingDate":"2026-03-01","SubstationName":"Corrie Substation","IslandingLabel":"ISLANDED"},{"FeederCode":"FDR-2","ReadingDate":"2026-03-02","SubstationName":"Glen Substation","IslandingLabel":"GRID-TIED"},{"FeederCode":"FDR-3","ReadingDate":"2026-03-03","SubstationName":"Corrie Substation","IslandingLabel":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

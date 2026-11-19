@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::embermarsh::service::ObserverSpeciesRoster
+{
+  pattern: '/wetland/v1/observer-species-roster';
+  title: 'Ember Marsh - Observer and Species Roster';
+  owners:
+  [
+    'wetland-survey-team'
+  ];
+  documentation: 'Parameterless roster of the distinct species-label and observer pairs recorded in the marsh sighting log. The deduplication applies to the projected pair rather than to the underlying sightings, so repeat visits collapse to one row.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::embermarsh::domain::MarshSighting.all()->project(
+      [
+        x|$x.speciesLabel,
+        x|$x.observerHandle
+      ],
+      [
+        'Species Label',
+        'Observer'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Species Label'),
+        asc('Observer')
+      ]
+    );
+    mapping: demo::embermarsh::mapping::MarshMapping;
+    runtime: demo::embermarsh::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    rosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              WETLAND.SIGHTING:
+                'SIGHTING_REF,SPECIES_CODE,HABITAT_ZONE,OBSERVER_HANDLE,BIRDS_COUNTED\n'+
+                '1,MALLARD,Open Water,ringer.one,4\n'+
+                '2,MALLARD,Open Water,ringer.one,9\n'+
+                '3,MALLARD,Reed Bed,ringer.two,2\n'+
+                '4,TEAL,Reed Bed,ringer.one,7\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        dedupedPairs:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeDistinctPairs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Species Label":"MAL-7","Observer":"ringer.one"},{"Species Label":"MAL-7","Observer":"ringer.two"},{"Species Label":"TEA-4","Observer":"ringer.one"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+name: dusky-quokka
+title: "Transit Network Register — Association-Backed Joins Behind a Curated Entry Point"
+description: |
+  A city transit network model whose relationship graph is the point: four classes
+  spanning text, numeric, temporal and boolean properties are bound to four tables
+  in one relational namespace, each under an explicit identity column and a named
+  driving table alias, and every relationship end is implemented over a declared
+  inner equality join so navigation resolves to a join rather than to an in-memory
+  link. Tabular projections are published as single-execution services, and a
+  curated entry point groups the mapping, its runtime, a layout diagram and the
+  featured executables with email support metadata.
+modelSources:
+  model:
+    root: dusky-quokka
+    files:
+      - test/duskyquokka/connection/TransitConnection.pure
+      - test/duskyquokka/dataspace/TransitDataSpace.pure
+      - test/duskyquokka/diagram/TransitDiagram.pure
+      - test/duskyquokka/domain/Domain.pure
+      - test/duskyquokka/mapping/TransitMapping.pure
+      - test/duskyquokka/runtime/TransitRuntime.pure
+      - test/duskyquokka/service/DepotRegisterService.pure
+      - test/duskyquokka/service/InspectionTrailService.pure
+      - test/duskyquokka/service/LineAllocationService.pure
+      - test/duskyquokka/store/TransitDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - data-space
+  - diagram
+  - h2
+  - inner-join
+  - multi-table
+  - snowflake
+  - tabular-projection
+  - transit-network

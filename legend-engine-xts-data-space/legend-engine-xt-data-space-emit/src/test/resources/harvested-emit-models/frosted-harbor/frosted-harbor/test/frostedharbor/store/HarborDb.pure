@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedharbor::store::HarborDb
+(
+  Schema harbor
+  (
+    Table dock
+    (
+      dock_id INTEGER PRIMARY KEY,
+      dock_code VARCHAR(24) NOT NULL,
+      dock_name VARCHAR(120) NOT NULL,
+      zone_code VARCHAR(24) NOT NULL
+    )
+    Table berth
+    (
+      berth_id INTEGER PRIMARY KEY,
+      berth_code VARCHAR(24) NOT NULL,
+      dock_id INTEGER NOT NULL,
+      capacity_ton INTEGER NOT NULL
+    )
+    Table assignment
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      assignment_id INTEGER PRIMARY KEY,
+      assignment_code VARCHAR(24) NOT NULL,
+      berth_id INTEGER NOT NULL,
+      grade_label VARCHAR(8) NOT NULL,
+      attach_level INTEGER NOT NULL,
+      base_level INTEGER NOT NULL,
+      peak_level INTEGER NOT NULL,
+      period_code VARCHAR(12) NOT NULL,
+      reported_on DATE NOT NULL,
+      logged_by VARCHAR(60) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table cargo_unit
+    (
+      unit_id INTEGER PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      assignment_id INTEGER NOT NULL,
+      kind_label VARCHAR(8) NOT NULL,
+      mass_kg INTEGER NOT NULL,
+      logged_by VARCHAR(60) NOT NULL,
+      status_code VARCHAR(4) NOT NULL
+    )
+    Table relay_unit
+    (
+      unit_id INTEGER PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      assignment_id INTEGER NOT NULL,
+      kind_label VARCHAR(8) NOT NULL,
+      mass_kg INTEGER NOT NULL,
+      logged_by VARCHAR(60) NOT NULL,
+      status_code VARCHAR(4) NOT NULL
+    )
+    Table inspection
+    (
+      inspection_id INTEGER PRIMARY KEY,
+      inspection_code VARCHAR(24) NOT NULL,
+      berth_id INTEGER NOT NULL,
+      inspected_on DATE NOT NULL,
+      inspector_name VARCHAR(60) NOT NULL
+    )
+
+    View unit_roster_vw
+    (
+      unit_id: harbor.cargo_unit.unit_id PRIMARY KEY,
+      roster_label: concat('ROSTER-', harbor.cargo_unit.kind_label)
+    )
+    View relay_roster_vw
+    (
+      unit_id: harbor.relay_unit.unit_id PRIMARY KEY,
+      roster_label: concat('RELAY-', harbor.relay_unit.kind_label)
+    )
+    View dock_summary_vw
+    (
+      ~groupBy (harbor.berth.dock_id)
+      dock_id: harbor.berth.dock_id PRIMARY KEY,
+      berth_count: count(harbor.berth.berth_id),
+      max_capacity_ton: max(harbor.berth.capacity_ton)
+    )
+  )
+
+  Filter OpenUnit(harbor.cargo_unit.status_code != 'X')
+  Filter OpenRelay(harbor.relay_unit.status_code != 'X')
+
+  Join Berth_Dock(harbor.berth.dock_id = harbor.dock.dock_id)
+  Join Assignment_Berth(harbor.assignment.berth_id = harbor.berth.berth_id)
+  Join Unit_Roster(harbor.cargo_unit.unit_id = harbor.unit_roster_vw.unit_id)
+  Join Relay_Roster(harbor.relay_unit.unit_id = harbor.relay_roster_vw.unit_id)
+  Join Dock_Summary(harbor.dock.dock_id = harbor.dock_summary_vw.dock_id)
+  Join Inspection_Berth(harbor.inspection.berth_id = harbor.berth.berth_id)
+)

@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::meadowapiary::domain::*;
+import demo::meadowapiary::profile::*;
+
+Enum <<Quality.verified>> {Quality.source = 'field-notebook'} demo::meadowapiary::domain::ForageCondition
+{
+  ABUNDANT,
+  STEADY,
+  SPARSE
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal, Stewardship.managed>> {Stewardship.owner = 'meadow-operations', Lifecycle.phase = 'active'} demo::meadowapiary::domain::Apiary
+{
+  {Stewardship.note = 'Stable register identifier.'} apiaryCode: String[1];
+  apiaryName: String[1];
+  {Quality.source = 'site-register'} landscape: String[1];
+  stewardLineage: QueenLineage[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal, Stewardship.observed>> {Stewardship.note = 'Hive placement is reviewed over the apiary operating calendar.'} demo::meadowapiary::domain::Hive
+{
+  hiveCode: String[1];
+  hiveName: String[1];
+  apiaryCode: String[1];
+  keeperLineage: QueenLineage[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal, Lifecycle.active>> {Lifecycle.phase = 'current'} demo::meadowapiary::domain::Colony
+{
+  colonyCode: String[1];
+  colonyName: String[1];
+  hiveCode: String[1];
+  queenLineage: QueenLineage[1];
+  strengthBand: String[1];
+}
+
+Class <<Quality.verified>> {Quality.source = 'breeder-register'} demo::meadowapiary::domain::QueenLineage
+{
+  lineageCode: String[1];
+  originApiary: String[1];
+  selectionNote: String[0..1];
+}
+
+Class <<Stewardship.managed>> {Stewardship.owner = 'lineage-desk'} demo::meadowapiary::domain::Queen
+{
+  queenCode: String[1];
+  lineage: QueenLineage[1];
+  emergenceYear: Integer[1];
+}
+
+Class <<Quality.provisional>> {Quality.sensitivity = 'routine'} demo::meadowapiary::domain::ApiaryInspection
+{
+  inspectionCode: String[1];
+  apiary: Apiary[1];
+  inspectorName: String[1];
+  inspectionNote: String[0..1];
+}
+
+Class <<Quality.verified>> {Quality.source = 'hive-rounds'} demo::meadowapiary::domain::HiveInspection extends ApiaryInspection
+{
+  inspectionCode: String[1];
+  hive: Hive[1];
+  inspectorName: String[1];
+  condition: ForageCondition[1];
+}
+
+Class <<Stewardship.observed>> {Stewardship.note = 'Forage resources are catalogued by bloom window.'} demo::meadowapiary::domain::ForageSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  bloomWindow: String[1];
+  condition: ForageCondition[0..1];
+}
+
+Class <<Quality.provisional>> {Quality.sensitivity = 'routine'} demo::meadowapiary::domain::ForageVisit
+{
+  visitCode: String[1];
+  apiary: Apiary[1];
+  forageSite: ForageSite[1];
+  visitedOn: StrictDate[1];
+}
+
+Association demo::meadowapiary::domain::Apiary_Hives
+{
+  apiary: Apiary[1];
+  hives: Hive[*];
+}
+
+Association demo::meadowapiary::domain::Hive_Colony
+{
+  hive: Hive[1];
+  colony: Colony[0..1];
+}
+
+Association demo::meadowapiary::domain::Colony_Queen
+{
+  colony: Colony[1];
+  queen: Queen[0..1];
+}
+
+Association demo::meadowapiary::domain::Apiary_Inspections
+{
+  apiary: Apiary[1];
+  inspections: ApiaryInspection[*];
+}
+
+Association demo::meadowapiary::domain::Hive_Inspections
+{
+  hive: Hive[1];
+  inspections: HiveInspection[*];
+}
+
+Association demo::meadowapiary::domain::Apiary_ForageSites
+{
+  apiaries: Apiary[*];
+  forageSites: ForageSite[*];
+}
+
+Association demo::meadowapiary::domain::Apiary_Visits
+{
+  apiary: Apiary[1];
+  visits: ForageVisit[*];
+}
+
+Association demo::meadowapiary::domain::ForageSite_Visits
+{
+  forageSite: ForageSite[1];
+  visits: ForageVisit[*];
+}

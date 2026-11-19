@@ -1,0 +1,62 @@
+name: ivory-beacon-m2m
+title: "Glacier Station Feed — Instance-to-Instance Projection with Graph-Fetch Serialisation"
+description: |
+  A store-less glacier-monitoring model whose whole computation lives in property
+  expressions: two instance-to-instance mappings project a text-heavy inbound
+  station report onto five target classes, one flat and one nested two levels
+  deep, with every optional source branch guarded by a present-or-sentinel
+  conditional and several narrowed to a source subtype on the way. Both flows are
+  graph-fetch-and-serialise pipelines rather than tabular projections — one
+  inlined in a service body with a reading-count parameter, the other owned by a
+  packageable function that binds mapping and runtime itself and is delegated to
+  by the second service.
+
+modelSources:
+  model:
+    root: ivory-beacon-m2m
+    files:
+      - test/ivorybeacon/connection/DossierFeedConnection.pure
+      - test/ivorybeacon/connection/SnapshotFeedConnection.pure
+      - test/ivorybeacon/domain/GlacierModel.pure
+      - test/ivorybeacon/function/AccessHelpers.pure
+      - test/ivorybeacon/function/DossierDocument.pure
+      - test/ivorybeacon/function/WindowHelpers.pure
+      - test/ivorybeacon/mapping/DossierM2M.pure
+      - test/ivorybeacon/mapping/SnapshotM2M.pure
+      - test/ivorybeacon/profile/TopicMetadata.pure
+      - test/ivorybeacon/runtime/DossierRuntime.pure
+      - test/ivorybeacon/runtime/SnapshotRuntime.pure
+      - test/ivorybeacon/service/StationSnapshotFeed.pure
+      - test/ivorybeacon/service/SurveyDossierFeed.pure
+      - test/ivorybeacon/source/IncomingStationReport.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:function
+  - grammar:profile
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - query:collection-op
+  - query:filter
+  - execution:graph-fetch
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - collection-collapse
+  - conditional-sentinel
+  - glacier-monitoring
+  - graph-fetch
+  - instance-to-instance
+  - mapping-test
+  - nested-serialisation
+  - service-test
+  - store-less
+  - subtype-narrowing

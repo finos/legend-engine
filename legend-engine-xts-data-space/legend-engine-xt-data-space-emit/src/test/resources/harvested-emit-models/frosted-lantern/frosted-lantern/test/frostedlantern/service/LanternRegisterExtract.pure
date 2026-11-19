@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedlantern::service::LanternRegisterExtract
+{
+  pattern: '/lantern/v1/register/{finishCode}/{guildCode}';
+  title: 'Frosted Lantern - Register extract';
+  owners:
+  [
+    'lantern-catalogue-desk',
+    'heritage-glass-registry'
+  ];
+  documentation: 'Item-level register extract: catalogued lantern items qualify through a parameterized glass-family membership call, a parameterized finish match call, a workshop guild equality and a workshop town set membership, then aliased item and workshop columns are projected and sorted by item code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {glassFamilies: String[*], finishCode: String[1], guildCode: String[1], townNames: String[*]|test::frostedlantern::domain::LanternItem.all()->filter(
+      i|$i.inGlassFamily($glassFamilies) && ($i.matchesFinish($finishCode) && (($i.workshop.guildCode == $guildCode) && ($i.workshop.townName->in($townNames))))
+    )->project(
+      [
+        i|$i.itemCode,
+        i|$i.itemName,
+        i|$i.glassType,
+        i|$i.finishCode,
+        i|$i.paneCount,
+        i|$i.catalogueYear,
+        i|$i.workshop.workshopName,
+        i|$i.workshop.townName,
+        i|$i.workshop.guildCode
+      ],
+      [
+        'Item/Code',
+        'Item/Name',
+        'Item/Glass',
+        'Item/Finish',
+        'Item/Panes',
+        'Item/Year',
+        'Workshop/Name',
+        'Workshop/Town',
+        'Workshop/Guild'
+      ]
+    )->sort(
+      [
+        asc('Item/Code')
+      ]
+    );};
+    mapping: test::frostedlantern::mapping::LanternMapping;
+    runtime: test::frostedlantern::runtime::LanternCatalogueRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lanternConnection:
+            Relational
+            #{
+              catalogue.workshop:
+                'workshop_code,workshop_name,town_name,guild_code\n'+
+                'WS-1,Frost Glassworks,Rimehaven,GLAZIERS\n'+
+                'WS-2,Pane And Pane,Rimehaven,GLAZIERS\n'+
+                'WS-3,Lantern Loft,Bellmoor,SMITHS\n'+
+                'WS-4,Clearlight Shed,Coldwater,GLAZIERS\n';
+              catalogue.lantern_item:
+                'item_code,item_name,glass_type,finish_code,workshop_code,pane_count,catalogue_year\n'+
+                'LI-1,Harbour Lantern,SODA,FROSTED,WS-1,6,1899\n'+
+                'LI-2,Cellar Lantern,LEAD,FROSTED,WS-2,4,1901\n'+
+                'LI-3,Signal Lantern,SODA,CLEAR,WS-1,8,1903\n'+
+                'LI-4,Chapel Lantern,BOROSILICATE,FROSTED,WS-3,12,1905\n'+
+                'LI-5,Cart Lantern,SODA,FROSTED,WS-4,3,1907\n'+
+                'LI-6,Storm Lantern,LEAD,FROSTED,WS-1,10,1910\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        frostedGlazierItemsInTheRequestedTowns:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            glassFamilies = ['SODA', 'LEAD'],
+            finishCode = 'FROSTED',
+            guildCode = 'GLAZIERS',
+            townNames = ['Rimehaven', 'Bellmoor']
+          ]
+          asserts:
+          [
+            threeQualifyingItems:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Item/Code":"LI-1","Item/Name":"Harbour Lantern","Item/Glass":"SODA","Item/Finish":"FROSTED","Item/Panes":6,"Item/Year":1899,"Workshop/Name":"Frost Glassworks","Workshop/Town":"Rimehaven","Workshop/Guild":"GLAZIERS"},{"Item/Code":"LI-2","Item/Name":"Cellar Lantern","Item/Glass":"LEAD","Item/Finish":"FROSTED","Item/Panes":4,"Item/Year":1901,"Workshop/Name":"Pane And Pane","Workshop/Town":"Rimehaven","Workshop/Guild":"GLAZIERS"},{"Item/Code":"LI-6","Item/Name":"Storm Lantern","Item/Glass":"LEAD","Item/Finish":"FROSTED","Item/Panes":10,"Item/Year":1910,"Workshop/Name":"Frost Glassworks","Workshop/Town":"Rimehaven","Workshop/Guild":"GLAZIERS"}]';
+                  }#;
+              }#
+          ]
+        },
+        finishWithNoCatalogueItem:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            glassFamilies = ['SODA', 'LEAD'],
+            finishCode = 'ETCHED',
+            guildCode = 'GLAZIERS',
+            townNames = ['Rimehaven', 'Bellmoor']
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::frostedthicket::profile::*;
+import test::frostedthicket::record::*;
+import test::frostedthicket::survey::*;
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'Which of the standard effort protocols a visit was run under. The protocol decides how long the lanes stay open, so it is held on the visit.'} test::frostedthicket::survey::EffortProtocol
+{
+  CONSTANT_EFFORT,
+  ROOST_CATCH,
+  TARGETED_LURE,
+  OPPORTUNIST
+}
+
+Enum {doc.doc = 'Whether a season has been closed off for submission.'} test::frostedthicket::survey::SeasonState
+{
+  OPEN,
+  CLOSED,
+  RESUBMITTED
+}
+
+Class <<SchemaHint.indexed>> {doc.doc = 'Where the lanes are cut. Held once and pointed at by the programme, because a programme can be moved to a neighbouring reedbed without rewriting its history.', SchemaHint.docs = 'site record'} test::frostedthicket::survey::SurveySite
+{
+  {doc.doc = 'Short name the ringing group calls the place.', SchemaHint.scalarType = 'string', SchemaHint.docs = 'site name'} siteName: String[1];
+  {doc.doc = 'Grid reference of the centre of the reedbed.', SchemaHint.format = 'national grid reference'} gridReference: String[1];
+  {doc.doc = 'Reedbed structure scored for the site.'} habitat: HabitatRecord[0..1];
+  {doc.doc = 'Height above sea level.'} elevation: BodyMeasure[0..1];
+  {doc.doc = 'Anything the group wants said about the place.'} remarks: RemarkRecord[*];
+}
+
+Class <<SchemaHint.example>> {doc.doc = 'One morning at the reedbed: the lanes were opened, birds were taken out of them, and the conditions and permit holder were recorded once for the whole visit. The innermost of the three containers.', SchemaHint.docs = 'visit container'} test::frostedthicket::survey::SurveyVisit
+{
+  {doc.doc = 'Reference the visit is filed under.', SchemaHint.scalarType = 'string', SchemaHint.docs = 'visit reference'} visitReference: String[1];
+  {doc.doc = 'Day the lanes were opened.'} visitedOn: StrictDate[1];
+  {doc.doc = 'Protocol the visit was run under.'} protocol: EffortProtocol[1];
+  {doc.doc = 'Minutes the lanes stayed open, summed across lanes.'} laneMinutes: Integer[0..1];
+  {doc.doc = 'Every bird taken out of the lanes on this visit.'} captures: CaptureRecord[*];
+  {doc.doc = 'Any ringed bird that came back into the record on this visit.'} recoveries: RecoveryRecord[*];
+  {doc.doc = 'Conditions the visit was worked under.'} weather: WeatherRecord[0..1];
+  {doc.doc = 'Permit holder who ran the visit.'} observer: ObserverRecord[0..1];
+  {doc.doc = 'Anything the permit holder wants said about the visit.'} remarks: RemarkRecord[*];
+}
+
+Class <<SchemaHint.example>> {doc.doc = 'A run of visits submitted together, which for this survey means one ringing season. The middle of the three containers.', SchemaHint.docs = 'season container'} test::frostedthicket::survey::RingingSeason
+{
+  {doc.doc = 'Year the season is submitted under.', SchemaHint.scalarType = 'integer'} seasonYear: Integer[1];
+  {doc.doc = 'Where the season stands for submission.'} state: SeasonState[1];
+  {doc.doc = 'Every visit made in the season.'} visits: SurveyVisit[*];
+  {doc.doc = 'Day the season was closed off. Empty while the season is open.'} closedOn: StrictDate[0..1];
+  {doc.doc = 'Anything the group wants said about the season as a whole.'} remarks: RemarkRecord[*];
+}
+
+Class <<SchemaHint.example, SchemaHint.indexed>> {doc.doc = 'The outermost container: a named ringing programme at one reedbed, holding every season worked under it. A schema generated from this class walks programme to season to visit to catch to measurement.', SchemaHint.docs = 'programme container', SchemaHint.docs = 'schema entry point'} test::frostedthicket::survey::SurveyProgramme
+{
+  {doc.doc = 'Name the programme is registered under.', SchemaHint.scalarType = 'string', SchemaHint.docs = 'programme name'} programmeName: String[1];
+  {doc.doc = 'Reedbed the programme works.'} site: SurveySite[1];
+  {doc.doc = 'Every season worked under the programme.'} seasons: RingingSeason[*];
+  {doc.doc = 'Year the programme was registered.', SchemaHint.scalarType = 'integer'} registeredIn: Integer[1];
+  {doc.doc = 'Whether the programme is still being worked.'} active: Boolean[1];
+  {doc.doc = 'Anything the group wants said about the programme.'} remarks: RemarkRecord[*];
+}

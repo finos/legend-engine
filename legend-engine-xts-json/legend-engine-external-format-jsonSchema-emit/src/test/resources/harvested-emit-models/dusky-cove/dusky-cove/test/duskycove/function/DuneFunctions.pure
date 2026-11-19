@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+function {doc.doc = 'Bands the plot stability index onto the eight-step restoration scale used by the register, folding an out-of-scale reading onto the unscored band.'} test::duskycove::function::stabilityBand(index: Integer[1]): String[1]
+{
+  if($index >= 90,
+    | 'ANCHORED',
+    | if($index >= 75,
+      | 'HOLDING',
+      | if($index >= 60,
+        | 'KNITTING',
+        | if($index >= 45,
+          | 'THIN COVER',
+          | if($index >= 30,
+            | 'SHIFTING',
+            | if($index >= 15,
+              | 'SCOURING',
+              | if($index >= 1,
+                | 'BLOWOUT',
+                | if($index == 0,
+                  | 'BARE SAND',
+                  | 'UNSCORED'
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+}
+
+function {doc.doc = 'Counts the whole days between two survey dates, so the register can express a survey age without leaking a wall-clock read into the plan.'} test::duskycove::function::surveyAgeDays(from: StrictDate[1], to: StrictDate[1]): Integer[1]
+{
+  dateDiff($from, $to, DurationUnit.DAYS)
+}
+
+function {doc.doc = 'Composes the stewardship headline of a plot: the banded stability, the age of the reading in days and the trimmed steward note, with an absent note folded onto a sentinel.'} test::duskycove::function::plotHeadline(index: Integer[1], surveyedOn: StrictDate[1], asOf: StrictDate[1], note: String[0..1]): String[1]
+{
+  test::duskycove::function::stabilityBand($index)
+    + ' @ '
+    + test::duskycove::function::surveyAgeDays($surveyedOn, $asOf)->toString()
+    + 'd / '
+    + if($note->isEmpty(),
+        | 'NO NOTE',
+        | if($note->toOne()->trim()->length() > 16,
+          | $note->toOne()->trim()->substring(0, 16)->toUpper(),
+          | $note->toOne()->trim()->toUpper()
+        )
+      )
+}

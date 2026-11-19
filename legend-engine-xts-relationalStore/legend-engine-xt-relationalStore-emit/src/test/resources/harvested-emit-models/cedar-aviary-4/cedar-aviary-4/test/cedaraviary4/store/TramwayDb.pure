@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cedaraviary4::store::TramwayDb
+(
+  Schema tramway
+  (
+    Table region
+    (
+      region_id INTEGER PRIMARY KEY,
+      region_name VARCHAR(80)
+    )
+
+    Table tram_line
+    (
+      line_id INTEGER PRIMARY KEY,
+      line_name VARCHAR(120),
+      region_id INTEGER NOT NULL,
+      gauge_code VARCHAR(12)
+    )
+
+    Table depot
+    (
+      depot_id INTEGER PRIMARY KEY,
+      depot_name VARCHAR(120) NOT NULL,
+      line_id INTEGER NOT NULL,
+      region_id INTEGER NOT NULL,
+      shelter_code VARCHAR(12)
+    )
+
+    Table tram_car
+    (
+      car_id INTEGER PRIMARY KEY,
+      car_ref VARCHAR(24) NOT NULL,
+      depot_id INTEGER NOT NULL,
+      livery_code VARCHAR(12),
+      seat_count INTEGER NOT NULL,
+      status_code VARCHAR(12) NOT NULL,
+      retired_ts TIMESTAMP
+    )
+
+    Table service_entry
+    (
+      entry_id INTEGER PRIMARY KEY,
+      car_id INTEGER NOT NULL,
+      entry_note VARCHAR(200),
+      logged_on DATE
+    )
+  )
+
+  Filter RunningCars(tramway.tram_car.status_code = 'ACTIVE' and isNull(tramway.tram_car.retired_ts))
+
+  Join Car_Depot(tramway.tram_car.depot_id = tramway.depot.depot_id)
+
+  Join Depot_Line(tramway.depot.line_id = tramway.tram_line.line_id)
+
+  Join Line_Region(tramway.tram_line.region_id = tramway.region.region_id)
+
+  Join Car_Entry(tramway.tram_car.car_id = tramway.service_entry.car_id)
+)

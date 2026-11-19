@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::sunlittundra4::domain::*;
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'The photometric band a plate was exposed through.'} demo::sunlittundra4::domain::FilterBand
+{
+  BLUE,
+  VISUAL,
+  RED,
+  INFRARED
+}
+
+Enum {doc.doc = 'How steady the atmosphere was judged to be while a plate was exposed.'} demo::sunlittundra4::domain::SeeingGrade
+{
+  SHARP,
+  SOFT,
+  POOR
+}
+
+Class {doc.doc = 'The identity every archived observing artefact carries, whatever surface it was read from.'} demo::sunlittundra4::domain::ScanRecord
+[
+  domeCodeStamped: $this.domeCode->length() >= 3,
+  recordCodeStamped: $this.recordCode->length() >= 4
+]
+{
+  recordCode: String[1];
+  domeCode: String[1];
+}
+
+Class {doc.doc = 'One photographic plate scan, decoding the band and seeing codes into enumerations, grading the exposure into a named band and naming the archive surface it was read from.'} demo::sunlittundra4::domain::PlateScan extends demo::sunlittundra4::domain::ScanRecord
+[
+  exposureNotNegative: $this.exposureSecs->isEmpty() || ($this.exposureSecs->toOne() >= 0),
+  magnitudeWithinScale: $this.skyMag->isEmpty() || ($this.skyMag->toOne() <= 30.0)
+]
+{
+  domeName: String[0..1];
+  ridgeName: String[0..1];
+  exposureSecs: Integer[0..1];
+  skyMag: Float[0..1];
+  band: FilterBand[0..1];
+  seeing: SeeingGrade[0..1];
+  exposureBand: String[0..1];
+  plateNote: String[0..1];
+  archiveSurface: String[0..1];
+}
+
+Class {doc.doc = 'One spectrum scan. The specialisation adds only the grating ruling, so the two scan relations stay comparable behind the shared record.'} demo::sunlittundra4::domain::SpectrumScan extends demo::sunlittundra4::domain::ScanRecord
+[
+  gratingLinesPositive: $this.gratingLines->isEmpty() || ($this.gratingLines->toOne() > 0)
+]
+{
+  gratingLines: Integer[0..1];
+}
+
+Class {doc.doc = 'A night-assistant note keyed off a plate, holding the still-textual dome, band and seeing wording typed at the eyepiece.'} demo::sunlittundra4::domain::ScanNote
+[
+  noteCodeStamped: $this.noteCode->length() >= 4,
+  noteExposureNotNegative: $this.exposureSecs >= 0
+]
+{
+  noteCode: String[1];
+  domeText: String[1];
+  bandText: String[1];
+  seeingText: String[1];
+  exposureSecs: Integer[1];
+}
+
+Class {doc.doc = 'The digest of a night-assistant note, carrying the same enumerations the relational surface decodes so the two derivation styles stay comparable.'} demo::sunlittundra4::domain::ScanDigest
+[
+  digestKeyStamped: $this.digestKey->length() >= 4,
+  exposureLabelStamped: $this.exposureLabel->length() > 0
+]
+{
+  digestKey: String[1];
+  exposureLabel: String[1];
+  band: FilterBand[0..1];
+  seeing: SeeingGrade[0..1];
+}

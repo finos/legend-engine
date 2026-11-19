@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledvineyard::service::TrellisRegister
+{
+  pattern: '/fabledvineyard/v1/trellis-register';
+  title: 'Fabled Vineyard - Trellis Register';
+  documentation: 'Flat register of the trellis runs, projecting the run key, its label, the wire height, the post count and the installation date over its own root so the plan is a single-table select against a second independent table of the same store.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'vineyard-estate-office'
+  ];
+  execution: Single
+  {
+    query: {|test::fabledvineyard::domain::TrellisRun.all()->project(
+      [
+        r|$r.runCode,
+        r|$r.runLabel,
+        r|$r.wireHeightM,
+        r|$r.postCount,
+        r|$r.installedOn
+      ],
+      [
+        'Run',
+        'Label',
+        'WireHeight',
+        'Posts',
+        'Installed'
+      ]
+    )->sort(
+      [
+        asc('Run')
+      ]
+    );};
+    mapping: test::fabledvineyard::mapping::VineyardMapping;
+    runtime: test::fabledvineyard::runtime::VineyardWarehouseRuntime;
+  }
+  testSuites:
+  [
+    trellisRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection:
+            Relational
+            #{
+              vineyard.trellis_run:
+                'run_code,run_label,wire_height_m,post_count,installed_on,inspected_at\n'+
+                'TR-01,North Wire,1.9,220,2012-04-01,2024-05-06 07:08:00\n'+
+                'TR-02,,,,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        nullBearingTrellisRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoTrellisRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Run":"TR-01","Label":"North Wire","WireHeight":1.9,"Posts":220,"Installed":"2012-04-01"},{"Run":"TR-02","Label":null,"WireHeight":null,"Posts":null,"Installed":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

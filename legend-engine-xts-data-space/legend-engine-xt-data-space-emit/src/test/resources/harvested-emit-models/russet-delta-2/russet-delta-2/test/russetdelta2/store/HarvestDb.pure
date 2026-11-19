@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::russetdelta2::store::HarvestDb
+(
+  Schema harvest
+  (
+    Table honey_lot
+    (
+      lot_code VARCHAR(16) PRIMARY KEY,
+      yard_code VARCHAR(16),
+      lot_kind VARCHAR(16),
+      kilograms INTEGER,
+      moisture_pct INTEGER,
+      jar_count INTEGER
+    )
+    Table extraction_run
+    (
+      run_code VARCHAR(16) PRIMARY KEY,
+      lot_code VARCHAR(16),
+      run_on DATE,
+      spun_frames INTEGER,
+      operator_code VARCHAR(16)
+    )
+  )
+
+  Join Run_Lot(harvest.extraction_run.lot_code = harvest.honey_lot.lot_code)
+)

@@ -1,0 +1,367 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::wistfulaviary::service::SiteSightingRollup
+{
+  pattern: '/aviary/v1/site-sighting-rollup/{businessDate}';
+  title: 'Site Sighting Rollup';
+  owners:
+  [
+    'aviary-ringing-network',
+    'wetland-survey-unit'
+  ];
+  documentation: 'Aggregates business-temporal observations as of a requested date by ringing region and decoded condition, reaching the region through a milestoned association chain.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::wistfulaviary::domain::Observation.all($businessDate)->filter(
+      x|($x.conditionLabel()->in(['HEALTHY', 'INJURED', 'MOULTING', 'UNASSESSED']) && ($x.countSeen > 0)) && ($x.bird($businessDate).site.habitat->toUpper()->in(['SCRUB', 'REEDBED', 'UNRECORDED']))
+    )->groupBy(
+      [
+        x|$x.bird($businessDate).site.regionCode,
+        x|$x.conditionLabel()
+      ],
+      [
+        agg(x|$x.countSeen, y|$y->sum())
+      ],
+      [
+        'Region',
+        'Condition',
+        'Seen'
+      ]
+    )->sort(
+      [
+        asc('Region'),
+        asc('Condition')
+      ]
+    )};
+    mapping: demo::wistfulaviary::mapping::AviaryMapping;
+    runtime: demo::wistfulaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    siteSightingRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryConnection:
+            Relational
+            #{
+              aviary.aviary_site:
+                'site_id,site_name,region_code,habitat_code\n'+
+                '1,Alder Carr,north,scrub\n'+
+                '2,Shingle Spit,coast,\n'+
+                '3,Fen Hide,inland,reedbed\n';
+              aviary.ringed_bird:
+                'bird_id,ring_code,species_code,site_id,wing_mm,from_z,thru_z\n'+
+                '1,RB-0001,wren,1,52,2024-01-01,9999-12-31\n'+
+                '2,RB-0002,finch,2,84,2024-01-01,2024-05-01\n'+
+                '2,RB-0002,thrush,2,112,2024-05-01,9999-12-31\n'+
+                '3,RB-0003,pipit,3,,2024-01-01,9999-12-31\n'+
+                '4,RB-0004,siskin,1,74,2024-01-01,2024-04-01\n';
+              aviary.observation:
+                'obs_id,bird_id,observer,count_seen,condition_code,observed_on,from_z,thru_z\n'+
+                '1,1,Rowan Field,3,h,2024-06-10,2024-01-01,9999-12-31\n'+
+                '2,2,Rowan Field,25,i,2024-06-20,2024-01-01,9999-12-31\n'+
+                '3,3,Ivy Larkin,1,,2024-06-25,2024-01-01,9999-12-31\n'+
+                '4,4,Ivy Larkin,8,m,2024-02-05,2024-01-01,2024-03-01\n'+
+                '5,1,Ivy Larkin,12,h,2024-01-15,2024-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rollupAfterTheCorrection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-07-01
+          ]
+          asserts:
+          [
+            retiredObservationDropsOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"COAST","Condition":"INJURED","Seen":25},{"Region":"INLAND","Condition":"UNASSESSED","Seen":1},{"Region":"NORTH","Condition":"HEALTHY","Seen":15}]';
+                  }#;
+              }#
+          ]
+        },
+        rollupWhileTheRetiredRowWasCurrent:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-02-15
+          ]
+          asserts:
+          [
+            moultingArmStillInRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"COAST","Condition":"INJURED","Seen":25},{"Region":"INLAND","Condition":"UNASSESSED","Seen":1},{"Region":"NORTH","Condition":"HEALTHY","Seen":15},{"Region":"NORTH","Condition":"MOULTING","Seen":8}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::wistfulaviary::service::SpeciesRoster
+{
+  pattern: '/aviary/v1/species-roster/{businessDate}/{species}';
+  title: 'Species Roster';
+  owners:
+  [
+    'aviary-ringing-network',
+    'wetland-survey-unit'
+  ];
+  documentation: 'Projects the ring roster as of a requested business date for a requested collection of species codes, decoding species, wing size class and the region tier reached through the site association.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], species: String[*]|demo::wistfulaviary::domain::RingedBird.all($businessDate)->filter(
+      x|$x.speciesCode->in($species)
+    )->project(
+      [
+        x|$x.ringCode,
+        x|$x.speciesLabel(),
+        x|$x.sizeClass(),
+        x|$x.site.name,
+        x|$x.site.regionTier()
+      ],
+      [
+        'Ring',
+        'Species',
+        'Size',
+        'Site',
+        'Tier'
+      ]
+    )->sort(
+      [
+        asc('Ring')
+      ]
+    )};
+    mapping: demo::wistfulaviary::mapping::AviaryMapping;
+    runtime: demo::wistfulaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    speciesRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryConnection:
+            Relational
+            #{
+              aviary.aviary_site:
+                'site_id,site_name,region_code,habitat_code\n'+
+                '1,Alder Carr,north,scrub\n'+
+                '2,Shingle Spit,coast,\n'+
+                '3,Fen Hide,inland,reedbed\n';
+              aviary.ringed_bird:
+                'bird_id,ring_code,species_code,site_id,wing_mm,from_z,thru_z\n'+
+                '1,RB-0001,wren,1,52,2024-01-01,9999-12-31\n'+
+                '2,RB-0002,finch,2,84,2024-01-01,2024-05-01\n'+
+                '2,RB-0002,thrush,2,112,2024-05-01,9999-12-31\n'+
+                '3,RB-0003,pipit,3,,2024-01-01,9999-12-31\n'+
+                '4,RB-0004,siskin,1,74,2024-01-01,2024-04-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosterAfterTheSpeciesCorrection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-07-01,
+            species = ['WREN', 'THRUSH', 'PIPIT']
+          ]
+          asserts:
+          [
+            everySizeClassAndTier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring":"RB-0001","Species":"Eurasian Wren","Size":"SMALL","Site":"Alder Carr","Tier":"PRIORITY"},{"Ring":"RB-0002","Species":"Song Thrush","Size":"LARGE","Site":"Shingle Spit","Tier":"SEASONAL"},{"Ring":"RB-0003","Species":"Meadow Pipit","Size":"UNMEASURED","Site":"Fen Hide","Tier":"STANDARD"}]';
+                  }#;
+              }#
+          ]
+        },
+        rosterBeforeTheSpeciesCorrection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-04-15,
+            species = ['WREN', 'FINCH', 'SISKIN']
+          ]
+          asserts:
+          [
+            expiredRingIsExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring":"RB-0001","Species":"Eurasian Wren","Size":"SMALL","Site":"Alder Carr","Tier":"PRIORITY"},{"Ring":"RB-0002","Species":"Common Chaffinch","Size":"MEDIUM","Site":"Shingle Spit","Tier":"SEASONAL"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::wistfulaviary::service::ObservationWindowTally
+{
+  pattern: '/aviary/v1/observation-window/{businessDate}';
+  title: 'Observation Window Tally';
+  owners:
+  [
+    'aviary-ringing-network',
+    'wetland-survey-unit'
+  ];
+  documentation: 'Tallies observations recorded in the thirty days up to a requested business date by observer and decoded effort band, combining a rolling date window with point-in-time milestoning.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::wistfulaviary::domain::Observation.all($businessDate)->filter(
+      x|(($x.observedOn >= $businessDate->adjust(-30, meta::pure::functions::date::DurationUnit.DAYS)) && ($x.observedOn <= $businessDate)) && $x.effortBand()->in(['FLOCK', 'PARTY', 'PAIR', 'SINGLETON'])
+    )->groupBy(
+      [
+        x|$x.observer,
+        x|$x.effortBand()
+      ],
+      [
+        agg(x|$x.countSeen, y|$y->sum())
+      ],
+      [
+        'Observer',
+        'Effort',
+        'Seen'
+      ]
+    )->sort(
+      [
+        asc('Observer'),
+        asc('Effort')
+      ]
+    )};
+    mapping: demo::wistfulaviary::mapping::AviaryMapping;
+    runtime: demo::wistfulaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    observationWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryConnection:
+            Relational
+            #{
+              aviary.aviary_site:
+                'site_id,site_name,region_code,habitat_code\n'+
+                '1,Alder Carr,north,scrub\n'+
+                '2,Shingle Spit,coast,\n'+
+                '3,Fen Hide,inland,reedbed\n';
+              aviary.ringed_bird:
+                'bird_id,ring_code,species_code,site_id,wing_mm,from_z,thru_z\n'+
+                '1,RB-0001,wren,1,52,2024-01-01,9999-12-31\n'+
+                '2,RB-0002,finch,2,84,2024-01-01,2024-05-01\n'+
+                '2,RB-0002,thrush,2,112,2024-05-01,9999-12-31\n'+
+                '3,RB-0003,pipit,3,,2024-01-01,9999-12-31\n'+
+                '4,RB-0004,siskin,1,74,2024-01-01,2024-04-01\n';
+              aviary.observation:
+                'obs_id,bird_id,observer,count_seen,condition_code,observed_on,from_z,thru_z\n'+
+                '1,1,Rowan Field,3,h,2024-06-10,2024-01-01,9999-12-31\n'+
+                '2,2,Rowan Field,25,i,2024-06-20,2024-01-01,9999-12-31\n'+
+                '3,3,Ivy Larkin,1,,2024-06-25,2024-01-01,9999-12-31\n'+
+                '4,4,Ivy Larkin,8,m,2024-02-05,2024-01-01,2024-03-01\n'+
+                '5,1,Ivy Larkin,12,h,2024-01-15,2024-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        summerWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-07-01
+          ]
+          asserts:
+          [
+            flockPartyAndSingletonBands:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observer":"Ivy Larkin","Effort":"SINGLETON","Seen":1},{"Observer":"Rowan Field","Effort":"FLOCK","Seen":25},{"Observer":"Rowan Field","Effort":"PAIR","Seen":3}]';
+                  }#;
+              }#
+          ]
+        },
+        lateWinterWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-02-15
+          ]
+          asserts:
+          [
+            onlyTheRetiredRowFallsInTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observer":"Ivy Larkin","Effort":"PARTY","Seen":8}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

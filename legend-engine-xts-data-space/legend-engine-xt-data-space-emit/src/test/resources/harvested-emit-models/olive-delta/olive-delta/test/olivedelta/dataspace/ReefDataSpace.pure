@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'Governed entry point over the reef survey and bleaching monitoring model.'} test::olivedelta::dataspace::ReefDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'monitoring';
+      description: 'Monitoring tier - the reef survey store used for curation and test execution.';
+      mapping: test::olivedelta::mapping::ReefMapping;
+      defaultRuntime: test::olivedelta::runtime::ReefRuntime;
+    }
+  ];
+  defaultExecutionContext: 'monitoring';
+  title: 'Reef Survey And Bleach Monitoring';
+  description: 'A curated entry point over the reef survey domain - sites, tagged coral colonies, shore-based dive teams and the processing-temporal bleaching observations - wiring the relational mapping, its runtime, the domain layout and the featured endpoints consumers should start from.';
+  diagrams:
+  [
+    {
+      title: 'Reef Survey Domain';
+      diagram: test::olivedelta::diagram::ReefDiagram;
+    }
+  ];
+  elements:
+  [
+    test::olivedelta::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Colony register';
+      description: 'Featured endpoint returning the tagged colony register for a set of lagoon zones.';
+      executable: test::olivedelta::service::ColonyRegisterService;
+    },
+    {
+      id: 2;
+      title: 'Bleach watch';
+      description: 'Featured endpoint returning the bleaching observations in force at a processing date.';
+      executable: test::olivedelta::service::BleachWatchService;
+    }
+  ];
+  supportInfo: Email {
+    address: 'reef-monitoring@example.invalid';
+  };
+}

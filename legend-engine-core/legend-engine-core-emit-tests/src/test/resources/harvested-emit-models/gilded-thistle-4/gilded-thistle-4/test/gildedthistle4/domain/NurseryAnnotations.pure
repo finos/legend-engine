@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::gildedthistle4::domain::*;
+
+Profile test::gildedthistle4::domain::PropagationMeta
+{
+  stereotypes: [trialOnly, retired];
+  tags: [steward, protocolRevision];
+}
+
+Profile test::gildedthistle4::domain::GrowingMediumMeta
+{
+  stereotypes: [peatFree];
+  tags: [supplierGrade];
+}
+
+Profile test::gildedthistle4::domain::ObservationMeta
+{
+  stereotypes: [manuallyFiled];
+  tags: [confidence];
+}
+
+Enum <<GrowingMediumMeta.peatFree>> {doc.doc = 'Technique used to raise a new plant from parent material.'} test::gildedthistle4::domain::PropagationMethod
+{
+  {doc.doc = 'Raised from collected seed.'} SEED,
+  {doc.doc = 'Cutting taken from soft current-season growth.'} SOFTWOOD_CUTTING,
+  {doc.doc = 'Cutting taken from dormant woody growth.'} HARDWOOD_CUTTING,
+  {doc.doc = 'Cutting raised from a single detached leaf.'} LEAF_CUTTING,
+  {doc.doc = 'Clump split into rooted pieces.'} DIVISION,
+  {doc.doc = 'Stem rooted while still attached to the parent plant.'} LAYERING,
+  {doc.doc = 'Scion joined onto a rooted understem.'} GRAFTING,
+  {doc.doc = 'Raised from tissue culture under sterile conditions.'} MICROPROPAGATION
+}
+
+Enum {doc.doc = 'Growing-medium blend filled into trays and pots.'} test::gildedthistle4::domain::GrowingMediumBlend
+{
+  {doc.doc = 'Peat-free garden compost.'} PEAT_FREE_COMPOST,
+  {doc.doc = 'Coir fibre lightened with perlite.'} COIR_PERLITE,
+  {doc.doc = 'Sandy loam screened for pot work.'} SANDY_LOAM,
+  {doc.doc = 'Composted bark fines.'} BARK_FINES,
+  {doc.doc = 'Vermiculite blended for seed sowing.'} VERMICULITE_MIX
+}
+
+Enum {doc.doc = 'Vigour grade assigned to a propagation at inspection.'} test::gildedthistle4::domain::VigourGrade
+{
+  {doc.doc = 'Thin growth, unlikely to be saleable.'} WEAK,
+  {doc.doc = 'Even growth within the expected range.'} MODERATE,
+  {doc.doc = 'Growth ahead of the expected range.'} STRONG
+}

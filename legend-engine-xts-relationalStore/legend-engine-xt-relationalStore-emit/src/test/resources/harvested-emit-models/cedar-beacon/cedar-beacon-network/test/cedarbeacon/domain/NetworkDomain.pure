@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::cedarbeacon::domain::*;
+
+Profile test::cedarbeacon::domain::NetworkMeta
+{
+  stereotypes: [surveyed, provisional];
+  tags: [steward, reviewCadence];
+}
+
+Class <<NetworkMeta.surveyed>> {NetworkMeta.steward = 'network-planning'} test::cedarbeacon::domain::ServiceDistrict
+{
+  districtCode: String[1];
+  districtName: String[1];
+}
+
+Class <<temporal.businesstemporal, NetworkMeta.surveyed>> {NetworkMeta.reviewCadence = 'quarterly'} test::cedarbeacon::domain::NetworkZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  districtName: String[0..1];
+}
+
+Class <<temporal.businesstemporal, NetworkMeta.provisional>> {NetworkMeta.steward = 'stop-register'} test::cedarbeacon::domain::StopPoint
+{
+  stopCode: String[1];
+  stopName: String[1];
+  shelterCount: Integer[1];
+  zoneName: String[0..1];
+  districtName: String[0..1];
+}
+
+Class <<NetworkMeta.surveyed>> test::cedarbeacon::domain::RouteCorridor
+{
+  corridorCode: String[1];
+  corridorName: String[1];
+}
+
+Class <<temporal.businesstemporal, NetworkMeta.provisional>> test::cedarbeacon::domain::ShelterUnit
+{
+  unitCode: String[1];
+  unitKind: String[1];
+  corridorName: String[0..1];
+}

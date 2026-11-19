@@ -1,0 +1,26 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::opalotter2::connection::TrialSeedConnection
+{
+  store: test::opalotter2::store::TrialTextDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'reach\nscenario_collection\ncollection_code,collection_label\nCO-01,Upper Reach Set\nCO-02,Lower Reach Set\n-\nreach\ntrial_scenario\ntrial_code,trial_name,habitat_code,surveyor_code,reach_label,active_flag,sample_count,collection_code,base_scenario_ref,base_scenario_name,water_temp_c,flow_rate,turbidity_ntu,bank_cover_pct,spraint_count,note_text,season_code,weather_code,verified_code\nTR-01,riffle sweep,HB-01,SV-Alpha,Alder Riffle,Y,12,CO-01,41,Riffle Baseline,9.5,0.8,3.5,62.0,4,first pass,spr,dry,Y\nTR-02,pool sweep,HB-02,SV-Beta,Willow Pool,Y,8,CO-02,42,Pool Baseline,11.0,0.4,6.0,48.0,2,second pass,sum,wet,N\n\n\n';
+    testDataSetupSqls: [];
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetorchard::service::FruitTreesByOrchard
+{
+  pattern: '/orchard/v1/heavy-yield/{orchardName}';
+  title: 'Heavy-Yield Fruit Trees by Orchard';
+  owners:
+  [
+    'orchard-survey',
+    'harvest-ops'
+  ];
+  documentation: 'Returns heavy-yield fruit trees for a named orchard as graph-fetched objects, exercising the enumeration mapping, the orchard association, the class-inheritance from Tree and the HeavyYield store filter over the in-process H2 OrchardRuntime.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {orchardName: String[1]|test::russetorchard::domain::FruitTree.all()->filter(
+      t|$t.orchard.name == $orchardName
+    )->sortBy(
+      t|$t.label
+    )->graphFetch(
+      #{
+        test::russetorchard::domain::FruitTree
+        {
+          label,
+          kind,
+          yieldKg
+        }
+      }#
+    )->serialize(
+      #{
+        test::russetorchard::domain::FruitTree
+        {
+          label,
+          kind,
+          yieldKg
+        }
+      }#
+    )};
+    mapping: test::russetorchard::mapping::OrchardMapping;
+    runtime: test::russetorchard::runtime::OrchardRuntime;
+  }
+  testSuites:
+  [
+    fruitTreesByOrchardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              grove.orchard:
+                'orchard_id,orchard_name\n'+
+                '1,Ridgeline Grove\n';
+              grove.fruit_tree:
+                'tree_id,label,kind_code,yield_kg,orchard_id\n'+
+                '1,Row A Apple,A,12.0,1\n'+
+                '2,Row B Cherry,C,4.0,1\n'+
+                '3,Row C Pear,P,18.0,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        ridgeline:
+        {
+          parameters:
+          [
+            orchardName = 'Ridgeline Grove'
+          ]
+          asserts:
+          [
+            heavyYieldOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"label":"Row A Apple","kind":"APPLE","yieldKg":12.0},{"label":"Row C Pear","kind":"PEAR","yieldKg":18.0}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

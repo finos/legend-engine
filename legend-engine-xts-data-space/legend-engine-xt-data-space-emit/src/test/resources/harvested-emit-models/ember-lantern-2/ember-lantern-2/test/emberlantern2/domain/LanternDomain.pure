@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::emberlantern2::domain::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::emberlantern2::domain::LanternBatch
+{
+  batchCode: String[1];
+  workshopCode: String[1];
+  unitCount: Integer[1];
+  glazeRatio: Float[1];
+  wickGrade: String[1];
+  firedOn: StrictDate[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::emberlantern2::domain::WorkshopSite
+{
+  workshopCode: String[1];
+  siteName: String[1];
+  regionCode: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::emberlantern2::domain::KilnRun
+{
+  batchCode: String[1];
+  kilnCode: String[1];
+  peakTempC: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::emberlantern2::domain::BatchNote
+{
+  batchCode: String[1];
+  noteText: String[1];
+  notedOn: StrictDate[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::emberlantern2::domain::GlazeRecipe
+{
+  wickGrade: String[1];
+  recipeName: String[1];
+  blendRatio: Float[1];
+}
+
+Association test::emberlantern2::domain::Batch_Site
+{
+  batchesAtSite: LanternBatch[*];
+  site: WorkshopSite[1];
+}
+
+Association test::emberlantern2::domain::Batch_KilnRun
+{
+  firedBatch: LanternBatch[1];
+  kilnRuns: KilnRun[*];
+}
+
+Association test::emberlantern2::domain::Batch_Note
+{
+  notedBatch: LanternBatch[1];
+  notes: BatchNote[*];
+}

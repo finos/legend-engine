@@ -1,0 +1,187 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::ambermarsh2::store::MoorlandDb
+(
+  Schema moor
+  (
+    Table peat_depth_survey
+    (
+      survey_id INTEGER PRIMARY KEY,
+      survey_code VARCHAR(24) NOT NULL,
+      grid_ref VARCHAR(24) NOT NULL,
+      depth_cm INTEGER NOT NULL,
+      probe_count INTEGER NOT NULL,
+      surveyed_on DATE NOT NULL,
+      surveyor_name VARCHAR(60) NOT NULL
+    )
+    Table gully_block_install
+    (
+      install_id INTEGER PRIMARY KEY,
+      install_code VARCHAR(24) NOT NULL,
+      gully_ref VARCHAR(24) NOT NULL,
+      block_tally INTEGER NOT NULL,
+      installed_on DATE NOT NULL,
+      material_label VARCHAR(40) NOT NULL
+    )
+    Table sphagnum_plug_batch
+    (
+      batch_id INTEGER PRIMARY KEY,
+      batch_code VARCHAR(24) NOT NULL,
+      plug_tally INTEGER NOT NULL,
+      species_mix VARCHAR(80) NOT NULL,
+      planted_on DATE NOT NULL
+    )
+    Table bare_peat_patch
+    (
+      patch_id INTEGER PRIMARY KEY,
+      patch_code VARCHAR(24) NOT NULL,
+      area_m2 FLOAT NOT NULL,
+      stage_code VARCHAR(4) NOT NULL,
+      mapped_on DATE NOT NULL,
+      slope_pct FLOAT NOT NULL
+    )
+    Table water_table_dip
+    (
+      dip_id INTEGER PRIMARY KEY,
+      dip_code VARCHAR(24) NOT NULL,
+      well_ref VARCHAR(24) NOT NULL,
+      depth_mm INTEGER NOT NULL,
+      dipped_on DATE NOT NULL,
+      logger_name VARCHAR(60) NOT NULL
+    )
+    Table vegetation_quadrat
+    (
+      quadrat_id INTEGER PRIMARY KEY,
+      quadrat_code VARCHAR(24) NOT NULL,
+      cover_pct FLOAT NOT NULL,
+      species_tally INTEGER NOT NULL,
+      recorded_on DATE NOT NULL,
+      recorder_name VARCHAR(60) NOT NULL
+    )
+    Table erosion_pin_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      reading_code VARCHAR(24) NOT NULL,
+      pin_ref VARCHAR(24) NOT NULL,
+      exposed_mm INTEGER NOT NULL,
+      read_on DATE NOT NULL
+    )
+    Table dam_inspection
+    (
+      inspection_id INTEGER PRIMARY KEY,
+      inspection_code VARCHAR(24) NOT NULL,
+      dam_ref VARCHAR(24) NOT NULL,
+      condition_label VARCHAR(24) NOT NULL,
+      inspected_on DATE NOT NULL
+    )
+    Table brash_bale_delivery
+    (
+      delivery_id INTEGER PRIMARY KEY,
+      delivery_code VARCHAR(24) NOT NULL,
+      bale_tally INTEGER NOT NULL,
+      delivered_on DATE NOT NULL,
+      haulier_name VARCHAR(60) NOT NULL
+    )
+    Table heather_cut_plot
+    (
+      plot_id INTEGER PRIMARY KEY,
+      plot_code VARCHAR(24) NOT NULL,
+      cut_area_m2 FLOAT NOT NULL,
+      cut_on DATE NOT NULL,
+      machine_label VARCHAR(40) NOT NULL
+    )
+    Table grip_reprofile_run
+    (
+      run_id INTEGER PRIMARY KEY,
+      run_code VARCHAR(24) NOT NULL,
+      grip_metres INTEGER NOT NULL,
+      reprofiled_on DATE NOT NULL,
+      operator_name VARCHAR(60) NOT NULL
+    )
+    Table drone_flight_log
+    (
+      flight_id INTEGER PRIMARY KEY,
+      flight_code VARCHAR(24) NOT NULL,
+      frame_tally INTEGER NOT NULL,
+      flown_at TIMESTAMP NOT NULL,
+      pilot_name VARCHAR(60) NOT NULL
+    )
+    Table peat_core_sample
+    (
+      sample_id INTEGER PRIMARY KEY,
+      sample_code VARCHAR(24) NOT NULL,
+      core_length_cm INTEGER NOT NULL,
+      bulk_density FLOAT NOT NULL,
+      cored_on DATE NOT NULL
+    )
+    Table runoff_flume_reading
+    (
+      flume_reading_id INTEGER PRIMARY KEY,
+      flume_reading_code VARCHAR(24) NOT NULL,
+      flume_ref VARCHAR(24) NOT NULL,
+      litres_per_sec FLOAT NOT NULL,
+      gauged_at TIMESTAMP NOT NULL
+    )
+    Table carbon_flux_chamber
+    (
+      chamber_id INTEGER PRIMARY KEY,
+      chamber_code VARCHAR(24) NOT NULL,
+      flux_umol FLOAT NOT NULL,
+      measured_at TIMESTAMP NOT NULL,
+      chamber_note VARCHAR(200) NOT NULL
+    )
+    Table grazing_exclosure
+    (
+      exclosure_id INTEGER PRIMARY KEY,
+      exclosure_code VARCHAR(24) NOT NULL,
+      fence_metres INTEGER NOT NULL,
+      erected_on DATE NOT NULL,
+      stock_label VARCHAR(40) NOT NULL
+    )
+    Table wildfire_scar_map
+    (
+      scar_id INTEGER PRIMARY KEY,
+      scar_code VARCHAR(24) NOT NULL,
+      burnt_area_m2 FLOAT NOT NULL,
+      burnt_on DATE NOT NULL,
+      severity_label VARCHAR(24) NOT NULL
+    )
+    Table path_repair_section
+    (
+      section_id INTEGER PRIMARY KEY,
+      section_code VARCHAR(24) NOT NULL,
+      stone_tonnes FLOAT NOT NULL,
+      repaired_on DATE NOT NULL,
+      surface_label VARCHAR(40) NOT NULL
+    )
+    Table contractor_visit
+    (
+      visit_id INTEGER PRIMARY KEY,
+      visit_code VARCHAR(24) NOT NULL,
+      crew_size INTEGER NOT NULL,
+      visited_on DATE NOT NULL,
+      contractor_name VARCHAR(80) NOT NULL
+    )
+    Table moss_donor_site
+    (
+      donor_id INTEGER PRIMARY KEY,
+      donor_code VARCHAR(24) NOT NULL,
+      harvest_area_m2 FLOAT NOT NULL,
+      licensed_on DATE NOT NULL,
+      holding_name VARCHAR(80) NOT NULL
+    )
+  )
+)

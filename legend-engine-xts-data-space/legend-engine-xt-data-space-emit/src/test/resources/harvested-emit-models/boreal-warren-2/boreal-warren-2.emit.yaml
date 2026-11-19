@@ -1,0 +1,73 @@
+name: boreal-warren-2
+title: "Boreal Warren — Cave Ripening Register with View-Backed Turn Totals"
+description: |
+  A cheese-cave ripening model whose wheel-batch class carries two constraints
+  and reaches its owning ripening cave through an association. The batch
+  mapping includes a second mapping for the cave, addresses every column
+  through a main-table alias, bands the rind through a nested eight-arm
+  conditional that falls through to a null band for unmatched and absent
+  codes, falls back to a placeholder note, and doubles a measured weight. Two
+  properties are backed by a filtered, grouped inline view reached through an
+  inner join, and the awarded grade is reached through an optional relation so
+  ungraded batches keep an absent grade. Three single-execution services read
+  the register: one lists every band of one cave with an age in days against a
+  supplied anchor date, one groups weight and counts per cave on a joined
+  grouping key, and one joins a batch projection to a cave projection to
+  report the humidity each batch ripens at. A data space exposes the working
+  cellar tier and a warehouse tier over the same mapping.
+modelSources:
+  model:
+    root: boreal-warren-2
+    files:
+      - test/borealwarren2/connection/CaveConnections.pure
+      - test/borealwarren2/data/CaveTestData.pure
+      - test/borealwarren2/dataspace/CaveDataSpace.pure
+      - test/borealwarren2/domain/CaveDomain.pure
+      - test/borealwarren2/mapping/BatchMapping.pure
+      - test/borealwarren2/mapping/CaveReferenceMapping.pure
+      - test/borealwarren2/runtime/CaveRuntimes.pure
+      - test/borealwarren2/service/BatchHumidityService.pure
+      - test/borealwarren2/service/BatchRegisterService.pure
+      - test/borealwarren2/service/CaveRollupService.pure
+      - test/borealwarren2/store/CaveDB.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:constraint
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-left-outer-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - constraint
+  - data-space
+  - group-by
+  - h2
+  - inline-view
+  - left-outer-join
+  - mapping-include
+  - view-backed-property

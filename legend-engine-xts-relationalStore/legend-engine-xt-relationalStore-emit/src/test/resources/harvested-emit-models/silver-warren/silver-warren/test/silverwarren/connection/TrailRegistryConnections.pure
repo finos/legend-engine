@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::silverwarren::connection::TrailRegistryFieldConnection
+{
+  store: test::silverwarren::store::TrailRegistryFieldDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists FIELDREF;',
+      'create schema FIELDREF;',
+      'create table FIELDREF.TRAIL_SEGMENT (segment_code varchar(24) not null, expiry_key bigint not null, segment_name varchar(120), corridor_code varchar(24), corridor_name varchar(120), surface_kind varchar(24), surface_grade varchar(24), district_code varchar(24), district_name varchar(120), length_metres bigint, ascent_metres bigint, width_centimetres bigint, access_note varchar(240), steward_team varchar(120), inspection_cycle varchar(24), created_on timestamp not null, updated_on timestamp);',
+      'create table FIELDREF.TRAILHEAD (trailhead_code varchar(24) not null, expiry_key bigint not null, trailhead_name varchar(120), corridor_code varchar(24), parking_kind varchar(24), bay_count bigint, opened_on timestamp not null, created_on timestamp not null, updated_on timestamp);',
+      'insert into FIELDREF.TRAIL_SEGMENT values (\'SEG-1\', 99991231, \'Willow Bend Path\', \'COR-1\', \'Willow Corridor\', \'GRAVEL\', \'FIRM\', \'DIS-1\', \'Northern Meadows\', 1840, 22, 240, \'Boardwalk closed after heavy rain\', \'Meadow Stewards\', \'QUARTERLY\', TIMESTAMP \'2026-01-04 06:10:00\', TIMESTAMP \'2026-02-09 07:45:00\');',
+      'insert into FIELDREF.TRAILHEAD values (\'TH-1\', 99991231, \'Willow Bend Trailhead\', \'COR-1\', \'SEALED\', 24, TIMESTAMP \'2026-03-07 05:30:00\', TIMESTAMP \'2026-01-04 06:10:00\', TIMESTAMP \'2026-02-09 07:45:00\');'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+RelationalDatabaseConnection test::silverwarren::connection::TrailRegistryArchiveConnection
+{
+  store: test::silverwarren::store::TrailRegistryArchiveDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists ARCHIVEREF;',
+      'create schema ARCHIVEREF;',
+      'create table ARCHIVEREF.TRAIL_SEGMENT (segment_code varchar(24) not null, expiry_key bigint not null, segment_name varchar(120), corridor_code varchar(24), corridor_name varchar(120), surface_kind varchar(24), surface_grade varchar(24), district_code varchar(24), district_name varchar(120), length_metres bigint, ascent_metres bigint, width_centimetres bigint, access_note varchar(240), steward_team varchar(120), inspection_cycle varchar(24), created_on timestamp not null, updated_on timestamp);',
+      'create table ARCHIVEREF.TRAILHEAD (trailhead_code varchar(24) not null, expiry_key bigint not null, trailhead_name varchar(120), corridor_code varchar(24), parking_kind varchar(24), bay_count bigint, opened_on timestamp not null, created_on timestamp not null, updated_on timestamp);',
+      'insert into ARCHIVEREF.TRAIL_SEGMENT values (\'SEG-1\', 99991231, \'Willow Bend Path\', \'COR-1\', \'Willow Corridor\', \'GRAVEL\', \'WORN\', \'DIS-1\', \'Northern Meadows\', 1840, 22, 240, null, \'Meadow Stewards\', \'ANNUAL\', TIMESTAMP \'2024-05-02 06:10:00\', null);',
+      'insert into ARCHIVEREF.TRAILHEAD values (\'TH-1\', 99991231, \'Willow Bend Trailhead\', \'COR-1\', \'GRAVEL\', 18, TIMESTAMP \'2024-11-12 05:30:00\', TIMESTAMP \'2024-05-02 06:10:00\', null);'
+      ];
+  };
+  auth: DefaultH2;
+}

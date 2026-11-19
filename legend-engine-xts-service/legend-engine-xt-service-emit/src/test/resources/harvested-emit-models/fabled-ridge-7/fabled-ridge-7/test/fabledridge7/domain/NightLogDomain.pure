@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A raw observing-night log as the public observatory logbook holds it: the conditions read off the sky, the filters and targets worked and the instrument used, almost all of it optional because a volunteer page is filled in by hand.'} test::fabledridge7::domain::NightLogPayload
+{
+  logRef: String[1];
+  revision: Integer[1];
+  observerCode: String[0..1];
+  seeingArcsec: Float[0..1];
+  cloudPct: Integer[0..1];
+  instrumentCode: String[0..1];
+  apertureMm: Integer[0..1];
+  filterCodes: String[*];
+  targetCodes: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The curated night-session report the observatory publishes, every column of which is derived from a raw log through one of the shared night-log rules.'} test::fabledridge7::domain::NightSessionReport
+{
+  logStamp: String[1];
+  observerLabel: String[1];
+  seeingBand: String[1];
+  cloudBand: String[1];
+  filterSummary: String[1];
+  targetSummary: String[1];
+  instrumentLabel: String[1];
+  apertureBand: String[1];
+  gradeLabel: String[1];
+  usabilityLabel: String[1];
+}

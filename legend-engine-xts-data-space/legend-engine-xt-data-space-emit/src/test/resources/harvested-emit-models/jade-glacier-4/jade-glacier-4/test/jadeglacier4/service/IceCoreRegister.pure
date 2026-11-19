@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::jadeglacier4::service::IceCoreRegister
+{
+  pattern: '/glacier-survey/v1/ice-core-register';
+  title: 'Glacier Survey - Ice Core Register';
+  ownership: DID { identifier: 'glacier-survey-desk' };
+  documentation: 'Projects the whole recovered ice-core register under a mixed alias contract - the coring coordinates, the field grades, the archive attributes, both logged instants and the two recovered measures - then de-duplicates and orders the register by core code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::jadeglacier4::domain::IceCoreSample.all()->project(
+      [
+        s|$s.coreCode,
+        s|$s.glacierName,
+        s|$s.basinCode,
+        s|$s.siteCode,
+        s|$s.drillCrewCode,
+        s|$s.surfaceKindCode,
+        s|$s.layerLabel,
+        s|$s.crystalGradeCode,
+        s|$s.debrisKindCode,
+        s|$s.meltStateCode,
+        s|$s.samplerCode,
+        s|$s.storageBoxCode,
+        s|$s.conditionNote,
+        s|$s.reviewerName,
+        s|$s.archiveStatusCode,
+        s|$s.drilledAt,
+        s|$s.loggedAt,
+        s|$s.coreDepthM,
+        s|$s.coreLengthCm
+      ],
+      [
+        'coreCode',
+        'glacier_name',
+        'basinCode',
+        'site_code',
+        'Drill Crew',
+        'surfaceKindCode',
+        'Layer Label',
+        'crystal_grade_code',
+        'debrisKindCode',
+        'Melt State',
+        'samplerCode',
+        'storage_box_code',
+        'Condition Note',
+        'reviewerName',
+        'Archive Status',
+        'drilledAt',
+        'logged_at',
+        'coreDepthM',
+        'Core Length Cm'
+      ]
+    )->distinct()->sort(
+      [
+        asc('coreCode')
+      ]
+    )->limit(50);
+    mapping: test::jadeglacier4::mapping::IceCoreSampleMapping;
+    runtime: test::jadeglacier4::runtime::IceCoreSampleRuntime;
+  }
+  testSuites:
+  [
+    iceCoreRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          glacierWarehouse:
+            Relational
+            #{
+              icefield.ice_core_sample:
+                'core_code,glacier_name,basin_code,site_code,drill_crew_code,surface_kind_code,layer_label,crystal_grade_code,debris_kind_code,melt_state_code,sampler_code,storage_box_code,condition_note,reviewer_name,archive_status_code,drilled_at,logged_at,core_depth_m,core_length_cm\n'+
+                'IC-0001,Jade Cirque Glacier,BS-NORTH,ST-0140,DC-ALPHA,SK-FIRN,Upper firn band,CG-COARSE,DK-SILT,MS-DRY,SM-CORER3,BX-0071,Column recovered intact,r.aspen,AS-SHELVED,2026-03-01 06:15:00,2026-03-01 09:40:00,128.75,96.25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theRecoveredColumnIsRegisteredUnderEveryAlias:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            oneShelvedCoreWithBothInstantsAndBothMeasures:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"coreCode":"IC-0001","glacier_name":"Jade Cirque Glacier","basinCode":"BS-NORTH","site_code":"ST-0140","Drill Crew":"DC-ALPHA","surfaceKindCode":"SK-FIRN","Layer Label":"Upper firn band","crystal_grade_code":"CG-COARSE","debrisKindCode":"DK-SILT","Melt State":"MS-DRY","samplerCode":"SM-CORER3","storage_box_code":"BX-0071","Condition Note":"Column recovered intact","reviewerName":"r.aspen","Archive Status":"AS-SHELVED","drilledAt":"2026-03-01T06:15:00.000000000+0000","logged_at":"2026-03-01T09:40:00.000000000+0000","coreDepthM":128.75,"Core Length Cm":96.25}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

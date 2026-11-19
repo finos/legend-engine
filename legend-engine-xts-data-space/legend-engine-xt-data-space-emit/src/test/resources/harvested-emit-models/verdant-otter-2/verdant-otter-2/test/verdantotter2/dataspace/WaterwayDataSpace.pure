@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace demo::verdantotter2::dataspace::WaterwayDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'passage';
+      description: 'Passage tier - the composed passage mapping, which pulls in the waterway and reach bindings, resolved through the passage runtime.';
+      mapping: demo::verdantotter2::mapping::PassageMapping;
+      defaultRuntime: demo::verdantotter2::runtime::PassageRuntime;
+    },
+    {
+      name: 'waterway';
+      description: 'Waterway tier - the intermediate waterway mapping resolved through its own runtime, without the test-owning outer mapping.';
+      mapping: demo::verdantotter2::mapping::WaterwayMapping;
+      defaultRuntime: demo::verdantotter2::runtime::WaterwayRuntime;
+    }
+  ];
+  defaultExecutionContext: 'passage';
+  title: 'Canal Lock Passage Register';
+  description: 'Discovery surface over the corrected canal register - lock chambers, licensed vessels, keeper shifts and the passages recorded through the chambers - so consumers reach the point-in-time projections without knowing how the mappings are composed or which runtime resolves them.';
+  elements:
+  [
+    demo::verdantotter2::domain::LockChamber,
+    demo::verdantotter2::domain::LockPassage,
+    demo::verdantotter2::domain::Reach,
+    demo::verdantotter2::domain::Vessel
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Lock Passages As Of';
+      description: 'The point-in-time projection of recorded lock passages.';
+      executable: demo::verdantotter2::service::PassagesAsOf;
+    },
+    {
+      id: 2;
+      title: 'Lock Chambers As Of';
+      description: 'The point-in-time chamber projection carrying the join-reached reach name.';
+      executable: demo::verdantotter2::service::LockChambersAsOf;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'lock-register@canalnavigation.invalid';
+  };
+}

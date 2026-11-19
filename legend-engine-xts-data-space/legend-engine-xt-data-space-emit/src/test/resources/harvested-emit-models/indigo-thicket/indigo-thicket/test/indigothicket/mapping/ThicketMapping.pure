@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigothicket::mapping::ThicketMapping
+(
+  *test::indigothicket::domain::RingingSite[ringingSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigothicket::store::ThicketDB]thicket.ringing_site.site_code
+    )
+    ~mainTable [test::indigothicket::store::ThicketDB]thicket.ringing_site
+    siteCode: [test::indigothicket::store::ThicketDB]thicket.ringing_site.site_code,
+    siteName: [test::indigothicket::store::ThicketDB]thicket.ringing_site.site_name,
+    habitatCode: toUpper([test::indigothicket::store::ThicketDB]thicket.ringing_site.habitat_code)
+  }
+
+  *test::indigothicket::domain::RecordSighting[recordSighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigothicket::store::ThicketDB]thicket.record_sighting.sighting_code
+    )
+    ~mainTable [test::indigothicket::store::ThicketDB]thicket.record_sighting
+    sightingCode: [test::indigothicket::store::ThicketDB]thicket.record_sighting.sighting_code,
+    observerRole: toUpper([test::indigothicket::store::ThicketDB]thicket.record_sighting.observer_role),
+    sightingNote: [test::indigothicket::store::ThicketDB]thicket.record_sighting.sighting_note
+  }
+
+  *test::indigothicket::domain::RingingRecord[ringingRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigothicket::store::ThicketDB]thicket.ringing_record.record_code
+    )
+    ~mainTable [test::indigothicket::store::ThicketDB]thicket.ringing_record
+    recordCode: [test::indigothicket::store::ThicketDB]thicket.ringing_record.record_code,
+    speciesCode: toUpper([test::indigothicket::store::ThicketDB]thicket.ringing_record.species_code),
+    wingMm: [test::indigothicket::store::ThicketDB]thicket.ringing_record.wing_mm,
+    massG: [test::indigothicket::store::ThicketDB]thicket.ringing_record.mass_g,
+    ringedAt: [test::indigothicket::store::ThicketDB]thicket.ringing_record.ringed_at,
+    checkedAt: [test::indigothicket::store::ThicketDB]thicket.ringing_record.checked_at,
+    retrap: [test::indigothicket::store::ThicketDB]thicket.ringing_record.retrap,
+    adult: [test::indigothicket::store::ThicketDB]thicket.ringing_record.adult,
+    site[ringingSite]: [test::indigothicket::store::ThicketDB]@Record_Site,
+    sightings[recordSighting]: [test::indigothicket::store::ThicketDB]@Record_Sighting
+  }
+)

@@ -1,0 +1,71 @@
+name: hazel-fossil-3
+title: "Fossil Dig Register — Enumerated Banding Over A Four-Hop Reference Chain"
+description: |
+  A non-financial palaeontology dig model whose mapping layer carries the whole derivation
+  stack over a cross-schema relational estate. Specimens are banded through an eight-arm
+  span conditional whose fallback leaves the band with no value, the log summary folds a
+  four-deep conditional over a nullable note and a nullable recovery date, and the matrix
+  mass defaults where the source column is null. A store filter withholds ungraded
+  specimens, a store view folds the matrix and preparation codes into a face label through
+  dyna functions, a second grouped view sums lot masses, and the bed, site, district and
+  region columns are reached by walking a four-hop join path across the reference schemas.
+  A grouped class mapping folds fragment lots into per-specimen tallies, a distinct class
+  mapping collapses repeated matrix codes, an embedded block and an inline stamp are folded
+  out of the specimen row itself, association implementations carry the reference chain on
+  the class side, four enumeration mappings decode both bare columns and computed
+  expressions, and an including mapping routes a notice extent through an operation union.
+  Mapping test suites assert every band arm, both conditional fallbacks, the multi-hop hit
+  and its two misses, the unmapped enumeration source value, the folded lot rollup, the
+  collapsed roster and both operation branches.
+modelSources:
+  model:
+    root: hazel-fossil-3
+    files:
+      - test/hazelfossil3/domain/FossilDomain.pure
+      - test/hazelfossil3/mapping/FossilBaseMapping.pure
+      - test/hazelfossil3/mapping/FossilCatalogMapping.pure
+      - test/hazelfossil3/mapping/FossilEnumMappings.pure
+      - test/hazelfossil3/store/FossilDigDb.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-distinct
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-group-by
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - test::hazelfossil3::store::FossilDigDb
+complexity: basic
+tags:
+  - conditional-transform
+  - cross-schema
+  - distinct-mapping
+  - duckdb
+  - embedded-mapping
+  - enumeration-mapping
+  - group-by-mapping
+  - inline-view
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - operation-mapping
+  - palaeontology

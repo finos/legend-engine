@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::quietdelta::mapping::KelpSurveyMapping
+(
+  *demo::quietdelta::domain::SurveyReef[reefSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::quietdelta::store::KelpDB]kelp.survey_reef.reef_ref
+    )
+    ~mainTable [demo::quietdelta::store::KelpDB]kelp.survey_reef
+    reefRef: [demo::quietdelta::store::KelpDB]kelp.survey_reef.reef_ref,
+    reefLabel: [demo::quietdelta::store::KelpDB]kelp.survey_reef.reef_label,
+    coastalZone: [demo::quietdelta::store::KelpDB]kelp.survey_reef.coastal_zone,
+    meanDepthMetres: [demo::quietdelta::store::KelpDB]kelp.survey_reef.mean_depth_metres,
+    wardenTeam: [demo::quietdelta::store::KelpDB]kelp.survey_reef.warden_team
+  }
+
+  *demo::quietdelta::domain::CanopyTransect[transectSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::quietdelta::store::KelpDB]kelp.canopy_transect.transect_ref
+    )
+    ~mainTable [demo::quietdelta::store::KelpDB]kelp.canopy_transect
+    transectRef: [demo::quietdelta::store::KelpDB]kelp.canopy_transect.transect_ref,
+    reefRef: [demo::quietdelta::store::KelpDB]kelp.canopy_transect.reef_ref,
+    swumOn: [demo::quietdelta::store::KelpDB]kelp.canopy_transect.swum_on,
+    stipeCount: [demo::quietdelta::store::KelpDB]kelp.canopy_transect.stipe_count,
+    canopyCoverPct: [demo::quietdelta::store::KelpDB]kelp.canopy_transect.canopy_cover_pct,
+    visibilityMetres: [demo::quietdelta::store::KelpDB]kelp.canopy_transect.visibility_metres,
+    reefLabel: [demo::quietdelta::store::KelpDB]@Transect_Reef | kelp.survey_reef.reef_label,
+    reefZone: [demo::quietdelta::store::KelpDB]@Transect_Reef | kelp.survey_reef.coastal_zone
+  }
+
+  *demo::quietdelta::domain::HoldfastQuadrat[quadratSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::quietdelta::store::KelpDB]kelp.holdfast_quadrat.quadrat_ref
+    )
+    ~mainTable [demo::quietdelta::store::KelpDB]kelp.holdfast_quadrat
+    quadratRef: [demo::quietdelta::store::KelpDB]kelp.holdfast_quadrat.quadrat_ref,
+    transectRef: [demo::quietdelta::store::KelpDB]kelp.holdfast_quadrat.transect_ref,
+    urchinCount: [demo::quietdelta::store::KelpDB]kelp.holdfast_quadrat.urchin_count,
+    sedimentGrade: [demo::quietdelta::store::KelpDB]kelp.holdfast_quadrat.sediment_grade,
+    reefZone: [demo::quietdelta::store::KelpDB]@Quadrat_Transect > @Transect_Reef | kelp.survey_reef.coastal_zone
+  }
+
+  testSuites:
+  [
+    joinReachedZoneSuite:
+    {
+      function: |demo::quietdelta::domain::HoldfastQuadrat.all()->project(
+  [
+    q|$q.quadratRef,
+    q|$q.transectRef,
+    q|$q.urchinCount,
+    q|$q.sedimentGrade,
+    q|$q.reefZone
+  ],
+  [
+    'QuadratRef',
+    'TransectRef',
+    'UrchinCount',
+    'SedimentGrade',
+    'ReefZone'
+  ]
+);
+      tests:
+      [
+        quadratZoneReachedOverTwoHops:
+        {
+          doc: 'Projects the quadrat rows together with the coastal zone reached over a two-hop inner-join path, so the aliased main table and both join shapes resolve in one query.';
+          data:
+          [
+            demo::quietdelta::store::KelpDB:
+              Relational
+              #{
+                kelp.survey_reef:
+                  'reef_ref,reef_label,coastal_zone,mean_depth_metres,warden_team\n'+
+                  'RF-1,Granite Skerry,INTERTIDAL,8.50,north shore team\n'+
+                  'RF-2,Cobble Sound,SUBTIDAL,17.25,west shore team\n';
+
+                kelp.canopy_transect:
+                  'transect_ref,reef_ref,swum_on,stipe_count,canopy_cover_pct,visibility_metres\n'+
+                  'TR-01,RF-1,2026-05-04,142,63.50,6.25\n'+
+                  'TR-02,RF-2,2026-05-11,87,41.75,4.00\n';
+
+                kelp.holdfast_quadrat:
+                  'quadrat_ref,transect_ref,urchin_count,sediment_grade\n'+
+                  'HQ-01,TR-01,12,coarse sand\n'+
+                  'HQ-02,TR-02,31,fine silt\n';
+              }#
+          ];
+          asserts:
+          [
+            bothQuadratsCarryTheirReefZone:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"QuadratRef":"HQ-01","TransectRef":"TR-01","UrchinCount":12,"SedimentGrade":"coarse sand","ReefZone":"INTERTIDAL"},{"QuadratRef":"HQ-02","TransectRef":"TR-02","UrchinCount":31,"SedimentGrade":"fine silt","ReefZone":"SUBTIDAL"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

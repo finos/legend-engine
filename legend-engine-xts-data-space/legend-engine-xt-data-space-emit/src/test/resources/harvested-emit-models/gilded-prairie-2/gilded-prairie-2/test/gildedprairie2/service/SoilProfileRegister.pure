@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedprairie2::service::SoilProfileRegister
+{
+  pattern: '/gildedprairie2/v1/soil-profile-register';
+  title: 'Soil Profiles Recorded Against Survey Plots';
+  owners:
+  [
+    'prairie-survey-platform',
+    'grassland-stewardship'
+  ];
+  documentation: 'Reads the processing-temporal soil-profile extent through the habitat mapping, which declares no include of its own, and keeps the profiles whose soil series begins with a caller prefix once the stored series has been upper-cased to match the caller prefix. The organic fraction is projected as recorded, so an absent fraction reaches the caller as a null rather than a substituted value, and the plot name is reached one join away from the profile row.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1], seriesPrefix: String[1]|test::gildedprairie2::domain::PlotSoil.all($asOf)->filter(
+      s|$s.soilSeries->toUpper()->startsWith($seriesPrefix)
+    )->project(
+      [
+        s|$s.plotCode,
+        s|$s.soilSeries,
+        s|$s.organicPct,
+        s|$s.plotName
+      ],
+      [
+        'PlotCode',
+        'SoilSeries',
+        'OrganicPct',
+        'PlotName'
+      ]
+    )->sort(
+      [
+        asc('PlotCode')
+      ]
+    );};
+    mapping: test::gildedprairie2::mapping::PrairieHabitatMapping;
+    runtime: test::gildedprairie2::runtime::PrairieHabitatRuntime;
+  }
+  testSuites:
+  [
+    soilProfileSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie_plot.plot_soil:
+                'plot_code,soil_series,organic_pct,in_z,out_z\n'+
+                'PL-01,Loam Ridge,4.5,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-02,Loam Hollow,,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-03,Sandy Bench,2.5,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-04,Loam Terrace,3.5,2018-01-01 00:00:00,2019-01-01 00:00:00\n';
+              prairie_plot.plot:
+                'plot_code,plot_name,region_code,established_on,plot_area_m2,in_z,out_z\n'+
+                'PL-01,North Ridge Sward,RG-01,2019-04-01,2400.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'PL-02,Creek Bend Sward,RG-01,2020-05-01,1800.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        prefixedSeriesWithAbsentFraction:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            seriesPrefix = 'LOAM'
+          ]
+          asserts:
+          [
+            twoEffectiveLoamProfiles:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-01","SoilSeries":"Loam Ridge","OrganicPct":4.5,"PlotName":"North Ridge Sward"},{"PlotCode":"PL-02","SoilSeries":"Loam Hollow","OrganicPct":null,"PlotName":"Creek Bend Sward"}]';
+                  }#;
+              }#
+          ]
+        },
+        supersededProfileOutOfRange:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01T00:00:00,
+            seriesPrefix = 'LOAM T'
+          ]
+          asserts:
+          [
+            closedProfileExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

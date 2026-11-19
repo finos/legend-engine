@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigoprairie4::mapping::PrairieTallyMapping
+(
+  include mapping test::indigoprairie4::mapping::PrairieBaseMapping
+
+  *test::indigoprairie4::domain::PlotTallyLabel[plotTallySet]: Pure
+  {
+    ~src test::indigoprairie4::source::RawPlotTallyRecord
+    tallyCode: $src.tallyRef->trim()->toUpper(),
+    plotLabel: $src.plotNumber->toString(),
+    sproutLabel: $src.sproutRate->round()->toString(),
+    surveyLabel: $src.surveyedOn->toString(),
+    markerLabel: if($src.markerIds->isNotEmpty(),
+                    | $src.markerIds->first()->toOne()->toString(),
+                    | 'NO-MARKER'),
+    noteLabel: if($src.observerNotes->isNotEmpty(),
+                  | $src.observerNotes->first()->toOne()->toString(),
+                  | 'NO-NOTE'),
+    plotFallbackLabel: if($src.altPlotIds->isNotEmpty(),
+                          | $src.altPlotIds->first()->toOne()->toString(),
+                          | $src.plotNumber->toString()),
+    provenance[provenanceSet]: $src.collection
+  }
+
+  testSuites:
+  [
+    plotTallySuite:
+    {
+      function: |test::indigoprairie4::domain::PlotTallyLabel.all()->graphFetch(
+        #{
+          test::indigoprairie4::domain::PlotTallyLabel{
+            tallyCode,
+            plotLabel,
+            sproutLabel,
+            surveyLabel,
+            markerLabel,
+            noteLabel,
+            plotFallbackLabel,
+            provenance{
+              collectionCode,
+              regionName,
+              primaryAlias
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::indigoprairie4::domain::PlotTallyLabel{
+            tallyCode,
+            plotLabel,
+            sproutLabel,
+            surveyLabel,
+            markerLabel,
+            noteLabel,
+            plotFallbackLabel,
+            provenance{
+              collectionCode,
+              regionName,
+              primaryAlias
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyLabelArm:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::indigoprairie4::source::RawPlotTallyRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tallyRef":"tal-01 ","plotNumber":11,"sproutRate":0.4,"surveyedOn":"2024-05-01","markerIds":[7],"observerNotes":["dew line"],"altPlotIds":[21],"collection":{"collectionCode":"col-01","regionName":"North Prairie","aliases":["north tally"]}},{"tallyRef":"tal-02 ","plotNumber":12,"sproutRate":1.2,"surveyedOn":"2024-05-02","markerIds":[],"observerNotes":["dry crust"],"altPlotIds":[22],"collection":{"collectionCode":"col-02","regionName":"East Prairie","aliases":["east tally"]}},{"tallyRef":"tal-03 ","plotNumber":13,"sproutRate":2.7,"surveyedOn":"2024-05-03","markerIds":[9],"observerNotes":[],"altPlotIds":[23],"collection":{"collectionCode":"col-03","regionName":"South Prairie","aliases":["south tally"]}},{"tallyRef":"tal-04 ","plotNumber":14,"sproutRate":3.1,"surveyedOn":"2024-05-04","markerIds":[10],"observerNotes":["frost edge"],"altPlotIds":[],"collection":{"collectionCode":"col-04","regionName":"West Prairie","aliases":["west tally"]}},{"tallyRef":"tal-05 ","plotNumber":15,"sproutRate":4.8,"surveyedOn":"2024-05-05","markerIds":[],"observerNotes":[],"altPlotIds":[],"collection":{"collectionCode":"col-05","regionName":"Central Prairie","aliases":["central tally"]}},{"tallyRef":"tal-06 ","plotNumber":16,"sproutRate":5.2,"surveyedOn":"2024-05-06","markerIds":[12,13],"observerNotes":["wind bent","second pass"],"altPlotIds":[26,27],"collection":{"collectionCode":"col-06","regionName":"Upper Prairie","aliases":["upper tally"]}},{"tallyRef":"tal-07 ","plotNumber":17,"sproutRate":6.9,"surveyedOn":"2024-05-07","markerIds":[14],"observerNotes":[],"altPlotIds":[],"collection":{"collectionCode":"col-07","regionName":"Lower Prairie","aliases":["lower tally"]}},{"tallyRef":"tal-08 ","plotNumber":18,"sproutRate":7.3,"surveyedOn":"2024-05-08","markerIds":[],"observerNotes":["shade gap"],"altPlotIds":[],"collection":{"collectionCode":"col-08","regionName":"Ridge Prairie","aliases":["ridge tally"]}},{"tallyRef":"tal-09 ","plotNumber":19,"sproutRate":8.6,"surveyedOn":"2024-05-09","markerIds":[],"observerNotes":[],"altPlotIds":[29],"collection":{"collectionCode":"col-09","regionName":"Reserve Prairie","aliases":["reserve tally"]}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            nineTallyLabels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tallyCode":"TAL-01","plotLabel":"11","sproutLabel":"0","surveyLabel":"2024-05-01","markerLabel":"7","noteLabel":"dew line","plotFallbackLabel":"21","provenance":{"collectionCode":"COL-01","regionName":"North Prairie","primaryAlias":"north tally"}},{"tallyCode":"TAL-02","plotLabel":"12","sproutLabel":"1","surveyLabel":"2024-05-02","markerLabel":"NO-MARKER","noteLabel":"dry crust","plotFallbackLabel":"22","provenance":{"collectionCode":"COL-02","regionName":"East Prairie","primaryAlias":"east tally"}},{"tallyCode":"TAL-03","plotLabel":"13","sproutLabel":"3","surveyLabel":"2024-05-03","markerLabel":"9","noteLabel":"NO-NOTE","plotFallbackLabel":"23","provenance":{"collectionCode":"COL-03","regionName":"South Prairie","primaryAlias":"south tally"}},{"tallyCode":"TAL-04","plotLabel":"14","sproutLabel":"3","surveyLabel":"2024-05-04","markerLabel":"10","noteLabel":"frost edge","plotFallbackLabel":"14","provenance":{"collectionCode":"COL-04","regionName":"West Prairie","primaryAlias":"west tally"}},{"tallyCode":"TAL-05","plotLabel":"15","sproutLabel":"5","surveyLabel":"2024-05-05","markerLabel":"NO-MARKER","noteLabel":"NO-NOTE","plotFallbackLabel":"15","provenance":{"collectionCode":"COL-05","regionName":"Central Prairie","primaryAlias":"central tally"}},{"tallyCode":"TAL-06","plotLabel":"16","sproutLabel":"5","surveyLabel":"2024-05-06","markerLabel":"12","noteLabel":"wind bent","plotFallbackLabel":"26","provenance":{"collectionCode":"COL-06","regionName":"Upper Prairie","primaryAlias":"upper tally"}},{"tallyCode":"TAL-07","plotLabel":"17","sproutLabel":"7","surveyLabel":"2024-05-07","markerLabel":"14","noteLabel":"NO-NOTE","plotFallbackLabel":"17","provenance":{"collectionCode":"COL-07","regionName":"Lower Prairie","primaryAlias":"lower tally"}},{"tallyCode":"TAL-08","plotLabel":"18","sproutLabel":"7","surveyLabel":"2024-05-08","markerLabel":"NO-MARKER","noteLabel":"shade gap","plotFallbackLabel":"18","provenance":{"collectionCode":"COL-08","regionName":"Ridge Prairie","primaryAlias":"ridge tally"}},{"tallyCode":"TAL-09","plotLabel":"19","sproutLabel":"9","surveyLabel":"2024-05-09","markerLabel":"NO-MARKER","noteLabel":"NO-NOTE","plotFallbackLabel":"29","provenance":{"collectionCode":"COL-09","regionName":"Reserve Prairie","primaryAlias":"reserve tally"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

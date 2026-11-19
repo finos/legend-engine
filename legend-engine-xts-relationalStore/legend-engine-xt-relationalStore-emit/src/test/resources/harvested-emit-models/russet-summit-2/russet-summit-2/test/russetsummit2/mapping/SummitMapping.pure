@@ -1,0 +1,209 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetsummit2::mapping::SummitMapping
+(
+  include test::russetsummit2::mapping::SummitEnumMappings
+
+  *test::russetsummit2::domain::FootpathSection[section]: Relational
+  {
+    ~filter [test::russetsummit2::store::SummitDB]SurveyedSectionFilter
+    ~primaryKey
+    (
+      [test::russetsummit2::store::SummitDB]path.footpath_section.section_code
+    )
+    ~mainTable [test::russetsummit2::store::SummitDB]path.footpath_section
+    sectionCode: [test::russetsummit2::store::SummitDB]path.footpath_section.section_code,
+    sectionName: [test::russetsummit2::store::SummitDB]path.footpath_section.section_name,
+    surface: EnumerationMapping SurfaceKindMapping: [test::russetsummit2::store::SummitDB]path.footpath_section.surface_code,
+    lengthM: [test::russetsummit2::store::SummitDB]path.footpath_section.length_m
+  }
+
+  *test::russetsummit2::domain::WorkCrew[crew]: Relational
+  {
+    ~filter [test::russetsummit2::store::SummitDB]StaffedCrewFilter
+    ~primaryKey
+    (
+      [test::russetsummit2::store::SummitDB]path.work_crew.crew_code
+    )
+    ~mainTable [test::russetsummit2::store::SummitDB]path.work_crew
+    crewCode: [test::russetsummit2::store::SummitDB]path.work_crew.crew_code,
+    crewName: [test::russetsummit2::store::SummitDB]path.work_crew.crew_name,
+    crewKind: [test::russetsummit2::store::SummitDB]path.work_crew.crew_kind,
+    wardenName: [test::russetsummit2::store::SummitDB]@Crew_Depot > @Depot_Warden | [test::russetsummit2::store::SummitDB]path.path_warden.warden_name
+  }
+
+  *test::russetsummit2::domain::RepairTask[task]: Relational
+  {
+    ~filter [test::russetsummit2::store::SummitDB]@Task_Section | [test::russetsummit2::store::SummitDB]SurveyedSectionFilter
+    ~primaryKey
+    (
+      [test::russetsummit2::store::SummitDB]path.repair_task.task_id
+    )
+    ~mainTable [test::russetsummit2::store::SummitDB]path.repair_task
+    taskId: [test::russetsummit2::store::SummitDB]path.repair_task.task_id,
+    sectionCode: [test::russetsummit2::store::SummitDB]path.repair_task.section_code,
+    stage: EnumerationMapping TaskStageMapping: [test::russetsummit2::store::SummitDB]path.repair_task.stage_code,
+    urgency: EnumerationMapping UrgencyBandMapping: case(
+      greaterThanEqual([test::russetsummit2::store::SummitDB]path.repair_task.priority_score, 8),
+      'URG/CRI',
+      case(
+        greaterThanEqual([test::russetsummit2::store::SummitDB]path.repair_task.priority_score, 5),
+        'URG/ELE',
+        'URG/ROU'
+      )
+    ),
+    haulNote: case(
+      greaterThan([test::russetsummit2::store::SummitDB]path.repair_task.spoil_load_kg, 400.0),
+      concat(
+        'HAUL-',
+        toUpper(trim([test::russetsummit2::store::SummitDB]path.repair_task.stage_code))
+      ),
+      case(
+        greaterThan([test::russetsummit2::store::SummitDB]path.repair_task.stone_count, 120),
+        'BARROW',
+        sqlNull()
+      )
+    ),
+    loadUnits: plus(
+      [test::russetsummit2::store::SummitDB]path.repair_task.stone_count,
+      [test::russetsummit2::store::SummitDB]path.repair_task.priority_score
+    ),
+    crewGrade: EnumerationMapping CrewGradeMapping: case(
+      equal([test::russetsummit2::store::SummitDB]@Task_Crew | [test::russetsummit2::store::SummitDB]path.work_crew.crew_kind, 'STF'),
+      'GRD/LEAD',
+      'GRD/TRAIN'
+    ),
+    wardenName: [test::russetsummit2::store::SummitDB]@Task_Crew > @Crew_Depot > @Depot_Warden | [test::russetsummit2::store::SummitDB]path.path_warden.warden_name,
+    sectionName: [test::russetsummit2::store::SummitDB]@Task_Section | [test::russetsummit2::store::SummitDB]path.footpath_section.section_name
+  }
+
+  test::russetsummit2::domain::Section_Tasks: Relational
+  {
+    AssociationMapping
+    (
+      tasks[section, task]: [test::russetsummit2::store::SummitDB]@Task_Section,
+      section[task, section]: [test::russetsummit2::store::SummitDB]@Task_Section
+    )
+  }
+
+  testSuites:
+  [
+    repairTaskSuite:
+    {
+      function: |test::russetsummit2::domain::RepairTask.all()->project(
+  [
+    t|$t.taskId,
+    t|$t.sectionCode,
+    t|$t.stage,
+    t|$t.urgency,
+    t|$t.haulNote,
+    t|$t.loadUnits,
+    t|$t.crewGrade,
+    t|$t.wardenName,
+    t|$t.sectionName
+  ],
+  [
+    'TaskId',
+    'SectionCode',
+    'Stage',
+    'Urgency',
+    'HaulNote',
+    'LoadUnits',
+    'CrewGrade',
+    'Warden',
+    'SectionName'
+  ]
+)->sort(
+  [
+    asc('TaskId')
+  ]
+);
+      tests:
+      [
+        allTrackedTasks:
+        {
+          data:
+          [
+            test::russetsummit2::store::SummitDB: Reference
+              #{
+                test::russetsummit2::data::SummitFixtureData
+              }#
+          ];
+          asserts:
+          [
+            elevenTaskRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TaskId":1,"SectionCode":"SEC-01","Stage":"RAISED","Urgency":"CRITICAL","HaulNote":"HAUL-STG/RSD","LoadUnits":209,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Zigzag Traverse"},{"TaskId":2,"SectionCode":"SEC-01","Stage":"SCHEDULED","Urgency":"ELEVATED","HaulNote":"BARROW","LoadUnits":146,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Zigzag Traverse"},{"TaskId":3,"SectionCode":"SEC-02","Stage":"ACTIVE","Urgency":"ROUTINE","HaulNote":null,"LoadUnits":42,"CrewGrade":"TRAINEE","Warden":"Rex Halloway","SectionName":"Corrie Steps"},{"TaskId":4,"SectionCode":"SEC-02","Stage":"COMPLETE","Urgency":"CRITICAL","HaulNote":"HAUL-STG/DON","LoadUnits":308,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Corrie Steps"},{"TaskId":5,"SectionCode":"SEC-03","Stage":"RAISED","Urgency":"ELEVATED","HaulNote":"HAUL-STG/RSD","LoadUnits":105,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Bog Crossing"},{"TaskId":6,"SectionCode":"SEC-03","Stage":null,"Urgency":"ROUTINE","HaulNote":"BARROW","LoadUnits":131,"CrewGrade":"TRAINEE","Warden":"Rex Halloway","SectionName":"Bog Crossing"},{"TaskId":7,"SectionCode":"SEC-01","Stage":"ACTIVE","Urgency":"ELEVATED","HaulNote":"BARROW","LoadUnits":128,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Zigzag Traverse"},{"TaskId":8,"SectionCode":"SEC-02","Stage":"SCHEDULED","Urgency":"CRITICAL","HaulNote":null,"LoadUnits":18,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Corrie Steps"},{"TaskId":9,"SectionCode":"SEC-03","Stage":"COMPLETE","Urgency":"ROUTINE","HaulNote":"HAUL-STG/DON","LoadUnits":404,"CrewGrade":"TRAINEE","Warden":"Rex Halloway","SectionName":"Bog Crossing"},{"TaskId":10,"SectionCode":"SEC-01","Stage":"RAISED","Urgency":"ELEVATED","HaulNote":null,"LoadUnits":65,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Zigzag Traverse"},{"TaskId":11,"SectionCode":"SEC-02","Stage":"ACTIVE","Urgency":"ROUTINE","HaulNote":"HAUL-STG/ACT","LoadUnits":17,"CrewGrade":"LEAD","Warden":"Ivy Thorn","SectionName":"Corrie Steps"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sectionTaskSuite:
+    {
+      function: |test::russetsummit2::domain::FootpathSection.all()->project(
+  [
+    s|$s.sectionCode,
+    s|$s.sectionName,
+    s|$s.surface,
+    s|$s.tasks->count()
+  ],
+  [
+    'SectionCode',
+    'SectionName',
+    'Surface',
+    'TaskCount'
+  ]
+)->sort(
+  [
+    asc('SectionCode')
+  ]
+);
+      tests:
+      [
+        sectionTaskCounts:
+        {
+          data:
+          [
+            test::russetsummit2::store::SummitDB: Reference
+              #{
+                test::russetsummit2::data::SummitFixtureData
+              }#
+          ];
+          asserts:
+          [
+            threeSectionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SectionCode":"SEC-01","SectionName":"Zigzag Traverse","Surface":"STONE_PITCH","TaskCount":4},{"SectionCode":"SEC-02","SectionName":"Corrie Steps","Surface":"AGGREGATE","TaskCount":4},{"SectionCode":"SEC-03","SectionName":"Bog Crossing","Surface":"BOARDWALK","TaskCount":3}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

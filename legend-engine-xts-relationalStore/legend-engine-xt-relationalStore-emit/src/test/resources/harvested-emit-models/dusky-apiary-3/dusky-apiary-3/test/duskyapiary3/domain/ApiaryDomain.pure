@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::duskyapiary3::domain::HiveStatus
+{
+  ACTIVE,
+  RESTING,
+  EMPTY
+}
+
+Class test::duskyapiary3::domain::ApiaryYard
+{
+  yardId: Integer[1];
+  yardCode: String[1];
+  yardName: String[1];
+  plotId: Integer[1];
+}
+
+Class test::duskyapiary3::domain::ForagePlot
+{
+  plotId: Integer[1];
+  plotCode: String[1];
+  plotName: String[1];
+  bloomNote: String[1];
+}
+
+Class test::duskyapiary3::domain::Hive
+[
+  namedHive: or(and(isNotEmpty($this.hiveName), lessThanEqual($this.hiveName->toOne()->trim()->length(), 40)), isEmpty($this.hiveName)),
+  positivePopulation: or($this.status->toString() == 'EMPTY', greaterThan($this.population, 0)),
+  boundedPopulation: or($this.status->toString() == 'EMPTY', lessThanEqual($this.population, 500)),
+  validYardCode: $this.yardCode->startsWith('YD-'),
+  meaningfulStatus: or(
+    and($this.status->toString() == 'ACTIVE', greaterThan($this.population, 20)),
+    or(
+      $this.status->toString() == 'RESTING',
+      and($this.status->toString() == 'EMPTY', equal($this.population, 0))
+    )
+  ),
+  codeDistinctFromYard: equal($this.hiveCode, $this.yardCode)->not()
+]
+{
+  hiveId: Integer[1];
+  hiveCode: String[1];
+  hiveName: String[0..1];
+  yardId: Integer[1];
+  yardCode: String[1];
+  population: Integer[1];
+  status: test::duskyapiary3::domain::HiveStatus[1];
+  plotName: String[1];
+  inspectionNote: String[1];
+}
+
+Class test::duskyapiary3::domain::Inspection
+{
+  inspectionId: Integer[1];
+  hiveId: Integer[1];
+  inspectorName: String[1];
+  inspectionNote: String[1];
+}
+
+Association test::duskyapiary3::domain::HiveYard
+{
+  hive: test::duskyapiary3::domain::Hive[1];
+  yard: test::duskyapiary3::domain::ApiaryYard[1];
+}

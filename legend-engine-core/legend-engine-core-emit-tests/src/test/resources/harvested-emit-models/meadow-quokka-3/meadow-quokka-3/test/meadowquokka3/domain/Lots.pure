@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::meadowquokka3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'The shared contract every seed lot satisfies, however the seed was obtained.'} test::meadowquokka3::domain::SeedLot
+{
+  accessionCode: String[1];
+  taxon: TaxonRecord[1];
+  storedIn: StorageVessel[0..1];
+  receivedOn: StrictDate[1];
+  seedCount: Integer[1];
+  viabilityPercent: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A seed lot gathered from a wild population, refined with the collection detail that only a wild gathering carries.'} test::meadowquokka3::domain::WildCollectedSeedLot extends SeedLot
+{
+  populationLabel: String[1];
+  collectedBy: Propagator[1];
+  habitatNotes: String[0..1];
+  collectorPermitCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A seed lot raised in the garden from a controlled cross, refined with the parentage that only a garden cross carries.'} test::meadowquokka3::domain::CultivatedSeedLot extends SeedLot
+{
+  seedParentAccession: String[1];
+  pollenParentAccession: String[0..1];
+  crossedIn: Glasshouse[1];
+  handPollinated: Boolean[1];
+}

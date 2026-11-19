@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarcavern2::service::ChamberReadingRegister
+{
+  pattern: '/solarcavern/v1/chamber-readings';
+  title: 'Chamber Reading Register';
+  owners:
+  [
+    'cavern-monitoring'
+  ];
+  documentation: 'Publishes the flat chamber reading register: every mapped round projected as a tabular result with explicit labels, no predicate and no aggregation, so the plan reduces to one select over the reading table plus the tabular instantiation.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::solarcavern2::domain::ChamberReading.all()->project(
+      [
+        r|$r.readingId,
+        r|$r.chamberCode,
+        r|$r.passageName,
+        r|$r.surveyorTeam,
+        r|$r.lampActive,
+        r|$r.registryTier
+      ],
+      [
+        'ReadingId',
+        'ChamberCode',
+        'PassageName',
+        'SurveyorTeam',
+        'LampActive',
+        'RegistryTier'
+      ]
+    )->sort(
+      [
+        asc('ReadingId')
+      ]
+    );
+    mapping: test::solarcavern2::mapping::CavernMapping;
+    runtime: test::solarcavern2::runtime::CavernWarehouseRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection:
+            Relational
+            #{
+              speleo.chamber_reading:
+                'reading_id,chamber_code,passage_name,surveyor_team,depth_m,humidity_pct,logged_at,calibrated_on,lamp_active,mapped_on_num,sealed_on_num,sampled_on_num\n'+
+                '1,CH-01,Lantern Gallery,North Round,12.50,88.25,2026-03-01 08:15:00,2026-02-10,true,20260301,20260305,20260302\n'+
+                '2,CH-02,Dripstone Walk,North Round,30.10,91.50,2026-04-05 09:00:00,2026-03-11,false,0,20260410,20260405\n'+
+                '3,,,,,,,,,20260630,20260701,0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRoundIncludingTheEmptyOne:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            nullsFlowThrough:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingId":1,"ChamberCode":"CH-01","PassageName":"Lantern Gallery","SurveyorTeam":"North Round","LampActive":true,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":2,"ChamberCode":"CH-02","PassageName":"Dripstone Walk","SurveyorTeam":"North Round","LampActive":false,"RegistryTier":"CAVERN-MONITORING-REGISTER"},{"ReadingId":3,"ChamberCode":null,"PassageName":null,"SurveyorTeam":null,"LampActive":null,"RegistryTier":"CAVERN-MONITORING-REGISTER"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::russetarboretum2::store::TrailDatabase
+(
+  Schema field
+  (
+    Table trail_inspection
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      logged_on DATE NOT NULL,
+      terrain_code CHAR(2) NOT NULL,
+      severity_index INTEGER NOT NULL,
+      wash_count INTEGER NOT NULL,
+      segment_code VARCHAR(24) NOT NULL,
+      inspection_note VARCHAR(200),
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table trail_segment
+    (
+      segment_code VARCHAR(24) PRIMARY KEY,
+      segment_name VARCHAR(120) NOT NULL,
+      steward_code VARCHAR(24) NOT NULL
+    )
+  )
+
+  Schema roster
+  (
+    Table steward
+    (
+      steward_code VARCHAR(24) PRIMARY KEY,
+      steward_name VARCHAR(120) NOT NULL,
+      radio_call VARCHAR(24) NOT NULL,
+      district_code VARCHAR(24) NOT NULL
+    )
+  )
+
+  Schema geo
+  (
+    Table district
+    (
+      district_code VARCHAR(24) PRIMARY KEY,
+      district_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(24) NOT NULL
+    )
+    Table region
+    (
+      region_code VARCHAR(24) PRIMARY KEY,
+      region_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Join Inspection_Segment(field.trail_inspection.segment_code = field.trail_segment.segment_code)
+  Join Segment_Steward(field.trail_segment.steward_code = roster.steward.steward_code)
+  Join Steward_District(roster.steward.district_code = geo.district.district_code)
+  Join District_Region(geo.district.region_code = geo.region.region_code)
+)

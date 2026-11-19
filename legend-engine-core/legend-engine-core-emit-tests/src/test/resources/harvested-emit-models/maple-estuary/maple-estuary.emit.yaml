@@ -1,0 +1,42 @@
+name: maple-estuary
+title: "Maple Estuary — a sap-run digest assembled model-to-model from a submission payload and a three-branch union of draw lines"
+description: |
+  A sugarbush intake reduced to a pure model-to-model refinement: an optional-
+  heavy submission payload is transformed into a refined run summary without any
+  store in the project, so the whole plan is in-memory and the source instances
+  arrive as model data. The refinement carries a nested eight-arm band ladder
+  with an absent-measure fallback, an optional label whose fallback yields
+  nothing, a positional slice parsed into a day number, and three enumeration
+  mappings fed by computed expressions rather than raw values — one of them
+  substituting a mapped sentinel first, so a submitted code outside the mapped
+  source set is an observable case instead of a failure. The drawn lines of a run
+  are a root operation mapping that unions three model-to-model set
+  implementations, each filtered to the measure it reads, so a run contributes to
+  one, some, all or none of the branches and the branch a row came from is
+  visible in the assembled collection.
+modelSources:
+  model:
+    root: maple-estuary
+    files:
+      - test/mapleestuary/domain/EstuaryDomain.pure
+      - test/mapleestuary/mapping/SugarbushDigestM2M.pure
+      - test/mapleestuary/source/SugarbushSource.pure
+features:
+  - mapping:operation-mapping
+  - mapping:store-union
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - branch-exclusive-rows
+  - conditional-arms
+  - enumeration-mapping
+  - graph-fetch
+  - m2m
+  - model-store
+  - operation-mapping
+  - optional-multiplicity
+  - store-union
+  - sugarbush
+  - tabular-data-set

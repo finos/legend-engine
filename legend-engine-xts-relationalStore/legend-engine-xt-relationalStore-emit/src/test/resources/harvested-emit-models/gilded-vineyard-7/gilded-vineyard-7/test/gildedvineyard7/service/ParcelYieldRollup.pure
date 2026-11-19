@@ -1,0 +1,175 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedvineyard7::service::ParcelYieldRollupMulti
+{
+  pattern: '/vineyard/v1/parcels-multi/{parcel}';
+  title: 'Gilded Vineyard - Parcel yield roll-up (multi-environment)';
+  owners:
+  [
+    'vineyard-operations-platform',
+    'harvest-planning-eng'
+  ];
+  documentation: 'Multi-execution parcel roll-up that resolves an environment-keyed mapping and runtime binding at execution time. It keeps the harvested blocks of the requested parcel that carried clusters and aggregates their basket weight, cluster extremes and block count through a grouped projection.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {parcel: String[1]|test::gildedvineyard7::domain::BlockHarvest.all()->filter(
+      h|(($h.parcelCode == $parcel) && ($h.clusterCount > 0)) && (($h.harvestStatus->in(['PICKED', 'SORTING'])) && (!($h.pickCrew->isEmpty())))
+    )->groupBy(
+      [
+        h|$h.parcelCode
+      ],
+      [
+        agg(h|$h.basketWeightKg, vals|$vals->sum()),
+        agg(h|$h.clusterCount, vals|$vals->max()),
+        agg(h|$h.clusterCount, vals|$vals->min()),
+        agg(h|$h.harvestId, vals|$vals->count())
+      ],
+      [
+        'Parcel',
+        'TotalBasketKg',
+        'PeakClusters',
+        'LowClusters',
+        'BlockCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Parcel')
+      ]
+    )->limit(100)};
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::gildedvineyard7::mapping::VineyardMapping;
+      runtime: test::gildedvineyard7::runtime::VineyardRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::gildedvineyard7::mapping::VineyardMapping;
+      runtime: test::gildedvineyard7::runtime::VineyardRuntime;
+    }
+  }
+}
+
+Service test::gildedvineyard7::service::ParcelYieldRollup
+{
+  pattern: '/vineyard/v1/parcels/{parcel}';
+  title: 'Gilded Vineyard - Parcel yield roll-up';
+  owners:
+  [
+    'vineyard-operations-platform',
+    'harvest-planning-eng'
+  ];
+  documentation: 'Single-execution counterpart carrying the tested suite. It returns the picked basket weight, the highest and lowest cluster count and the number of contributing blocks for the requested parcel.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {parcel: String[1]|test::gildedvineyard7::domain::BlockHarvest.all()->filter(
+      h|(($h.parcelCode == $parcel) && ($h.clusterCount > 0)) && (($h.harvestStatus->in(['PICKED', 'SORTING'])) && (!($h.pickCrew->isEmpty())))
+    )->groupBy(
+      [
+        h|$h.parcelCode
+      ],
+      [
+        agg(h|$h.basketWeightKg, vals|$vals->sum()),
+        agg(h|$h.clusterCount, vals|$vals->max()),
+        agg(h|$h.clusterCount, vals|$vals->min()),
+        agg(h|$h.harvestId, vals|$vals->count())
+      ],
+      [
+        'Parcel',
+        'TotalBasketKg',
+        'PeakClusters',
+        'LowClusters',
+        'BlockCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Parcel')
+      ]
+    )->limit(100)};
+    mapping: test::gildedvineyard7::mapping::VineyardMapping;
+    runtime: test::gildedvineyard7::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    parcelYieldRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          vineyardConnection:
+            Relational
+            #{
+              vineyard.block_harvest:
+                'harvest_id,block_code,parcel_code,harvest_status,cluster_count,basket_weight_kg,pick_crew\n'+
+                '1,BLK-01,PAR-NORTH,PICKED,320,480,CREW-SUNRISE\n'+
+                '2,BLK-02,PAR-NORTH,PICKED,280,410,CREW-SUNRISE\n'+
+                '3,BLK-03,PAR-NORTH,SKIPPED,0,0,CREW-SUNRISE\n'+
+                '4,BLK-04,PAR-SOUTH,PICKED,500,760,CREW-RIDGE\n'+
+                '5,BLK-05,PAR-NORTH,SORTING,150,220,CREW-RIDGE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northParcelRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            parcel = 'PAR-NORTH'
+          ]
+          asserts:
+          [
+            harvestedBlocksOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Parcel":"PAR-NORTH","TotalBasketKg":1110,"PeakClusters":320,"LowClusters":150,"BlockCount":3}]';
+                  }#;
+              }#
+          ]
+        },
+        southParcelRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            parcel = 'PAR-SOUTH'
+          ]
+          asserts:
+          [
+            singleBlockParcel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Parcel":"PAR-SOUTH","TotalBasketKg":760,"PeakClusters":500,"LowClusters":500,"BlockCount":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

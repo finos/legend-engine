@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::sunlitlighthouse::mapping::TrailRegisterMapping
+(
+  *demo::sunlitlighthouse::domain::TrailMarker[marker]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.marker_code,
+      [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.in_z
+    )
+    ~mainTable [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register
+    markerCode: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.marker_code,
+    markerName: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.marker_name,
+    routeCode: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.route_code,
+    surfaceClass: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.surface_class,
+    elevationM: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.elevation_m,
+    postHeightM: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.post_height_m,
+    installedOn: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.installed_on,
+    checkedAt: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.marker_register.checked_at
+  }
+
+  *demo::sunlitlighthouse::domain::TrailShelter[shelter]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.shelter_code,
+      [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.in_z
+    )
+    ~mainTable [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register
+    shelterCode: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.shelter_code,
+    shelterName: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.shelter_name,
+    routeCode: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.route_code,
+    conditionBand: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.condition_band,
+    bunkCount: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.bunk_count,
+    floorAreaM2: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.floor_area_m2,
+    openedOn: [demo::sunlitlighthouse::store::TrailRegisterDB]trail.shelter_register.opened_on
+  }
+
+  *demo::sunlitlighthouse::domain::UpkeepInspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.inspection_code,
+      [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.in_z
+    )
+    ~mainTable [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register
+    inspectionCode: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.inspection_code,
+    markerCode: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.marker_code,
+    crewCode: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.crew_code,
+    outcomeCode: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.outcome_code,
+    durationMinutes: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.duration_minutes,
+    materialKg: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.material_kg,
+    inspectedOn: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.inspected_on,
+    loggedAt: [demo::sunlitlighthouse::store::TrailRegisterDB]upkeep.inspection_register.logged_at
+  }
+
+  testSuites:
+  [
+    markerRegisterSuite:
+    {
+      function: |demo::sunlitlighthouse::domain::TrailMarker.all(%2026-06-01)->filter(
+        m|$m.surfaceClass->toOne()->in(['GRAVEL', 'BOARDWALK', 'STONE'])
+      )->project(
+        [
+          x|$x.markerCode,
+          x|$x.markerName,
+          x|$x.routeCode,
+          x|$x.surfaceClass,
+          x|$x.elevationM,
+          x|$x.postHeightM,
+          x|$x.installedOn
+        ],
+        [
+          'MarkerCode',
+          'MarkerName',
+          'RouteCode',
+          'SurfaceClass',
+          'ElevationM',
+          'PostHeightM',
+          'InstalledOn'
+        ]
+      )->sort([asc('MarkerCode')])->take(20);
+      tests:
+      [
+        surfacedMarkersInsideProcessingWindow:
+        {
+          doc: 'Reads the marker register as of a processing date over a composite code-and-window key. One marker version is open at the infinity sentinel and carries a surface class in the membership list; a second version of that same code was already closed out before the requested date, a third marker opens only after it, and a fourth is open but carries a surface class outside the list.';
+          data:
+          [
+            demo::sunlitlighthouse::store::TrailRegisterDB:
+              Relational
+              #{
+                trail.marker_register:
+                  'marker_code,marker_name,route_code,surface_class,elevation_m,post_height_m,installed_on,checked_at,in_z,out_z\n'+
+                  'MK-01,Fell Gate Post,RT-NORTH,GRAVEL,412.5,1.85,2024-04-11,2026-05-02 07:30:00,2026-01-01,9999-12-31\n'+
+                  'MK-01,Fell Gate Post,RT-NORTH,STONE,410.0,1.8,2024-04-11,2025-11-02 07:30:00,2025-01-01,2026-01-01\n'+
+                  'MK-02,Beck Crossing Post,RT-NORTH,BOARDWALK,188.25,2.05,2025-03-20,2026-05-03 08:15:00,2026-08-01,9999-12-31\n'+
+                  'MK-03,Quarry Rim Post,RT-WEST,TARMAC,255.75,1.95,2023-09-08,2026-05-04 09:00:00,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheOpenMarkerInTheSurfaceList:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MarkerCode":"MK-01","MarkerName":"Fell Gate Post","RouteCode":"RT-NORTH","SurfaceClass":"GRAVEL","ElevationM":412.5,"PostHeightM":1.85,"InstalledOn":"2024-04-11"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

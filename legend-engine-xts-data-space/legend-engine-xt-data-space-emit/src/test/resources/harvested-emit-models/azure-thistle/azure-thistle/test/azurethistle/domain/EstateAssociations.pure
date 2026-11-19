@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::azurethistle::domain::*;
+
+Association {doc.doc = 'The nacelle telemetry read against one turbine, and the turbine a reading was taken on when that turbine is itself in the published extent.'} test::azurethistle::domain::TurbineRecord_NacelleReading
+{
+  nacelleTurbine: TurbineRecord[0..1];
+  nacelleReadings: NacelleReading[*];
+}
+
+Association {doc.doc = 'The blade inspections held against one turbine, and the turbine an inspected blade set is fitted to.'} test::azurethistle::domain::TurbineRecord_BladeInspection
+{
+  bladeTurbine: TurbineRecord[0..1];
+  bladeInspections: BladeInspection[*];
+}
+
+Association {doc.doc = 'The feeder a turbine exports through, and the turbines that export through one feeder.'} test::azurethistle::domain::SubstationFeeder_TurbineRecord
+{
+  exportFeeder: SubstationFeeder[0..1];
+  feederTurbines: TurbineRecord[*];
+}
+
+Association {doc.doc = 'The hill track a turbine is reached along, and the turbines reached along one track.'} test::azurethistle::domain::AccessTrack_TurbineRecord
+{
+  reachedAlongTrack: AccessTrack[0..1];
+  trackTurbines: TurbineRecord[*];
+}
+
+Association {doc.doc = 'The met mast a turbine is compared against, and the turbines compared against one mast.'} test::azurethistle::domain::MetMast_TurbineRecord
+{
+  referenceMast: MetMast[0..1];
+  mastTurbines: TurbineRecord[*];
+}
+
+Association {doc.doc = 'The met mast a nacelle reading is compared against, and the nacelle readings compared against one mast.'} test::azurethistle::domain::MetMast_NacelleReading
+{
+  readingMast: MetMast[0..1];
+  mastNacelleReadings: NacelleReading[*];
+}
+
+Association {doc.doc = 'The nacelle reading a blade inspection is read alongside, and the inspections read alongside one reading.'} test::azurethistle::domain::NacelleReading_BladeInspection
+{
+  inspectionReading: NacelleReading[0..1];
+  readingBladeInspections: BladeInspection[*];
+}
+
+Association {doc.doc = 'The feeder that runs beside one access track, and the tracks a feeder runs beside.'} test::azurethistle::domain::SubstationFeeder_AccessTrack
+{
+  trackFeeder: SubstationFeeder[0..1];
+  feederTracks: AccessTrack[*];
+}
+
+Association {doc.doc = 'The met mast an access track passes, and the tracks that pass one mast.'} test::azurethistle::domain::MetMast_AccessTrack
+{
+  passedMast: MetMast[0..1];
+  mastTracks: AccessTrack[*];
+}

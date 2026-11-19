@@ -1,0 +1,235 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietcanyon3::mapping::CanyonM2M
+(
+  *test::quietcanyon3::domain::PanelReport[panelReport]: Pure
+  {
+    ~src test::quietcanyon3::source::PanelSubmission
+    ~filter $src.panelCode->startsWith('PN-') && ($src.clearanceNotes->isEmpty() || $src.clearanceNotes->contains('cleared'))
+    surveyRef: $src.surveyRef,
+    panelCode: $src.panelCode,
+    conditionBand: if($src.integrity->isEmpty(),
+                      | test::quietcanyon3::domain::ConditionBand.UNASSESSED,
+                      | if($src.integrity->toOne() >= 0.85,
+                           | test::quietcanyon3::domain::ConditionBand.PRISTINE,
+                           | if($src.integrity->toOne() >= 0.6,
+                                | test::quietcanyon3::domain::ConditionBand.STABLE,
+                                | if($src.integrity->toOne() >= 0.3,
+                                     | test::quietcanyon3::domain::ConditionBand.WEATHERED,
+                                     | test::quietcanyon3::domain::ConditionBand.ERODED)))),
+    phaseLabel: if($src.phase->isEmpty(),
+                   | 'UNSTAGED',
+                   | 'PHASE ' + $src.phase->toOne()->toUpper()->trim()),
+    fractureIndex: if($src.fractureCount->isEmpty(),
+                      | 0,
+                      | ($src.fractureCount->toOne() * 3) + 1),
+    lichenLabel: if($src.lichenPct->isEmpty(),
+                    | 'UNRECORDED',
+                    | if($src.lichenPct->toOne() >= 50.0,
+                         | 'HEAVY COVER',
+                         | 'LIGHT COVER')),
+    clearanceDigest: if($src.clearanceNotes->isEmpty(),
+                        | 'NO NOTES',
+                        | $src.clearanceNotes->joinStrings('; ')->toUpper()),
+    visitedOn: $src.visitedOn,
+    station[reportStation]: $src.station
+  }
+
+  test::quietcanyon3::domain::ReportStation[reportStation]: Pure
+  {
+    ~src test::quietcanyon3::source::StationBlock
+    stationCode: 'ST-' + $src.code->toOne()->toUpper(),
+    sector[reportSector]: $src.sector
+  }
+
+  test::quietcanyon3::domain::ReportSector[reportSector]: Pure
+  {
+    ~src test::quietcanyon3::source::SectorBlock
+    sectorCode: 'SC-' + $src.code->toOne(),
+    regionLabel: $src.region->toOne()->toUpper()->trim()
+  }
+
+  testSuites:
+  [
+    panelBandSuite:
+    {
+      function: |test::quietcanyon3::domain::PanelReport.all()->graphFetch(
+        #{
+          test::quietcanyon3::domain::PanelReport{
+            surveyRef,
+            panelCode,
+            conditionBand,
+            phaseLabel,
+            fractureIndex,
+            lichenLabel,
+            clearanceDigest,
+            visitedOn,
+            station{
+              stationCode,
+              sector{
+                sectorCode,
+                regionLabel
+              }
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::quietcanyon3::domain::PanelReport{
+            surveyRef,
+            panelCode,
+            conditionBand,
+            phaseLabel,
+            fractureIndex,
+            lichenLabel,
+            clearanceDigest,
+            visitedOn,
+            station{
+              stationCode,
+              sector{
+                sectorCode,
+                regionLabel
+              }
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        pristinePanel:
+        {
+          doc: 'Top condition band with the whole station graph present and a cleared note collection the source filter admits.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietcanyon3::source::PanelSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0001","panelCode":"PN-11","integrity":0.92,"phase":"dry season","fractureCount":4,"lichenPct":61.5,"clearanceNotes":["cleared","warden signed"],"visitedOn":"2026-03-04","station":{"code":"gc-1","sector":{"code":"SEC-A","region":"  upper gorge  "}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedPanel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0001","panelCode":"PN-11","conditionBand":"PRISTINE","phaseLabel":"PHASE DRY SEASON","fractureIndex":13,"lichenLabel":"HEAVY COVER","clearanceDigest":"CLEARED; WARDEN SIGNED","visitedOn":"2026-03-04","station":{"stationCode":"ST-GC-1","sector":{"sectorCode":"SC-SEC-A","regionLabel":"UPPER GORGE"}}}';
+                  }#;
+              }#
+          ];
+        },
+        weatheredPanelWithoutStation:
+        {
+          doc: 'Middle condition band with no station block at all, no notes and no fracture count, so the nested graph and three fallback arms resolve to their empty forms.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietcanyon3::source::PanelSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0002","panelCode":"PN-12","integrity":0.42,"lichenPct":12.0,"visitedOn":"2026-03-06"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedPanel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0002","panelCode":"PN-12","conditionBand":"WEATHERED","phaseLabel":"UNSTAGED","fractureIndex":0,"lichenLabel":"LIGHT COVER","clearanceDigest":"NO NOTES","visitedOn":"2026-03-06","station":null}';
+                  }#;
+              }#
+          ];
+        },
+        unassessedPanel:
+        {
+          doc: 'Fallback condition band, reached when no integrity fraction was submitted, with a sector block whose region still needs trimming.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietcanyon3::source::PanelSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0003","panelCode":"PN-13","phase":"wet season","fractureCount":0,"visitedOn":"2026-03-08","station":{"code":"gc-2","sector":{"code":"SEC-B","region":"lower narrows"}}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedPanel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0003","panelCode":"PN-13","conditionBand":"UNASSESSED","phaseLabel":"PHASE WET SEASON","fractureIndex":1,"lichenLabel":"UNRECORDED","clearanceDigest":"NO NOTES","visitedOn":"2026-03-08","station":{"stationCode":"ST-GC-2","sector":{"sectorCode":"SC-SEC-B","regionLabel":"LOWER NARROWS"}}}';
+                  }#;
+              }#
+          ];
+        },
+        erodedPanel:
+        {
+          doc: 'Closing condition band, reached below every threshold, with a station block that carries no sector.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietcanyon3::source::PanelSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0004","panelCode":"PN-14","integrity":0.11,"phase":"monsoon","fractureCount":9,"lichenPct":50.0,"visitedOn":"2026-03-10","station":{"code":"gc-3"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedPanel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"surveyRef":"SV-0004","panelCode":"PN-14","conditionBand":"ERODED","phaseLabel":"PHASE MONSOON","fractureIndex":28,"lichenLabel":"HEAVY COVER","clearanceDigest":"NO NOTES","visitedOn":"2026-03-10","station":{"stationCode":"ST-GC-3","sector":null}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

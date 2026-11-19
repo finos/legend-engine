@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::indigoaviary::data::AviaryTestData
+{
+  Relational
+  #{
+    ops.unit_registry:
+      'unit_code,unit_name,sector_code,turbine_kind,foundation_type,blade_span_metres,platform_code,water_depth_metres,from_date,thru_date\n'+
+      'WT-01,North Gale,SEC-N,LAND,GRAVITY,120,,,2026-01-01,9999-12-31\n'+
+      'WT-02,Reef Current,SEC-S,SEA,,,FLOAT-7,48.0,2026-01-01,9999-12-31\n'+
+      'WT-03,Prototype Rise,SEC-N,PROTOTYPE,PILED,110,,,2026-01-01,2026-05-31\n';
+    ops.nacelle_registry:
+      'nacelle_code,unit_code,model_name,condition_code,from_date,thru_date\n'+
+      'NC-01,WT-01,Oriole-9,CLEAR,2026-01-01,9999-12-31\n'+
+      'NC-02,WT-02,Kestrel-4,WATCH,2026-01-01,9999-12-31\n';
+    telemetry.sensor_reading:
+      'reading_code,unit_code,sensor_code,reading_value,captured_on,condition_code,in_date,out_date\n'+
+      'RD-01,WT-01,VIB,12.0,2026-06-10,CLEAR,2026-01-01,9999-12-31\n'+
+      'RD-02,WT-01,TMP,78.0,2026-06-11,WATCH,2026-01-01,9999-12-31\n'+
+      'RD-03,WT-02,VIB,34.0,2026-06-12,ALERT,2026-01-01,9999-12-31\n'+
+      'RD-04,WT-02,PRS,4.0,2026-06-13,CRITICAL,2026-01-01,9999-12-31\n'+
+      'RD-05,WT-03,VIB,18.0,2026-05-01,CLEAR,2026-01-01,2026-05-31\n';
+    telemetry.sensor_reading_archive:
+      'reading_code,unit_code,sensor_code,reading_value,captured_on,condition_code,in_date,out_date\n'+
+      'RA-01,WT-01,VIB,9.0,2025-12-15,CLEAR,2025-01-01,2025-12-31\n';
+    ops.inspection_visit:
+      'visit_code,unit_code,visit_kind,visited_on,visit_note\n'+
+      'IV-01,WT-01,ROUTINE,2026-06-15,north routine check\n'+
+      'IV-02,WT-02,TARGETED,2026-06-16,reef vibration check\n';
+    ops.work_item:
+      'work_code,unit_code,work_state,opened_on,work_note\n'+
+      'WK-01,WT-01,COMPLETE,2026-06-17,blade alignment complete\n'+
+      'WK-02,WT-02,ACTIVE,2026-06-18,nacelle inspection open\n';
+    ops.downtime_event:
+      'event_code,unit_code,downtime_kind,started_on,duration_hours\n'+
+      'DT-01,WT-01,WEATHER,2026-06-09,2.5\n'+
+      'DT-02,WT-02,EQUIPMENT,2026-06-14,7.0\n';
+    ref.site_sector:
+      'sector_code,sector_name,region_name\n'+
+      'SEC-N,Northern Reach,North Array\n'+
+      'SEC-S,Southern Reef,South Array\n';
+    ref.weather_snapshot:
+      'snapshot_code,sector_code,observed_on,wind_speed_metres\n'+
+      'WS-01,SEC-N,2026-06-10,11.5\n'+
+      'WS-02,SEC-S,2026-06-12,15.0\n';
+  }#
+}

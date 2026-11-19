@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlycove2::mapping::CoveMapping
+(
+  include mapping test::kindlycove2::mapping::BaseCoveMapping
+
+  *test::kindlycove2::domain::PatrolVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlycove2::store::CoveDatabase]cove.patrol_visit.visit_id
+    )
+    ~mainTable [test::kindlycove2::store::CoveDatabase]cove.patrol_visit
+    visitId: [test::kindlycove2::store::CoveDatabase]cove.patrol_visit.visit_id,
+    plotId: [test::kindlycove2::store::CoveDatabase]cove.patrol_visit.plot_id,
+    visitCode: [test::kindlycove2::store::CoveDatabase]cove.patrol_visit.visit_code,
+    visitedOn: [test::kindlycove2::store::CoveDatabase]cove.patrol_visit.visited_on,
+    rangerNote: [test::kindlycove2::store::CoveDatabase]cove.patrol_visit.ranger_note,
+    plotCode: [test::kindlycove2::store::CoveDatabase]@Plot_Visit | [test::kindlycove2::store::CoveDatabase]cove.survey_plot.plot_code,
+    patrolLabel: concat(toString([test::kindlycove2::store::CoveDatabase]cove.patrol_visit.visit_id), concat(' - ', [test::kindlycove2::store::CoveDatabase]cove.patrol_visit.visit_code))
+  }
+
+  *test::kindlycove2::domain::VisitorTally[tally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlycove2::store::CoveDatabase]cove.visitor_tally.tally_id
+    )
+    ~mainTable [test::kindlycove2::store::CoveDatabase]cove.visitor_tally
+    tallyId: [test::kindlycove2::store::CoveDatabase]cove.visitor_tally.tally_id,
+    plotId: [test::kindlycove2::store::CoveDatabase]cove.visitor_tally.plot_id,
+    tallyDate: [test::kindlycove2::store::CoveDatabase]cove.visitor_tally.tally_date,
+    visitorCount: [test::kindlycove2::store::CoveDatabase]cove.visitor_tally.visitor_count,
+    tallyLabel: concat(toString([test::kindlycove2::store::CoveDatabase]cove.visitor_tally.visitor_count), ' visitors')
+  }
+
+  testSuites:
+  [
+    visitMappingSuite:
+    {
+      function: |test::kindlycove2::domain::PatrolVisit.all()->project(
+        [
+          v|$v.visitCode,
+          v|$v.plotCode,
+          v|$v.patrolLabel
+        ],
+        [
+          'Visit',
+          'Plot',
+          'Label'
+        ]
+      );
+      tests:
+      [
+        visitsResolvePlotAlias:
+        {
+          data:
+          [
+            test::kindlycove2::store::CoveDatabase:
+              Relational
+              #{
+                cove.survey_plot:
+                  'plot_id,plot_code,cove_name,ranger_id,zone_code,opened_on,visitor_capacity,from_z,thru_z\n'+
+                  '1,TP-ALPHA,Quiet Cove,7,NORTH,2024-03-01,40,2026-01-01,2026-12-31\n';
+                cove.patrol_visit:
+                  'visit_id,plot_id,visit_code,visited_on,ranger_note\n'+
+                  '101,1,PV-ONE,2026-05-04,North trail\n';
+              }#
+          ];
+          asserts:
+          [
+            aliasColumnIsPresent:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"PV-ONE","Plot":"TP-ALPHA","Label":"101 - PV-ONE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

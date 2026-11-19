@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A monitored coral patch on a reef, labelled by its condition tier.'} test::quietreef::domain::CoralPatch
+{
+  patchCode: String[1];
+  patchName: String[1];
+  coverPct: Integer[1];
+  tierLabel: String[1];
+  healthLabel: String[1];
+  patchTrail: String[1];
+  districtName: String[1];
+  zoneName: String[1];
+  coverBand: String[0..1];
+  noteLabel: String[0..1];
+  surveyCount: Integer[0..1];
+  lastSurveyedAt: DateTime[0..1];
+}
+
+Class {doc.doc = 'A reef carrying monitored coral patches.'} test::quietreef::domain::Reef
+{
+  reefCode: String[1];
+  reefName: String[1];
+  reefState: String[1];
+}
+
+Class {doc.doc = 'A management zone grouping reefs.'} test::quietreef::domain::ReefZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+}
+
+Class {doc.doc = 'A marine-park district grouping reef zones.'} test::quietreef::domain::ReefDistrict
+{
+  districtCode: String[1];
+  districtName: String[1];
+  zoneName: String[1];
+}

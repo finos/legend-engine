@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedlighthouse2::service::WatchRollupService
+{
+  pattern: '/gildedlighthouse2/v1/watch-rollup/{environment}';
+  title: 'Gilded Lighthouse 2 - Watch Rollup';
+  ownership: UserList { users: ['harbour-watch-desk'] };
+  documentation: 'Lit hours, peak oil draw and watch counts per station and keeper, resolved at a business date and then joined back on both grouping columns to the register of the watches that formed the groups, so the grouped side is republished once for every watch behind it and folded again by a deduplication after the join.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], keeperSet: String[*], hoursCap: Integer[1]|test::gildedlighthouse2::domain::LampWatch.all($asOf)->filter(
+      w|($w.keeperCode->in($keeperSet)) && ($w.hoursLit <= $hoursCap)
+    )->groupBy(
+      [
+        w|$w.stationCode,
+        w|$w.keeperCode
+      ],
+      [
+        agg(w|$w.hoursLit, y|$y->sum()),
+        agg(w|$w.oilUsed, y|$y->max()),
+        agg(w|$w.watchRef, y|$y->count())
+      ],
+      [
+        'Station',
+        'Keeper',
+        'TotalHours',
+        'PeakOil',
+        'Watches'
+      ]
+    )->join(
+      test::gildedlighthouse2::domain::LampWatch.all($asOf)->filter(
+        w|($w.keeperCode->in($keeperSet)) && ($w.hoursLit <= $hoursCap)
+      )->project(
+        [
+          w|$w.stationCode,
+          w|$w.keeperCode
+        ],
+        [
+          'RefStation',
+          'RefKeeper'
+        ]
+      ),
+      meta::relational::metamodel::join::JoinType.INNER,
+      [
+        'Station',
+        'Keeper'
+      ],
+      [
+        'RefStation',
+        'RefKeeper'
+      ]
+    )->restrict(
+      [
+        'Station',
+        'Keeper',
+        'TotalHours',
+        'PeakOil',
+        'Watches'
+      ]
+    )->distinct()->sort([asc('Station'), asc('Keeper')])};
+    key: 'environment';
+    executions['primary']:
+    {
+      mapping: test::gildedlighthouse2::mapping::HarbourMapping;
+      runtime: test::gildedlighthouse2::runtime::HarbourPrimaryRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::gildedlighthouse2::mapping::HarbourMapping;
+      runtime: test::gildedlighthouse2::runtime::HarbourArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    watchRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harbourConnection:
+            Reference
+            #{
+              test::gildedlighthouse2::data::HarbourTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        rollupAtTheCurrentBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['primary'];
+          parameters:
+          [
+            asOf = %2026-06-15,
+            hoursCap = 15,
+            keeperSet = ['KP-1', 'KP-2']
+          ]
+          asserts:
+          [
+            twoGroupsFoldedBackAfterTheJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-N","Keeper":"KP-1","TotalHours":16,"PeakOil":4.5,"Watches":2},{"Station":"ST-S","Keeper":"KP-2","TotalHours":11,"PeakOil":5.75,"Watches":1}]';
+                  }#;
+              }#
+          ]
+        },
+        rollupAtAnEarlierBusinessDateSeesOnlyTheSupersededWatch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            asOf = %2025-01-15,
+            hoursCap = 40,
+            keeperSet = ['KP-1', 'KP-2']
+          ]
+          asserts:
+          [
+            theWatchWhoseWindowClosedBeforeTheCurrentDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-N","Keeper":"KP-1","TotalHours":30,"PeakOil":9.5,"Watches":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

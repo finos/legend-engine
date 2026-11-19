@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantquokka4::mapping::ReefConditionMapping
+(
+  *test::verdantquokka4::domain::SiteCondition[siteCondition]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefSiteDb]site.site_condition.region_code,
+      [test::verdantquokka4::store::ReefSiteDb]site.site_condition.site_code
+    )
+    ~mainTable [test::verdantquokka4::store::ReefSiteDb]site.site_condition
+    regionCode: [test::verdantquokka4::store::ReefSiteDb]site.site_condition.region_code,
+    siteCode: [test::verdantquokka4::store::ReefSiteDb]site.site_condition.site_code,
+    waterTempF: plus(times([test::verdantquokka4::store::ReefSiteDb]site.site_condition.water_temp_c, 1.8), 32.0),
+    visibilityMetres: [test::verdantquokka4::store::ReefSiteDb]site.site_condition.visibility_m
+  }
+
+  testSuites:
+  [
+    siteConditionSuite:
+    {
+      function: |test::verdantquokka4::domain::SiteCondition.all(%2026-06-01)->project(~[
+        Region: c|$c.regionCode,
+        Site: c|$c.siteCode,
+        WaterTempF: c|$c.waterTempF,
+        Visibility: c|$c.visibilityMetres
+      ])->sort([~Site->ascending()]);
+      tests:
+      [
+        conditionsOutsideWindowExcluded:
+        {
+          doc: 'Reads site conditions at the June survey date: the two open readings convert their Celsius temperature to Fahrenheit, while the closed reading and the reading that only opens next year are excluded by business milestoning.';
+          data:
+          [
+            test::verdantquokka4::store::ReefSiteDb:
+              Relational
+              #{
+                site.site_condition:
+                  'region_code,site_code,water_temp_c,visibility_m,valid_from,valid_thru\n'+
+                  'NR,NR-01,25.0,12.0,2026-01-01,9999-12-31\n'+
+                  'NR,NR-02,30.0,8.0,2026-02-01,9999-12-31\n'+
+                  'SR,SR-01,20.0,5.0,2025-01-01,2026-03-31\n'+
+                  'SR,SR-02,20.0,6.0,2027-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            openConditionsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"NR","Site":"NR-01","WaterTempF":77.0,"Visibility":12.0},{"Region":"NR","Site":"NR-02","WaterTempF":86.0,"Visibility":8.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

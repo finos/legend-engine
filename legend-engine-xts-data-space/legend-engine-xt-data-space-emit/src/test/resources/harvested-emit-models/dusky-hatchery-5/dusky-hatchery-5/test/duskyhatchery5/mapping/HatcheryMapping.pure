@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyhatchery5::mapping::HatcheryMapping
+(
+  *test::duskyhatchery5::domain::RearingPond[pond]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyhatchery5::store::HatcheryDB]hatchery.rearing_pond.pond_code
+    )
+    ~mainTable [test::duskyhatchery5::store::HatcheryDB]hatchery.rearing_pond
+    pondCode: [test::duskyhatchery5::store::HatcheryDB]hatchery.rearing_pond.pond_code,
+    siteName: [test::duskyhatchery5::store::HatcheryDB]hatchery.rearing_pond.site_name,
+    waterTempC: [test::duskyhatchery5::store::HatcheryDB]hatchery.rearing_pond.water_temp_c,
+    volumeLitres: [test::duskyhatchery5::store::HatcheryDB]hatchery.rearing_pond.volume_litres
+  }
+
+  *test::duskyhatchery5::domain::FryBatch[batch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyhatchery5::store::HatcheryDB]hatchery.fry_batch.batch_code
+    )
+    ~mainTable [test::duskyhatchery5::store::HatcheryDB]hatchery.fry_batch
+    batchCode: [test::duskyhatchery5::store::HatcheryDB]hatchery.fry_batch.batch_code,
+    speciesName: [test::duskyhatchery5::store::HatcheryDB]hatchery.fry_batch.species_name,
+    fryTally: [test::duskyhatchery5::store::HatcheryDB]hatchery.fry_batch.fry_tally,
+    hatchedOn: [test::duskyhatchery5::store::HatcheryDB]hatchery.fry_batch.hatched_on,
+    pond[pond]: [test::duskyhatchery5::store::HatcheryDB]@Batch_Pond
+  }
+
+  *test::duskyhatchery5::domain::FeedRun[feedRun]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyhatchery5::store::HatcheryDB]hatchery.feed_run.feed_code
+    )
+    ~mainTable [test::duskyhatchery5::store::HatcheryDB]hatchery.feed_run
+    feedCode: [test::duskyhatchery5::store::HatcheryDB]hatchery.feed_run.feed_code,
+    batchCode: [test::duskyhatchery5::store::HatcheryDB]hatchery.feed_run.batch_code,
+    feedKind: [test::duskyhatchery5::store::HatcheryDB]hatchery.feed_run.feed_kind,
+    rationGrams: [test::duskyhatchery5::store::HatcheryDB]hatchery.feed_run.ration_grams,
+    loggedAt: [test::duskyhatchery5::store::HatcheryDB]hatchery.feed_run.logged_at
+  }
+
+  testSuites:
+  [
+    batchAtProcessingInstantSuite:
+    {
+      function: |test::duskyhatchery5::domain::FryBatch.all(%2025-07-01)->project(
+        [
+          x|$x.batchCode,
+          x|$x.speciesName,
+          x|$x.fryTally,
+          x|$x.pond.siteName,
+          x|$x.pond.waterTempC
+        ],
+        [
+          'Batch',
+          'Species',
+          'Fry',
+          'Site',
+          'TempC'
+        ]
+      )->sort([asc('Batch')]);
+      tests:
+      [
+        outOfWindowVersionExcluded:
+        {
+          doc: 'Resolves the fry batches and their ponds at one processing instant; a superseded batch version whose processing window closed before that instant and a pond version outside the window are both excluded, so the milestoning predicate is observable.';
+          data:
+          [
+            test::duskyhatchery5::store::HatcheryDB:
+              Relational
+              #{
+                hatchery.rearing_pond:
+                  'pond_code,site_name,water_temp_c,volume_litres,in_z,out_z\n'+
+                  'PD-01,Alder Run,9.5,45000.000,2025-01-01,9999-12-31\n'+
+                  'PD-01,Alder Run Old,7.0,30000.000,2024-01-01,2025-01-01\n'+
+                  'PD-02,Willow Flat,8.25,52000.500,2025-01-01,9999-12-31\n';
+                hatchery.fry_batch:
+                  'batch_code,pond_code,species_name,fry_tally,hatched_on,in_z,out_z\n'+
+                  'FB-01,PD-01,Brook Trout,1200,2025-03-04,2025-01-01,9999-12-31\n'+
+                  'FB-02,PD-02,Rainbow Trout,900,2025-03-11,2025-01-01,9999-12-31\n'+
+                  'FB-03,PD-02,Rainbow Trout,400,2025-02-02,2024-06-01,2025-06-01\n';
+              }#
+          ];
+          asserts:
+          [
+            currentBatchesOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"FB-01","Species":"Brook Trout","Fry":1200,"Site":"Alder Run","TempC":9.5},{"Batch":"FB-02","Species":"Rainbow Trout","Fry":900,"Site":"Willow Flat","TempC":8.25}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

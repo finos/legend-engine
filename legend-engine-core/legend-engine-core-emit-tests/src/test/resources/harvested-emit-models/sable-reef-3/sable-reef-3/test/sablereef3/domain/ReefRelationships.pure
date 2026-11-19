@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Association {meta::pure::profiles::doc.doc = 'Runs of a reef pipeline against a deployment. The same link is also stored on the run as datasetDeploymentRef, so navigation and stored reference can disagree.'} test::sablereef3::domain::Run_Deployment
+{
+  runs: test::sablereef3::domain::SurveyPipelineRun[*];
+  deployment: test::sablereef3::domain::DatasetDeployment[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ad-hoc triggers raised against a reef dataset deployment.'} test::sablereef3::domain::Trigger_Deployment
+{
+  triggers: test::sablereef3::domain::AdHocTrigger[*];
+  triggeredDeployment: test::sablereef3::domain::DatasetDeployment[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'The storage location an ad-hoc trigger drained, duplicating the trigger storageLocationRef.'} test::sablereef3::domain::Trigger_Location
+{
+  drainingTriggers: test::sablereef3::domain::AdHocTrigger[*];
+  drainedLocation: test::sablereef3::domain::StorageLocation[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'The storage locations a reef dataset deployment publishes into.'} test::sablereef3::domain::Deployment_Location
+{
+  publishingDeployments: test::sablereef3::domain::DatasetDeployment[*];
+  publishedLocations: test::sablereef3::domain::StorageLocation[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Dataset-level metadata of a reef deployment, reached from the hub record.'} test::sablereef3::domain::Deployment_DatasetMetadata
+{
+  metadataDeployments: test::sablereef3::domain::DatasetDeployment[*];
+  datasetMetadata: test::sablereef3::domain::DatasetMetadata[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Deployment-level metadata of a reef deployment.'} test::sablereef3::domain::Deployment_DeploymentMetadata
+{
+  describedDeployments: test::sablereef3::domain::DatasetDeployment[*];
+  deploymentMetadata: test::sablereef3::domain::DeploymentMetadata[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'The scheduler job driving a reef deployment.'} test::sablereef3::domain::Deployment_JobIdentifier
+{
+  scheduledDeployments: test::sablereef3::domain::DatasetDeployment[*];
+  jobIdentifier: test::sablereef3::domain::JobIdentifier[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'The deployed definition a reef deployment was built from.'} test::sablereef3::domain::Deployment_DefinitionDeployment
+{
+  builtDeployments: test::sablereef3::domain::DatasetDeployment[*];
+  definitionDeployment: test::sablereef3::domain::DefinitionDeployment[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Edges leaving a reef deployment, giving a two-step traversal through the deployment hub when followed to the downstream side.'} test::sablereef3::domain::Deployment_OutgoingEdge
+{
+  upstreamDeployment: test::sablereef3::domain::DatasetDeployment[0..1];
+  outgoingEdges: test::sablereef3::domain::DependencyEdge[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Edges arriving at a reef deployment.'} test::sablereef3::domain::Deployment_IncomingEdge
+{
+  downstreamDeployment: test::sablereef3::domain::DatasetDeployment[0..1];
+  incomingEdges: test::sablereef3::domain::DependencyEdge[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Loads performed inside a reef pipeline run.'} test::sablereef3::domain::Run_Load
+{
+  loadingRun: test::sablereef3::domain::SurveyPipelineRun[0..1];
+  loads: test::sablereef3::domain::LoadRecord[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Provisioning records that preceded a reef dataset deployment.'} test::sablereef3::domain::Provision_Deployment
+{
+  provisionedDeployment: test::sablereef3::domain::DatasetDeployment[0..1];
+  provisions: test::sablereef3::domain::ProvisionRecord[*];
+}

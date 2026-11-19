@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westerncavern6::mapping::WesternBaseMapping
+(
+  include mapping test::westerncavern6::mapping::WesternEnumMappings
+
+  *test::westerncavern6::domain::Cavern[cavern]: Relational
+  {
+    ~filter [test::westerncavern6::store::CavernSurveyDb]OpenCavernFilter
+    ~primaryKey
+    (
+      [test::westerncavern6::store::CavernSurveyDb]karst.cavern.cavern_code
+    )
+    ~mainTable [test::westerncavern6::store::CavernSurveyDb]karst.cavern
+    cavernCode: [test::westerncavern6::store::CavernSurveyDb]karst.cavern.cavern_code,
+    cavernName: [test::westerncavern6::store::CavernSurveyDb]karst.cavern.cavern_name,
+    status: EnumerationMapping StatusMapping: toUpper(trim([test::westerncavern6::store::CavernSurveyDb]karst.cavern.status_code)),
+    entranceAltitude: [test::westerncavern6::store::CavernSurveyDb]karst.cavern.entrance_alt,
+    altitudeBand: case(
+                    isNull([test::westerncavern6::store::CavernSurveyDb]karst.cavern.entrance_alt),
+                    'UNSURVEYED',
+                    case(
+                      greaterThan([test::westerncavern6::store::CavernSurveyDb]karst.cavern.entrance_alt, 1500),
+                      'ALPINE',
+                      'VALLEY'
+                    )
+                  ),
+    registrySource: 'western-karst-register',
+    surveyYear: year([test::westerncavern6::store::CavernSurveyDb]karst.cavern.surveyed_on),
+    displayLabel: concat(toUpper(trim([test::westerncavern6::store::CavernSurveyDb]karst.cavern.cavern_name)), ' #', toLower([test::westerncavern6::store::CavernSurveyDb]karst.cavern.cavern_code)),
+    steward
+    (
+      stewardName: [test::westerncavern6::store::CavernSurveyDb]karst.cavern.steward_name,
+      stewardPhone: [test::westerncavern6::store::CavernSurveyDb]karst.cavern.steward_phone
+    ),
+    locality
+    (
+      massifName: [test::westerncavern6::store::CavernSurveyDb]@Cavern_Massif | registry.massif.massif_name,
+      regionName: [test::westerncavern6::store::CavernSurveyDb]@Cavern_Massif > @Massif_Region | registry.region.region_name,
+      authorityName: [test::westerncavern6::store::CavernSurveyDb]@Cavern_Massif > @Massif_Region > @Region_Authority | registry.authority.authority_name
+    )
+  }
+
+  *test::westerncavern6::domain::Passage[passage]: Relational
+  {
+    ~filter [test::westerncavern6::store::CavernSurveyDb]SurveyedPassageFilter
+    ~primaryKey
+    (
+      [test::westerncavern6::store::CavernSurveyDb]survey.passage.passage_code
+    )
+    ~mainTable [test::westerncavern6::store::CavernSurveyDb]survey.passage
+    passageCode: [test::westerncavern6::store::CavernSurveyDb]survey.passage.passage_code,
+    lengthM: [test::westerncavern6::store::CavernSurveyDb]survey.passage.length_m,
+    gradeLabel: case(
+                  isNull([test::westerncavern6::store::CavernSurveyDb]survey.passage.grade_num),
+                  'UNGRADED',
+                  case(
+                    lessThan([test::westerncavern6::store::CavernSurveyDb]survey.passage.grade_num, 3),
+                    'EASY',
+                    case(
+                      lessThan([test::westerncavern6::store::CavernSurveyDb]survey.passage.grade_num, 5),
+                      'SPORTING',
+                      'SEVERE'
+                    )
+                  )
+                ),
+    flow: EnumerationMapping FlowMapping: case(
+            isNull([test::westerncavern6::store::CavernSurveyDb]survey.passage.flow_code),
+            'D',
+            toUpper(trim([test::westerncavern6::store::CavernSurveyDb]survey.passage.flow_code))
+          ),
+    nextPassageCode: [test::westerncavern6::store::CavernSurveyDb]survey.passage.next_code,
+    nextPassageLength: [test::westerncavern6::store::CavernSurveyDb]@Passage_Next | survey.passage.length_m,
+    authorityName: [test::westerncavern6::store::CavernSurveyDb]@Passage_Cavern > @Cavern_Massif > @Massif_Region > @Region_Authority | registry.authority.authority_name
+  }
+
+  test::westerncavern6::domain::Cavern_Passages: Relational
+  {
+    AssociationMapping
+    (
+      cavern[passage, cavern]: [test::westerncavern6::store::CavernSurveyDb]@Passage_Cavern,
+      passages[cavern, passage]: [test::westerncavern6::store::CavernSurveyDb]@Passage_Cavern
+    )
+  }
+)

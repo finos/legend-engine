@@ -1,0 +1,75 @@
+name: fabled-arboretum-6
+title: "Observatory Telescope Lending Pool Decoded Through Enumerations and Deep Cascades"
+description: |
+  A public observatory lending pool whose telescopes are read out of one relational store
+  and whose optical coatings are read out of a second. Readiness is spoken by a nine-way
+  cascade over the tube state, the aperture and the logged hours, and the tube that
+  matches no state at all falls through to a service note that was never written, so it
+  carries no note. The mount kind, the optical arrangement and the readiness band are
+  each decoded by an enumeration mapping laid over a computed expression rather than a
+  stored code, and the tube whose mount is not published resolves to a code the
+  enumeration mapping does not carry, so it carries no mount kind. A telescope reaches
+  its site over one join hop and its sky region over a second hop onto the region
+  relation, and the tube standing at a site that was never published carries neither.
+  A model-to-model transform folds lending-desk documents into a settled register whose
+  night band walks seven arms and whose desk label falls back twice. Two MemSQL
+  warehouses are published with static datasources, delegated-Kerberos authentication
+  and post-processors that retarget the lending schema and the coating relation, one
+  paired with a full runtime and one with a single-connection runtime.
+modelSources:
+  model:
+    root: fabled-arboretum-6
+    files:
+      - test/fabledarboretum6/connection/ScopeConnections.pure
+      - test/fabledarboretum6/data/ScopeTestData.pure
+      - test/fabledarboretum6/domain/ScopeDomain.pure
+      - test/fabledarboretum6/mapping/CoatingMapping.pure
+      - test/fabledarboretum6/mapping/HireDigestM2M.pure
+      - test/fabledarboretum6/mapping/ScopeMapping.pure
+      - test/fabledarboretum6/runtime/ScopeRuntimes.pure
+      - test/fabledarboretum6/store/CoatingDb.pure
+      - test/fabledarboretum6/store/ScopeDb.pure
+
+features:
+  - connection:mapper-postprocessor
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - execution:graph-fetch
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-store
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - enum-of-expression
+  - enumeration
+  - kerberos
+  - m2m
+  - mapper-post-processor
+  - memsql
+  - multi-hop-join
+  - multi-store
+  - null-sentinel
+  - single-connection-runtime
+  - telescope-lending

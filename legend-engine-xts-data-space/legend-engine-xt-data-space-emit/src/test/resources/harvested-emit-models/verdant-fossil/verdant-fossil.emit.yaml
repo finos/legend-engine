@@ -1,0 +1,58 @@
+name: verdant-fossil
+title: "Quarry Dig Register — Data Space over a Multi-Table Relational Model"
+description: |
+  A palaeontology quarry register whose seven domain classes are each anchored on
+  their own main table alias and primary key over one relational store, with
+  column values reached through five named equality joins including a two-hop path
+  from a find to its site. Six single-execution services project labelled column
+  lists over the model, one of them walking the site-to-trench association, and a
+  data space groups the mapping, runtime and two featured endpoints behind an
+  email support contact.
+modelSources:
+  model:
+    root: verdant-fossil
+    files:
+      - test/verdantfossil/connection/DigConnection.pure
+      - test/verdantfossil/dataspace/DigDataSpace.pure
+      - test/verdantfossil/domain/DigDomain.pure
+      - test/verdantfossil/mapping/DigMapping.pure
+      - test/verdantfossil/runtime/DigRuntime.pure
+      - test/verdantfossil/service/FindServices.pure
+      - test/verdantfossil/service/SiteServices.pure
+      - test/verdantfossil/store/DigDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - data-space
+  - derived-property
+  - dig-register
+  - h2
+  - main-table-alias
+  - multi-hop-join
+  - multi-table
+  - relational
+  - service-test
+  - snowflake

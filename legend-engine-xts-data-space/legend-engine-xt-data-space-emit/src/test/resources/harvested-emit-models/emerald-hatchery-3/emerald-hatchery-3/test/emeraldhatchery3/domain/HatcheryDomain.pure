@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A rearing pond on a freshwater hatchery site, holding a single water source and a nominal working volume.'} test::emeraldhatchery3::domain::RearingPond
+{
+  pondCode: String[1];
+  waterSource: String[1];
+  capacityLitres: Integer[1];
+  gradeBand: String[1];
+  decommissionedOn: StrictDate[0..1];
+}
+
+Class {doc.doc = 'A cohort of fry stocked into a rearing pond and grown out until release.'} test::emeraldhatchery3::domain::RearingBatch
+{
+  batchCode: String[1];
+  pondCode: String[1];
+  speciesGroup: String[1];
+  fryCount: Integer[1];
+  stockedOn: StrictDate[1];
+  releasedOn: StrictDate[0..1];
+}
+
+Class {doc.doc = 'A retired rearing pond retained in the site archive after decommissioning.'} test::emeraldhatchery3::domain::ArchivedPond
+{
+  pondCode: String[1];
+  waterSource: String[1];
+  gradeBand: String[1];
+  retiredOn: StrictDate[1];
+}

@@ -1,0 +1,53 @@
+name: zephyr-isle-3
+title: "Zephyr Isle 3 — A Cave Survey Register Of Nineteen Closed Vocabularies, Three Record Shapes And Two Laid-Out Views"
+description: |
+  A karst cave survey register with no physical layer at all: the model is nothing but classes,
+  enumerations and the diagrams laid out over them, so the surface exercised is compile-time
+  referential integrity and protocol round-tripping rather than execution.
+
+  Nineteen enumerations fix the closed vocabularies the register depends on — the confidence grade
+  of a survey leg and the technique it was measured with, the cross-sectional shape of a passage,
+  the host rock it is developed in and the mineral formation recorded along it, the water regime
+  and the kit class the leg demands, the hazard, air-clarity and breathable-air bands noted at a
+  station, the fixing a marker hangs from and the lamp the instruments were read under, the role
+  of the team member reading them, the form of the surface opening, the projection the drawing is
+  plotted on, the vertical datum depths are referred to, the season the survey window falls in,
+  and the roosting group counted underground.
+
+  Three classes carry that vocabulary. A cave system holds surface identity, six mandatory and one
+  optional vocabulary references, two measured scalars and collections of the stations and passage
+  segments recorded beneath it. A survey station holds the conditions the team recorded while
+  standing on it, with an optional hazard and anchor, and an optional back-reference to its system.
+  A passage segment reaches two stations — a mandatory near station and an optional far station,
+  because a dead end is surveyed from one side only — plus an optional system back-reference.
+
+  Two diagrams lay the domain out. A system layout view places the system against the station and
+  segment shapes and connects them through both collection properties and a single-valued
+  reference. A station reach view places the same three classes in a different arrangement and
+  reaches the station view twice from the segment view, once through the mandatory near station and
+  once through the optional far station, so two property views resolve onto one target view; it
+  then reaches the system view from both other views. Every class appears in both diagrams and
+  every class view and property view has to resolve against a class and a property that exist.
+
+modelSources:
+  model:
+    root: zephyr-isle-3
+    files:
+      - test/zephyrisle3/diagram/CaveSurveyDiagrams.pure
+      - test/zephyrisle3/domain/CaveSurveyDomain.pure
+      - test/zephyrisle3/domain/CaveSurveyVocabulary.pure
+
+features:
+  - grammar:diagram
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - cave-survey
+  - class-view
+  - closed-vocabulary
+  - diagram
+  - enumeration
+  - optional-reference
+  - property-view

@@ -1,0 +1,50 @@
+name: amber-reef-model
+title: "Amber Reef — Business-Temporal Survey Lattice with Selectors, Constraints and a Banded Conditional"
+description: |
+  A reef-monitoring domain whose business-temporal survey root carries a
+  bounded-coverage constraint, parameterised selector properties over its
+  observations, collection-operation derived properties and a coalescing
+  label, all inherited by a two-level subtype chain and widened by three
+  associations. A relational survey table maps the root and derives a
+  condition band through a nested conditional whose arms and absent-index
+  fallback are covered by a point-in-time mapping test.
+
+modelSources:
+  model:
+    root: amber-reef-model
+    files:
+      - test/amberreef/domain/Observation.pure
+      - test/amberreef/domain/ReefProfile.pure
+      - test/amberreef/domain/SurveyMethod.pure
+      - test/amberreef/domain/SurveyRecord.pure
+      - test/amberreef/mapping/ReefMapping.pure
+      - test/amberreef/store/ReefDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:relational-conditional-transform
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - conditional-transform
+  - constraint
+  - h2
+  - inheritance
+  - marine-biology
+  - qualified-property

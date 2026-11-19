@@ -1,0 +1,131 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedapiary::mapping::ApiaryScheduleMapping
+(
+  *test::frostedapiary::domain::HiveInspectionVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.visit_id
+    )
+    ~mainTable [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit
+    visitReference: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.visit_reference,
+    visitTitle: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.visit_title,
+    visitKind: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.visit_kind,
+    calendarName: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.calendar_name,
+    organiserName: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.organiser_name,
+    inspectorContact: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.inspector_contact,
+    siteCode: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.site_code,
+    apiaryZone: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.apiary_zone,
+    hiveCount: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.hive_count,
+    locationNote: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.location_note,
+    agendaNote: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.agenda_note,
+    weatherNote: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.weather_note,
+    startsAt: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.starts_at,
+    endsAt: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.ends_at,
+    allDay: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.all_day_flag,
+    recurring: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.recurring_flag,
+    cancelled: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.cancelled_flag,
+    confirmed: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.confirmed_flag,
+    protectiveGearRequired: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.protective_gear_flag,
+    smokerRequired: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.smoker_required_flag,
+    queenCheckPlanned: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.queen_check_flag,
+    broodCheckPlanned: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.brood_check_flag,
+    varroaCheckPlanned: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.varroa_check_flag,
+    harvestPlanned: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.harvest_planned_flag,
+    feedingPlanned: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.feeding_planned_flag,
+    travelRequired: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.travel_required_flag,
+    reminderSent: [test::frostedapiary::store::ApiaryScheduleStore]schedule.inspection_visit.reminder_sent_flag,
+    inspectorName: [test::frostedapiary::store::ApiaryScheduleStore]@Visit_Inspector | [test::frostedapiary::store::ApiaryScheduleStore]directory.inspector_directory.display_name,
+    inspectorTeam: [test::frostedapiary::store::ApiaryScheduleStore]@Visit_Inspector | [test::frostedapiary::store::ApiaryScheduleStore]directory.inspector_directory.team_name,
+    inspectorRegion: [test::frostedapiary::store::ApiaryScheduleStore]@Visit_Inspector | [test::frostedapiary::store::ApiaryScheduleStore]directory.inspector_directory.region_name,
+    siteName: [test::frostedapiary::store::ApiaryScheduleStore]@Visit_Site | [test::frostedapiary::store::ApiaryScheduleStore]site.hive_site.site_name,
+    forageType: [test::frostedapiary::store::ApiaryScheduleStore]@Visit_Site | [test::frostedapiary::store::ApiaryScheduleStore]site.hive_site.forage_type
+  }
+
+  testSuites:
+  [
+    visitDirectorySuite:
+    {
+      function: |test::frostedapiary::domain::HiveInspectionVisit.all()->project(
+  [
+    v|$v.visitReference,
+    v|$v.visitTitle,
+    v|$v.apiaryZone,
+    v|$v.hiveCount,
+    v|$v.confirmed,
+    v|$v.queenCheckPlanned,
+    v|$v.inspectorName,
+    v|$v.inspectorTeam,
+    v|$v.inspectorRegion,
+    v|$v.siteName,
+    v|$v.forageType
+  ],
+  [
+    'Visit/Reference',
+    'Visit/Title',
+    'Visit/Zone',
+    'Visit/HiveCount',
+    'Visit/Confirmed',
+    'Visit/QueenCheck',
+    'Inspector/Name',
+    'Inspector/Team',
+    'Inspector/Region',
+    'Site/Name',
+    'Site/Forage'
+  ]
+);
+      tests:
+      [
+        visitWithDirectoryAndSite:
+        {
+          doc: 'Projects a scheduled visit whose unqualified columns resolve against the main table alias while the inspector and site columns are reached through the two declared joins into the included stores.';
+          data:
+          [
+            test::frostedapiary::store::ApiaryScheduleStore:
+              Relational
+              #{
+                directory.inspector_directory:
+                  'directory_id,contact_address,display_name,team_name,region_name\n'+
+                  '1,rowan-hale-apiary-contact,Rowan Hale,Hive Welfare Team,Northern Downs\n';
+
+                site.hive_site:
+                  'site_code,site_name,forage_type\n'+
+                  'HS-01,Clover Meadow Yard,CLOVER\n';
+
+                schedule.inspection_visit:
+                  'visit_id,visit_reference,visit_title,visit_kind,calendar_name,organiser_name,inspector_contact,site_code,apiary_zone,hive_count,location_note,agenda_note,weather_note,starts_at,ends_at,all_day_flag,recurring_flag,cancelled_flag,confirmed_flag,protective_gear_flag,smoker_required_flag,queen_check_flag,brood_check_flag,varroa_check_flag,harvest_planned_flag,feeding_planned_flag,travel_required_flag,reminder_sent_flag\n'+
+                  '1,IV-1001,Spring brood inspection,ROUTINE,Apiary Field Calendar,Marin Ashby,rowan-hale-apiary-contact,HS-01,North Paddock,12,Gate 3 track,Check brood pattern and stores,Light breeze,2026-04-02 09:00:00,2026-04-02 11:30:00,false,true,false,true,true,true,true,true,false,false,false,true,true\n';
+              }#
+          ];
+          asserts:
+          [
+            oneJoinedVisitRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit/Reference":"IV-1001","Visit/Title":"Spring brood inspection","Visit/Zone":"North Paddock","Visit/HiveCount":12,"Visit/Confirmed":true,"Visit/QueenCheck":true,"Inspector/Name":"Rowan Hale","Inspector/Team":"Hive Welfare Team","Inspector/Region":"Northern Downs","Site/Name":"Clover Meadow Yard","Site/Forage":"CLOVER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

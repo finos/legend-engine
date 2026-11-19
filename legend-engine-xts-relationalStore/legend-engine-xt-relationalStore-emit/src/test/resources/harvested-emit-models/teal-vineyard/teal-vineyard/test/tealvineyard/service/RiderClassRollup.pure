@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealvineyard::service::RiderClassRollup
+{
+  pattern: '/tealvineyard/riderClassRollup/{replica}';
+  documentation: 'Totals hire minutes and hire counts per rider category over a closed date window, where the category and trip-kind narrowings are each optional and are skipped entirely when the caller supplies nothing for them. The same query body runs against either the live or the replay replica of the network store, and only the leading categories in code order are returned.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['cycle-network-operations'] };
+  execution: Multi
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1], riderClasses: String[*], tripKinds: String[*]|
+      test::tealvineyard::domain::JourneyRecord.all()->filter(
+        j|(($j.startedOn >= $fromDate) && ($j.startedOn <= $toDate)) &&
+          (($riderClasses->isEmpty() || $j.riderClass->in($riderClasses)) && ($tripKinds->isEmpty() || $j.tripKind->in($tripKinds)))
+      )->project(
+        ~[
+          RIDER: j|$j.riderClass,
+          MINUTES: j|$j.durationMinutes
+        ]
+      )->extend(~MINUTES_F: r|$r.MINUTES->toOne())
+       ->groupBy(~[RIDER], ~[MINUTE_SUM: x|$x.MINUTES_F: y|$y->sum(), JOURNEY_COUNT: x|$x.MINUTES_F: y|$y->count()])
+       ->sort(~RIDER->ascending())
+       ->limit(3);
+    };
+    key: 'replica';
+    executions['live']:
+    {
+      mapping: test::tealvineyard::mapping::CycleNetworkMapping;
+      runtime: test::tealvineyard::runtime::CycleNetworkLiveRuntime;
+    }
+    executions['replay']:
+    {
+      mapping: test::tealvineyard::mapping::CycleNetworkMapping;
+      runtime: test::tealvineyard::runtime::CycleNetworkReplayRuntime;
+    }
+  }
+  testSuites:
+  [
+    riderClassRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cycleNetworkConnection:
+            Relational
+            #{
+              cyclenet.journey_record:
+                'journey_id,journey_code,station_code,rider_class,trip_kind,duration_minutes,started_on\n'+
+                '11,JR-11,DS-01,RESIDENT,COMMUTE,20,2024-05-02\n'+
+                '12,JR-12,DS-01,RESIDENT,LEISURE,35,2024-05-03\n'+
+                '13,JR-13,DS-02,VISITOR,LEISURE,50,2024-05-04\n'+
+                '14,JR-14,DS-03,STUDENT,COMMUTE,15,2024-05-05\n'+
+                '15,JR-15,DS-02,VISITOR,COMMUTE,25,2024-06-20\n'+
+                '16,JR-16,DS-03,STUDENT,ERRAND,10,2024-04-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        anUnnarrowedWindowTotalsEveryCategoryInsideIt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['live'];
+          parameters:
+          [
+            fromDate = %2024-05-01,
+            toDate = %2024-05-31,
+            riderClasses = [],
+            tripKinds = []
+          ]
+          asserts:
+          [
+            theHiresEitherSideOfTheWindowAreExcludedFromTheTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RIDER":"RESIDENT","MINUTE_SUM":55,"JOURNEY_COUNT":2},{"RIDER":"STUDENT","MINUTE_SUM":15,"JOURNEY_COUNT":1},{"RIDER":"VISITOR","MINUTE_SUM":50,"JOURNEY_COUNT":1}]';
+                  }#;
+              }#
+          ]
+        },
+        bothNarrowingsTogetherCanEmptyTheRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['replay'];
+          parameters:
+          [
+            fromDate = %2024-05-01,
+            toDate = %2024-05-31,
+            riderClasses = ['VISITOR'],
+            tripKinds = ['COMMUTE']
+          ]
+          asserts:
+          [
+            theOnlyVisitorCommuteHireSitsOutsideTheWindowSoNothingIsTotalled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

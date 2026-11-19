@@ -1,0 +1,71 @@
+name: golden-otter-2
+title: "Golden Otter 2 — glasshouse plant register across a garden and a volunteer store"
+description: |
+  A botanic-garden glasshouse register split over two relational stores. The
+  garden store holds bed and accession tables in one schema, glasshouse and
+  watering-rota tables in a second schema and a label view whose column is built
+  by a store dyna function; a store filter keeps retired beds out of every read.
+  The volunteer store holds volunteers and the badges they hold. Two mappings
+  bind five classes: bed properties are derived with string-function transforms,
+  one property is a mapping literal, two are table-alias columns reached across
+  the schema boundary and one walks an inner two-hop path onto the watering rota,
+  while an association gives bed-to-accession navigation a relational
+  implementation. Four services read the two runtimes: an accession register that
+  filters on a requested taxon collection and reduces with distinct, a sorted and
+  limited bed inventory, a single-glasshouse rota projection and a sorted
+  volunteer roster. Mapping test suites cover both mappings.
+modelSources:
+  model:
+    root: golden-otter-2
+    files:
+      - test/goldenotter2/connection/RegisterConnections.pure
+      - test/goldenotter2/domain/GardenDomain.pure
+      - test/goldenotter2/mapping/GardenMapping.pure
+      - test/goldenotter2/mapping/VolunteerMapping.pure
+      - test/goldenotter2/runtime/RegisterRuntimes.pure
+      - test/goldenotter2/service/AccessionRegister.pure
+      - test/goldenotter2/service/BedInventory.pure
+      - test/goldenotter2/service/GlasshouseRotaList.pure
+      - test/goldenotter2/service/VolunteerRoster.pure
+      - test/goldenotter2/store/GardenDb.pure
+      - test/goldenotter2/store/VolunteerDb.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-view
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - cross-schema
+  - glasshouse-register
+  - h2
+  - inner-join
+  - multi-store
+  - relational
+  - service-test
+  - store-filter

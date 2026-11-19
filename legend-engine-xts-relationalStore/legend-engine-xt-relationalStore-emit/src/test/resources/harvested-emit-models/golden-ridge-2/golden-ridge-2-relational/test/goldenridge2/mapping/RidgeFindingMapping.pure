@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::goldenridge2::mapping::RidgeFindingMapping
+(
+  include mapping demo::goldenridge2::mapping::RidgeBaseMapping
+
+  *demo::goldenridge2::domain::DuplicateFinding[duplicate]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.voucher_code
+    )
+    ~mainTable [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw
+    voucherCode: [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.voucher_code,
+    sheetCount: [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.sheet_count,
+    peakMounts: [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.peak_mounts,
+    duplicateVerdict: case(
+                        greaterThan([demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.sheet_count, 1),
+                        'DUPLICATE',
+                        'SINGLETON'
+                      )
+  }
+
+  *demo::goldenridge2::domain::IntakeMismatch[mismatch]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.voucher_code
+    )
+    ~mainTable [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw
+    voucherCode: [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.voucher_code,
+    sheetCount: [demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.sheet_count,
+    intakeTotal: [demo::goldenridge2::store::HerbariumDB]@Dupe_Rollup | [demo::goldenridge2::store::HerbariumDB]accession.batch_rollup_vw.lot_total,
+    mismatchVerdict: case(
+                       greaterThan([demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.peak_mounts, 2),
+                       'OVER_RECORDED',
+                       case(
+                         equal([demo::goldenridge2::store::HerbariumDB]herbarium.voucher_dupe_vw.sheet_count, 1),
+                         'MATCHED',
+                         'REVIEW'
+                       )
+                     )
+  }
+
+  testSuites:
+  [
+    sheetBandSuite:
+    {
+      function: |demo::goldenridge2::domain::SheetRecord.all()->project(~[Sheet: x|$x.sheetId, Voucher: x|$x.voucherCode, Taxon: x|$x.taxonName, Band: x|$x.vigourBand, Handling: x|$x.handlingNote, Label: x|$x.voucherLabel, Sheets: x|$x.sheetsOnVoucher, Intake: x|$x.intakeOnVoucher])->sort(~Sheet->ascending());
+      tests:
+      [
+        everyBandArm:
+        {
+          doc: 'One herbarium sheet per vigour band arm, the high-vigour sheet that falls through the band chain to the null sentinel, an escorted sheet, a duplicated voucher and a sheet whose validity window closed before it opened and is removed by the store filter.';
+          data:
+          [
+            demo::goldenridge2::store::HerbariumDB:
+              Relational
+              #{
+                herbarium.taxon_ref:
+                  'taxon_code,taxon_name\n'+
+                  'T1,Silver Fern\n'+
+                  'T2,Marsh Sedge\n';
+
+                herbarium.sheet_record:
+                  'sheet_id,voucher_code,taxon_code,collector_code,mount_count,vigour_score,handling_code,valid_from,valid_thru\n'+
+                  'S01,V01,T1,C1,1,5,,2026-01-01,9999-12-31\n'+
+                  'S02,V02,T1,C1,1,15,,2026-01-01,\n'+
+                  'S03,V03,T2,C2,2,25,,2026-01-01,9999-12-31\n'+
+                  'S04,V04,T2,C2,1,35,,2026-01-01,9999-12-31\n'+
+                  'S05,V05,T1,C3,1,45,X,2026-01-01,9999-12-31\n'+
+                  'S06,V06,T2,C3,1,55,,2026-01-01,9999-12-31\n'+
+                  'S07,V07,T1,C1,1,65,,2026-01-01,9999-12-31\n'+
+                  'S08,V08,T2,C2,1,75,,2026-01-01,9999-12-31\n'+
+                  'S09,V09,T1,C1,1,95,,2026-01-01,9999-12-31\n'+
+                  'S10,V10,T2,C2,1,50,,2026-01-01,2025-01-01\n'+
+                  'S11,V01,T1,C1,3,8,,2026-01-01,9999-12-31\n';
+
+                accession.accession_lot:
+                  'batch_id,voucher_code,lot_count,batch_state\n'+
+                  'B1,V01,4,S\n'+
+                  'B2,V02,1,S\n'+
+                  'B3,V03,2,\n';
+              }#
+          ];
+          asserts:
+          [
+            bandPerArm:
+              Relation
+              #{
+                Sheet,Voucher,Taxon,Band,Handling,Label,Sheets,Intake
+                S01,V01,Silver Fern,BAND_1,,STD-V01,2,4
+                S02,V02,Silver Fern,BAND_2,,STD-V02,1,1
+                S03,V03,Marsh Sedge,BAND_3,,STD-V03,1,2
+                S04,V04,Marsh Sedge,BAND_4,,STD-V04,1,
+                S05,V05,Silver Fern,BAND_5,ESCORTED,CARE-V05,1,
+                S06,V06,Marsh Sedge,BAND_6,,STD-V06,1,
+                S07,V07,Silver Fern,BAND_7,,STD-V07,1,
+                S08,V08,Marsh Sedge,BAND_8,,STD-V08,1,
+                S09,V09,Silver Fern,,OPEN,STD-V09,1,
+                S11,V01,Silver Fern,BAND_1,,STD-V01,2,4;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

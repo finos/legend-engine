@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::borealwillow3::store::ApiaryDb
+(
+  Schema apiary
+  (
+    Table hive
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      hive_code VARCHAR(24) PRIMARY KEY,
+      yard_code VARCHAR(24) NOT NULL,
+      strain_code VARCHAR(8),
+      temper_code VARCHAR(8),
+      frame_count INTEGER,
+      mite_note VARCHAR(128),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table hive_inspection
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      inspection_id INTEGER PRIMARY KEY,
+      hive_code VARCHAR(24) NOT NULL,
+      inspector_name VARCHAR(128),
+      outcome_code VARCHAR(8),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table yard_visit
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      visit_id INTEGER PRIMARY KEY,
+      yard_code VARCHAR(24) NOT NULL,
+      entry_text VARCHAR(256),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table swarm_trap
+    (
+      trap_code VARCHAR(24) PRIMARY KEY,
+      yard_code VARCHAR(24) NOT NULL,
+      lure_code VARCHAR(8),
+      catch_note VARCHAR(128),
+      catch_count INTEGER
+    )
+    Table frame_sample
+    (
+      sample_id INTEGER PRIMARY KEY,
+      hive_code VARCHAR(24) NOT NULL,
+      cell_count INTEGER,
+      grade_code VARCHAR(8)
+    )
+
+    View hive_sample_tally
+    (
+      ~groupBy
+      (
+        apiary.frame_sample.hive_code
+      )
+      hive_code: apiary.frame_sample.hive_code PRIMARY KEY,
+      sample_count: count(apiary.frame_sample.sample_id),
+      max_cell_count: max(apiary.frame_sample.cell_count)
+    )
+  )
+
+  Schema registry
+  (
+    Table yard
+    (
+      yard_code VARCHAR(24) PRIMARY KEY,
+      yard_name VARCHAR(120),
+      district_code VARCHAR(24),
+      forage_code VARCHAR(8)
+    )
+    Table forage_ref
+    (
+      forage_code VARCHAR(8) PRIMARY KEY,
+      forage_name VARCHAR(120),
+      bloom_note VARCHAR(120)
+    )
+    Table steward
+    (
+      steward_code VARCHAR(24) PRIMARY KEY,
+      yard_code VARCHAR(24) NOT NULL,
+      steward_name VARCHAR(120)
+    )
+
+    View forage_label_vw
+    (
+      forage_code: registry.forage_ref.forage_code PRIMARY KEY,
+      forage_name: registry.forage_ref.forage_name,
+      bloom_label: concat('BLOOM-', registry.forage_ref.bloom_note)
+    )
+    View yard_steward_tally
+    (
+      ~groupBy
+      (
+        registry.steward.yard_code
+      )
+      yard_code: registry.steward.yard_code PRIMARY KEY,
+      steward_count: count(registry.steward.steward_code)
+    )
+  )
+
+  Filter GradedSample(apiary.frame_sample.grade_code != 'X')
+  Filter NamedYard(registry.yard.yard_name != '')
+
+  Join Hive_SampleTally(apiary.hive.hive_code = apiary.hive_sample_tally.hive_code)
+  Join Hive_Yard(apiary.hive.yard_code = registry.yard.yard_code)
+  Join Trap_Yard(apiary.swarm_trap.yard_code = registry.yard.yard_code)
+  Join Yard_Forage(registry.yard.forage_code = registry.forage_ref.forage_code)
+  Join Yard_ForageLabel(registry.yard.forage_code = registry.forage_label_vw.forage_code)
+  Join Yard_StewardTally(registry.yard.yard_code = registry.yard_steward_tally.yard_code)
+  Join Yard_Trap(registry.yard.yard_code = apiary.swarm_trap.yard_code)
+)

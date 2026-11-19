@@ -1,0 +1,77 @@
+name: opal-warren-2
+title: "Opal Warren 2 — A Tower Ring Register Over An Included Relational Store With An Eight-Arm Tone Ladder, An Association Implementation And A Digest Service"
+description: |
+  A tower-ring stewardship register whose store is assembled from two database elements: a core
+  store carrying the hung-bell and belfry-frame tables, and a register store that includes it,
+  and declares the store filter and the bell-to-belfry join the register is read
+  through. Two chained mappings compile in order: a base layer that keys the bell extent on its
+  identifier through an explicit main-table alias, resolves the tone label through eight case arms
+  and an unrecorded fallback, bands the tier from the tone code, folds a missing bell name and an
+  unrecorded headstock onto sentinels and derives the swing margin arithmetically; and a register
+  layer that includes it and implements the housing association across the bell-to-belfry join so
+  the frame name is reachable one hop out.
+
+  Above the mappings sit a digest service that keeps the weighed bells, projects the bell key, the
+  resolved tone label, the tier, the arithmetic margin and the joined frame name as a tabular data
+  set, and a governed data space wiring the register mapping to the in-process tier.
+
+  Both the mapping suite and the service suite assert over the same nine-bell ring: one row for
+  every tone arm, plus the unnamed, unrecorded-headstock bell that falls through to the sentinels,
+  with a scrapped bell present in the mapping fixture to prove the store filter removes it.
+modelSources:
+  model:
+    root: opal-warren-2
+    files:
+      - test/opalwarren2/connection/BellConnections.pure
+      - test/opalwarren2/dataspace/BellDataSpace.pure
+      - test/opalwarren2/domain/BellDomain.pure
+      - test/opalwarren2/mapping/BellBaseMapping.pure
+      - test/opalwarren2/mapping/BellRegisterMapping.pure
+      - test/opalwarren2/runtime/BellRuntimes.pure
+      - test/opalwarren2/service/BellServices.pure
+      - test/opalwarren2/store/BellCoreDb.pure
+      - test/opalwarren2/store/BellRegisterDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:test-data
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - condition-ladder
+  - conditional-transform
+  - data-space
+  - h2
+  - layered-mappings
+  - mapping-include
+  - mapping-test
+  - relational
+  - service-test
+  - store-filter
+  - store-include
+  - tabular-data-set
+  - tower-ring-stewardship

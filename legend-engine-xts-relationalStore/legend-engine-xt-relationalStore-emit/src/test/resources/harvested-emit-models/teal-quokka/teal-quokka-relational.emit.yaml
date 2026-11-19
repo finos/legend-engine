@@ -1,0 +1,54 @@
+name: teal-quokka-relational
+title: "Field Station Sightings — Deep Conditional Transforms, Enumeration Mappings Over Expressions and Three-Hop Joins"
+description: |
+  A relational corpus over a wildlife field station. A single database holds
+  sightings, animals, species and taxonomic families, and the relational
+  mapping derives a condition band from an eight-arm conditional that falls
+  through to a SQL null sentinel, builds a label from string functions, and
+  resolves three enumerations from computed code expressions, including a
+  stored code that is outside the enumeration mapping. Sighting attributes are
+  reached over a three-hop join path, and a companion model-to-model mapping
+  resolves the same enumerations from expressions over a staging class.
+modelSources:
+  model:
+    root: teal-quokka-relational
+    files:
+      - test/tealquokka/connection/DigestJsonConnection.pure
+      - test/tealquokka/connection/WildlifeConnection.pure
+      - test/tealquokka/domain/WildlifeDomain.pure
+      - test/tealquokka/mapping/SightingDigestMapping.pure
+      - test/tealquokka/mapping/WildlifeEnumMappings.pure
+      - test/tealquokka/mapping/WildlifeMapping.pure
+      - test/tealquokka/runtime/DigestRuntime.pure
+      - test/tealquokka/runtime/WildlifeRuntime.pure
+      - test/tealquokka/store/WildlifeDB.pure
+features:
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-conditional-transform
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - enumeration-mapping
+  - field-station
+  - h2
+  - multi-hop-join
+  - null-sentinel
+  - relational
+  - string-function
+  - tabular-data-set
+  - wildlife-tracking

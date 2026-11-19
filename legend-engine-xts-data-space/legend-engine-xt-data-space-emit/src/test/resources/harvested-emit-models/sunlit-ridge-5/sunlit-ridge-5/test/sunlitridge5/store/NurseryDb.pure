@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sunlitridge5::store::NurseryDb
+(
+  Schema greenhouse
+  (
+    Table seedling_tray
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+      tray_code VARCHAR(12) PRIMARY KEY,
+      in_z TIMESTAMP PRIMARY KEY,
+      out_z TIMESTAMP,
+      species_code VARCHAR(8) NOT NULL,
+      bench_code VARCHAR(8),
+      cell_count INTEGER,
+      germination_pct DOUBLE,
+      sown_on DATE
+    )
+  )
+  Schema field
+  (
+    Table planting_bed
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+      bed_code VARCHAR(12) PRIMARY KEY,
+      in_z TIMESTAMP PRIMARY KEY,
+      out_z TIMESTAMP,
+      soil_kind VARCHAR(16),
+      bed_length_m DOUBLE,
+      plant_count BIGINT,
+      last_mulched TIMESTAMP
+    )
+  )
+  Schema catalogue
+  (
+    Table cultivar
+    (
+      cultivar_code VARCHAR(12) PRIMARY KEY,
+      common_name VARCHAR(40),
+      flower_colour VARCHAR(16),
+      hardiness_zone INTEGER
+    )
+  )
+)

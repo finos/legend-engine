@@ -1,0 +1,181 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarhatchery2::mapping::HatcheryHealthMapping
+(
+  *test::cedarhatchery2::domain::HealthCheck[health_check]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery2::store::HatcheryHealthDb]health.health_check.check_id
+    )
+    ~mainTable [test::cedarhatchery2::store::HatcheryHealthDb]health.health_check
+    checkId: [test::cedarhatchery2::store::HatcheryHealthDb]health.health_check.check_id,
+    lotCode: [test::cedarhatchery2::store::HatcheryHealthDb]health.health_check.lot_code,
+    waterTempC: [test::cedarhatchery2::store::HatcheryHealthDb]health.health_check.water_temp_c,
+    sampledCount: [test::cedarhatchery2::store::HatcheryHealthDb]health.health_check.sampled_count,
+    vetAlias: [test::cedarhatchery2::store::HatcheryHealthDb]@HealthCheck_Vet | [test::cedarhatchery2::store::HatcheryHealthDb]health.vet_roster.vet_alias
+  }
+
+  *test::cedarhatchery2::domain::VetRoster[vet_roster]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery2::store::HatcheryHealthDb]health.vet_roster.vet_code
+    )
+    ~mainTable [test::cedarhatchery2::store::HatcheryHealthDb]health.vet_roster
+    vetCode: [test::cedarhatchery2::store::HatcheryHealthDb]health.vet_roster.vet_code,
+    vetAlias: [test::cedarhatchery2::store::HatcheryHealthDb]health.vet_roster.vet_alias,
+    clinicName: [test::cedarhatchery2::store::HatcheryHealthDb]health.vet_roster.clinic_name
+  }
+
+  *test::cedarhatchery2::domain::GradeScale[grade_scale]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarhatchery2::store::HatcheryHealthDb]health.grade_scale.grade_code
+    )
+    ~mainTable [test::cedarhatchery2::store::HatcheryHealthDb]health.grade_scale
+    gradeCode: [test::cedarhatchery2::store::HatcheryHealthDb]health.grade_scale.grade_code,
+    gradeLabel: [test::cedarhatchery2::store::HatcheryHealthDb]health.grade_scale.grade_label,
+    severityRank: [test::cedarhatchery2::store::HatcheryHealthDb]health.grade_scale.severity_rank
+  }
+
+  test::cedarhatchery2::domain::HealthCheck_Vet: Relational
+  {
+    AssociationMapping
+    (
+      vet[health_check, vet_roster]: [test::cedarhatchery2::store::HatcheryHealthDb]@HealthCheck_Vet,
+      vetChecks[vet_roster, health_check]: [test::cedarhatchery2::store::HatcheryHealthDb]@HealthCheck_Vet
+    )
+  }
+
+  test::cedarhatchery2::domain::HealthCheck_Grade: Relational
+  {
+    AssociationMapping
+    (
+      grade[health_check, grade_scale]: [test::cedarhatchery2::store::HatcheryHealthDb]@HealthCheck_Grade,
+      gradeChecks[grade_scale, health_check]: [test::cedarhatchery2::store::HatcheryHealthDb]@HealthCheck_Grade
+    )
+  }
+
+  testSuites:
+  [
+    healthBoardAsOfSuite:
+    {
+      function: |test::cedarhatchery2::domain::HealthCheck.all(%2026-06-01)->project(
+        [
+          c|$c.checkId,
+          c|$c.lotCode,
+          c|$c.vetAlias,
+          c|$c.grade.gradeLabel,
+          c|$c.waterTempC,
+          c|$c.sampledCount
+        ],
+        [
+          'Check',
+          'Lot',
+          'Vet',
+          'Grade',
+          'Water Temp',
+          'Sampled'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Check')
+        ]
+      )->limit(10);
+      tests:
+      [
+        supersededCheckIsOutOfRangeAtTheQueriedInstant:
+        {
+          doc: 'Reads the inspection set of the second store at one processing instant, resolving the join-reached veterinary alias and the association-implemented grade hop, and proves that an inspection whose processing window closed before that instant is out of range.';
+          data:
+          [
+            test::cedarhatchery2::store::HatcheryHealthDb:
+              Relational
+              #{
+                health.health_check:
+                  'check_id,lot_code,vet_code,grade_code,water_temp_c,sampled_count,in_z,out_z\n'+
+                  'HC-01,LOT-ALPHA,VT-01,GR-A,11.25,60,2026-01-01,9999-12-31\n'+
+                  'HC-02,LOT-BRAVO,VT-02,GR-B,12.75,45,2026-01-01,9999-12-31\n'+
+                  'HC-03,LOT-CHARLIE,VT-01,GR-C,9.55,30,2026-01-01,2026-03-15\n';
+                health.vet_roster:
+                  'vet_code,vet_alias,clinic_name\n'+
+                  'VT-01,North Shore Vet,North Clinic\n'+
+                  'VT-02,South Shore Vet,South Clinic\n';
+                health.grade_scale:
+                  'grade_code,grade_label,severity_rank\n'+
+                  'GR-A,Prime,1\n'+
+                  'GR-B,Sound,2\n'+
+                  'GR-C,Watch,3\n';
+              }#
+          ];
+          asserts:
+          [
+            inRangeChecksOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Check":"HC-01","Lot":"LOT-ALPHA","Vet":"North Shore Vet","Grade":"Prime","Water Temp":11.25,"Sampled":60},{"Check":"HC-02","Lot":"LOT-BRAVO","Vet":"South Shore Vet","Grade":"Sound","Water Temp":12.75,"Sampled":45}]';
+                  }#;
+              }#
+          ];
+        },
+        stillBelievedCheckIsInRangeAtTheSameInstant:
+        {
+          doc: 'Repeats the point-in-time read with the third inspection still believed at the queried instant, so the previously out-of-range row resolves through the same join-reached column and grade hop.';
+          data:
+          [
+            test::cedarhatchery2::store::HatcheryHealthDb:
+              Relational
+              #{
+                health.health_check:
+                  'check_id,lot_code,vet_code,grade_code,water_temp_c,sampled_count,in_z,out_z\n'+
+                  'HC-01,LOT-ALPHA,VT-01,GR-A,11.25,60,2026-01-01,9999-12-31\n'+
+                  'HC-02,LOT-BRAVO,VT-02,GR-B,12.75,45,2026-01-01,9999-12-31\n'+
+                  'HC-03,LOT-CHARLIE,VT-01,GR-C,9.55,30,2026-01-01,9999-12-31\n';
+                health.vet_roster:
+                  'vet_code,vet_alias,clinic_name\n'+
+                  'VT-01,North Shore Vet,North Clinic\n'+
+                  'VT-02,South Shore Vet,South Clinic\n';
+                health.grade_scale:
+                  'grade_code,grade_label,severity_rank\n'+
+                  'GR-A,Prime,1\n'+
+                  'GR-B,Sound,2\n'+
+                  'GR-C,Watch,3\n';
+              }#
+          ];
+          asserts:
+          [
+            allThreeChecks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Check":"HC-01","Lot":"LOT-ALPHA","Vet":"North Shore Vet","Grade":"Prime","Water Temp":11.25,"Sampled":60},{"Check":"HC-02","Lot":"LOT-BRAVO","Vet":"South Shore Vet","Grade":"Sound","Water Temp":12.75,"Sampled":45},{"Check":"HC-03","Lot":"LOT-CHARLIE","Vet":"North Shore Vet","Grade":"Watch","Water Temp":9.55,"Sampled":30}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

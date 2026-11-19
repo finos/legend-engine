@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::jadelighthouse::store::LighthouseDB
+(
+  Schema coast
+  (
+    Table station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(16),
+      station_name VARCHAR(128),
+      region_code VARCHAR(16),
+      station_type VARCHAR(16),
+      status_code VARCHAR(8),
+      tower_height_m INTEGER,
+      keeper_note VARCHAR(256),
+      lamp_id INTEGER
+    )
+    Table heritage_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(16),
+      station_name VARCHAR(128),
+      region_code VARCHAR(16),
+      station_type VARCHAR(16),
+      status_code VARCHAR(8),
+      tower_height_m INTEGER,
+      lamp_id INTEGER
+    )
+    Table lamp
+    (
+      lamp_id INTEGER PRIMARY KEY,
+      lamp_code VARCHAR(16),
+      optic_code VARCHAR(8),
+      power_code VARCHAR(8),
+      service_state VARCHAR(16)
+    )
+    Table region
+    (
+      region_code VARCHAR(16) PRIMARY KEY,
+      region_name VARCHAR(128),
+      coast_side VARCHAR(16)
+    )
+    Table inspection
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      inspection_id INTEGER PRIMARY KEY,
+      station_id INTEGER,
+      inspector_name VARCHAR(128),
+      condition_code VARCHAR(8),
+      hazard_code VARCHAR(8),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table keeper_log
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      log_id INTEGER PRIMARY KEY,
+      station_id INTEGER,
+      entry_text VARCHAR(256),
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+
+    View station_roster_vw
+    (
+      station_id: coast.station.station_id PRIMARY KEY,
+      station_code: coast.station.station_code,
+      roster_label: concat('ROSTER-', coast.station.region_code)
+    )
+    View region_summary_vw
+    (
+      ~groupBy (coast.station.region_code)
+      region_code: coast.station.region_code PRIMARY KEY,
+      station_count: count(coast.station.station_id),
+      max_tower_height_m: max(coast.station.tower_height_m)
+    )
+    View lamp_optic_vw
+    (
+      lamp_id: coast.lamp.lamp_id PRIMARY KEY,
+      lamp_code: coast.lamp.lamp_code,
+      power_label: concat('POWER-', coast.lamp.power_code)
+    )
+    View heritage_roster_vw
+    (
+      station_id: coast.heritage_station.station_id PRIMARY KEY,
+      station_code: coast.heritage_station.station_code,
+      region_code: coast.heritage_station.region_code
+    )
+  )
+
+  Filter OpenStation(coast.station.status_code != 'X')
+  Filter ServiceableLamp(coast.lamp.service_state != 'WITHDRAWN')
+  Filter NamedRegion(coast.region.region_name != '')
+  Filter ListedHeritage(coast.heritage_station.status_code != 'X' and coast.heritage_station.tower_height_m >= 0)
+
+  Join Station_Lamp(coast.station.lamp_id = coast.lamp.lamp_id)
+  Join Station_Region(coast.station.region_code = coast.region.region_code)
+  Join Inspection_Station(coast.inspection.station_id = coast.station.station_id)
+  Join Log_Station(coast.keeper_log.station_id = coast.station.station_id)
+  Join Region_Summary(coast.region.region_code = coast.region_summary_vw.region_code)
+  Join Station_Roster(coast.station.station_id = coast.station_roster_vw.station_id)
+  Join Lamp_Optic(coast.lamp.lamp_id = coast.lamp_optic_vw.lamp_id)
+  Join Heritage_Roster(coast.heritage_station.station_id = coast.heritage_roster_vw.station_id)
+)

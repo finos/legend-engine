@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrlighthouse5::mapping::KeeperMapping
+(
+  *test::zephyrlighthouse5::domain::Keeper[keeper]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper.keeper_code
+    )
+    ~mainTable [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper
+    keeperCode: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper.keeper_code,
+    contactCode: trim([test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper.contact_code),
+    rosterCode: toUpper([test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper.roster_code),
+    certCode: toLower([test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper.cert_code),
+    primaryName[keeperName]: [test::zephyrlighthouse5::store::KeeperRegisterDB]@Keeper_Name,
+    station[lightStation]: [test::zephyrlighthouse5::store::KeeperRegisterDB]@Keeper_Station,
+    tenures[tenureEntry]: [test::zephyrlighthouse5::store::KeeperRegisterDB]@Keeper_Tenure
+  }
+
+  *test::zephyrlighthouse5::domain::KeeperName[keeperName]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper_name.name_code
+    )
+    ~mainTable [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper_name
+    nameCode: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper_name.name_code,
+    salutationPart: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper_name.salutation_part,
+    givenPart: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper_name.given_part,
+    middlePart: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper_name.middle_part,
+    familyPart: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.keeper_name.family_part
+  }
+
+  *test::zephyrlighthouse5::domain::TenureEntry[tenureEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.tenure_entry.tenure_code
+    )
+    ~mainTable [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.tenure_entry
+    tenureCode: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.tenure_entry.tenure_code,
+    tenureYears: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.tenure_entry.tenure_years,
+    dutyCode: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.tenure_entry.duty_code,
+    rotationCode: toUpper([test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.tenure_entry.rotation_code),
+    postLabel: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.tenure_entry.post_label
+  }
+
+  *test::zephyrlighthouse5::domain::LightStation[lightStation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.light_station.station_code
+    )
+    ~mainTable [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.light_station
+    stationCode: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.light_station.station_code,
+    stationLabel: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.light_station.station_label,
+    watchWindow: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.light_station.watch_window,
+    lampType: toLower([test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.light_station.lamp_type),
+    grade[stationGrade]: [test::zephyrlighthouse5::store::KeeperRegisterDB]@Station_Grade,
+    district[coastDistrict]: [test::zephyrlighthouse5::store::KeeperRegisterDB]@Station_District
+  }
+
+  *test::zephyrlighthouse5::domain::StationGrade[stationGrade]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.station_grade.grade_code
+    )
+    ~mainTable [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.station_grade
+    gradeCode: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.station_grade.grade_code,
+    gradeDescription: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.station_grade.grade_description,
+    gradeBandLabel: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.station_grade.grade_band_label
+  }
+
+  *test::zephyrlighthouse5::domain::CoastDistrict[coastDistrict]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.coast_district.district_code
+    )
+    ~mainTable [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.coast_district
+    districtCode: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.coast_district.district_code,
+    districtName: [test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.coast_district.district_name,
+    coastName: trim([test::zephyrlighthouse5::store::KeeperRegisterDB]keepers.coast_district.coast_name)
+  }
+)

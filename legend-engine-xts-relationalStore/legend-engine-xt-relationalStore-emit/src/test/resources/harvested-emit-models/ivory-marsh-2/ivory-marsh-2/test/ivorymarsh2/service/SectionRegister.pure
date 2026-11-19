@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivorymarsh2::service::SectionRegister
+{
+  pattern: '/marsh/v1/sections';
+  title: 'Wetland Boardwalk - Section register gathered across the reserve and warden tables';
+  owners:
+  [
+    'wetland-boardwalk-desk',
+    'reserve-estate-eng'
+  ];
+  documentation: 'Single-execution service that narrows the boardwalk sections by a surface collection, a plank floor and a hazard ceiling, then reports each section together with the reserve and warden attributes gathered from the neighbouring tables, ordered and truncated for the register page.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {surfaceCodes: String[*], minPlanks: Integer[1], maxTier: Integer[1]|test::ivorymarsh2::domain::BoardwalkSection.all()->filter(
+      s|($s.surfaceCode->in($surfaceCodes)) && (($s.plankCount >= $minPlanks) && (($s.hazardTier <= $maxTier) && (($s.accessCode != 'CLOSED') && ($s.plankCount > 0))))
+    )->project(
+      [
+        col(s|$s.sectionCode->toUpper(), 'Section'),
+        col(s|$s.reserveCode, 'Reserve'),
+        col(s|$s.wetlandName, 'Wetland'),
+        col(s|$s.wardenName, 'Warden'),
+        col(s|$s.plankCount, 'Planks'),
+        col(s|$s.plankCount * 2, 'Plank Faces')
+      ]
+    )->sort([asc('Section')])->limit(5)};
+    mapping: test::ivorymarsh2::mapping::MarshMapping;
+    runtime: test::ivorymarsh2::runtime::MarshTestRuntime;
+  }
+  testSuites:
+  [
+    sectionRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              wetland.boardwalk_section:
+                'section_id,section_code,reserve_id,surface_code,plank_count,hazard_tier\n'+
+                '1,SC-01,100,PLANK,240,4\n'+
+                '2,SC-02,100,MESH,120,2\n'+
+                '3,SC-03,200,PLANK,80,5\n';
+              wetland.reserve:
+                'reserve_id,reserve_code,wetland_name,access_code\n'+
+                '100,RS-NORTH,North Fen,OPEN\n'+
+                '200,RS-SOUTH,South Carr,PERMIT\n';
+              wetland.section_warden:
+                'warden_id,section_id,warden_name,contact_rota\n'+
+                '1,1,Ada Wren,MORNING\n'+
+                '2,2,Bo Heron,EVENING\n'+
+                '3,3,Cai Snipe,MORNING\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sectionsInsidePlankAndHazardBounds:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surfaceCodes = ['PLANK', 'MESH'],
+            minPlanks = 100,
+            maxTier = 4
+          ]
+          asserts:
+          [
+            shortAndHazardousSectionsAreOmitted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Section":"SC-01","Reserve":"RS-NORTH","Wetland":"North Fen","Warden":"Ada Wren","Planks":240,"Plank Faces":480},{"Section":"SC-02","Reserve":"RS-NORTH","Wetland":"North Fen","Warden":"Bo Heron","Planks":120,"Plank Faces":240}]';
+                  }#;
+              }#
+          ]
+        },
+        narrowSurfaceCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surfaceCodes = ['MESH'],
+            minPlanks = 100,
+            maxTier = 4
+          ]
+          asserts:
+          [
+            onlyTheRequestedSurfaceIsReported:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Section":"SC-02","Reserve":"RS-NORTH","Wetland":"North Fen","Warden":"Bo Heron","Planks":120,"Plank Faces":240}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+name: quiet-quokka-3
+title: "Grafting Nursery — Validity-Filtered View Layer, Included Enumeration and Lookup Mappings, and a Point-in-Time Listing Register"
+description: |
+  A propagation-nursery corpus whose staged tables carry a validity window per row and are
+  read only through views: every view names an explicit filter, exposes a composite key
+  pairing its business identifier with the validity-start column, and two of them add a
+  derived column computed by a string or concatenation expression, so a row closed in the
+  past is invisible to every consumer even when a join condition matches it. Named joins
+  connect view to view, one folding a coalesce over a nullable code and one adding a literal
+  kind code to the equality, and a self-join walks the cultivar pseudonym relationship from a
+  synonym onto its accepted counterpart. Three mappings layer on top: one declares only
+  enumeration mappings, including a ternary with explicit blank and null buckets; one includes
+  it and maps the lookup classes onto the view layer, feeding three enumerations from nested
+  rewrite expressions rather than stored columns; the last includes that one, re-declares the
+  cultivar class under a second alias so one view serves two roles, and maps the graft record
+  with an eight-armed handling conditional falling through to a null, a trim-and-substring
+  level code, an embedded placement block that nests a further tray block and pins one target
+  to a literal, and properties reached through one, two and three join hops with a forced
+  inner qualifier on the pseudonym hop. A composing store includes the view store and adds a
+  business-temporal listing register plus a custodian table, whose mapping resolves the extent
+  at an explicit instant, passes the same instant into a qualified label property, and reaches
+  a cultivar name across the include boundary. Mapping tests pin whole projections so the view
+  filters, the join paths, the enumeration rewrites and the conditional arms are asserted
+  together, with one row per conditional arm, a fallthrough row, a source code outside every
+  enumeration bucket, hops that miss at the first, middle and final position, and rows closed
+  before the requested instant.
+
+modelSources:
+  model:
+    root: quiet-quokka-3
+    files:
+      - test/quietquokka3/domain/NurseryDomain.pure
+      - test/quietquokka3/mapping/CultivarRegistryMapping.pure
+      - test/quietquokka3/mapping/NurseryEnumMappings.pure
+      - test/quietquokka3/mapping/NurseryGraftMapping.pure
+      - test/quietquokka3/mapping/NurseryLookupMapping.pure
+      - test/quietquokka3/store/NurseryDb.pure
+      - test/quietquokka3/store/RegistryDb.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:test-data
+  - grammar:association
+  - grammar:enumeration
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-enum-of-expression
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - conditional-arms
+  - embedded-mapping
+  - enumeration-rewrite
+  - grafting-nursery
+  - h2
+  - mapping-include
+  - multi-hop-join
+  - point-in-time
+  - view-backed
+  - view-filter

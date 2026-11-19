@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::wistfulorchard2::domain::*;
+
+Profile test::wistfulorchard2::domain::GraftMeta
+{
+  stereotypes: [reviewed, provisional];
+  tags: [warden, graftRound];
+}
+
+Enum test::wistfulorchard2::domain::Hardiness
+{
+  TENDER,
+  HALF_HARDY,
+  HARDY,
+  ALPINE
+}
+
+Enum test::wistfulorchard2::domain::ScionVigour
+{
+  WEAK,
+  STRONG
+}
+
+Class <<test::wistfulorchard2::domain::GraftMeta.reviewed, temporal.processingtemporal>> {test::wistfulorchard2::domain::GraftMeta.warden = 'Grove Warden Board'} test::wistfulorchard2::domain::GraftRun
+{
+  recordCode: String[1];
+  runName: String[1];
+  scionCount: Integer[1];
+  canopySpanCm: Float[1];
+  spanPerScion: Float[0..1];
+  band: String[0..1];
+  loadLabel: String[1];
+  noteLabel: String[1];
+  weightLabel: String[1];
+  gradeLabel: String[1];
+  bandKnown: String[1];
+  hardiness: Hardiness[0..1];
+  vigour: ScionVigour[0..1];
+  plotName: String[0..1];
+  wardenPost: String[0..1];
+  journalId: Integer[0..1];
+  journalTag: String[0..1];
+  seasonFlag: String[0..1];
+  massTotal: Float[0..1];
+  loadTally: Integer[0..1];
+
+  wellTended()
+  {
+    if(((($this.loadLabel == 'NOTED') && ($this.weightLabel == 'heavy')) || ($this.noteLabel == 'LONG')) || ($this.gradeLabel == 'SPARSE SCION'),
+       | true,
+       | false)
+  }: Boolean[1];
+
+  fullyGrafted()
+  {
+    if(((($this.loadLabel == 'NOTED') && ($this.weightLabel == 'heavy')) || ($this.bandKnown == 'known')) || ($this.scionCount >= 4),
+       | true,
+       | false)
+  }: Boolean[1];
+
+  compactRun()
+  {
+    if($this.scionCount <= 2,
+       | true,
+       | false)
+  }: Boolean[1];
+}
+
+Class test::wistfulorchard2::domain::GroveJournal
+{
+  recordCode: String[1];
+  journalCode: String[1];
+  journalHours: Float[1];
+  journalDate: StrictDate[1];
+  trayMass: Float[0..1];
+  trayTally: Integer[0..1];
+}

@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::noblequarry::data::LiveQuarryFixture
+{
+  Relational #{
+    registry.quarry_site:
+      'site_id,site_name,region_name\n'+
+      '101,North Face Pit,Upland\n'+
+      '102,Riverside Cut,Lowland\n';
+    xref.code_scheme:
+      'source_key,local_code,in_batch,link_group,linked_code,out_batch\n'+
+      'SURVEY,SV-1,1,G1,,999999999\n'+
+      'REGISTRY,R-101,1,G1,101,999999999\n'+
+      'SURVEY,SV-2,1,G2,,999999999\n'+
+      'SURVEY,SV-3,1,G3,,999999999\n'+
+      'REGISTRY,R-102-OLD,1,G3,102,5\n'+
+      'REGISTRY,R-102,1,G4,102,999999999\n';
+    quarry.bench_survey:
+      'survey_ref,in_z,out_z,bench_code,surveyor_code,face_height_m,surveyed_on,valid_from,valid_to\n'+
+      'SV-1,2026-02-01 00:00:00,9999-12-31 00:00:00,BENCH-A,QS-07,12.5,2026-02-01,2026-02-01,\n'+
+      'SV-1,2026-01-15 00:00:00,2026-02-01 00:00:00,BENCH-A,QS-07,11.0,2026-02-01,2026-02-01,\n'+
+      'SV-2,2026-03-01 00:00:00,9999-12-31 00:00:00,BENCH-B,QS-03,9.0,2026-03-01,2026-03-01,2026-04-01\n'+
+      'SV-3,2026-03-10 00:00:00,9999-12-31 00:00:00,BENCH-C,QS-07,15.25,2026-03-10,2026-03-10,\n';
+    quarry.blast_record:
+      'blast_ref,in_z,out_z,bench_code,site_ref,fired_on,charge_kg,hole_count\n'+
+      'BL-1,2026-02-10 00:00:00,9999-12-31 00:00:00,BENCH-A,R-101,2026-02-10,420.0,18\n'+
+      'BL-2,2026-04-15 00:00:00,9999-12-31 00:00:00,BENCH-B,R-102,2026-04-15,380.5,16\n'+
+      'BL-3,2026-03-20 00:00:00,9999-12-31 00:00:00,BENCH-C,R-102-OLD,2026-03-20,510.0,22\n'+
+      'BL-4,2026-03-15 00:00:00,2026-03-16 00:00:00,BENCH-B,R-102,2026-03-15,300.0,12\n';
+  }#
+}
+
+Data test::noblequarry::data::ArchiveQuarryFixture
+{
+  Relational #{
+    registry.quarry_site:
+      'site_id,site_name,region_name\n'+
+      '101,North Face Pit,Upland\n'+
+      '102,Riverside Cut,Lowland\n';
+    xref.code_scheme:
+      'source_key,local_code,in_batch,link_group,linked_code,out_batch\n'+
+      'SURVEY,AS-1,1,G7,,999999999\n'+
+      'REGISTRY,R-101-ARC,1,G7,101,999999999\n'+
+      'SURVEY,AS-2,1,G8,,999999999\n'+
+      'REGISTRY,R-101,1,G1,101,999999999\n';
+    quarry_archive.archived_survey:
+      'survey_ref,archive_cycle,bench_code,surveyor_code,face_height_m,surveyed_on,valid_from,valid_to\n'+
+      'AS-1,1,BENCH-D,QS-01,8.5,2025-06-01,2025-06-01,2025-09-01\n'+
+      'AS-2,1,BENCH-E,QS-02,10.0,2025-07-01,2025-07-01,\n';
+    quarry_archive.archived_blast:
+      'blast_ref,archive_cycle,bench_code,site_ref,fired_on,charge_kg,hole_count\n'+
+      'AB-1,1,BENCH-D,R-101,2025-08-01,200.0,10\n'+
+      'AB-2,1,BENCH-D,R-101,2025-10-01,220.0,11\n';
+  }#
+}

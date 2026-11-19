@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+function {meta::pure::profiles::doc.doc = 'Measures how many days before the requested survey instant a holt was last visited, so a query body can band its rows on a computed lag rather than on a stored column.'}
+demo::crimsonotter3::function::visitLagDays(lastVisitedOn: StrictDate[1], asOf: StrictDate[1]): Integer[1]
+{
+  dateDiff($lastVisitedOn, $asOf, DurationUnit.DAYS)
+}
+
+function {meta::pure::profiles::doc.doc = 'Takes the season boundary a requested survey instant falls after, ninety days back from that instant.'}
+demo::crimsonotter3::function::seasonWindowStart(asOf: StrictDate[1]): Date[1]
+{
+  $asOf->adjust(-90, DurationUnit.DAYS)
+}
+
+function {meta::pure::profiles::doc.doc = 'Takes the season boundary open at the moment of the call, for callers that have no requested survey instant to work from.'}
+demo::crimsonotter3::function::currentSeasonWindowStart(): Date[1]
+{
+  now()->adjust(-90, DurationUnit.DAYS)
+}

@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::gildedharbor::domain::CycleUnit
+{
+  unitCode: String[1];
+  wheelSizeMm: Integer[0..1];
+  stationName: String[0..1];
+  zoneName: String[0..1];
+  boroughName: String[0..1];
+  zoneStationCount: Integer[0..1];
+  modelLabel: String[0..1];
+  frameType: String[0..1];
+  assistNote: String[0..1];
+  conditionNote: String[0..1];
+  rideBand: String[0..1];
+}
+
+Class test::gildedharbor::domain::ZoneUsage
+{
+  zoneCode: String[1];
+  stationCount: Integer[0..1];
+  totalDockCount: Integer[0..1];
+}
+
+Class test::gildedharbor::domain::VisitLoad
+{
+  unitCode: String[1];
+  visitCount: Integer[0..1];
+  totalDurationMin: Integer[0..1];
+}

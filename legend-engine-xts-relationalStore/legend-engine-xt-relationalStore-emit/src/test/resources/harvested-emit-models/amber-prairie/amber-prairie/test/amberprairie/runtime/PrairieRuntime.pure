@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::amberprairie::runtime::PrairieRuntime
+{
+  mappings:
+  [
+    test::amberprairie::mapping::PrairieMapping
+  ];
+  connections:
+  [
+    test::amberprairie::store::PrairieDatabase:
+    [
+      embeddedPrairieConnection:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::amberprairie::store::PrairieDatabase;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupSqls: [
+              'drop schema if exists PRAIRIE cascade;',
+              'create schema PRAIRIE;',
+              'create table PRAIRIE.RESTORATION_PLOT(PLOT_ID DOUBLE PRIMARY KEY, PLOT_NAME VARCHAR(16777216), SOIL_TYPE VARCHAR(16777216));',
+              'create table PRAIRIE.SEED_LOT(LOT_ID DOUBLE PRIMARY KEY, LOT_CODE VARCHAR(16777216), SPECIES_NAME VARCHAR(16777216), PLOT_ID DOUBLE);',
+              'insert into PRAIRIE.RESTORATION_PLOT (PLOT_ID, PLOT_NAME, SOIL_TYPE) values (1.0, \'North Swale\', \'silt loam\');',
+              'insert into PRAIRIE.RESTORATION_PLOT (PLOT_ID, PLOT_NAME, SOIL_TYPE) values (2.0, \'East Ridge\', \'sandy loam\');',
+              'insert into PRAIRIE.SEED_LOT (LOT_ID, LOT_CODE, SPECIES_NAME, PLOT_ID) values (10.0, \'SL-10\', \'Little Bluestem\', 1.0);',
+              'insert into PRAIRIE.SEED_LOT (LOT_ID, LOT_CODE, SPECIES_NAME, PLOT_ID) values (11.0, \'SL-11\', \'Purple Coneflower\', 2.0);',
+              'insert into PRAIRIE.SEED_LOT (LOT_ID, LOT_CODE, SPECIES_NAME, PLOT_ID) values (12.0, \'SL-12\', \'Prairie Dropseed\', 2.0);'
+            ];
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

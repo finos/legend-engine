@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum test::duskyisle::domain::SwellState
+{
+  CALM,
+  CHOPPY,
+  HEAVY
+}
+
+Enum test::duskyisle::domain::HullClass
+{
+  OPEN,
+  DECKED
+}
+
+Enum test::duskyisle::domain::SailWindow
+{
+  DAWN,
+  MIDDAY,
+  DUSK
+}
+
+Class test::duskyisle::domain::BoatRound
+{
+  roundCode: String[1];
+  roundName: String[1];
+  sackCount: Integer[1];
+  dropCount: Integer[1];
+  sacksPerDrop: Float[0..1];
+  spanShare: Float[0..1];
+  weatherBand: String[0..1];
+  remarkLabel: String[1];
+  codePrefix: String[1];
+  crewTag: String[1];
+  swell: test::duskyisle::domain::SwellState[0..1];
+  hull: test::duskyisle::domain::HullClass[0..1];
+  window: test::duskyisle::domain::SailWindow[0..1];
+  routeName: String[0..1];
+  stageName: String[0..1];
+  harbourName: String[0..1];
+  isleName: String[0..1];
+  routeRoundCount: Integer[0..1];
+  routeSackTotal: Integer[0..1];
+
+  bandLabel()
+  {
+    if($this.weatherBand->isEmpty(), |'unbanded', |$this.weatherBand->toOne())
+  }: String[1];
+
+  routeText()
+  {
+    if($this.routeName->isEmpty(), |'no route', |$this.routeName->toOne())
+  }: String[1];
+
+  stageText()
+  {
+    if($this.stageName->isEmpty(), |'no stage', |$this.stageName->toOne())
+  }: String[1];
+
+  harbourText()
+  {
+    if($this.harbourName->isEmpty(), |'no harbour', |$this.harbourName->toOne())
+  }: String[1];
+
+  isleText()
+  {
+    if($this.isleName->isEmpty(), |'no isle', |$this.isleName->toOne())
+  }: String[1];
+
+  loadTier()
+  {
+    if($this.routeSackTotal->isEmpty(),
+       |'untallied',
+       |if($this.routeSackTotal->toOne() >= 300,
+           |'heavy load',
+           |if($this.routeSackTotal->toOne() >= 30, |'steady load', |'light load')))
+  }: String[1];
+}
+
+Class test::duskyisle::domain::RouteLeg
+{
+  routeCode: String[1];
+  routeLabel: String[1];
+  stageLabel: String[1];
+}

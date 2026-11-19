@@ -1,0 +1,30 @@
+name: hazel-lighthouse
+title: "Hazel Lighthouse - Coastal Navigation Domain (profile, enumeration, class)"
+description: |
+  A pure domain model for a coastal navigation registry. Defines a
+  `LighthouseMeta` profile carrying stereotypes and tagged values, a
+  `BeaconColor` enumeration (annotated by both the profile and the built-in doc
+  profile) that constrains a property domain, and a `Lighthouse` class that
+  applies the profile, references the enumeration, declares a constraint and a
+  derived qualified property. Exercises profile / enumeration / class
+  interaction at compile and generation time. No stores or executable elements.
+modelSources:
+  model:
+    root: hazel-lighthouse
+    files:
+      - test/hazellighthouse/domain/BeaconColor.pure
+      - test/hazellighthouse/domain/Lighthouse.pure
+      - test/hazellighthouse/profile/LighthouseMeta.pure
+features:
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+complexity: basic
+tags:
+  - domain-model
+  - enumeration
+  - lighthouse
+  - navigation
+  - profile

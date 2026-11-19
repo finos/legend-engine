@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::crimsonaviary::service::CohortFledglingsAsOf
+{
+  pattern: '/crimsonaviary/v1/cohortFledglings/{surveyDate}';
+  title: 'Crimson Aviary - Cohort Fledglings As Of';
+  owners:
+  [
+    'aviary-conservation',
+    'ringing-records'
+  ];
+  documentation: 'Totals the fledglings recorded against every bird cohort of one ring series as of a survey date. The survey date is threaded into both the cohort extent retrieval and the enclosure traversal, so the cohort and its enclosure are resolved at a single instant, and the projected columns are then collapsed to one row per species, enclosure and plumage stage.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {surveyDate: StrictDate[1]|demo::crimsonaviary::domain::BirdCohort.all($surveyDate)->filter(
+      c|($c.fledglingCount > 0) && ($c.ringSeries == 12.5)
+    )->project(
+      ~[
+        species_name: c|$c.speciesName,
+        enclosure_code: c|$c.enclosure($surveyDate).enclosureCode,
+        enclosure_name: c|$c.enclosure($surveyDate).enclosureName,
+        plumage_stage: c|$c.stage,
+        fledgling_count: c|$c.fledglingCount
+      ]
+    )->groupBy(
+      ~[species_name, enclosure_code, enclosure_name, plumage_stage],
+      ~[fledgling_total: x|$x.fledgling_count: y|$y->sum()]
+    )->sort(~species_name->ascending())};
+    mapping: demo::crimsonaviary::mapping::AviaryMapping;
+    runtime: demo::crimsonaviary::runtime::AviaryRuntime;
+  }
+  testSuites:
+  [
+    cohortFledglingsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryConnection:
+            Relational
+            #{
+              aviary.flight_enclosure:
+                'enclosure_code,enclosure_name,canopy_height_m,from_z,thru_z\n'+
+                'EN-01,Fern Atrium,12.0,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'EN-02,Mist Gallery,9.5,2026-01-01 00:00:00,9999-12-31 00:00:00\n';
+
+              aviary.bird_cohort:
+                'cohort_code,species_name,ring_series,fledgling_count,brood_size,stage_code,enclosure_code,from_z,thru_z\n'+
+                'BC-01,Rosy Finch,12.5,14,7,FL,EN-01,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'BC-02,Rosy Finch,12.5,6,3,FL,EN-01,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'BC-03,Slate Wren,12.5,9,,JU,EN-02,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'BC-04,Rosy Finch,12.5,5,4,FL,EN-01,2025-01-01 00:00:00,2026-03-01 00:00:00\n'+
+                'BC-05,Amber Tit,18.25,11,5,AD,EN-02,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                'BC-06,Slate Wren,12.5,0,2,JU,EN-02,2026-01-01 00:00:00,9999-12-31 00:00:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentSurveyDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyDate = %2026-06-01
+          ]
+          asserts:
+          [
+            retiredCohortIsOutsideItsBusinessWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"species_name":"Rosy Finch","enclosure_code":"EN-01","enclosure_name":"Fern Atrium","plumage_stage":"FLEDGLING","fledgling_total":20},{"species_name":"Slate Wren","enclosure_code":"EN-02","enclosure_name":"Mist Gallery","plumage_stage":"JUVENILE","fledgling_total":9}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierSurveyDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyDate = %2026-02-01
+          ]
+          asserts:
+          [
+            retiredCohortStillContributesInsideItsWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"species_name":"Rosy Finch","enclosure_code":"EN-01","enclosure_name":"Fern Atrium","plumage_stage":"FLEDGLING","fledgling_total":25},{"species_name":"Slate Wren","enclosure_code":"EN-02","enclosure_name":"Mist Gallery","plumage_stage":"JUVENILE","fledgling_total":9}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

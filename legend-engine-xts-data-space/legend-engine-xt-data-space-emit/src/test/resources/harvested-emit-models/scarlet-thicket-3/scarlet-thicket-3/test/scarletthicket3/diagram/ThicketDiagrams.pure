@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::scarletthicket3::diagram::PropagationDiagram
+{
+  classView seedLot
+  {
+    class: test::scarletthicket3::domain::SeedLot;
+    position: (40.0, 40.0);
+    rectangle: (260.0, 200.0);
+  }
+  classView nurseryBed
+  {
+    class: test::scarletthicket3::domain::NurseryBed;
+    position: (400.0, 40.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView cultivar
+  {
+    class: test::scarletthicket3::domain::Cultivar;
+    position: (400.0, 260.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView growerTeam
+  {
+    class: test::scarletthicket3::domain::GrowerTeam;
+    position: (760.0, 140.0);
+    rectangle: (240.0, 120.0);
+  }
+  propertyView
+  {
+    property: test::scarletthicket3::domain::Lot_Bed.bed;
+    source: seedLot;
+    target: nurseryBed;
+    points: [(170.0, 140.0), (520.0, 110.0)];
+  }
+  propertyView
+  {
+    property: test::scarletthicket3::domain::Lot_Cultivar.cultivar;
+    source: seedLot;
+    target: cultivar;
+    points: [(170.0, 140.0), (520.0, 330.0)];
+  }
+  propertyView
+  {
+    property: test::scarletthicket3::domain::Bed_Team.team;
+    source: nurseryBed;
+    target: growerTeam;
+    points: [(520.0, 110.0), (880.0, 200.0)];
+  }
+  propertyView
+  {
+    property: test::scarletthicket3::domain::Cultivar_Team.stewardTeam;
+    source: cultivar;
+    target: growerTeam;
+    points: [(520.0, 330.0), (880.0, 200.0)];
+  }
+}
+
+###Diagram
+Diagram test::scarletthicket3::diagram::LotDetailDiagram
+{
+  classView seedLot
+  {
+    class: test::scarletthicket3::domain::SeedLot;
+    position: (60.0, 60.0);
+    rectangle: (260.0, 200.0);
+  }
+  classView lotOrigin
+  {
+    class: test::scarletthicket3::domain::LotOrigin;
+    position: (420.0, 40.0);
+    rectangle: (220.0, 120.0);
+  }
+  classView handlingSpec
+  {
+    class: test::scarletthicket3::domain::HandlingSpec;
+    position: (420.0, 220.0);
+    rectangle: (220.0, 120.0);
+  }
+  classView graftedCultivar
+  {
+    class: test::scarletthicket3::domain::GraftedCultivar;
+    position: (60.0, 340.0);
+    rectangle: (260.0, 120.0);
+  }
+}

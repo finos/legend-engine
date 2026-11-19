@@ -1,0 +1,59 @@
+name: frosted-lighthouse-4
+title: "Frosted Lighthouse Nursery Lots — Deeply Nested Service Query Bodies Planned Over One Anchoring Table"
+description: |
+  A plant-nursery propagation register. One flat, primitive-typed lot class is
+  bound to a single anchoring table, and every declared feature is carried by
+  the service query bodies rather than by the store: a deeply nested boolean
+  predicate composing equality, set membership, a null-tolerant numeric test
+  and a code-prefix fallback; a collection existence traversal over a
+  caller-supplied stage collection; a sowing window derived by date arithmetic
+  on the supplied date with elapsed-day and month-start columns; a window
+  function numbering the graded lots within each glasshouse partition; and an
+  unfiltered projection whose ungraded lot returns a null timestamp. Each
+  service carries its own test suite and fixture, so plan generation is
+  exercised and the generated plan is executed against rows covering the null
+  and non-null cases of every optional column.
+modelSources:
+  model:
+    root: frosted-lighthouse-4
+    files:
+      - test/frostedlighthouse4/connection/NurseryLotConnection.pure
+      - test/frostedlighthouse4/domain/NurseryDomain.pure
+      - test/frostedlighthouse4/mapping/NurseryLotMapping.pure
+      - test/frostedlighthouse4/runtime/NurseryLotRuntime.pure
+      - test/frostedlighthouse4/service/LotHouseRankFeed.pure
+      - test/frostedlighthouse4/service/LotRosterFeed.pure
+      - test/frostedlighthouse4/service/LotSowWindowFeed.pure
+      - test/frostedlighthouse4/service/LotStageMembershipFeed.pure
+      - test/frostedlighthouse4/service/LotTrayFeed.pure
+      - test/frostedlighthouse4/store/NurseryLotDB.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - collection-op
+  - date-arithmetic
+  - deep-expression
+  - h2
+  - horticulture
+  - plan-generation
+  - projection
+  - relational
+  - service-test
+  - tabular-data-set
+  - window-function

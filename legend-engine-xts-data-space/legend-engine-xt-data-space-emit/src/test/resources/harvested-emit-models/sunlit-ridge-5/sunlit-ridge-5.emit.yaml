@@ -1,0 +1,57 @@
+name: sunlit-ridge-5
+title: "Sunlit Ridge 5 - Plant nursery register over three store schemas, read at a processing date through owned services and a data space"
+description: >
+  A hillside plant nursery records its seedling trays and planting beds in
+  processing-milestoned tables and keeps a plain cultivar catalogue, the
+  three tables spread across greenhouse, field and catalogue schemas of one
+  store. Flat documented classes are mapped once each by direct columns.
+  Three single-execution services owned by a deployment identifier read the
+  register: two take a strict-date processing date passed straight into
+  all(), one of them keeping only trays of six listed species before
+  projecting, and one projects the unmilestoned catalogue. Three Snowflake
+  connections with key-pair public authentication back three runtimes, and a
+  tagged data space pairs the mapping with a runtime and publishes two of
+  the services as executables.
+modelSources:
+  model:
+    root: sunlit-ridge-5
+    files:
+      - test/sunlitridge5/connection/NurseryConnections.pure
+      - test/sunlitridge5/dataspace/NurseryDataSpace.pure
+      - test/sunlitridge5/domain/NurseryDomain.pure
+      - test/sunlitridge5/mapping/NurseryMapping.pure
+      - test/sunlitridge5/runtime/NurseryRuntimes.pure
+      - test/sunlitridge5/service/BedRosterAsOf.pure
+      - test/sunlitridge5/service/CultivarCatalogue.pure
+      - test/sunlitridge5/service/TrayRosterBySpecies.pure
+      - test/sunlitridge5/store/NurseryDb.pure
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - grammar:tagged-value
+  - milestoning:processing-date-parameter
+  - milestoning:processing-temporal
+  - query:filter
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - multi-schema
+  - nursery
+  - processing-date
+  - processing-temporal
+  - service-ownership
+  - snowflake

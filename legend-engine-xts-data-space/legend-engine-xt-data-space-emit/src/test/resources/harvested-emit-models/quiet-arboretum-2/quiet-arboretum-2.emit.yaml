@@ -1,0 +1,58 @@
+name: quiet-arboretum-2
+title: "Quiet Arboretum 2 — Processing-Milestoned Accession Register Behind A Governed Discovery Surface"
+description: |
+  A plant-collection accession register whose single mapped class is
+  processing-temporal, so every surfaced instance is qualified by the window in
+  which it was recorded and the window predicate is injected by the plan rather
+  than written into the query body. One property mapping binds a constant
+  instead of a column, so the surfaced register always carries an origin label.
+  A profile supplies the stereotypes and tags the collection classes annotate
+  themselves with, a data space packages the mapping-and-runtime pair consumers
+  select instead of naming them directly, and two point-in-time services project
+  and truncate the register - one at a fixed instant, one at a requested instant.
+  Fixtures carry a superseded row that falls outside the requested window.
+modelSources:
+  model:
+    root: quiet-arboretum-2
+    files:
+      - test/quietarboretum2/connection/AccessionConnections.pure
+      - test/quietarboretum2/dataspace/AccessionDataSpace.pure
+      - test/quietarboretum2/domain/AccessionDomain.pure
+      - test/quietarboretum2/domain/CollectionProfile.pure
+      - test/quietarboretum2/mapping/AccessionMapping.pure
+      - test/quietarboretum2/runtime/AccessionRuntimes.pure
+      - test/quietarboretum2/service/AccessionServices.pure
+      - test/quietarboretum2/store/AccessionDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:profile
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+
+stores:
+  - relational
+
+complexity: advanced
+
+tags:
+  - data-space
+  - h2
+  - literal-transform
+  - milestoning
+  - relational
+  - service-test
+  - tabular-data-set

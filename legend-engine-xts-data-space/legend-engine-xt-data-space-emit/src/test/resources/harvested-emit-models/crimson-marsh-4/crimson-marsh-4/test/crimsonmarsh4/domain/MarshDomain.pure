@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonmarsh4::domain::*;
+
+Class <<temporal.businesstemporal>> test::crimsonmarsh4::domain::ReedCensus
+{
+  censusRef: String[1];
+  bedCode: String[1];
+  stemGrade: Integer[0..1];
+  stemDensity: Integer[0..1];
+  waterDepthCm: Integer[0..1];
+  densityBand: String[0..1];
+  bedLabel: String[0..1];
+}
+
+Class test::crimsonmarsh4::domain::ReedBed
+{
+  bedCode: String[1];
+  bedName: String[1];
+  wardenCode: String[1];
+}
+
+Association test::crimsonmarsh4::domain::Bed_Census
+{
+  censuses: ReedCensus[*];
+  bed: ReedBed[0..1];
+}

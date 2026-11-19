@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::opalgecko::domain::*;
+import meta::pure::profiles::*;
+
+Association {doc.doc = 'The germination trials run against a sample, milestoned on the processing timeline both ends inherit from the record root.'} demo::opalgecko::domain::Sample_Trial
+{
+  {doc.doc = 'The sample the trial was sown from.'} trialledSample: StoredSample[1];
+  {doc.doc = 'The trials run against the sample.'} trials: GerminationTrial[*];
+}
+
+Association {doc.doc = 'The samples a vessel holds, reached from a record kind that only the vessel side narrows.'} demo::opalgecko::domain::Vessel_Sample
+{
+  {doc.doc = 'The vessel the sample is held in.'} holdingVessel: StorageVessel[1];
+  {doc.doc = 'The samples held in the vessel.'} heldSamples: StoredSample[*];
+}
+
+Association {doc.doc = 'The voucher sheet filed for a curated sample; the optional end means an uncurated exchange has no sheet at all.'} demo::opalgecko::domain::Sample_Voucher
+{
+  {doc.doc = 'The curated samples the sheet was pressed for.'} vouchedSample: CuratedSample[*];
+  {doc.doc = 'The sheet pressed for the sample, absent when none was filed.'} voucher: VoucherSheet[0..1];
+}
+
+Association {doc.doc = 'The regeneration lineage between samples: the self-association whose two end names, rather than their types, disambiguate a traversal.'} demo::opalgecko::domain::Sample_Lineage
+{
+  {doc.doc = 'The sample a regenerated sample was drawn from.'} parentSample: StoredSample[0..1];
+  {doc.doc = 'The samples regenerated from this sample.'} regeneratedSample: StoredSample[*];
+}

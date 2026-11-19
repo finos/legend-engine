@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenridge::service::ReportedCaseFeed
+{
+  pattern: '/goldenRidge/v1/reportedCases';
+  title: 'Reported Case Feed';
+  owners:
+  [
+    'ridge-planning-office',
+    'ward-reporting'
+  ];
+  documentation: 'Publishes the whole review-case column contract straight from the pre-joined reporting view, so every projected column is a plain view column and no join path is walked at query time. It is the materialized end of the pair that the join-path feed reproduces from base tables.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::goldenridge::domain::ReportedCase.all()->project(
+      [
+        x|$x.caseCode,
+        x|$x.siteLabel,
+        x|$x.storeys,
+        x|$x.floorArea,
+        x|$x.filedOn,
+        x|$x.intakeOfficer,
+        x|$x.inspector,
+        x|$x.approver,
+        x|$x.wardName,
+        x|$x.districtLabel
+      ],
+      [
+        'CaseCode',
+        'SiteLabel',
+        'Storeys',
+        'FloorArea',
+        'FiledOn',
+        'IntakeOfficer',
+        'Inspector',
+        'Approver',
+        'WardName',
+        'DistrictLabel'
+      ]
+    )->sort(
+      [
+        asc('CaseCode')
+      ]
+    );
+    mapping: test::goldenridge::mapping::ReportingViewMapping;
+    runtime: test::goldenridge::runtime::RidgeReportingRuntime;
+  }
+  testSuites:
+  [
+    reportedCaseFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              intake.reviewer:
+                'reviewer_id,reviewer_name,unit_label\n'+
+                '1,Nadia Osei,Intake Desk\n'+
+                '2,Roman Fisk,Site Inspection\n'+
+                '3,Priya Vale,Approvals\n';
+              reference.parcel:
+                'parcel_id,parcel_code\n'+
+                '1,PCL-7781\n';
+              reference.ward:
+                'ward_id,ward_name,district_label\n'+
+                '1,Ridge Crest Ward,North Heights District\n'+
+                '2,Fern Hollow Ward,South Flats District\n';
+              reference.ward_link:
+                'link_id,parcel_id,ward_id,link_kind\n'+
+                '1,1,1,PRIMARY_WARD\n'+
+                '2,1,2,SECONDARY_WARD\n';
+              intake.permit_case:
+                'case_id,case_code,site_label,storeys,floor_area,filed_on,intake_officer_id,inspector_id,approver_id,parcel_id\n'+
+                '1,PMT-1001,Old Mill Terrace,3,420.5,2024-03-11,1,2,3,1\n'+
+                '3,PMT-1003,Harbour Steps Lot,5,210.25,2024-05-20,1,2,3,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        wholeFeedFromView:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            everyColumnFromTheView:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CaseCode":"PMT-1001","SiteLabel":"Old Mill Terrace","Storeys":3,"FloorArea":420.5,"FiledOn":"2024-03-11","IntakeOfficer":"Nadia Osei","Inspector":"Roman Fisk","Approver":"Priya Vale","WardName":"Ridge Crest Ward","DistrictLabel":"North Heights District"},{"CaseCode":"PMT-1003","SiteLabel":"Harbour Steps Lot","Storeys":5,"FloorArea":210.25,"FiledOn":"2024-05-20","IntakeOfficer":"Nadia Osei","Inspector":"Roman Fisk","Approver":"Priya Vale","WardName":"Ridge Crest Ward","DistrictLabel":"North Heights District"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

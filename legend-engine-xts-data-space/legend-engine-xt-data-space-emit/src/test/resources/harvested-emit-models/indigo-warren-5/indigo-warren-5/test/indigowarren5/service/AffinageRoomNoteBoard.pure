@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigowarren5::service::AffinageRoomNoteBoard
+{
+  pattern: '/indigowarren5/v1/affinage-room-note-board';
+  title: 'Indigo Warren 5 - Affinage Room Note Board';
+  owners:
+  [
+    'cellar-book-desk',
+    'cave-affinage-eng'
+  ];
+  documentation: 'Room note board over the same processing-milestoned affinage book, cut for the cellar hands rather than the graders. The read date is again computed, switching to the current day when the caller raises the current-day flag, and each standing entry is published beside its room note, the milk of the wheel it stands against and the label that wheel derives, which falls back to a bare-wheel token while the wheel carries no rind treatment.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], readToday: Boolean[1], currentDate: StrictDate[1] |
+              let readDate = if($readToday,
+                                | $currentDate,
+                                | $asOf);
+              test::indigowarren5::domain::AffinageEntry.all($readDate)
+                ->project(~[
+                    entry: e | $e.entryCode,
+                    note: e | $e.roomNote,
+                    milk: e | $e.entryWheel.milkKind,
+                    label: e | $e.entryWheel.preferredLabel('BARE WHEEL')
+                  ])
+                ->sort([~entry->ascending()]);
+           };
+    mapping: test::indigowarren5::mapping::CellarMapping;
+    runtime: test::indigowarren5::runtime::CellarDayRuntime;
+  }
+  testSuites:
+  [
+    affinageRoomNoteBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          cellarConnection:
+            Relational
+            #{
+              cellar.affinage_entry:
+                'entry_code,wheel_code,rind_code,turn_count,room_note,in_z,out_z\n'+
+                'AE-01,WH-01,BLOOMY,4,cool corner,2026-04-01,9999-12-31\n'+
+                'AE-02,WH-02,WASHED,6,damp wall,2026-04-01,9999-12-31\n'+
+                'AE-03,WH-03,NATURAL,2,,2026-04-01,9999-12-31\n'+
+                'AE-04,WH-04,WAXED,8,dry end,2026-04-01,9999-12-31\n'+
+                'AE-05,WH-05,ASHED,3,near the door,2026-04-01,9999-12-31\n'+
+                'AE-06,WH-06,CLOTH,5,under the vault,2026-04-01,9999-12-31\n'+
+                'AE-07,WH-07,BRINED,7,brine bench,2026-04-01,9999-12-31\n'+
+                'AE-08,WH-08,,1,unwrapped shelf,2026-04-01,9999-12-31\n'+
+                'AE-09,WH-09,SMOKED,,smoke loft,2026-04-01,9999-12-31\n'+
+                'AE-10,WH-01,WASHED,9,rewrapped corner,2026-04-20,9999-12-31\n'+
+                'AE-11,WH-02,NATURAL,3,closed window,2026-03-01,2026-04-15\n';
+              cellar.wheel:
+                'wheel_code,shelf_code,turner_code,milk_kind,rind_code,weight_grams,wrapped_on\n'+
+                'WH-01,SH-1,TN-1,ewe,BLOOMY,3200,2026-01-05\n'+
+                'WH-02,SH-1,TN-1,goat,WASHED,1800,2026-01-09\n'+
+                'WH-03,SH-2,TN-1,cow,NATURAL,5400,2026-01-14\n'+
+                'WH-04,SH-2,TN-2,buffalo,WAXED,2600,2026-01-18\n'+
+                'WH-05,SH-3,TN-2,ewe,ASHED,1200,2026-01-22\n'+
+                'WH-06,SH-3,TN-2,goat,CLOTH,4400,2026-01-27\n'+
+                'WH-07,SH-4,TN-3,cow,BRINED,3000,2026-02-02\n'+
+                'WH-08,SH-4,TN-3,ewe,,2100,2026-02-06\n'+
+                'WH-09,SH-1,TN-3,goat,SMOKED,,2026-02-11\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        aReadDateAfterTheWindowClosedDropsTheClosedEntryAndTheEntryNotYetOpened:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-16,
+            readToday = false,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            nineEntriesStandingOnTheHandedInDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"entry":"AE-01","note":"cool corner","milk":"EWE","label":"WH-01/BLOOMY"},{"entry":"AE-02","note":"damp wall","milk":"GOAT","label":"WH-02/WASHED"},{"entry":"AE-03","note":null,"milk":"COW","label":"WH-03/NATURAL"},{"entry":"AE-04","note":"dry end","milk":"BUFFALO","label":"WH-04/WAXED"},{"entry":"AE-05","note":"near the door","milk":"EWE","label":"WH-05/ASHED"},{"entry":"AE-06","note":"under the vault","milk":"GOAT","label":"WH-06/CLOTH"},{"entry":"AE-07","note":"brine bench","milk":"COW","label":"WH-07/BRINED"},{"entry":"AE-08","note":"unwrapped shelf","milk":"EWE","label":"BARE WHEEL"},{"entry":"AE-09","note":"smoke loft","milk":"GOAT","label":"WH-09/SMOKED"}]';
+                  }#;
+              }#
+          ]
+        },
+        theCurrentDayFlagComputesTheReadDateAndPicksUpTheLaterEntry:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-04-10,
+            readToday = true,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            tenEntriesStandingTodayWithTheirRoomNotes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"entry":"AE-01","note":"cool corner","milk":"EWE","label":"WH-01/BLOOMY"},{"entry":"AE-02","note":"damp wall","milk":"GOAT","label":"WH-02/WASHED"},{"entry":"AE-03","note":null,"milk":"COW","label":"WH-03/NATURAL"},{"entry":"AE-04","note":"dry end","milk":"BUFFALO","label":"WH-04/WAXED"},{"entry":"AE-05","note":"near the door","milk":"EWE","label":"WH-05/ASHED"},{"entry":"AE-06","note":"under the vault","milk":"GOAT","label":"WH-06/CLOTH"},{"entry":"AE-07","note":"brine bench","milk":"COW","label":"WH-07/BRINED"},{"entry":"AE-08","note":"unwrapped shelf","milk":"EWE","label":"BARE WHEEL"},{"entry":"AE-09","note":"smoke loft","milk":"GOAT","label":"WH-09/SMOKED"},{"entry":"AE-10","note":"rewrapped corner","milk":"EWE","label":"WH-01/BLOOMY"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

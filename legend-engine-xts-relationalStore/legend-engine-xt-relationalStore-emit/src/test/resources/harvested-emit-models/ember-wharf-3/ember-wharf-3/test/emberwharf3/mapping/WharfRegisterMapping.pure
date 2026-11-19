@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberwharf3::mapping::WharfRegisterMapping
+(
+  *test::emberwharf3::domain::BerthAssignment[berthAssignment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.assignment_ref
+    )
+    ~mainTable [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment
+    assignmentRef: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.assignment_ref,
+    berthCode: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.berth_code,
+    vesselName: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.vessel_name,
+    serviceRoute: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.service_route,
+    callStatus: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.call_status,
+    passengerCap: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.passenger_cap,
+    draughtM: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.draught_m,
+    scheduledOn: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.scheduled_on,
+    rampFitted: [test::emberwharf3::store::WharfRegisterDb]wharf.berth_assignment.ramp_fitted
+  }
+
+  testSuites:
+  [
+    berthAssignmentExtentSuite:
+    {
+      function: |test::emberwharf3::domain::BerthAssignment.all(%2026-06-01)->filter(a|($a.passengerCap->toOne() >= 300) && ($a.vesselName->isNotEmpty()))->graphFetch(#{test::emberwharf3::domain::BerthAssignment{assignmentRef, berthCode, vesselName, serviceRoute, passengerCap}}#)->serialize(#{test::emberwharf3::domain::BerthAssignment{assignmentRef, berthCode, vesselName, serviceRoute, passengerCap}}#);
+      tests:
+      [
+        currentExtentKeepsNamedLargeCallsOnly:
+        {
+          doc: 'Resolves the business-time extent at a current instant, drops the superseded assignment and the unnamed vessel, and serialises the remaining large-capacity call.';
+          data:
+          [
+            test::emberwharf3::store::WharfRegisterDb:
+              Relational
+              #{
+                wharf.berth_assignment:
+                'assignment_ref,berth_code,vessel_name,service_route,call_status,passenger_cap,draught_m,scheduled_on,ramp_fitted,bus_from,bus_thru\n'+
+                'BA-01,BR-1,Harbour Swift,Outer Isles,BERTHED,320,3.2,2026-05-04,true,2026-01-01,9999-12-31\n'+
+                'BA-02,BR-2,Tideline Runner,Cove Loop,BERTHED,280,2.8,2026-05-04,true,2026-01-01,9999-12-31\n'+
+                'BA-03,BR-3,Sound Wanderer,Upper Sound,BERTHED,410,4.1,2025-02-10,true,2025-01-01,2025-06-30\n'+
+                'BA-04,BR-4,,Cove Loop,BERTHED,300,3.0,2026-05-04,false,2026-01-01,9999-12-31\n'+
+                'BA-05,BR-5,Shingle Hopper,Inner Reach,BERTHED,90,1.9,2026-05-04,true,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheNamedLargeCall:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"assignmentRef":"BA-01","berthCode":"BR-1","vesselName":"Harbour Swift","serviceRoute":"Outer Isles","passengerCap":320}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    supersededExtentSuite:
+    {
+      function: |test::emberwharf3::domain::BerthAssignment.all(%2025-03-01)->filter(a|$a.passengerCap->toOne() >= 300)->graphFetch(#{test::emberwharf3::domain::BerthAssignment{assignmentRef, berthCode, vesselName, serviceRoute, passengerCap}}#)->serialize(#{test::emberwharf3::domain::BerthAssignment{assignmentRef, berthCode, vesselName, serviceRoute, passengerCap}}#);
+      tests:
+      [
+        pinnedEarlierInstantKeepsTheClosedWindowRow:
+        {
+          doc: 'Pins the extent to an instant inside the closed business window so that only the later-superseded assignment is in range.';
+          data:
+          [
+            test::emberwharf3::store::WharfRegisterDb:
+              Relational
+              #{
+                wharf.berth_assignment:
+                'assignment_ref,berth_code,vessel_name,service_route,call_status,passenger_cap,draught_m,scheduled_on,ramp_fitted,bus_from,bus_thru\n'+
+                'BA-01,BR-1,Harbour Swift,Outer Isles,BERTHED,320,3.2,2026-05-04,true,2026-01-01,9999-12-31\n'+
+                'BA-02,BR-2,Tideline Runner,Cove Loop,BERTHED,280,2.8,2026-05-04,true,2026-01-01,9999-12-31\n'+
+                'BA-03,BR-3,Sound Wanderer,Upper Sound,BERTHED,410,4.1,2025-02-10,true,2025-01-01,2025-06-30\n'+
+                'BA-04,BR-4,,Cove Loop,BERTHED,300,3.0,2026-05-04,false,2026-01-01,9999-12-31\n'+
+                'BA-05,BR-5,Shingle Hopper,Inner Reach,BERTHED,90,1.9,2026-05-04,true,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheClosedWindowRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"assignmentRef":"BA-03","berthCode":"BR-3","vesselName":"Sound Wanderer","serviceRoute":"Upper Sound","passengerCap":410}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

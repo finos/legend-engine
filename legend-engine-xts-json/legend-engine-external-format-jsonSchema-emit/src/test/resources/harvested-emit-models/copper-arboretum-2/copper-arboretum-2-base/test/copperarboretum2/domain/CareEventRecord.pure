@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::copperarboretum2::base::domain::CareEventRecord
+{
+  eventKey: String[1];
+  eventSeq: Integer[1];
+  siteCode: String[1];
+  observedAt: DateTime[1];
+  partitionBucket: Integer[1];
+  noteText: String[0..1];
+  eventKind: String[1];
+  eventSubkind: String[1];
+  crewRole: String[1];
+  canopyStage: String[1];
+  mulchGrade: String[1];
+  irrigationMode: String[1];
+  permitCode: String[1];
+  contractorLabel: String[1];
+  surveyRound: Integer[1];
+  visitCount: Integer[1];
+  healthScore: Integer[1];
+  heightMetres: Float[1];
+  girthCm: Float[1];
+  mulchDepthCm: Float[1];
+  plantedOn: StrictDate[1];
+  inspectedAt: DateTime[1];
+  activeFlag: Boolean[1];
+  noteHint: String[0..1];
+  trailStage: String[0..1];
+  hazardBand: String[1];
+  feedLabel: String[1];
+  specimen: test::copperarboretum2::base::domain::SpecimenDetail[1];
+  steward: test::copperarboretum2::base::domain::StewardDetail[1];
+}

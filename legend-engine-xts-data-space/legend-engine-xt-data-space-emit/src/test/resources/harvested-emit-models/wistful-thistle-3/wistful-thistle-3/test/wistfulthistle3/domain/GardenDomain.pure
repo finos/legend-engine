@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::wistfulthistle3::domain::*;
+import test::wistfulthistle3::profile::*;
+import meta::pure::profiles::*;
+
+Class <<Curation.livingCollection>> {doc.doc = 'A single plant taken into the living collection of a botanic garden, recorded against the bed it stands in.', Curation.curator = 'living-collections', Curation.reviewCadence = 'seasonal'} test::wistfulthistle3::domain::PlantAccession
+{
+  {doc.doc = 'Number the accession register holds the plant under.'} accessionCode: String[1];
+  {doc.doc = 'Accepted botanical name of the plant.'} taxonName: String[1];
+  {doc.doc = 'Family the taxon sits in.'} familyName: String[1];
+  {doc.doc = 'Region the plant material was collected in.'} originRegion: String[1];
+  {doc.doc = 'Code of the bed the plant stands in.'} bedCode: String[1];
+  {doc.doc = 'Height of the plant in centimetres at the last measure.'} heightCm: Integer[1];
+  {doc.doc = 'Hardiness zone the plant is rated for.'} hardinessZone: Integer[1];
+}
+
+Class <<Curation.displayOnly>> {doc.doc = 'A planted bed in the garden, laid out and labelled as one display.', Curation.curator = 'garden-layout'} test::wistfulthistle3::domain::GardenBed
+{
+  {doc.doc = 'Code the layout plan holds the bed under.'} bedCode: String[1];
+  {doc.doc = 'Name the bed is signposted under.'} bedName: String[1];
+  {doc.doc = 'Part of the garden the bed lies in.'} quarterName: String[1];
+  {doc.doc = 'Exposure of the bed: how much sun it takes.'} exposure: String[1];
+  {doc.doc = 'Area of the bed in square metres.'} areaSqm: Integer[1];
+}
+
+Class <<Curation.herbariumBacked>> {doc.doc = 'A pressed specimen filed in the herbarium behind an accession, the paper record standing beside the living one.', Curation.publishedIn = 'herbarium-index'} test::wistfulthistle3::domain::HerbariumSheet
+{
+  {doc.doc = 'Number the herbarium files the sheet under.'} sheetCode: String[1];
+  {doc.doc = 'Accession the sheet was pressed from.'} accessionCode: String[1];
+  {doc.doc = 'Name of whoever pressed and mounted the sheet.'} collectorName: String[1];
+  {doc.doc = 'Cabinet the sheet is filed in.'} cabinetCode: String[1];
+  {doc.doc = 'Number of duplicate sheets filed beside it.'} duplicateCount: Integer[1];
+}

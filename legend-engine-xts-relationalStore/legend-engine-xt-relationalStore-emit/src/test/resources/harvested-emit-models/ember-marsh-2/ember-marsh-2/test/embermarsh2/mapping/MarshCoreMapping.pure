@@ -1,0 +1,451 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::embermarsh2::mapping::MarshCoreMapping
+(
+  include mapping test::embermarsh2::mapping::MarshReferenceMapping
+
+  *test::embermarsh2::domain::MarshUnit[unit]: Relational
+  {
+    ~filter [test::embermarsh2::store::MarshCoreDb]ActiveUnitFilter
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_id
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit
+    unitId: [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_id,
+    unitCode: [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_code,
+    unitName: [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_name,
+    extent
+    (
+      gridRef: [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.grid_ref,
+      areaHa: [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.area_ha,
+      perimeterM: [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.perimeter_m
+    ),
+    zoneName: [test::embermarsh2::store::MarshCoreDb]@Unit_Zone | [test::embermarsh2::store::MarshCoreDb]reserve.zone.zone_name,
+    regionName: [test::embermarsh2::store::MarshCoreDb]@Unit_Zone > (INNER) @Zone_Region | [test::embermarsh2::store::MarshCoreDb]reserve.region.region_name,
+    programmeName: [test::embermarsh2::store::MarshCoreDb]@Unit_Zone > (INNER) @Zone_Region > (INNER) @Region_Programme | [test::embermarsh2::store::MarshCoreDb]reserve.programme.programme_name,
+    regimeClass: EnumerationMapping RegimeMapping: concat('REGIME/', toUpper(trim([test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.regime_code))),
+    accessClass: EnumerationMapping AccessMapping: concat(
+                   'ACCESS/',
+                   case(
+                     isNull([test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.access_code),
+                     'C',
+                     trim([test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.access_code)
+                   )
+                 ),
+    conditionBand: EnumerationMapping ConditionMapping: case(
+                     lessThanEqual([test::embermarsh2::store::MarshCoreDb]@Unit_Condition | [test::embermarsh2::store::MarshCoreDb]reference.condition_ref.severity_rank, 1),
+                     'COND/1',
+                     case(
+                       lessThanEqual([test::embermarsh2::store::MarshCoreDb]@Unit_Condition | [test::embermarsh2::store::MarshCoreDb]reference.condition_ref.severity_rank, 2),
+                       'COND/2',
+                       case(
+                         lessThanEqual([test::embermarsh2::store::MarshCoreDb]@Unit_Condition | [test::embermarsh2::store::MarshCoreDb]reference.condition_ref.severity_rank, 3),
+                         'COND/3',
+                         case(
+                           lessThanEqual([test::embermarsh2::store::MarshCoreDb]@Unit_Condition | [test::embermarsh2::store::MarshCoreDb]reference.condition_ref.severity_rank, 4),
+                           'COND/4',
+                           concat('COND/', trim([test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.condition_code))
+                         )
+                       )
+                     )
+                   ),
+    maxCoverPct: [test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct,
+    coverSurveyCount: [test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.survey_count,
+    stewardshipNote: case(
+                       greaterThan([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 90),
+                       concat('CLOSED CANOPY ', toUpper(trim([test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_code))),
+                       case(
+                         greaterThan([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 75),
+                         'DENSE SWARD',
+                         case(
+                           greaterThan([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 60),
+                           'ESTABLISHED SWARD',
+                           case(
+                             greaterThan([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 45),
+                             'MIXED SWARD',
+                             case(
+                               greaterThan([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 30),
+                               'OPEN SWARD',
+                               case(
+                                 greaterThan([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 15),
+                                 'SPARSE SWARD',
+                                 case(
+                                   greaterThan([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 0),
+                                   'BARE FLAT',
+                                   case(
+                                     equal([test::embermarsh2::store::MarshCoreDb]@Unit_CoverSummary | [test::embermarsh2::store::MarshCoreDb]habitat.unit_cover_summary.max_cover_pct, 0),
+                                     'SCOURED FLAT',
+                                     sqlNull()
+                                   )
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     ),
+    registryLabel: concat(
+                     concat(
+                       concat(
+                         toUpper(trim([test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_code)),
+                         ' / '
+                       ),
+                       toUpper(coalesce([test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_name, 'UNNAMED PLOT'))
+                     ),
+                     concat(
+                       ' [',
+                       concat(
+                         case(
+                           isNotEmpty([test::embermarsh2::store::MarshCoreDb]@Unit_Zone | [test::embermarsh2::store::MarshCoreDb]reserve.zone.zone_name),
+                           toUpper([test::embermarsh2::store::MarshCoreDb]@Unit_Zone | [test::embermarsh2::store::MarshCoreDb]reserve.zone.zone_name),
+                           'UNZONED'
+                         ),
+                         ']'
+                       )
+                     )
+                   ),
+    registerName: 'WETLAND BASELINE REGISTER',
+    regimeName: [test::embermarsh2::store::MarshCoreDb]@Unit_Regime | [test::embermarsh2::store::MarshCoreDb]habitat.water_regime.regime_name,
+    accessLabel: [test::embermarsh2::store::MarshCoreDb]@Unit_Access | [test::embermarsh2::store::MarshCoreDb]reference.access_ref.access_label
+  }
+
+  *test::embermarsh2::domain::Visit[visit]: Relational
+  {
+    ~filter [test::embermarsh2::store::MarshCoreDb]PostedVisitFilter
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]survey.visit.visit_id
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]survey.visit
+    visitId: [test::embermarsh2::store::MarshCoreDb]survey.visit.visit_id,
+    visitDate: [test::embermarsh2::store::MarshCoreDb]survey.visit.visit_date,
+    waterDepthCm: [test::embermarsh2::store::MarshCoreDb]survey.visit.water_depth_cm,
+    observerAlias: [test::embermarsh2::store::MarshCoreDb]@Visit_Observer | [test::embermarsh2::store::MarshCoreDb]survey.observer.observer_alias,
+    teamName: [test::embermarsh2::store::MarshCoreDb]@Visit_Observer > (INNER) @Observer_Team | [test::embermarsh2::store::MarshCoreDb]survey.team.team_name,
+    depthNote: case(
+                 greaterThan([test::embermarsh2::store::MarshCoreDb]survey.visit.water_depth_cm, 200),
+                 concat('DEEP ', toString([test::embermarsh2::store::MarshCoreDb]survey.visit.water_depth_cm)),
+                 case(
+                   greaterThan([test::embermarsh2::store::MarshCoreDb]survey.visit.water_depth_cm, 100),
+                   'MID WATER',
+                   case(
+                     greaterThan([test::embermarsh2::store::MarshCoreDb]survey.visit.water_depth_cm, 0),
+                     'SHALLOW',
+                     sqlNull()
+                   )
+                 )
+               )
+  }
+
+  *test::embermarsh2::domain::Sighting[sighting]: Relational
+  {
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]species.sighting.sighting_id
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]species.sighting
+    sightingId: [test::embermarsh2::store::MarshCoreDb]species.sighting.sighting_id,
+    individuals: [test::embermarsh2::store::MarshCoreDb]species.sighting.individuals,
+    taxonName: [test::embermarsh2::store::MarshCoreDb]@Sighting_Taxon | [test::embermarsh2::store::MarshCoreDb]species.taxon.taxon_name,
+    guildName: [test::embermarsh2::store::MarshCoreDb]@Sighting_Taxon > (INNER) @Taxon_Guild | [test::embermarsh2::store::MarshCoreDb]species.guild.guild_name,
+    guild: EnumerationMapping GuildMapping: concat('GUILD/', toUpper(trim([test::embermarsh2::store::MarshCoreDb]@Sighting_Taxon | [test::embermarsh2::store::MarshCoreDb]species.taxon.guild_code)))
+  }
+
+  *test::embermarsh2::domain::DepthLogger[logger]: Relational
+  {
+    ~filter [test::embermarsh2::store::MarshCoreDb]ServiceableLoggerFilter
+    ~primaryKey
+    (
+      [test::embermarsh2::store::MarshCoreDb]equipment.depth_logger.logger_id
+    )
+    ~mainTable [test::embermarsh2::store::MarshCoreDb]equipment.depth_logger
+    loggerId: [test::embermarsh2::store::MarshCoreDb]equipment.depth_logger.logger_id,
+    loggerSerial: [test::embermarsh2::store::MarshCoreDb]equipment.depth_logger.logger_serial,
+    installYear: [test::embermarsh2::store::MarshCoreDb]equipment.depth_logger.install_year,
+    state: EnumerationMapping LoggerStateMapping: concat('STATE/', toUpper(trim([test::embermarsh2::store::MarshCoreDb]equipment.depth_logger.status_code))),
+    calibrationCount: [test::embermarsh2::store::MarshCoreDb]@Logger_Drift | [test::embermarsh2::store::MarshCoreDb]equipment.logger_drift_summary.calibration_count,
+    maxDriftPpm: [test::embermarsh2::store::MarshCoreDb]@Logger_Drift | [test::embermarsh2::store::MarshCoreDb]equipment.logger_drift_summary.max_drift_ppm,
+    unitName: [test::embermarsh2::store::MarshCoreDb]@Unit_Logger | [test::embermarsh2::store::MarshCoreDb]reserve.marsh_unit.unit_name
+  }
+
+  test::embermarsh2::domain::MarshUnit_Visits: Relational
+  {
+    AssociationMapping
+    (
+      visits[unit, visit]: [test::embermarsh2::store::MarshCoreDb]@Unit_Visit,
+      unit[visit, unit]: [test::embermarsh2::store::MarshCoreDb]@Unit_Visit
+    )
+  }
+
+  test::embermarsh2::domain::Visit_Sightings: Relational
+  {
+    AssociationMapping
+    (
+      sightings[visit, sighting]: [test::embermarsh2::store::MarshCoreDb]@Visit_Sighting,
+      visit[sighting, visit]: [test::embermarsh2::store::MarshCoreDb]@Visit_Sighting
+    )
+  }
+
+  testSuites:
+  [
+    unitRegisterSuite:
+    {
+      function: test::embermarsh2::domain::MarshUnit.all()->project(~[unitCode: u|$u.unitCode, gridRef: u|$u.extent.gridRef, areaHa: u|$u.extent.areaHa, perimeterM: u|$u.extent.perimeterM, zoneName: u|$u.zoneName, regionName: u|$u.regionName, programmeName: u|$u.programmeName, regimeClass: u|$u.regimeClass, accessClass: u|$u.accessClass, conditionBand: u|$u.conditionBand, maxCoverPct: u|$u.maxCoverPct, coverSurveyCount: u|$u.coverSurveyCount, stewardshipNote: u|$u.stewardshipNote, registryLabel: u|$u.registryLabel, registerName: u|$u.registerName, regimeName: u|$u.regimeName, accessLabel: u|$u.accessLabel])->sort(~unitCode->ascending());
+      tests:
+      [
+        everyStewardshipArm:
+        {
+          doc: 'Covers all eight arms of the stewardship conditional pushed into the store, its null sentinel fallback for a unit with no vegetation survey, the three-hop zone-region-programme join path, a chain broken at the third hop by the retired-programme predicate, a chain broken at the first hop by an unresolvable zone, the grouped inline view feeding the cover columns, the embedded extent block, the enumeration transforms applied to computed expressions including an unmapped condition source value, the composed registry label and the constant register name; the retired unit is excluded by the store filter.';
+          data:
+          [
+            test::embermarsh2::store::MarshCoreDb:
+              Relational
+              #{
+                reserve.marsh_unit:
+                  'unit_id,unit_code,unit_name,zone_code,grid_ref,area_ha,perimeter_m,regime_code,access_code,condition_code,retired_flag\n'+
+                  'U-01,MU-01,Alder Carr,ZN-1,TQ1234,12.5,1800,PERM,O,P,N\n'+
+                  'U-02,MU-02,Reed Flat,ZN-1,TQ1235,8.25,1400,SEAS,R,F,N\n'+
+                  'U-03,MU-03,Sedge Ridge,ZN-2,TQ1236,5.0,900,EPHM,C,D,N\n'+
+                  'U-04,MU-04,Willow Scrape,ZN-2,TQ1237,3.75,600,PERM,O,X,N\n'+
+                  'U-05,MU-05,Osier Bed,ZN-3,TQ1238,2.5,450,SEAS,R,F,N\n'+
+                  'U-06,MU-06,Rush Pasture,ZN-3,TQ1239,1.5,300,EPHM,C,D,N\n'+
+                  'U-07,MU-07,Peat Hollow,ZN-1,TQ1240,0.75,200,PERM,,P,N\n'+
+                  'U-08,MU-08,Scoured Flat,ZN-2,TQ1241,0.5,150,SEAS,O,ZZ,N\n'+
+                  'U-09,MU-09,,ZN-3,TQ1242,0.25,100,EPHM,R,F,N\n'+
+                  'U-10,MU-10,Fringe Chain,ZN-4,TQ1243,4.0,700,PERM,O,D,N\n'+
+                  'U-11,MU-11,Orphan Plot,ZN-X,TQ1244,6.0,1100,SEAS,C,P,N\n'+
+                  'U-12,MU-12,Closed Unit,ZN-1,TQ1245,9.0,1200,PERM,O,F,Y\n';
+                reserve.zone:
+                  'zone_code,zone_name,region_code\n'+
+                  'ZN-1,North Fen,RG-1\n'+
+                  'ZN-2,Mid Fen,RG-1\n'+
+                  'ZN-3,South Fen,RG-2\n'+
+                  'ZN-4,Edge Fen,RG-9\n';
+                reserve.region:
+                  'region_code,region_name,programme_code\n'+
+                  'RG-1,Upper Basin,PR-1\n'+
+                  'RG-2,Lower Basin,PR-1\n'+
+                  'RG-9,Fringe Basin,PR-9\n';
+                reserve.programme:
+                  'programme_code,programme_name,retired_flag\n'+
+                  'PR-1,Reserve Monitoring,N\n'+
+                  'PR-9,Legacy Survey,Y\n';
+                habitat.water_regime:
+                  'regime_code,regime_name,mean_depth_cm\n'+
+                  'PERM,Permanently Wet,60\n'+
+                  'SEAS,Seasonally Wet,25\n'+
+                  'EPHM,Ephemerally Wet,5\n';
+                reference.access_ref:
+                  'access_code,access_label\n'+
+                  'O,Open Access\n'+
+                  'R,Permit Only\n'+
+                  'C,Closed\n';
+                reference.condition_ref:
+                  'condition_code,condition_label,severity_rank\n'+
+                  'P,Pristine,1\n'+
+                  'F,Favourable,2\n'+
+                  'D,Degraded,3\n'+
+                  'X,Poor,4\n'+
+                  'ZZ,Unclassified,9\n';
+                habitat.vegetation:
+                  'veg_id,unit_code,cover_pct,sward_height_cm,survey_year\n'+
+                  'VG-01,MU-01,95,45.5,2022\n'+
+                  'VG-02,MU-01,10,12.0,2001\n'+
+                  'VG-03,MU-02,80,38.0,2022\n'+
+                  'VG-04,MU-03,65,30.5,2022\n'+
+                  'VG-05,MU-04,50,24.0,2022\n'+
+                  'VG-06,MU-05,35,18.5,2022\n'+
+                  'VG-07,MU-06,20,12.5,2022\n'+
+                  'VG-08,MU-07,5,4.0,2022\n'+
+                  'VG-09,MU-08,0,0.5,2022\n'+
+                  'VG-10,MU-10,45,22.0,2022\n'+
+                  'VG-11,MU-11,70,33.0,2022\n';
+              }#
+          ];
+          asserts:
+          [
+            elevenActiveUnits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"unitCode":"MU-01","gridRef":"TQ1234","areaHa":12.5,"perimeterM":1800,"zoneName":"North Fen","regionName":"Upper Basin","programmeName":"Reserve Monitoring","regimeClass":"PERMANENT","accessClass":"OPEN","conditionBand":"PRISTINE","maxCoverPct":95,"coverSurveyCount":2,"stewardshipNote":"CLOSED CANOPY MU-01","registryLabel":"MU-01 / ALDER CARR [NORTH FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Permanently Wet","accessLabel":"Open Access"},{"unitCode":"MU-02","gridRef":"TQ1235","areaHa":8.25,"perimeterM":1400,"zoneName":"North Fen","regionName":"Upper Basin","programmeName":"Reserve Monitoring","regimeClass":"SEASONAL","accessClass":"PERMIT","conditionBand":"FAVOURABLE","maxCoverPct":80,"coverSurveyCount":1,"stewardshipNote":"DENSE SWARD","registryLabel":"MU-02 / REED FLAT [NORTH FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Seasonally Wet","accessLabel":"Permit Only"},{"unitCode":"MU-03","gridRef":"TQ1236","areaHa":5.0,"perimeterM":900,"zoneName":"Mid Fen","regionName":"Upper Basin","programmeName":"Reserve Monitoring","regimeClass":"EPHEMERAL","accessClass":"CLOSED","conditionBand":"DEGRADED","maxCoverPct":65,"coverSurveyCount":1,"stewardshipNote":"ESTABLISHED SWARD","registryLabel":"MU-03 / SEDGE RIDGE [MID FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Ephemerally Wet","accessLabel":"Closed"},{"unitCode":"MU-04","gridRef":"TQ1237","areaHa":3.75,"perimeterM":600,"zoneName":"Mid Fen","regionName":"Upper Basin","programmeName":"Reserve Monitoring","regimeClass":"PERMANENT","accessClass":"OPEN","conditionBand":"POOR","maxCoverPct":50,"coverSurveyCount":1,"stewardshipNote":"MIXED SWARD","registryLabel":"MU-04 / WILLOW SCRAPE [MID FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Permanently Wet","accessLabel":"Open Access"},{"unitCode":"MU-05","gridRef":"TQ1238","areaHa":2.5,"perimeterM":450,"zoneName":"South Fen","regionName":"Lower Basin","programmeName":"Reserve Monitoring","regimeClass":"SEASONAL","accessClass":"PERMIT","conditionBand":"FAVOURABLE","maxCoverPct":35,"coverSurveyCount":1,"stewardshipNote":"OPEN SWARD","registryLabel":"MU-05 / OSIER BED [SOUTH FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Seasonally Wet","accessLabel":"Permit Only"},{"unitCode":"MU-06","gridRef":"TQ1239","areaHa":1.5,"perimeterM":300,"zoneName":"South Fen","regionName":"Lower Basin","programmeName":"Reserve Monitoring","regimeClass":"EPHEMERAL","accessClass":"CLOSED","conditionBand":"DEGRADED","maxCoverPct":20,"coverSurveyCount":1,"stewardshipNote":"SPARSE SWARD","registryLabel":"MU-06 / RUSH PASTURE [SOUTH FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Ephemerally Wet","accessLabel":"Closed"},{"unitCode":"MU-07","gridRef":"TQ1240","areaHa":0.75,"perimeterM":200,"zoneName":"North Fen","regionName":"Upper Basin","programmeName":"Reserve Monitoring","regimeClass":"PERMANENT","accessClass":"CLOSED","conditionBand":"PRISTINE","maxCoverPct":5,"coverSurveyCount":1,"stewardshipNote":"BARE FLAT","registryLabel":"MU-07 / PEAT HOLLOW [NORTH FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Permanently Wet","accessLabel":null},{"unitCode":"MU-08","gridRef":"TQ1241","areaHa":0.5,"perimeterM":150,"zoneName":"Mid Fen","regionName":"Upper Basin","programmeName":"Reserve Monitoring","regimeClass":"SEASONAL","accessClass":"OPEN","conditionBand":null,"maxCoverPct":0,"coverSurveyCount":1,"stewardshipNote":"SCOURED FLAT","registryLabel":"MU-08 / SCOURED FLAT [MID FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Seasonally Wet","accessLabel":"Open Access"},{"unitCode":"MU-09","gridRef":"TQ1242","areaHa":0.25,"perimeterM":100,"zoneName":"South Fen","regionName":"Lower Basin","programmeName":"Reserve Monitoring","regimeClass":"EPHEMERAL","accessClass":"PERMIT","conditionBand":"FAVOURABLE","maxCoverPct":null,"coverSurveyCount":null,"stewardshipNote":null,"registryLabel":"MU-09 / UNNAMED PLOT [SOUTH FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Ephemerally Wet","accessLabel":"Permit Only"},{"unitCode":"MU-10","gridRef":"TQ1243","areaHa":4.0,"perimeterM":700,"zoneName":"Edge Fen","regionName":"Fringe Basin","programmeName":null,"regimeClass":"PERMANENT","accessClass":"OPEN","conditionBand":"DEGRADED","maxCoverPct":45,"coverSurveyCount":1,"stewardshipNote":"OPEN SWARD","registryLabel":"MU-10 / FRINGE CHAIN [EDGE FEN]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Permanently Wet","accessLabel":"Open Access"},{"unitCode":"MU-11","gridRef":"TQ1244","areaHa":6.0,"perimeterM":1100,"zoneName":null,"regionName":null,"programmeName":null,"regimeClass":"SEASONAL","accessClass":"CLOSED","conditionBand":"PRISTINE","maxCoverPct":70,"coverSurveyCount":1,"stewardshipNote":"ESTABLISHED SWARD","registryLabel":"MU-11 / ORPHAN PLOT [UNZONED]","registerName":"WETLAND BASELINE REGISTER","regimeName":"Seasonally Wet","accessLabel":"Closed"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    visitTrailSuite:
+    {
+      function: test::embermarsh2::domain::MarshUnit.all()->project(~[unitCode: u|$u.unitCode, visitId: u|$u.visits.visitId, teamName: u|$u.visits.teamName, depthNote: u|$u.visits.depthNote, taxonName: u|$u.visits.sightings.taxonName, guildName: u|$u.visits.sightings.guildName, guild: u|$u.visits.sightings.guild])->sort(~unitCode->ascending());
+      tests:
+      [
+        associationEndsCarryJoinedRows:
+        {
+          doc: 'Walks the unit-to-visit and visit-to-sighting association ends so both join-bound ends emit their joins, resolves the two-hop observer-to-team path and the two-hop taxon-to-guild path, applies the guild enumeration to a joined column, exercises the depth conditional arms with its null sentinel and drops the voided visit through the store filter.';
+          data:
+          [
+            test::embermarsh2::store::MarshCoreDb:
+              Relational
+              #{
+                reserve.marsh_unit:
+                  'unit_id,unit_code,unit_name,zone_code,grid_ref,area_ha,perimeter_m,regime_code,access_code,condition_code,retired_flag\n'+
+                  'U-01,MU-01,Alder Carr,ZN-1,TQ1234,12.5,1800,PERM,O,P,N\n'+
+                  'U-02,MU-02,Reed Flat,ZN-1,TQ1235,8.25,1400,SEAS,R,F,N\n';
+                survey.visit:
+                  'visit_id,unit_code,observer_code,visit_date,water_depth_cm,void_flag\n'+
+                  'VS-01,MU-01,OB-1,2023-04-11,240,\n'+
+                  'VS-02,MU-01,OB-2,2023-05-12,150,\n'+
+                  'VS-03,MU-02,OB-1,2023-06-13,40,\n'+
+                  'VS-04,MU-02,OB-3,2023-07-14,0,\n'+
+                  'VS-05,MU-02,OB-1,2023-08-15,90,V\n';
+                survey.observer:
+                  'observer_code,observer_alias,team_code\n'+
+                  'OB-1,fen warden,TM-1\n'+
+                  'OB-2,reed surveyor,TM-2\n'+
+                  'OB-3,volunteer recorder,TM-9\n';
+                survey.team:
+                  'team_code,team_name\n'+
+                  'TM-1,North Team\n'+
+                  'TM-2,South Team\n';
+                species.sighting:
+                  'sighting_id,visit_id,taxon_code,individuals,ringed_flag\n'+
+                  'SG-01,VS-01,TX-1,12,Y\n'+
+                  'SG-02,VS-01,TX-2,4,N\n'+
+                  'SG-03,VS-02,TX-3,7,N\n'+
+                  'SG-04,VS-03,TX-9,3,N\n';
+                species.taxon:
+                  'taxon_code,taxon_name,guild_code\n'+
+                  'TX-1,Common Snipe,WD\n'+
+                  'TX-2,Teal,DB\n'+
+                  'TX-3,Little Grebe,DV\n'+
+                  'TX-9,Unlisted Warbler,GG\n';
+                species.guild:
+                  'guild_code,guild_name\n'+
+                  'WD,Waders\n'+
+                  'DB,Dabbling Ducks\n'+
+                  'DV,Diving Birds\n';
+              }#
+          ];
+          asserts:
+          [
+            joinedTrailRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"unitCode":"MU-01","visitId":"VS-01","teamName":"North Team","depthNote":"DEEP 240","taxonName":"Common Snipe","guildName":"Waders","guild":"WADER"},{"unitCode":"MU-01","visitId":"VS-01","teamName":"North Team","depthNote":"DEEP 240","taxonName":"Teal","guildName":"Dabbling Ducks","guild":"DABBLER"},{"unitCode":"MU-01","visitId":"VS-02","teamName":"North Team","depthNote":"MID WATER","taxonName":"Little Grebe","guildName":"Diving Birds","guild":"DIVER"},{"unitCode":"MU-01","visitId":"VS-01","teamName":"South Team","depthNote":"DEEP 240","taxonName":"Common Snipe","guildName":"Waders","guild":"WADER"},{"unitCode":"MU-01","visitId":"VS-01","teamName":"South Team","depthNote":"DEEP 240","taxonName":"Teal","guildName":"Dabbling Ducks","guild":"DABBLER"},{"unitCode":"MU-01","visitId":"VS-02","teamName":"South Team","depthNote":"MID WATER","taxonName":"Little Grebe","guildName":"Diving Birds","guild":"DIVER"},{"unitCode":"MU-02","visitId":"VS-04","teamName":"North Team","depthNote":null,"taxonName":null,"guildName":null,"guild":null},{"unitCode":"MU-02","visitId":"VS-03","teamName":"North Team","depthNote":"SHALLOW","taxonName":"Unlisted Warbler","guildName":null,"guild":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    equipmentSuite:
+    {
+      function: test::embermarsh2::domain::DepthLogger.all()->project(~[loggerId: l|$l.loggerId, loggerSerial: l|$l.loggerSerial, installYear: l|$l.installYear, state: l|$l.state, calibrationCount: l|$l.calibrationCount, maxDriftPpm: l|$l.maxDriftPpm, unitName: l|$l.unitName])->sort(~loggerId->ascending());
+      tests:
+      [
+        serviceableLoggersCarryDriftView:
+        {
+          doc: 'Resolves the grouped drift view through a join so the aggregated derived table nests inside the query, applies the logger enumeration to a trimmed and upper-cased expression with one source value outside the mapped set, and proves the named store filter drops the retired logger a bare query would return.';
+          data:
+          [
+            test::embermarsh2::store::MarshCoreDb:
+              Relational
+              #{
+                reserve.marsh_unit:
+                  'unit_id,unit_code,unit_name,zone_code,grid_ref,area_ha,perimeter_m,regime_code,access_code,condition_code,retired_flag\n'+
+                  'U-01,MU-01,Alder Carr,ZN-1,TQ1234,12.5,1800,PERM,O,P,N\n'+
+                  'U-02,MU-02,Reed Flat,ZN-1,TQ1235,8.25,1400,SEAS,R,F,N\n';
+                equipment.depth_logger:
+                  'logger_id,unit_code,logger_serial,install_year,status_code\n'+
+                  'LG-01,MU-01,SN-0001,2019,active\n'+
+                  'LG-02,MU-01,SN-0002,2020,faulty\n'+
+                  'LG-03,MU-02,SN-0003,2021,PARKED\n'+
+                  'LG-04,MU-02,SN-0004,2022,RETIRED\n';
+                equipment.calibration:
+                  'calibration_id,logger_id,drift_ppm\n'+
+                  'CB-01,LG-01,1.5\n'+
+                  'CB-02,LG-01,3.25\n'+
+                  'CB-03,LG-02,0.75\n';
+              }#
+          ];
+          asserts:
+          [
+            threeServiceableLoggers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"loggerId":"LG-01","loggerSerial":"SN-0001","installYear":2019,"state":"ACTIVE","calibrationCount":2,"maxDriftPpm":3.25,"unitName":"Alder Carr"},{"loggerId":"LG-02","loggerSerial":"SN-0002","installYear":2020,"state":"FAULTY","calibrationCount":1,"maxDriftPpm":0.75,"unitName":"Alder Carr"},{"loggerId":"LG-03","loggerSerial":"SN-0003","installYear":2021,"state":null,"calibrationCount":null,"maxDriftPpm":null,"unitName":"Reed Flat"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    vegetationWindowSuite:
+    {
+      function: test::embermarsh2::domain::VegetationSurvey.all()->project(~[vegId: v|$v.vegId, unitCode: v|$v.unitCode, coverPct: v|$v.coverPct, swardHeightCm: v|$v.swardHeightCm, surveyYear: v|$v.surveyYear, unitName: v|$v.unitName])->sort(~vegId->ascending());
+      tests:
+      [
+        surveyWindowFilterApplied:
+        {
+          doc: 'Applies the bounded survey-year store filter before the query so the two out-of-window vegetation rows are dropped while the in-window rows keep their cover and sward readings.';
+          data:
+          [
+            test::embermarsh2::store::MarshCoreDb:
+              Relational
+              #{
+                reserve.marsh_unit:
+                  'unit_id,unit_code,unit_name,zone_code,grid_ref,area_ha,perimeter_m,regime_code,access_code,condition_code,retired_flag\n'+
+                  'U-01,MU-01,Alder Carr,ZN-1,TQ1234,12.5,1800,PERM,O,P,N\n'+
+                  'U-02,MU-02,Reed Flat,ZN-1,TQ1235,8.25,1400,SEAS,R,F,N\n';
+                habitat.vegetation:
+                  'veg_id,unit_code,cover_pct,sward_height_cm,survey_year\n'+
+                  'VG-01,MU-01,95,45.5,2022\n'+
+                  'VG-02,MU-01,10,12.0,2001\n'+
+                  'VG-03,MU-02,80,38.0,2022\n'+
+                  'VG-04,MU-03,65,30.5,2044\n';
+              }#
+          ];
+          asserts:
+          [
+            twoInWindowSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"vegId":"VG-01","unitCode":"MU-01","coverPct":95,"swardHeightCm":45.5,"surveyYear":2022,"unitName":"Alder Carr"},{"vegId":"VG-03","unitCode":"MU-02","coverPct":80,"swardHeightCm":38.0,"surveyYear":2022,"unitName":"Reed Flat"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

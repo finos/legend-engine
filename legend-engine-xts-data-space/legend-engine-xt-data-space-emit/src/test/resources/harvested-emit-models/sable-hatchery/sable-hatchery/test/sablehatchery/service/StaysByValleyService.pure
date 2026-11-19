@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sablehatchery::service::StaysByValleyService
+{
+  pattern: '/hut-network/v1/stays/{valley}/{grade}';
+  owners:
+  [
+    'hut-network-office'
+  ];
+  documentation: 'Band the overnight stays recorded in one valley at one access grade during the walkable seasons.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {valley: String[1], grade: String[1]|test::sablehatchery::domain::StayRecord.all()->filter(
+      s|($s.valleyName == $valley) && (($s.accessGrade == $grade) && $s.seasonLabel->in(['early-season', 'high-season', 'late-season']))
+    )->project(
+      [
+        x|$x.stayId,
+        x|$x.hutName->toUpper(),
+        x|if(
+          $x.partySize >= 8,
+          |'group-party',
+          |if(
+            $x.partySize >= 4,
+            |'family-party',
+            |if(
+              $x.hutName->startsWith('Kastel'),
+              |'kastel-solo',
+              |'solo-party'
+            )
+          )
+        )
+      ],
+      [
+        'Stay',
+        'Hut',
+        'Band'
+      ]
+    )};
+    mapping: test::sablehatchery::mapping::HutNetworkMapping;
+    runtime: test::sablehatchery::runtime::HutNetworkRuntime;
+  }
+  testSuites:
+  [
+    valleyStaySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              hutnet.stay_record:
+                'stay_id,hut_name,valley_name,access_grade,season_label,party_size,check_in_time,meals_served,load_factor\n'+
+                'SR-01,Kastel Hut,Ober Valley,alpine,high-season,9,2024-07-01 10:00:00,18.50,0.90\n'+
+                'SR-02,Kastel Hut,Ober Valley,alpine,high-season,4,2024-07-02 11:00:00,8.00,0.55\n'+
+                'SR-03,Ridge Shelter,Ober Valley,alpine,early-season,2,2024-06-05 09:30:00,4.00,0.20\n'+
+                'SR-04,Ridge Shelter,Unter Valley,forest,high-season,6,2024-07-04 12:00:00,12.00,0.60\n'+
+                'SR-05,Larch Cabin,Ober Valley,alpine,off-season,3,2024-11-02 08:00:00,3.00,0.10\n'+
+                'SR-06,Kastel Hut,Ober Valley,alpine,high-season,1,2024-07-06 16:00:00,2.00,0.15\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        alpineStaysBanded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            valley = 'Ober Valley',
+            grade = 'alpine'
+          ]
+          asserts:
+          [
+            everyBandArmSurfaces:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stay":"SR-01","Hut":"KASTEL HUT","Band":"group-party"},{"Stay":"SR-02","Hut":"KASTEL HUT","Band":"family-party"},{"Stay":"SR-03","Hut":"RIDGE SHELTER","Band":"solo-party"},{"Stay":"SR-06","Hut":"KASTEL HUT","Band":"kastel-solo"}]';
+                  }#;
+              }#
+          ]
+        },
+        forestStaysBanded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            valley = 'Unter Valley',
+            grade = 'forest'
+          ]
+          asserts:
+          [
+            onlyTheForestGradeStayKept:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stay":"SR-04","Hut":"RIDGE SHELTER","Band":"family-party"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

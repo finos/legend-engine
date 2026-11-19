@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedquarry2::service::BlockRegister
+{
+  pattern: '/frostedquarry2/v1/block-register';
+  title: 'Frosted Quarry - Ice Block Register';
+  documentation: 'The flattest of the four featured endpoints: a bare projection of every mapped ice block with its mass and its recorded melt-loss ratio, resolved through the single mapping and runtime the data space publishes as its default execution context.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::frostedquarry2::domain::IceBlock.all()->project(
+      [
+        r|$r.blockCode,
+        r|$r.massKg,
+        r|$r.meltLossRatio
+      ],
+      [
+        'Block',
+        'MassKg',
+        'MeltLoss'
+      ]
+    )->sort([asc('Block')])};
+    mapping: test::frostedquarry2::mapping::FrostQuarryMapping;
+    runtime: test::frostedquarry2::runtime::FrostQuarryRuntime;
+  }
+  testSuites:
+  [
+    blockRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          frostQuarryWarehouse:
+            Relational
+            #{
+              frostquarry.ice_block:
+                'block_id,cycle_id,block_code,mass_kg,melt_loss_ratio\n'+
+                'BLK-01,CYC-01,B-001,180,0.25\n'+
+                'BLK-02,CYC-01,B-002,220,0.4\n'+
+                'BLK-03,CYC-02,B-003,200,0.25\n'+
+                'BLK-04,CYC-03,B-004,150,0.1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyMappedBlockIsProjectedInCodeOrder:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            theRegisterCarriesAllFourBlocksWithTheirNumericColumnsUnaltered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"B-001","MassKg":180,"MeltLoss":0.25},{"Block":"B-002","MassKg":220,"MeltLoss":0.4},{"Block":"B-003","MassKg":200,"MeltLoss":0.25},{"Block":"B-004","MassKg":150,"MeltLoss":0.1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

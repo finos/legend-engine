@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::easternquarry5::profile::RefugePrivacyProfile.openRecord, test::easternquarry5::profile::RefugeProductProfile.catalogued>> {test::easternquarry5::profile::RefugeProductProfile.steward = 'refuge-network-wardens', test::easternquarry5::profile::RefugeProductProfile.refreshCadence = 'nightly'} test::easternquarry5::dataspace::RefugeLogDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'current';
+      description: 'Latest processing versions of every refuge, trail, snowpack, spring and supply log.';
+      mapping: test::easternquarry5::mapping::RefugeLogMapping;
+      defaultRuntime: test::easternquarry5::runtime::RefugeLogRuntime;
+    }
+  ];
+  defaultExecutionContext: 'current';
+  title: 'Highland Refuge Log';
+  description: 'Nightly bed counts, trail notes, snowpack profiles, spring readings and supply drops of a chain of high-altitude refuges, each published at its latest processing version.';
+  elements:
+  [
+    test::easternquarry5::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'RefugeOccupancy extract';
+      description: 'Latest processing versions of the RefugeOccupancy log.';
+      executable: test::easternquarry5::service::RefugeOccupancyExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 2;
+      title: 'TrailConditionNote extract';
+      description: 'Latest processing versions of the TrailConditionNote log.';
+      executable: test::easternquarry5::service::TrailConditionNoteExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 3;
+      title: 'SnowpackProfile extract';
+      description: 'Latest processing versions of the SnowpackProfile log.';
+      executable: test::easternquarry5::service::SnowpackProfileExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 4;
+      title: 'SpringFlowReading extract';
+      description: 'Latest processing versions of the SpringFlowReading log.';
+      executable: test::easternquarry5::service::SpringFlowReadingExtract;
+      executionContextKey: 'current';
+    },
+    {
+      id: 5;
+      title: 'SupplyDropLog extract';
+      description: 'Latest processing versions of the SupplyDropLog log.';
+      executable: test::easternquarry5::service::SupplyDropLogExtract;
+      executionContextKey: 'current';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'refuge-network-wardens';
+  };
+}

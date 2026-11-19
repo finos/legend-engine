@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::duskythicket3::domain::*;
+import demo::duskythicket3::profile::*;
+import meta::pure::profiles::*;
+
+Enum demo::duskythicket3::domain::ThicketLayer
+{
+  GROUND_MOSS,
+  HERB,
+  SHRUB,
+  SUBCANOPY,
+  CANOPY
+}
+
+Class <<typemodifiers.abstract, temporal.processingtemporal, ThicketStewardship.regulatedRecord>> {doc.doc = 'Anything the woodland register holds against a fixed position on the reserve. Abstract: only the concrete feature kinds are ever instantiated, but every association on the versioned side points at this shape.', ThicketStewardship.steward = 'Reserve Monitoring'} demo::duskythicket3::domain::SurveyedFeature
+{
+  {doc.doc = 'Register-wide identifier of the feature.'} featureCode: String[1];
+  {doc.doc = 'Human readable siting of the feature on the reserve.'} siteLabel: String[1];
+  <<ThicketStewardship.fieldOnly>> {doc.doc = 'Working remark kept by the field crews and never published.'} sitingRemark: String[0..1];
+}
+
+Class <<temporal.processingtemporal, ThicketStewardship.regulatedRecord>> {doc.doc = 'A marked-out vegetation plot: the wide feature kind, carrying the layer it is scored against and the area it covers.', ThicketStewardship.reviewCadence = 'seasonal'} demo::duskythicket3::domain::ThicketPlot extends SurveyedFeature
+{
+  {doc.doc = 'Vertical layer the plot is scored against.'} layer: ThicketLayer[1];
+  {doc.doc = 'Marked-out area of the plot in square metres.'} areaSqm: Float[1];
+  {doc.doc = 'Date the plot was first pegged out.'} establishedOn: StrictDate[1];
+  {doc.doc = 'Grid reference the plot centre was surveyed to.'} gridReference: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A clump of woody stems standing inside a plot, versioned on the same processing timeline as the plot that holds it.'} demo::duskythicket3::domain::ShrubClump extends SurveyedFeature
+{
+  {doc.doc = 'Live stems counted in the clump.'} stemCount: Integer[1];
+  {doc.doc = 'Mean stem height of the clump in metres.'} meanHeightM: Float[1];
+  {doc.doc = 'Species name the clump was keyed out to.'} speciesName: String[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A browse line scored between two clumps: the first of the two clump roles, so the end names rather than the end types disambiguate a traversal.'} demo::duskythicket3::domain::BrowseLine extends SurveyedFeature
+{
+  {doc.doc = 'Height in metres at which browsing was scored.'} browseHeightM: Float[1];
+  {doc.doc = 'Date and time the line was walked.'} walkedAt: DateTime[1];
+}
+
+Class <<temporal.processingtemporal, ThicketStewardship.regulatedRecord>> {doc.doc = 'A numbered stretch of reserve trail that plots and transects are hung from.', ThicketStewardship.reviewCadence = 'annual'} demo::duskythicket3::domain::TrailSection extends SurveyedFeature
+{
+  {doc.doc = 'Walked length of the stretch in metres.'} lengthM: Float[1];
+  {doc.doc = 'Compartment the stretch falls in.'} compartment: String[1];
+}
+
+Class <<typemodifiers.abstract, temporal.processingtemporal>> {doc.doc = 'Anything a field crew writes on one visit to the reserve. Abstract, and versioned on the processing timeline so that a correction to a visit is a new version rather than an overwrite.'} demo::duskythicket3::domain::MonitoringVisit
+{
+  {doc.doc = 'Identifier the visit is filed under.'} visitCode: String[1];
+  {doc.doc = 'Moment the crew signed on for the visit.'} visitedAt: DateTime[1];
+  {doc.doc = 'Name the visit is credited to.'} recordedBy: String[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A scoring of one quadrat inside a plot, two levels down the visit hierarchy and inheriting its processing timeline from the abstract visit rather than declaring one of its own.'} demo::duskythicket3::domain::QuadratVisit extends MonitoringVisit
+{
+  {doc.doc = 'Index of the quadrat inside the plot.'} quadratIndex: Integer[1];
+  {doc.doc = 'Ground wetness score, absent when the ground was not scored.'} wetnessScore: Integer[0..1];
+  {doc.doc = 'Layer the quadrat was scored against.'} scoredLayer: ThicketLayer[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A walked transect along a trail stretch, the second visit kind, so the two leaves of the visit hierarchy hang off different feature kinds.'} demo::duskythicket3::domain::TransectVisit extends MonitoringVisit
+{
+  {doc.doc = 'Metres walked along the stretch.'} walkedMetres: Float[1];
+  {doc.doc = 'Number of stops made along the walk.'} stopCount: Integer[1];
+}
+
+Class <<temporal.processingtemporal, ThicketStewardship.withdrawnMarker>> {doc.doc = 'A single-attribute designation marker: the presence of the link carrying it is the information rather than any value on it.'} demo::duskythicket3::domain::DesignationMarker
+{
+  {doc.doc = 'Code of the designation the plot sits under.'} designationCode: String[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A body that stewards trail stretches on the reserve, versioned on the processing timeline of the register.'} demo::duskythicket3::domain::StewardingBody
+{
+  {doc.doc = 'Register code of the stewarding body.'} bodyCode: String[1];
+  {doc.doc = 'Name the body is published under.'} bodyName: String[1];
+}
+
+Association {doc.doc = 'The clumps standing inside a plot, milestoned on the processing timeline both ends share.'} demo::duskythicket3::domain::Plot_Clump
+{
+  {doc.doc = 'The plot the clump stands in.'} holdingPlot: ThicketPlot[1];
+  {doc.doc = 'The clumps standing in the plot.'} clumps: ShrubClump[*];
+}
+
+Association {doc.doc = 'The quadrat scorings written against a plot, crossing from a feature to a visit on the same timeline.'} demo::duskythicket3::domain::Plot_QuadratVisit
+{
+  {doc.doc = 'The plot the quadrat was scored inside.'} quadratPlot: ThicketPlot[1];
+  {doc.doc = 'The quadrat scorings written against the plot.'} quadratVisits: QuadratVisit[*];
+}
+
+Association {doc.doc = 'The plots hung off a trail stretch.'} demo::duskythicket3::domain::Section_Plot
+{
+  {doc.doc = 'The stretch the plot is hung off.'} holdingSection: TrailSection[1];
+  {doc.doc = 'The plots hung off the stretch.'} sectionPlots: ThicketPlot[*];
+}
+
+Association {doc.doc = 'The transects walked along a trail stretch, the second traversal from a stretch into the visit hierarchy.'} demo::duskythicket3::domain::Section_TransectVisit
+{
+  {doc.doc = 'The stretch the transect was walked along.'} walkedSection: TrailSection[1];
+  {doc.doc = 'The transects walked along the stretch.'} transectVisits: TransectVisit[*];
+}
+
+Association {doc.doc = 'The browse lines leaving a clump, the first of the two clump roles that link the same pair of feature kinds.'} demo::duskythicket3::domain::Browse_Upstream
+{
+  {doc.doc = 'The lines scored away from the clump.'} upstreamLines: BrowseLine[*];
+  {doc.doc = 'The clump a line is scored away from.'} upstreamClump: ShrubClump[1];
+}
+
+Association {doc.doc = 'The browse lines arriving at a clump, the second clump role, so end names rather than types disambiguate a browse traversal.'} demo::duskythicket3::domain::Browse_Downstream
+{
+  {doc.doc = 'The lines scored towards the clump.'} downstreamLines: BrowseLine[*];
+  {doc.doc = 'The clump a line is scored towards.'} downstreamClump: ShrubClump[1];
+}
+
+Association {doc.doc = 'The designation a plot sits under; the optional end onto a single-attribute marker means the presence of the link is itself the information.'} demo::duskythicket3::domain::Plot_Designation
+{
+  {doc.doc = 'The plots sitting under the designation.'} designatedPlots: ThicketPlot[*];
+  {doc.doc = 'The designation the plot sits under, absent when it sits under none.'} designation: DesignationMarker[0..1];
+}
+
+Association {doc.doc = 'The trail stretches a body stewards, the traversal that reaches the register from outside the feature hierarchy.'} demo::duskythicket3::domain::Body_Section
+{
+  {doc.doc = 'The body stewarding the stretch.'} stewardingBody: StewardingBody[1];
+  {doc.doc = 'The stretches the body stewards.'} stewardedSections: TrailSection[*];
+}

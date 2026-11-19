@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedquarry2::service::PanelPickList
+{
+  pattern: '/frostedquarry2/v1/panel-pick-list';
+  title: 'Frosted Quarry - Panel Pick List By Region';
+  documentation: 'Narrows the extraction panels to those whose owning quarry sits in one hard-coded region before projecting them, so the region literal is pushed into the join between panel and quarry rather than applied to the projected rows. Panels of a quarry in any other region never reach the projection.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::frostedquarry2::domain::ExtractionPanel.all()->filter(
+      p|$p.quarry.regionCode == 'REG-N'
+    )->project(
+      [
+        p|$p.panelCode,
+        p|$p.iceThicknessM,
+        p|$p.quarry.quarryName
+      ],
+      [
+        'Panel',
+        'ThicknessM',
+        'Quarry'
+      ]
+    )->sort([asc('Panel')])};
+    mapping: test::frostedquarry2::mapping::FrostQuarryMapping;
+    runtime: test::frostedquarry2::runtime::FrostQuarryRuntime;
+  }
+  testSuites:
+  [
+    panelPickListSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          frostQuarryWarehouse:
+            Relational
+            #{
+              frostquarry.ice_quarry:
+                'quarry_id,quarry_name,region_code,licence_status\n'+
+                'QRY-01,North Firn Quarry,REG-N,ACTIVE\n'+
+                'QRY-02,South Neve Quarry,REG-S,DORMANT\n';
+              frostquarry.extraction_panel:
+                'panel_id,quarry_id,panel_code,ice_thickness_m\n'+
+                'PNL-01,QRY-01,P-001,4.5\n'+
+                'PNL-02,QRY-01,P-002,6.25\n'+
+                'PNL-03,QRY-02,P-003,3.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyPanelsOfTheNorthernQuarrySurviveTheRegionLiteral:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            theSouthernQuarrysPanelIsExcludedByTheFilterAppliedBeforeTheProjection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Panel":"P-001","ThicknessM":4.5,"Quarry":"North Firn Quarry"},{"Panel":"P-002","ThicknessM":6.25,"Quarry":"North Firn Quarry"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

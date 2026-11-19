@@ -1,0 +1,160 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadeisle2::mapping::IsleVisitMapping
+(
+  include mapping test::jadeisle2::mapping::IsleCoreMapping
+
+  *test::jadeisle2::domain::TrailPatrol[patrol_log]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeisle2::store::IsleVisitDb]patrol.trail_patrol.patrol_code
+    )
+    ~mainTable [test::jadeisle2::store::IsleVisitDb]patrol.trail_patrol
+    patrolCode: [test::jadeisle2::store::IsleVisitDb]patrol.trail_patrol.patrol_code,
+    segmentCode: [test::jadeisle2::store::IsleVisitDb]patrol.trail_patrol.segment_code,
+    wardenName: [test::jadeisle2::store::IsleVisitDb]patrol.trail_patrol.warden_name,
+    patrolGrade: [test::jadeisle2::store::IsleVisitDb]patrol.trail_patrol.patrol_grade
+  }
+
+  *test::jadeisle2::domain::WardenShift[shift_roster]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeisle2::store::IsleVisitDb]patrol.warden_shift.shift_code
+    )
+    ~mainTable [test::jadeisle2::store::IsleVisitDb]patrol.warden_shift
+    shiftCode: [test::jadeisle2::store::IsleVisitDb]patrol.warden_shift.shift_code,
+    shiftName: [test::jadeisle2::store::IsleVisitDb]patrol.warden_shift.shift_name,
+    crewSize: [test::jadeisle2::store::IsleVisitDb]patrol.warden_shift.crew_size,
+    noteText: [test::jadeisle2::store::IsleVisitDb]@Shift_Note_J | [test::jadeisle2::store::IsleVisitDb]roster.shift_note.note_text
+  }
+
+  test::jadeisle2::domain::Patrol_Shift: Relational
+  {
+    AssociationMapping
+    (
+      shifts[patrol_log, shift_roster]: [test::jadeisle2::store::IsleVisitDb]@Patrol_Shift_J,
+      patrol[shift_roster, patrol_log]: [test::jadeisle2::store::IsleVisitDb]@Patrol_Shift_J
+    )
+  }
+
+  testSuites:
+  [
+    patrolSuite:
+    {
+      function: |test::jadeisle2::domain::TrailPatrol.all(%2026-06-01)->project(
+        [
+          p|$p.patrolCode,
+          p|$p.segmentCode,
+          p|$p.wardenName,
+          p|$p.patrolGrade
+        ],
+        [
+          'Patrol',
+          'Segment',
+          'Warden',
+          'Grade'
+        ]
+      )->sort([asc('Patrol')]);
+      tests:
+      [
+        patrolAsOfProcessingDate:
+        {
+          doc: 'The patrol log resolves at one processing date, so the corrected version that was closed out before that date falls out of range while the current versions survive.';
+          data:
+          [
+            test::jadeisle2::store::IsleVisitDb:
+              Relational
+              #{
+                patrol.trail_patrol:
+                  'patrol_code,segment_code,warden_name,patrol_grade,in_z,out_z\n'+
+                  'PAT-1,SEG-1,Iris Wren,routine,2026-01-01,9999-12-31\n'+
+                  'PAT-2,SEG-2,Odell Marsh,priority,2026-01-01,9999-12-31\n'+
+                  'PAT-3,SEG-3,Corrected Entry,routine,2024-01-01,2025-01-01\n';
+              }#
+          ];
+          asserts:
+          [
+            patrolRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patrol":"PAT-1","Segment":"SEG-1","Warden":"Iris Wren","Grade":"routine"},{"Patrol":"PAT-2","Segment":"SEG-2","Warden":"Odell Marsh","Grade":"priority"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    shiftSuite:
+    {
+      function: |test::jadeisle2::domain::WardenShift.all()->project(
+        [
+          s|$s.shiftCode,
+          s|$s.shiftName,
+          s|$s.crewSize,
+          s|$s.noteText
+        ],
+        [
+          'Shift',
+          'Name',
+          'Crew',
+          'Note'
+        ]
+      )->sort([asc('Shift')]);
+      tests:
+      [
+        shiftNoteReach:
+        {
+          doc: 'The roster note is reached across the schema boundary of the visit store, and the shift with no note keeps its row with an empty note column.';
+          data:
+          [
+            test::jadeisle2::store::IsleVisitDb:
+              Relational
+              #{
+                patrol.warden_shift:
+                  'shift_code,patrol_code,shift_name,crew_size\n'+
+                  'SHF-1,PAT-1,Dawn Shore Walk,3\n'+
+                  'SHF-2,PAT-1,Dusk Shore Walk,2\n'+
+                  'SHF-3,PAT-2,Fern Hollow Sweep,4\n';
+                roster.shift_note:
+                  'shift_code,note_text\n'+
+                  'SHF-1,tide table checked before departure\n'+
+                  'SHF-3,seal pup cordon inspected\n';
+              }#
+          ];
+          asserts:
+          [
+            shiftRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shift":"SHF-1","Name":"Dawn Shore Walk","Crew":3,"Note":"tide table checked before departure"},{"Shift":"SHF-2","Name":"Dusk Shore Walk","Crew":2,"Note":null},{"Shift":"SHF-3","Name":"Fern Hollow Sweep","Crew":4,"Note":"seal pup cordon inspected"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

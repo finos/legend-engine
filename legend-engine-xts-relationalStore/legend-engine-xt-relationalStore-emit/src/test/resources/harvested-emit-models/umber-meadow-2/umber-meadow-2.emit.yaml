@@ -1,0 +1,48 @@
+name: umber-meadow-2
+title: "Umber Meadow 2 — One Point-In-Time Register Query Deployed Against Two Execution Contexts"
+description: |
+  An upland commons grazing register whose only testable elements are two
+  single-execution services carrying the same query shape into two independent
+  execution contexts: one mapping and runtime over the register schema, a second
+  over the mirrored schema. Each query retrieves a business-milestoned herd
+  allocation set at one date supplied as the service parameter and threads that
+  same date manually through every navigation to the milestoned grazing block,
+  including the two-hop reach onto the block's warden. The predicate conjoins two
+  enumeration equality comparisons — one on a directly held property, one across
+  the point-in-time navigation — with a negated emptiness test on a value reached
+  through a to-many patrol navigation, then the filtered set is projected onto a
+  wide positional label list, deduplicated so a fanned-out root instance
+  collapses, and ordered on two ascending keys with no row limit. Each service
+  suite seeds all four tables of its schema and drops a block version whose
+  window closed before the requested date.
+modelSources:
+  model:
+    root: umber-meadow-2
+    files:
+      - test/umbermeadow2/connection/CommonsConnections.pure
+      - test/umbermeadow2/domain/CommonsDomain.pure
+      - test/umbermeadow2/mapping/GrazingMapping.pure
+      - test/umbermeadow2/mapping/GrazingMirrorMapping.pure
+      - test/umbermeadow2/runtime/CommonsRuntimes.pure
+      - test/umbermeadow2/service/GrazingRegisterServices.pure
+      - test/umbermeadow2/store/CommonsDb.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - commons-grazing
+  - deduplication
+  - enumeration-mapping
+  - h2
+  - point-in-time
+  - service-test
+  - tabular-data-set
+  - two-execution-contexts

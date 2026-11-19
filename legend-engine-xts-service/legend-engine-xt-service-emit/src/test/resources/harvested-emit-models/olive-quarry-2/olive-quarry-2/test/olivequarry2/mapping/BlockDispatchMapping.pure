@@ -1,0 +1,218 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivequarry2::mapping::BlockDispatchMapping
+(
+  include mapping test::olivequarry2::mapping::QuarryEnumMappings
+
+  *test::olivequarry2::domain::StoneBlock[stoneBlock]: Pure
+  {
+    ~src test::olivequarry2::source::BlockDispatch
+    dispatchRef: $src.dispatchRef,
+    blockLabel: if($src.blockCode->isNotEmpty(),
+                   | $src.blockCode->toOne()->trim()->toUpper() + '/' + $src.faceCount->toString(),
+                   | 'Q-' + $src.dispatchRef->substring(0, 4)),
+    grade: EnumerationMapping StoneGradeMap: $src.gradeText->filter(g|$g->trim()->toUpper()->in(['FREESTONE', 'RAGSTONE', 'FLAGSTONE']))->map(g|$g->trim()->toUpper() + '/BLOCK')->first(),
+    finish: EnumerationMapping SurfaceFinishMap: if($src.finishText->isEmpty(),
+                                                   | [],
+                                                   | $src.finishText->toOne()->trim()->substring(0, 3)->toUpper() + '/FACE'),
+    sizeBand: if($src.massKg->isEmpty(),
+                 | [],
+                 | if($src.massKg->toOne() >= 8000,
+                      | 'BAND-8',
+                      | if($src.massKg->toOne() >= 6000,
+                           | 'BAND-7',
+                           | if($src.massKg->toOne() >= 4000,
+                                | 'BAND-6',
+                                | if($src.massKg->toOne() >= 2500,
+                                     | 'BAND-5',
+                                     | if($src.massKg->toOne() >= 1500,
+                                          | 'BAND-4',
+                                          | if($src.massKg->toOne() >= 800,
+                                               | 'BAND-3',
+                                               | if($src.massKg->toOne() >= 300,
+                                                    | 'BAND-2',
+                                                    | 'BAND-1')))))))),
+    location[blockLocation]: $src.site,
+    identifiers[blockIdentifier]: $src
+  }
+
+  test::olivequarry2::domain::BlockLocation[blockLocation]: Pure
+  {
+    ~src test::olivequarry2::source::SiteRecord
+    quarryName: $src.quarryName->trim(),
+    benchLabel: if($src.benchLabel->isEmpty(), | 'UNBENCHED', | $src.benchLabel->toOne()->toUpper()),
+    elevationBand: if($src.elevationM->isEmpty(),
+                      | 'UNSURVEYED',
+                      | if($src.elevationM->toOne() > 200, | 'UPPER', | 'LOWER'))
+  }
+
+  *test::olivequarry2::domain::BlockIdentifier[blockIdentifier]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(legacyIdentifier, tagIdentifier)
+  }
+
+  test::olivequarry2::domain::BlockIdentifier[legacyIdentifier]: Pure
+  {
+    ~src test::olivequarry2::source::BlockDispatch
+    scheme: 'LEGACY',
+    identifierValue: if($src.legacyCode->isEmpty(), | 'NONE', | $src.legacyCode->toOne()->trim()->toUpper())
+  }
+
+  test::olivequarry2::domain::BlockIdentifier[tagIdentifier]: Pure
+  {
+    ~src test::olivequarry2::source::BlockDispatch
+    scheme: 'TAG',
+    identifierValue: if($src.tags->filter(t|($t.retired->isEmpty() || ($t.retired != true)) && ($t.tagValue->trim()->length() > 0))->isEmpty(),
+                        | 'UNTAGGED',
+                        | $src.tags->filter(t|($t.retired->isEmpty() || ($t.retired != true)) && ($t.tagValue->trim()->length() > 0))->first()->toOne().tagValue->trim())
+  }
+
+  testSuites:
+  [
+    sizeBandSuite:
+    {
+      function: |test::olivequarry2::domain::StoneBlock.all()->graphFetch(
+        #{
+          test::olivequarry2::domain::StoneBlock
+          {
+            dispatchRef,
+            blockLabel,
+            grade,
+            finish,
+            sizeBand
+          }
+        }#
+      )->serialize(
+        #{
+          test::olivequarry2::domain::StoneBlock
+          {
+            dispatchRef,
+            blockLabel,
+            grade,
+            finish,
+            sizeBand
+          }
+        }#
+      );
+      tests:
+      [
+        everyBandArmGradeAndFinish:
+        {
+          doc: 'Hits all eight mass arms of the size-band transform and the absent-mass fallback with no band, maps the trimmed grade and the shortened finish through the shared enumeration mappings, leaves the grade absent when the source grade is not one the mapping knows, and falls back to a dispatch-derived label when the block code is absent.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::olivequarry2::source::BlockDispatch:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dispatchRef":"DQ-01","blockCode":"fb-1","gradeText":"freestone","finishText":"rubbed","massKg":9000,"faceCount":6},{"dispatchRef":"DQ-02","gradeText":" ragstone ","finishText":"tooled","massKg":7000,"faceCount":4},{"dispatchRef":"DQ-03","blockCode":"fl-3","gradeText":"FLAGSTONE","finishText":"sawn","massKg":5000,"faceCount":5},{"dispatchRef":"DQ-04","blockCode":"fb-4","gradeText":"freestone","massKg":3000,"faceCount":6},{"dispatchRef":"DQ-05","blockCode":"mb-5","gradeText":"marble","finishText":"rubbed","massKg":2000,"faceCount":3},{"dispatchRef":"DQ-06","blockCode":"rg-6","gradeText":"ragstone","finishText":"sawn","massKg":1000,"faceCount":2},{"dispatchRef":"DQ-07","blockCode":"fl-7","gradeText":"flagstone","finishText":"tooled","massKg":500,"faceCount":4},{"dispatchRef":"DQ-08","blockCode":"xx-8","finishText":"rubbed","massKg":100,"faceCount":1},{"dispatchRef":"DQ-09","blockCode":"fb-9","gradeText":"freestone","finishText":"sawn","faceCount":6},{"dispatchRef":"DQ-10","gradeText":"slate","massKg":2500,"faceCount":2}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            tenBandedBlocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dispatchRef":"DQ-01","blockLabel":"FB-1/6","grade":"FREESTONE","finish":"RUBBED","sizeBand":"BAND-8"},{"dispatchRef":"DQ-02","blockLabel":"Q-DQ-0","grade":"RAGSTONE","finish":"TOOLED","sizeBand":"BAND-7"},{"dispatchRef":"DQ-03","blockLabel":"FL-3/5","grade":"FLAGSTONE","finish":"SAWN","sizeBand":"BAND-6"},{"dispatchRef":"DQ-04","blockLabel":"FB-4/6","grade":"FREESTONE","finish":null,"sizeBand":"BAND-5"},{"dispatchRef":"DQ-05","blockLabel":"MB-5/3","grade":null,"finish":"RUBBED","sizeBand":"BAND-4"},{"dispatchRef":"DQ-06","blockLabel":"RG-6/2","grade":"RAGSTONE","finish":"SAWN","sizeBand":"BAND-3"},{"dispatchRef":"DQ-07","blockLabel":"FL-7/4","grade":"FLAGSTONE","finish":"TOOLED","sizeBand":"BAND-2"},{"dispatchRef":"DQ-08","blockLabel":"XX-8/1","grade":null,"finish":"RUBBED","sizeBand":"BAND-1"},{"dispatchRef":"DQ-09","blockLabel":"FB-9/6","grade":"FREESTONE","finish":"SAWN","sizeBand":null},{"dispatchRef":"DQ-10","blockLabel":"Q-DQ-1","grade":null,"finish":null,"sizeBand":"BAND-5"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    locationAndIdentifierSuite:
+    {
+      function: |test::olivequarry2::domain::StoneBlock.all()->graphFetch(
+        #{
+          test::olivequarry2::domain::StoneBlock
+          {
+            dispatchRef,
+            location
+            {
+              quarryName,
+              benchLabel,
+              elevationBand
+            },
+            identifiers
+            {
+              scheme,
+              identifierValue
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::olivequarry2::domain::StoneBlock
+          {
+            dispatchRef,
+            location
+            {
+              quarryName,
+              benchLabel,
+              elevationBand
+            },
+            identifiers
+            {
+              scheme,
+              identifierValue
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        nestedSiteAndUnionedIdentifiers:
+        {
+          doc: 'Hands the nested site element to the location class mapping, including the unbenched and unsurveyed fallbacks and the absent site, and stacks a legacy and a tag identifier onto every block through the router union, skipping retired tags and falling back when no live tag remains.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::olivequarry2::source::BlockDispatch:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dispatchRef":"DQ-21","faceCount":6,"legacyCode":" lg-7 ","site":{"quarryName":" North Pit ","benchLabel":"b2","elevationM":240},"tags":[{"scheme":"PAINT","tagValue":" red-4 ","retired":true},{"scheme":"PAINT","tagValue":" blue-2 "}]},{"dispatchRef":"DQ-22","faceCount":3,"site":{"quarryName":"East Face","elevationM":150},"tags":[{"scheme":"PAINT","tagValue":"green-1","retired":false}]},{"dispatchRef":"DQ-23","faceCount":2,"legacyCode":"lg-9","tags":[{"scheme":"PAINT","tagValue":"old-3","retired":true}]},{"dispatchRef":"DQ-24","faceCount":1,"site":{"quarryName":"West Shelf","benchLabel":"b5"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            locatedAndIdentifiedBlocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"dispatchRef":"DQ-21","location":{"quarryName":"North Pit","benchLabel":"B2","elevationBand":"UPPER"},"identifiers":[{"scheme":"LEGACY","identifierValue":"LG-7"},{"scheme":"TAG","identifierValue":"blue-2"}]},{"dispatchRef":"DQ-22","location":{"quarryName":"East Face","benchLabel":"UNBENCHED","elevationBand":"LOWER"},"identifiers":[{"scheme":"LEGACY","identifierValue":"NONE"},{"scheme":"TAG","identifierValue":"green-1"}]},{"dispatchRef":"DQ-23","location":null,"identifiers":[{"scheme":"LEGACY","identifierValue":"LG-9"},{"scheme":"TAG","identifierValue":"UNTAGGED"}]},{"dispatchRef":"DQ-24","location":{"quarryName":"West Shelf","benchLabel":"B5","elevationBand":"UNSURVEYED"},"identifiers":[{"scheme":"LEGACY","identifierValue":"NONE"},{"scheme":"TAG","identifierValue":"UNTAGGED"}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

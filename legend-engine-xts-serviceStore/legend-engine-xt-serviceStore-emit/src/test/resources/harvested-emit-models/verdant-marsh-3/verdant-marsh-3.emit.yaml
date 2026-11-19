@@ -1,0 +1,55 @@
+name: verdant-marsh-3
+title: "Verdant Marsh 3 — Footpath Waymarker Audit Surveys (http service stores refined into one flattened record)"
+description: |
+  A footpath waymarker audit whose documents arrive from remote http endpoints
+  rather than from a table. Five service stores each expose one service group
+  with a base path and one get operation carrying a query-located zone filter,
+  and each returns a different population variant of the same survey document,
+  so one request shape serves ramblers, wardens, volunteers, contractors and the
+  full detail tree. Two json bindings derive the payload schema straight from the
+  included class graph, one for the detail response tree and one for every survey
+  data variant, with no separate schema set. The domain is shaped as that payload:
+  response wrappers holding a result set and paging metadata, result nodes holding
+  nested question, option, revision, scale, validation, type and expiration nodes,
+  parallel result variants per population, and one flattened refined record. A
+  single mapping holds both stages: root class mappings whose source is an http
+  service, each supplying a literal request parameter and most pinning a path into
+  the response document so the mapped class is a nested node rather than the
+  payload root, and a model-to-model stage that flattens the detail node into the
+  refined record, navigating three levels of nested optional properties and
+  narrowing each to one element, shifting two dates before writing them, and
+  declaring two audit-cycle boundaries as local properties of the class mapping
+  rather than of the class. Two engine runtimes, one per environment, bind that
+  mapping to one service-store connection per store plus a model-chain connection,
+  so the model-to-model stage consumes the service-store stage's output inside one
+  execution.
+modelSources:
+  model:
+    root: verdant-marsh-3
+    files:
+      - test/verdantmarsh3/binding/WaymarkerSurveyBindings.pure
+      - test/verdantmarsh3/connection/WaymarkerSurveyConnections.pure
+      - test/verdantmarsh3/domain/WaymarkerSurveyDomain.pure
+      - test/verdantmarsh3/mapping/WaymarkerSurveyMapping.pure
+      - test/verdantmarsh3/runtime/WaymarkerSurveyRuntimes.pure
+      - test/verdantmarsh3/store/WaymarkerSurveyApis.pure
+features:
+  - execution:external-format-binding
+  - mapping:m2m-local-property
+  - mapping:m2m-transform
+  - execution:mapping-test
+  - scaffolding:class
+  - scaffolding:runtime
+  - scaffolding:service-store-connection
+  - mapping:service-store-mapping
+  - store:service-store
+stores:
+  - service-store
+complexity: intermediate
+tags:
+  - external-format-binding
+  - footpath-waymarker-audit
+  - local-mapping-property
+  - model-chain-connection
+  - response-path-offset
+  - service-store

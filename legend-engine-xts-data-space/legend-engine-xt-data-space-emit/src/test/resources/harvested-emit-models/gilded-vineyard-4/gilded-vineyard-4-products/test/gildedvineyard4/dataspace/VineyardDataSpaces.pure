@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::gildedvineyard4::dataspace::VineyardEstateDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'estate';
+      description: 'Estate tier - the warehouse the block register, the grouped harvest tally and the varietal roster run against day to day.';
+      mapping: test::gildedvineyard4::mapping::VineyardMapping;
+      defaultRuntime: test::gildedvineyard4::runtime::VineyardRuntime;
+    },
+    {
+      name: 'archive';
+      description: 'Archive tier - the same curated mapping bound through the archive runtime for reads of older processing pictures.';
+      mapping: test::gildedvineyard4::mapping::VineyardMapping;
+      defaultRuntime: test::gildedvineyard4::runtime::VineyardArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'estate';
+  title: 'Gilded Vineyard Estate Register';
+  description: 'A governed entry point over the processing-temporal vine blocks, the harvest passes walked over them and the trellis sections that train their canopies, wiring the curated mapping to an estate tier and an archive tier and publishing the three query services as executables.';
+  elements:
+  [
+    test::gildedvineyard4::domain::VineBlock,
+    test::gildedvineyard4::domain::HarvestPass,
+    test::gildedvineyard4::domain::TrellisSection
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Vine Block Register';
+      description: 'The wide block projection with its vine-count floor, membership disjunction and bounded slice.';
+      executable: test::gildedvineyard4::service::VineBlockRegister;
+    },
+    {
+      id: 2;
+      title: 'Harvest Yield By Stage';
+      description: 'The grouped harvest tally keyed by pass stage and the estate reached across the block traversal.';
+      executable: test::gildedvineyard4::service::HarvestYieldByStage;
+    },
+    {
+      id: 3;
+      title: 'Varietal Roster';
+      description: 'The de-duplicated varietal projection with its bound on the ordered result.';
+      executable: test::gildedvineyard4::service::VarietalRoster;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'vineyard-estate-ops@gildedvineyard.invalid';
+  };
+}
+
+DataSpace test::gildedvineyard4::dataspace::VineyardArchiveDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'archive';
+      description: 'Archive tier only - the curated mapping bound through the archive runtime, for point-in-time reads of superseded block and pass versions.';
+      mapping: test::gildedvineyard4::mapping::VineyardMapping;
+      defaultRuntime: test::gildedvineyard4::runtime::VineyardArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'archive';
+  title: 'Gilded Vineyard Estate Register - Archive';
+  description: 'Discovery surface over the archive execution of the same curated model, exposing the block extent and the grouped harvest tally for reads of older processing dates.';
+  elements:
+  [
+    test::gildedvineyard4::domain::VineBlock,
+    test::gildedvineyard4::domain::HarvestPass
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Harvest Yield By Stage';
+      description: 'The grouped harvest tally, driven at an earlier processing date against the archive runtime.';
+      executable: test::gildedvineyard4::service::HarvestYieldByStage;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'vineyard-archive-ops@gildedvineyard.invalid';
+  };
+}

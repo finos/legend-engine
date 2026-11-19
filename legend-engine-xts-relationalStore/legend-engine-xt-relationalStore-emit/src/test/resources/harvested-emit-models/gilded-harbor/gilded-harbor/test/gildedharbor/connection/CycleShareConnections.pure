@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::gildedharbor::connection::CycleShareH2Connection
+{
+  store: test::gildedharbor::store::CycleShareDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists network;',
+      'create schema network;',
+      'create table network.dock_station (station_id integer primary key, station_code varchar(16) not null, station_name varchar(128) not null, zone_code varchar(16) not null, status_code varchar(8) not null, dock_count integer not null);',
+      'create table network.service_zone (zone_code varchar(16) primary key, zone_name varchar(128) not null, borough_name varchar(128) not null);',
+      'drop schema if exists fleet;',
+      'create schema fleet;',
+      'create table fleet.cycle_unit (unit_id integer primary key, unit_code varchar(16) not null, station_code varchar(16) not null, model_id integer not null, retired_flag varchar(1) not null, wheel_size_mm integer not null, ride_count integer not null, condition_note varchar(256));',
+      'create table fleet.cycle_model (model_id integer primary key, model_code varchar(16) not null, frame_type varchar(32) not null, assist_flag varchar(1) not null);',
+      'create table fleet.service_visit (visit_id integer primary key, unit_code varchar(16) not null, visit_kind varchar(16) not null, duration_min integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

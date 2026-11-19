@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantwharf5::service::WharfLaneLookup
+{
+  pattern: '/verdantwharf5/lane/{berthCode}/{minPallets}/{cargoClass}';
+  title: 'Wharf Lane Lookup';
+  owners:
+  [
+    'harbour-operations'
+  ];
+  documentation: 'Filters the call legs berthed at one quay down to a cargo class and a minimum pallet count, then projects the handling lane alongside the berth attributes reached through the berth association.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {berthCode: String[1], minPallets: Integer[1], cargoClass: String[1]|test::verdantwharf5::domain::VesselCall.all()->filter(
+      x|$x.cargoClass->in(['CONTAINER', 'REEFER', 'BULK', 'BREAKBULK', 'LIGHT', 'RETURNS']) && ($x.berth.berthCode->toOne() == $berthCode) && ($x.palletTotal->toOne() >= $minPallets) && ($x.cargoClass == $cargoClass)
+    )->project(
+      [
+        x|$x.callCode,
+        x|$x.callLeg,
+        x|$x.vesselName,
+        x|$x.cargoClass,
+        x|$x.palletTotal,
+        x|$x.handlingLane,
+        x|$x.berth.berthName->toOne(),
+        x|$x.berth.tideWindow->toOne(),
+        x|'LANE-' + $x.cargoClass
+      ],
+      [
+        'CallCode',
+        'CallLeg',
+        'Vessel',
+        'CargoClass',
+        'Pallets',
+        'Lane',
+        'BerthName',
+        'TideWindow',
+        'LaneTag'
+      ]
+    )->sort(
+      [
+        asc('CallCode'),
+        asc('CallLeg')
+      ]
+    )};
+    mapping: test::verdantwharf5::mapping::WharfMapping;
+    runtime: test::verdantwharf5::runtime::WharfRuntime;
+  }
+  testSuites:
+  [
+    laneLookupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfConnection: Reference
+            #{
+              test::verdantwharf5::data::WharfTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        selectingParameters:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            berthCode = 'B-01',
+            minPallets = 20,
+            cargoClass = 'CONTAINER'
+          ]
+          asserts:
+          [
+            twoContainerLegs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CallCode":"C-01","CallLeg":1,"Vessel":"NORTHERN GULL","CargoClass":"CONTAINER","Pallets":40,"Lane":"EXPRESS LANE","BerthName":"North Quay","TideWindow":"SPRING","LaneTag":"LANE-CONTAINER"},{"CallCode":"C-02","CallLeg":1,"Vessel":"HARBOUR TERN","CargoClass":"CONTAINER","Pallets":25,"Lane":"HAZARD LANE","BerthName":"North Quay","TideWindow":"SPRING","LaneTag":"LANE-CONTAINER"}]';
+                  }#;
+              }#
+          ]
+        },
+        nonSelectingParameters:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            berthCode = 'B-03',
+            minPallets = 99,
+            cargoClass = 'CONTAINER'
+          ]
+          asserts:
+          [
+            noLegs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

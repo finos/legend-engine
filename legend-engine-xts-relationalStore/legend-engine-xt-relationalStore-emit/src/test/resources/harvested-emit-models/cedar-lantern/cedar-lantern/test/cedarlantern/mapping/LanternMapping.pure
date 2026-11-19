@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarlantern::mapping::LanternMapping
+(
+  include mapping test::cedarlantern::mapping::LanternBaseMapping
+
+  *test::cedarlantern::domain::LanternService[lanternService]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarlantern::store::LanternDb]harbour.lantern_service.service_id
+    )
+    ~mainTable [test::cedarlantern::store::LanternDb]harbour.lantern_service
+    serviceCode: [test::cedarlantern::store::LanternDb]harbour.lantern_service.service_code,
+    serviceName: toUpper([test::cedarlantern::store::LanternDb]harbour.lantern_service.service_name),
+    wickMm: [test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm,
+    burnHours: [test::cedarlantern::store::LanternDb]harbour.lantern_service.burn_hours,
+    wickBand: case(
+                lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 10),
+                'WICK-A',
+                case(
+                  lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 20),
+                  'WICK-B',
+                  case(
+                    lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 30),
+                    'WICK-C',
+                    case(
+                      lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 40),
+                      'WICK-D',
+                      case(
+                        lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 50),
+                        'WICK-E',
+                        case(
+                          lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 60),
+                          'WICK-F',
+                          case(
+                            lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 70),
+                            'WICK-G',
+                            case(
+                              lessThan([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 80),
+                              'WICK-H',
+                              sqlNull()
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+    glassLabel: case(
+                  equal([test::cedarlantern::store::LanternDb]harbour.lantern_service.glass_code, 'FRESNEL'),
+                  'FRESNEL GLASS',
+                  case(
+                    equal([test::cedarlantern::store::LanternDb]harbour.lantern_service.glass_code, 'PRISM'),
+                    'PRISM GLASS',
+                    'PLAIN GLASS'
+                  )
+                ),
+    burnScore: minus(
+                 times([test::cedarlantern::store::LanternDb]harbour.lantern_service.burn_hours, 100),
+                 times([test::cedarlantern::store::LanternDb]harbour.lantern_service.wick_mm, 10)
+               ),
+    sourceLabel: 'HARBOUR LANTERN',
+    towerName: [test::cedarlantern::store::LanternDb]@Service_Lens > @Lens_Tower | [test::cedarlantern::store::LanternDb]harbour.lantern_tower.tower_name,
+    keeperPost: [test::cedarlantern::store::LanternDb]@Service_Lens > @Lens_Tower > @Tower_Keeper | [test::cedarlantern::store::LanternDb]harbour.keeper_post.post_name,
+    glass: EnumerationMapping GlassKindMapping: [test::cedarlantern::store::LanternDb]harbour.lantern_service.glass_code
+  }
+
+  testSuites:
+  [
+    wickBandSuite:
+    {
+      function: |test::cedarlantern::domain::LanternService.all()->project(~[serviceCode: s|$s.serviceCode, serviceName: s|$s.serviceName, wickBand: s|$s.wickBand, glassLabel: s|$s.glassLabel, burnScore: s|$s.burnScore, sourceLabel: s|$s.sourceLabel, towerName: s|$s.towerName, keeperPost: s|$s.keeperPost, glass: s|$s.glass])->sort([~serviceCode->ascending()]);
+      tests:
+      [
+        everyWickArmTheFallbackAndTheKeeperPath:
+        {
+          doc: 'Covers all eight arms of the wick-length conditional and the fallback arm that resolves to no value, the two-armed glass conditional with its default, the arithmetic burn score, the literal source label, the upper-cased watch name, the decoded glass enumeration, the two-hop service-to-lens-to-tower path and the three-hop service-to-lens-to-tower-to-post path; the last night was booked against a lens grade no register row claims, so both join paths reach nothing.';
+          data:
+          [
+            test::cedarlantern::store::LanternDb:
+              Relational
+              #{
+                harbour.keeper_post:
+                  'keeper_name,post_name\n'+
+                  'North keeper,Northern watch post\n';
+
+                harbour.lantern_tower:
+                  'tower_code,tower_name,keeper_name\n'+
+                  'T1,North Tower,North keeper\n';
+
+                harbour.lens_grade:
+                  'lens_code,grade_label,tower_code\n'+
+                  'L1,Dense lens,T1\n';
+
+                harbour.lantern_service:
+                  'service_id,service_code,service_name,wick_mm,burn_hours,glass_code,lens_code,note_text\n'+
+                  '1,LS-01,north watch,5,12,FRESNEL,L1,trimmed short\n'+
+                  '2,LS-02,south watch,15,10,PRISM,L1,trimmed short\n'+
+                  '3,LS-03,east watch,25,8,PLAIN,L1,trimmed even\n'+
+                  '4,LS-04,west watch,35,9,FRESNEL,L1,trimmed even\n'+
+                  '5,LS-05,dune watch,45,7,PRISM,L1,trimmed long\n'+
+                  '6,LS-06,pier watch,55,6,PLAIN,L1,trimmed long\n'+
+                  '7,LS-07,reef watch,65,11,FRESNEL,L1,trimmed longer\n'+
+                  '8,LS-08,cove watch,75,13,PRISM,L1,trimmed longest\n'+
+                  '9,LS-09,wide watch,95,14,PLAIN,L1,wick beyond every band\n'+
+                  '10,LS-10,lost watch,12,5,FRESNEL,L9,lens grade never registered\n';
+              }#
+          ];
+          asserts:
+          [
+            bandedServices:
+              Relation
+              #{
+                serviceCode,serviceName,wickBand,glassLabel,burnScore,sourceLabel,towerName,keeperPost,glass
+                LS-01,NORTH WATCH,WICK-A,FRESNEL GLASS,1150,HARBOUR LANTERN,North Tower,Northern watch post,FRESNEL
+                LS-02,SOUTH WATCH,WICK-B,PRISM GLASS,850,HARBOUR LANTERN,North Tower,Northern watch post,PRISM
+                LS-03,EAST WATCH,WICK-C,PLAIN GLASS,550,HARBOUR LANTERN,North Tower,Northern watch post,PLAIN
+                LS-04,WEST WATCH,WICK-D,FRESNEL GLASS,550,HARBOUR LANTERN,North Tower,Northern watch post,FRESNEL
+                LS-05,DUNE WATCH,WICK-E,PRISM GLASS,250,HARBOUR LANTERN,North Tower,Northern watch post,PRISM
+                LS-06,PIER WATCH,WICK-F,PLAIN GLASS,50,HARBOUR LANTERN,North Tower,Northern watch post,PLAIN
+                LS-07,REEF WATCH,WICK-G,FRESNEL GLASS,450,HARBOUR LANTERN,North Tower,Northern watch post,FRESNEL
+                LS-08,COVE WATCH,WICK-H,PRISM GLASS,550,HARBOUR LANTERN,North Tower,Northern watch post,PRISM
+                LS-09,WIDE WATCH,,PLAIN GLASS,450,HARBOUR LANTERN,North Tower,Northern watch post,PLAIN
+                LS-10,LOST WATCH,WICK-B,FRESNEL GLASS,380,HARBOUR LANTERN,,,FRESNEL;
+              }#
+          ];
+        }
+      ];
+    },
+    towerRegisterSuite:
+    {
+      function: |test::cedarlantern::domain::LanternTower.all()->project(~[towerCode: t|$t.towerCode, towerName: t|$t.towerName])->sort([~towerCode->ascending()]);
+      tests:
+      [
+        towersAreReadFromTheIncludedMapping:
+        {
+          doc: 'Reads the tower register carried by the included base mapping, so the tower extent resolves independently of the lamp-tending extent that reaches it over joins.';
+          data:
+          [
+            test::cedarlantern::store::LanternDb:
+              Relational
+              #{
+                harbour.lantern_tower:
+                  'tower_code,tower_name,keeper_name\n'+
+                  'T1,North Tower,North keeper\n'+
+                  'T2,South Tower,South keeper\n';
+              }#
+          ];
+          asserts:
+          [
+            registeredTowers:
+              Relation
+              #{
+                towerCode,towerName
+                T1,North Tower
+                T2,South Tower;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

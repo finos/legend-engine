@@ -1,0 +1,27 @@
+name: quiet-cavern-2
+title: "Quiet Cavern Field Notebook Mappings"
+description: |
+  A small field-notebook model translating trail survey notes, roost logs, and
+  canopy passes into curated records. Three model-to-model mappings exercise
+  standalone validation, enumeration translation, marker selection, and
+  concrete mapping assertions without services or generated files.
+modelSources:
+  model:
+    root: quiet-cavern-2
+    files:
+      - test/quietcavern2/domain/NotebookDomain.pure
+      - test/quietcavern2/function/NotebookChecks.pure
+      - test/quietcavern2/mapping/NotebookMappings.pure
+features:
+  - execution:mapping-test
+  - mapping:enumeration-mapping
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - field-notebooks
+  - mapping-test
+  - roost-logs
+  - trail-surveys

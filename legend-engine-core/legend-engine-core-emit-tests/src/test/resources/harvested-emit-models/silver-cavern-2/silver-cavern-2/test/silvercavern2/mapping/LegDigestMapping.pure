@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silvercavern2::mapping::LegDigestMapping
+(
+  *test::silvercavern2::domain::SurveyLeg[survey_leg]: Pure
+  {
+    ~src test::silvercavern2::domain::LegNote
+    recordReference: $src.noteReference->toUpper()->trim(),
+    filedBy: $src.clerk->trim(),
+    legCode: 'LEG-' + $src.noteReference->toUpper(),
+    gradeTag: 'GRADE-' + $src.grade->trim(),
+    tapeLengthM: $src.tapeMetres,
+    depthM: if($src.depth->isEmpty(),
+               | 0.0,
+               | $src.depth->toOne()),
+    chamberTags: $src.tags->map(t|$t->trim()->toUpper())
+  }
+
+  testSuites:
+  [
+    legDigestSuite:
+    {
+      function: |test::silvercavern2::domain::SurveyLeg.all()->graphFetch(
+        #{
+          test::silvercavern2::domain::SurveyLeg
+          {
+            recordReference,
+            filedBy,
+            legCode,
+            gradeTag,
+            tapeLengthM,
+            depthM,
+            chamberTags
+          }
+        }#
+      )->serialize(
+        #{
+          test::silvercavern2::domain::SurveyLeg
+          {
+            recordReference,
+            filedBy,
+            legCode,
+            gradeTag,
+            tapeLengthM,
+            depthM,
+            chamberTags
+          }
+        }#
+      );
+      tests:
+      [
+        inheritedHeaderAndConstrainedLegBody:
+        {
+          doc: 'Proves that the inherited register header and the leg body are both filled by the transform: the reference is upper-cased into the shape the inherited constraint demands, the filer is trimmed into the shape the inherited function-backed constraint demands, the grade tag is composed into a recognised club grade, a missing depth falls back to the surface and every chamber tag is trimmed and upper-cased so the to-many constraint holds.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::silvercavern2::domain::LegNote:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"noteReference":"cv-01021","clerk":" Wren Halvard ","grade":"1","tapeMetres":42.5,"depth":18.25,"tags":["silver hall"," drip crawl "]},{"noteReference":"cv-01022","clerk":"Iver Snowdon","grade":"3","tapeMetres":16.0,"tags":["moth gallery"]},{"noteReference":"cv-01023","clerk":"Marek Aldbury","grade":"5","tapeMetres":7.75,"depth":31.25,"tags":["bat annex","echo bend","sump duck"]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeDigestedLegs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordReference":"CV-01021","filedBy":"Wren Halvard","legCode":"LEG-CV-01021","gradeTag":"GRADE-1","tapeLengthM":42.5,"depthM":18.25,"chamberTags":["SILVER HALL","DRIP CRAWL"]},{"recordReference":"CV-01022","filedBy":"Iver Snowdon","legCode":"LEG-CV-01022","gradeTag":"GRADE-3","tapeLengthM":16.0,"depthM":0.0,"chamberTags":["MOTH GALLERY"]},{"recordReference":"CV-01023","filedBy":"Marek Aldbury","legCode":"LEG-CV-01023","gradeTag":"GRADE-5","tapeLengthM":7.75,"depthM":31.25,"chamberTags":["BAT ANNEX","ECHO BEND","SUMP DUCK"]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

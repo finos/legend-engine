@@ -1,0 +1,162 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarsummit::service::PropagationLotLookupService
+{
+  pattern: '/nursery/v1/lt-3390/{lotReference}/{sownOn}';
+  title: 'Greenhouse Network - Single Propagation Lot';
+  documentation: 'Selects one remote propagation lot by reference and sowing date, conjoining equality on a mandatory reference with equality on an optional date that the mapping renders into the remote query parameter, then serialises the fetched attributes including the nested lot identity.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['greenhouse-network', 'propagation-audit'] };
+  execution: Single
+  {
+    query: {lotReference: String[1], sownOn: String[1]|test::cedarsummit::domain::LotRecord.all()->filter(
+      l|($l.lotReference == $lotReference) && ($l.sownOnText == $sownOn)
+    )->toOne()->graphFetch(
+      #{
+        test::cedarsummit::domain::LotRecord
+        {
+          lotReference,
+          sownOn,
+          custodianNote,
+          identity
+          {
+            lotKey,
+            lotKeyAlternate
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::cedarsummit::domain::LotRecord
+        {
+          lotReference,
+          sownOn,
+          custodianNote,
+          identity
+          {
+            lotKey,
+            lotKeyAlternate
+          }
+        }
+      }#,
+      ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+        typeKeyName = '@type',
+        includeType = false,
+        includeEnumType = false,
+        removePropertiesWithNullValues = true,
+        removePropertiesWithEmptySets = true,
+        fullyQualifiedTypePath = false
+      )
+    )};
+    mapping: test::cedarsummit::mapping::LotLookupMapping;
+    runtime: test::cedarsummit::runtime::PropagationLotRuntime;
+  }
+  testSuites:
+  [
+    propagationLotSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          propagationLotConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/nursery/lots/LOT-9001?sownOn=2026-03-14';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"lotReference":"LOT-9001","sownOnText":"2026-03-14","sownOn":"2026-03-14","custodianNote":"cold frame","identity":{"lotKey":"LK-11","lotKeyAlternate":"LK-11-B"}}';
+                      }#;
+                  };
+                },
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/nursery/lots/LOT-9007?sownOn=2026-04-02';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '{"lotReference":"LOT-9007","sownOnText":"2026-04-02","sownOn":"2026-04-02","identity":{"lotKey":"LK-18"}}';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        lotWithFullIdentity:
+        {
+          parameters:
+          [
+            lotReference = 'LOT-9001',
+            sownOn = '2026-03-14'
+          ]
+          asserts:
+          [
+            lotDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"lotReference":"LOT-9001","sownOn":"2026-03-14","custodianNote":"cold frame","identity":{"lotKey":"LK-11","lotKeyAlternate":"LK-11-B"}}}';
+                  }#;
+              }#
+          ]
+        },
+        lotWithAbsentNoteAndAlternateKey:
+        {
+          parameters:
+          [
+            lotReference = 'LOT-9007',
+            sownOn = '2026-04-02'
+          ]
+          asserts:
+          [
+            absentNoteDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"lotReference":"LOT-9007","sownOn":"2026-04-02","identity":{"lotKey":"LK-18"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::gildedcove3::connection::CoveKelpH2Connection
+{
+  store: test::gildedcove3::store::CoveKelpDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists kelp cascade;',
+      'create schema kelp;',
+      'create table kelp.kelp_plot(plot_id integer primary key, plot_code varchar(24) not null, bed_code varchar(24) not null, canopy_class varchar(24) not null, frond_count integer, surveyed_on date not null, from_z date not null, thru_z date not null);',
+      'create table kelp.kelp_bed(bed_code varchar(24) primary key, bed_name varchar(80) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

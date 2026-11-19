@@ -1,0 +1,286 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sunlitlagoon::service::ObservationRegister
+{
+  pattern: '/sunlitlagoon/v1/observations/{program}';
+  title: 'Observation Register';
+  documentation: 'The observations of a requested programme, restricted to a literal programme list and a literal capture floor, kept only where the site reached across the two namespaces is open, and projected with the banding derivations and the joined telescope, site and steward attributes.';
+  owners:
+  [
+    'observatory-register'
+  ];
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {program: String[1]|test::sunlitlagoon::domain::Observation.all()->filter(
+      o|((($o.programCode->in(['DEEP', 'SURVEY', 'CALIBRATION'])) && ($o.programCode == $program)) && ($o.capturedOn >= %2026-04-01)) && ($o.telescopeOfObservation.siteOfTelescope.statusCode == 'OPEN')
+    )->project(
+      [
+        o|$o.obsRef,
+        o|$o.targetName,
+        o|$o.qualityBand(),
+        o|$o.exposureBand(600),
+        o|$o.telescopeOfObservation.telescopeName,
+        o|$o.telescopeOfObservation.siteOfTelescope.siteName,
+        o|$o.telescopeOfObservation.siteOfTelescope.stewardOfSite.stewardName
+      ],
+      [
+        'ObsRef',
+        'TargetName',
+        'QualityBand',
+        'ExposureBand',
+        'TelescopeName',
+        'SiteName',
+        'StewardName'
+      ]
+    )->sort(
+      [
+        asc('ObsRef')
+      ]
+    )};
+    mapping: test::sunlitlagoon::mapping::ObservatoryMapping;
+    runtime: test::sunlitlagoon::runtime::RidgeRuntime;
+  }
+  testSuites:
+  [
+    observationRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeConnection:
+            Relational
+            #{
+              sky.observation:
+                'observation_id,obs_ref,target_name,captured_on,seeing_arcsec,exposure_seconds,program_code,telescope_code\n'+
+                '1,o-1, vega ,2026-04-02,0.8,900,deep,T1\n'+
+                '2,o-2,altair,2026-04-03,1.4,300,survey,T1\n'+
+                '3,o-3,rigel_b,2026-04-04,2.7,1200,deep,T2\n'+
+                '4,o-4,,2026-04-05,,600,,T9\n';
+              sky.telescope:
+                'telescope_code,telescope_name,aperture_mm,site_code\n'+
+                'T1,Ridge Reflector,1200,S1\n'+
+                'T2,Basin Refractor,600,S2\n';
+              ops.site:
+                'site_code,site_name,altitude_m,status_code,steward_id\n'+
+                'S1,Lagoon Ridge,2400,open,1\n'+
+                'S2,Sunlit Basin,1200,open,9\n'+
+                'S3,Closed Annex,900,CLOSED,1\n';
+              ops.steward:
+                'steward_id,steward_name,contact_code\n'+
+                '1,ada north,c1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theRequestedProgrammeKeepsOnlyItsOpenSiteObservations:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            program = 'DEEP'
+          ]
+          asserts:
+          [
+            deepProgrammeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ObsRef":"OBS-O-1","TargetName":"VEGA","QualityBand":"PRISTINE","ExposureBand":"DEEP","TelescopeName":"RIDGE REFLECTOR","SiteName":"LAGOON RIDGE","StewardName":"ADA NORTH"},{"ObsRef":"OBS-O-3","TargetName":"RIGEL B","QualityBand":"POOR","ExposureBand":"DEEP","TelescopeName":"BASIN REFRACTOR","SiteName":"SUNLIT BASIN","StewardName":null}]';
+                  }#;
+              }#
+          ]
+        },
+        aListedProgrammeNoObservationCarriesReturnsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            program = 'CALIBRATION'
+          ]
+          asserts:
+          [
+            noProgrammeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::sunlitlagoon::service::SiteExposureDigest
+{
+  pattern: '/sunlitlagoon/v1/sites/exposure-digest';
+  title: 'Site Exposure Digest';
+  documentation: 'Aggregates the observations of a literal programme list into an observation count and an exposure total per site name reached across the namespace boundary, so the grouping key is a joined column of the other namespace rather than a column of the observation relation.';
+  owners:
+  [
+    'observatory-register'
+  ];
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::sunlitlagoon::domain::Observation.all()->filter(
+      o|$o.programCode->in(['DEEP', 'SURVEY'])
+    )->project(
+      [
+        o|$o.telescopeOfObservation.siteOfTelescope.siteName,
+        o|$o.exposureSeconds
+      ],
+      [
+        'SiteName',
+        'ExposureSeconds'
+      ]
+    )->groupBy(
+      [
+        'SiteName'
+      ],
+      [
+        meta::pure::tds::agg(
+          'ObservationCount',
+          r: meta::pure::tds::TDSRow[1]|$r.getInteger('ExposureSeconds'),
+          vs|$vs->count()
+        ),
+        meta::pure::tds::agg(
+          'TotalExposureSeconds',
+          r: meta::pure::tds::TDSRow[1]|$r.getInteger('ExposureSeconds'),
+          vs|$vs->sum()
+        )
+      ]
+    )->sort(
+      [
+        asc('SiteName')
+      ]
+    )};
+    mapping: test::sunlitlagoon::mapping::ObservatoryMapping;
+    runtime: test::sunlitlagoon::runtime::RidgeRuntime;
+  }
+  testSuites:
+  [
+    siteExposureDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ridgeConnection:
+            Relational
+            #{
+              sky.observation:
+                'observation_id,obs_ref,target_name,captured_on,seeing_arcsec,exposure_seconds,program_code,telescope_code\n'+
+                '1,o-1, vega ,2026-04-02,0.8,900,deep,T1\n'+
+                '2,o-2,altair,2026-04-03,1.4,300,survey,T1\n'+
+                '3,o-3,rigel_b,2026-04-04,2.7,1200,deep,T2\n'+
+                '4,o-4,,2026-04-05,,600,,T9\n';
+              sky.telescope:
+                'telescope_code,telescope_name,aperture_mm,site_code\n'+
+                'T1,Ridge Reflector,1200,S1\n'+
+                'T2,Basin Refractor,600,S2\n';
+              ops.site:
+                'site_code,site_name,altitude_m,status_code,steward_id\n'+
+                'S1,Lagoon Ridge,2400,open,1\n'+
+                'S2,Sunlit Basin,1200,open,9\n';
+              ops.steward:
+                'steward_id,steward_name,contact_code\n'+
+                '1,ada north,c1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        eachSiteTotalsTheExposuresOfItsTelescopes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            siteDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SiteName":"LAGOON RIDGE","ObservationCount":2,"TotalExposureSeconds":1200},{"SiteName":"SUNLIT BASIN","ObservationCount":1,"TotalExposureSeconds":1200}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::sunlitlagoon::service::ObservationRegisterByFacility
+{
+  pattern: '/sunlitlagoon/v1/observations-by-facility';
+  title: 'Observation Register By Facility';
+  documentation: 'One published shape with two execution alternatives keyed by a supplied facility value: the same register body resolves to the ridge binding or the basin binding, so the interface is shared while the connection reached at execution time differs.';
+  owners:
+  [
+    'observatory-register'
+  ];
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {|test::sunlitlagoon::domain::Observation.all()->filter(
+      o|($o.programCode->in(['DEEP', 'SURVEY'])) && ($o.capturedOn >= %2026-04-01)
+    )->project(
+      [
+        o|$o.obsRef,
+        o|$o.targetName,
+        o|$o.qualityBand(),
+        o|$o.telescopeOfObservation.siteOfTelescope.siteName
+      ],
+      [
+        'ObsRef',
+        'TargetName',
+        'QualityBand',
+        'SiteName'
+      ]
+    )->sort(
+      [
+        asc('ObsRef')
+      ]
+    )};
+    key: 'facility';
+    executions['ridge']:
+    {
+      mapping: test::sunlitlagoon::mapping::ObservatoryMapping;
+      runtime: test::sunlitlagoon::runtime::RidgeRuntime;
+    }
+    executions['basin']:
+    {
+      mapping: test::sunlitlagoon::mapping::ObservatoryMapping;
+      runtime: test::sunlitlagoon::runtime::BasinRuntime;
+    }
+  }
+}

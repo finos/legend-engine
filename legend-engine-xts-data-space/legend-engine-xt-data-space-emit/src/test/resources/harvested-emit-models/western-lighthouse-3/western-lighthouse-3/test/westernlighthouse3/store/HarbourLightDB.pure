@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::westernlighthouse3::store::HarbourLightDB
+(
+  Schema harbour
+  (
+    Table navigation_light
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      light_code VARCHAR(24) PRIMARY KEY,
+      station_code VARCHAR(24) NOT NULL,
+      lamp_code VARCHAR(24) NOT NULL,
+      character_code VARCHAR(32) NOT NULL,
+      focal_height_m DOUBLE NOT NULL,
+      range_nm DOUBLE NOT NULL,
+      status_code VARCHAR(16) NOT NULL,
+      last_inspected DATE NOT NULL,
+      in_z DATE PRIMARY KEY,
+      out_z DATE
+    )
+    Table lamp_unit
+    (
+      lamp_code VARCHAR(24) PRIMARY KEY,
+      lamp_type VARCHAR(48) NOT NULL,
+      wattage INTEGER NOT NULL,
+      installed_on DATE NOT NULL
+    )
+    Table harbour_station
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(96) NOT NULL,
+      coast_sector VARCHAR(48) NOT NULL
+    )
+  )
+
+  Join Light_Lamp(harbour.navigation_light.lamp_code = harbour.lamp_unit.lamp_code)
+  Join Light_Station(harbour.navigation_light.station_code = harbour.harbour_station.station_code)
+)

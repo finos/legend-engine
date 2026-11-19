@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietwillow2::service::CarriageWorkloadAsOf
+{
+  pattern: '/quietwillow2/v1/carriages/workload/{asOf}/{minHours}';
+  ownership: UserList { users: ['heritage-railway-workshop-office'] };
+  documentation: 'Reports how much workshop time each carriage has attracted on a requested day: the overhauls current on that day are folded back to a count and a total of booked hours, the billable-hours tally view supplies the independently kept tally, and only carriages above the caller supplied hour floor survive.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minHours: Integer[1]|test::quietwillow2::domain::Carriage.all($asOf)->filter(
+      c|$c.overhauls->map(o|$o.labourHours)->sum() >= $minHours
+    )->project(
+      [
+        c|$c.carriageCode,
+        c|$c.depotName,
+        c|$c.overhauls->count(),
+        c|$c.overhauls->map(o|$o.labourHours)->sum(),
+        c|$c.overhaulCount,
+        c|$c.labourHours
+      ],
+      [
+        'CARRIAGE_CODE',
+        'DEPOT_NAME',
+        'OVERHAULS',
+        'BOOKED_HOURS',
+        'TALLYSHEET_OVERHAULS',
+        'TALLYSHEET_HOURS'
+      ]
+    )->sort(
+      [
+        desc('BOOKED_HOURS'),
+        asc('CARRIAGE_CODE')
+      ]
+    )->limit(3)};
+    mapping: test::quietwillow2::mapping::WorkshopMapping;
+    runtime: test::quietwillow2::runtime::WorkshopRuntime;
+  }
+  testSuites:
+  [
+    carriageWorkloadSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection:
+            Relational
+            #{
+              fleet.carriage:
+                'carriage_code,carriage_name,class_code,seats,tare_tonnes,depot_code,from_z,thru_z\n'+
+                'CR-01,Larch Saloon,SA,42,14.5,DP-01,2026-01-01,9999-12-31\n'+
+                'CR-02,Rowan Composite,CO,36,12.0,DP-02,2026-02-01,9999-12-31\n'+
+                'CR-03,Alder Observation,OB,24,11.5,DP-01,2026-08-01,9999-12-31\n';
+
+              works.overhaul:
+                'overhaul_code,carriage_code,works_code,grade_code,labour_hours,from_z,thru_z\n'+
+                'OV-01,CR-01,WK-01,H,180,2026-01-01,9999-12-31\n'+
+                'OV-02,CR-01,WK-01,L,40,2026-01-01,9999-12-31\n'+
+                'OV-03,CR-01,WK-02,I,95,2026-01-01,2026-03-01\n'+
+                'OV-04,CR-02,WK-02,I,110,2026-02-01,9999-12-31\n'+
+                'OV-05,CR-03,WK-01,L,25,2026-08-01,9999-12-31\n';
+
+              depots.depot:
+                'depot_code,depot_name,region_code\n'+
+                'DP-01,Lakeside Depot,RG-01\n'+
+                'DP-02,Moorfoot Depot,RG-02\n';
+
+              records.overhaul_hours:
+                'overhaul_code,carriage_code,labour_hours,billable_flag\n'+
+                'OV-01,CR-01,180,Y\n'+
+                'OV-02,CR-01,40,Y\n'+
+                'OV-04,CR-02,110,Y\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        workloadOfTheCarriagesCurrentOnTheQueriedDay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            minHours = 50
+          ]
+          asserts:
+          [
+            twoCarriagesAboveTheFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CARRIAGE_CODE":"CR-01","DEPOT_NAME":"Lakeside Depot","OVERHAULS":2,"BOOKED_HOURS":220,"TALLYSHEET_OVERHAULS":2,"TALLYSHEET_HOURS":220},{"CARRIAGE_CODE":"CR-02","DEPOT_NAME":"Moorfoot Depot","OVERHAULS":1,"BOOKED_HOURS":110,"TALLYSHEET_OVERHAULS":1,"TALLYSHEET_HOURS":110}]';
+                  }#;
+              }#
+          ]
+        },
+        floorAboveEveryCarriage:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            minHours = 400
+          ]
+          asserts:
+          [
+            nothingSurvivesTheFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+name: indigo-warren-5
+title: "Farmhouse Cellar Affinage Book — A Milestoned Grade Cascade Across An Eight-Edge Racking Graph"
+description: |
+  The affinage book of a farmhouse cheese cellar, landed on one relational store whose cellar schema holds the
+  dairy list, the caves cut under it, the racking shelves, the turners who walk the rota, the wheels laid on the
+  shelves, the rind check cards and the processing-milestoned affinage book itself. Seven classes carry eighteen
+  constraints between them, checking code shape, readable names and the optional gauge readings of the cave, the
+  crated weight of the wheel and the score on the check card; the wheel additionally derives a label that falls
+  back to a handed-in token while it carries no rind treatment and a flag for the wheels heavy enough to need
+  two hands on the turn. Eight associations wire the seven classes into a connected graph in which the wheel and
+  the turner each carry three relationship ends, and every edge is realised as a relational association
+  implementation over its own inner join. Three mappings are chained by inclusion: a base mapping lands the
+  dairy, cave and shelf, a detail mapping includes it and lands the turner, wheel, check card and affinage
+  entry — settling a nine-armed grade band from the rind treatment recorded on the entry, with its own arm for
+  the bare wheel and a fall-through arm for a treatment the cellar never listed — and a third mapping includes
+  the detail mapping, maps all eight association ends and carries the test suites. Two services publish
+  boards over the milestoned book, each taking an optional read date that is computed rather than only
+  compared: an absent date falls back to the current day, so entries whose cellar window has closed drop out of
+  the cast. A data space packages the mapping with a day-walk and a night-walk execution context over two
+  Kerberos-delegated MemSQL runtimes and names the day walk as its default. Four mapping test suites and four
+  service tests bind the model: the grade suite reaches every band arm on one read date and holds the closed
+  entry out of the cast, the cellar walk suite walks each wheel three association hops out to its dairy and
+  publishes both wheel derivations, the check card suite resolves the card to its wheel and the cave it stands
+  in, the rota suite resolves both ends the turner carries, and the board tests cover a handed-in read date, a
+  date after a window closed and the fall back to the current day.
+modelSources:
+  model:
+    root: indigo-warren-5
+    files:
+      - test/indigowarren5/connection/CellarConnections.pure
+      - test/indigowarren5/dataspace/CellarDataSpace.pure
+      - test/indigowarren5/domain/CellarDomain.pure
+      - test/indigowarren5/mapping/CellarBaseMapping.pure
+      - test/indigowarren5/mapping/CellarDetailMapping.pure
+      - test/indigowarren5/mapping/CellarMapping.pure
+      - test/indigowarren5/runtime/CellarRuntimes.pure
+      - test/indigowarren5/service/AffinageGradeBoard.pure
+      - test/indigowarren5/service/AffinageRoomNoteBoard.pure
+      - test/indigowarren5/store/CellarDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:constraint
+  - grammar:derived-property
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - class-constraint
+  - conditional-transform
+  - data-space
+  - derived-property
+  - duckdb
+  - inner-join
+  - kerberos-delegated
+  - mapping-include
+  - mapping-test
+  - memsql
+  - multi-hop-join
+  - nine-arm-cascade
+  - processing-temporal
+  - relational
+  - service-test

@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::jadeestuary::store::EstuaryRegisterDb
+(
+  Schema ringing
+  (
+    Table ring_record
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      record_code VARCHAR(24) PRIMARY KEY,
+      record_name VARCHAR(120) NOT NULL,
+      wing_mm INTEGER NOT NULL,
+      mass_g FLOAT NOT NULL,
+      plumage_code VARCHAR(8),
+      plumage_stage VARCHAR(24),
+      moult_code VARCHAR(8),
+      session_code VARCHAR(8),
+      station_code VARCHAR(24) NOT NULL,
+      lane_code VARCHAR(24) NOT NULL,
+      ringer_code VARCHAR(24),
+      note_text VARCHAR(120),
+      tag_code VARCHAR(24) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table ring_station
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      zone_code VARCHAR(24) NOT NULL
+    )
+
+    Table net_lane
+    (
+      lane_code VARCHAR(24) PRIMARY KEY,
+      lane_name VARCHAR(120) NOT NULL,
+      open_flag VARCHAR(4) NOT NULL,
+      span_code VARCHAR(8),
+      mesh_code VARCHAR(24) NOT NULL,
+      mesh_label VARCHAR(120)
+    )
+
+    Table ring_holder
+    (
+      holder_code VARCHAR(24) PRIMARY KEY,
+      holder_name VARCHAR(120) NOT NULL
+    )
+
+    Table holder_permit
+    (
+      holder_code VARCHAR(24) PRIMARY KEY,
+      permit_grade VARCHAR(24) NOT NULL,
+      issued_on DATE
+    )
+  )
+
+  Schema census
+  (
+    Table census_zone
+    (
+      zone_code VARCHAR(24) PRIMARY KEY,
+      zone_name VARCHAR(120) NOT NULL,
+      warden_name VARCHAR(120) NOT NULL
+    )
+
+    Table zone_warden
+    (
+      warden_name VARCHAR(120) PRIMARY KEY,
+      warden_team VARCHAR(120) NOT NULL
+    )
+
+    Table warden_base
+    (
+      warden_team VARCHAR(120) PRIMARY KEY,
+      base_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Schema tally
+  (
+    Table lane_log
+    (
+      log_code VARCHAR(24) PRIMARY KEY,
+      lane_code VARCHAR(24) NOT NULL,
+      logged_on DATE,
+      catch_count INTEGER NOT NULL
+    )
+
+    Table lane_day_tally
+    (
+      tally_code VARCHAR(24) PRIMARY KEY,
+      lane_code VARCHAR(24) NOT NULL,
+      tally_day DATE,
+      catch_total INTEGER
+    )
+
+    View lane_tally_vw
+    (
+      ~groupBy
+      (
+        tally.lane_log.lane_code
+      )
+      lane_code: tally.lane_log.lane_code PRIMARY KEY,
+      log_count: count(tally.lane_log.log_code),
+      total_catch: sum(tally.lane_log.catch_count)
+    )
+  )
+
+  Join Record_Station(ringing.ring_record.station_code = ringing.ring_station.station_code)
+  Join Station_Zone(ringing.ring_station.zone_code = census.census_zone.zone_code)
+  Join Zone_Warden(census.census_zone.warden_name = census.zone_warden.warden_name)
+  Join Warden_Base(census.zone_warden.warden_team = census.warden_base.warden_team)
+  Join Record_Lane(toUpper(ringing.ring_record.lane_code) = ringing.net_lane.lane_code)
+  Join Record_LaneTally(toUpper(ringing.ring_record.lane_code) = tally.lane_tally_vw.lane_code)
+  Join Record_Holder(ringing.ring_record.ringer_code = ringing.ring_holder.holder_code)
+  Join Holder_Permit(ringing.ring_holder.holder_code = ringing.holder_permit.holder_code)
+
+  Filter OpenLaneFilter(toUpper(trim(ringing.net_lane.open_flag)) = 'Y')
+)

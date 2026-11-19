@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::russetwarren2::store::PropagationBenchStore
+(
+  include test::russetwarren2::store::BenchReferenceStore
+
+  Schema bench
+  (
+    Table propagation_tray
+    (
+      tray_id INTEGER PRIMARY KEY,
+      tray_label VARCHAR(64) NOT NULL,
+      cell_count INTEGER NOT NULL,
+      mist_seconds FLOAT NOT NULL,
+      band_code VARCHAR(8),
+      stage_code VARCHAR(16),
+      kind_code VARCHAR(16) NOT NULL,
+      zone_code VARCHAR(16) NOT NULL,
+      note_text VARCHAR(128)
+    )
+  )
+
+  Join Tray_Zone(bench.propagation_tray.zone_code = reference.bench_zone.zone_code)
+
+  Filter MistedTrayFilter(bench.propagation_tray.mist_seconds > 0.0)
+)

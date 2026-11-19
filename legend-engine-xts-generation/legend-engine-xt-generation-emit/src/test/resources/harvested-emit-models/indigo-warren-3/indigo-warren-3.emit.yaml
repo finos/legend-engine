@@ -1,0 +1,37 @@
+name: indigo-warren-3
+title: "Indigo Warren 3 — Annotated burrow-survey contract with a standalone JSON-schema generation"
+description: |
+  A basic non-financial EMIT model in a rabbit-warren field-survey domain. Four unmapped
+  contract classes carry roughly fifty optional properties, two of which are unbounded
+  collections of another class in the set, giving a single level of repeated nesting. Two
+  annotation vocabularies are layered on the same properties — a locally declared
+  documentation profile and an imported representation profile that pins three numeric
+  properties to a fixed-width integral type — while an import-aware section groups three of
+  the four classes and leaves the fourth outside it. A package-scoped JSON-schema file
+  generation with no output path and no generation specification exercises the standalone
+  generation form over the whole contract package.
+modelSources:
+  model:
+    root: indigo-warren-3
+    files:
+      - test/indigowarren3/contract/ForageSample.pure
+      - test/indigowarren3/contract/WarrenContract.pure
+      - test/indigowarren3/generation/WarrenSchema.pure
+      - test/indigowarren3/vocabulary/WarrenVocabulary.pure
+features:
+  - execution:file-generation
+  - grammar:complex-typed-property
+  - grammar:profile
+  - grammar:section-index
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - burrow-survey
+  - file-generation
+  - indigo
+  - json-schema
+  - optional-properties
+  - profile
+  - section-index
+  - warren

@@ -1,0 +1,48 @@
+name: cedar-delta
+title: "Ward Street-Tree Census — Store-less Tabular Service over a Function Library"
+description: |
+  A store-less street-tree inventory rebuilt in memory from an inbound field
+  survey document, where the size class, canopy remark, note digest and health
+  grade of every published row come from a shared census function library. A
+  single-execution service filters the inventory with a deeply nested boolean
+  predicate — a minimum-height comparison combined with emptiness checks that
+  make each parameterised membership test optional — and projects a fixed
+  tabular column list, so the empty-collection, matched and unmatched cases all
+  surface in one query body.
+modelSources:
+  model:
+    root: cedar-delta
+    files:
+      - test/cedardelta/connection/SurveyFeedConnection.pure
+      - test/cedardelta/domain/CensusDomain.pure
+      - test/cedardelta/function/TreeFunctions.pure
+      - test/cedardelta/mapping/TreeRowFromSurvey.pure
+      - test/cedardelta/runtime/TreeRowRuntime.pure
+      - test/cedardelta/service/TreeCensusService.pure
+      - test/cedardelta/source/SurveyFeed.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:derived-property
+  - grammar:function
+  - mapping:m2m-transform
+  - query:collection-op
+  - query:filter
+  - execution:graph-fetch
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - arboriculture
+  - census
+  - function-library
+  - json-model-connection
+  - m2m
+  - service-test
+  - store-less
+  - urban-planning

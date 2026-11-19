@@ -1,0 +1,78 @@
+name: sunlit-quarry-2
+title: "Sunlit Quarry 2 — A Rooftop Array String Register Packaged As A Data Space Over A Cross-Schema Store With A Grouped Yield View And Effective-Version Filters"
+description: |
+  A municipal rooftop array estate held in two schemas of one relational store: an
+  estate schema carrying roofs and the wards that warden them, and a solar schema
+  carrying panel strings, their inverters and a versioned yield reading table. A
+  grouped view rolls the reading versions up per string into a tally and a summed
+  yield, and two named filters restrict rows to the currently-effective slice by
+  conjoining a comparison of an end-validity instant against the current instant
+  with an equality on a coded column. The mapping layer includes two levels deep:
+  enumeration translations for orientation, health state and inverter class sit
+  furthest back, a base mapping adds the filtered roof class with its fallback
+  label, the ward class and the inverter and reading-version classes, and the
+  estate mapping adds the string driver class with an explicit primary key and
+  main-table alias. The string class folds its tilt into eight bands through a
+  nested conditional with a null fallback for the unrecorded tilt, resolves two
+  enumerations from computed expressions rather than stored codes, reads its
+  reading tally and summed yield through a join onto the grouped view, reaches its
+  inverter model through a single hop and its ward warden through a two-hop chain
+  across the schema boundary. Two association implementations fan a roof out onto
+  its strings and reach back to the ward. A data space packages the mapping and
+  the runtime into a named execution context so the group is executable rather
+  than descriptive. Four mapping test suites observe every tilt arm and the
+  unrecorded fallback, the grouped view tally, both store filters, the association
+  ends in both directions and the source codes no enumeration member lists.
+modelSources:
+  model:
+    root: sunlit-quarry-2
+    files:
+      - test/sunlitquarry2/connection/SolarH2Connection.pure
+      - test/sunlitquarry2/dataspace/SolarDataSpace.pure
+      - test/sunlitquarry2/domain/SolarDomain.pure
+      - test/sunlitquarry2/mapping/SolarBaseMapping.pure
+      - test/sunlitquarry2/mapping/SolarEnumMappings.pure
+      - test/sunlitquarry2/mapping/SolarEstateMapping.pure
+      - test/sunlitquarry2/runtime/SolarRuntime.pure
+      - test/sunlitquarry2/store/SolarEstateDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - conditional-transform
+  - cross-schema-store
+  - data-space
+  - effective-version-filter
+  - enumeration-mapping
+  - grouped-view
+  - h2
+  - mapping-include
+  - rooftop-solar-estate
+  - tabular-data-set
+  - view-backed-property

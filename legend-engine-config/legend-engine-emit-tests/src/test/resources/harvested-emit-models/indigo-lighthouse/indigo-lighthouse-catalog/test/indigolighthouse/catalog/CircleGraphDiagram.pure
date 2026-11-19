@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::indigolighthouse::catalog::CircleGraphDiagram
+{
+  classView circleView
+  {
+    class: test::indigolighthouse::catalog::ExhibitCircle;
+    position: (60.0,60.0);
+    rectangle: (260.0,120.0);
+  }
+  classView memberView
+  {
+    class: test::indigolighthouse::catalog::CircleMember;
+    position: (420.0,60.0);
+    rectangle: (240.0,100.0);
+  }
+  classView maskedLabelView
+  {
+    class: test::indigolighthouse::catalog::MaskedLabel;
+    position: (780.0,60.0);
+    rectangle: (240.0,100.0);
+  }
+  classView taxonomyBranchView
+  {
+    class: test::indigolighthouse::catalog::TaxonomyBranch;
+    position: (1120.0,60.0);
+    rectangle: (220.0,80.0);
+  }
+  classView curatorPartyView
+  {
+    class: test::indigolighthouse::registry::CuratorParty;
+    position: (420.0,300.0);
+    rectangle: (240.0,100.0);
+  }
+  classView accessionIdentifierView
+  {
+    class: test::indigolighthouse::registry::AccessionIdentifier;
+    position: (60.0,300.0);
+    rectangle: (260.0,100.0);
+  }
+  classView galleryVenueView
+  {
+    class: test::indigolighthouse::registry::GalleryVenue;
+    position: (780.0,300.0);
+    rectangle: (240.0,100.0);
+  }
+  classView conservationNoteView
+  {
+    class: test::indigolighthouse::registry::ConservationNote;
+    position: (1120.0,300.0);
+    rectangle: (240.0,100.0);
+  }
+  classView provenanceStepView
+  {
+    class: test::indigolighthouse::registry::ProvenanceStep;
+    position: (420.0,520.0);
+    rectangle: (240.0,100.0);
+  }
+  classView mediumCategoryView
+  {
+    class: test::indigolighthouse::registry::MediumCategory;
+    position: (780.0,520.0);
+    rectangle: (240.0,80.0);
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::ExhibitCircle_CircleMember.members;
+    source: circleView;
+    target: memberView;
+    points: [(190.0,120.0),(540.0,110.0)];
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::ExhibitCircle_CircleMember.circle;
+    source: memberView;
+    target: circleView;
+    points: [(540.0,110.0),(190.0,120.0)];
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::CircleMember_CuratorParty.curatorParty;
+    source: memberView;
+    target: curatorPartyView;
+    points: [(540.0,110.0),(540.0,350.0)];
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::CircleMember_CuratorParty.affiliatedMembers;
+    source: curatorPartyView;
+    target: memberView;
+    points: [(540.0,350.0),(540.0,110.0)];
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::ExhibitCircle_AccessionIdentifier.accessionIdentifiers;
+    source: circleView;
+    target: accessionIdentifierView;
+    points: [(190.0,120.0),(190.0,350.0)];
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::ExhibitCircle_AccessionIdentifier.owningCircle;
+    source: accessionIdentifierView;
+    target: circleView;
+    points: [(190.0,350.0),(190.0,120.0)];
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::MaskedLabel.masks;
+    source: maskedLabelView;
+    target: memberView;
+    points: [(900.0,110.0),(540.0,110.0)];
+  }
+  propertyView
+  {
+    property: test::indigolighthouse::catalog::ExhibitCircle.parentCircle;
+    source: circleView;
+    target: circleView;
+    points: [(190.0,120.0),(190.0,120.0)];
+  }
+}

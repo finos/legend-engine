@@ -1,0 +1,74 @@
+name: verdant-wharf-5
+title: "Verdant Wharf 5 — Cross-Schema Wharf Berths, Call Legs and Pallet Checks Behind Three Parameterised Service Shapes"
+description: |
+  A harbour-operations read model spread over two schemas of one relational store —
+  quay berths and vessel call legs in the harbour schema, landed pallets and wardens
+  checks in the logistics schema — so every generated table reference has to be
+  schema-qualified. Four class bindings each pin their own main table alias, two of
+  them behind a composite primary key of mixed type, and three named equi-joins of
+  different key shapes carry the association implementations plus a two-hop path
+  that resolves a wardens check back across the schema boundary to its call leg. An
+  eight-armed handling-lane conditional falls through to a null for an unrecognised
+  priority. Three services over one Snowflake-bound runtime expose structurally
+  distinct query shapes — a three-parameter filtered projection that walks the berth
+  association, a grouped aggregate summing pallet totals per class and berth, and a
+  nested-collection escalation that tests pallets and their checks before coercing a
+  single berth name — each with parameters bound once to selecting and once to
+  non-selecting values. A data space packages the mapping, runtime, featured
+  endpoints and support address as one product surface.
+modelSources:
+  model:
+    root: verdant-wharf-5
+    files:
+      - test/verdantwharf5/connection/WharfConnection.pure
+      - test/verdantwharf5/data/WharfTestData.pure
+      - test/verdantwharf5/dataspace/WharfDataSpace.pure
+      - test/verdantwharf5/domain/WharfDomain.pure
+      - test/verdantwharf5/mapping/WharfMapping.pure
+      - test/verdantwharf5/runtime/WharfRuntime.pure
+      - test/verdantwharf5/service/WharfEscalations.pure
+      - test/verdantwharf5/service/WharfLaneDigest.pure
+      - test/verdantwharf5/service/WharfLaneLookup.pure
+      - test/verdantwharf5/store/WharfDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - composite-primary-key
+  - conditional-fallthrough
+  - cross-schema
+  - data-space
+  - group-by
+  - h2
+  - harbour-operations
+  - main-table-alias
+  - mapping-test
+  - multi-hop-join
+  - named-join
+  - nested-collection-op
+  - parameterised-service
+  - service-test
+  - snowflake
+  - snowflake-connection

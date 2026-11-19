@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coppergecko3::store::ApiaryDb
+(
+  Schema apiary
+  (
+    Table hive_inspection
+    (
+      inspection_ref VARCHAR(24) PRIMARY KEY,
+      hive_code VARCHAR(16) NOT NULL,
+      inspected_on DATE NOT NULL,
+      frames_of_brood INTEGER NOT NULL,
+      mite_count INTEGER NOT NULL,
+      inspector_name VARCHAR(64) NOT NULL,
+      site_note VARCHAR(200)
+    )
+    Table hive
+    (
+      hive_code VARCHAR(16) PRIMARY KEY,
+      apiary_code VARCHAR(16) NOT NULL,
+      queen_line VARCHAR(32) NOT NULL,
+      install_year INTEGER NOT NULL
+    )
+    Table apiary_site
+    (
+      apiary_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(64) NOT NULL,
+      district_code VARCHAR(16) NOT NULL
+    )
+    Table district
+    (
+      district_code VARCHAR(16) PRIMARY KEY,
+      district_name VARCHAR(64) NOT NULL,
+      region_name VARCHAR(64) NOT NULL
+    )
+
+    View apiary_hive_summary
+    (
+      ~groupBy (apiary.hive.apiary_code)
+      apiary_code: apiary.hive.apiary_code PRIMARY KEY,
+      hive_count: count(apiary.hive.hive_code),
+      latest_install_year: max(apiary.hive.install_year)
+    )
+
+    View hive_mite_tally
+    (
+      ~groupBy (apiary.hive_inspection.hive_code)
+      hive_code: apiary.hive_inspection.hive_code PRIMARY KEY,
+      walk_count: count(apiary.hive_inspection.inspection_ref),
+      peak_mite_count: max(apiary.hive_inspection.mite_count),
+      brood_total: sum(apiary.hive_inspection.frames_of_brood)
+    )
+  )
+
+  Join Inspection_Hive(apiary.hive_inspection.hive_code = apiary.hive.hive_code)
+  Join Hive_Site(apiary.hive.apiary_code = apiary.apiary_site.apiary_code)
+  Join Site_District(apiary.apiary_site.district_code = apiary.district.district_code)
+  Join Site_Summary(apiary.apiary_site.apiary_code = apiary.apiary_hive_summary.apiary_code)
+  Join Tally_Hive(apiary.hive_mite_tally.hive_code = apiary.hive.hive_code)
+)

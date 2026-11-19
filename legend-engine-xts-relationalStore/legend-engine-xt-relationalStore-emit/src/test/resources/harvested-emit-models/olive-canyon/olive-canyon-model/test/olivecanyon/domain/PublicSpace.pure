@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::olivecanyon::domain::*;
+
+Class <<CivicProfile.abstractRoot>> {CivicProfile.notes = 'Root of the open-space lattice; subtypes add their own surface detail.'} test::olivecanyon::domain::PublicSpace
+{
+  spaceCode: String[1];
+  name: String[1];
+  areaHectares: Float[1];
+  openedOn: StrictDate[1];
+}
+
+Class <<CivicProfile.publiclyAccessible>> {CivicProfile.stewardshipTier = 'district'} test::olivecanyon::domain::Park extends PublicSpace
+{
+  hasDrinkingWater: Boolean[1];
+  canopyCoverPercent: Integer[1];
+}
+
+Class <<CivicProfile.seasonal>> {CivicProfile.surveyCadence = 'quarterly'} test::olivecanyon::domain::Playground extends Park
+{
+  minAge: Integer[1];
+  maxAge: Integer[1];
+  surfaceMaterial: String[1];
+}
+
+Class <<CivicProfile.publiclyAccessible>> test::olivecanyon::domain::GreenCorridor extends PublicSpace
+{
+  lengthKilometres: Float[1];
+  shoreAdjacent: Boolean[1];
+}

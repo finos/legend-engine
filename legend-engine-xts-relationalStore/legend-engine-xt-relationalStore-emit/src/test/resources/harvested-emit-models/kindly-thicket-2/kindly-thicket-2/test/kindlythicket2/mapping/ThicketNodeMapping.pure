@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlythicket2::mapping::ThicketNodeMapping
+(
+  *test::kindlythicket2::domain::TrailNode[trailNodeRow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlythicket2::store::ThicketDB]reserve.trail_node.node_code
+    )
+    ~mainTable [test::kindlythicket2::store::ThicketDB]reserve.trail_node
+    nodeCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.node_code,
+    nodeLabel: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.node_label,
+    reserveName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.reserve_name,
+    reserveCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.reserve_code,
+    districtName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.district_name,
+    districtCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.district_code,
+    corridorName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.corridor_name,
+    corridorCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.corridor_code,
+    sectorName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.sector_name,
+    sectorCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.sector_code,
+    segmentName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.segment_name,
+    segmentCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.segment_code,
+    spurName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.spur_name,
+    spurCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.spur_code,
+    stationName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.station_name,
+    stationCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.station_code,
+    waypointName: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.waypoint_name,
+    waypointCode: [test::kindlythicket2::store::ThicketDB]reserve.trail_node.waypoint_code
+  }
+
+  *test::kindlythicket2::domain::StewardRecord[stewardRecordRow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlythicket2::store::ThicketDB]reserve.steward_record.record_code
+    )
+    ~mainTable [test::kindlythicket2::store::ThicketDB]reserve.steward_record
+    recordCode: [test::kindlythicket2::store::ThicketDB]reserve.steward_record.record_code,
+    stewardName: [test::kindlythicket2::store::ThicketDB]reserve.steward_record.steward_name,
+    nodeCode: [test::kindlythicket2::store::ThicketDB]reserve.steward_record.node_code
+  }
+)

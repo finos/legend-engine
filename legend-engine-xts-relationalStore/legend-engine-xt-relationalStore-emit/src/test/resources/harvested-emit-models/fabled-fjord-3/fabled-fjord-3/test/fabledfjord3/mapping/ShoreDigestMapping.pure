@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledfjord3::mapping::ShoreDigestMapping
+(
+  include mapping test::fabledfjord3::mapping::ShoreEnumMapping
+
+  *test::fabledfjord3::domain::SampleDigest: Pure
+  {
+    ~src test::fabledfjord3::domain::DigestInput
+    sampleCode: $src.sampleCode,
+    siteCode: $src.siteCode,
+    armLabel: if($src.sourceCode == 'ARM-1',
+      | 'ARM-1',
+      | if($src.sourceCode == 'ARM-2',
+        | 'ARM-2',
+        | if($src.sourceCode == 'ARM-3',
+          | 'ARM-3',
+          | if($src.sourceCode == 'ARM-4',
+            | 'ARM-4',
+            | if($src.sourceCode == 'ARM-5',
+              | 'ARM-5',
+              | if($src.sourceCode == 'ARM-6',
+                | 'ARM-6',
+                | if($src.sourceCode == 'ARM-7',
+                  | 'ARM-7',
+                  | if($src.sourceCode == 'ARM-8',
+                    | 'ARM-8',
+                    | [])))))))),
+    sourceBand: EnumerationMapping BandSource: [if($src.bandCode == 'A',
+      | 'A',
+      | if($src.bandCode == 'B',
+        | 'B',
+        | if($src.bandCode == 'C',
+          | 'C',
+          | [])))],
+    densityBand: EnumerationMapping BandSource: [if($src.density > 0.7,
+      | 'A',
+      | 'C')],
+    fallbackBand: EnumerationMapping BandSource: [if($src.sourceCode == 'UNKNOWN',
+      | 'C',
+      | 'B')]
+  }
+
+  testSuites:
+  [
+    conditionalArmsSuite:
+    {
+      function: |test::fabledfjord3::domain::SampleDigest.all()->graphFetch(#{test::fabledfjord3::domain::SampleDigest{sampleCode,armLabel,sourceBand,densityBand,fallbackBand}}#)->serialize(#{test::fabledfjord3::domain::SampleDigest{sampleCode,armLabel,sourceBand,densityBand,fallbackBand}}#);
+      tests:
+      [
+        allTenConditionalRows:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::fabledfjord3::domain::DigestInput:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sampleCode":"S-01","siteCode":"P-01","sourceCode":"ARM-1","density":0.8,"bandCode":"A"},{"sampleCode":"S-02","siteCode":"P-01","sourceCode":"ARM-2","density":0.8,"bandCode":"B"},{"sampleCode":"S-03","siteCode":"P-01","sourceCode":"ARM-3","density":0.8,"bandCode":"B"},{"sampleCode":"S-04","siteCode":"P-01","sourceCode":"ARM-4","density":0.8,"bandCode":"B"},{"sampleCode":"S-05","siteCode":"P-01","sourceCode":"ARM-5","density":0.8,"bandCode":"B"},{"sampleCode":"S-06","siteCode":"P-01","sourceCode":"ARM-6","density":0.8,"bandCode":"B"},{"sampleCode":"S-07","siteCode":"P-01","sourceCode":"ARM-7","density":0.8,"bandCode":"B"},{"sampleCode":"S-08","siteCode":"P-01","sourceCode":"ARM-8","density":0.8,"bandCode":"B"},{"sampleCode":"S-09","siteCode":"P-01","density":0.8,"bandCode":"B"},{"sampleCode":"S-10","siteCode":"P-01","sourceCode":"UNMAPPED","density":0.1,"bandCode":"Z"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            allArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sampleCode":"S-01","armLabel":"ARM-1","sourceBand":"A","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-02","armLabel":"ARM-2","sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-03","armLabel":"ARM-3","sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-04","armLabel":"ARM-4","sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-05","armLabel":"ARM-5","sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-06","armLabel":"ARM-6","sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-07","armLabel":"ARM-7","sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-08","armLabel":"ARM-8","sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-09","armLabel":null,"sourceBand":"B","densityBand":"A","fallbackBand":"B"},{"sampleCode":"S-10","armLabel":null,"sourceBand":null,"densityBand":"C","fallbackBand":"B"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,34 @@
+name: zephyr-lighthouse-6
+title: "Observatory Night-Log Register — Exposure and Observer Hierarchies, Associations and a Curation Profile"
+description: |
+  A mountain observatory's plate-archive night log held entirely in the model layer: no store, no
+  mapping and no runtime. Two independent inheritance hierarchies (logged record -> sky exposure ->
+  plate/strip/detector frame, and observer -> staff/guest astronomer) are wired to observing runs,
+  telescopes, catalogue designations, archive cabinets and study handoffs by thirteen bidirectional
+  associations, several of which bind on an abstract supertype so the qualified ends resolve through
+  inheritance. Three enumerations carry the recording medium, the physical condition found at the last
+  archive sweep and the confidence attached to a catalogue name, and a curation profile supplies the
+  stereotypes and tags the archive annotates its classes with.
+modelSources:
+  model:
+    root: zephyr-lighthouse-6
+    files:
+      - test/zephyrlighthouse6/domain/NightLogDomain.pure
+      - test/zephyrlighthouse6/profile/NightLogProfile.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - class-inheritance
+  - enumeration
+  - night-log
+  - observatory
+  - plate-archive
+  - profile
+  - target-designation

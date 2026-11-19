@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobaltreef2::mapping::CanopyMapping
+(
+  *test::cobaltreef2::domain::CanopyPlot[plot]: Relational
+  {
+    ~filter [test::cobaltreef2::store::CanopyDatabase]CurrentCanopy
+    ~primaryKey
+    (
+      [test::cobaltreef2::store::CanopyDatabase]survey.canopy_plot.plot_id
+    )
+    ~mainTable [test::cobaltreef2::store::CanopyDatabase]survey.canopy_plot
+    plotCode: [test::cobaltreef2::store::CanopyDatabase]survey.canopy_plot.plot_code,
+    avenueName: toUpper(trim([test::cobaltreef2::store::CanopyDatabase]survey.canopy_plot.avenue_name)),
+    surveyNote: [test::cobaltreef2::store::CanopyDatabase]survey.canopy_plot.survey_note,
+    inspectionId: [test::cobaltreef2::store::CanopyDatabase]survey.canopy_plot.inspection_id,
+    regionName: [test::cobaltreef2::store::CanopyDatabase]@Plot_Inspection > @Inspection_Crew > @Crew_Depot > @Depot_Region | survey.depot_region.region_name
+  }
+
+  *test::cobaltreef2::domain::CanopyInspection[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltreef2::store::CanopyDatabase]survey.plot_inspection.inspection_id
+    )
+    ~mainTable [test::cobaltreef2::store::CanopyDatabase]survey.plot_inspection
+    inspectionCode: [test::cobaltreef2::store::CanopyDatabase]survey.plot_inspection.inspection_code,
+    plotCode: [test::cobaltreef2::store::CanopyDatabase]@Plot_Inspection | survey.canopy_plot.plot_code,
+    crewCode: [test::cobaltreef2::store::CanopyDatabase]survey.inspection_crew.crew_code,
+    inspectionNote: [test::cobaltreef2::store::CanopyDatabase]survey.plot_inspection.inspection_note,
+    depotRegion: [test::cobaltreef2::store::CanopyDatabase]@Inspection_Crew > @Crew_Depot > @Depot_Region | survey.depot_region.region_name
+  }
+
+  *test::cobaltreef2::domain::SurveyCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltreef2::store::CanopyDatabase]survey.inspection_crew.crew_id
+    )
+    ~mainTable [test::cobaltreef2::store::CanopyDatabase]survey.inspection_crew
+    crewCode: [test::cobaltreef2::store::CanopyDatabase]survey.inspection_crew.crew_code,
+    crewName: [test::cobaltreef2::store::CanopyDatabase]survey.inspection_crew.crew_name,
+    depotCode: [test::cobaltreef2::store::CanopyDatabase]survey.maintenance_depot.depot_code
+  }
+
+  testSuites:
+  [
+    canopyPlotSuite:
+    {
+      function: |test::cobaltreef2::domain::CanopyPlot.all(%2026-06-01)->project(
+  [
+    col(p|$p.plotCode, 'PlotCode'),
+    col(p|$p.avenueName, 'Avenue'),
+    col(p|$p.surveyNote, 'Note'),
+    col(p|$p.regionName, 'Region')
+  ]);
+      tests:
+      [
+        processingWindowRows:
+        {
+          data:
+          [
+            test::cobaltreef2::store::CanopyDatabase:
+              Relational
+              #{
+                survey.canopy_plot:
+                  'plot_id,plot_code,avenue_name,survey_note,inspection_id,in_z,out_z\n'+
+                  '1,CP-01,Elm Avenue,north canopy,101,2026-01-01,9999-12-31\n'+
+                  '2,CP-02,Oak Avenue,,102,2026-01-01,9999-12-31\n'+
+                  '3,CP-03,Pine Avenue,median shade,103,2026-01-01,9999-12-31\n'+
+                  '4,CP-04,Cedar Avenue,young trees,104,2026-01-01,9999-12-31\n'+
+                  '5,CP-05,Birch Avenue,corner canopy,105,2026-01-01,9999-12-31\n'+
+                  '6,CP-06,Maple Avenue,closed survey,106,2024-01-01,2025-01-01\n';
+                survey.plot_inspection:
+                  'inspection_id,inspection_code,plot_id,crew_id,inspection_note,in_z,out_z\n'+
+                  '101,IN-01,1,201,leaf check,2026-01-01,9999-12-31\n'+
+                  '102,IN-02,2,202,root check,2026-01-01,9999-12-31\n'+
+                  '103,IN-03,3,201,branch check,2026-01-01,9999-12-31\n'+
+                  '104,IN-04,4,203,soil check,2026-01-01,9999-12-31\n'+
+                  '105,IN-05,5,202,street check,2026-01-01,9999-12-31\n';
+                survey.inspection_crew:
+                  'crew_id,crew_code,crew_name,depot_id\n'+
+                  '201,CR-01,Green Team,301\n'+
+                  '202,CR-02,Canopy Team,302\n'+
+                  '203,CR-03,Root Team,303\n';
+                survey.maintenance_depot:
+                  'depot_id,depot_code,region_code\n'+
+                  '301,DP-01,NORTH\n'+
+                  '302,DP-02,CENTRAL\n'+
+                  '303,DP-03,SOUTH\n';
+                survey.depot_region:
+                  'region_code,region_name\n'+
+                  'NORTH,North Shore\n'+
+                  'CENTRAL,Central Green\n'+
+                  'SOUTH,South Grove\n';
+              }#
+          ];
+          asserts:
+          [
+            inRangeOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"CP-01","Avenue":"ELM AVENUE","Note":"north canopy","Region":"North Shore"},{"PlotCode":"CP-02","Avenue":"OAK AVENUE","Note":null,"Region":"Central Green"},{"PlotCode":"CP-03","Avenue":"PINE AVENUE","Note":"median shade","Region":"North Shore"},{"PlotCode":"CP-04","Avenue":"CEDAR AVENUE","Note":"young trees","Region":"South Grove"},{"PlotCode":"CP-05","Avenue":"BIRCH AVENUE","Note":"corner canopy","Region":"Central Green"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,52 @@
+name: sable-hatchery
+title: "Sable Hatchery - data-space published trail-hut network over a Snowflake-backed store"
+description: |
+  An alpine trail-hut network mapped relationally: huts and the overnight stays recorded
+  against them each bind to an explicit main table with a declared primary key. Three
+  single-execution services publish the network - one bands a valley's stays through a
+  three-way nested band expression behind a conjunctive predicate with a season set test,
+  one narrows huts by valley and access grade, and one aggregates guest counts per valley.
+  A data space groups the three endpoints with the mapping and the OAuth-authenticated
+  Snowflake-backed engine runtime. Every service carries a test suite executing its query
+  against embedded relational fixtures.
+modelSources:
+  model:
+    root: sable-hatchery
+    files:
+      - test/sablehatchery/connection/HutWarehouseConnection.pure
+      - test/sablehatchery/dataspace/HutNetworkDataSpace.pure
+      - test/sablehatchery/domain/Domain.pure
+      - test/sablehatchery/mapping/HutNetworkMapping.pure
+      - test/sablehatchery/runtime/HutNetworkRuntime.pure
+      - test/sablehatchery/service/HutsByGradeService.pure
+      - test/sablehatchery/service/StayTotalsByValleyService.pure
+      - test/sablehatchery/service/StaysByValleyService.pure
+      - test/sablehatchery/store/HutNetworkDatabase.pure
+features:
+  - connection:oauth-authentication
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - group-by
+  - h2
+  - oauth
+  - relational
+  - service-test
+  - snowflake
+  - tabular-data-set
+  - trail-hut

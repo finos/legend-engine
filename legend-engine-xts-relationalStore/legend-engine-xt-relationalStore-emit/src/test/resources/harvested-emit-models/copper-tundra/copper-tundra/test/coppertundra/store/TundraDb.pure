@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coppertundra::store::TundraDb
+(
+  Schema field
+  (
+    Table sighting
+    (
+      sighting_id INTEGER PRIMARY KEY,
+      animal_tag VARCHAR(40) NOT NULL,
+      herd_code VARCHAR(20) NOT NULL,
+      terrain_code VARCHAR(20) NOT NULL,
+      count_seen INTEGER NOT NULL
+    )
+
+    View herd_terrain_totals
+    (
+      ~groupBy
+      (
+        field.sighting.herd_code,
+        field.sighting.terrain_code
+      )
+      herd_code: field.sighting.herd_code PRIMARY KEY,
+      terrain_code: field.sighting.terrain_code PRIMARY KEY,
+      total_seen: sum(field.sighting.count_seen),
+      sighting_count: count(field.sighting.sighting_id)
+    )
+  )
+
+  Schema registry
+  (
+    Table animal
+    (
+      animal_tag VARCHAR(40) PRIMARY KEY,
+      species VARCHAR(80) NOT NULL,
+      tag_code VARCHAR(40) NOT NULL,
+      battery_pct INTEGER,
+      collar_active BIT NOT NULL
+    )
+  )
+
+  Join Sighting_Animal(field.sighting.animal_tag = registry.animal.animal_tag)
+
+  Filter ActiveCollar(registry.animal.collar_active = 1)
+)

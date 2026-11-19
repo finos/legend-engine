@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantcove2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Page envelope over survey records: an unbounded collection of one detail kind plus an optional page marker, so one instance describes a page rather than a record.'} test::verdantcove2::domain::SurveyRecordPage
+{
+  records: SurveyRecord[*];
+  marker: PageMarker[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Page envelope over species counts, repeating the same collection-plus-marker shape for a second detail kind.'} test::verdantcove2::domain::SpeciesCountPage
+{
+  counts: SpeciesCount[*];
+  marker: PageMarker[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Page envelope over quadrat readings, repeating the collection-plus-marker shape for a third detail kind.'} test::verdantcove2::domain::QuadratReadingPage
+{
+  readings: QuadratReading[*];
+  marker: PageMarker[0..1];
+}

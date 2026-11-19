@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::zephyrwillow2::dataspace::NetworkCollectionDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'lake';
+      description: 'Lake tier - the network binding served through the collection warehouse.';
+      mapping: test::zephyrwillow2::mapping::NetworkMapping;
+      defaultRuntime: test::zephyrwillow2::runtime::NetworkLakeRuntime;
+    },
+    {
+      name: 'archive';
+      description: 'Archive tier - the same logical model resolved against the retained archive warehouse.';
+      mapping: test::zephyrwillow2::mapping::NetworkMapping;
+      defaultRuntime: test::zephyrwillow2::runtime::NetworkArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'lake';
+  title: 'Metro Waste Collection Network';
+  description: 'Entry point over the collection network: rounds with their mapping-decided handling instructions, the containers they are lifted from and the depot, ward, district and authority chain behind them, wired to the two tiers, the curated diagram and the endpoints consumers should start from.';
+  diagrams:
+  [
+    {
+      title: 'Round To Ward';
+      diagram: test::zephyrwillow2::diagram::NetworkDiagram;
+    }
+  ];
+  elements:
+  [
+    test::zephyrwillow2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Round register';
+      description: 'Featured endpoint returning the live rounds of a grade set inside a ninety-day window.';
+      executable: test::zephyrwillow2::service::RoundRegister;
+    },
+    {
+      id: 2;
+      title: 'Handling board';
+      description: 'Featured endpoint returning the rounds whose handling cascade resolved an instruction.';
+      executable: test::zephyrwillow2::service::HandlingBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'collection-network-desk@metrowaste.invalid';
+  };
+}
+
+###DataSpace
+DataSpace test::zephyrwillow2::dataspace::ReferenceTierDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'reference';
+      description: 'Reference tier - the material grade and service tier registers on their own binding.';
+      mapping: test::zephyrwillow2::mapping::GradeReferenceMapping;
+      defaultRuntime: test::zephyrwillow2::runtime::GradeReferenceRuntime;
+    },
+    {
+      name: 'staging';
+      description: 'Staging tier - the draft rounds resolved through the mapping that composes the reference tier into itself.';
+      mapping: test::zephyrwillow2::mapping::DraftMapping;
+      defaultRuntime: test::zephyrwillow2::runtime::DraftStagingRuntime;
+    }
+  ];
+  defaultExecutionContext: 'reference';
+  title: 'Metro Waste Reference And Staging Tiers';
+  description: 'Discovery surface over the supporting tiers: the material grade and service tier registers, and the staged draft rounds that inherit those registers through mapping composition.';
+  elements:
+  [
+    test::zephyrwillow2::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Grade directory';
+      description: 'Featured endpoint returning the material grades on one side of the recyclable flag.';
+      executable: test::zephyrwillow2::service::GradeDirectory;
+    },
+    {
+      id: 2;
+      title: 'Draft round board';
+      description: 'Featured endpoint returning the staged draft rounds in the requested review states.';
+      executable: test::zephyrwillow2::service::DraftRoundBoard;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'reference-tier-desk@metrowaste.invalid';
+  };
+}

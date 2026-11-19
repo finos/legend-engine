@@ -1,0 +1,191 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledarboretum6::mapping::ScopeMapping
+(
+  test::fabledarboretum6::domain::MountKind: EnumerationMapping MountCodeMapping
+  {
+    EQUATORIAL: ['EQ'],
+    DOBSONIAN: ['DB'],
+    ALTAZIMUTH: ['AZ'],
+    ROBOTIC: ['RB']
+  }
+
+  test::fabledarboretum6::domain::OpticKind: EnumerationMapping OpticCodeMapping
+  {
+    REFRACTOR: ['RF'],
+    REFLECTOR: ['RL'],
+    CATADIOPTRIC: ['CT']
+  }
+
+  test::fabledarboretum6::domain::ReadinessBand: EnumerationMapping ReadinessCodeMapping
+  {
+    READY: ['RD'],
+    WATCH: ['WT'],
+    HOLD: ['HD'],
+    RETIRED: ['RT']
+  }
+
+  *test::fabledarboretum6::domain::Telescope[telescope]: Relational
+  {
+    ~primaryKey
+    (
+      [test::fabledarboretum6::store::ScopeDb]hirepool.telescope.scope_id
+    )
+    ~mainTable [test::fabledarboretum6::store::ScopeDb]hirepool.telescope
+    scopeCode: [test::fabledarboretum6::store::ScopeDb]hirepool.telescope.scope_code,
+    scopeName: [test::fabledarboretum6::store::ScopeDb]hirepool.telescope.scope_name,
+    apertureMm: [test::fabledarboretum6::store::ScopeDb]hirepool.telescope.aperture_mm,
+    tubeState: [test::fabledarboretum6::store::ScopeDb]hirepool.telescope.tube_state,
+    loggedHours: [test::fabledarboretum6::store::ScopeDb]hirepool.telescope.logged_hours,
+    readinessNote: case(
+                     equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.tube_state, 'FIELD'),
+                     case(
+                       greaterThanEqual([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.aperture_mm, 400),
+                       concat('READY LARGE ', toUpper([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.scope_name)),
+                       case(
+                         greaterThanEqual([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.aperture_mm, 200),
+                         'READY MEDIUM',
+                         'READY SMALL'
+                       )
+                     ),
+                     case(
+                       equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.tube_state, 'WORKSHOP'),
+                       case(
+                         greaterThan([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.logged_hours, 800),
+                         'WORKSHOP OVERDUE',
+                         'WORKSHOP ROUTINE'
+                       ),
+                       case(
+                         equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.tube_state, 'STORE'),
+                         case(
+                           greaterThanEqual([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.aperture_mm, 300),
+                           'STORE LARGE',
+                           'STORE SMALL'
+                         ),
+                         case(
+                           equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.tube_state, 'HIRE'),
+                           'ON HIRE',
+                           [test::fabledarboretum6::store::ScopeDb]hirepool.telescope.service_note
+                         )
+                       )
+                     )
+                   ),
+    mountKind: EnumerationMapping MountCodeMapping: case(
+                 equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.mount_code, 'EQ'),
+                 'EQ',
+                 case(
+                   equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.mount_code, 'DB'),
+                   'DB',
+                   case(
+                     equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.mount_code, 'AZ'),
+                     'AZ',
+                     case(
+                       equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.mount_code, 'RB'),
+                       'RB',
+                       toUpper([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.mount_code)
+                     )
+                   )
+                 )
+               ),
+    opticKind: EnumerationMapping OpticCodeMapping: case(
+                 equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.optic_code, 'RF'),
+                 'RF',
+                 case(
+                   equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.optic_code, 'RL'),
+                   'RL',
+                   case(
+                     greaterThanEqual([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.aperture_mm, 300),
+                     'CT',
+                     'RL'
+                   )
+                 )
+               ),
+    readinessBand: EnumerationMapping ReadinessCodeMapping: case(
+                     equal([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.tube_state, 'RETIRED'),
+                     'RT',
+                     case(
+                       greaterThan([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.logged_hours, 800),
+                       'HD',
+                       case(
+                         greaterThan([test::fabledarboretum6::store::ScopeDb]hirepool.telescope.logged_hours, 400),
+                         'WT',
+                         'RD'
+                       )
+                     )
+                   ),
+    siteName: [test::fabledarboretum6::store::ScopeDb]@Scope_Site | [test::fabledarboretum6::store::ScopeDb]hirepool.mount_site.site_name,
+    altitudeM: [test::fabledarboretum6::store::ScopeDb]@Scope_Site | [test::fabledarboretum6::store::ScopeDb]hirepool.mount_site.altitude_m,
+    regionName: [test::fabledarboretum6::store::ScopeDb]@Scope_Site > @Site_Region | [test::fabledarboretum6::store::ScopeDb]hirepool.sky_region.region_name
+  }
+
+  testSuites:
+  [
+    readinessNoteSuite:
+    {
+      function: |test::fabledarboretum6::domain::Telescope.all()->project(
+  [
+    t|$t.scopeCode,
+    t|$t.readinessNote,
+    t|$t.mountKind,
+    t|$t.opticKind,
+    t|$t.readinessBand,
+    t|$t.siteName,
+    t|$t.regionName
+  ],
+  [
+    'ScopeCode',
+    'ReadinessNote',
+    'MountKind',
+    'OpticKind',
+    'ReadinessBand',
+    'SiteName',
+    'RegionName'
+  ]
+)->sort(
+  [
+    asc('ScopeCode')
+  ]
+);
+      tests:
+      [
+        everyReadinessArmAndTheUnmappedMount:
+        {
+          doc: 'Each of the eight readiness arms is claimed by a telescope, the ninth telescope falls through the whole cascade to a service note that was never written so it carries no note at all, the mount decode falls through to the raw code for the tube whose mount kind is not published so that telescope carries no mount kind, the site name is read over one join hop and the region name over a second hop onto the region relation, and the tube standing at a site that is not published carries neither site nor region.';
+          data:
+          [
+            test::fabledarboretum6::store::ScopeDb: Reference
+              #{
+                test::fabledarboretum6::data::ScopeTestData
+              }#
+          ];
+          asserts:
+          [
+            readinessRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ScopeCode":"TS-01","ReadinessNote":"READY LARGE NORTH DOME REFRACTOR","MountKind":"EQUATORIAL","OpticKind":"REFRACTOR","ReadinessBand":"READY","SiteName":"North Dome","RegionName":"Moor Sky"},{"ScopeCode":"TS-02","ReadinessNote":"READY MEDIUM","MountKind":"DOBSONIAN","OpticKind":"REFLECTOR","ReadinessBand":"WATCH","SiteName":"North Dome","RegionName":"Moor Sky"},{"ScopeCode":"TS-03","ReadinessNote":"READY SMALL","MountKind":"ALTAZIMUTH","OpticKind":"REFLECTOR","ReadinessBand":"READY","SiteName":"Ridge Hut","RegionName":"Ridge Sky"},{"ScopeCode":"TS-04","ReadinessNote":"WORKSHOP OVERDUE","MountKind":"ROBOTIC","OpticKind":"CATADIOPTRIC","ReadinessBand":"HOLD","SiteName":"Ridge Hut","RegionName":"Ridge Sky"},{"ScopeCode":"TS-05","ReadinessNote":"WORKSHOP ROUTINE","MountKind":"EQUATORIAL","OpticKind":"REFLECTOR","ReadinessBand":"READY","SiteName":"Lane Pier","RegionName":"Lane Sky"},{"ScopeCode":"TS-06","ReadinessNote":"STORE LARGE","MountKind":"DOBSONIAN","OpticKind":"CATADIOPTRIC","ReadinessBand":"WATCH","SiteName":"Lane Pier","RegionName":"Lane Sky"},{"ScopeCode":"TS-07","ReadinessNote":"STORE SMALL","MountKind":"ALTAZIMUTH","OpticKind":"REFLECTOR","ReadinessBand":"READY","SiteName":"North Dome","RegionName":"Moor Sky"},{"ScopeCode":"TS-08","ReadinessNote":"ON HIRE","MountKind":"ROBOTIC","OpticKind":"REFRACTOR","ReadinessBand":"READY","SiteName":"Ridge Hut","RegionName":"Ridge Sky"},{"ScopeCode":"TS-09","ReadinessNote":null,"MountKind":"EQUATORIAL","OpticKind":"REFLECTOR","ReadinessBand":"RETIRED","SiteName":"Lane Pier","RegionName":"Lane Sky"},{"ScopeCode":"TS-10","ReadinessNote":"READY SMALL","MountKind":null,"OpticKind":"REFLECTOR","ReadinessBand":"READY","SiteName":"North Dome","RegionName":"Moor Sky"},{"ScopeCode":"TS-11","ReadinessNote":"READY MEDIUM","MountKind":"DOBSONIAN","OpticKind":"REFRACTOR","ReadinessBand":"READY","SiteName":null,"RegionName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

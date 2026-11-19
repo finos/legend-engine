@@ -1,0 +1,48 @@
+name: cobalt-cove-2-relational
+title: "Cobalt Cove — Service Layer over Business- and Processing-Temporal Wildlife Monitoring"
+description: |
+  A service-centric coastal wildlife monitoring model in which every element of
+  interest is a single-execution service. One service combines a set-membership
+  test with an existence test over a to-many navigation on a business-temporal
+  trail segment, one ranks trail cameras with a partitioned window function over
+  a processing-temporal slice, and one collapses duplicate projected rows. Both
+  milestoning windows therefore coexist across a single service set.
+modelSources:
+  model:
+    root: cobalt-cove-2-relational
+    files:
+      - test/cobaltcove2/connection/CoveConnection.pure
+      - test/cobaltcove2/domain/CoveDomain.pure
+      - test/cobaltcove2/mapping/CoveMapping.pure
+      - test/cobaltcove2/runtime/CoveRuntime.pure
+      - test/cobaltcove2/service/ReserveRosterService.pure
+      - test/cobaltcove2/service/SegmentSpeciesService.pure
+      - test/cobaltcove2/service/StationBatteryRankService.pure
+      - test/cobaltcove2/store/CoveDB.pure
+features:
+  - execution:service
+  - milestoning:business-temporal
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-op
+  - distinct
+  - existence-test
+  - h2
+  - processing-temporal
+  - service-test
+  - set-membership
+  - wildlife
+  - window-function

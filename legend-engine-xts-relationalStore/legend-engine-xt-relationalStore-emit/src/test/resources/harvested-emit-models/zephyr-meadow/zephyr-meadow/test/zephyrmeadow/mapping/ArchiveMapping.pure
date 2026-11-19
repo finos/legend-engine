@@ -1,0 +1,365 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrmeadow::mapping::ArchiveMapping
+(
+  test::zephyrmeadow::domain::SeverityBand: EnumerationMapping SeverityMapping
+  {
+    MINOR: ['MIN/BAND'],
+    MODERATE: ['MOD/BAND'],
+    SEVERE: ['SEV/BAND'],
+    'VERY SEVERE': ['VSV/BAND']
+  }
+
+  test::zephyrmeadow::domain::FindingStatus: EnumerationMapping StatusMapping
+  {
+    OPEN: ['OPEN'],
+    'IN REVIEW': ['REVIEW'],
+    'CLOSED OUT': ['CLOSED OUT'],
+    WITHDRAWN: ['WITHDRAWN']
+  }
+
+  test::zephyrmeadow::domain::InterventionAppetite: EnumerationMapping AppetiteMapping
+  {
+    'LOW APPETITE': ['LOW'],
+    'MEDIUM APPETITE': ['MED'],
+    'HIGH APPETITE': ['HIGH']
+  }
+
+  test::zephyrmeadow::domain::ManagementRegime: EnumerationMapping RegimeMapping
+  {
+    GRAZED: ['GRAZED'],
+    'CUT MEADOW': ['CUT'],
+    UNMANAGED: ['UNMANAGED']
+  }
+
+  test::zephyrmeadow::domain::WorkflowStage: EnumerationMapping StageMapping
+  {
+    PLANNED: ['PLANNED'],
+    'IN PROGRESS': ['PROGRESS'],
+    COMPLETE: ['COMPLETE']
+  }
+
+  *test::zephyrmeadow::domain::RestorationSite[site]: Relational
+  {
+    ~filter [test::zephyrmeadow::store::MeadowArchiveStore]ManagedSite
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowArchiveStore]archive.restoration_site.site_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowArchiveStore]archive.restoration_site
+    siteCode: [test::zephyrmeadow::store::MeadowArchiveStore]archive.restoration_site.site_code,
+    siteName: toUpper(trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.restoration_site.site_name)),
+    regime: EnumerationMapping RegimeMapping: trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.restoration_site.regime_code),
+    regionName: [test::zephyrmeadow::store::MeadowArchiveStore]@SiteToRegion | archive.meadow_region.region_name,
+    stewardTeamName: [test::zephyrmeadow::store::MeadowArchiveStore]@SiteToRegion > @RegionToSteward | archive.steward_team.team_name
+  }
+
+  *test::zephyrmeadow::domain::SurveyVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowArchiveStore]archive.survey_visit.visit_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowArchiveStore]archive.survey_visit
+    visitCode: [test::zephyrmeadow::store::MeadowArchiveStore]archive.survey_visit.visit_code,
+    visitedOn: [test::zephyrmeadow::store::MeadowArchiveStore]archive.survey_visit.visited_on,
+    stage: EnumerationMapping StageMapping: trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.survey_visit.stage_code),
+    siteLabel: [test::zephyrmeadow::store::MeadowArchiveStore]@VisitToSite | toUpper(trim(archive.restoration_site.site_name))
+  }
+
+  *test::zephyrmeadow::domain::HabitatFinding[finding]: Relational
+  {
+    ~filter [test::zephyrmeadow::store::MeadowArchiveStore]LiveFinding
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding
+    findingCode: [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_code,
+    findingSummary: trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_summary),
+    displayLabel: case(
+                    isNotEmpty([test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_summary),
+                    substring(
+                      toUpper(
+                        trim(
+                          concat(
+                            [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_code,
+                            concat(' - ', [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_summary)
+                          )
+                        )
+                      ),
+                      0,
+                      28
+                    ),
+                    'UNSUMMARISED FINDING'
+                  ),
+    severity: EnumerationMapping SeverityMapping: concat(trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.severity_code), '/BAND'),
+    status: EnumerationMapping StatusMapping: trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.status_code),
+    appetite: EnumerationMapping AppetiteMapping: toUpper(trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.appetite_code)),
+    stewardTeamName: [test::zephyrmeadow::store::MeadowArchiveStore]@FindingToVisit > @VisitToSite > @SiteToRegion > @RegionToSteward | archive.steward_team.team_name
+  }
+
+  *test::zephyrmeadow::domain::EscalatedFinding[escalatedFinding]: Relational
+  {
+    ~filter [test::zephyrmeadow::store::MeadowArchiveStore]EscalatedLiveFinding
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding
+    findingCode: [test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.finding_code,
+    severity: EnumerationMapping SeverityMapping: concat(trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.habitat_finding.severity_code), '/BAND'),
+    escalationNote: [test::zephyrmeadow::store::MeadowArchiveStore]@FindingToRetirementNote | trim(archive.retirement_note.note_text)
+  }
+
+  *test::zephyrmeadow::domain::MeadowRegion[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowArchiveStore]archive.meadow_region.region_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowArchiveStore]archive.meadow_region
+    regionCode: [test::zephyrmeadow::store::MeadowArchiveStore]archive.meadow_region.region_code,
+    regionName: [test::zephyrmeadow::store::MeadowArchiveStore]archive.meadow_region.region_name
+  }
+
+  *test::zephyrmeadow::domain::StewardTeam[steward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrmeadow::store::MeadowArchiveStore]archive.steward_team.steward_code
+    )
+    ~mainTable [test::zephyrmeadow::store::MeadowArchiveStore]archive.steward_team
+    stewardCode: [test::zephyrmeadow::store::MeadowArchiveStore]archive.steward_team.steward_code,
+    teamName: trim([test::zephyrmeadow::store::MeadowArchiveStore]archive.steward_team.team_name)
+  }
+
+  test::zephyrmeadow::domain::Site_Visit: Relational
+  {
+    AssociationMapping
+    (
+      visits[site, visit]: [test::zephyrmeadow::store::MeadowArchiveStore]@SiteToVisit,
+      site[visit, site]: [test::zephyrmeadow::store::MeadowArchiveStore]@VisitToSite
+    )
+  }
+
+  test::zephyrmeadow::domain::Visit_Finding: Relational
+  {
+    AssociationMapping
+    (
+      findings[visit, finding]: [test::zephyrmeadow::store::MeadowArchiveStore]@VisitToFinding,
+      recordedVisit[finding, visit]: [test::zephyrmeadow::store::MeadowArchiveStore]@FindingToVisit
+    )
+  }
+
+  test::zephyrmeadow::domain::Visit_ReviewFinding: Relational
+  {
+    AssociationMapping
+    (
+      reviewedFindings[visit, finding]: [test::zephyrmeadow::store::MeadowArchiveStore]@VisitToReviewFinding,
+      reviewVisit[finding, visit]: [test::zephyrmeadow::store::MeadowArchiveStore]@FindingToReviewVisit
+    )
+  }
+
+  test::zephyrmeadow::domain::Region_Site: Relational
+  {
+    AssociationMapping
+    (
+      sites[region, site]: [test::zephyrmeadow::store::MeadowArchiveStore]@RegionToSite,
+      region[site, region]: [test::zephyrmeadow::store::MeadowArchiveStore]@SiteToRegion
+    )
+  }
+
+  test::zephyrmeadow::domain::Region_Steward: Relational
+  {
+    AssociationMapping
+    (
+      stewardTeam[region, steward]: [test::zephyrmeadow::store::MeadowArchiveStore]@RegionToSteward,
+      regions[steward, region]: [test::zephyrmeadow::store::MeadowArchiveStore]@StewardToRegion
+    )
+  }
+
+  testSuites:
+  [
+    archiveFindingSuite:
+    {
+      function: |test::zephyrmeadow::domain::HabitatFinding.all(%2026-06-01)->project(
+        [
+          f|$f.findingCode,
+          f|$f.displayLabel,
+          f|$f.severity,
+          f|$f.status,
+          f|if($f.stewardTeamName->isNotEmpty(), | $f.stewardTeamName->toOne(), | 'UNSTEWARDED')
+        ],
+        [
+          'Finding',
+          'Label',
+          'Severity',
+          'Status',
+          'Steward'
+        ]
+      )->sort([asc('Finding')]);
+      tests:
+      [
+        archivedFindings:
+        {
+          doc: 'The same class layer over the archive schema keeps the withdrawn finding that the field predicate drops, still excludes the closed-out one and the version superseded before the queried instant, and resolves the stewarding team over the identical four-hop chain.';
+          data:
+          [
+            test::zephyrmeadow::store::MeadowArchiveStore:
+              Relational
+              #{
+                archive.habitat_finding:
+                  'finding_code,visit_code,review_visit_code,severity_code,status_code,appetite_code,finding_summary,escalation_note,in_z,out_z\n'+
+                  'HF-1,SV-1,,SEV,OPEN,HIGH,scrub encroachment,,2026-01-01,9999-12-31\n'+
+                  'HF-4,SV-1,,VSV,CLOSED OUT,HIGH,drainage collapse,,2026-01-01,9999-12-31\n'+
+                  'HF-5,SV-1,,MIN,WITHDRAWN,LOW,duplicate report,,2026-01-01,9999-12-31\n'+
+                  'HF-6,SV-1,,SEV,OPEN,HIGH,superseded version,,2025-01-01,2026-03-01\n';
+                archive.survey_visit:
+                  'visit_code,site_code,stage_code,visited_on,in_z,out_z\n'+
+                  'SV-1,RS-1,COMPLETE,2026-04-02,2026-01-01,9999-12-31\n';
+                archive.restoration_site:
+                  'site_code,site_name,region_code,regime_code,in_z,out_z\n'+
+                  'RS-1,Upper Hay Meadow,MR-1,GRAZED,2026-01-01,9999-12-31\n';
+                archive.meadow_region:
+                  'region_code,region_name,steward_code\n'+
+                  'MR-1,Chalk Downs,ST-1\n';
+                archive.steward_team:
+                  'steward_code,team_name\n'+
+                  'ST-1,Downs Meadow Volunteers\n';
+              }#
+          ];
+          asserts:
+          [
+            archivedFindingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Finding":"HF-1","Label":"HF-1 - SCRUB ENCROACHMENT","Severity":"SEVERE","Status":"OPEN","Steward":"Downs Meadow Volunteers"},{"Finding":"HF-5","Label":"HF-5 - DUPLICATE REPORT","Severity":"MINOR","Status":"WITHDRAWN","Steward":"Downs Meadow Volunteers"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    archiveEscalatedSuite:
+    {
+      function: |test::zephyrmeadow::domain::EscalatedFinding.all(%2026-06-01)->project(
+        [
+          e|$e.findingCode,
+          e|$e.severity,
+          e|if($e.escalationNote->isNotEmpty(), | $e.escalationNote->toOne(), | 'NO RETIREMENT NOTE')
+        ],
+        [
+          'Finding',
+          'Severity',
+          'Note'
+        ]
+      )->sort([asc('Finding')]);
+      tests:
+      [
+        escalatedFindings:
+        {
+          doc: 'The second set implementation over the same relation keeps only the two most serious bands that are not closed out, and reaches the retirement note held in a relation that exists in this schema alone, with one escalated finding having no note row.';
+          data:
+          [
+            test::zephyrmeadow::store::MeadowArchiveStore:
+              Relational
+              #{
+                archive.habitat_finding:
+                  'finding_code,visit_code,review_visit_code,severity_code,status_code,appetite_code,finding_summary,escalation_note,in_z,out_z\n'+
+                  'HF-1,SV-1,,SEV,OPEN,HIGH,scrub encroachment,,2026-01-01,9999-12-31\n'+
+                  'HF-2,SV-1,,VSV,REVIEW,HIGH,embankment slumping,,2026-01-01,9999-12-31\n'+
+                  'HF-3,SV-1,,MOD,OPEN,MED,ragwort spreading,,2026-01-01,9999-12-31\n'+
+                  'HF-4,SV-1,,VSV,CLOSED OUT,HIGH,drainage collapse,,2026-01-01,9999-12-31\n';
+                archive.retirement_note:
+                  'note_code,finding_code,note_text\n'+
+                  'RN-1,HF-1, cut and rake before September \n';
+              }#
+          ];
+          asserts:
+          [
+            escalatedFindingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Finding":"HF-1","Severity":"SEVERE","Note":"cut and rake before September"},{"Finding":"HF-2","Severity":"VERY SEVERE","Note":"NO RETIREMENT NOTE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    archiveVisitSuite:
+    {
+      function: |test::zephyrmeadow::domain::SurveyVisit.all(%2026-06-01)->project(
+        [
+          v|$v.visitCode,
+          v|$v.stage,
+          v|if($v.siteLabel->isNotEmpty(), | $v.siteLabel->toOne(), | 'UNSITED'),
+          v|if($v.site(%2026-06-01)->isNotEmpty(), | $v.site(%2026-06-01).siteCode->toOne(), | 'UNSITED')
+        ],
+        [
+          'Visit',
+          'Stage',
+          'SiteLabel',
+          'Site'
+        ]
+      )->sort([asc('Visit')]);
+      tests:
+      [
+        visitsToSites:
+        {
+          doc: 'Traverses the mirrored join in the visit-to-meadow direction both as a bound column and as an association end, with a visit whose meadow key matches nothing and a stage code outside the enumeration.';
+          data:
+          [
+            test::zephyrmeadow::store::MeadowArchiveStore:
+              Relational
+              #{
+                archive.survey_visit:
+                  'visit_code,site_code,stage_code,visited_on,in_z,out_z\n'+
+                  'SV-1,RS-1,COMPLETE,2026-04-02,2026-01-01,9999-12-31\n'+
+                  'SV-2,RS-9,PROGRESS,2026-04-19,2026-01-01,9999-12-31\n'+
+                  'SV-3,RS-1,ZZ,2026-05-05,2026-01-01,9999-12-31\n';
+                archive.restoration_site:
+                  'site_code,site_name,region_code,regime_code,in_z,out_z\n'+
+                  'RS-1,Upper Hay Meadow,MR-1,GRAZED,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            visitRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"SV-1","Stage":"COMPLETE","SiteLabel":"UPPER HAY MEADOW","Site":"RS-1"},{"Visit":"SV-2","Stage":"IN PROGRESS","SiteLabel":"UNSITED","Site":"UNSITED"},{"Visit":"SV-3","Stage":null,"SiteLabel":"UPPER HAY MEADOW","Site":"RS-1"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

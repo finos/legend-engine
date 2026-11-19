@@ -1,0 +1,515 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::azurethistle::service::TurbineRegisterFeed
+{
+  pattern: '/estate/v1/turbines';
+  title: 'Upland Turbine Estate - Daily Turbine Register';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the daily turbine register read through the estate mapping: the machine, the park it stands in and the curtailment and service-lock labels its flag columns resolve to, including the rows whose flags were never logged.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::azurethistle::domain::TurbineRecord.all()
+      ->project(
+        [
+          t|$t.assetCode,
+          t|$t.turbineName,
+          t|$t.parkCode,
+          t|$t.curtailmentLabel,
+          t|$t.serviceLockLabel
+        ],
+        [
+          'AssetCode',
+          'TurbineName',
+          'ParkCode',
+          'CurtailmentLabel',
+          'ServiceLockLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('AssetCode')
+        ]
+      );
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    turbineRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyLoggedTurbine:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            tenTurbineRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AssetCode":"TB-01","TurbineName":"Turbine 01","ParkCode":"PARK-A","CurtailmentLabel":"CURTAILED-TB-01","ServiceLockLabel":"LOCKED-PEAT"},{"AssetCode":"TB-02","TurbineName":"Turbine 02","ParkCode":"PARK-B","CurtailmentLabel":"FREE-TB-02","ServiceLockLabel":"OPEN-MORAINE"},{"AssetCode":"TB-03","TurbineName":"Turbine 03","ParkCode":"PARK-A","CurtailmentLabel":null,"ServiceLockLabel":null},{"AssetCode":"TB-04","TurbineName":"Turbine 04","ParkCode":"PARK-B","CurtailmentLabel":"CURTAILED-TB-04","ServiceLockLabel":"OPEN-PEAT"},{"AssetCode":"TB-05","TurbineName":"Turbine 05","ParkCode":"PARK-A","CurtailmentLabel":"FREE-TB-05","ServiceLockLabel":"LOCKED-MORAINE"},{"AssetCode":"TB-06","TurbineName":"Turbine 06","ParkCode":"PARK-B","CurtailmentLabel":"CURTAILED-TB-06","ServiceLockLabel":null},{"AssetCode":"TB-07","TurbineName":"Turbine 07","ParkCode":"PARK-A","CurtailmentLabel":null,"ServiceLockLabel":"OPEN-PEAT"},{"AssetCode":"TB-08","TurbineName":"Turbine 08","ParkCode":"PARK-B","CurtailmentLabel":"FREE-TB-08","ServiceLockLabel":"LOCKED-MORAINE"},{"AssetCode":"TB-09","TurbineName":"Turbine 09","ParkCode":"PARK-A","CurtailmentLabel":"CURTAILED-TB-09","ServiceLockLabel":"OPEN-SCREE"},{"AssetCode":"TB-10","TurbineName":"Turbine 10","ParkCode":"PARK-B","CurtailmentLabel":null,"ServiceLockLabel":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::NacelleTelemetryFeed
+{
+  pattern: '/estate/v1/nacelle-readings';
+  title: 'Upland Turbine Estate - Nacelle Telemetry';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the nacelle telemetry readings taken across the park, each carrying the met mast it is compared against and the alarm label its flag column resolves to.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::azurethistle::domain::NacelleReading.all()
+      ->project(
+        [
+          n|$n.assetCode,
+          n|$n.readingSeq,
+          n|$n.mastCode,
+          n|$n.alarmLabel
+        ],
+        [
+          'AssetCode',
+          'ReadingSeq',
+          'MastCode',
+          'AlarmLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('AssetCode')
+        ]
+      );
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    nacelleTelemetrySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyNacelleReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            fourNacelleRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AssetCode":"TB-01","ReadingSeq":1,"MastCode":"MST-1","AlarmLabel":"ALARM"},{"AssetCode":"TB-02","ReadingSeq":2,"MastCode":"MST-2","AlarmLabel":"CLEAR"},{"AssetCode":"TB-03","ReadingSeq":3,"MastCode":"MST-3","AlarmLabel":null},{"AssetCode":"TB-04","ReadingSeq":4,"MastCode":"MST-1","AlarmLabel":"ALARM"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::BladeInspectionFeed
+{
+  pattern: '/estate/v1/blade-inspections';
+  title: 'Upland Turbine Estate - Blade Inspections';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the rope-access blade inspections held against the estate, each carrying the inspector, the defect tally and the repair label its flag column resolves to.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::azurethistle::domain::BladeInspection.all()
+      ->project(
+        [
+          b|$b.bladeSetCode,
+          b|$b.inspectorName,
+          b|$b.defectCount,
+          b|$b.repairLabel
+        ],
+        [
+          'BladeSetCode',
+          'InspectorName',
+          'DefectCount',
+          'RepairLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('BladeSetCode')
+        ]
+      );
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateStandbyRuntime;
+  }
+  testSuites:
+  [
+    bladeInspectionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateStandbyConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyBladeInspection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeBladeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BladeSetCode":"BLD-01","InspectorName":"Inspector 01","DefectCount":1,"RepairLabel":"REPAIR-DUE-BLD-01"},{"BladeSetCode":"BLD-02","InspectorName":"Inspector 02","DefectCount":2,"RepairLabel":"REPAIR-NONE"},{"BladeSetCode":"BLD-03","InspectorName":"Inspector 03","DefectCount":3,"RepairLabel":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::FeederExportFeed
+{
+  pattern: '/estate/v1/feeders';
+  title: 'Upland Turbine Estate - Substation Feeders';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the substation feeders the park exports through, each carrying the substation it belongs to and the islanding label its flag column resolves to.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::azurethistle::domain::SubstationFeeder.all()
+      ->project(
+        [
+          f|$f.feederCode,
+          f|$f.substationName,
+          f|$f.islandingLabel
+        ],
+        [
+          'FeederCode',
+          'SubstationName',
+          'IslandingLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('FeederCode')
+        ]
+      );
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    feederExportSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyFeeder:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeFeederRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"FeederCode":"FDR-1","SubstationName":"Corrie Substation","IslandingLabel":"ISLANDED"},{"FeederCode":"FDR-2","SubstationName":"Glen Substation","IslandingLabel":"GRID-TIED"},{"FeederCode":"FDR-3","SubstationName":"Corrie Substation","IslandingLabel":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::AccessTrackFeed
+{
+  pattern: '/estate/v1/access-tracks';
+  title: 'Upland Turbine Estate - Hill Access Tracks';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the surveyed hill access tracks, each carrying the met mast it passes and the passability label its flag column resolves to.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::azurethistle::domain::AccessTrack.all()
+      ->project(
+        [
+          k|$k.trackCode,
+          k|$k.trackName,
+          k|$k.mastCode,
+          k|$k.passabilityLabel
+        ],
+        [
+          'TrackCode',
+          'TrackName',
+          'MastCode',
+          'PassabilityLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('TrackCode')
+        ]
+      );
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateStandbyRuntime;
+  }
+  testSuites:
+  [
+    accessTrackSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateStandbyConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyAccessTrack:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeTrackRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TrackCode":"TRK-1","TrackName":"Track 1","MastCode":"MST-1","PassabilityLabel":"PASSABLE"},{"TrackCode":"TRK-2","TrackName":"Track 2","MastCode":"MST-2","PassabilityLabel":"IMPASSABLE-TRK-2"},{"TrackCode":"TRK-3","TrackName":"Track 3","MastCode":"MST-3","PassabilityLabel":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::MetMastFeed
+{
+  pattern: '/estate/v1/met-masts';
+  title: 'Upland Turbine Estate - Met Mast Readings';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the meteorological mast readings behind the estate, each carrying the mast and the icing label its flag column resolves to.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::azurethistle::domain::MetMast.all()
+      ->project(
+        [
+          m|$m.mastCode,
+          m|$m.mastName,
+          m|$m.icingLabel
+        ],
+        [
+          'MastCode',
+          'MastName',
+          'IcingLabel'
+        ]
+      )
+      ->sort(
+        [
+          asc('MastCode')
+        ]
+      );
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateWarehouseRuntime;
+  }
+  testSuites:
+  [
+    metMastSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateWarehouseConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyMetMast:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeMastRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MastCode":"MST-1","MastName":"Mast 1","IcingLabel":"ICING"},{"MastCode":"MST-2","MastName":"Mast 2","IcingLabel":"ICE-FREE"},{"MastCode":"MST-3","MastName":"Mast 3","IcingLabel":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::azurethistle::service::TurbineDeicingFeed
+{
+  pattern: '/estate/v1/turbines/deicing';
+  title: 'Upland Turbine Estate - De-icing and Yaw States';
+  ownership: DID { identifier: 'upland-turbine-estate-platform' };
+  documentation: 'Serves the de-icing and yaw-fault states of every turbine alongside the crew that last worked it, so the two remaining flag conditionals on the wide turbine class can be read on their own.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::azurethistle::domain::TurbineRecord.all()
+      ->project(
+        [
+          t|$t.assetCode,
+          t|$t.deiceLabel,
+          t|$t.yawFaultLabel,
+          t|$t.serviceCrew
+        ],
+        [
+          'AssetCode',
+          'DeiceLabel',
+          'YawFaultLabel',
+          'ServiceCrew'
+        ]
+      )
+      ->sort(
+        [
+          asc('AssetCode')
+        ]
+      );
+    mapping: test::azurethistle::mapping::TurbineEstateMapping;
+    runtime: test::azurethistle::runtime::EstateStandbyRuntime;
+  }
+  testSuites:
+  [
+    turbineDeicingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estateStandbyConnection:
+            Reference
+            #{
+              test::azurethistle::data::TurbineEstateData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyDeicingAndYawArm:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            tenTurbineRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AssetCode":"TB-01","DeiceLabel":"DEICE-ON","YawFaultLabel":"YAW-FAULT","ServiceCrew":"Corrie Crew"},{"AssetCode":"TB-02","DeiceLabel":"DEICE-OFF","YawFaultLabel":"YAW-OK","ServiceCrew":"Glen Crew"},{"AssetCode":"TB-03","DeiceLabel":null,"YawFaultLabel":null,"ServiceCrew":"Ridge Crew"},{"AssetCode":"TB-04","DeiceLabel":"DEICE-ON","YawFaultLabel":"YAW-OK","ServiceCrew":"Corrie Crew"},{"AssetCode":"TB-05","DeiceLabel":"DEICE-OFF","YawFaultLabel":"YAW-FAULT","ServiceCrew":"Glen Crew"},{"AssetCode":"TB-06","DeiceLabel":"DEICE-OFF","YawFaultLabel":null,"ServiceCrew":"Ridge Crew"},{"AssetCode":"TB-07","DeiceLabel":null,"YawFaultLabel":"YAW-FAULT","ServiceCrew":"Corrie Crew"},{"AssetCode":"TB-08","DeiceLabel":"DEICE-ON","YawFaultLabel":"YAW-OK","ServiceCrew":"Glen Crew"},{"AssetCode":"TB-09","DeiceLabel":"DEICE-OFF","YawFaultLabel":"YAW-FAULT","ServiceCrew":"Ridge Crew"},{"AssetCode":"TB-10","DeiceLabel":"DEICE-ON","YawFaultLabel":"YAW-OK","ServiceCrew":"Corrie Crew"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

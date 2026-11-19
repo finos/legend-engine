@@ -1,0 +1,342 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::meadowwarren4::mapping::WarrenMapping
+(
+  include mapping demo::meadowwarren4::mapping::WarrenEnumerations
+  include mapping demo::meadowwarren4::mapping::WardenHierarchyMapping
+
+  *demo::meadowwarren4::domain::GrazingPlot[plot]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.plot_ref,
+      [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.from_z
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot
+    plotRef: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.plot_ref,
+    plotName: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.plot_name,
+    blockRef: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.block_ref,
+    wardenCode: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.warden_code,
+    indicatorLevel: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level,
+    swardCode: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.sward_code,
+    conditionIndex: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.condition_index,
+    aspectNote: [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.aspect_note,
+    swardCondition: EnumerationMapping SwardConditionMap: case(
+          equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 1),
+          'C1',
+          case(
+            equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 2),
+            'C2',
+            case(
+              equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 3),
+              'C3',
+              case(
+                equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 4),
+                'C4',
+                case(
+                  equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 5),
+                  'C5',
+                  case(
+                    equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 6),
+                    'C6',
+                    case(
+                      equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 7),
+                      'C7',
+                      case(
+                        equal([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.indicator_level, 8),
+                        'C8',
+                        sqlNull()
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+    patrolNote: case(
+                    greaterThan([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.condition_index, 80),
+                    concat('PRIORITY-', toUpper([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.sward_code)),
+                    case(
+                      greaterThan([demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.condition_index, 40),
+                      'ROUTINE',
+                      sqlNull()
+                    )
+                  ),
+    swardHeightMm: [demo::meadowwarren4::store::WarrenDb]@Plot_Metrics | [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.sward_height_mm,
+    wardenName: [demo::meadowwarren4::store::WarrenDb]@Plot_Warden | [demo::meadowwarren4::store::WardenDb]staff.warden_person.warden_name,
+    pathNote: [demo::meadowwarren4::store::WarrenDb]@Plot_Hierarchy | [demo::meadowwarren4::store::WardenDb]staff.hierarchy_flat.path_note,
+    gateCode: [demo::meadowwarren4::store::WarrenDb]@Plot_Access | [demo::meadowwarren4::store::WarrenDb]warren.warden_access.gate_code
+  }
+
+  *demo::meadowwarren4::domain::PlotMetrics[metrics]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.metric_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics
+    metricRef: [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.metric_ref,
+    plotRef: [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.plot_ref,
+    grazingDays: [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.grazing_days,
+    swardHeightMm: [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.sward_height_mm,
+    browseIndex: [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.browse_index,
+    browseBand: case(
+                  greaterThan([demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.browse_index, 60),
+                  'HEAVY BROWSE',
+                  case(
+                    greaterThan([demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.browse_index, 30),
+                    'MODERATE BROWSE',
+                    'LIGHT BROWSE'
+                  )
+                )
+  }
+
+  *demo::meadowwarren4::domain::BurrowCountEast[countEast]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.entry_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east
+    entryRef: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.entry_ref,
+    plotRef: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.plot_ref,
+    levelOne: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.level_one,
+    levelTwo: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.level_two,
+    levelThree: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.level_three,
+    levelFour: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.level_four,
+    tally: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_east.tally,
+    rolledPlotName: [demo::meadowwarren4::store::WarrenDb]@East_RollDown | [demo::meadowwarren4::store::WarrenDb]warren.grazing_plot.plot_name,
+    metricBrowseIndex: [demo::meadowwarren4::store::WarrenDb]@East_Metrics | [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.browse_index
+  }
+
+  *demo::meadowwarren4::domain::BurrowCountWest[countWest]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.entry_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west
+    entryRef: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.entry_ref,
+    plotRef: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.plot_ref,
+    levelOne: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.level_one,
+    levelTwo: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.level_two,
+    levelThree: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.level_three,
+    levelFour: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.level_four,
+    tally: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_west.tally,
+    metricBrowseIndex: [demo::meadowwarren4::store::WarrenDb]@West_Metrics | [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.browse_index
+  }
+
+  *demo::meadowwarren4::domain::BurrowCountSouth[countSouth]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.entry_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south
+    entryRef: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.entry_ref,
+    plotRef: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.plot_ref,
+    levelOne: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.level_one,
+    levelTwo: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.level_two,
+    levelThree: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.level_three,
+    levelFour: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.level_four,
+    tally: [demo::meadowwarren4::store::WarrenDb]warren.burrow_count_south.tally,
+    metricBrowseIndex: [demo::meadowwarren4::store::WarrenDb]@South_Metrics | [demo::meadowwarren4::store::WarrenDb]warren.plot_metrics.browse_index
+  }
+
+  *demo::meadowwarren4::domain::WardenRole[role]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.warden_role.role_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.warden_role
+    roleRef: [demo::meadowwarren4::store::WarrenDb]warren.warden_role.role_ref,
+    wardenCode: [demo::meadowwarren4::store::WarrenDb]warren.warden_role.warden_code,
+    roleCode: [demo::meadowwarren4::store::WarrenDb]warren.warden_role.role_code,
+    bandCode: [demo::meadowwarren4::store::WarrenDb]warren.warden_role.band_code,
+    action: EnumerationMapping WardenActionMap: [demo::meadowwarren4::store::WarrenDb]warren.warden_role.role_code
+  }
+
+  *demo::meadowwarren4::domain::WardenAccess[access]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::meadowwarren4::store::WarrenDb]warren.warden_access.access_ref
+    )
+    ~mainTable [demo::meadowwarren4::store::WarrenDb]warren.warden_access
+    accessRef: [demo::meadowwarren4::store::WarrenDb]warren.warden_access.access_ref,
+    wardenCode: [demo::meadowwarren4::store::WarrenDb]warren.warden_access.warden_code,
+    gateCode: [demo::meadowwarren4::store::WarrenDb]warren.warden_access.gate_code,
+    accessKind: EnumerationMapping AccessKindMap: [demo::meadowwarren4::store::WarrenDb]warren.warden_access.access_kind
+  }
+
+  demo::meadowwarren4::domain::Plot_Metrics: Relational
+  {
+    AssociationMapping
+    (
+      metrics[plot, metrics]: [demo::meadowwarren4::store::WarrenDb]@Plot_Metrics,
+      plot[metrics, plot]: [demo::meadowwarren4::store::WarrenDb]@Plot_Metrics
+    )
+  }
+
+  demo::meadowwarren4::domain::Plot_Role: Relational
+  {
+    AssociationMapping
+    (
+      role[plot, role]: [demo::meadowwarren4::store::WarrenDb]@Plot_Role,
+      rolePlot[role, plot]: [demo::meadowwarren4::store::WarrenDb]@Plot_Role
+    )
+  }
+
+  demo::meadowwarren4::domain::Plot_Warden: Relational
+  {
+    AssociationMapping
+    (
+      warden[plot, person]: [demo::meadowwarren4::store::WarrenDb]@Plot_Warden,
+      wardenPlot[person, plot]: [demo::meadowwarren4::store::WarrenDb]@Plot_Warden
+    )
+  }
+
+  testSuites:
+  [
+    conditionalLadderSuite:
+    {
+      function: |demo::meadowwarren4::domain::GrazingPlot.all(%2026-06-01)->project(
+        [
+          x|$x.plotRef,
+          x|$x.swardCondition,
+          x|$x.patrolNote
+        ],
+        [
+          'Plot Ref',
+          'Sward Condition',
+          'Patrol Note'
+        ]
+      )->sort([asc('Plot Ref')]);
+      tests:
+      [
+        everyLadderArmIsSelectedInTurn:
+        {
+          doc: 'One plot row per arm of the eight-arm indicator ladder, one row whose indicator is absent so the ladder falls through to the null sentinel, and one row whose validity window closed before the supplied instant so it never reaches the ladder at all.';
+          data:
+          [
+            demo::meadowwarren4::store::WarrenDb:
+              Relational
+              #{
+                warren.grazing_plot:
+                  'plot_ref,plot_name,block_ref,warden_code,indicator_level,sward_code,condition_index,aspect_note,from_z,thru_z\n'+
+                  'P-01,north warren plot,BL-1,W-1,1,acid grass,90,open plot,2026-01-01,9999-12-31\n'+
+                  'P-02,west warren plot,BL-1,W-2,2,neutral grass,50,open plot,2026-01-01,9999-12-31\n'+
+                  'P-03,south warren plot,BL-2,W-1,3,calcareous grass,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-04,east warren plot,BL-2,W-1,4,rush pasture,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-05,hollow warren plot,BL-2,W-1,5,bracken edge,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-06,ridge warren plot,BL-2,W-1,6,thin sward,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-07,spring warren plot,BL-2,W-1,7,herb rich,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-08,knoll warren plot,BL-2,W-1,8,moss carpet,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-09,gate warren plot,BL-2,W-1,,unrecorded sward,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-10,retired warren plot,BL-2,W-1,4,old sward,95,retired plot,2019-01-01,2019-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            nineVisiblePlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot Ref":"P-01","Sward Condition":"CLOSE_GRAZED","Patrol Note":"PRIORITY-ACID GRASS"},{"Plot Ref":"P-02","Sward Condition":"TUSSOCK","Patrol Note":"ROUTINE"},{"Plot Ref":"P-03","Sward Condition":"MIXED_SWARD","Patrol Note":null},{"Plot Ref":"P-04","Sward Condition":"RANK","Patrol Note":null},{"Plot Ref":"P-05","Sward Condition":"SCRUBBING_OVER","Patrol Note":null},{"Plot Ref":"P-06","Sward Condition":"BARE_GROUND","Patrol Note":null},{"Plot Ref":"P-07","Sward Condition":"FLOWER_RICH","Patrol Note":null},{"Plot Ref":"P-08","Sward Condition":"MOSS_DOMINANT","Patrol Note":null},{"Plot Ref":"P-09","Sward Condition":null,"Patrol Note":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinReachedColumnSuite:
+    {
+      function: |demo::meadowwarren4::domain::GrazingPlot.all(%2026-06-01)->filter(
+        x|$x.blockRef == 'BL-1'
+      )->project(
+        [
+          x|$x.plotRef,
+          x|$x.swardHeightMm,
+          x|$x.wardenName,
+          x|$x.pathNote
+        ],
+        [
+          'Plot Ref',
+          'Sward Height Mm',
+          'Warden Name',
+          'Path Note'
+        ]
+      )->sort([asc('Plot Ref')]);
+      tests:
+      [
+        missingCounterpartsReadEmpty:
+        {
+          doc: 'The first plot resolves all three reached columns - one within its own store and two in the externally declared store - while the second plot has a metrics row but no warden and no flattened hierarchy row, so those two reached columns are empty rather than removing the plot.';
+          data:
+          [
+            demo::meadowwarren4::store::WarrenDb:
+              Relational
+              #{
+                warren.grazing_plot:
+                  'plot_ref,plot_name,block_ref,warden_code,indicator_level,sward_code,condition_index,aspect_note,from_z,thru_z\n'+
+                  'P-01,north warren plot,BL-1,W-1,1,acid grass,90,open plot,2026-01-01,9999-12-31\n'+
+                  'P-02,west warren plot,BL-1,W-2,2,neutral grass,50,open plot,2026-01-01,9999-12-31\n'+
+                  'P-03,south warren plot,BL-2,W-1,3,calcareous grass,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-04,east warren plot,BL-2,W-1,4,rush pasture,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-05,hollow warren plot,BL-2,W-1,5,bracken edge,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-06,ridge warren plot,BL-2,W-1,6,thin sward,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-07,spring warren plot,BL-2,W-1,7,herb rich,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-08,knoll warren plot,BL-2,W-1,8,moss carpet,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-09,gate warren plot,BL-2,W-1,,unrecorded sward,10,open plot,2026-01-01,9999-12-31\n'+
+                  'P-10,retired warren plot,BL-2,W-1,4,old sward,95,retired plot,2019-01-01,2019-12-31\n';
+
+                warren.plot_metrics:
+                  'metric_ref,plot_ref,grazing_days,sward_height_mm,browse_index,from_z,thru_z\n'+
+                  'MT-01,P-01,120,45,70,2026-01-01,9999-12-31\n'+
+                  'MT-02,P-02,90,60,20,2026-01-01,9999-12-31\n';
+
+                staff.warden_person:
+                  'warden_code,warden_name,depot_name,contact_note,from_z,thru_z\n'+
+                  'W-1,meadow warden one,north depot,radio channel two,2026-01-01,9999-12-31\n';
+
+                staff.hierarchy_flat:
+                  'flat_ref,plot_ref,path_note,depth_level,from_z,thru_z\n'+
+                  'FL-01,P-01,north meadow > east warren,2,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            reachedColumnsResolveOrReadEmpty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot Ref":"P-01","Sward Height Mm":45,"Warden Name":"meadow warden one","Path Note":"north meadow > east warren"},{"Plot Ref":"P-02","Sward Height Mm":60,"Warden Name":null,"Path Note":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

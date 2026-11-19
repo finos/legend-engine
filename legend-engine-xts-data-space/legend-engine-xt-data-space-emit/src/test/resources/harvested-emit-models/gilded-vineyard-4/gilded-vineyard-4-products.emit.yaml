@@ -1,0 +1,51 @@
+name: gilded-vineyard-4-products
+title: "Gilded Vineyard - three parameterised services published through two data spaces"
+description: |
+  Three query-only services over the processing-temporal estate model, each
+  pinning the curated mapping and a runtime in a single execution context and each
+  entering the model through the milestoned accessor with a processing date taken
+  from its own parameter list. The first projects a wide tabular row - a derived
+  label, direct alias reads and a join-reached canopy style - behind a vine-count
+  comparison conjoined with a membership disjunction, then orders and bounds the
+  result; the second groups by the pass stage and by the estate reached across the
+  block traversal, summing and counting inside the group; the third de-duplicates
+  a single projected column and bounds the ordered roster. Two data spaces publish
+  the same mapping over an estate runtime and an archive runtime, each with a
+  default execution context, a documented element list, the services as
+  executables and a support contact. The suites cover both sides of every
+  conjunct, an empty membership collection that must not fault, a bound smaller
+  than the result, and a processing date before every window that must return an
+  empty result.
+modelSources:
+  model:
+    root: gilded-vineyard-4-products
+    files:
+      - test/gildedvineyard4/dataspace/VineyardDataSpaces.pure
+      - test/gildedvineyard4/service/HarvestYieldByStage.pure
+      - test/gildedvineyard4/service/VarietalRoster.pure
+      - test/gildedvineyard4/service/VineBlockRegister.pure
+  dependencies:
+    - source: gilded-vineyard-4-network.emit.yaml
+features:
+  - execution:data-space
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+stores: []
+complexity: intermediate
+tags:
+  - aggregation
+  - data-space
+  - estate-viticulture
+  - h2
+  - out-of-range-milestoning
+  - service-test
+  - set-membership
+  - snowflake
+  - sort-limit

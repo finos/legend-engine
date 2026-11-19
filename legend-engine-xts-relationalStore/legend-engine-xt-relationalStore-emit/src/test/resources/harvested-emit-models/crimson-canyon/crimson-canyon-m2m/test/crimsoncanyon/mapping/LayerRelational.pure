@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsoncanyon::mapping::LayerRelational
+(
+  test::crimsoncanyon::domain::StrataLayer[layer_north]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsoncanyon::store::CanyonDB]geo.layer_north.unit_code
+    )
+    ~mainTable [test::crimsoncanyon::store::CanyonDB]geo.layer_north
+    unitCode: [test::crimsoncanyon::store::CanyonDB]geo.layer_north.unit_code,
+    name: [test::crimsoncanyon::store::CanyonDB]geo.layer_north.name,
+    thicknessMeters: [test::crimsoncanyon::store::CanyonDB]geo.layer_north.thickness_m,
+    status: EnumerationMapping LayerStatusRelMapping: [test::crimsoncanyon::store::CanyonDB]geo.layer_north.status_code
+  }
+  test::crimsoncanyon::domain::StrataLayer[layer_south]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsoncanyon::store::CanyonDB]geo.layer_south.unit_code
+    )
+    ~mainTable [test::crimsoncanyon::store::CanyonDB]geo.layer_south
+    unitCode: [test::crimsoncanyon::store::CanyonDB]geo.layer_south.unit_code,
+    name: [test::crimsoncanyon::store::CanyonDB]geo.layer_south.name,
+    thicknessMeters: [test::crimsoncanyon::store::CanyonDB]geo.layer_south.thickness_m,
+    status: EnumerationMapping LayerStatusRelMapping: [test::crimsoncanyon::store::CanyonDB]geo.layer_south.status_code
+  }
+  *test::crimsoncanyon::domain::StrataLayer: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(layer_north, layer_south)
+  }
+
+  test::crimsoncanyon::domain::LayerStatus: EnumerationMapping LayerStatusRelMapping
+  {
+    EXPOSED: ['E'],
+    BURIED: ['B'],
+    ERODED: ['X']
+  }
+)

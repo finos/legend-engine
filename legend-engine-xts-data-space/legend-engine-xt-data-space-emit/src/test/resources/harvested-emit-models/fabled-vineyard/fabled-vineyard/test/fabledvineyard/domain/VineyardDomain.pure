@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::fabledvineyard::domain::VineBlock
+{
+  blockCode: String[0..1];
+  blockName: String[0..1];
+  rowSpacingM: Float[0..1];
+  vineCount: Integer[0..1];
+  plantedOn: StrictDate[0..1];
+  lastWalkedAt: DateTime[0..1];
+}
+
+Class test::fabledvineyard::domain::TrellisRun
+{
+  runCode: String[0..1];
+  runLabel: String[0..1];
+  wireHeightM: Float[0..1];
+  postCount: Integer[0..1];
+  installedOn: StrictDate[0..1];
+  inspectedAt: DateTime[0..1];
+}
+
+Class test::fabledvineyard::domain::CanopyReading
+{
+  readingCode: String[0..1];
+  observerName: String[0..1];
+  leafAreaM2: Float[0..1];
+  shootCount: Integer[0..1];
+  readingOn: StrictDate[0..1];
+  recordedAt: DateTime[0..1];
+}
+
+Class test::fabledvineyard::domain::IrrigationPulse
+{
+  pulseCode: String[0..1];
+  zoneName: String[0..1];
+  litresDelivered: Float[0..1];
+  valveCount: Integer[0..1];
+  pulseOn: StrictDate[0..1];
+  startedAt: DateTime[0..1];
+}
+
+Association test::fabledvineyard::domain::Block_TrellisRun
+{
+  runBlock: test::fabledvineyard::domain::VineBlock[0..1];
+  blockRuns: test::fabledvineyard::domain::TrellisRun[*];
+}
+
+Association test::fabledvineyard::domain::TrellisRun_CanopyReading
+{
+  readingRun: test::fabledvineyard::domain::TrellisRun[0..1];
+  runReadings: test::fabledvineyard::domain::CanopyReading[*];
+}
+
+Association test::fabledvineyard::domain::Block_IrrigationPulse
+{
+  pulseBlock: test::fabledvineyard::domain::VineBlock[0..1];
+  blockPulses: test::fabledvineyard::domain::IrrigationPulse[*];
+}

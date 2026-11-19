@@ -1,0 +1,72 @@
+name: verdant-hatchery-2
+title: "Verdant Hatchery 2 — Fry-Batch Rearing Stages Banded Through An Eight-Armed Relational Conditional Over A Three-Table Hatchery Store"
+description: |
+  A freshwater hatchery model in three related units: the stocked fry batches,
+  the rearing ponds that hold them and the hatchery sites those ponds sit on.
+  One binding unit maps all three, keys each on its own identity column and
+  derives the rearing stage of a batch from its mean length through an
+  eight-armed conditional whose fallback past the last boundary yields null, a
+  grader name that falls back to null when the survey left it blank and is
+  defaulted again by a derived property, a two-armed tag note, and the pond and
+  site names reached one and two hops out. Its mapping suite places one batch on
+  every arm, on the fallback and on the blank grader, so no branch of the
+  derivation is left unexercised. Three published queries read the model: the
+  graded batch register restricted by a species membership set above a health
+  floor, the pond capacities of one site and the site roster for a set of
+  catchments, each ordered and capped, with the register carrying an executed
+  suite that covers the null rearing stage as well. A curated access point
+  groups the three classes and lists all three queries with a support address.
+
+modelSources:
+  model:
+    root: verdant-hatchery-2
+    files:
+      - test/verdanthatchery2/connection/HatcheryConnections.pure
+      - test/verdanthatchery2/dataspace/HatcheryDataSpace.pure
+      - test/verdanthatchery2/domain/HatcheryDomain.pure
+      - test/verdanthatchery2/mapping/HatcheryMapping.pure
+      - test/verdanthatchery2/runtime/HatcheryRuntimes.pure
+      - test/verdanthatchery2/service/BatchRegister.pure
+      - test/verdanthatchery2/service/PondCapacity.pure
+      - test/verdanthatchery2/service/SiteRoster.pure
+      - test/verdanthatchery2/store/HatcheryDb.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:derived-property
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+
+stores:
+  - relational
+
+complexity: advanced
+
+tags:
+  - aquaculture
+  - conditional-transform
+  - data-space
+  - derived-property
+  - h2
+  - mapping-test
+  - multi-hop-join
+  - multi-table
+  - null-fallback
+  - service-test
+  - snowflake

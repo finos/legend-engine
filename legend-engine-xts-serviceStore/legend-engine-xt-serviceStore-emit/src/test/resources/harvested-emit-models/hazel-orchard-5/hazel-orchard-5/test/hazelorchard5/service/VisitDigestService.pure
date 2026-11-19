@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelorchard5::service::VisitDigestService
+{
+  pattern: '/orchard-pollination/v1/visit-digest';
+  title: 'Orchard Pollination - Hive Visit Digest';
+  documentation: 'Graph-fetches the digest of the transformed hive-visit payload over the chained runtime, so one execution fetches the documents from the remote endpoint and applies the model-to-model transform, including the derived tag collection and the literal source label.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazelorchard5::domain::PollinationVisit.all()->graphFetch(
+      #{
+      test::hazelorchard5::domain::PollinationVisit
+      {
+        visitId,
+        hiveCode,
+        observedOnDate,
+        foragerCountPerMinute,
+        hiveCodeLabel,
+        noteTagLabels,
+        sourceSystemLabel
+      }
+    }#
+    )->serialize(
+      #{
+      test::hazelorchard5::domain::PollinationVisit
+      {
+        visitId,
+        hiveCode,
+        observedOnDate,
+        foragerCountPerMinute,
+        hiveCodeLabel,
+        noteTagLabels,
+        sourceSystemLabel
+      }
+    }#
+    );
+    mapping: test::hazelorchard5::mapping::PollinationSyncMapping;
+    runtime: test::hazelorchard5::runtime::PollinationSyncRuntime;
+  }
+  testSuites:
+  [
+    visitDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hiveVisitApiConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/pollination/hive-visits';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[{"visitId":"HV-1001","orchardCode":"OR-NORTH","seasonLabel":"2026-BLOSSOM","hiveCode":"hv-a12","blockCode":"BLK-3","rowCode":"R-07","colonyCode":"CL-441","inspectorCode":"INS-22","observedOnDate":"2026-04-18","startedAtTime":"08:15","endedAtTime":"08:47","weatherLabel":"sunny","cloudCoverLabel":"scattered","windLabel":"light","temperatureCelsius":17.5,"humidityPercent":62.0,"visitDurationMinutes":32,"frameCount":10,"broodFrameCount":6,"foragerCountPerMinute":48,"blossomOpenPercent":71.5,"blossomStageLabel":"full-bloom","nectarFlowLabel":"strong","pollenTrapGrams":24.5,"hiveWeightKilograms":38.25,"queenSeenFlag":true,"varroaCountPerHundred":1.5,"diseaseSignLabel":"none","feedGivenLitres":0.5,"equipmentLabel":"super-added","noteTags":["hive-strong","frames-added"]},{"visitId":"HV-1002","orchardCode":"OR-NORTH","seasonLabel":"2026-BLOSSOM","hiveCode":"hv-b04","observedOnDate":"2026-04-19","foragerCountPerMinute":12,"queenSeenFlag":false,"noteTags":["queen-absent"]}]';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        digestRowsCarryDerivedLabels:
+        {
+          asserts:
+          [
+            derivedLabelsAndTagCollectionReachTheCaller:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"visitId":"HV-1001","hiveCode":"hv-a12","observedOnDate":"2026-04-18","foragerCountPerMinute":48,"hiveCodeLabel":"HV-A12","noteTagLabels":["TAG-hive-strong","TAG-frames-added"],"sourceSystemLabel":"ORCHARD-VISIT-API"},{"visitId":"HV-1002","hiveCode":"hv-b04","observedOnDate":"2026-04-19","foragerCountPerMinute":12,"hiveCodeLabel":"HV-B04","noteTagLabels":["TAG-queen-absent"],"sourceSystemLabel":"ORCHARD-VISIT-API"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

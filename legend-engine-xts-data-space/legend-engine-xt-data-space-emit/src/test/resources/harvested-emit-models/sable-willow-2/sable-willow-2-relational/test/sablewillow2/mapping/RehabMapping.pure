@@ -1,0 +1,174 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablewillow2::mapping::RehabMapping
+(
+  include test::sablewillow2::mapping::ReferenceMapping
+
+  *test::sablewillow2::domain::Enclosure[enclosure]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablewillow2::store::RehabDB]facility.enclosure.enclosure_id
+    )
+    ~mainTable [test::sablewillow2::store::RehabDB]facility.enclosure
+    enclosureName: [test::sablewillow2::store::RehabDB]facility.enclosure.enclosure_name,
+    habitatCode: [test::sablewillow2::store::RehabDB]facility.enclosure.habitat_code
+  }
+
+  *test::sablewillow2::domain::IntakeCase[intakeCase]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablewillow2::store::RehabDB]intake.rescue_admission.case_id
+    )
+    ~mainTable [test::sablewillow2::store::RehabDB]intake.rescue_admission
+    caseRef: [test::sablewillow2::store::RehabDB]intake.rescue_admission.case_ref,
+    admittedAt: [test::sablewillow2::store::RehabDB]intake.rescue_admission.admitted_at,
+    releaseWeightKg: [test::sablewillow2::store::RehabDB]intake.rescue_admission.release_weight_kg
+  }
+
+  test::sablewillow2::domain::Case_Species: Relational
+  {
+    AssociationMapping
+    (
+      species[intakeCase, species]: [test::sablewillow2::store::RehabDB]@Case_Species,
+      intakeCases[species, intakeCase]: [test::sablewillow2::store::RehabDB]@Case_Species
+    )
+  }
+
+  test::sablewillow2::domain::Case_Enclosure: Relational
+  {
+    AssociationMapping
+    (
+      enclosure[intakeCase, enclosure]: [test::sablewillow2::store::RehabDB]@Case_Enclosure,
+      intakeCases[enclosure, intakeCase]: [test::sablewillow2::store::RehabDB]@Case_Enclosure
+    )
+  }
+
+  test::sablewillow2::domain::Case_Team: Relational
+  {
+    AssociationMapping
+    (
+      careTeam[intakeCase, careTeam]: [test::sablewillow2::store::RehabDB]@Case_Team,
+      intakeCases[careTeam, intakeCase]: [test::sablewillow2::store::RehabDB]@Case_Team
+    )
+  }
+
+  test::sablewillow2::domain::Enclosure_Parent: Relational
+  {
+    AssociationMapping
+    (
+      parentEnclosure[enclosure, enclosure]: [test::sablewillow2::store::RehabDB]@Enclosure_Parent,
+      childEnclosures[enclosure, enclosure]: [test::sablewillow2::store::RehabDB]@Enclosure_Parent
+    )
+  }
+
+  test::sablewillow2::domain::Enclosure_Suitability: Relational
+  {
+    AssociationMapping
+    (
+      suitableSpecies[enclosure, species]: [test::sablewillow2::store::RehabDB]@Enclosure_Suitability,
+      suitableEnclosures[species, enclosure]: [test::sablewillow2::store::RehabDB]@Enclosure_Suitability
+    )
+  }
+
+  test::sablewillow2::domain::Case_AncestorSpecies: Relational
+  {
+    AssociationMapping
+    (
+      ancestorSpecies[intakeCase, species]: [test::sablewillow2::store::RehabDB]@Case_Enclosure > @Enclosure_Parent > @Enclosure_Suitability,
+      ancestorCases[species, intakeCase]: [test::sablewillow2::store::RehabDB]@Enclosure_Suitability > @Enclosure_Parent > @Case_Enclosure
+    )
+  }
+
+  testSuites:
+  [
+    caseLineageSuite:
+    {
+      function: |test::sablewillow2::domain::IntakeCase.all(%2026-06-01T00:00:00)->project(
+  [
+    c|$c.caseRef,
+    c|$c.species.commonName->toOne(),
+    c|$c.enclosure.enclosureName->toOne(),
+    c|$c.ancestorSpecies.commonName->toOne(),
+    c|$c.careTeam.teamName->toOne()
+  ],
+  [
+    'Case Ref',
+    'Species',
+    'Enclosure',
+    'Ancestor Habitat Species',
+    'Care Team'
+  ]
+)->sort(
+  [
+    asc('Case Ref')
+  ]
+);
+      tests:
+      [
+        multiHopLineageWithinWindow:
+        {
+          doc: 'Only the two revisions whose processing window contains the pinned instant survive; each one resolves its habitat species through the three-hop chain that leaves the case, climbs to the parent complex and crosses schemas onto the reference register.';
+          data:
+          [
+            test::sablewillow2::store::RehabDB:
+              Relational
+              #{
+                reference.species:
+                  'species_id,common_name,family_name,habitat_suitability\n'+
+                  '1,Eurasian otter,Mustelidae,WETLAND\n'+
+                  '2,Barn owl,Tytonidae,WOODLAND\n'+
+                  '3,West European hedgehog,Erinaceidae,SCRUB\n'+
+                  '4,Common kingfisher,Alcedinidae,RIVERBANK\n'+
+                  '5,Common swift,Apodidae,AVIARY\n';
+                facility.care_team:
+                  'team_id,team_name,rota_code\n'+
+                  '1,River Ward Rota,ROTA-A\n'+
+                  '2,Woodland Ward Rota,ROTA-B\n';
+                facility.enclosure:
+                  'enclosure_id,enclosure_name,habitat_code,parent_enclosure_id,in_z,out_z\n'+
+                  '1,Riverside Complex,wetland,,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '2,Woodland Complex,woodland,,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '3,Otter Pool,riverbank,1,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '4,Songbird Aviary,aviary,2,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '5,Retired Pen,scrub,1,2026-01-01 00:00:00,2026-02-01 00:00:00\n';
+                intake.rescue_admission:
+                  'case_id,case_ref,species_id,enclosure_id,team_id,admitted_at,release_weight_kg,in_z,out_z\n'+
+                  '1,RC-1001,1,3,1,2026-05-02 09:15:00,3.25,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '2,RC-1002,2,4,1,2026-05-11 14:40:00,1.75,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  '3,RC-1003,1,3,2,2026-04-20 08:05:00,2.5,2026-01-01 00:00:00,2026-03-01 00:00:00\n'+
+                  '4,RC-1004,3,5,1,2026-05-20 07:00:00,4.75,2027-01-01 00:00:00,9999-12-31 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLineageRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Case Ref":"RC-1001","Species":"Eurasian otter","Enclosure":"Otter Pool","Ancestor Habitat Species":"Eurasian otter","Care Team":"River Ward Rota"},{"Case Ref":"RC-1002","Species":"Barn owl","Enclosure":"Songbird Aviary","Ancestor Habitat Species":"Barn owl","Care Team":"River Ward Rota"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

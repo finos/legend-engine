@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sableridge2::store::RidgeDB
+(
+  Schema alpine
+  (
+    Table hut_stay
+    (
+      stay_ref VARCHAR(24) PRIMARY KEY,
+      hut_code VARCHAR(16) NOT NULL,
+      stay_date DATE NOT NULL,
+      bunk_count INTEGER NOT NULL,
+      guest_count INTEGER NOT NULL,
+      supply_kg INTEGER,
+      party_note VARCHAR(64)
+    )
+
+    Table mountain_hut
+    (
+      hut_code VARCHAR(16) PRIMARY KEY,
+      hut_name VARCHAR(64) NOT NULL,
+      class_code VARCHAR(8) NOT NULL,
+      segment_code VARCHAR(16) NOT NULL,
+      elevation_m INTEGER NOT NULL
+    )
+
+    Table trail_segment
+    (
+      segment_code VARCHAR(16) PRIMARY KEY,
+      segment_name VARCHAR(64) NOT NULL,
+      grade_code VARCHAR(8) NOT NULL
+    )
+
+    Table warden
+    (
+      warden_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(64) NOT NULL,
+      segment_code VARCHAR(16) NOT NULL
+    )
+  )
+
+  Join Stay_Hut(alpine.hut_stay.hut_code = alpine.mountain_hut.hut_code)
+  Join Hut_Segment(alpine.mountain_hut.segment_code = alpine.trail_segment.segment_code)
+  Join Warden_Segment(alpine.warden.segment_code = alpine.trail_segment.segment_code)
+)

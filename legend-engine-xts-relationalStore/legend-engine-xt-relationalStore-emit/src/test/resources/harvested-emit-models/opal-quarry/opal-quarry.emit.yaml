@@ -1,0 +1,55 @@
+name: opal-quarry
+title: "Opal Quarry — A Stone-Yard Block Register with an Embedded Dimension Block, a Two-Condition Join and a Grouped View"
+description: |
+  A dimension-stone yard register in which five class mappings each pin an explicit
+  main table and primary key over one schema of six tables. The block mapping carries
+  an eight-armed grade conditional whose fallback passes the raw code through, a
+  three-armed finish conditional, a mass banding built from a division against the
+  raw mass, and an embedded dimension block that assembles a complex property out of
+  the enclosing table alias, a literal caliper source and a join-reached blade kind.
+  A cutter join carries a two-condition predicate so an inactive cutter is skipped,
+  and a grouped inline view is traversed twice — once from the block alias and once
+  from the cut-log alias — to read the peak pass count as a derived-table subselect.
+  Mapping test suites assert nine block rows covering every conditional arm, the
+  fallback with an absent code and the join misses, the serialized embedded block,
+  the grit bands and the cut rows read against the view. Two engine runtimes bind the
+  store to statically specified connections authenticated with delegated Kerberos.
+modelSources:
+  model:
+    root: opal-quarry
+    files:
+      - test/opalquarry/connection/QuarryConnections.pure
+      - test/opalquarry/domain/QuarryDomain.pure
+      - test/opalquarry/mapping/QuarryMapping.pure
+      - test/opalquarry/runtime/QuarryRuntimes.pure
+      - test/opalquarry/store/QuarryDB.pure
+features:
+  - connection:delegated-kerberos-authentication
+  - execution:mapping-test
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - delegated-kerberos
+  - embedded-mapping
+  - h2
+  - inline-view
+  - mapping-test-suite
+  - memsql
+  - multi-condition-join
+  - stone-yard-register

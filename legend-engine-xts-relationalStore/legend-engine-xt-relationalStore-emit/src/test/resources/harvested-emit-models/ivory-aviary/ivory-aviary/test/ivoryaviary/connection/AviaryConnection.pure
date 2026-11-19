@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::ivoryaviary::connection::AviaryH2Connection
+{
+  store: test::ivoryaviary::store::AviaryStore;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists aviary;',
+      'create schema aviary;',
+      'create table aviary.ring_record (record_id integer not null, ring_code varchar(24) not null, species_code varchar(16) not null, species_name varchar(64) not null, enclosure_code varchar(16) not null, wing_span_mm integer not null, mass_g double not null, observer_name varchar(64) not null, note_text varchar(128), age_class_code varchar(8), in_z date not null, out_z date, primary key (record_id, in_z));'
+      ];
+  };
+  auth: DefaultH2;
+}

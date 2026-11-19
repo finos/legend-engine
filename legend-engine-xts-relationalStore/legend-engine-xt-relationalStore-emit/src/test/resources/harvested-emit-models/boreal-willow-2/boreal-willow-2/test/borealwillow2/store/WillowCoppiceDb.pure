@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::borealwillow2::store::WillowCoppiceDb
+(
+  Schema coppice
+  (
+    Table cut_log
+    (
+      cut_ref VARCHAR(24) PRIMARY KEY,
+      bed_code VARCHAR(24),
+      cut_round INTEGER,
+      rod_bundles INTEGER,
+      rod_length_cm INTEGER,
+      cut_grade VARCHAR(16),
+      cut_state VARCHAR(16)
+    )
+
+    Table willow_bed
+    (
+      bed_code VARCHAR(24) PRIMARY KEY,
+      bed_name VARCHAR(80),
+      soil_code VARCHAR(16),
+      crew_code VARCHAR(24)
+    )
+
+    Table cutter_crew
+    (
+      crew_code VARCHAR(24) PRIMARY KEY,
+      crew_name VARCHAR(80),
+      depot_name VARCHAR(80)
+    )
+  )
+
+  Join cutToBed(coppice.cut_log.bed_code = coppice.willow_bed.bed_code)
+  Join bedToCrew(coppice.willow_bed.crew_code = coppice.cutter_crew.crew_code)
+)

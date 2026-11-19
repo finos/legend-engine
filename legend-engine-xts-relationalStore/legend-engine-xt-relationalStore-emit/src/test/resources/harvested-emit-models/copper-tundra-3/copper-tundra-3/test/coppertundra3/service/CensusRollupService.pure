@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coppertundra3::service::CensusRollupService
+{
+  pattern: '/coppertundra3/censusRollup';
+  title: 'Enclosure Census Rollup At A Business Date';
+  owners:
+  [
+    'reserve-census-desk'
+  ];
+  documentation: 'Resolves the enclosure census extent at the supplied business date, keeps the observations recorded on or after a fixed instant whose region code is one of three, and rolls the counted heads and forage weight up behind a twenty-seven column grouping key so the published grain stays one row per described enclosure state.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|test::coppertundra3::domain::EnclosureCensus.all($businessDate)->filter(
+      c|($c.observedOn >= %2026-01-01T00:00:00) && ($c.regionCode->in(['NORTH', 'MIDLAND', 'SOUTH']))
+    )->groupBy(
+      [
+        c|$c.enclosureCode,
+        c|$c.censusStatus,
+        c|$c.habitatTier,
+        c|$c.zoneName,
+        c|$c.zoneDescription,
+        c|$c.sectorName,
+        c|$c.sectorDescription,
+        c|$c.reserveName,
+        c|$c.reserveDescription,
+        c|$c.keeperTeam,
+        c|$c.stewardName,
+        c|$c.surveyMethod,
+        c|$c.accessLevel,
+        c|$c.substrateClass,
+        c|$c.regionCode,
+        c|$c.observedOn,
+        c|$c.certifiedThrough,
+        c|$c.patrolDays,
+        c|$c.dayCount,
+        c|$c.fencedFlag,
+        c|$c.shadedFlag,
+        c|$c.wateredFlag,
+        c|$c.signedFlag,
+        c|$c.gatedFlag,
+        c|$c.pavedFlag,
+        c|$c.lockedFlag,
+        c|$c.mappedFlag
+      ],
+      [
+        agg(c|$c.headcount, y|$y->sum()),
+        agg(c|$c.forageKg, y|$y->sum())
+      ],
+      [
+        'Enclosure Ref',
+        'Census State',
+        'Habitat Tier Label',
+        'Zone',
+        'Zone Note',
+        'Sector',
+        'Sector Note',
+        'Reserve',
+        'Reserve Note',
+        'Keeper Rota',
+        'Steward',
+        'Method',
+        'Access Band',
+        'Substrate',
+        'Region',
+        'Observed Instant',
+        'Certified Until',
+        'Patrol Day Count',
+        'Open Day Count',
+        'Is Fenced',
+        'Is Shaded',
+        'Is Watered',
+        'Is Signed',
+        'Is Gated',
+        'Is Paved',
+        'Is Locked',
+        'Is Mapped',
+        'Counted Head Total',
+        'Forage Kilogram Total'
+      ]
+    )->sort(
+      [
+        asc('Enclosure Ref'),
+        asc('Access Band')
+      ]
+    )};
+    mapping: test::coppertundra3::mapping::CensusMapping;
+    runtime: test::coppertundra3::runtime::CensusRuntime;
+  }
+  testSuites:
+  [
+    censusRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          censusH2Connection:
+            Reference
+            #{
+              test::coppertundra3::data::CensusSeasonData
+            }#
+        ]
+      ]
+      tests:
+      [
+        rollupAtBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-15
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Enclosure Ref":"ENC-LAPSED","Census State":"CONFIRMED","Habitat Tier Label":"TIER-UPLAND","Zone":"Lapsed Paddock","Zone Note":"Paddock whose certificate has lapsed","Sector":"Lapsed Sector","Sector Note":"Retired sector kept for the record","Reserve":"Tundra Reserve","Reserve Note":"Cold-climate reserve of open ground","Keeper Rota":"ROTA-EARLY","Steward":"Ivo Thorne","Method":"WALKED-TRANSECT","Access Band":"OPEN","Substrate":"PEAT","Region":"SOUTH","Observed Instant":"2026-03-04T08:15:00.000000000+0000","Certified Until":"2001-04-05","Patrol Day Count":12,"Open Day Count":94,"Is Fenced":"Y","Is Shaded":"N","Is Watered":"Y","Is Signed":"Y","Is Gated":"N","Is Paved":"N","Is Locked":"N","Is Mapped":"Y","Counted Head Total":3,"Forage Kilogram Total":1.5},{"Enclosure Ref":"ENC-MIRE-HOLLOW","Census State":"CONFIRMED","Habitat Tier Label":"TIER-UPLAND","Zone":"Fell Mire","Zone Note":"Waterlogged hollow below the ridge","Sector":"Mire Sector","Sector Note":"Southern mire and its outflow","Reserve":"Tundra Reserve","Reserve Note":"Cold-climate reserve of open ground","Keeper Rota":"ROTA-EARLY","Steward":"Ivo Thorne","Method":"WALKED-TRANSECT","Access Band":"OPEN","Substrate":"PEAT","Region":"MIDLAND","Observed Instant":"2026-03-04T08:15:00.000000000+0000","Certified Until":"2099-01-31","Patrol Day Count":12,"Open Day Count":94,"Is Fenced":"Y","Is Shaded":"N","Is Watered":"Y","Is Signed":"Y","Is Gated":"N","Is Paved":"N","Is Locked":"N","Is Mapped":"Y","Counted Head Total":15,"Forage Kilogram Total":5.5},{"Enclosure Ref":"ENC-NORTH-RIDGE","Census State":"CONFIRMED","Habitat Tier Label":"TIER-UPLAND","Zone":"Upland Heath","Zone Note":"Wind-clipped heath above the tree line","Sector":"Ridge Sector","Sector Note":"Northern ridge and its saddle","Reserve":"Tundra Reserve","Reserve Note":"Cold-climate reserve of open ground","Keeper Rota":"ROTA-EARLY","Steward":"Ivo Thorne","Method":"WALKED-TRANSECT","Access Band":"OPEN","Substrate":"PEAT","Region":"NORTH","Observed Instant":"2026-03-04T08:15:00.000000000+0000","Certified Until":"2099-01-31","Patrol Day Count":12,"Open Day Count":94,"Is Fenced":"Y","Is Shaded":"N","Is Watered":"Y","Is Signed":"Y","Is Gated":"N","Is Paved":"N","Is Locked":"N","Is Mapped":"Y","Counted Head Total":65,"Forage Kilogram Total":20.0},{"Enclosure Ref":"ENC-NORTH-RIDGE","Census State":"CONFIRMED","Habitat Tier Label":"TIER-UPLAND","Zone":"Upland Heath","Zone Note":"Wind-clipped heath above the tree line","Sector":"Ridge Sector","Sector Note":"Northern ridge and its saddle","Reserve":"Tundra Reserve","Reserve Note":"Cold-climate reserve of open ground","Keeper Rota":"ROTA-EARLY","Steward":"Ivo Thorne","Method":"WALKED-TRANSECT","Access Band":"PERMIT","Substrate":"PEAT","Region":"NORTH","Observed Instant":"2026-03-04T08:15:00.000000000+0000","Certified Until":"2099-01-31","Patrol Day Count":12,"Open Day Count":94,"Is Fenced":"Y","Is Shaded":"N","Is Watered":"Y","Is Signed":"Y","Is Gated":"N","Is Paved":"N","Is Locked":"N","Is Mapped":"Y","Counted Head Total":9,"Forage Kilogram Total":3.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

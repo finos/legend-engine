@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadecove2::function::*;
+
+function {meta::pure::profiles::doc.doc = 'Bands a handed-in sample grade, folding anything unrecognised onto a review band.'} test::jadecove2::function::gradeBand(sampleGrade: String[1]): String[1]
+{
+  if($sampleGrade->trim()->toUpper() == 'CLEAN',
+    |'CLEAN-SAMPLE',
+    |if($sampleGrade->trim()->toUpper() == 'SILTED', |'SILTED-SAMPLE', |'REVIEW-SAMPLE'))
+}
+
+function {meta::pure::profiles::doc.doc = 'Summarises a shore walker note, falling back when nothing was written down.'} test::jadecove2::function::noteSummary(sampleNote: String[1]): String[1]
+{
+  if($sampleNote->trim() == '', |'NO-NOTE', |'NOTE:' + $sampleNote->trim()->toUpper())
+}
+
+function {meta::pure::profiles::doc.doc = 'Folds a technician code to a single spelling for the digest.'} test::jadecove2::function::technicianLabel(technicianCode: String[1]): String[1]
+{
+  'TECH/' + $technicianCode->trim()->toUpper()
+}

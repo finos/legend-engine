@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigogecko2::store::ToolshareStore
+(
+  Schema toolshare
+  (
+    Table checkout
+    (
+      checkout_code VARCHAR(8) PRIMARY KEY,
+      period VARCHAR(7),
+      status_code VARCHAR(8),
+      tool_code VARCHAR(16),
+      member_code VARCHAR(8),
+      wear_points DOUBLE,
+      setup_points DOUBLE,
+      taken_on DATE,
+      due_on DATE,
+      returned_on DATE,
+      minutes_used INTEGER,
+      wear_grade VARCHAR(2)
+    )
+    Table member
+    (
+      member_code VARCHAR(8) PRIMARY KEY,
+      member_name VARCHAR(40),
+      workshop_code VARCHAR(8)
+    )
+    Table workshop
+    (
+      workshop_code VARCHAR(8) PRIMARY KEY,
+      workshop_name VARCHAR(40),
+      steward_code VARCHAR(8)
+    )
+    Table steward
+    (
+      steward_code VARCHAR(8) PRIMARY KEY,
+      steward_name VARCHAR(40)
+    )
+    Table tool
+    (
+      tool_code VARCHAR(16) PRIMARY KEY,
+      tool_name VARCHAR(40),
+      supplier_code VARCHAR(8)
+    )
+    Table supplier
+    (
+      supplier_code VARCHAR(8) PRIMARY KEY,
+      supplier_name VARCHAR(40)
+    )
+    Table checkout_tag
+    (
+      checkout_code VARCHAR(8) PRIMARY KEY,
+      tag_code VARCHAR(12) PRIMARY KEY
+    )
+  )
+
+  Filter LiveCheckouts(toolshare.checkout.status_code <> 'VOID')
+
+  Join Checkout_Member(toolshare.checkout.member_code = toolshare.member.member_code)
+  Join Member_Workshop(toolshare.member.workshop_code = toolshare.workshop.workshop_code)
+  Join Workshop_Steward(toolshare.workshop.steward_code = toolshare.steward.steward_code)
+  Join Checkout_Tool(toolshare.checkout.tool_code = toolshare.tool.tool_code)
+  Join Tool_Supplier(toolshare.tool.supplier_code = toolshare.supplier.supplier_code)
+  Join Checkout_Tag(toolshare.checkout.checkout_code = toolshare.checkout_tag.checkout_code)
+)

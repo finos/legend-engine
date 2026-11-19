@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarbeacon::mapping::ShelterMapping
+(
+  *test::cedarbeacon::domain::RouteCorridor[routeCorridor]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon::store::ShelterRegisterDb]shelters.route_corridor.corridor_code
+    )
+    ~mainTable [test::cedarbeacon::store::ShelterRegisterDb]shelters.route_corridor
+    corridorCode: [test::cedarbeacon::store::ShelterRegisterDb]shelters.route_corridor.corridor_code,
+    corridorName: [test::cedarbeacon::store::ShelterRegisterDb]shelters.route_corridor.corridor_name
+  }
+
+  *test::cedarbeacon::domain::ShelterUnit[shelterUnit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarbeacon::store::ShelterRegisterDb]shelters.shelter_unit.unit_code
+    )
+    ~mainTable [test::cedarbeacon::store::ShelterRegisterDb]shelters.shelter_unit
+    unitCode: [test::cedarbeacon::store::ShelterRegisterDb]shelters.shelter_unit.unit_code,
+    unitKind: [test::cedarbeacon::store::ShelterRegisterDb]shelters.shelter_unit.unit_kind,
+    corridorName: [test::cedarbeacon::store::ShelterRegisterDb]@UnitCorridor | [test::cedarbeacon::store::ShelterRegisterDb]shelters.route_corridor.corridor_name
+  }
+
+  testSuites:
+  [
+    shelterUnitSuite:
+    {
+      function: |test::cedarbeacon::domain::ShelterUnit.all(%2026-06-01)->filter(u|$u.unitCode == 'SU-1')->graphFetch(
+        #{
+          test::cedarbeacon::domain::ShelterUnit
+          {
+            unitCode,
+            unitKind,
+            corridorName
+          }
+        }#
+      )->serialize(
+        #{
+          test::cedarbeacon::domain::ShelterUnit
+          {
+            unitCode,
+            unitKind,
+            corridorName
+          }
+        }#
+      );
+      tests:
+      [
+        unitWithCorridor:
+        {
+          doc: 'A shelter unit open at the pinned business date resolves its own columns and the corridor name reached through the single hop.';
+          data:
+          [
+            test::cedarbeacon::store::ShelterRegisterDb:
+              Relational
+              #{
+                shelters.route_corridor:
+                  'corridor_code,corridor_name\n'+
+                  'RC-1,Riverside Corridor\n';
+                shelters.shelter_unit:
+                  'unit_code,unit_kind,corridor_code,valid_from,valid_thru\n'+
+                  'SU-1,glazed shelter,RC-1,2026-01-01,9999-12-31\n'+
+                  'SU-2,open canopy,RC-7,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            resolvedUnit:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"unitCode":"SU-1","unitKind":"glazed shelter","corridorName":"Riverside Corridor"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    shelterUnitJoinMissSuite:
+    {
+      function: |test::cedarbeacon::domain::ShelterUnit.all(%2026-06-01)->filter(u|$u.unitCode == 'SU-2')->graphFetch(
+        #{
+          test::cedarbeacon::domain::ShelterUnit
+          {
+            unitCode,
+            unitKind,
+            corridorName
+          }
+        }#
+      )->serialize(
+        #{
+          test::cedarbeacon::domain::ShelterUnit
+          {
+            unitCode,
+            unitKind,
+            corridorName
+          }
+        }#
+      );
+      tests:
+      [
+        unitWithoutCorridorRow:
+        {
+          doc: 'A shelter unit whose corridor code has no register row keeps its own columns while the hop yields no corridor name.';
+          data:
+          [
+            test::cedarbeacon::store::ShelterRegisterDb:
+              Relational
+              #{
+                shelters.route_corridor:
+                  'corridor_code,corridor_name\n'+
+                  'RC-1,Riverside Corridor\n';
+                shelters.shelter_unit:
+                  'unit_code,unit_kind,corridor_code,valid_from,valid_thru\n'+
+                  'SU-1,glazed shelter,RC-1,2026-01-01,9999-12-31\n'+
+                  'SU-2,open canopy,RC-7,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            unresolvedUnit:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"unitCode":"SU-2","unitKind":"open canopy","corridorName":null}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

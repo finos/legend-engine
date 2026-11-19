@@ -1,0 +1,31 @@
+name: boreal-cove-shared
+title: "Boreal Cove — Field Survey Domain, Store and Mapping"
+description: |
+  Scaffolding the keyed access layer runs against: one tagged-animal class, the
+  single-table survey database it is mapped onto, and a standalone helper
+  function that resolves a per-region re-sighting floor. Nothing here is
+  executable on its own; the query bodies live entirely in the access module.
+
+modelSources:
+  model:
+    root: boreal-cove-shared
+    files:
+      - test/borealcove/domain/SurveyDomain.pure
+      - test/borealcove/mapping/SurveyMapping.pure
+      - test/borealcove/store/SurveyStore.pure
+
+features:
+  - execution:mapping-test
+  - grammar:function
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - field-survey
+  - h2
+  - mapping-test
+  - shared-domain
+  - wildlife-tracking

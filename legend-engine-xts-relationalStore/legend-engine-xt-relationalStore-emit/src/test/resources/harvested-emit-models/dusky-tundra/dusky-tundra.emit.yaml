@@ -1,0 +1,51 @@
+name: dusky-tundra
+title: "Dusky Tundra — Lichen Grazing Plot Roster (environment-keyed multi-execution over a branch-covered compound predicate)"
+description: |
+  A tundra lichen grazing survey whose roster query allocates a normalised range
+  anchor and then filters plots through a compound predicate that switches
+  between an unrestricted plot-code path and a caller-supplied membership path
+  before bounding the lichen cover and projecting a de-duplicated tabular
+  result. One multi-execution service keyed by environment binds that body to
+  two runtimes, and its single-execution counterpart carries fixtures that cover
+  both arms of the predicate.
+
+modelSources:
+  model:
+    root: dusky-tundra
+    files:
+      - test/duskytundra/connection/TundraConnections.pure
+      - test/duskytundra/domain/TundraDomain.pure
+      - test/duskytundra/mapping/TundraMapping.pure
+      - test/duskytundra/runtime/TundraRuntimes.pure
+      - test/duskytundra/service/PlotBandRoster.pure
+      - test/duskytundra/store/TundraDatabase.pure
+
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data-branch-coverage
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - branch-coverage
+  - collection-op
+  - compound-filter
+  - distinct
+  - grazing-survey
+  - h2
+  - lichen-monitoring
+  - mapping-test
+  - multi-execution
+  - service-test
+  - tabular-data-set

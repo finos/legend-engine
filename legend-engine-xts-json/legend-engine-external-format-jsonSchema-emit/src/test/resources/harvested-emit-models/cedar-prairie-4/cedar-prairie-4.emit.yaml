@@ -1,0 +1,59 @@
+name: cedar-prairie-4
+title: "Cedar Prairie 4 - a prairie restoration register whose surveys carry their crew paperwork as a bound JSON document"
+description: |
+  A prairie restoration programme. Restoration plots are held in one landed
+  table that nests inside itself: a plot may sit inside a wider parent plot, and
+  the store declares a self-referential inner join over the parent key so the
+  parent name is reached by traversal rather than duplication. The standing of a
+  plot is a closed enumeration bound to its landed code through an enumeration
+  mapping, and every mapped class is bound with a primary key over an explicitly
+  aliased main table. Each walked survey carries its crew paperwork as a single
+  nested JSON document column, and the mapping interprets that one column
+  through a JSON binding so the reference, the crew name and the crew lead
+  resolve as ordinary properties. Three services publish the register: the
+  nested plots of either named region under a disjunctive predicate, a coverage
+  rollup that groups the surveys by plot and averages the walked coverage, and a
+  flat projection of the crew paperwork out of the bound document. All three
+  services and the mapping carry test suites over seeded relational fixtures.
+modelSources:
+  model:
+    root: cedar-prairie-4
+    files:
+      - test/cedarprairie4/binding/CrewReportBinding.pure
+      - test/cedarprairie4/connection/PrairieConnection.pure
+      - test/cedarprairie4/domain/PrairieDomain.pure
+      - test/cedarprairie4/mapping/PrairieMapping.pure
+      - test/cedarprairie4/runtime/PrairieRuntime.pure
+      - test/cedarprairie4/service/PrairieServices.pure
+      - test/cedarprairie4/store/PrairieDb.pure
+features:
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+tags:
+  - enumeration
+  - external-format-binding
+  - group-by
+  - h2
+  - prairie-restoration-register
+  - relational-mapping
+  - self-join
+  - service-test
+  - snowflake
+stores:
+  - relational
+complexity: advanced

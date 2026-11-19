@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cedarthicket2::store::ParkCoreDb
+(
+  Schema trailway
+  (
+    Table trail_run
+    (
+      run_id INTEGER PRIMARY KEY,
+      trail_code VARCHAR(16) NOT NULL,
+      trail_name VARCHAR(80) NOT NULL,
+      event_on DATE NOT NULL,
+      snapshot_tag VARCHAR(24) NOT NULL,
+      distance_metres INTEGER,
+      surface_code VARCHAR(16)
+    )
+  )
+
+  Schema shelter
+  (
+    Table shelter_stay
+    (
+      stay_id INTEGER PRIMARY KEY,
+      shelter_code VARCHAR(16) NOT NULL,
+      shelter_name VARCHAR(80) NOT NULL,
+      zone_code VARCHAR(16),
+      party_size INTEGER,
+      nights_booked INTEGER,
+      valid_thru TIMESTAMP NOT NULL,
+      registry_code VARCHAR(24),
+      permit_ref VARCHAR(24),
+      sequence_no INTEGER
+    )
+  )
+)

@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::quietthicket::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One telemetry sample captured by a turbine sensor. The class is a narrow projection of a wide physical relation: the descriptive columns beside the raw measures are reached through declared join paths rather than from the driving relation.'} test::quietthicket::domain::SensorReading
+{
+  readingCode: String[1];
+  capturedAt: DateTime[1];
+  windSpeedMs: Float[1];
+  powerOutputKw: Float[1];
+  bladePitchDeg: Float[0..1];
+  faultRaised: Boolean[1];
+  turbineName: String[0..1];
+  mastLabel: String[0..1];
+  siteName: String[0..1];
+  regionName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sensor head fitted to a met mast, with the instant it was fitted and the day it was last calibrated.'} test::quietthicket::domain::Sensor
+{
+  sensorCode: String[1];
+  sensorModel: String[1];
+  installedAt: DateTime[1];
+  calibratedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A turbine in the fleet, sited on one wind farm.'} test::quietthicket::domain::Turbine
+{
+  turbineCode: String[1];
+  turbineNameText: String[1];
+  ratedKw: Integer[1];
+  commissionedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A meteorological mast carrying sensor heads at a fixed height.'} test::quietthicket::domain::Mast
+{
+  mastCode: String[1];
+  mastLabelText: String[1];
+  heightMetres: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wind farm site, filed under one grid region.'} test::quietthicket::domain::Site
+{
+  siteCode: String[1];
+  siteNameText: String[1];
+  gridZone: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A grid region grouping wind farm sites for reporting.'} test::quietthicket::domain::Region
+{
+  regionCode: String[1];
+  regionNameText: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A maintenance entry against a turbine, timestamped to the instant the crew closed the job.'} test::quietthicket::domain::MaintenanceLog
+{
+  logCode: String[1];
+  loggedAt: DateTime[1];
+  crewCode: String[1];
+  hoursSpent: Integer[1];
+  notes: String[0..1];
+}
+
+Association test::quietthicket::domain::Reading_Sensor
+{
+  readings: SensorReading[*];
+  sensor: Sensor[0..1];
+}
+
+Association test::quietthicket::domain::Reading_Turbine
+{
+  turbineReadings: SensorReading[*];
+  turbine: Turbine[0..1];
+}
+
+Association test::quietthicket::domain::Sensor_Mast
+{
+  sensors: Sensor[*];
+  mast: Mast[0..1];
+}
+
+Association test::quietthicket::domain::Turbine_Site
+{
+  turbines: Turbine[*];
+  site: Site[0..1];
+}
+
+Association test::quietthicket::domain::Site_Region
+{
+  sites: Site[*];
+  region: Region[0..1];
+}
+
+Association test::quietthicket::domain::Log_Turbine
+{
+  maintenanceLogs: MaintenanceLog[*];
+  loggedTurbine: Turbine[0..1];
+}

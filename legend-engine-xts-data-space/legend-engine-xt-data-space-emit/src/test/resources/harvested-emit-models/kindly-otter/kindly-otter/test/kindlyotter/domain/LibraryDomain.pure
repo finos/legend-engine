@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One branch year of monthly lending counts held as a wide numeric series.'} test::kindlyotter::domain::BranchMonthSeries
+[
+  monthsAreNonNegative: $this.checkoutsM01 >= 0,
+  totalCoversJanuary: $this.annualTotal >= $this.checkoutsM01
+]
+{
+  branchCode: String[1];
+  periodCode: String[1];
+  checkoutsM01: Integer[1];
+  checkoutsM02: Integer[1];
+  checkoutsM03: Integer[1];
+  checkoutsM04: Integer[1];
+  checkoutsM05: Integer[1];
+  checkoutsM06: Integer[1];
+  checkoutsM07: Integer[1];
+  checkoutsM08: Integer[1];
+  checkoutsM09: Integer[1];
+  checkoutsM10: Integer[1];
+  checkoutsM11: Integer[1];
+  checkoutsM12: Integer[1];
+  annualTotal: Integer[1];
+  noteText: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lending branch and the service band it is staffed for.'} test::kindlyotter::domain::BranchProfile
+[
+  seatsAreDeclared: $this.seatCount > 0
+]
+{
+  branchCode: String[1];
+  branchName: String[1];
+  districtCode: String[1];
+  openedYear: Integer[1];
+  seatCount: Integer[1];
+  serviceGrade: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A shelved stock line and the reservation queue standing against it.'} test::kindlyotter::domain::TitleStock
+[
+  holdsWithinCopies: $this.holdCount <= $this.copyCount
+]
+{
+  stockCode: String[1];
+  branchCode: String[1];
+  mediaType: String[1];
+  copyCount: Integer[1];
+  holdCount: Integer[1];
+  retiredFlag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One volunteer period of logged hours at a branch.'} test::kindlyotter::domain::VolunteerHours
+{
+  volunteerCode: String[1];
+  periodCode: String[1];
+  branchCode: String[1];
+  loggedHours: Float[1];
+  badgeGrade: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single outreach event held by a branch.'} test::kindlyotter::domain::OutreachEvent
+{
+  eventCode: String[1];
+  branchCode: String[1];
+  eventDate: StrictDate[1];
+  attendance: Integer[1];
+  themeCode: String[1];
+}

@@ -1,0 +1,184 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::amberestuary2::mapping::ReedBedMapping
+(
+  test::amberestuary2::domain::ReedPlot: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.plot_code,
+      [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.survey_date
+    )
+    ~mainTable [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot
+    plotCode: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.plot_code,
+    surveyDate: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.survey_date,
+    plotLabel: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.plot_label,
+    sectorCode: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.sector_code,
+    reedDensity: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.reed_density,
+    waterDepthCm: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.water_depth_cm,
+    stemCount: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.stem_count,
+    salinityPsu: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.salinity_psu,
+    canopyPct: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.canopy_pct,
+    wardenCode: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.warden_code,
+    habitatNote: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.habitat_note,
+    seasonCode: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.season_code,
+    accessFlag: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.access_flag,
+    tideStage: [test::amberestuary2::store::ReedBedDatabase]wetland.reed_plot.tide_stage,
+    platformLabel: [test::amberestuary2::store::ReedBedDatabase]@plot_platform | wetland.nesting_platform.platform_label
+  }
+
+  test::amberestuary2::domain::NestingPlatform: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform.platform_code,
+      [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform.install_year
+    )
+    ~mainTable [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform
+    platformCode: [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform.platform_code,
+    sectorCode: [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform.sector_code,
+    platformLabel: [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform.platform_label,
+    installYear: [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform.install_year,
+    mountHeightM: [test::amberestuary2::store::ReedBedDatabase]wetland.nesting_platform.mount_height_m
+  }
+
+  testSuites:
+  [
+    plotSuite:
+    {
+      function: |test::amberestuary2::domain::ReedPlot.all()->project(
+        [
+          p|$p.plotCode,
+          p|$p.surveyDate,
+          p|$p.plotLabel->toUpper(),
+          p|$p.sectorCode,
+          p|$p.stemCount,
+          p|$p.waterDepthCm,
+          p|test::amberestuary2::function::depthBand($p.waterDepthCm),
+          p|$p.canopyPct,
+          p|$p.platformLabel
+        ],
+        [
+          'Plot',
+          'Surveyed',
+          'Label',
+          'Sector',
+          'Stems',
+          'Depth',
+          'DepthBand',
+          'Canopy',
+          'Platform'
+        ]
+      )->sort(
+        [
+          asc('Plot'),
+          asc('Surveyed')
+        ]
+      );
+      tests:
+      [
+        plotsBandedAgainstDeclaredKey:
+        {
+          doc: 'Projects the alias-qualified plot columns, the joined platform label and the banded water depth over rows that share part of the declared composite key, including a row whose key date column is null and a row with no join counterpart.';
+          data:
+          [
+            test::amberestuary2::store::ReedBedDatabase:
+              Relational
+              #{
+                wetland.reed_plot:
+                  'plot_code,survey_date,plot_label,sector_code,reed_density,water_depth_cm,stem_count,salinity_psu,canopy_pct,warden_code,habitat_note,season_code,access_flag,tide_stage\n'+
+                  'RP-01,2026-04-12,North Reed Plot,SEC-NORTH,5.2,38.4,120,1.2,72.5,wd-north,dense stand,spring-early,Y,ebb\n'+
+                  'RP-01,2026-05-18,North Reed Plot,SEC-NORTH,5.8,44.2,140,1.4,80.4,wd-north,dense stand,spring-late,Y,flood\n'+
+                  'RP-02,,South Reed Plot,SEC-SOUTH,2.5,12.6,60,0.8,40.1,wd-south,patchy stand,summer-early,N,slack\n'+
+                  'RP-03,2026-06-02,East Fen Plot,SEC-EAST,1.5,8.3,25,0.5,,,,summer-late,N,ebb\n';
+                wetland.nesting_platform:
+                  'platform_code,sector_code,platform_label,install_year,mount_height_m\n'+
+                  'NP-01,SEC-NORTH,North Ridge Platform,2019,2.5\n'+
+                  'NP-02,SEC-SOUTH,South Fen Platform,2021,3.4\n';
+              }#
+          ];
+          asserts:
+          [
+            fourPlotsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"RP-01","Surveyed":"2026-04-12","Label":"NORTH REED PLOT","Sector":"SEC-NORTH","Stems":120,"Depth":38.4,"DepthBand":"mid","Canopy":72.5,"Platform":"North Ridge Platform"},{"Plot":"RP-01","Surveyed":"2026-05-18","Label":"NORTH REED PLOT","Sector":"SEC-NORTH","Stems":140,"Depth":44.2,"DepthBand":"deep","Canopy":80.4,"Platform":"North Ridge Platform"},{"Plot":"RP-02","Surveyed":null,"Label":"SOUTH REED PLOT","Sector":"SEC-SOUTH","Stems":60,"Depth":12.6,"DepthBand":"shallow","Canopy":40.1,"Platform":"South Fen Platform"},{"Plot":"RP-03","Surveyed":"2026-06-02","Label":"EAST FEN PLOT","Sector":"SEC-EAST","Stems":25,"Depth":8.3,"DepthBand":"shallow","Canopy":null,"Platform":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    platformSuite:
+    {
+      function: |test::amberestuary2::domain::NestingPlatform.all()->project(
+        [
+          q|$q.platformCode,
+          q|$q.sectorCode,
+          q|$q.platformLabel->toUpper(),
+          q|$q.installYear,
+          q|$q.mountHeightM
+        ],
+        [
+          'Platform',
+          'Sector',
+          'Label',
+          'Installed',
+          'Height'
+        ]
+      )->sort(
+        [
+          asc('Platform')
+        ]
+      );
+      tests:
+      [
+        platformsProjectedFromOwnMainTable:
+        {
+          doc: 'Projects the second main table so its own alias and its mixed-type composite key of platform code plus install year are exercised independently of the plot table.';
+          data:
+          [
+            test::amberestuary2::store::ReedBedDatabase:
+              Relational
+              #{
+                wetland.nesting_platform:
+                  'platform_code,sector_code,platform_label,install_year,mount_height_m\n'+
+                  'NP-01,SEC-NORTH,North Ridge Platform,2019,2.5\n'+
+                  'NP-02,SEC-SOUTH,South Fen Platform,2021,3.4\n';
+              }#
+          ];
+          asserts:
+          [
+            twoPlatformsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Platform":"NP-01","Sector":"SEC-NORTH","Label":"NORTH RIDGE PLATFORM","Installed":2019,"Height":2.5},{"Platform":"NP-02","Sector":"SEC-SOUTH","Label":"SOUTH FEN PLATFORM","Installed":2021,"Height":3.4}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

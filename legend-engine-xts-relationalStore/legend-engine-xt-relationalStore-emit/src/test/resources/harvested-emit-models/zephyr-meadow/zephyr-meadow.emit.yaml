@@ -1,0 +1,47 @@
+name: zephyr-meadow
+title: "Zephyr Meadow — One Processing-Temporal Class Layer Bound Twice Over Mirrored Joins and Computed Enumerations"
+description: |
+  A meadow restoration corpus whose observation, visit and meadow relations are versioned on a
+  processing axis and reached through mirrored join pairs, a four-hop steward chain and filters
+  whose predicates differ between the two schemas that back the same classes. Every enumeration
+  is bound over a computed source expression, so trimmed, concatenated and upper-cased codes decide
+  the member and an unknown code resolves to none.
+modelSources:
+  model:
+    root: zephyr-meadow
+    files:
+      - test/zephyrmeadow/domain/MeadowDomain.pure
+      - test/zephyrmeadow/mapping/ArchiveMapping.pure
+      - test/zephyrmeadow/mapping/FieldMapping.pure
+      - test/zephyrmeadow/store/MeadowArchiveStore.pure
+      - test/zephyrmeadow/store/MeadowFieldStore.pure
+features:
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - computed-enumeration-source
+  - dual-schema
+  - h2
+  - habitat-survey
+  - meadow-restoration
+  - mirrored-joins
+  - multi-hop-join-path
+  - processing-temporal
+  - store-filter
+  - string-function-transform

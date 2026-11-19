@@ -1,0 +1,169 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedfossil6::mapping::PrepDigestMapping
+(
+  test::frostedfossil6::domain::PrepStage: EnumerationMapping DigestStageMapping
+  {
+    Intake: ['I'],
+    Active: ['A'],
+    Held: ['H'],
+    Closed: ['C']
+  }
+
+  test::frostedfossil6::domain::MatrixGrade: EnumerationMapping DigestGradeMapping
+  {
+    Soft: ['SFT'],
+    Firm: ['FRM'],
+    Hard: ['HRD']
+  }
+
+  test::frostedfossil6::domain::QueueBand: EnumerationMapping DigestBandMapping
+  {
+    Low: ['LOW'],
+    Medium: ['MID'],
+    High: ['HGH']
+  }
+
+  *test::frostedfossil6::domain::PrepDigest[digest]: Pure
+  {
+    ~src test::frostedfossil6::domain::PrepScan
+    digestCode: $src.scanCode,
+    digestStage: EnumerationMapping DigestStageMapping: [if($src.stageText == 'OPEN', |'I', |if($src.stageText == 'WORKING', |'A', |if($src.stageText == 'PAUSED', |'H', |'C')))]->toOne(),
+    digestGrade: EnumerationMapping DigestGradeMapping: [if($src.matrixValue >= 8.0, |'HRD', |if($src.matrixValue >= 4.0, |'FRM', |'SFT'))]->toOne(),
+    digestBand: EnumerationMapping DigestBandMapping: [if($src.queueDepth >= 8, |'HGH', |if($src.queueDepth >= 4, |'MID', |'LOW'))]->toOne()
+  }
+
+  testSuites:
+  [
+    digestEnumerationSuite:
+    {
+      function: |test::frostedfossil6::domain::PrepDigest.all()->graphFetch(
+        #{
+          test::frostedfossil6::domain::PrepDigest
+          {
+            digestCode,
+            digestStage,
+            digestGrade,
+            digestBand
+          }
+        }#
+      )->serialize(
+        #{
+          test::frostedfossil6::domain::PrepDigest
+          {
+            digestCode,
+            digestStage,
+            digestGrade,
+            digestBand
+          }
+        }#
+      );
+      tests:
+      [
+        computedTopOfEveryCascade:
+        {
+          doc: 'The scan drives the top arm of each of the three computed enumeration cascades.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::frostedfossil6::domain::PrepScan:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"scanCode":"PS-01","stageText":"OPEN","matrixValue":9.0,"queueDepth":9}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            computedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestCode":"PS-01","digestStage":"Intake","digestGrade":"Hard","digestBand":"High"}';
+                  }#;
+              }#
+          ];
+        },
+        computedMiddleOfEveryCascade:
+        {
+          doc: 'The scan drives the middle arm of each of the three computed enumeration cascades.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::frostedfossil6::domain::PrepScan:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"scanCode":"PS-02","stageText":"WORKING","matrixValue":5.0,"queueDepth":5}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            computedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestCode":"PS-02","digestStage":"Active","digestGrade":"Firm","digestBand":"Medium"}';
+                  }#;
+              }#
+          ];
+        },
+        computedFallThroughOfEveryCascade:
+        {
+          doc: 'The scan falls through to the last arm of each of the three computed enumeration cascades.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::frostedfossil6::domain::PrepScan:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"scanCode":"PS-03","stageText":"SIGNED-OFF","matrixValue":1.0,"queueDepth":1}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            computedDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestCode":"PS-03","digestStage":"Closed","digestGrade":"Soft","digestBand":"Low"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

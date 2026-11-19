@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldapiary2::mapping::ApiaryRelationalMapping
+(
+  include mapping test::emeraldapiary2::mapping::ApiaryBaseMapping
+
+  *test::emeraldapiary2::domain::HiveInspection[inspectionBase]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.inspection_code
+    )
+    ~mainTable [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection
+    inspectionCode: [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.inspection_code,
+    colonyCode: [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.colony_code,
+    inspectedOn: [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.inspected_on,
+    inspectorName: [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.inspector_name,
+    apiaryName: [test::emeraldapiary2::store::ApiaryDatabase]@Inspection_Colony > @Colony_Apiary | apiary.apiary_site.apiary_name,
+    inspectionStamp
+    (
+      inspectorAlias: [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.inspector_name,
+      apiaryLabel: [test::emeraldapiary2::store::ApiaryDatabase]@Inspection_Colony > @Colony_Apiary | apiary.apiary_site.apiary_name
+    )
+  }
+
+  test::emeraldapiary2::domain::TreatmentInspection[treatmentInspection] extends [inspectionBase]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.inspection_code
+    )
+    ~mainTable [test::emeraldapiary2::store::ApiaryDatabase]inspection.treatment_inspection
+    treatmentCode: [test::emeraldapiary2::store::ApiaryDatabase]inspection.treatment_inspection.treatment_code,
+    treatmentNotes: [test::emeraldapiary2::store::ApiaryDatabase]inspection.treatment_inspection.treatment_notes
+  }
+
+  test::emeraldapiary2::domain::RoutineInspection[routineInspection] extends [inspectionBase]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary2::store::ApiaryDatabase]inspection.hive_inspection.inspection_code
+    )
+    ~mainTable [test::emeraldapiary2::store::ApiaryDatabase]inspection.routine_inspection
+    observationNote: [test::emeraldapiary2::store::ApiaryDatabase]inspection.routine_inspection.observation_note
+  }
+
+  test::emeraldapiary2::domain::Apiary[apiaryArchive]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldapiary2::store::ApiaryDatabase]apiary.apiary_archive.apiary_code
+    )
+    ~mainTable [test::emeraldapiary2::store::ApiaryDatabase]apiary.apiary_archive
+    apiaryCode: [test::emeraldapiary2::store::ApiaryDatabase]apiary.apiary_archive.apiary_code,
+    apiaryName: [test::emeraldapiary2::store::ApiaryDatabase]apiary.apiary_archive.apiary_name
+  }
+
+  *test::emeraldapiary2::domain::Apiary[apiaryOperation]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(apiaryBase, apiaryArchive)
+  }
+
+  testSuites:
+  [
+    inspectionPathSuite:
+    {
+      function: |test::emeraldapiary2::domain::HiveInspection.all()->project(
+  [
+    i|$i.inspectionCode,
+    i|$i.apiaryName
+  ],
+  [
+    'InspectionCode',
+    'ApiaryName'
+  ]);
+      tests:
+      [
+        multiHopJoinHit:
+        {
+          data:
+          [
+            test::emeraldapiary2::store::ApiaryDatabase:
+              Relational
+              #{
+                apiary.apiary_site:
+                  'apiary_code,apiary_name\n'+
+                  'AP-01,Emerald Garden';
+                apiary.colony:
+                  'colony_code,colony_name,apiary_code,street,district\n'+
+                  'CL-01,North Hive,AP-01,9 Garden Lane,Meadow';
+                inspection.hive_inspection:
+                  'inspection_code,colony_code,inspected_on,inspector_name\n'+
+                  'IN-01,CL-01,2026-04-02,Rowan Keeper';
+              }#
+          ];
+          asserts:
+          [
+            oneInspection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"InspectionCode":"IN-01","ApiaryName":"Emerald Garden"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

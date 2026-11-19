@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitlagoon2::mapping::LibraryRelationalMapping
+(
+  *test::sunlitlagoon2::domain::RawCheckoutRecord[checkout]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.checkout_code
+    )
+    ~mainTable [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register
+    checkoutCode: [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.checkout_code,
+    borrowerCode: [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.borrower_code,
+    itemTitle: [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.item_title,
+    statusCode: [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.status_code,
+    overdueDays: [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.overdue_days,
+    renewalText: [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.renewal_text,
+    channelCodes: [test::sunlitlagoon2::store::BranchCatalogueDb]branches.checkout_register.channel_codes,
+    programmeTag: 'COMMUNITY_LIBRARY_CIRCULATION'
+  }
+
+  *test::sunlitlagoon2::domain::RawBorrowerRecord[borrower]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitlagoon2::store::CirculationDb]members.borrower_register.borrower_code
+    )
+    ~mainTable [test::sunlitlagoon2::store::CirculationDb]members.borrower_register
+    borrowerCode: [test::sunlitlagoon2::store::CirculationDb]members.borrower_register.borrower_code,
+    displayName: [test::sunlitlagoon2::store::CirculationDb]members.borrower_register.display_name,
+    homeBranch: [test::sunlitlagoon2::store::CirculationDb]members.borrower_register.home_branch,
+    membershipTier: case(
+      in([test::sunlitlagoon2::store::CirculationDb]members.borrower_register.membership_tier, ['READER', 'RESEARCHER']),
+      'COMMUNITY',
+      'VISITOR'
+    )
+  }
+
+  testSuites:
+  [
+    libraryRelationalSuite:
+    {
+      function: |test::sunlitlagoon2::domain::RawCheckoutRecord.all()->project(
+        [
+          l|$l.checkoutCode,
+          l|$l.itemTitle,
+          l|$l.channelCodes,
+          l|$l.programmeTag
+        ],
+        [
+          'Checkout',
+          'Title',
+          'Channels',
+          'Programme'
+        ]
+      );
+      tests:
+      [
+        relationalLandingRows:
+        {
+          data:
+          [
+            test::sunlitlagoon2::store::BranchCatalogueDb:
+              Relational
+              #{
+                branches.checkout_register:
+                  'checkout_code,borrower_code,item_title,status_code,overdue_days,renewal_text,channel_codes\n'+
+                  'RL-01,B-101,Canal Almanac,AVAILABLE,0,2,DESK|MOBILE\n';
+              }#,
+            test::sunlitlagoon2::store::CirculationDb:
+              Relational
+              #{
+                members.borrower_register:
+                  'borrower_code,display_name,home_branch,membership_tier\n'+
+                  'B-101,Reader One,North,READER\n';
+              }#
+          ];
+          asserts:
+          [
+            relationalRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Checkout":"RL-01","Title":"Canal Almanac","Channels":"DESK|MOBILE","Programme":"COMMUNITY_LIBRARY_CIRCULATION"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

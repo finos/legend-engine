@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::emberestuary3::data::GaugeReadingData
+{
+  Relational
+  #{
+    estuary.tide_gauge:
+      'gauge_id,gauge_code,gauge_name,reach_name,datum_metres\n'+
+      '1,TG-01,Outer Sill Gauge,North Reach,2.500\n'+
+      '2,TG-02,Inner Basin Gauge,South Reach,\n';
+
+    estuary.gauge_reading:
+      'reading_id,reading_code,gauge_code,read_on,water_level_metres,surge_metres,reading_note\n'+
+      '1,GR-0001,TG-01,2026-04-01,4.250,0.400,Spring tide crest\n'+
+      '2,GR-0002,TG-01,2026-04-02,3.900,,\n'+
+      '3,GR-0003,TG-02,2026-04-01,2.750,0.150,Wind against the ebb\n'+
+      '4,GR-0004,TG-02,2026-04-03,2.100,0.050,\n';
+  }#
+}

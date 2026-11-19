@@ -1,0 +1,69 @@
+name: meadow-delta
+title: "Meadow Delta Ringing Records — A Ten-Arm Moult Cascade And A Four-Hop Taxonomy Path Over One Multi-Table Wetland Store With A Grouped Catch View"
+description: |
+  A wetland bird-ringing scheme carried on a single relational store: one record table holding the
+  birds taken out of the mist nets, a reference chain of species, families, taxonomic orders and
+  lineages, a netting-zone table and a grouped inline view that folds the record table down to one
+  row per zone carrying the counted catch and the widest wing measured in it. Six joins carry the
+  chain the mapping walks, one of them landing on the grouped view. The record class mapping lands
+  the records under a primary key and a main-table alias and writes the moult sentence over a
+  cascade of ten arms — five scored moult states crossed with the juvenile and the adult plumage
+  stage — falling through to the unscored column when the moult was never scored; the assessed
+  condition sentence, the programme literal and the ring label are written from string functions
+  over the record columns, the species common name is right-trimmed over a joined column, and the
+  family, order and lineage names resolve over two-, three- and four-hop reference paths while the
+  counted catch and widest wing of a zone are read across the join onto the grouped view. The
+  grouped view is mapped as a class in its own right. On the model side a governed record class
+  carries derived sentences that score the bird's condition over eight arms crossing three
+  condition letters with a wing-length threshold, name the plumage stage and the moult standing,
+  fall back for an unreviewed and an unweighed record, flag a heavy bird and a crowded zone against
+  a floor, read the migration code reached over a hop and re-read the score they depend on; a
+  profile stamps the governed classes. Three executable mapping suites cover every cascade arm, the
+  fallback to a null moult sentence, all four reference hops, the derived arms over the same rows
+  and the grouped zone rows.
+modelSources:
+  model:
+    root: meadow-delta
+    files:
+      - test/meadowdelta/domain/MeadowDomain.pure
+      - test/meadowdelta/mapping/MeadowSurveyMapping.pure
+      - test/meadowdelta/profile/MeadowProfile.pure
+      - test/meadowdelta/store/MeadowSurveyDb.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - grammar:derived-property
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - bird-ringing
+  - conditional-cascade
+  - derived-property
+  - h2
+  - inline-view
+  - mapping-test
+  - multi-hop-join-path
+  - plan-generation
+  - profile
+  - relational
+  - string-function-transform
+  - wetland-survey

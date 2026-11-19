@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarhatchery2::service::LotBoardAsOf
+{
+  pattern: '/cedarhatchery/v1/lot-board/{processingDate}';
+  title: 'Cedar Hatchery - Lot Board As Of';
+  documentation: 'Projects the rearing lot board as it was believed at one processing instant, resolving the species and raceway names through join-reached column bindings and the feeding plan through an association implementation.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::cedarhatchery2::domain::StockLot.all($processingDate)->project(
+      [
+        l|$l.lotCode,
+        l|$l.speciesName,
+        l|$l.racewayName,
+        l|$l.feedPlan.feedName,
+        l|$l.fishCount,
+        l|$l.meanLengthMm
+      ],
+      [
+        'Lot',
+        'Species',
+        'Raceway',
+        'Feed Plan',
+        'Fish Count',
+        'Mean Length'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Lot')
+      ]
+    )->limit(10)};
+    mapping: test::cedarhatchery2::mapping::HatcheryCoreMapping;
+    runtime: test::cedarhatchery2::runtime::HatcheryCoreWarehouseRuntime;
+  }
+  testSuites:
+  [
+    lotBoardAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              hatchery.stock_lot:
+                'lot_id,lot_code,species_code,raceway_code,feed_code,fish_count,mean_length_mm,in_z,out_z\n'+
+                'L-01,LOT-ALPHA,SP-TR,RW-01,FD-STD,1200,88.5,2026-01-01,9999-12-31\n'+
+                'L-02,LOT-BRAVO,SP-CH,RW-02,FD-HI,800,102.25,2026-01-01,9999-12-31\n'+
+                'L-03,LOT-CHARLIE,SP-TR,RW-01,FD-STD,450,64.75,2026-01-01,2026-04-01\n';
+              hatchery.species:
+                'species_code,species_name,family_name\n'+
+                'SP-TR,Speckled Trout,Salmonidae\n'+
+                'SP-CH,Mountain Char,Salmonidae\n';
+              hatchery.raceway:
+                'raceway_code,raceway_name,water_source\n'+
+                'RW-01,North Raceway,SPRING\n'+
+                'RW-02,South Raceway,WELL\n';
+              hatchery.feed_plan:
+                'feed_code,feed_name,pellet_size_mm\n'+
+                'FD-STD,Standard Pellet,3.5\n'+
+                'FD-HI,High Energy Pellet,4.25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        boardAfterTheCorrectionExcludesTheSupersededLot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01
+          ]
+          asserts:
+          [
+            twoLotsBelieved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LOT-ALPHA","Species":"Speckled Trout","Raceway":"North Raceway","Feed Plan":"Standard Pellet","Fish Count":1200,"Mean Length":88.5},{"Lot":"LOT-BRAVO","Species":"Mountain Char","Raceway":"South Raceway","Feed Plan":"High Energy Pellet","Fish Count":800,"Mean Length":102.25}]';
+                  }#;
+              }#
+          ]
+        },
+        boardBeforeTheCorrectionStillCarriesTheSupersededLot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-02-01
+          ]
+          asserts:
+          [
+            threeLotsBelieved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LOT-ALPHA","Species":"Speckled Trout","Raceway":"North Raceway","Feed Plan":"Standard Pellet","Fish Count":1200,"Mean Length":88.5},{"Lot":"LOT-BRAVO","Species":"Mountain Char","Raceway":"South Raceway","Feed Plan":"High Energy Pellet","Fish Count":800,"Mean Length":102.25},{"Lot":"LOT-CHARLIE","Species":"Speckled Trout","Raceway":"North Raceway","Feed Plan":"Standard Pellet","Fish Count":450,"Mean Length":64.75}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

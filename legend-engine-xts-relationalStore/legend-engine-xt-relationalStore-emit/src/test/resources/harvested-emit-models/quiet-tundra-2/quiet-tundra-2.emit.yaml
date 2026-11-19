@@ -1,0 +1,80 @@
+name: quiet-tundra-2
+title: "Quiet Tundra 2 - Tundra Vegetation Plots through a Checked Model-to-Model Intake and a Relational Field Store"
+description: |
+  A tundra vegetation survey. Plot and crew submissions from field tablets arrive as JSON
+  through model connections; a model-to-model mapping filters them, bands the cover
+  reading through eight conditional arms with an empty fallback, cuts long names and bag
+  tags after a length check, flattens the bag tags, translates habitat and bag kinds by
+  enumeration mappings and nests the station and bags. Two services fetch plots and crews
+  with constraint checking, so warnings about missing cover bands, overcounted quadrats,
+  unknown stations and lone crews ride with the values. The same abstract-rooted model is
+  also read from a field store that includes a reference store, with composite, cross-store,
+  self, literal-condition and converted-key joins, a three-hop station-to-zone path, a
+  grouped tally view, a distinct pairing view, an inner-joined zone view, an embedded site
+  block and association mappings.
+modelSources:
+  model:
+    root: quiet-tundra-2
+    files:
+      - test/quiet-tundra-2/domain/TundraDomain.pure
+      - test/quiet-tundra-2/mapping/PlotIntakeM2M.pure
+      - test/quiet-tundra-2/mapping/TundraEnumMappings.pure
+      - test/quiet-tundra-2/mapping/TundraFieldMapping.pure
+      - test/quiet-tundra-2/runtime/TundraRuntime.pure
+      - test/quiet-tundra-2/service/TundraServices.pure
+      - test/quiet-tundra-2/source/TundraSource.pure
+      - test/quiet-tundra-2/store/TundraStores.pure
+features:
+  - scaffolding:model-connection
+  - execution:service
+  - execution:service-inline-runtime
+  - execution:service-test
+  - execution:service-test-external-format-json
+  - grammar:abstract-class
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:complex-typed-property
+  - grammar:constraint
+  - grammar:tagged-value
+  - grammar:enumeration
+  - grammar:qualified-property
+  - grammar:stereotype-tag-metadata
+  - mapping:enumeration-mapping
+  - mapping:m2m-collection-flatten
+  - mapping:m2m-string-function-transform
+  - mapping:relational-association-implementation
+  - scaffolding:relational-mapping
+  - mapping:relational-embedded
+  - mapping:relational-string-function-transform
+  - execution:checked-graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-composite-join
+  - store:relational-cross-store-join
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-join-literal-condition
+  - store:relational-multi-column-primary-key
+  - store:relational-multi-table
+  - store:relational-self-join
+  - store:relational-store-include
+  - store:relational-view
+  - store:relational-view-distinct
+  - store:relational-view-group-by
+stores:
+  - model-store
+  - relational
+complexity: intermediate
+tags:
+  - checked-graph-fetch
+  - constraints
+  - h2
+  - json-model-connection
+  - model-to-model
+  - relational
+  - relational-views
+  - store-include
+  - tundra-survey

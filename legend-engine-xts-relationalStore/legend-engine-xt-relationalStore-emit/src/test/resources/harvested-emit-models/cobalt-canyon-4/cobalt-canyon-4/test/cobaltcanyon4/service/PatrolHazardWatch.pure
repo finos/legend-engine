@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltcanyon4::service::PatrolHazardWatch
+{
+  pattern: '/cobalt-canyon/v1/patrol-hazard-watch';
+  title: 'Cobalt Canyon - Patrol hazard watch';
+  ownership: UserList { users: ['canyon-patrol-desk', 'canyon-ranger-lead'] };
+  documentation: 'Lists live patrol reports raised since the season opened that carry at least one hazard, were revised within the past week and lie outside the excluded sectors, with the as-of closure of their trail segment and a ranger tag kept only when it follows the badge pattern.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|let processingDate = now();
+    let businessDate = now();
+    test::cobaltcanyon4::domain::PatrolReport.all($processingDate)->filter(
+      r|$r.createdAt->isOnOrAfterDay(%2024-01-01) && (!$r.hazards->isEmpty() && ($r.updatedAt->isOnOrAfterDay(today()->adjust(-7, DurationUnit.DAYS)) && !$r.sector.sectorNumber->in([3, 7, 11])))
+    )->project(
+      [
+        r|$r.reportCode,
+        r|$r.sector.sectorName,
+        r|$r.segment($businessDate).closed,
+        r|$r.archived,
+        r|if($r.rangerTag->isNotEmpty() && $r.rangerTag->toOne()->matches('[A-Z]{2}-[0-9]+'), |$r.rangerTag->toOne(), |'UNTAGGED'),
+        r|'LIVE'
+      ],
+      [
+        'Report',
+        'Sector',
+        'SegmentClosed',
+        'Archived',
+        'RangerTag',
+        'Source'
+      ]
+    )->filter(
+      row|!($row.getBoolean('Archived') == true)
+    )->distinct()->sort(
+      [
+        asc('Report')
+      ]
+    );};
+    mapping: test::cobaltcanyon4::mapping::CanyonLiveMapping;
+    runtime: test::cobaltcanyon4::runtime::CanyonLiveRuntime;
+  }
+  testSuites:
+  [
+    hazardWatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          liveConnection:
+            Reference
+            #{
+              test::cobaltcanyon4::data::CanyonPatrolData
+            }#
+        ]
+      ]
+      tests:
+      [
+        hazardWatchCollapsesDuplicates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            hazardWatchCollapsesDuplicatesResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Report":"PR-001","Sector":"Rim Sector","SegmentClosed":false,"Archived":false,"RangerTag":"RG-12","Source":"LIVE"},{"Report":"PR-003","Sector":"Slot Sector","SegmentClosed":true,"Archived":false,"RangerTag":"UNTAGGED","Source":"LIVE"},{"Report":"PR-008","Sector":"Rim Sector","SegmentClosed":false,"Archived":null,"RangerTag":"QX-7","Source":"LIVE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

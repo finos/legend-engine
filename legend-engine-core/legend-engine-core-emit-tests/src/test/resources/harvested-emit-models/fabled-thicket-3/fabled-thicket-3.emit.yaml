@@ -1,0 +1,50 @@
+name: fabled-thicket-3
+title: "Fabled Thicket 3 - A Glasshouse Propagation Nursery Whose Record Kinds Inherit One Bench Identity And Constrain Their Own Technique"
+description: |
+  A plant propagation glasshouse expressed as a model-only hierarchy. One
+  propagation record carries the identity, start date, rooting medium and bench
+  class that every technique shares, and four record kinds extend it: a tray of
+  softwood cuttings, a cell-sown seed tray, a grafted batch worked onto
+  rootstock and a batch of liners potted on for sale. Each kind adds only what
+  its technique needs and resolves the inherited enumerated properties back
+  through the supertype, so property resolution has to walk the hierarchy.
+
+  Four enumerations close the value domains the hierarchy reads - growth stage,
+  rooting medium, inspection verdict and bench kind - and three profiles
+  annotate the classes and their properties with stewardship, provenance and
+  presentation metadata.
+
+  Five class constraints assert bench validity across properties rather than on
+  a single column: the cutting batch must root every cutting inside one season
+  and must name a real crew on each inspection, the seed tray must neither
+  count more viable seedlings than it sowed nor germinate a cell before the tray
+  was sown, and the graft batch must clear its unions inside the grafting year.
+  Every constraint traverses a to-many property, filters and maps it, folds a
+  date difference or a cased string comparison over the result, raises at error
+  level and reports the offending record in its message. Derived properties
+  expose the same readings - rooted cuttings, shortfall against target, latest
+  verdict, germination rate and hardening state - so a caller can ask before a
+  constraint refuses.
+modelSources:
+  model:
+    root: fabled-thicket-3
+    files:
+      - test/fabledthicket3/domain/NurseryDomain.pure
+      - test/fabledthicket3/profile/NurseryProfiles.pure
+features:
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - constraint
+  - custom-profile
+  - derived-property
+  - enumeration
+  - model-only
+  - propagation-nursery

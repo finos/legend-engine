@@ -1,0 +1,233 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskydelta::service::HiveHealthBoard
+{
+  pattern: '/duskydelta/v1/hive-health-board';
+  title: 'Apiary Field Office - Hive Health Board';
+  documentation: 'Keeps the hives whose brood count clears an optional floor and whose stand appears in an optional stand list, then projects the hive token, the graded band produced by the transform arms, the stand reached through one reference hop and the forage belt reached through two.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {sites: String[*], minBrood: Integer[0..1]|test::duskydelta::domain::Hive.all()->filter(
+      h|(($minBrood->isEmpty()) || ($h.broodScore >= $minBrood->toOne())) && (($sites->isEmpty()) || ($h.siteName->toOne()->in($sites)))
+    )->project(
+      [
+        h|$h.hiveCode,
+        h|$h.healthBand,
+        h|$h.siteName,
+        h|$h.forageName
+      ],
+      [
+        'Hive',
+        'Band',
+        'Site',
+        'Forage'
+      ]
+    )->distinct()->sort([asc('Hive')])->limit(5)};
+    mapping: test::duskydelta::mapping::ApiaryMapping;
+    runtime: test::duskydelta::runtime::ApiaryFieldRuntime;
+  }
+  testSuites:
+  [
+    hiveHealthBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryWarehouse:
+            Relational
+            #{
+              apiary.apiary_site:
+                'site_code,site_name,terrain_class,forage_code\n'+
+                'AS-1,Hollow Meadow Stand,LOWLAND,FZ-1\n'+
+                'AS-2,Ridge Orchard Stand,UPLAND,FZ-2\n';
+
+              forage.forage_zone:
+                'forage_code,forage_name,bloom_class,nectar_index\n'+
+                'FZ-1,Clover Meadow Belt,EARLY,7\n'+
+                'FZ-2,Lime Avenue Belt,LATE,5\n';
+
+              forage.keeper:
+                'keeper_code,keeper_name,round_label\n'+
+                'KP-1,Rowan Ashby,Morning Round\n'+
+                'KP-2,Juno Pell,Evening Round\n';
+
+              apiary.hive_record:
+                'hive_id,hive_code,site_code,keeper_code,queen_code,frame_count,brood_score,varroa_count\n'+
+                '1,HV-01,AS-1,KP-1,qn-1101,11,95,1\n'+
+                '2,HV-02,AS-1,KP-1,qn-1102,10,55,4\n'+
+                '3,HV-03,AS-2,KP-2,qn-1103,12,35,4\n'+
+                '4,HV-04,AS-2,KP-2,UNSET,9,15,7\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        noFloorAndNoStandListSuppliedKeepsEveryHive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            sites = [],
+            minBrood = []
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Hive" : "HV-01",\n  "Band" : "BAND_A",\n  "Site" : "Hollow Meadow Stand",\n  "Forage" : "Clover Meadow Belt"\n}, {\n  "Hive" : "HV-02",\n  "Band" : "BAND_E",\n  "Site" : "Hollow Meadow Stand",\n  "Forage" : "Clover Meadow Belt"\n}, {\n  "Hive" : "HV-03",\n  "Band" : "BAND_G",\n  "Site" : "Ridge Orchard Stand",\n  "Forage" : "Lime Avenue Belt"\n}, {\n  "Hive" : "HV-04",\n  "Band" : null,\n  "Site" : "Ridge Orchard Stand",\n  "Forage" : "Lime Avenue Belt"\n} ]';
+                  }#;
+              }#
+          ]
+        },
+        standListAndBroodFloorNarrowTheBoard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            sites = ['Hollow Meadow Stand'],
+            minBrood = 60
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Hive" : "HV-01",\n  "Band" : "BAND_A",\n  "Site" : "Hollow Meadow Stand",\n  "Forage" : "Clover Meadow Belt"\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+###Service
+Service test::duskydelta::service::ColonyRegisterBoard
+{
+  pattern: '/duskydelta/v1/colony-register-board';
+  title: 'Apiary Field Office - Colony Register Board';
+  documentation: 'Resolves the colony register at the open instant, keeps the surviving versions whose registered frame count clears an optional floor and whose stored state appears in an optional state list, then projects the label transform output beside the inspector reached through the reference path.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {states: String[*], minFrames: Integer[0..1]|test::duskydelta::domain::ColonyRecord.all(%latest)->filter(
+      c|(($minFrames->isEmpty()) || ($c.framesRegistered >= $minFrames->toOne())) && (($states->isEmpty()) || ($c.registryState->in($states)))
+    )->project(
+      [
+        c|$c.hiveCode,
+        c|$c.stateLabel,
+        c|$c.inspectorName,
+        c|$c.framesRegistered
+      ],
+      [
+        'Hive',
+        'StateLabel',
+        'Inspector',
+        'Frames'
+      ]
+    )->sort([desc('Frames')])};
+    mapping: test::duskydelta::mapping::ColonyRegistryMapping;
+    runtime: test::duskydelta::runtime::ColonyRegistryRuntime;
+  }
+  testSuites:
+  [
+    colonyRegisterBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          colonyRegistryWarehouse:
+            Relational
+            #{
+              reference.inspector_ref:
+                'inspector_code,inspector_name,depot_label\n'+
+                'IN-1,Marta Quill,North Depot\n'+
+                'IN-2,Piers Loam,South Depot\n';
+
+              registry.colony_registry:
+                'colony_id,hive_code,registry_state,inspector_code,frames_registered,in_z,out_z\n'+
+                '1,HV-01,PAUSED,IN-1,8,2026-01-01,2026-02-01\n'+
+                '2,HV-01,ACTIVE,IN-1,11,2026-02-01,9999-12-31\n'+
+                '3,HV-02,MERGED,IN-2,6,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        openVersionsOnlyWithNoFloorSupplied:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            states = [],
+            minFrames = []
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Hive" : "HV-01",\n  "StateLabel" : "IN-SERVICE",\n  "Inspector" : "Marta Quill",\n  "Frames" : 11\n}, {\n  "Hive" : "HV-02",\n  "StateLabel" : "FOLDED-IN",\n  "Inspector" : "Piers Loam",\n  "Frames" : 6\n} ]';
+                  }#;
+              }#
+          ]
+        },
+        stateListNarrowsTheRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            states = ['MERGED'],
+            minFrames = 2
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Hive" : "HV-02",\n  "StateLabel" : "FOLDED-IN",\n  "Inspector" : "Piers Loam",\n  "Frames" : 6\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

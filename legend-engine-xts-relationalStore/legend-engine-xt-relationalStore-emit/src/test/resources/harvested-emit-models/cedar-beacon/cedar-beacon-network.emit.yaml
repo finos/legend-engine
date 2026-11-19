@@ -1,0 +1,47 @@
+name: cedar-beacon-network
+title: "Civic Transit Network — Business-Temporal Hierarchy over Two Relational Stores"
+description: |
+  A municipal transit register whose district, zone and stop levels are all
+  business-temporal, so every read is an as-of query and each level must be
+  open at the pinned date for the hierarchy to resolve. Two relational stores
+  bind five annotated classes through aliased main tables and explicit primary
+  keys, reaching the zone name one inner-join hop away and the district name two
+  hops away, while a separate shelter register reaches its corridor name through
+  a single hop. The mapping test suites pin the business date on either side of
+  a closed zone window and include a hop with no matching register row.
+modelSources:
+  model:
+    root: cedar-beacon-network
+    files:
+      - test/cedarbeacon/domain/NetworkDomain.pure
+      - test/cedarbeacon/mapping/NetworkMapping.pure
+      - test/cedarbeacon/mapping/ShelterMapping.pure
+      - test/cedarbeacon/store/CivicNetworkDb.pure
+      - test/cedarbeacon/store/ShelterRegisterDb.pure
+features:
+  - execution:mapping-test
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - h2
+  - mapping-test
+  - milestoning
+  - multi-hop-join
+  - point-in-time
+  - profile
+  - relational
+  - transit-network
+  - urban-planning

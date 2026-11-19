@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyotter::service::BranchProfileFeed
+{
+  pattern: '/kindlylibrary/v1/branch-profile';
+  title: 'Kindly Library - Branch Service Profiles';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the branch service profile at full width, with the uppercased branch label and the decoded service band, served over the primary estate.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::kindlyotter::domain::BranchProfile.all()->project(
+      [
+        x|$x.branchCode,
+        x|$x.branchName,
+        x|$x.districtCode,
+        x|$x.openedYear,
+        x|$x.seatCount,
+        x|$x.serviceGrade
+      ],
+      [
+        'BranchCode',
+        'BranchName',
+        'DistrictCode',
+        'OpenedYear',
+        'SeatCount',
+        'ServiceGrade'
+      ]
+    )->sort([asc('BranchCode')]);
+    mapping: test::kindlyotter::mapping::LibraryBranchMapping;
+    runtime: test::kindlyotter::runtime::LibraryPrimaryRuntime;
+  }
+  testSuites:
+  [
+    branchProfileFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          libraryPrimary:
+            Relational
+            #{
+              libmain.branch_profile:
+                'branch_code,branch_name,district_code,opened_year,seat_count,service_grade\n'+
+                'BR-01,Willow Street Branch,DT-NORTH,1974,48,A\n'+
+                'BR-02,Fern Hollow Branch,DT-SOUTH,1992,20,B\n'+
+                'BR-03,Quarry Lane Branch,DT-SOUTH,2011,12,C\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyServiceBand:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            allThreeBandArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BranchCode":"BR-01","BranchName":"WILLOW STREET BRANCH","DistrictCode":"DT-NORTH","OpenedYear":1974,"SeatCount":48,"ServiceGrade":"ALL WEEK"},{"BranchCode":"BR-02","BranchName":"FERN HOLLOW BRANCH","DistrictCode":"DT-SOUTH","OpenedYear":1992,"SeatCount":20,"ServiceGrade":"WEEKDAYS ONLY"},{"BranchCode":"BR-03","BranchName":"QUARRY LANE BRANCH","DistrictCode":"DT-SOUTH","OpenedYear":2011,"SeatCount":12,"ServiceGrade":"LIMITED HOURS"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

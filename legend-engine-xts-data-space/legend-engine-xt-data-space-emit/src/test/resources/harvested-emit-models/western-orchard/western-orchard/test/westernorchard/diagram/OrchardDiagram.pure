@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram demo::westernorchard::diagram::OrchardDiagram
+{
+  classView cultivar
+  {
+    class: demo::westernorchard::domain::Cultivar;
+    position: (40.0, 40.0);
+    rectangle: (220.0, 110.0);
+  }
+  classView block
+  {
+    class: demo::westernorchard::domain::OrchardBlock;
+    position: (360.0, 40.0);
+    rectangle: (240.0, 150.0);
+  }
+  classView lot
+  {
+    class: demo::westernorchard::domain::HarvestLot;
+    position: (360.0, 280.0);
+    rectangle: (240.0, 130.0);
+  }
+  classView crew
+  {
+    class: demo::westernorchard::domain::PickingCrew;
+    position: (40.0, 280.0);
+    rectangle: (220.0, 110.0);
+  }
+  propertyView
+  {
+    property: demo::westernorchard::domain::BlockCultivar.cultivar;
+    source: block;
+    target: cultivar;
+    points: [(480.0, 115.0), (150.0, 95.0)];
+  }
+  propertyView
+  {
+    property: demo::westernorchard::domain::BlockLot.lots;
+    source: block;
+    target: lot;
+    points: [(480.0, 115.0), (480.0, 345.0)];
+  }
+  propertyView
+  {
+    property: demo::westernorchard::domain::LotCrew.crew;
+    source: lot;
+    target: crew;
+    points: [(480.0, 345.0), (150.0, 335.0)];
+  }
+}

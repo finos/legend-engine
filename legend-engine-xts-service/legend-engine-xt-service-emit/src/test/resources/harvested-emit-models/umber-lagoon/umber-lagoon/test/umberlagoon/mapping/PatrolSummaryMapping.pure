@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberlagoon::mapping::PatrolSummaryMapping
+(
+  *test::umberlagoon::domain::PatrolSummary[patrolSummary]: Pure
+  {
+    ~src test::umberlagoon::domain::PatrolLine
+    sweepRef: 'SW-' + $src.lineRef->trim()->toUpper()->replace(' ', ''),
+    segmentLabel: $src.segmentCode->trim()->toLower()->replace('_', '-'),
+    wardenLabel: [$src.wardenText->trim(), $src.segmentCode->toUpper()]->joinStrings(' / '),
+    surfaceLabel: [$src.surfaceCode->toLower(), $src.segmentCode->toLower()]->joinStrings('-'),
+    noticeLabel: 'notice:' + $src.noticeText->toUpper()->in(['CLEAR', 'WET'])->toString(),
+    sweepRate: $src.sweepMinutes / 12,
+    sweepTally: round($src.sweepCount * 2.5) + [1, 2]->sum()
+  }
+
+  testSuites:
+  [
+    patrolSummarySuite:
+    {
+      function: |test::umberlagoon::domain::PatrolSummary.all()->graphFetch(
+        #{
+          test::umberlagoon::domain::PatrolSummary{
+            sweepRef,
+            segmentLabel,
+            wardenLabel,
+            surfaceLabel,
+            noticeLabel,
+            sweepRate,
+            sweepTally
+          }
+        }#
+      )->serialize(
+        #{
+          test::umberlagoon::domain::PatrolSummary{
+            sweepRef,
+            segmentLabel,
+            wardenLabel,
+            surfaceLabel,
+            noticeLabel,
+            sweepRate,
+            sweepTally
+          }
+        }#
+      );
+      tests:
+      [
+        summaryLabelsAndRates:
+        {
+          doc: 'Maps two inbound patrol lines onto the patrol summary, proving the trimmed and cased reference, the joined warden and surface labels, the literal-set notice flag, the divided sweep rate and the rounded tally.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::umberlagoon::domain::PatrolLine:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lineRef":" pl 101 ","segmentCode":"RIDGE_NORTH","wardenText":"  ada north  ","surfaceCode":"GRAVEL","noticeText":"clear","sweepCount":6,"sweepMinutes":48.0},{"lineRef":"pl 202","segmentCode":"VALE_SOUTH","wardenText":"bo vale","surfaceCode":"BOARDWALK","noticeText":"muddy","sweepCount":3,"sweepMinutes":30.0}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedSummaries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sweepRef":"SW-PL101","segmentLabel":"ridge-north","wardenLabel":"ada north / RIDGE_NORTH","surfaceLabel":"gravel-ridge_north","noticeLabel":"notice:true","sweepRate":4.0,"sweepTally":18},{"sweepRef":"SW-PL202","segmentLabel":"vale-south","wardenLabel":"bo vale / VALE_SOUTH","surfaceLabel":"boardwalk-vale_south","noticeLabel":"notice:false","sweepRate":2.5,"sweepTally":11}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westerndelta::service::RingExceptionReport
+{
+  pattern: '/westerndelta/v1/ring-exceptions/{businessDate}/{windowStart}/{windowEnd}';
+  title: 'Western Delta - Ring Exception Register';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Opens the ringing-exception extent at a business date, keeps the records created inside an inclusive two-sided window that also carry the reviewed control identifier, and reports a constant register label, the reason code chosen by a three-way fallback over the finer sub-reason, the habitat zone reached three milestoned hops away, the date components of the raised, due and completed instants, and an audit trail assembled by right-nested concatenation.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], windowStart: StrictDate[1], windowEnd: StrictDate[1]|test::westerndelta::domain::RingRecord.all($businessDate)->filter(
+      r|($r.createdAt >= $windowStart) &&
+        (($r.createdAt <= $windowEnd) && ($r.controlId == 7))
+    )->project(
+      [
+        col(
+          r|$r.ringSerial,
+          'Ring/Serial'
+        ),
+        col(
+          r|'DELTA EXCEPTION REGISTER',
+          'Report/Label'
+        ),
+        col(
+          r|if($r.subReasonCode->isEmpty() ||
+              ($r.subReasonCode->isNotEmpty() && ($r.subReasonCode->toOne()->trim()->length() == 0)),
+            |$r.reasonCode,
+            |$r.subReasonCode->toOne()->trim()),
+          'Reason/Code'
+        ),
+        col(
+          r|$r.observer($businessDate).station($businessDate).zone($businessDate).zoneName,
+          'Zone/Name'
+        ),
+        col(
+          r|$r.createdAt->datePart(),
+          'Created/Date'
+        ),
+        col(
+          r|$r.dueAt->datePart(),
+          'Due/Date'
+        ),
+        col(
+          r|if($r.completedAt->isEmpty(), |%1900-01-01, |$r.completedAt->toOne()->datePart()),
+          'Completed/Date'
+        )
+      ]
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getString('Ring/Serial') + (' | ' + ($r.getString('Reason/Code') + (' | ' + $r.getString('Zone/Name')))),
+        'Audit/Trail'
+      )
+    )->sort([asc('Ring/Serial')]);};
+    mapping: test::westerndelta::mapping::RingMapping;
+    runtime: test::westerndelta::runtime::DeltaFieldRuntime;
+  }
+  testSuites:
+  [
+    ringExceptionReportSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          deltaFieldConnection: Reference
+            #{
+              test::westerndelta::data::DeltaSeedData
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyFallbackArmInTheWideWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-01,
+            windowStart = %2026-03-01,
+            windowEnd = %2026-03-31
+          ]
+          asserts:
+          [
+            presentBlankAndAbsentSubReasons:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring/Serial":"RS-001","Report/Label":"DELTA EXCEPTION REGISTER","Reason/Code":"FINE-A","Zone/Name":"Reedbed Zone","Created/Date":"2026-03-05","Due/Date":"2026-03-20","Completed/Date":"2026-03-18","Audit/Trail":"RS-001 | FINE-A | Reedbed Zone"},{"Ring/Serial":"RS-002","Report/Label":"DELTA EXCEPTION REGISTER","Reason/Code":"COARSE-B","Zone/Name":"Reedbed Zone","Created/Date":"2026-03-06","Due/Date":"2026-03-21","Completed/Date":"1900-01-01","Audit/Trail":"RS-002 | COARSE-B | Reedbed Zone"},{"Ring/Serial":"RS-003","Report/Label":"DELTA EXCEPTION REGISTER","Reason/Code":"COARSE-C","Zone/Name":"Saltpan Zone","Created/Date":"2026-03-07","Due/Date":"2026-03-22","Completed/Date":"1900-01-01","Audit/Trail":"RS-003 | COARSE-C | Saltpan Zone"}]';
+                  }#;
+              }#
+          ]
+        },
+        narrowedWindowDropsTheEarliestRecord:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-01,
+            windowStart = %2026-03-06,
+            windowEnd = %2026-03-31
+          ]
+          asserts:
+          [
+            onlyTheLaterTwoRecords:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ring/Serial":"RS-002","Report/Label":"DELTA EXCEPTION REGISTER","Reason/Code":"COARSE-B","Zone/Name":"Reedbed Zone","Created/Date":"2026-03-06","Due/Date":"2026-03-21","Completed/Date":"1900-01-01","Audit/Trail":"RS-002 | COARSE-B | Reedbed Zone"},{"Ring/Serial":"RS-003","Report/Label":"DELTA EXCEPTION REGISTER","Reason/Code":"COARSE-C","Zone/Name":"Saltpan Zone","Created/Date":"2026-03-07","Due/Date":"2026-03-22","Completed/Date":"1900-01-01","Audit/Trail":"RS-003 | COARSE-C | Saltpan Zone"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

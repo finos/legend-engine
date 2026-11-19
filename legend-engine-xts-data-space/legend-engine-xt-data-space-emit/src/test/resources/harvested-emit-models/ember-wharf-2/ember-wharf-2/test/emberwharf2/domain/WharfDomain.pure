@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A dredged berthing slot along one of the wharf quays.'} test::emberwharf2::domain::BerthSlot
+{
+  slotCode: String[1];
+  slotName: String[1];
+  quaySide: String[1];
+  draughtMetres: Decimal[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A quayside gantry crane with its rated lift capacity.'} test::emberwharf2::domain::CraneUnit
+{
+  craneCode: String[1];
+  craneLabel: String[1];
+  liftCapacityTonnes: Float[1];
+  lastServicedOn: StrictDate[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A vessel visit recorded against a berthing slot.'} test::emberwharf2::domain::VesselCall
+{
+  callCode: String[1];
+  vesselName: String[1];
+  slotCode: String[1];
+  berthedAt: DateTime[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A palletised cargo lot staged on the wharf apron.'} test::emberwharf2::domain::PalletLot
+{
+  lotCode: String[1];
+  commodityClass: String[1];
+  grossWeightKg: Decimal[0..1];
+  packedOn: StrictDate[0..1];
+}

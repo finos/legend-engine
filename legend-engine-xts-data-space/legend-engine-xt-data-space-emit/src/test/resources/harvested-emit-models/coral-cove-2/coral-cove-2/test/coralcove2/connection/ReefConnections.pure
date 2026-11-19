@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::coralcove2::connection::ReefWarehouseConnection
+{
+  store: test::coralcove2::store::ReefDB;
+  type: Snowflake;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'REEF_MONITORING';
+    account: 'reef_monitoring_account';
+    warehouse: 'REEF_QUERY_WH';
+    region: 'eu-west-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'reef_network_org';
+    role: 'REEF_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'reef_oauth_key';
+    scopeName: 'SESSION:ROLE:REEF_READER';
+  };
+}
+
+RelationalDatabaseConnection test::coralcove2::connection::ReefH2Connection
+{
+  store: test::coralcove2::store::ReefDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists reef cascade;',
+      'create schema reef;',
+      'create table reef.cove (cove_code varchar(12) primary key, cove_name varchar(80) not null, shoreline_code varchar(12));',
+      'create table reef.reef_site (site_code varchar(16) primary key, site_name varchar(120) not null, cove_code varchar(12) not null, depth_m integer, established_on date);',
+      'create table reef.transect (transect_code varchar(16) primary key, site_code varchar(16) not null, length_m integer, bearing_deg integer);',
+      'create table reef.observer (observer_code varchar(16) primary key, observer_name varchar(120) not null, station_code varchar(16));',
+      'create table reef.station (station_code varchar(16) primary key, station_name varchar(120) not null, cove_code varchar(12));',
+      'create table reef.survey_batch (batch_code varchar(16), version_no integer, site_code varchar(16) not null, observer_code varchar(16) not null, surveyed_on date, visibility_m integer, primary key (batch_code, version_no));',
+      'create table reef.coral_colony (colony_code varchar(16), batch_code varchar(16), species_code varchar(16) not null, diameter_cm integer, health_score integer, primary key (colony_code, batch_code));',
+      'create table reef.species (species_code varchar(16) primary key, common_name varchar(120) not null, growth_form varchar(40));',
+      'create table reef.bleaching_event (event_code varchar(16), event_seq integer, site_code varchar(16) not null, event_on date, severity_code varchar(12), primary key (event_code, event_seq));',
+      'create table reef.water_reading (reading_code varchar(16) primary key, site_code varchar(16) not null, taken_on date, temperature_c integer, turbidity_ntu integer);'
+      ];
+  };
+  auth: DefaultH2;
+}

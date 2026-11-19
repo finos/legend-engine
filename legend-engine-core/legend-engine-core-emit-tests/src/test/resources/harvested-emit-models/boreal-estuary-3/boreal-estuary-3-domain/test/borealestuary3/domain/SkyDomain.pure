@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::borealestuary3::domain::*;
+
+Profile test::borealestuary3::domain::NightSkyProfile
+{
+  stereotypes: [instrumentTracked, seasonalProgramme];
+  tags: [measurementOrigin, custodianRoster, retentionWindow];
+}
+
+Class <<NightSkyProfile.instrumentTracked>> {meta::pure::profiles::doc.doc = 'An observatory site hosting the instruments of the night-sky programme.', NightSkyProfile.custodianRoster = 'summit-operations', NightSkyProfile.retentionWindow = 'ten-seasons'} test::borealestuary3::domain::ObservatorySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  {NightSkyProfile.measurementOrigin = 'geodetic-survey'} latitudeDegrees: Float[1];
+  elevationMetres: Integer[1];
+  commissionedOn: StrictDate[1];
+  {NightSkyProfile.measurementOrigin = 'site-log'} lastAuditedAt: DateTime[0..1];
+  skyQualityIndex: Decimal[0..1];
+}
+
+Class <<NightSkyProfile.instrumentTracked, NightSkyProfile.seasonalProgramme>> {meta::pure::profiles::doc.doc = 'A telescope installed at an observatory site and used across observation sessions.', NightSkyProfile.custodianRoster = 'instrument-crew'} test::borealestuary3::domain::Telescope
+{
+  equipmentTag: String[1];
+  mountKind: String[0..1];
+  {NightSkyProfile.measurementOrigin = 'optics-bench'} apertureCentimetres: Float[1];
+  focalRatio: Decimal[1];
+  installedOn: StrictDate[1];
+  lastServicedAt: DateTime[0..1];
+  homeSite: ObservatorySite[0..1];
+
+  sessionCount() {$this.sessions->size()} : Integer[1];
+  loggedTargetCodes() {$this.sessions.targets.catalogueCode->removeDuplicates()->sort()} : String[*];
+  apertureBand() {if($this.apertureCentimetres > 90.0, | 'wide-field', | if($this.apertureCentimetres > 40.0, | 'mid-field', | 'narrow-field'))} : String[1];
+}
+
+Class <<NightSkyProfile.seasonalProgramme>> {meta::pure::profiles::doc.doc = 'A single observing session carried out on one telescope against a set of sky targets.', NightSkyProfile.retentionWindow = 'three-seasons'} test::borealestuary3::domain::ObservationSession
+{
+  sessionCode: String[1];
+  startedAt: DateTime[1];
+  finishedAt: DateTime[0..1];
+  {NightSkyProfile.measurementOrigin = 'seeing-monitor'} seeingArcseconds: Float[0..1];
+  plateCount: Integer[1];
+  weatherNote: String[0..1];
+
+  siteCode() {$this.telescope.homeSite.siteCode} : String[0..1];
+  targetCount() {$this.targets->size()} : Integer[1];
+  brightestMagnitude() {$this.targets.apparentMagnitude->sort()->first()} : Float[0..1];
+}
+
+Class <<NightSkyProfile.instrumentTracked>> {meta::pure::profiles::doc.doc = 'A catalogued sky target reachable from the sessions that observed it.', NightSkyProfile.custodianRoster = 'catalogue-desk'} test::borealestuary3::domain::SkyTarget
+{
+  catalogueCode: String[1];
+  commonName: String[0..1];
+  {NightSkyProfile.measurementOrigin = 'photometry'} apparentMagnitude: Float[1];
+  declinationDegrees: Decimal[1];
+  firstLoggedOn: StrictDate[0..1];
+  revisedAt: DateTime[0..1];
+
+  observingSiteNames() {$this.sessions.telescope.homeSite.siteName->removeDuplicates()->sort()} : String[*];
+  totalPlateCount() {$this.sessions.plateCount->sum()} : Integer[1];
+}

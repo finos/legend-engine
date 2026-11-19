@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowfjord8::service::BloomBoard
+{
+  pattern: '/meadowfjord/v1/blooms/{speciesCode}';
+  title: 'Alpine Meadow - Bloom Board For One Species';
+  documentation: 'Narrows the flowering counts to one species and to the counts that cleared the reporting threshold, rounding the ground cover the species held so the board carries whole percentage points beside the day the count was taken.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['meadow-survey-desk'] };
+  execution: Single
+  {
+    query: {speciesCode: String[1]|test::meadowfjord8::domain::BloomCount.all()->filter(
+      c|($c.speciesCode == $speciesCode) && ($c.flowerCount > 20)
+    )->project(
+      [
+        c|$c.countCode,
+        c|$c.plotCode,
+        c|$c.flowerCount,
+        c|$c.coverPercent->round(),
+        c|$c.countedOn
+      ],
+      [
+        'CountCode',
+        'PlotCode',
+        'FlowerCount',
+        'CoverPercent',
+        'CountedOn'
+      ]
+    )->sort(
+      [
+        asc('CountCode')
+      ]
+    )};
+    mapping: test::meadowfjord8::mapping::MeadowMapping;
+    runtime: test::meadowfjord8::runtime::MeadowSurveyRuntime;
+  }
+  testSuites:
+  [
+    bloomBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowSurveyConnection: Reference
+            #{
+              test::meadowfjord8::data::MeadowTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        otherSpeciesAndThinCountsNeverReachTheBoard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            speciesCode = 'SP-GENT'
+          ]
+          asserts:
+          [
+            twoCountsForTheNamedSpecies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CountCode":"BC-01","PlotCode":"PL-01","FlowerCount":42,"CoverPercent":18,"CountedOn":"2026-06-11"},{"CountCode":"BC-03","PlotCode":"PL-03","FlowerCount":63,"CoverPercent":28,"CountedOn":"2026-06-13"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

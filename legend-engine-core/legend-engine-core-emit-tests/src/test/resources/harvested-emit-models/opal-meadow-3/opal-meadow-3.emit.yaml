@@ -1,0 +1,46 @@
+name: opal-meadow-3
+title: "Opal Meadow 3 - Store-less wildflower restoration register held together by layered class constraints"
+description: |
+  A model-only register for a wildflower meadow restoration reserve with no store
+  behind it. An abstract register entry carries code-shape and remark checks that
+  combine trimming, length and pattern tests behind emptiness guards; abstract
+  localities and visits extend it into concrete plots, transects and two visit
+  kinds, three levels deep. Plots, quadrats, plant tallies, seed mixes, sightings
+  and second-opinion confirmations are linked through class-typed properties with
+  bounded collection multiplicities, and their constraints apply filter, distinctness
+  and sum operations over those collections, feeding emptiness and equality tests.
+  The deepest rule screens every confirmation of a sighting through a nested
+  disjunction of case-insensitive name agreement and a closed confidence vocabulary.
+  Two project profiles decorate the graph: a curation profile with verification
+  stereotypes and recorder tags, and a storage profile whose precision stereotypes
+  pin how each floating-point measurement is persisted while documentation tags
+  describe every element.
+modelSources:
+  model:
+    root: opal-meadow-3
+    files:
+      - test/opalmeadow3/domain/MeadowSurvey.pure
+      - test/opalmeadow3/domain/MeadowVocabulary.pure
+      - test/opalmeadow3/profile/MeadowProfiles.pure
+features:
+  - grammar:abstract-class
+  - grammar:class-inheritance
+  - grammar:collection-multiplicity-bound
+  - grammar:complex-typed-property
+  - grammar:constraint
+  - grammar:constraint-collection-op
+  - grammar:constraint-function-call
+  - grammar:profile
+  - grammar:tagged-value
+  - grammar:enumeration
+  - grammar:storage-type-stereotype
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - abstract-class
+  - constraint
+  - model-only
+  - profile
+  - restoration-survey
+  - wildflower-meadow

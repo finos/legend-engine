@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::russetsummit2::data::SummitFixtureData
+{
+  Relational
+  #{
+    path.footpath_section:
+      'section_code,section_name,surface_code,estate_code,length_m,exposed_flag\n'+
+      'SEC-01,Zigzag Traverse,SUR/STN,EST-1,420,Y\n'+
+      'SEC-02,Corrie Steps,SUR/AGG,EST-1,180,Y\n'+
+      'SEC-03,Bog Crossing,SUR/BRD,EST-1,260,Y\n'+
+      'SEC-04,Screed Shortcut,SUR/AGG,EST-2,95,N\n';
+
+    path.work_crew:
+      'crew_code,crew_name,crew_kind,depot_code\n'+
+      'CR-1,Ridge Gang,STF,DEP-1\n'+
+      'CR-2,Corrie Gang,STF,DEP-1\n'+
+      'CR-3,Bothy Gang,CON,DEP-2\n';
+
+    path.supply_depot:
+      'depot_code,depot_name,warden_code\n'+
+      'DEP-1,Upper Depot,WD-1\n'+
+      'DEP-2,Lower Depot,WD-2\n';
+
+    path.path_warden:
+      'warden_code,warden_name\n'+
+      'WD-1,Ivy Thorn\n'+
+      'WD-2,Rex Halloway\n';
+
+    path.repair_task:
+      'task_id,section_code,crew_code,stage_code,raised_on,spoil_load_kg,stone_count,priority_score,note_text\n'+
+      '1,SEC-01,CR-1,STG/RSD,2026-03-02,520.0,200,9,Zigzag washout\n'+
+      '2,SEC-01,CR-2,STG/SCH,2026-03-03,120.5,140,6,\n'+
+      '3,SEC-02,CR-3,STG/ACT,2026-03-04,90.0,40,2,\n'+
+      '4,SEC-02,CR-1,STG/DON,2026-03-05,610.25,300,8,Steps relaid\n'+
+      '5,SEC-03,CR-2,STG/RSD,2026-03-06,410.0,100,5,\n'+
+      '6,SEC-03,CR-3,STG/ZZZ,2026-03-07,50.0,130,1,Unknown stage code\n'+
+      '7,SEC-01,CR-1,STG/ACT,2026-03-08,400.0,121,7,\n'+
+      '8,SEC-02,CR-2,STG/SCH,2026-03-09,15.75,10,8,\n'+
+      '9,SEC-03,CR-3,STG/DON,2026-03-10,700.0,400,4,Boardwalk renewed\n'+
+      '10,SEC-01,CR-2,STG/RSD,2026-03-11,60.0,60,5,\n'+
+      '11,SEC-02,CR-1,STG/ACT,2026-03-12,480.5,15,2,\n';
+  }#
+}

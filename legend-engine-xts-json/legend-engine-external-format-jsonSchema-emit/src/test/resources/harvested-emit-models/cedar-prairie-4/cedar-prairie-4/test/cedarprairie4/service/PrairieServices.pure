@@ -1,0 +1,244 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarprairie4::service::RegionPlotRegister
+{
+  pattern: '/cedarprairie4/v1/region-plot-register';
+  title: 'Cedar Prairie 4 - Plots Of Two Named Regions';
+  ownership: UserList { users: ['prairie-restoration-desk'] };
+  documentation: 'Publishes the restoration plots of either named region: the predicate is a disjunction over the region name, and the parent plot name each row carries is reached over the self join inside the plot table, so a plot nested under a wider plot names it and a top plot does not.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::cedarprairie4::domain::RestorationPlot.all()->filter(
+      p|$p.regionName == 'Upper Prairie' ||
+        $p.regionName == 'Lower Prairie'
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.plotName,
+        p|$p.regionName,
+        p|$p.hectares,
+        p|$p.standing,
+        p|$p.parentPlotName
+      ],
+      [
+        'Plot/Code',
+        'Plot/Name',
+        'Plot/Region',
+        'Plot/Hectares',
+        'Plot/Standing',
+        'Plot/ParentName'
+      ]
+    )->sort(
+      [
+        asc('Plot/Code')
+      ]
+    )};
+    mapping: test::cedarprairie4::mapping::PrairieMapping;
+    runtime: test::cedarprairie4::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    regionPlotSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie.restoration_plot:
+                'plot_code,plot_name,region_name,hectares,standing_code,parent_plot_code\n'+
+                'PL-1,North Prairie,Upper Prairie,12.5,ESTABLISHED,\n'+
+                'PL-2,North Verge,Upper Prairie,2.5,ESTABLISHING,PL-1\n'+
+                'PL-3,South Swale,Lower Prairie,4.0,SEEDED,PL-1\n'+
+                'PL-4,Far Heath,Outer Heath,6.0,RETIRED,PL-1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        plotsOfBothNamedRegionsWithTheirParentName:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            plotsOfEitherNamedRegion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"PL-1","Plot/Name":"North Prairie","Plot/Region":"Upper Prairie","Plot/Hectares":12.5,"Plot/Standing":"ESTABLISHED","Plot/ParentName":null},{"Plot/Code":"PL-2","Plot/Name":"North Verge","Plot/Region":"Upper Prairie","Plot/Hectares":2.5,"Plot/Standing":"ESTABLISHING","Plot/ParentName":"North Prairie"},{"Plot/Code":"PL-3","Plot/Name":"South Swale","Plot/Region":"Lower Prairie","Plot/Hectares":4.0,"Plot/Standing":"SEEDED","Plot/ParentName":"North Prairie"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedarprairie4::service::SurveyCoverageRollup
+{
+  pattern: '/cedarprairie4/v1/survey-coverage-rollup';
+  title: 'Cedar Prairie 4 - Coverage Rollup Per Plot';
+  ownership: UserList { users: ['prairie-restoration-desk'] };
+  documentation: 'Summarises the walked surveys one row per plot rather than one row per survey: the surveys are grouped by their plot and the coverage percentage is averaged while the surveys themselves are counted, so the aggregation happens in the plan and not in the caller.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::cedarprairie4::domain::PlotSurvey.all()->groupBy(
+      [
+        s|$s.plotCode
+      ],
+      [
+        agg(s|$s.coverPct, y|$y->average()),
+        agg(s|$s.surveyCode, y|$y->count())
+      ],
+      [
+        'Survey/PlotCode',
+        'Survey/MeanCoverPct',
+        'Survey/Count'
+      ]
+    )->sort(
+      [
+        asc('Survey/PlotCode')
+      ]
+    )};
+    mapping: test::cedarprairie4::mapping::PrairieMapping;
+    runtime: test::cedarprairie4::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    coverageRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie.plot_survey:
+                'survey_code,plot_code,cover_pct,surveyed_on,crew_doc\n'+
+                'SV-1,PL-1,40.0,2026-06-01,\n'+
+                'SV-2,PL-1,60.0,2026-06-08,\n'+
+                'SV-3,PL-2,25.0,2026-06-02,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onePlotRowPerGroup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoGroupedPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey/PlotCode":"PL-1","Survey/MeanCoverPct":50.0,"Survey/Count":2},{"Survey/PlotCode":"PL-2","Survey/MeanCoverPct":25.0,"Survey/Count":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedarprairie4::service::SurveyCrewPaperwork
+{
+  pattern: '/cedarprairie4/v1/survey-crew-paperwork';
+  title: 'Cedar Prairie 4 - Crew Paperwork Read Out Of The Survey Document';
+  ownership: UserList { users: ['prairie-restoration-desk'] };
+  documentation: 'Publishes the crew paperwork of every walked survey as flat columns, resolving the reference, the crew name and the crew lead out of the single document column the mapping interprets through the JSON binding, so each depth of the document tree resolves only where that branch is recorded.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|test::cedarprairie4::domain::PlotSurvey.all()->project(
+      [
+        s|$s.surveyCode,
+        s|$s.plotCode,
+        s|$s.crewReport.reportRef,
+        s|$s.crewReport.crew.crewName,
+        s|$s.crewReport.crew.lead.leadName
+      ],
+      [
+        'Survey/Code',
+        'Survey/PlotCode',
+        'Survey/ReportRef',
+        'Survey/CrewName',
+        'Survey/LeadName'
+      ]
+    )->sort(
+      [
+        asc('Survey/Code')
+      ]
+    )};
+    mapping: test::cedarprairie4::mapping::PrairieMapping;
+    runtime: test::cedarprairie4::runtime::PrairieRuntime;
+  }
+  testSuites:
+  [
+    crewPaperworkSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          prairieConnection:
+            Relational
+            #{
+              prairie.plot_survey:
+                'survey_code,plot_code,cover_pct,surveyed_on,crew_doc\n'+
+                'SV-1,PL-1,40.0,2026-06-01,{"reportRef":"CR-1"}\n'+
+                'SV-2,PL-1,60.0,2026-06-08,{"crew":{"crewName":"Thistle Crew"}}\n'+
+                'SV-3,PL-2,25.0,2026-06-02,{"crew":{"lead":{"leadName":"Ida Marsh"}}}\n'+
+                'SV-4,PL-2,10.0,2026-06-09,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        eachDocumentBranchResolvesWhereRecorded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            fourSurveyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey/Code":"SV-1","Survey/PlotCode":"PL-1","Survey/ReportRef":"CR-1","Survey/CrewName":null,"Survey/LeadName":null},{"Survey/Code":"SV-2","Survey/PlotCode":"PL-1","Survey/ReportRef":null,"Survey/CrewName":"Thistle Crew","Survey/LeadName":null},{"Survey/Code":"SV-3","Survey/PlotCode":"PL-2","Survey/ReportRef":null,"Survey/CrewName":null,"Survey/LeadName":"Ida Marsh"},{"Survey/Code":"SV-4","Survey/PlotCode":"PL-2","Survey/ReportRef":null,"Survey/CrewName":null,"Survey/LeadName":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

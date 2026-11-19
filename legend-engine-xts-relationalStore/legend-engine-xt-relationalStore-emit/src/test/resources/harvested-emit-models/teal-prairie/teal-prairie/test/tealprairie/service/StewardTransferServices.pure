@@ -1,0 +1,237 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealprairie::service::StewardTransferTrail
+{
+  pattern: '/prairie/v1/steward-transfers/{processingDate}';
+  documentation: 'Binds the processing date to a local point and lists the crate transfers standing at it, each banded through an eight-armed kind, crate-count and holding-temperature cascade and labelled with its genus and family read three and four joins away.';
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|
+      let processingPoint = $processingDate;
+      test::tealprairie::domain::StewardTransfer.all($processingPoint)->project(
+        [
+          t|$t.transferRef,
+          t|$t.transferKind,
+          t|$t.transferBand,
+          t|$t.genusLabel,
+          t|$t.familyLabel
+        ],
+        [
+          'Transfer',
+          'Kind',
+          'Band',
+          'Genus',
+          'Family'
+        ]
+      )->sort(
+        [
+          asc('Transfer')
+        ]
+      );
+    };
+    mapping: test::tealprairie::mapping::SeedVaultMapping;
+    runtime: test::tealprairie::runtime::SeedVaultRuntime;
+  }
+  testSuites:
+  [
+    stewardTransferSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultConnection:
+            Reference
+            #{
+              test::tealprairie::data::StewardFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        transfersStandingAtTheProcessingDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-05-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Transfer":"X-01","Kind":"FIELD","Band":"FIELD_INTAKE","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-02","Kind":"VISIT","Band":"OUT_ON_VISIT","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-03","Kind":"STORE","Band":"BULK","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-04","Kind":"STORE","Band":"LARGE","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-05","Kind":"STORE","Band":"DEEP_FROZEN","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-06","Kind":"STORE","Band":"CHILLED","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-07","Kind":"STORE","Band":"UNCOUNTED","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-08","Kind":"RETURN","Band":"RETURNED","Genus":"Bluestem","Family":"Grass Family"},{"Transfer":"X-09","Kind":"STORE","Band":null,"Genus":null,"Family":null},{"Transfer":"X-10","Kind":"FIELD","Band":"FIELD_INTAKE","Genus":"Bluestem","Family":"Grass Family"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealprairie::service::CustodianDeskRoster
+{
+  pattern: '/prairie/v1/custodian-desks/{processingDate}/{businessDate}';
+  documentation: 'Binds a processing point and a business point from parameters and lists the bi-temporal custodian desk assignments standing at both.';
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|
+      let processingPoint = $processingDate;
+      let businessPoint = $businessDate;
+      test::tealprairie::domain::SeedCustodian.all($processingPoint, $businessPoint)->project(
+        [
+          c|$c.custodianName,
+          c|$c.custodianDesk
+        ],
+        [
+          'Custodian',
+          'Desk'
+        ]
+      )->sort(
+        [
+          asc('Custodian')
+        ]
+      );
+    };
+    mapping: test::tealprairie::mapping::SeedVaultMapping;
+    runtime: test::tealprairie::runtime::SeedVaultRuntime;
+  }
+  testSuites:
+  [
+    custodianDeskSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultConnection:
+            Reference
+            #{
+              test::tealprairie::data::StewardFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        deskRestatedOnTheProcessingDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-05-01,
+            businessDate = %2026-05-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Custodian":"Ivy Sedge","Desk":"Seed Return Desk"},{"Custodian":"Rowan Fescue","Desk":"Prairie Curation Desk"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::tealprairie::service::GenusTransferCrates
+{
+  pattern: '/prairie/v1/genus-transfer-crates/{processingDate}';
+  documentation: 'Totals crates by genus and transfer kind for field and return transfers of classified accessions standing at the processing date.';
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|
+      test::tealprairie::domain::StewardTransfer.all($processingDate)->filter(
+        t|$t.genusLabel->isNotEmpty() && $t.transferKind->in(['FIELD', 'RETURN'])
+      )->groupBy(
+        [
+          t|$t.genusLabel,
+          t|$t.transferKind
+        ],
+        [
+          agg(t|$t.crateCount, y|$y->sum())
+        ],
+        [
+          'Genus',
+          'Kind',
+          'Crates'
+        ]
+      )->sort(
+        [
+          asc('Kind')
+        ]
+      );
+    };
+    mapping: test::tealprairie::mapping::SeedVaultMapping;
+    runtime: test::tealprairie::runtime::SeedVaultRuntime;
+  }
+  testSuites:
+  [
+    genusTransferCratesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultConnection:
+            Reference
+            #{
+              test::tealprairie::data::StewardFixtureData
+            }#
+        ]
+      ]
+      tests:
+      [
+        fieldAndReturnCratesAtTheProcessingDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-05-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Genus":"Bluestem","Kind":"FIELD","Crates":20},{"Genus":"Bluestem","Kind":"RETURN","Crates":10}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

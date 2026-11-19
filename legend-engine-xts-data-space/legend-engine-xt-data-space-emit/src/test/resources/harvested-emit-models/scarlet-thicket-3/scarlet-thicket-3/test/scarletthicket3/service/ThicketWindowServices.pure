@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletthicket3::service::SeasonLotWindow
+{
+  pattern: '/thicket/v1/season-lot-window';
+  title: 'Scarlet Thicket - Season Lot Window';
+  owners:
+  [
+    'thicket-propagation-nursery'
+  ];
+  documentation: 'Selects the lots of one named season whose collection date falls inside a window whose lower bound is derived by shifting the execution date backwards by a fixed interval, so the bound is computed rather than passed in and has to be emitted in the target dialect against a date column.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {seasonCode: String[1], currentDate: StrictDate[1]|test::scarletthicket3::domain::SeedLot.all()->filter(
+      l|($l.seasonCode == $seasonCode) && ($l.collectedOn >= $currentDate->adjust(-3650, meta::pure::functions::date::DurationUnit.DAYS))
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.quantityGrams
+      ],
+      [
+        'Lot',
+        'Grams'
+      ]
+    )->sort([asc('Lot')]);};
+    mapping: test::scarletthicket3::mapping::ThicketMapping;
+    runtime: test::scarletthicket3::runtime::ThicketWarehouseRuntime;
+  }
+  testSuites:
+  [
+    seasonLotWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse: Reference
+            #{
+              test::scarletthicket3::data::ThicketFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        theLotCollectedLongBeforeTheComputedBoundIsExcluded:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonCode = 'S-2026B',
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            twoOfTheThreeSeasonLotsFallInsideTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"SL-03","Grams":150.0},{"Lot":"SL-04","Grams":95.75}]';
+                  }#;
+              }#
+          ]
+        },
+        anUnknownSeasonSelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonCode = 'S-2019A',
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            emptyWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::scarletthicket3::service::RecentViabilityFeed
+{
+  pattern: '/thicket/v1/recent-viability-feed';
+  title: 'Scarlet Thicket - Recent Viability Feed';
+  owners:
+  [
+    'thicket-propagation-nursery'
+  ];
+  documentation: 'Reports the germination percentage of every recently collected lot next to the preparation name carried by the inline handling detail, which reaches that name across its own join while the codes beside it come from the lot row.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {currentDate: StrictDate[1]|test::scarletthicket3::domain::SeedLot.all()->filter(
+      l|$l.collectedOn >= $currentDate->adjust(-3650, meta::pure::functions::date::DurationUnit.DAYS)
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.viabilityPct,
+        l|$l.handling.treatmentName
+      ],
+      [
+        'Lot',
+        'Viability',
+        'Treatment'
+      ]
+    )->sort([asc('Lot')]);};
+    mapping: test::scarletthicket3::mapping::ThicketMapping;
+    runtime: test::scarletthicket3::runtime::ThicketWarehouseRuntime;
+  }
+  testSuites:
+  [
+    recentViabilityFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketWarehouse: Reference
+            #{
+              test::scarletthicket3::data::ThicketFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRecentLotCarriesItsPreparationName:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            fourRecentLotsWithResolvedTreatments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"SL-01","Viability":88,"Treatment":"Cold Stratification"},{"Lot":"SL-02","Viability":74,"Treatment":"Scarification"},{"Lot":"SL-03","Viability":61,"Treatment":"Cold Stratification"},{"Lot":"SL-04","Viability":52,"Treatment":"Smoke Priming"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

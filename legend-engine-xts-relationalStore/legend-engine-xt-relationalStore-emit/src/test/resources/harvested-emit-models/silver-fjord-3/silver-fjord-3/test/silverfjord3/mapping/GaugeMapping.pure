@@ -1,0 +1,151 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverfjord3::mapping::GaugeMapping
+(
+  include mapping test::silverfjord3::mapping::FjordEnumMappings
+
+  *test::silverfjord3::domain::TideStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverfjord3::store::GaugeDb]gauge.station.station_code,
+      [test::silverfjord3::store::GaugeDb]gauge.station.network_code,
+      [test::silverfjord3::store::GaugeDb]gauge.station.region_code
+    )
+    ~mainTable [test::silverfjord3::store::GaugeDb]gauge.station
+    stationCode: [test::silverfjord3::store::GaugeDb]gauge.station.station_code,
+    networkCode: [test::silverfjord3::store::GaugeDb]gauge.station.network_code,
+    regionCode: [test::silverfjord3::store::GaugeDb]gauge.station.region_code,
+    stationName: [test::silverfjord3::store::GaugeDb]gauge.station.station_name,
+    status: EnumerationMapping StationStatusMapping: [test::silverfjord3::store::GaugeDb]gauge.station.status_code,
+    datumMm: [test::silverfjord3::store::GaugeDb]gauge.station.datum_mm
+  }
+
+  *test::silverfjord3::domain::LevelReading[reading]: Relational
+  {
+    ~filter [test::silverfjord3::store::GaugeDb]LoggedSinceNetworkUpgrade
+    ~primaryKey
+    (
+      [test::silverfjord3::store::GaugeDb]gauge.level_reading.station_code,
+      [test::silverfjord3::store::GaugeDb]gauge.level_reading.network_code,
+      [test::silverfjord3::store::GaugeDb]gauge.level_reading.sensor_no,
+      [test::silverfjord3::store::GaugeDb]gauge.level_reading.reading_kind
+    )
+    ~mainTable [test::silverfjord3::store::GaugeDb]gauge.level_reading
+    stationCode: [test::silverfjord3::store::GaugeDb]gauge.level_reading.station_code,
+    networkCode: [test::silverfjord3::store::GaugeDb]gauge.level_reading.network_code,
+    sensorNo: [test::silverfjord3::store::GaugeDb]gauge.level_reading.sensor_no,
+    readingKind: [test::silverfjord3::store::GaugeDb]gauge.level_reading.reading_kind,
+    levelMm: [test::silverfjord3::store::GaugeDb]gauge.level_reading.level_mm,
+    quality: EnumerationMapping ReadingQualityMapping: [test::silverfjord3::store::GaugeDb]gauge.level_reading.quality_code
+  }
+
+  testSuites:
+  [
+    stationAsOfSuite:
+    {
+      function: |test::silverfjord3::domain::TideStation.all(%2026-06-01, %2026-06-01)->project(~[
+        Station: s|$s.stationCode,
+        Network: s|$s.networkCode,
+        Name: s|$s.stationName->toUpper(),
+        Short: s|$s.stationName->trim()->toUpper()->substring(0, 6),
+        Status: s|$s.status
+      ])->sort([~Station->ascending(), ~Network->ascending()]);
+      tests:
+      [
+        stationsStandingOnBothTimelines:
+        {
+          doc: 'Bitemporal point-in-time resolution: two stations differ only on the network key column and both stand, one carries no status code, one row is out of range on the business timeline and one on the processing timeline.';
+          data:
+          [
+            test::silverfjord3::store::GaugeDb:
+              Relational
+              #{
+                gauge.station:
+                  'station_code,network_code,region_code,station_name,status_code,datum_mm,in_z,out_z,from_z,thru_z\n'+
+                  'ST-01,NW-1,RG-1,Skerry Point,A,1200,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'ST-01,NW-2,RG-1,Skerry Point Twin,S,1210,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'ST-02,NW-1,RG-2,Gull Narrows,,980,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'ST-03,NW-1,RG-2,Old Pier,D,900,2026-01-01,9999-12-31,2018-01-01,2019-12-31\n'+
+                  'ST-04,NW-1,RG-1,Misfiled Gauge,A,700,2020-01-01,2021-12-31,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            standingStations:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-01","Network":"NW-1","Name":"SKERRY POINT","Short":"SKERRY","Status":"ACTIVE"},{"Station":"ST-01","Network":"NW-2","Name":"SKERRY POINT TWIN","Short":"SKERRY","Status":"SUSPENDED"},{"Station":"ST-02","Network":"NW-1","Name":"GULL NARROWS","Short":"GULL N","Status":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    readingAsOfSuite:
+    {
+      function: |test::silverfjord3::domain::LevelReading.all(%2026-06-01)->filter(
+        r|($r.readingKind != 'TEST') && ($r.levelMm->isEmpty() || ($r.levelMm->toOne() > 0))
+      )->project(~[
+        Station: r|$r.stationCode,
+        Sensor: r|$r.sensorNo,
+        Kind: r|$r.readingKind,
+        Level: r|$r.levelMm,
+        Quality: r|$r.quality
+      ])->sort([~Station->ascending(), ~Sensor->ascending()]);
+      tests:
+      [
+        readingsInsideTheUpgradeWindow:
+        {
+          doc: 'Business-temporal readings: the store filter drops readings logged before the network upgrade, one reading is out of the business range, a test reading and a non-positive level fail the query filter, and a reading with no level survives.';
+          data:
+          [
+            test::silverfjord3::store::GaugeDb:
+              Relational
+              #{
+                gauge.level_reading:
+                  'station_code,network_code,sensor_no,reading_kind,level_mm,quality_code,logged_at,from_z,thru_z\n'+
+                  'ST-01,NW-1,1,TIDE,1450,G,2026-05-01 06:00:00,2026-01-01,9999-12-31\n'+
+                  'ST-01,NW-1,2,SURGE,1720,Q,2026-05-01 06:05:00,2026-01-01,9999-12-31\n'+
+                  'ST-01,NW-1,3,TIDE,,G,2026-05-01 06:10:00,2026-01-01,9999-12-31\n'+
+                  'ST-01,NW-1,4,TEST,1500,G,2026-05-01 06:15:00,2026-01-01,9999-12-31\n'+
+                  'ST-02,NW-1,1,TIDE,0,G,2026-05-01 06:20:00,2026-01-01,9999-12-31\n'+
+                  'ST-02,NW-1,2,TIDE,1300,G,2023-11-30 23:00:00,2026-01-01,9999-12-31\n'+
+                  'ST-02,NW-1,3,TIDE,1310,G,2026-05-01 06:30:00,2019-01-01,2020-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            currentReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-01","Sensor":1,"Kind":"TIDE","Level":1450,"Quality":"GOOD"},{"Station":"ST-01","Sensor":2,"Kind":"SURGE","Level":1720,"Quality":"SUSPECT"},{"Station":"ST-01","Sensor":3,"Kind":"TIDE","Level":null,"Quality":"GOOD"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

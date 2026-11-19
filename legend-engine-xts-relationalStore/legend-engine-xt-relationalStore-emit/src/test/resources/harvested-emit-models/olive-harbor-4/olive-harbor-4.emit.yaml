@@ -1,0 +1,51 @@
+name: olive-harbor-4
+title: "Olive Harbor — A Boatyard Haul-Out Register Derived In The Mapping And Read Across Two Association Hops By One Service"
+description: |
+  A harbour boatyard books the boats it draws out of the water onto its lift cradles. One relational
+  store carries the haul-out log beside the cradle register and the slipway register, and one
+  relational mapping binds three flat classes over explicit primary keys and main tables while
+  deriving two properties in the mapping itself rather than in any query: a three-part label folded
+  out of the craft kind, the craft name and the haul reference, and a lift score that weights
+  tonnage and dock days against the keel length and defaults an unweighed boat to nothing rather
+  than dropping it. Two bidirectional associations bind haul to cradle and cradle to slipway over
+  declared joins, so the cradle resolves one hop out and the slipway two hops out from either end.
+  One single-execution service narrows the register to a caller-supplied set of cradles and keeps a
+  boat currently ashore that either clears the caller-supplied lift-score floor or has already
+  stood ashore for a long dock spell, then publishes the derived label and score beside the
+  join-reached cradle and slipway names. The mapping suites assert every derived value, the
+  collection traversal from the cradle end and the cradle standing empty, and the service suite
+  asserts both surviving arms and an empty membership.
+modelSources:
+  model:
+    root: olive-harbor-4
+    files:
+      - test/oliveharbor4/connection/HarborConnections.pure
+      - test/oliveharbor4/domain/HarborDomain.pure
+      - test/oliveharbor4/mapping/HarborHaulMapping.pure
+      - test/oliveharbor4/runtime/HarborRuntimes.pure
+      - test/oliveharbor4/service/HarborServices.pure
+      - test/oliveharbor4/store/HarborYardDb.pure
+features:
+  - execution:service
+  - grammar:association
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-traversal
+  - boatyard-register
+  - collection-membership
+  - derived-mapping-expression
+  - h2
+  - relational-mapping
+  - service

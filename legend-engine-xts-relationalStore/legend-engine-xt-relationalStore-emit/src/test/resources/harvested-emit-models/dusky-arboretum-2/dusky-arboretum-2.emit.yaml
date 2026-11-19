@@ -1,0 +1,47 @@
+name: dusky-arboretum-2
+title: "Arboretum Health Timeline — Business-Temporal Mapping with Mapping Include"
+description: |
+  An arboretum corpus over a business-temporal H2 store. TreeSpecimen carries a
+  health rating on a business timeline (from_z/thru_z milestoning) and belongs
+  to a Grove mapped by an included base mapping. A mapping testSuite asserts a
+  point-in-time projection as of a fixed date, and a single-execution service
+  asserts a parameterised as-of query, driving EMIT test execution and
+  execution-plan generation.
+modelSources:
+  model:
+    root: dusky-arboretum-2
+    files:
+      - test/duskyarboretum2/connection/ArboretumH2Connection.pure
+      - test/duskyarboretum2/domain/ArboretumDomain.pure
+      - test/duskyarboretum2/mapping/ArboretumMapping.pure
+      - test/duskyarboretum2/mapping/GroveMapping.pure
+      - test/duskyarboretum2/runtime/ArboretumRuntime.pure
+      - test/duskyarboretum2/service/TreeHealthAsOf.pure
+      - test/duskyarboretum2/store/ArboretumDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - arboretum
+  - business-temporal
+  - h2
+  - mapping-include
+  - mapping-test
+  - milestoning
+  - plan-generation
+  - point-in-time
+  - relational
+  - service-test

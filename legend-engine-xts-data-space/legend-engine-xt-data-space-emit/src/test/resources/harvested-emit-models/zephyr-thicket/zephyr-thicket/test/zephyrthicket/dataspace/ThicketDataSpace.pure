@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::zephyrthicket::domain::ThicketMeta.governed>> {test::zephyrthicket::domain::ThicketMeta.custodian = 'parkland-registry', test::zephyrthicket::domain::ThicketMeta.registryTier = 'gold', meta::pure::profiles::doc.doc = 'Catalogue entry point for the parkland parcel registry.'} test::zephyrthicket::dataspace::ThicketDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'registry';
+      description: 'Registry tier - the governed parkland parcel graph served from the registry warehouse.';
+      mapping: test::zephyrthicket::mapping::ThicketMapping;
+      defaultRuntime: test::zephyrthicket::runtime::ThicketRegistryRuntime;
+    }
+  ];
+  defaultExecutionContext: 'registry';
+  title: 'Parkland Parcel Registry';
+  description: 'A governed entry point over the parkland registry - parcels and the wards, districts, canopy classes and stewards they navigate to - wiring the relational mapping, the runtime and the published tabular services for catalogue consumers.';
+  elements:
+  [
+    test::zephyrthicket::domain::ParkParcel,
+    test::zephyrthicket::domain::CivicWard,
+    test::zephyrthicket::domain::CivicDistrict,
+    test::zephyrthicket::domain::CanopyClass,
+    test::zephyrthicket::domain::ParcelSteward
+  ];
+  executables:
+  [
+    {
+      id: parcelRoster;
+      title: 'Parcel roster';
+      description: 'Sample executable resolving to the published parcel roster service.';
+      executable: test::zephyrthicket::service::ParcelRosterService;
+      executionContextKey: 'registry';
+    },
+    {
+      id: wardRegister;
+      title: 'Ward register';
+      description: 'Sample executable resolving to the published ward register service.';
+      executable: test::zephyrthicket::service::WardCanopyService;
+      executionContextKey: 'registry';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'parkland-registry@parkland.invalid';
+  };
+}

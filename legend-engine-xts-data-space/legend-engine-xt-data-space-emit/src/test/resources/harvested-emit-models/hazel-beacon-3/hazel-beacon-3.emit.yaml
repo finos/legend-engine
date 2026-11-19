@@ -1,0 +1,89 @@
+name: hazel-beacon-3
+title: "Hazel Beacon — A Two-Store Coastal Beacon Register With Banded Bindings, Ranked Visits And Depot Upkeep"
+description: |
+  A volunteer coastal trust keeps navigation beacons on two databases. The
+  register store holds graded beacons, their shore stations and lamp units in
+  one schema and the keepers' inspection visits and the defects raised from
+  them in another, while the depot store holds maintenance orders, the crews
+  that work them and the parts drawn against them. Two relational mappings
+  bind them through primary keys, main-table aliases, joined table-alias
+  columns, a literal scheme stamp and eight-, three- and two-armed conditional
+  transforms that fall back to a null sentinel. Six associations are
+  implemented over the six single-hop inner joins so consumers can navigate
+  station to beacon to visit to defect and crew to order to part. Four
+  single-execution services prove the bindings through parse, compile and
+  execution-plan generation: a register narrowed by day arithmetic off the
+  reporting date and a shared code list, a de-duplicated escalation feed, a
+  window that ranks lens scores inside each beacon partition, and a capped
+  near-term order feed on the second store. Two data spaces surface the two
+  bindings with three curated diagrams.
+modelSources:
+  model:
+    root: hazel-beacon-3
+    files:
+      - test/hazelbeacon3/connection/BeaconH2Connection.pure
+      - test/hazelbeacon3/connection/BeaconRegistryConnection.pure
+      - test/hazelbeacon3/connection/UpkeepConnection.pure
+      - test/hazelbeacon3/connection/UpkeepH2Connection.pure
+      - test/hazelbeacon3/dataspace/RegisterDataSpace.pure
+      - test/hazelbeacon3/dataspace/UpkeepDataSpace.pure
+      - test/hazelbeacon3/diagram/InspectionDiagram.pure
+      - test/hazelbeacon3/diagram/RegisterDiagram.pure
+      - test/hazelbeacon3/diagram/UpkeepDiagram.pure
+      - test/hazelbeacon3/domain/BeaconDomain.pure
+      - test/hazelbeacon3/function/InspectionFunctions.pure
+      - test/hazelbeacon3/mapping/BeaconRegistryMapping.pure
+      - test/hazelbeacon3/mapping/UpkeepMapping.pure
+      - test/hazelbeacon3/runtime/BeaconH2Runtime.pure
+      - test/hazelbeacon3/runtime/BeaconRegistryRuntime.pure
+      - test/hazelbeacon3/runtime/UpkeepH2Runtime.pure
+      - test/hazelbeacon3/runtime/UpkeepRuntime.pure
+      - test/hazelbeacon3/service/BeaconInspectionRegister.pure
+      - test/hazelbeacon3/service/DefectEscalationFeed.pure
+      - test/hazelbeacon3/service/LensScoreRanking.pure
+      - test/hazelbeacon3/service/UpkeepOrderFeed.pure
+      - test/hazelbeacon3/store/BeaconRegistryDB.pure
+      - test/hazelbeacon3/store/UpkeepDB.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - grammar:association
+  - grammar:diagram
+  - grammar:function
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - conditional-transform
+  - cross-schema
+  - data-space
+  - diagram
+  - h2
+  - inner-join
+  - maritime-navigation
+  - multi-store
+  - service
+  - window

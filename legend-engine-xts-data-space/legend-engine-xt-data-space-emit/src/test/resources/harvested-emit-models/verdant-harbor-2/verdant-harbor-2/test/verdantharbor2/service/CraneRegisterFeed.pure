@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantharbor2::service::CraneRegisterFeed
+{
+  pattern: '/verdantharbor/v1/craneRegister';
+  title: 'Verdant Harbour - Crane Register Feed';
+  owners:
+  [
+    'harbour-register-desk',
+    'harbour-engineering'
+  ];
+  documentation: 'Projects the quayside cranes of the register straight into a select list over the crane table alone, so per-class main-table resolution is observable independently of every other table in the schema.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::verdantharbor2::domain::CraneUnit.all()->project(
+      [
+        c|$c.craneId,
+        c|$c.craneCode,
+        c|$c.craneModel,
+        c|$c.liftTonnes,
+        c|$c.commissionedOn,
+        c|$c.inspectedAt,
+        c|$c.railMountedFlag
+      ],
+      [
+        'CraneId',
+        'CraneCode',
+        'CraneModel',
+        'LiftTonnes',
+        'CommissionedOn',
+        'InspectedAt',
+        'RailMountedFlag'
+      ]
+    );
+    mapping: test::verdantharbor2::mapping::HarborRegisterMapping;
+    runtime: test::verdantharbor2::runtime::HarborRegisterRuntime;
+  }
+  testSuites:
+  [
+    craneRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborRegisterConnection:
+            Relational
+            #{
+              harbor.crane_unit:
+                'crane_id,crane_code,crane_model,lift_tonnes,commissioned_on,inspected_at,rail_mounted_flag\n'+
+                '201,CR-01,Gantry Mk3,42.5,2018-09-01,2026-01-02 06:15:00,true\n'+
+                '202,CR-02,Luffing Mk1,18.75,2022-03-20,2026-01-03 06:45:00,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyCraneRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoCraneRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CraneId":201,"CraneCode":"CR-01","CraneModel":"Gantry Mk3","LiftTonnes":42.5,"CommissionedOn":"2018-09-01","InspectedAt":"2026-01-02T06:15:00.000000000+0000","RailMountedFlag":true},{"CraneId":202,"CraneCode":"CR-02","CraneModel":"Luffing Mk1","LiftTonnes":18.75,"CommissionedOn":"2022-03-20","InspectedAt":"2026-01-03T06:45:00.000000000+0000","RailMountedFlag":false}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

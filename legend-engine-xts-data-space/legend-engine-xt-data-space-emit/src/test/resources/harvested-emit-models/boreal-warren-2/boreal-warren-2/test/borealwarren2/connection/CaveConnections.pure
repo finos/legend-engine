@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::borealwarren2::connection::CaveH2Connection
+{
+  store: demo::borealwarren2::store::CaveDB;
+  type: H2;
+  specification: LocalH2 { testDataSetupSqls: []; };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::borealwarren2::connection::CaveWarehouseConnection
+{
+  store: demo::borealwarren2::store::CaveDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'CAVE_RIPENING_DB';
+    account: 'cave_ripening_account';
+    warehouse: 'CAVE_WH';
+    region: 'us-east-1';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'CAVE_OAUTH';
+    scopeName: 'SESSION:ROLE:CAVE_ROLE';
+  };
+}

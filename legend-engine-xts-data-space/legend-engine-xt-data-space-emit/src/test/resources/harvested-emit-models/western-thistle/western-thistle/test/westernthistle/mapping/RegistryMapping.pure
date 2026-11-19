@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernthistle::mapping::RegistryMapping
+(
+  *test::westernthistle::domain::MaintenanceCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle::store::RegistryDB]registry.maintenance_crew.crew_code
+    )
+    ~mainTable [test::westernthistle::store::RegistryDB]registry.maintenance_crew
+    crewCode: [test::westernthistle::store::RegistryDB]registry.maintenance_crew.crew_code,
+    crewName: [test::westernthistle::store::RegistryDB]registry.maintenance_crew.crew_name,
+    depotName: [test::westernthistle::store::RegistryDB]registry.maintenance_crew.depot_name,
+    headcount: [test::westernthistle::store::RegistryDB]registry.maintenance_crew.headcount,
+    onCall: [test::westernthistle::store::RegistryDB]registry.maintenance_crew.on_call_flag,
+    commissionedOn: [test::westernthistle::store::RegistryDB]registry.maintenance_crew.commissioned_on
+  }
+
+  *test::westernthistle::domain::SurfaceType[grade]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthistle::store::RegistryDB]registry.surface_type.grade_code
+    )
+    ~mainTable [test::westernthistle::store::RegistryDB]registry.surface_type
+    gradeCode: [test::westernthistle::store::RegistryDB]registry.surface_type.grade_code,
+    gradeDescription: [test::westernthistle::store::RegistryDB]registry.surface_type.grade_description,
+    resurfaceIntervalYears: [test::westernthistle::store::RegistryDB]registry.surface_type.resurface_interval_years,
+    reviewedOn: [test::westernthistle::store::RegistryDB]registry.surface_type.reviewed_on
+  }
+
+  testSuites:
+  [
+    crewSuite:
+    {
+      function: |test::westernthistle::domain::MaintenanceCrew.all()->project(
+        [
+          m|$m.crewCode,
+          m|$m.crewName,
+          m|$m.depotName,
+          m|$m.headcount,
+          m|$m.onCall
+        ],
+        [
+          'CrewCode',
+          'CrewName',
+          'DepotName',
+          'Headcount',
+          'OnCall'
+        ]
+      )->sort([asc('CrewCode')]);
+      tests:
+      [
+        crewRoster:
+        {
+          doc: 'Reads the crew roster from the second relational store, proving the primary keyed alias in the registry schema.';
+          data:
+          [
+            test::westernthistle::store::RegistryDB:
+              Relational
+              #{
+                registry.maintenance_crew:
+                  'crew_code,crew_name,depot_name,headcount,on_call_flag,commissioned_on\n'+
+                  'CR-01,Greenway Sweepers,North Depot,6,true,2018-04-02\n'+
+                  'CR-02,Towpath Menders,West Depot,3,false,2021-11-15\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedCrews:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CrewCode":"CR-01","CrewName":"Greenway Sweepers","DepotName":"North Depot","Headcount":6,"OnCall":true},{"CrewCode":"CR-02","CrewName":"Towpath Menders","DepotName":"West Depot","Headcount":3,"OnCall":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surfaceSuite:
+    {
+      function: |test::westernthistle::domain::SurfaceType.all()->project(
+        [
+          g|$g.gradeCode,
+          g|$g.gradeDescription,
+          g|$g.resurfaceIntervalYears,
+          g|$g.reviewedOn
+        ],
+        [
+          'GradeCode',
+          'GradeDescription',
+          'ResurfaceIntervalYears',
+          'ReviewedOn'
+        ]
+      )->sort([asc('GradeCode')]);
+      tests:
+      [
+        surfaceCatalogue:
+        {
+          doc: 'Reads the surface grade catalogue used to describe corridor surfaces.';
+          data:
+          [
+            test::westernthistle::store::RegistryDB:
+              Relational
+              #{
+                registry.surface_type:
+                  'grade_code,grade_description,resurface_interval_years,reviewed_on\n'+
+                  'ASPHALT,Sealed asphalt running surface,12,2023-02-01\n'+
+                  'GRAVEL,Compacted gravel towpath surface,5,2023-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            projectedGrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GradeCode":"ASPHALT","GradeDescription":"Sealed asphalt running surface","ResurfaceIntervalYears":12,"ReviewedOn":"2023-02-01"},{"GradeCode":"GRAVEL","GradeDescription":"Compacted gravel towpath surface","ResurfaceIntervalYears":5,"ReviewedOn":"2023-02-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

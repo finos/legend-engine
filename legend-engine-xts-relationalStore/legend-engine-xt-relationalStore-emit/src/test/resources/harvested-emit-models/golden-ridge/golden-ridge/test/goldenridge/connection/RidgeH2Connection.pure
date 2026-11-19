@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::goldenridge::connection::RidgeH2Connection
+{
+  store: test::goldenridge::store::RidgeDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists intake cascade;',
+      'drop schema if exists reference cascade;',
+      'create schema intake;',
+      'create schema reference;',
+      'create table intake.reviewer (reviewer_id integer primary key, reviewer_name varchar(200) not null, unit_label varchar(100));',
+      'create table intake.permit_case (case_id integer primary key, case_code varchar(40) not null, site_label varchar(200) not null, storeys integer, floor_area double, filed_on date, intake_officer_id integer, inspector_id integer, approver_id integer, parcel_id integer);',
+      'create table reference.parcel (parcel_id integer primary key, parcel_code varchar(40) not null);',
+      'create table reference.ward (ward_id integer primary key, ward_name varchar(120) not null, district_label varchar(120) not null);',
+      'create table reference.ward_link (link_id integer primary key, parcel_id integer not null, ward_id integer not null, link_kind varchar(40) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

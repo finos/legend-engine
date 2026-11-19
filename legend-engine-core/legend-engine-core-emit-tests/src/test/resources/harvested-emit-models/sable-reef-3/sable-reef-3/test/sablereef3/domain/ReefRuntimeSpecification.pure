@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sablereef3::domain::*;
+import test::sablereef3::profile::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Root of the reef runtime layer: a store a reef pipeline reads from or writes to.'} test::sablereef3::domain::StoreSpecification
+{
+  storeName: String[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'A store backed by exactly one physical system. Empty intermediate level.', ReefPlatform.copiedFrom = 'reef-simple-store-specification'} test::sablereef3::domain::SimpleStoreSpecification extends test::sablereef3::domain::StoreSpecification
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'Reef observation files held in an object store under a bucket prefix.'} test::sablereef3::domain::ObjectStoreSpecification extends test::sablereef3::domain::SimpleStoreSpecification
+{
+  bucketPrefix: String[1];
+  region: String[0..1];
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only store: a columnar warehouse resolved by the platform from the store name alone.', ReefPlatform.copiedFrom = 'reef-columnar-store-specification'} test::sablereef3::domain::ColumnarStoreSpecification extends test::sablereef3::domain::SimpleStoreSpecification
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only store: a row-oriented operational database, distinguished from its sibling only by type.', ReefPlatform.copiedFrom = 'reef-row-store-specification'} test::sablereef3::domain::RowStoreSpecification extends test::sablereef3::domain::SimpleStoreSpecification
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A store whose specification holds other store specifications, so the hierarchy is recursive: a composite may nest simple stores and further composites.'} test::sablereef3::domain::CompositeStoreSpecification extends test::sablereef3::domain::StoreSpecification
+{
+  members: test::sablereef3::domain::StoreSpecification[*];
+  primaryMember: test::sablereef3::domain::StoreSpecification[0..1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'How a reef pipeline reaches a store. Splits by technology and then again by authentication strategy.'} test::sablereef3::domain::ConnectionSpecification
+{
+  connectionName: String[1];
+  store: test::sablereef3::domain::StoreSpecification[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Object-store connections. Empty intermediate level between the base and the per-strategy leaves.', ReefPlatform.copiedFrom = 'reef-object-store-connection'} test::sablereef3::domain::ObjectStoreConnection extends test::sablereef3::domain::ConnectionSpecification
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'An object-store connection that names the strategy it authenticates with.'} test::sablereef3::domain::ObjectStoreTokenConnection extends test::sablereef3::domain::ObjectStoreConnection
+{
+  authentication: test::sablereef3::domain::AuthenticationStrategy[1];
+  tokenLifetimeMinutes: Integer[1];
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only connection: the caller identity is delegated by the platform, so nothing is configured here.', ReefPlatform.copiedFrom = 'reef-object-store-delegated-connection'} test::sablereef3::domain::ObjectStoreDelegatedConnection extends test::sablereef3::domain::ObjectStoreConnection
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Columnar-warehouse connections. Empty intermediate level.', ReefPlatform.copiedFrom = 'reef-columnar-connection'} test::sablereef3::domain::ColumnarConnection extends test::sablereef3::domain::ConnectionSpecification
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only connection: credentials are brokered, so the connection carries none.', ReefPlatform.copiedFrom = 'reef-columnar-brokered-connection'} test::sablereef3::domain::ColumnarBrokeredConnection extends test::sablereef3::domain::ColumnarConnection
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only connection: a key pair registered out of band with the warehouse.', ReefPlatform.copiedFrom = 'reef-columnar-key-pair-connection'} test::sablereef3::domain::ColumnarKeyPairConnection extends test::sablereef3::domain::ColumnarConnection
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'How a reef connection proves who it is. An empty base that exists only to be extended.', ReefPlatform.copiedFrom = 'reef-authentication-strategy'} test::sablereef3::domain::AuthenticationStrategy
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only strategy: the reef feed is public and no credential is presented.', ReefPlatform.copiedFrom = 'reef-anonymous-strategy'} test::sablereef3::domain::AnonymousStrategy extends test::sablereef3::domain::AuthenticationStrategy
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only strategy: the surveying user identity is delegated through the platform.', ReefPlatform.copiedFrom = 'reef-delegated-identity-strategy'} test::sablereef3::domain::DelegatedIdentityStrategy extends test::sablereef3::domain::AuthenticationStrategy
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Brokered strategies. An empty level under an empty base, so two levels carry only type identity.', ReefPlatform.copiedFrom = 'reef-brokered-strategy'} test::sablereef3::domain::BrokeredStrategy extends test::sablereef3::domain::AuthenticationStrategy
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only strategy: the broker is the survey vault.', ReefPlatform.copiedFrom = 'reef-vault-brokered-strategy'} test::sablereef3::domain::VaultBrokeredStrategy extends test::sablereef3::domain::BrokeredStrategy
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only strategy: the broker is the reef monitoring platform itself.', ReefPlatform.copiedFrom = 'reef-platform-brokered-strategy'} test::sablereef3::domain::PlatformBrokeredStrategy extends test::sablereef3::domain::BrokeredStrategy
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A key-pair strategy, the one strategy in the tree that carries a credential reference.'} test::sablereef3::domain::KeyPairStrategy extends test::sablereef3::domain::AuthenticationStrategy
+{
+  keyReference: String[1];
+  rotationDays: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The resolved runtime of a reef pipeline: the intent it executes, the connections it opens and the environment it runs in.'} test::sablereef3::domain::ReefRuntimeBinding
+{
+  bindingName: String[1];
+  intent: test::sablereef3::domain::ReefPipelineIntent[1];
+  connections: test::sablereef3::domain::ConnectionSpecification[*];
+  environment: DeploymentEnvironment[1];
+}

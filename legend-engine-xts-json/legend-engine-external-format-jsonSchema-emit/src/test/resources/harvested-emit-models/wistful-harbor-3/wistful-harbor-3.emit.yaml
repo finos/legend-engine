@@ -1,0 +1,37 @@
+name: wistful-harbor-3
+title: "Wistful Harbor 3 — Seabird Colony Census With JSON Bindings And Mapped Warehouse Runtimes"
+description: |
+  A seabird colony census whose nest counts and fledgling tallies specialise a shared census record
+  and navigate to their colony and observer over named joins. Two JSON external-format bindings
+  include the census classes, and the relational mapping is bound through two engine runtimes to
+  OAuth-authenticated warehouse connections that remap the census schema with mapper post-processors.
+modelSources:
+  model:
+    root: wistful-harbor-3
+    files:
+      - test/wistfulharbor3/binding/ColonyBindings.pure
+      - test/wistfulharbor3/connection/ColonyConnections.pure
+      - test/wistfulharbor3/data/ColonyFixture.pure
+      - test/wistfulharbor3/domain/ColonyDomain.pure
+      - test/wistfulharbor3/mapping/ColonyMapping.pure
+      - test/wistfulharbor3/runtime/ColonyRuntimes.pure
+      - test/wistfulharbor3/store/ColonyDb.pure
+features:
+  - execution:binding
+  - execution:external-format-binding
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - test::wistfulharbor3::store::ColonyDb
+complexity: basic
+tags:
+  - external-format-binding
+  - mapper-postprocessor
+  - oauth
+  - relational
+  - seabird-census
+  - snowflake
+  - tabular-data-set

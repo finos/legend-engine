@@ -1,0 +1,38 @@
+name: verdant-cavern-2
+title: "Cavern Gauge Reading — Shape-Preserving Model-to-Model Copy Asserted By Value"
+description: |
+  Two flat classes of equal width describe a cavern gauge reading, one as the field logger hands
+  it over and one as the register keeps it. Every property is a mandatory to-one scalar or
+  enumerated value, with no supertype, constraint, derived property or collection anywhere, so a
+  single model-to-model class mapping copies the shape across property for property with no
+  conditionals, arithmetic or string work in any transform. Two enumerations type several of the
+  copied properties and no enumeration mapping is declared, so the enumerated value has to
+  survive the copy directly and serialize back to its declared constant. The mapping is the only
+  executable element and it carries its own verification: two mapping tests supply inline intake
+  graphs and assert the serialized target graph, one through a selection naming all eleven mapped
+  properties and one through a narrower selection that omits properties the mapping still
+  populates, so the assertions pin the graph-fetch selection as well as the transform.
+modelSources:
+  model:
+    root: verdant-cavern-2
+    files:
+      - test/verdantcavern2/domain/CavernEnums.pure
+      - test/verdantcavern2/domain/GaugeReadingIntake.pure
+      - test/verdantcavern2/domain/GaugeReadingRecord.pure
+      - test/verdantcavern2/mapping/GaugeReadingMapping.pure
+features:
+  - execution:mapping-test
+  - grammar:enumeration
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - cavern-gauge
+  - enumeration-passthrough
+  - equal-to-json
+  - graph-fetch-selection
+  - m2m-mapping
+  - mapping-test
+  - shape-preserving-copy

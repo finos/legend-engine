@@ -1,0 +1,47 @@
+name: fabled-thicket-2
+title: "Fabled Thicket - a guarded instance-sourced digest of woodland tale submissions over an inherited, annotated stop hierarchy"
+description: |
+  A woodland storytelling trail whose tale submissions arrive as instances rather than rows. One
+  instance-sourced class mapping curates them into a published stop graph behind a source guard that is
+  itself substantial logic: a boolean fan-out of emptiness checks over a deep lantern path, a prefix test
+  on the submission reference, a membership test on the telling band and a disjunction that tolerates an
+  absent note list but rejects a list of only trivial notes. Surviving submissions are banded into eight
+  audience rings by a nested conditional whose fallback leaves the band absent, and their notes, hops and
+  tallies are derived with collection operators - mapping over a to-many path, filtering it inline,
+  counting it and reducing it to a single joined label - so an empty collection and a multi-element
+  collection are both observable. The published stops share an inherited stop identity, every class in the
+  hierarchy carries stereotypes and tagged values from three profiles, and the nested lantern node has its
+  own guard, so a lantern block whose code is unregistered publishes as an absent node. A second suite
+  reduces the hop collection of each stop with an existence test before serialising it.
+modelSources:
+  model:
+    root: fabled-thicket-2
+    files:
+      - test/fabledthicket2/connection/TrailFeedConnection.pure
+      - test/fabledthicket2/domain/ThicketDomain.pure
+      - test/fabledthicket2/domain/ThicketProfiles.pure
+      - test/fabledthicket2/mapping/ThicketDigestM2M.pure
+      - test/fabledthicket2/runtime/TrailFeedRuntime.pure
+      - test/fabledthicket2/source/TrailFeed.pure
+features:
+  - grammar:class-inheritance
+  - grammar:profile
+  - mapping:instance-source-filter
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - query:collection-op
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - audience-ring-chain
+  - class-inheritance
+  - collection-operators
+  - conditional-fallback-absent
+  - graph-fetch
+  - instance-source-filter
+  - m2m-mapping
+  - mapping-test
+  - nested-node-guard
+  - profile-annotations

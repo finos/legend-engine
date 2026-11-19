@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::duskyquokka::diagram::TransitDiagram
+{
+  classView depotView
+  {
+    class: test::duskyquokka::domain::Depot;
+    position: (120.0,80.0);
+    rectangle: (220.0,110.0);
+  }
+  classView lineView
+  {
+    class: test::duskyquokka::domain::TransitLine;
+    position: (440.0,80.0);
+    rectangle: (220.0,110.0);
+  }
+  classView railcarView
+  {
+    class: test::duskyquokka::domain::Railcar;
+    position: (440.0,300.0);
+    rectangle: (220.0,110.0);
+  }
+  classView inspectionView
+  {
+    class: test::duskyquokka::domain::InspectionLog;
+    position: (760.0,300.0);
+    rectangle: (220.0,110.0);
+  }
+  propertyView
+  {
+    property: test::duskyquokka::domain::Depot_TransitLine.servedLines;
+    source: depotView;
+    target: lineView;
+    points: [(230.0,135.0),(550.0,135.0)];
+  }
+  propertyView
+  {
+    property: test::duskyquokka::domain::TransitLine_Railcar.allocatedRailcars;
+    source: lineView;
+    target: railcarView;
+    points: [(550.0,190.0),(550.0,300.0)];
+  }
+  propertyView
+  {
+    property: test::duskyquokka::domain::Railcar_InspectionLog.inspectionLogs;
+    source: railcarView;
+    target: inspectionView;
+    points: [(550.0,355.0),(870.0,355.0)];
+  }
+}

@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenotter7::store::RailwayFleetDB
+(
+  include test::goldenotter7::store::RailwayReferenceDB
+
+  Schema fleet
+  (
+    Table locomotive
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      loco_code VARCHAR(12) PRIMARY KEY,
+      loco_name VARCHAR(60) NOT NULL,
+      gauge_mm INTEGER NOT NULL,
+      gauge_code VARCHAR(4) NOT NULL,
+      power_code VARCHAR(4) NOT NULL,
+      service_code VARCHAR(4) NOT NULL,
+      tractive_effort_kn DOUBLE NOT NULL,
+      livery_code VARCHAR(12),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table carriage
+    (
+      carriage_code VARCHAR(12) PRIMARY KEY,
+      carriage_name VARCHAR(60) NOT NULL,
+      axle_count INTEGER NOT NULL,
+      seat_count INTEGER NOT NULL,
+      layout_code VARCHAR(4) NOT NULL,
+      depot_code VARCHAR(12)
+    )
+    Table wagon
+    (
+      wagon_code VARCHAR(12) PRIMARY KEY,
+      wagon_name VARCHAR(60) NOT NULL,
+      axle_count INTEGER NOT NULL,
+      payload_tonnes DOUBLE NOT NULL,
+      body_style VARCHAR(24) NOT NULL,
+      depot_code VARCHAR(12)
+    )
+  )
+
+  Schema works
+  (
+    Table depot
+    (
+      depot_code VARCHAR(12) PRIMARY KEY,
+      depot_name VARCHAR(60) NOT NULL,
+      region_code VARCHAR(12),
+      parent_depot_code VARCHAR(12)
+    )
+    Table inspection_ticket
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = batch_in_z, PROCESSING_OUT = batch_out_z)
+      )
+      ticket_code VARCHAR(12) PRIMARY KEY,
+      loco_code VARCHAR(12) NOT NULL,
+      outcome_code VARCHAR(4) NOT NULL,
+      inspected_on DATE NOT NULL,
+      labour_hours DOUBLE NOT NULL,
+      inspector_code VARCHAR(12),
+      batch_in_z DATE NOT NULL,
+      batch_out_z DATE NOT NULL
+    )
+    Table inspector
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = batch_in_z, PROCESSING_OUT = batch_out_z)
+      )
+      inspector_code VARCHAR(12) PRIMARY KEY,
+      inspector_name VARCHAR(60) NOT NULL,
+      grade_code VARCHAR(4) NOT NULL,
+      batch_in_z DATE NOT NULL,
+      batch_out_z DATE NOT NULL
+    )
+  )
+
+  Join Loco_Livery(fleet.locomotive.livery_code = reference.livery_scheme.livery_code)
+  Join Carriage_Depot(fleet.carriage.depot_code = works.depot.depot_code)
+  Join Wagon_Depot(fleet.wagon.depot_code = works.depot.depot_code)
+  Join Depot_Region(works.depot.region_code = reference.region_profile.region_code)
+  Join Depot_Parent(works.depot.parent_depot_code = {target}.depot_code)
+  Join Ticket_Inspector(works.inspection_ticket.inspector_code = works.inspector.inspector_code)
+)

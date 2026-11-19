@@ -1,0 +1,174 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarcove3::service::DockFeedService
+{
+  pattern: '/solarcove/v1/dock-feed';
+  title: 'Dock Feed By Status';
+  ownership: DID { identifier: 'bike-share-platform' };
+  documentation: 'Returns the published bike-share dock rows rebuilt in memory from an inbound street-cabinet reading, keeping only the docks whose status is in the requested set. Backed by a model-to-model mapping over a JSON model connection and fed by a shared data element.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {codes: String[*]|test::solarcove3::domain::Dock.all()->filter(d | $d.statusCode->in($codes))->graphFetch(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      capacity,
+      bikesAvailable,
+      statusCode,
+      operatorName,
+      tier
+    }
+  }#
+    )->serialize(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      capacity,
+      bikesAvailable,
+      statusCode,
+      operatorName,
+      tier
+    }
+  }#
+    )};
+    mapping: test::solarcove3::mapping::DockFromReading;
+    runtime: test::solarcove3::runtime::DockRuntime;
+  }
+  testSuites:
+  [
+    dockFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          dockConnection:
+            Reference
+            #{
+              test::solarcove3::data::DockFeedFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        activeAndLimited:
+        {
+          parameters:
+          [
+            codes = ['ACTIVE', 'LIMITED']
+          ]
+          asserts:
+          [
+            feedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"dockId":"D-01","stationCode":"S-1","zone":"Z-N","capacity":20,"bikesAvailable":12,"statusCode":"ACTIVE","operatorName":"North Cycles","tier":"dev"},{"dockId":"D-03","stationCode":"S-2","zone":"Z-E","capacity":25,"bikesAvailable":8,"statusCode":"LIMITED","operatorName":"East Wheels","tier":"prod"},{"dockId":"D-04","stationCode":"S-2","zone":"Z-E","capacity":10,"bikesAvailable":10,"statusCode":"ACTIVE","operatorName":"East Wheels","tier":"prod"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+###Service
+Service test::solarcove3::service::DockRosterService
+{
+  pattern: '/solarcove/v1/dock-roster';
+  title: 'Dock Roster';
+  ownership: DID { identifier: 'bike-share-platform' };
+  documentation: 'Returns the full published bike-share dock roster rebuilt in memory from an inbound street-cabinet reading. Backed by a model-to-model mapping over a JSON model connection and fed by a shared data element.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::solarcove3::domain::Dock.all()->graphFetch(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      capacity,
+      bikesAvailable,
+      statusCode,
+      operatorName,
+      tier
+    }
+  }#
+    )->serialize(
+  #{
+    test::solarcove3::domain::Dock{
+      dockId,
+      stationCode,
+      zone,
+      capacity,
+      bikesAvailable,
+      statusCode,
+      operatorName,
+      tier
+    }
+  }#
+    );
+    mapping: test::solarcove3::mapping::DockFromReading;
+    runtime: test::solarcove3::runtime::DockRuntime;
+  }
+  testSuites:
+  [
+    dockRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          dockConnection:
+            Reference
+            #{
+              test::solarcove3::data::DockRosterFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        allDocks:
+        {
+          asserts:
+          [
+            rosterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"dockId":"D-10","stationCode":"S-3","zone":"Z-W","capacity":18,"bikesAvailable":5,"statusCode":"ACTIVE","operatorName":"West Ring","tier":"dev"},{"dockId":"D-11","stationCode":"S-3","zone":"Z-W","capacity":12,"bikesAvailable":12,"statusCode":"ACTIVE","operatorName":"West Ring","tier":"prod"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'A curated entry point over the otter raft survey model.'} test::sunlitotter::dataspace::OtterDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'dev';
+      description: 'Development tier over the otter raft survey store.';
+      mapping: test::sunlitotter::mapping::OtterMapping;
+      defaultRuntime: test::sunlitotter::runtime::OtterRuntime;
+    }
+  ];
+  defaultExecutionContext: 'dev';
+  title: 'Otter Raft Survey';
+  description: 'Publishes the otter raft census of a river network: raft codes, sighting dates, pup and adult tallies, water clarity and fish density readings, and the reach and catchment each raft was observed on. The ranking endpoint is the featured executable.';
+  elements:
+  [
+    test::sunlitotter::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Raft rank by catchment';
+      description: 'The threshold-parameterised partitioned ranking published as an executable of this entry point.';
+      executable: test::sunlitotter::service::RaftRankService;
+      executionContextKey: 'dev';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'otter-survey@example.com';
+  };
+}

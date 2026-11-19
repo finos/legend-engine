@@ -1,0 +1,89 @@
+name: apiary-control
+title: "Maple Apiary 2 - environment-keyed apiary control reporting over a cross-schema semi-structured store"
+description: |
+  A hive-inspection control domain. A three-schema relational store keeps wide
+  all-versions event tables with semi-structured document columns, work-item
+  version and comment tables, and a presentation schema of keeper, team and
+  region tables plus grouped maximum-version views used for latest-row
+  selection. Named joins span all three schemas, add predicates to key
+  equality, pair identifier with version, and extract a correlation value out
+  of a document column inside the join condition.
+  One shared mapping binds the report class over its main table with an explicit
+  primary key, deserialises document properties through external-format
+  bindings over semi-structured columns, reaches a region label through a
+  four-hop join path, and computes a nine-arm care band and a brood tag as
+  conditional transforms; an operation mapping unions a latest-version view
+  branch with an all-versions branch, and a shared derived-fields class over the
+  same main table carries guarded date-difference and link-building qualified
+  properties. A parameterised date-range service and an environment-keyed
+  multi-execution endpoint share that mapping while each environment supplies
+  its own warehouse binding, whose post-processor rewrites every schema and
+  table name to its environment-specific physical equivalent, and a data space
+  exposes both contexts. Four further complex-typed report properties are
+  binding-backed over sub-documents extracted by path from the inspection
+  payload column, so each one parses only its own nested object.
+modelSources:
+  model:
+    root: apiary-control
+    files:
+      - test/mapleapiary2/connection/ApiaryAcceptanceConnection.pure
+      - test/mapleapiary2/connection/ApiaryProductionConnection.pure
+      - test/mapleapiary2/dataspace/ApiaryDataSpace.pure
+      - test/mapleapiary2/domain/ApiaryDomain.pure
+      - test/mapleapiary2/external/ApiaryBindings.pure
+      - test/mapleapiary2/mapping/ApiaryMapping.pure
+      - test/mapleapiary2/runtime/ApiaryAcceptanceRuntime.pure
+      - test/mapleapiary2/runtime/ApiaryProductionRuntime.pure
+      - test/mapleapiary2/service/ColonyExceptionEndpoint.pure
+      - test/mapleapiary2/service/ColonyInspectionExtract.pure
+      - test/mapleapiary2/store/ApiaryDatabase.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:profile
+  - grammar:qualified-property-date-difference
+  - mapping:operation-mapping
+  - mapping:relational-binding-backed-property
+  - mapping:relational-external-format-binding-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-semi-structured-extract
+  - query:date-arithmetic
+  - query:filter
+  - execution:service-parameter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-latest-version-view
+  - store:relational-multi-table
+  - store:relational-semistructured
+  - store:relational-semi-structured-extraction-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - apiary
+  - conditional-transform
+  - cross-schema-join
+  - date-range-parameters
+  - environment-keyed-multi-execution
+  - h2
+  - latest-version-view
+  - multi-hop-join
+  - operation-union
+  - schema-table-mapper
+  - semi-structured-extraction
+  - snowflake

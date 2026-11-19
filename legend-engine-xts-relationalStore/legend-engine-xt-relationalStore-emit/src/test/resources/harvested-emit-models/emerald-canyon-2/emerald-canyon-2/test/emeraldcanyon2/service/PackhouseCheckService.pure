@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldcanyon2::service::PackhouseCheckService
+{
+  pattern: '/emeraldcanyon/v1/checks/{processingDate}';
+  title: 'Packhouse Checks Within Defect Bound';
+  owners:
+  [
+    'grove-register',
+    'packhouse-quality'
+  ];
+  documentation: 'Returns the packhouse checks recorded by the requested inspection teams that stay within a defect bound as of the requested processing date, excluding the re-audit codes, so the processing-temporal rewrite is exercised alongside a set-membership test and a negated string test.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], teams: String[*], maxDefect: Integer[1]|test::emeraldcanyon2::domain::PackhouseCheck.all($processingDate)->filter(
+      c|($c.inspectorTeam->in($teams)) && (not($c.checkCode->startsWith('QA-X')) && ($c.defectPercent <= $maxDefect))
+    )->project(
+      [
+        c|$c.checkCode,
+        c|$c.consignmentCode,
+        c|$c.inspectorTeam,
+        c|$c.defectPercent
+      ],
+      [
+        'CheckCode',
+        'ConsignmentCode',
+        'InspectorTeam',
+        'DefectPercent'
+      ]
+    )->sort(
+      [
+        asc('CheckCode')
+      ]
+    )};
+    mapping: test::emeraldcanyon2::mapping::GroveMapping;
+    runtime: test::emeraldcanyon2::runtime::GroveRuntime;
+  }
+  testSuites:
+  [
+    packhouseCheckSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          groveConnection:
+            Relational
+            #{
+              harvest.packhouse_check:
+                'check_code,consignment_code,inspector_team,defect_percent,in_z,out_z\n'+
+                'PC-01,CG-01,Ridge Team,3,2026-01-01,9999-12-31\n'+
+                'PC-02,CG-03,Ridge Team,12,2026-01-01,9999-12-31\n'+
+                'PC-03,CG-04,Brook Team,4,2026-01-01,9999-12-31\n'+
+                'PC-05,CG-06,Ridge Team,1,2025-01-01,2025-12-31\n'+
+                'QA-X-09,CG-05,Ridge Team,2,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        ridgeTeamChecks:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            teams = ['Ridge Team'],
+            maxDefect = 5
+          ]
+          asserts:
+          [
+            oneCheck:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"PC-01","ConsignmentCode":"CG-01","InspectorTeam":"Ridge Team","DefectPercent":3}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

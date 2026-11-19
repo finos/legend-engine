@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarprairie3::mapping::PrairieNetworkMapping
+(
+  include mapping test::cedarprairie3::mapping::PrairieBaseMapping
+
+  test::cedarprairie3::domain::Plot_Lot_Link: Relational
+  {
+    AssociationMapping
+    (
+      lot[prairiePlot, seedLot]: [test::cedarprairie3::store::PrairieDB]@Plot_Lot,
+      plots[seedLot, prairiePlot]: [test::cedarprairie3::store::PrairieDB]@Plot_Lot
+    )
+  }
+
+  test::cedarprairie3::domain::Plot_Crew_Link: Relational
+  {
+    AssociationMapping
+    (
+      crew[prairiePlot, stewardCrew]: [test::cedarprairie3::store::PrairieDB]@Plot_Crew,
+      tendedPlots[stewardCrew, prairiePlot]: [test::cedarprairie3::store::PrairieDB]@Plot_Crew
+    )
+  }
+
+  testSuites:
+  [
+    plotBandSuite:
+    {
+      function: |test::cedarprairie3::domain::PrairiePlot.all()->project(
+        [
+          p|$p.plotCode,
+          p|$p.sectorCode,
+          p|$p.nativePct,
+          p|$p.invasivePct,
+          p|$p.restorationBand,
+          p|$p.standNote
+        ],
+        [
+          'Plot',
+          'Sector',
+          'Native',
+          'Invasive',
+          'Band',
+          'Note'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        everyBandArmAndTheUnbandedFallback:
+        {
+          doc: 'Reads the whole plot register so each arm of the eight-way restoration chain is hit exactly once and the bare plot falls through to a null band, with the sector code trimmed and upper-cased and the stand note composed from the canopy and moisture codes.';
+          data:
+          [
+            test::cedarprairie3::store::PrairieDB:
+              Reference
+              #{
+                test::cedarprairie3::data::PrairieNetworkData
+              }#
+          ];
+          asserts:
+          [
+            bandedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Sector":"NORTH","Native":95,"Invasive":2,"Band":"REFERENCE","Note":"OPEN/dry"},{"Plot":"P-02","Sector":"NORTH","Native":80,"Invasive":5,"Band":"ADVANCED","Note":"OPEN/mes"},{"Plot":"P-03","Sector":"SOUTH","Native":65,"Invasive":20,"Band":"ESTABLISHING","Note":"OPEN/dry"},{"Plot":"P-04","Sector":"SOUTH","Native":45,"Invasive":8,"Band":"RECOVERING","Note":"OPEN/mes"},{"Plot":"P-05","Sector":"WEST","Native":30,"Invasive":70,"Band":"INVADED","Note":"OPEN/dry"},{"Plot":"P-06","Sector":"WEST","Native":35,"Invasive":20,"Band":"WET-SETBACK","Note":"OPEN/wet"},{"Plot":"P-07","Sector":"EAST","Native":25,"Invasive":15,"Band":"SHADED","Note":"SHADE/dry"},{"Plot":"P-08","Sector":"EAST","Native":20,"Invasive":10,"Band":"SPARSE","Note":"OPEN/dry"},{"Plot":"P-09","Sector":"EAST","Native":5,"Invasive":5,"Band":null,"Note":"OPEN/dry"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    plotLinkSuite:
+    {
+      function: |test::cedarprairie3::domain::PrairiePlot.all()->project(
+        [
+          p|$p.plotCode,
+          p|$p.lot.lotCode,
+          p|$p.lot.mixName,
+          p|$p.lot.viabilityScore,
+          p|$p.crew.crewName,
+          p|$p.crew.depotCode,
+          p|$p.crew.staffedCount
+        ],
+        [
+          'Plot',
+          'Lot',
+          'Mix',
+          'Viability',
+          'Crew',
+          'Depot',
+          'Staffed'
+        ]
+      )->sort([asc('Plot')]);
+      tests:
+      [
+        bothAssociationsTraversed:
+        {
+          doc: 'Traverses both relational association implementations from the plot: the seed lot inside the planting schema and the steward crew across the schema boundary, leaving every reached column null for the plot that carries neither a lot nor a crew key.';
+          data:
+          [
+            test::cedarprairie3::store::PrairieDB:
+              Reference
+              #{
+                test::cedarprairie3::data::PrairieNetworkData
+              }#
+          ];
+          asserts:
+          [
+            linkedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Lot":"L-1","Mix":"UPLAND TALLGRASS MIX","Viability":85.5,"Crew":"Ridge Stewards","Depot":"RIDGE","Staffed":6},{"Plot":"P-02","Lot":"L-1","Mix":"UPLAND TALLGRASS MIX","Viability":85.5,"Crew":"Ridge Stewards","Depot":"RIDGE","Staffed":6},{"Plot":"P-03","Lot":"L-2","Mix":"MESIC FORB MIX","Viability":72,"Crew":"Hollow Stewards","Depot":"HOLLOW","Staffed":4},{"Plot":"P-04","Lot":"L-2","Mix":"MESIC FORB MIX","Viability":72,"Crew":"Hollow Stewards","Depot":"HOLLOW","Staffed":4},{"Plot":"P-05","Lot":"L-3","Mix":"WET MEADOW MIX","Viability":56,"Crew":"Hollow Stewards","Depot":"HOLLOW","Staffed":4},{"Plot":"P-06","Lot":"L-3","Mix":"WET MEADOW MIX","Viability":56,"Crew":"Verge Stewards","Depot":"VERGE","Staffed":3},{"Plot":"P-07","Lot":"L-4","Mix":"SHADE SEDGE MIX","Viability":45,"Crew":"Verge Stewards","Depot":"VERGE","Staffed":3},{"Plot":"P-08","Lot":"L-4","Mix":"SHADE SEDGE MIX","Viability":45,"Crew":"Verge Stewards","Depot":"VERGE","Staffed":3},{"Plot":"P-09","Lot":null,"Mix":null,"Viability":null,"Crew":null,"Depot":null,"Staffed":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

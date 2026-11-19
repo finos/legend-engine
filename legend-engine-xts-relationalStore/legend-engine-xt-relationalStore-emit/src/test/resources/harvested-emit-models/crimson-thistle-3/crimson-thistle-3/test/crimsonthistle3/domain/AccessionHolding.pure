@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonthistle3::domain::*;
+
+Class test::crimsonthistle3::domain::AccessionHolding
+{
+  accessionCode: String[1];
+  accessionName: String[0..1];
+  glasshouseName: String[0..1];
+  displayStatusClass: String[0..1];
+  livingPlantCount: Integer[0..1];
+  labelledOn: StrictDate[0..1];
+  lastAuditedAt: DateTime[0..1];
+  onDisplayFlag: Boolean[0..1];
+  currentGrowth: GrowthMeasure[1];
+  priorPeriodGrowthDelta: GrowthMeasure[1];
+  taxon: TaxonLookup[1];
+  provenance: ProvenanceLookup[1];
+  parentAccession: AccessionHolding[0..1];
+  curatorNotes: CuratorNote[*];
+}
+
+Class test::crimsonthistle3::domain::BeddedAccessionHolding extends AccessionHolding
+{
+  bed: GardenBed[1];
+}

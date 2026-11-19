@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::duskybeacon::data::SkyTestData
+{
+  Relational
+  #{
+    sky.observatory:
+      'obs_code,obs_name,elevation_m\n'+
+      'OBS-1,Ridgecrest Dome,1820\n'+
+      'OBS-2,Coastal Array,40\n';
+
+    sky.telescope:
+      'instrument_code,obs_code,optical_class,aperture_cm,commissioned_on\n'+
+      'T-100,OBS-1,reflector,260,2026-01-10\n'+
+      'T-200,OBS-1,refractor,150,2026-02-20\n'+
+      'T-300,OBS-2,schmidt,80,2026-03-05\n';
+  }#
+}

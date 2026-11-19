@@ -1,0 +1,64 @@
+name: quiet-ridge
+title: "Ridge Trail Registry — Multi-Execution Tabular Service Over Processing-Milestoned Segments"
+description: |
+  A trail-registry corpus whose processing-milestoned segment class is specialised
+  into two single-table subtypes selected by store filters and routed by an
+  inheritance operation mapping. An environment-keyed multi-execution service shares
+  one tabular query body that filters on a compound surface predicate with a hazard
+  existence check across a join, projects a derived band column, unions a second
+  projection reached through a polymorphic subtype navigation, and is asserted by a
+  service test suite whose fixtures include a segment closed out before the
+  requested processing instant.
+modelSources:
+  model:
+    root: quiet-ridge
+    files:
+      - test/quietridge/connection/RidgeConnection.pure
+      - test/quietridge/domain/RidgeDomain.pure
+      - test/quietridge/mapping/RidgeMapping.pure
+      - test/quietridge/runtime/RidgeRuntime.pure
+      - test/quietridge/service/SegmentsAsOf.pure
+      - test/quietridge/service/SegmentsByEnvironment.pure
+      - test/quietridge/store/RidgeDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - mapping:operation-mapping
+  - mapping:relational-polymorphic-query
+  - mapping:relational-primary-key
+  - mapping:relational-single-table-inheritance
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:subtype-cast
+  - query:union
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - class-inheritance
+  - collection-op
+  - h2
+  - milestoning
+  - multi-execution
+  - operation-mapping
+  - processing-temporal
+  - relational
+  - service-test
+  - subtype-cast
+  - tabular-data-set
+  - trail-registry
+  - union

@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalwarren2::mapping::BellBaseMapping
+(
+  *test::opalwarren2::domain::TowerBell[bell]: Relational
+  {
+    ~filter [test::opalwarren2::store::BellRegisterDb]SoundedBell
+    ~primaryKey
+    (
+      [test::opalwarren2::store::BellRegisterDb]tower.hung_bell.bell_id
+    )
+    ~mainTable [test::opalwarren2::store::BellRegisterDb]tower.hung_bell
+    bellRef: [test::opalwarren2::store::BellRegisterDb]tower.hung_bell.bell_ref,
+    bellName: case(
+                isNotEmpty([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.bell_name),
+                rtrim([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.bell_name),
+                concat('UNNAMED BELL ', [test::opalwarren2::store::BellRegisterDb]tower.hung_bell.bell_ref)
+              ),
+    toneCode: [test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code,
+    canonWeightKg: [test::opalwarren2::store::BellRegisterDb]tower.hung_bell.canon_weight_kg,
+    headstockCode: case(
+                     isNotEmpty([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.headstock_code),
+                     toUpper([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.headstock_code),
+                     'NO HEADSTOCK RECORDED'
+                   ),
+    toneLabel: case(
+      equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T1'),
+      'TENOR BELL',
+      case(
+        equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T2'),
+        'SEVENTH BELL',
+        case(
+          equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T3'),
+          'SIXTH BELL',
+          case(
+            equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T4'),
+            'FIFTH BELL',
+            case(
+              equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T5'),
+              'FOURTH BELL',
+              case(
+                equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T6'),
+                'THIRD BELL',
+                case(
+                  equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T7'),
+                  'SECOND BELL',
+                  case(
+                    equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T8'),
+                    'TREBLE BELL',
+                    'UNRECORDED TONE'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    ringingTier: case(
+                   or(
+                     or(
+                       equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T1'),
+                       equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T2')
+                     ),
+                     equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T3')
+                   ),
+                   'BACK SIX TIER',
+                   case(
+                     or(
+                       or(
+                         equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T4'),
+                         equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T5')
+                       ),
+                       equal([test::opalwarren2::store::BellRegisterDb]tower.hung_bell.tone_code, 'T6')
+                     ),
+                     'MIDDLE TIER',
+                     'FRONT TIER'
+                   )
+                 ),
+    swingMargin: times(minus(2000, [test::opalwarren2::store::BellRegisterDb]tower.hung_bell.canon_weight_kg), 2)
+  }
+
+  *test::opalwarren2::domain::Belfry[belfry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::opalwarren2::store::BellRegisterDb]tower.belfry_frame.belfry_code
+    )
+    ~mainTable [test::opalwarren2::store::BellRegisterDb]tower.belfry_frame
+    belfryCode: [test::opalwarren2::store::BellRegisterDb]tower.belfry_frame.belfry_code,
+    belfryName: case(
+                  isNotEmpty([test::opalwarren2::store::BellRegisterDb]tower.belfry_frame.belfry_name),
+                  rtrim([test::opalwarren2::store::BellRegisterDb]tower.belfry_frame.belfry_name),
+                  concat('UNNAMED BELFRY ', [test::opalwarren2::store::BellRegisterDb]tower.belfry_frame.belfry_code)
+                ),
+    frameKind: toUpper([test::opalwarren2::store::BellRegisterDb]tower.belfry_frame.frame_kind)
+  }
+)

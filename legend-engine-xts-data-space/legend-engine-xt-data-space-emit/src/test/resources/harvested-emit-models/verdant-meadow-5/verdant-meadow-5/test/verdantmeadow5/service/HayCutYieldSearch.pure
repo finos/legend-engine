@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantmeadow5::service::HayCutYieldSearch
+{
+  pattern: '/meadow/v1/hay-cuts/{seasonLabel}';
+  title: 'Hay Meadow - Cut Yield Search';
+  ownership: DID { identifier: 'meadow-fieldwork' };
+  documentation: 'Narrows the cut register to one season on an enumerated set of parcels whose bale count reaches the given floor, then projects the labelled yield columns and drops repeats.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {seasonLabel: String[1], parcelCodes: String[*], minBales: Integer[1]|test::verdantmeadow5::domain::HayCut.all()->filter(
+      c|(($c.seasonLabel == $seasonLabel) && ($c.parcelCode->in($parcelCodes))) && ($c.yieldBales >= $minBales)
+    )->project(
+      [
+        c|$c.cutCode,
+        c|$c.parcelCode,
+        c|$c.cutWeek,
+        c|$c.yieldBales
+      ],
+      [
+        'Cut Code',
+        'Parcel Code',
+        'Cut Week',
+        'Yield Bales'
+      ]
+    )->sort([asc('Cut Code')])->distinct()};
+    mapping: test::verdantmeadow5::mapping::MeadowMapping;
+    runtime: test::verdantmeadow5::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    hayCutYieldSearchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowCuratedConnection:
+            Relational
+            #{
+              meadow.hay_cut:
+                'cut_code,parcel_code,season_label,cut_week,yield_bales\n'+
+                'HC-01,MP-01,summer,24,180\n'+
+                'HC-02,MP-02,summer,26,140\n'+
+                'HC-03,MP-01,autumn,36,60\n'+
+                'HC-04,MP-03,summer,25,200\n'+
+                'HC-05,MP-02,summer,27,90\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        summerCutsOverTheBaleFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonLabel = 'summer',
+            parcelCodes = ['MP-01', 'MP-02'],
+            minBales = 100
+          ]
+          asserts:
+          [
+            twoSummerCutsMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut Code":"HC-01","Parcel Code":"MP-01","Cut Week":24,"Yield Bales":180},{"Cut Code":"HC-02","Parcel Code":"MP-02","Cut Week":26,"Yield Bales":140}]';
+                  }#;
+              }#
+          ]
+        },
+        autumnSeasonNarrowsToTheThinCut:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonLabel = 'autumn',
+            parcelCodes = ['MP-01', 'MP-02'],
+            minBales = 10
+          ]
+          asserts:
+          [
+            onlyTheAutumnCut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut Code":"HC-03","Parcel Code":"MP-01","Cut Week":36,"Yield Bales":60}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

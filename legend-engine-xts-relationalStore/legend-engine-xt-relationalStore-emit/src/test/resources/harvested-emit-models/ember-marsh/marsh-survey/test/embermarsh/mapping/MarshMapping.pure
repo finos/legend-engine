@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::embermarsh::mapping::MarshMapping
+(
+  demo::embermarsh::domain::MarshSighting: Relational
+  {
+    ~primaryKey
+    (
+      [demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.SIGHTING_REF
+    )
+    ~mainTable [demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING
+    sightingRef: [demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.SIGHTING_REF,
+    speciesLabel: case(isNotEmpty([demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.SPECIES_CODE), concat(toUpper(substring(trim([demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.SPECIES_CODE), 1, 3)), concat('-', toString(length([demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.SPECIES_CODE)))), sqlNull()),
+    habitatZone: [demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.HABITAT_ZONE,
+    zoneTag: case(equal(rtrim([demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.HABITAT_ZONE), 'Open Water'), toLower(substring(trim([demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.HABITAT_ZONE), 1, 4)), coalesce(toLower(rtrim([demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.HABITAT_ZONE)), 'unzoned')),
+    observerHandle: [demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.OBSERVER_HANDLE,
+    birdsCounted: [demo::embermarsh::store::MarshDatabase]WETLAND.SIGHTING.BIRDS_COUNTED
+  }
+
+  testSuites:
+  [
+    sightingTransformSuite:
+    {
+      function: |demo::embermarsh::domain::MarshSighting.all()->project(
+  [
+    x|$x.sightingRef,
+    x|$x.speciesLabel,
+    x|$x.zoneTag,
+    x|$x.birdsCounted
+  ],
+  [
+    'Sighting Ref',
+    'Species Label',
+    'Zone Tag',
+    'Birds Counted'
+  ]
+)->sort([asc('Sighting Ref')]);
+      tests:
+      [
+        transformArms:
+        {
+          doc: 'Covers both arms of the habitat-zone label conditional, its unzoned default, and the absent-species-code fallback that yields nothing.';
+          data:
+          [
+            demo::embermarsh::store::MarshDatabase:
+              Relational
+              #{
+                WETLAND.SIGHTING:
+                  'SIGHTING_REF,SPECIES_CODE,HABITAT_ZONE,OBSERVER_HANDLE,BIRDS_COUNTED\n'+
+                  '1,MALLARD,Open Water,ringer.one,4\n'+
+                  '2,TEAL,Reed Bed,ringer.two,2\n'+
+                  '3,,Reed Bed,ringer.one,1\n'+
+                  '4,TEAL,,ringer.two,5\n';
+              }#
+          ];
+          asserts:
+          [
+            fourLabelledRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sighting Ref":1,"Species Label":"MAL-7","Zone Tag":"open","Birds Counted":4},{"Sighting Ref":2,"Species Label":"TEA-4","Zone Tag":"reed bed","Birds Counted":2},{"Sighting Ref":3,"Species Label":null,"Zone Tag":"reed bed","Birds Counted":1},{"Sighting Ref":4,"Species Label":"TEA-4","Zone Tag":"unzoned","Birds Counted":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,96 @@
+name: azure-estuary-3
+title: "Azure Estuary 3 — Bi-Temporal Estuary Roost Counts With An Eight-Armed Condition Case, A Five-Join Region Path And One Query Planned Against Two SQL Dialects"
+description: |
+  An estuary bird-roost census corpus in which one relational store holds the
+  roost sectors, their tidal zones, reserves, survey districts and coast regions
+  alongside the observer teams and the counts themselves. Roost counts are
+  milestoned on both a processing and a business dimension, so the register
+  resolves the extent at one business instant and one processing instant and the
+  count whose processing window has closed and the count whose business window
+  has closed both fall out of range. Sectors, zones and reserves specialise a
+  common survey-feature supertype, and three code vocabularies - tide stage,
+  shelter class and observer grade - are translated onto enumerations by
+  enumeration mappings. The condition code of a count is folded through an
+  eight-armed nested case whose final arm yields a relational null, the effort
+  figure is derived arithmetically from the tally and the absolute drift, the
+  note falls back to a sentinel when the column is empty, and a sector carries an
+  embedded location block whose approach label is concatenated across a join. The
+  coast region of a count is reached five joins away, a grouped view supplies the
+  peak capacity of its zone three joins away and a label view supplies each
+  sector's zone label; a store filter withholds closed sectors and another
+  withholds unnamed regions, and the join conditions themselves use relational
+  functions. Six associations are implemented over the declared joins, a zone
+  exposes parameterised navigations over its sector collection, and two services
+  expose the tabular surface: a register that narrows on a tally floor, an
+  enumeration comparison, a sentinel test and set membership before restricting,
+  deduplicating, ordering and clipping the result, and a keyed multi-execution
+  coverage report that plans the same body against a host dialect runtime and an
+  in-memory dialect runtime.
+modelSources:
+  model:
+    root: azure-estuary-3
+    files:
+      - test/azureestuary3/connection/EstuaryConnections.pure
+      - test/azureestuary3/data/EstuaryData.pure
+      - test/azureestuary3/domain/EstuaryDomain.pure
+      - test/azureestuary3/mapping/EstuaryEnumMappings.pure
+      - test/azureestuary3/mapping/EstuaryMapping.pure
+      - test/azureestuary3/runtime/EstuaryRuntimes.pure
+      - test/azureestuary3/service/RoostCountRegister.pure
+      - test/azureestuary3/service/SectorCoverageByDialect.pure
+      - test/azureestuary3/store/EstuaryDB.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - bitemporal
+  - conditional-transform
+  - db2
+  - embedded-mapping
+  - enumeration-mapping
+  - estuary
+  - h2
+  - multi-execution-service
+  - multi-hop-join
+  - null-sentinel
+  - qualified-property
+  - relational
+  - roost-census
+  - service-test
+  - view-backed-property

@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealwillow3::service::YardWalkFeed
+{
+  pattern: '/borealwillow3/yardWalks';
+  title: 'Yard Walk Feed Believed Now';
+  documentation: 'Resolves the yard walk-round notes believed at the current processing instant, so the snapshot superseded by a later correction never reaches the feed, and projects the trimmed note text.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'apiary-register-desk'
+  ];
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::borealwillow3::domain::YardVisitLog.all($processingDate)->project(
+      [
+        v|$v.visitId,
+        v|$v.yardCode,
+        v|$v.entryText
+      ],
+      [
+        'Visit',
+        'Yard',
+        'Note'
+      ]
+    )->sort([asc('Visit')])};
+    mapping: test::borealwillow3::mapping::ApiaryMapping;
+    runtime: test::borealwillow3::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    yardWalkSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryH2Connection:
+            Relational
+            #{
+              apiary.yard_visit:
+                'visit_id,yard_code,entry_text,in_z,out_z\n'+
+                '1,Y-01,entrance widened   ,2020-01-01,9999-12-31\n'+
+                '2,Y-01,fence line cleared ,2020-01-01,9999-12-31\n'+
+                '3,Y-02,water trough refilled,2020-01-01,9999-12-31\n'+
+                '4,Y-02,superseded note,2020-01-01,2021-01-01\n'+
+                '5,Y-03,stand levelled,2020-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        walksBelievedNow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2022-06-01
+          ]
+          asserts:
+          [
+            openSnapshotsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":1,"Yard":"Y-01","Note":"entrance widened"},{"Visit":2,"Yard":"Y-01","Note":"fence line cleared"},{"Visit":3,"Yard":"Y-02","Note":"water trough refilled"},{"Visit":5,"Yard":"Y-03","Note":"stand levelled"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

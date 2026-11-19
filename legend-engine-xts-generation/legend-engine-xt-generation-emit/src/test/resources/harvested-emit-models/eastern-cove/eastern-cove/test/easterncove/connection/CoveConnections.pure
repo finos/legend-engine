@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::easterncove::connection::CoveConnection
+{
+  store: test::easterncove::store::CoveDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'EXAMPLE_COVE_DB';
+    account: 'example_cove_account';
+    warehouse: 'EXAMPLE_COVE_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'EXAMPLE_COVE_ROLE';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'COVE_OAUTH';
+    scopeName: 'SESSION:ROLE:COVE_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'sailing'; to: 'sailing_current'; schemaFrom: 'harbour'; schemaTo: 'harbour';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::easterncove::connection::CoveTideConnection
+{
+  store: test::easterncove::store::CoveDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'EXAMPLE_COVE_TIDE_DB';
+    account: 'example_cove_account';
+    warehouse: 'EXAMPLE_COVE_TIDE_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'EXAMPLE_COVE_TIDE_ROLE';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'COVE_TIDE_OAUTH';
+    scopeName: 'SESSION:ROLE:COVE_TIDE_READER';
+  };
+}
+
+JsonModelConnection test::easterncove::connection::InboundVesselConnection
+{
+  class: test::easterncove::source::InboundVesselDocument;
+  url: 'data:application/json,%7B%7D';
+}

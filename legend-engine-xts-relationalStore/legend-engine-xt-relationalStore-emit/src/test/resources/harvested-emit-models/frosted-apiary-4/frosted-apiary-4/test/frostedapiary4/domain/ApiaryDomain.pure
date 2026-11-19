@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::frostedapiary4::domain::*;
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A monitored bee hive in the apiary register, versioned by the instant at which the observation batch reached the register.'} test::frostedapiary4::domain::Hive
+{
+  hiveId: Integer[1];
+  hiveName: String[1];
+  forageZone: String[1];
+  frameCount: Integer[1];
+  queenTag: String[0..1];
+  auditNote: String[1];
+  visits: Visit[*];
+  strengthBand()
+  {
+    if($this.frameCount >= 20,
+       | 'STRONG',
+       | if($this.frameCount >= 10,
+            | 'BUILDING',
+            | 'NUCLEUS'))
+  }: String[1];
+  zoneLabel()
+  {
+    $this.forageZone->toLower() + '/' + $this.hiveName
+  }: String[1];
+}
+
+Class test::frostedapiary4::domain::Visit
+{
+  visitId: Integer[1];
+  visitKind: String[1];
+  visitDate: StrictDate[1];
+}

@@ -1,0 +1,263 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::indigoprairie::mapping::PaddockMapping
+(
+  *demo::indigoprairie::domain::GrazingPaddock[paddockSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.paddock_id
+    )
+    ~mainTable [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock
+    paddockId: [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.paddock_id,
+    paddockName: [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.paddock_name,
+    grassAssociation: [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.grass_association,
+    acreage: [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.acreage
+  }
+
+  *demo::indigoprairie::domain::ForageSample[sampleSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::indigoprairie::store::PaddockDB]paddock.forage_sample.sample_id
+    )
+    ~mainTable [demo::indigoprairie::store::PaddockDB]paddock.forage_sample
+    sampleId: [demo::indigoprairie::store::PaddockDB]paddock.forage_sample.sample_id,
+    sampleCode: [demo::indigoprairie::store::PaddockDB]paddock.forage_sample.sample_code,
+    dryMatterPct: [demo::indigoprairie::store::PaddockDB]paddock.forage_sample.dry_matter_pct,
+    grassAssociation: [demo::indigoprairie::store::PaddockDB]@Sample_Paddock | [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.grass_association
+  }
+
+  *demo::indigoprairie::domain::HerdMove[moveSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::indigoprairie::store::PaddockDB]rotation.herd_move.move_id
+    )
+    ~mainTable [demo::indigoprairie::store::PaddockDB]rotation.herd_move
+    moveId: [demo::indigoprairie::store::PaddockDB]rotation.herd_move.move_id,
+    moveCode: [demo::indigoprairie::store::PaddockDB]rotation.herd_move.move_code,
+    herdSize: [demo::indigoprairie::store::PaddockDB]rotation.herd_move.herd_size,
+    paddockName: [demo::indigoprairie::store::PaddockDB]@Move_Paddock | [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.paddock_name
+  }
+
+  *demo::indigoprairie::domain::MoveNote[noteSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::indigoprairie::store::PaddockDB]rotation.move_note.note_id
+    )
+    ~mainTable [demo::indigoprairie::store::PaddockDB]rotation.move_note
+    noteId: [demo::indigoprairie::store::PaddockDB]rotation.move_note.note_id,
+    noteText: [demo::indigoprairie::store::PaddockDB]rotation.move_note.note_text,
+    recordedBy: [demo::indigoprairie::store::PaddockDB]rotation.move_note.recorded_by,
+    paddockName: [demo::indigoprairie::store::PaddockDB]@Note_Move > @Move_Paddock | [demo::indigoprairie::store::PaddockDB]paddock.grazing_paddock.paddock_name
+  }
+
+  demo::indigoprairie::domain::Paddock_Samples: Relational
+  {
+    AssociationMapping
+    (
+      samples[paddockSet, sampleSet]: [demo::indigoprairie::store::PaddockDB]@Sample_Paddock,
+      samplePaddock[sampleSet, paddockSet]: [demo::indigoprairie::store::PaddockDB]@Sample_Paddock
+    )
+  }
+
+  demo::indigoprairie::domain::Move_Notes: Relational
+  {
+    AssociationMapping
+    (
+      notes[moveSet, noteSet]: [demo::indigoprairie::store::PaddockDB]@Note_Move,
+      noteMove[noteSet, moveSet]: [demo::indigoprairie::store::PaddockDB]@Note_Move
+    )
+  }
+
+  testSuites:
+  [
+    forageSampleSuite:
+    {
+      function: |demo::indigoprairie::domain::ForageSample.all()->project(
+  [
+    s|$s.sampleCode,
+    s|$s.dryMatterPct,
+    s|$s.grassAssociation,
+    s|$s.sampleTag()
+  ],
+  [
+    'SampleCode',
+    'DryMatter',
+    'GrassAssociation',
+    'SampleTag'
+  ]
+)->sort(
+  [
+    asc('SampleCode')
+  ]
+);
+      tests:
+      [
+        samplesReachAssociation:
+        {
+          doc: 'Reaches the paddock grass association from the sample main table through the single-hop join and composes the sample tag from the upper-cased code and the dry-matter reading.';
+          data:
+          [
+            demo::indigoprairie::store::PaddockDB:
+              Relational
+              #{
+                paddock.grazing_paddock:
+                  'paddock_id,paddock_name,grass_association,acreage\n'+
+                  'PD-01,North Swale,Big Bluestem,64.5\n'+
+                  'PD-02,Cedar Draw,Little Bluestem,41.25\n';
+
+                paddock.forage_sample:
+                  'sample_id,sample_code,dry_matter_pct,paddock_id\n'+
+                  'FS-01,fs-north-a,32.5,PD-01\n'+
+                  'FS-02,fs-cedar-a,27.75,PD-02\n';
+              }#
+          ];
+          asserts:
+          [
+            twoTaggedSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SampleCode":"fs-cedar-a","DryMatter":27.75,"GrassAssociation":"Little Bluestem","SampleTag":"FS-CEDAR-A-27.75"},{"SampleCode":"fs-north-a","DryMatter":32.5,"GrassAssociation":"Big Bluestem","SampleTag":"FS-NORTH-A-32.5"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    moveNoteSuite:
+    {
+      function: |demo::indigoprairie::domain::MoveNote.all()->project(
+  [
+    n|$n.noteId,
+    n|$n.recordedBy,
+    n|$n.paddockName,
+    n|$n.noteLength()
+  ],
+  [
+    'NoteId',
+    'RecordedBy',
+    'PaddockName',
+    'NoteLength'
+  ]
+)->sort(
+  [
+    asc('NoteId')
+  ]
+);
+      tests:
+      [
+        notesReachPaddockAcrossSchemas:
+        {
+          doc: 'Walks the two-hop path from the note table through the herd move table into the other schema, landing on the paddock name, and measures the note text length.';
+          data:
+          [
+            demo::indigoprairie::store::PaddockDB:
+              Relational
+              #{
+                paddock.grazing_paddock:
+                  'paddock_id,paddock_name,grass_association,acreage\n'+
+                  'PD-01,North Swale,Big Bluestem,64.5\n'+
+                  'PD-02,Cedar Draw,Little Bluestem,41.25\n';
+
+                rotation.herd_move:
+                  'move_id,move_code,herd_size,paddock_id\n'+
+                  'HM-01,mv-spring-1,120,PD-01\n'+
+                  'HM-02,mv-spring-2,88,PD-02\n';
+
+                rotation.move_note:
+                  'note_id,note_text,recorded_by,move_id\n'+
+                  'MN-01,Sward height even,range rider,HM-01\n'+
+                  'MN-02,Water point clear,herd steward,HM-02\n';
+              }#
+          ];
+          asserts:
+          [
+            twoNotesReachPaddocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"NoteId":"MN-01","RecordedBy":"range rider","PaddockName":"North Swale","NoteLength":17},{"NoteId":"MN-02","RecordedBy":"herd steward","PaddockName":"Cedar Draw","NoteLength":17}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    paddockSampleAssociationSuite:
+    {
+      function: |demo::indigoprairie::domain::GrazingPaddock.all()->project(
+  [
+    p|$p.paddockLabel(),
+    p|$p.samples.sampleCode
+  ],
+  [
+    'PaddockLabel',
+    'SampleCode'
+  ]
+)->sort(
+  [
+    asc('PaddockLabel'),
+    asc('SampleCode')
+  ]
+);
+      tests:
+      [
+        paddocksTraverseAssociation:
+        {
+          doc: 'Traverses the paddock-to-sample association implementation and renders the composed paddock label for each surfaced pair.';
+          data:
+          [
+            demo::indigoprairie::store::PaddockDB:
+              Relational
+              #{
+                paddock.grazing_paddock:
+                  'paddock_id,paddock_name,grass_association,acreage\n'+
+                  'PD-01,North Swale,Big Bluestem,64.5\n';
+
+                paddock.forage_sample:
+                  'sample_id,sample_code,dry_matter_pct,paddock_id\n'+
+                  'FS-01,fs-north-a,32.5,PD-01\n'+
+                  'FS-03,fs-north-b,29.0,PD-01\n';
+              }#
+          ];
+          asserts:
+          [
+            twoAssociatedSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PaddockLabel":"BIG BLUESTEM / North Swale","SampleCode":"fs-north-a"},{"PaddockLabel":"BIG BLUESTEM / North Swale","SampleCode":"fs-north-b"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,47 @@
+name: russet-orchard
+title: "Orchard Harvest Registry — GraphFetch Service over Association, Inheritance and Enumeration"
+description: |
+  An orchard corpus served as graph-fetched objects rather than a tabular set.
+  Fruit trees specialise a base tree, carry an enumerated fruit kind translated
+  by an enumeration mapping, and associate with their orchard. A HeavyYield
+  store filter scopes the mapped rows, and a single-execution service graph-
+  fetches heavy-yield trees for a named orchard, driving EMIT service test
+  execution and execution-plan generation.
+modelSources:
+  model:
+    root: russet-orchard
+    files:
+      - test/russetorchard/connection/OrchardH2Connection.pure
+      - test/russetorchard/domain/OrchardDomain.pure
+      - test/russetorchard/mapping/OrchardMapping.pure
+      - test/russetorchard/runtime/OrchardRuntime.pure
+      - test/russetorchard/service/FruitTreesByOrchard.pure
+      - test/russetorchard/store/OrchardDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association
+  - class-inheritance
+  - enumeration
+  - enumeration-mapping
+  - graphfetch
+  - h2
+  - orchard
+  - plan-generation
+  - relational
+  - relational-filter
+  - service-test

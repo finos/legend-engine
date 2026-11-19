@@ -1,0 +1,50 @@
+name: ember-orchard
+title: "Ember Orchard — profile-documented wide register projected through an environment-keyed multi-execution service"
+description: >-
+  A nursery propagation register whose wide specimen record carries a documentation profile on
+  every property, contrasted with a narrow unannotated irrigation allocation. Both are bound by
+  direct column reads onto a two-schema nursery store, with no joins, transforms or
+  enumerations anywhere in the binding layer. One keyed multi-execution service projects all
+  twenty-eight documented properties into a named tabular result, unrestricted and unordered,
+  and routes the identical projection to a nursery warehouse or to its archive counterpart,
+  which share their OAuth scope but differ in datasource and identifier quoting. A data space
+  curates the register and pins the production-tier context to the nursery runtime.
+modelSources:
+  model:
+    root: ember-orchard
+    files:
+      - test/emberorchard/connection/OrchardArchiveConnection.pure
+      - test/emberorchard/connection/OrchardNurseryConnection.pure
+      - test/emberorchard/dataspace/OrchardRegisterDataSpace.pure
+      - test/emberorchard/domain/OrchardDomain.pure
+      - test/emberorchard/mapping/OrchardMapping.pure
+      - test/emberorchard/runtime/OrchardArchiveRuntime.pure
+      - test/emberorchard/runtime/OrchardNurseryRuntime.pure
+      - test/emberorchard/service/SpecimenRegister.pure
+      - test/emberorchard/store/OrchardDB.pure
+features:
+  - execution:data-space
+  - execution:multi-execution-service
+  - execution:service-test
+  - execution:test-data
+  - grammar:profile
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - documentation-profile
+  - environment-keyed
+  - h2
+  - horticulture
+  - multi-execution
+  - multi-schema
+  - snowflake
+  - tagged-values
+  - wide-projection

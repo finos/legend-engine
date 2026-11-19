@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetcanyon2::mapping::CanyonMapping
+(
+  include mapping test::russetcanyon2::mapping::CanyonBaseMapping
+
+  testSuites:
+  [
+    includedBindingSuite:
+    {
+      function: |test::russetcanyon2::domain::TrailHead.all(%2026-03-01)->project(
+        [
+          h|$h.trailCode,
+          h|$h.trailName,
+          h|$h.elevationM,
+          h|$h.accessNote,
+          h|$h.segments(%2026-03-01).segmentCode
+        ],
+        [
+          'Trail/Code',
+          'Trail/Name',
+          'Trail/ElevationM',
+          'Trail/AccessNote',
+          'Trail/SegmentCode'
+        ]
+      )->sort(
+        [
+          asc('Trail/Code'),
+          asc('Trail/SegmentCode')
+        ]
+      );
+      tests:
+      [
+        includedClassAndAssociationMappings:
+        {
+          doc: 'Resolves the class mappings and the association mapping the outer mapping only inherits, at one processing instant, with a superseded trail-head version and a superseded segment version in the fixture so the milestoning predicate is proven to exclude them.';
+          data:
+          [
+            test::russetcanyon2::store::CanyonDatabase:
+              Relational
+              #{
+                canyon.trail_head:
+                  'trail_code,trail_name,elevation_m,access_note,in_z,out_z\n'+
+                  'TH-01,Russet Rim Trail Draft,880,,2026-01-01,2026-02-01\n'+
+                  'TH-01,Russet Rim Trail,905,gate closed at dusk,2026-02-01,9999-12-31\n'+
+                  'TH-02,Ochre Bench Trail,640,,2026-02-01,9999-12-31\n';
+                canyon.trail_segment:
+                  'segment_code,trail_code,surface_type,length_m,grade_percent,in_z,out_z\n'+
+                  'SG-01,TH-01,gravel path,1400,18,2026-01-01,2026-02-01\n'+
+                  'SG-01,TH-01,gravel path,1400,14,2026-02-01,9999-12-31\n'+
+                  'SG-02,TH-01,gravel track,900,7,2026-02-01,9999-12-31\n'+
+                  'SG-03,TH-02,boardwalk,300,22,2026-02-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            currentHeadVersionsWithTheirSegments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trail/Code":"TH-01","Trail/Name":"Russet Rim Trail","Trail/ElevationM":905,"Trail/AccessNote":"gate closed at dusk","Trail/SegmentCode":"SG-01"},{"Trail/Code":"TH-01","Trail/Name":"Russet Rim Trail","Trail/ElevationM":905,"Trail/AccessNote":"gate closed at dusk","Trail/SegmentCode":"SG-02"},{"Trail/Code":"TH-02","Trail/Name":"Ochre Bench Trail","Trail/ElevationM":640,"Trail/AccessNote":null,"Trail/SegmentCode":"SG-03"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

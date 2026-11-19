@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberlagoon::mapping::KioskCardMapping
+(
+  *test::umberlagoon::domain::KioskCard[kioskCardFromSummary]: Pure
+  {
+    ~src test::umberlagoon::domain::PatrolSummary
+    cardRef: 'KC-' + $src.sweepRef->trim()->toUpper()->replace('SW-', ''),
+    headline: [$src.segmentLabel->toUpper(), $src.wardenLabel->trim()]->joinStrings(' | '),
+    surfaceNote: 'kiosk-surface:' + $src.surfaceLabel->toLower(),
+    ratingText: 'tally-' + $src.sweepTally->toString(),
+    tallyValue: $src.sweepRate * 4.0 + [1.0, 2.0]->sum(),
+    tallyRank: round($src.sweepRate * 2.0)
+  }
+
+  testSuites:
+  [
+    kioskCardSuite:
+    {
+      function: |test::umberlagoon::domain::KioskCard.all()->graphFetch(
+        #{
+          test::umberlagoon::domain::KioskCard{
+            cardRef,
+            headline,
+            surfaceNote,
+            ratingText,
+            tallyValue,
+            tallyRank
+          }
+        }#
+      )->serialize(
+        #{
+          test::umberlagoon::domain::KioskCard{
+            cardRef,
+            headline,
+            surfaceNote,
+            ratingText,
+            tallyValue,
+            tallyRank
+          }
+        }#
+      );
+      tests:
+      [
+        cardsFromSummaries:
+        {
+          doc: 'Maps published patrol summaries onto the kiosk card, proving the stripped card reference, the joined headline, the lowered surface note and the arithmetic tally and rank.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::umberlagoon::domain::PatrolSummary:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sweepRef":"SW-PL101","segmentLabel":"ridge-north","wardenLabel":"ada north / RIDGE_NORTH","surfaceLabel":"GRAVEL-RIDGE","noticeLabel":"notice:true","sweepRate":4.0,"sweepTally":18},{"sweepRef":"SW-PL202","segmentLabel":"vale-south","wardenLabel":"bo vale / VALE_SOUTH","surfaceLabel":"BOARDWALK-VALE","noticeLabel":"notice:false","sweepRate":2.5,"sweepTally":11}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedKioskCards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"cardRef":"KC-PL101","headline":"RIDGE-NORTH | ada north / RIDGE_NORTH","surfaceNote":"kiosk-surface:gravel-ridge","ratingText":"tally-18","tallyValue":19.0,"tallyRank":8},{"cardRef":"KC-PL202","headline":"VALE-SOUTH | bo vale / VALE_SOUTH","surfaceNote":"kiosk-surface:boardwalk-vale","ratingText":"tally-11","tallyValue":13.0,"tallyRank":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

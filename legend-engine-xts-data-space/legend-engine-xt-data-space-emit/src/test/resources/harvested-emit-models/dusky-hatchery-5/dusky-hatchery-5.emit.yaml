@@ -1,0 +1,64 @@
+name: dusky-hatchery-5
+title: "Dusky Hatchery 5 — Processing-Temporal Fish Hatchery Programme (Multi-Table Store, Diagram, Data Space)"
+description: |
+  A fish-hatchery rearing programme published as a curated relational corpus.
+  Three processing-temporal classes are bound to three milestoned tables of one
+  schema, each class mapping anchored on its own named main table with an
+  explicit primary key over that alias, and the batch-to-pond property resolved
+  across a declared join so two milestoned main tables are aligned on the same
+  processing predicate. The column spread covers string, integer, date,
+  timestamp, floating-point and decimal families. Three single-execution
+  services take the processing instant they resolve at and differ structurally:
+  a threshold-filtered projection, a species-parameterised projection reaching
+  through the join, and an aggregate over the feeding log. Every suite includes a
+  superseded version whose processing window closed before the requested
+  instant, and one endpoint is also probed at an instant before any version
+  exists. A layout element pins the three classes and the property relating two
+  of them, and the data space gathers the mapping, runtime, layout element and
+  all three endpoints as featured executables with an e-mail support contact.
+
+modelSources:
+  model:
+    root: dusky-hatchery-5
+    files:
+      - test/duskyhatchery5/connection/HatcheryConnection.pure
+      - test/duskyhatchery5/dataspace/HatcheryDataSpace.pure
+      - test/duskyhatchery5/diagram/HatcheryDiagram.pure
+      - test/duskyhatchery5/domain/HatcheryDomain.pure
+      - test/duskyhatchery5/mapping/HatcheryMapping.pure
+      - test/duskyhatchery5/runtime/HatcheryRuntime.pure
+      - test/duskyhatchery5/service/BatchRosterService.pure
+      - test/duskyhatchery5/service/FeedTotalsService.pure
+      - test/duskyhatchery5/service/PondConditionService.pure
+      - test/duskyhatchery5/store/HatcheryDatabase.pure
+
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aquaculture
+  - data-space
+  - diagram
+  - h2
+  - main-table-alias
+  - multi-table-store
+  - primary-key
+  - processing-temporal
+  - project
+  - relational
+  - service-test
+  - snowflake

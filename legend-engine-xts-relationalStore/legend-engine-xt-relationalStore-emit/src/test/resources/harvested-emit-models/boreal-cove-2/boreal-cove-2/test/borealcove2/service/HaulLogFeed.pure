@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealcove2::service::HaulLogFeed
+{
+  pattern: '/borealcove/v1/haul-log/{siteCode}';
+  title: 'Compost Network - Haul Log Feed';
+  documentation: 'Projects the hauls lifted from one site, keeping only the load bands the log publishes, and reads bin, site, route, crew and depot detail through the declared association joins.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {siteCode: String[1]|test::borealcove2::domain::Haul.all()->filter(
+      h|($h.bin.site.siteCode->toOne() == $siteCode) &&
+        ($h.loadBand->in(['full-load', 'part-load', 'tagged-part-load']))
+    )->project(
+      [
+        h|$h.haulId,
+        h|$h.netKg,
+        h|$h.loadBand,
+        h|$h.gradeLabel,
+        h|$h.bin.binCode->toOne(),
+        h|$h.route.shiftLabel->toOne(),
+        h|$h.crew.crewName->toOne(),
+        h|$h.crew.depot.depotName->toOne()
+      ],
+      [
+        'Haul/Id',
+        'Haul/NetKg',
+        'Haul/Band',
+        'Haul/Grade',
+        'Bin/Code',
+        'Route/Shift',
+        'Crew/Name',
+        'Depot/Name'
+      ]
+    )->sort([asc('Haul/Id')])};
+    mapping: test::borealcove2::mapping::CompostMapping;
+    runtime: test::borealcove2::runtime::CompostServiceRuntime;
+  }
+  testSuites:
+  [
+    haulLogFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          compostConnection:
+            Relational
+            #{
+              compost.haul:
+                'haul_id,route_code,bin_id,crew_code,haul_date,gross_kg,tare_kg,grade_code\n'+
+                '1,RT-01,11,CR-01,2026-04-02,2480.00,180.00,fines-a\n'+
+                '2,RT-01,12,CR-01,2026-04-04,340.50,90.50,ovs\n'+
+                '3,RT-02,13,CR-02,2026-04-05,900.00,100.00,ovs\n';
+
+              compost.collection_bin:
+                'bin_id,site_code,bin_code,litre_size,lid_code,seal_state\n'+
+                '11,ST-01,BIN-011,1100,gr,FITTED\n'+
+                '12,ST-01,BIN-012,240,,FITTED\n'+
+                '13,ST-02,BIN-013,660,bl,FITTED\n';
+
+              compost.site:
+                'site_code,site_name,ward_code,site_kind,status_code,bin_count,note_text\n'+
+                'ST-01,Alder Yard,W-1,windrow bay,A,12,turned weekly\n'+
+                'ST-02,Bramble Walk,W-1,tumbler drum,B,4,turned monthly\n';
+
+              compost.round_route:
+                'route_code,route_name,shift_code\n'+
+                'RT-01,Riverbend Morning,AM\n'+
+                'RT-02,Kiln Fields Late,PM\n';
+
+              compost.crew:
+                'crew_code,crew_name,depot_code\n'+
+                'CR-01, ash lindo ,DP-01\n'+
+                'CR-02, vale ossen ,DP-02\n';
+
+              compost.depot:
+                'depot_code,depot_name,ward_code\n'+
+                'DP-01,Riverbend Depot,W-1\n'+
+                'DP-02,Kiln Fields Depot,W-2\n';
+
+              compost.ward:
+                'ward_code,ward_name,borough_name\n'+
+                'W-1,Riverbend,upper vale\n'+
+                'W-2,Kiln Fields,lower vale\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        logForOneSite:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            siteCode = 'ST-01'
+          ]
+          asserts:
+          [
+            onlyTheRequestedSiteIsPublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Haul/Id":1,"Haul/NetKg":2300.00,"Haul/Band":"full-load","Haul/Grade":"FIN/cr-01RT-01","Bin/Code":"BIN-011","Route/Shift":"MORNING ROUND","Crew/Name":"ASH LINDO","Depot/Name":"Riverbend Depot"},{"Haul/Id":2,"Haul/NetKg":250.00,"Haul/Band":"part-load","Haul/Grade":"OVS/cr-01RT-01","Bin/Code":"BIN-012","Route/Shift":"MORNING ROUND","Crew/Name":"ASH LINDO","Depot/Name":"Riverbend Depot"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

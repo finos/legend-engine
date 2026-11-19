@@ -1,0 +1,45 @@
+name: teal-orchard-3
+title: "Teal Orchard 3 — heritage orchard type graph over processing-temporal and bi-temporal milestoning"
+description: |
+  A heritage fruit-orchard register held as a model-only type graph. An abstract
+  processing-temporal supertype carries the shared record shape and is specialised by the tree
+  specimens and the graft records worked onto them, so the subtypes resolve their inherited
+  properties in every derived expression. Assessments of a specimen and the narrative notes that
+  belong to an assessment are bi-temporal, so a correction is readable beside the reading it
+  supersedes. Four bidirectional associations wire the graph: two of them join milestoned classes
+  on both ends, so traversal propagates temporal context rather than opening it again at each
+  hop, and one continues through a further associated class, giving a block that walks its
+  specimens and then the grafts worked onto them in a single qualified expression. A profile
+  declares the stewardship stereotypes and tags annotating the register, and four closed
+  vocabularies type properties that are then read back in derived predicates rather than only
+  declared.
+modelSources:
+  model:
+    root: teal-orchard-3
+    files:
+      - test/tealorchard3/domain/OrchardAssociations.pure
+      - test/tealorchard3/domain/OrchardDomain.pure
+      - test/tealorchard3/domain/OrchardVocabulary.pure
+      - test/tealorchard3/profile/OrchardProfile.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:nested-association
+  - grammar:profile
+  - milestoning:bi-temporal
+  - milestoning:milestoned-association
+  - milestoning:milestoning
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bi-temporal
+  - derived-predicate
+  - heritage-orchard
+  - inheritance
+  - milestoned-association
+  - nested-association
+  - processing-temporal
+  - profile

@@ -1,0 +1,189 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedfossil4::mapping::IceArchiveMapping
+(
+  include mapping test::frostedfossil4::mapping::IceArchiveBaseMapping
+
+  *test::frostedfossil4::domain::IceCore[core_main]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil4::store::IceArchiveDb]archive.ice_core.core_code
+    )
+    ~mainTable [test::frostedfossil4::store::IceArchiveDb]archive.ice_core
+    coreCode: [test::frostedfossil4::store::IceArchiveDb]archive.ice_core.core_code,
+    siteCode: [test::frostedfossil4::store::IceArchiveDb]archive.ice_core.site_code,
+    drillDepthMetres: [test::frostedfossil4::store::IceArchiveDb]archive.ice_core.drill_depth_metres,
+    isotopeIndex: [test::frostedfossil4::store::IceArchiveDb]archive.ice_core.isotope_index,
+    sealedAt: [test::frostedfossil4::store::IceArchiveDb]archive.ice_core.sealed_at,
+    retrievedOn: [test::frostedfossil4::store::IceArchiveDb]archive.ice_core.retrieved_on,
+    siteRegion: [test::frostedfossil4::store::IceArchiveDb]@Core_Site_J | [test::frostedfossil4::store::IceArchiveDb]archive.drill_site.region_name
+  }
+
+  test::frostedfossil4::domain::Core_DrillSite: Relational
+  {
+    AssociationMapping
+    (
+      drillSite[core_main, site_base]: [test::frostedfossil4::store::IceArchiveDb]@Core_Site_J,
+      cores[site_base, core_main]: [test::frostedfossil4::store::IceArchiveDb]@Core_Site_J
+    )
+  }
+
+  test::frostedfossil4::domain::Core_Segments: Relational
+  {
+    AssociationMapping
+    (
+      segments[core_main, segment_base]: [test::frostedfossil4::store::IceArchiveDb]@Core_Segment_J,
+      core[segment_base, core_main]: [test::frostedfossil4::store::IceArchiveDb]@Core_Segment_J
+    )
+  }
+
+  testSuites:
+  [
+    coreVersionSuite:
+    {
+      function: |test::frostedfossil4::domain::IceCore.all(%2026-06-01)->project(
+        [
+          c|$c.coreCode,
+          c|$c.drillDepthMetres,
+          c|$c.siteRegion,
+          c|$c.drillSite.siteName
+        ],
+        [
+          'Core Code',
+          'Drill Depth',
+          'Site Region',
+          'Site Name'
+        ]
+      )->sort(
+        [
+          asc('Core Code')
+        ]
+      );
+      tests:
+      [
+        versionValidAtInstantOnly:
+        {
+          doc: 'Reads the milestoned core at one processing instant so the superseded version, the version that only opens later and the row whose site key never resolves are all distinguished on the same projection.';
+          data:
+          [
+            test::frostedfossil4::store::IceArchiveDb:
+              Relational
+              #{
+                archive.ice_core:
+                  'core_code,site_code,drill_depth_metres,isotope_index,sealed_at,retrieved_on,in_z,out_z\n'+
+                  'IC-1,DS-1,120.5,3.25,2026-01-15 08:30:00,2026-01-10,2026-01-01,2026-03-01\n'+
+                  'IC-1,DS-1,180.5,4.10,2026-03-20 09:00:00,2026-03-15,2026-03-01,9999-12-31\n'+
+                  'IC-2,DS-2,60.0,1.75,2026-02-01 12:00:00,2026-01-28,2026-02-01,9999-12-31\n'+
+                  'IC-3,DS-1,240.0,5.50,2026-08-01 07:00:00,2026-07-25,2026-07-01,9999-12-31\n'+
+                  'IC-4,DS-9,90.0,2.00,2026-02-18 10:15:00,2026-02-20,2026-02-01,9999-12-31\n'+
+                  'IC-5,DS-2,300.0,6.25,2026-02-05 06:00:00,2026-02-02,2026-02-01,9999-12-31\n';
+                archive.core_segment:
+                  'segment_code,core_code,segment_length_cm,density_g_cm3,in_z,out_z\n'+
+                  'SG-1,IC-1,50,0.92,2026-03-01,9999-12-31\n'+
+                  'SG-2,IC-1,45,0.88,2026-03-01,9999-12-31\n'+
+                  'SG-3,IC-2,30,0.91,2026-02-01,9999-12-31\n'+
+                  'SG-4,IC-3,60,0.85,2026-07-01,9999-12-31\n';
+                archive.drill_site:
+                  'site_code,site_name,region_name\n'+
+                  'DS-1,Frosted Saddle Station,North Plateau\n'+
+                  'DS-2,Cirque Camp,South Basin\n';
+              }#
+          ];
+          asserts:
+          [
+            coreRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Core Code":"IC-1","Drill Depth":180.5,"Site Region":"North Plateau","Site Name":"Frosted Saddle Station"},{"Core Code":"IC-2","Drill Depth":60.0,"Site Region":"South Basin","Site Name":"Cirque Camp"},{"Core Code":"IC-4","Drill Depth":90.0,"Site Region":null,"Site Name":null},{"Core Code":"IC-5","Drill Depth":300.0,"Site Region":"South Basin","Site Name":"Cirque Camp"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    segmentLinkSuite:
+    {
+      function: |test::frostedfossil4::domain::CoreSegment.all(%2026-06-01)->project(
+        [
+          s|$s.segmentCode,
+          s|$s.segmentLengthCm,
+          s|$s.densityGcm3,
+          s|$s.core(%2026-06-01).coreCode,
+          s|$s.core(%2026-06-01).siteRegion
+        ],
+        [
+          'Segment Code',
+          'Length Cm',
+          'Density',
+          'Core Code',
+          'Site Region'
+        ]
+      )->sort(
+        [
+          asc('Segment Code')
+        ]
+      );
+      tests:
+      [
+        segmentsTraverseToOwningCoreVersion:
+        {
+          doc: 'Proves the association implementation declared here resolves the class mapping the included mapping owns, and that the traversal onwards to the join-reached region column stays inside the same processing window.';
+          data:
+          [
+            test::frostedfossil4::store::IceArchiveDb:
+              Relational
+              #{
+                archive.ice_core:
+                  'core_code,site_code,drill_depth_metres,isotope_index,sealed_at,retrieved_on,in_z,out_z\n'+
+                  'IC-1,DS-1,120.5,3.25,2026-01-15 08:30:00,2026-01-10,2026-01-01,2026-03-01\n'+
+                  'IC-1,DS-1,180.5,4.10,2026-03-20 09:00:00,2026-03-15,2026-03-01,9999-12-31\n'+
+                  'IC-2,DS-2,60.0,1.75,2026-02-01 12:00:00,2026-01-28,2026-02-01,9999-12-31\n'+
+                  'IC-3,DS-1,240.0,5.50,2026-08-01 07:00:00,2026-07-25,2026-07-01,9999-12-31\n';
+                archive.core_segment:
+                  'segment_code,core_code,segment_length_cm,density_g_cm3,in_z,out_z\n'+
+                  'SG-1,IC-1,50,0.92,2026-03-01,9999-12-31\n'+
+                  'SG-2,IC-1,45,0.88,2026-03-01,9999-12-31\n'+
+                  'SG-3,IC-2,30,0.91,2026-02-01,9999-12-31\n'+
+                  'SG-4,IC-3,60,0.85,2026-07-01,9999-12-31\n';
+                archive.drill_site:
+                  'site_code,site_name,region_name\n'+
+                  'DS-1,Frosted Saddle Station,North Plateau\n'+
+                  'DS-2,Cirque Camp,South Basin\n';
+              }#
+          ];
+          asserts:
+          [
+            segmentRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment Code":"SG-1","Length Cm":50,"Density":0.92,"Core Code":"IC-1","Site Region":"North Plateau"},{"Segment Code":"SG-2","Length Cm":45,"Density":0.88,"Core Code":"IC-1","Site Region":"North Plateau"},{"Segment Code":"SG-3","Length Cm":30,"Density":0.91,"Core Code":"IC-2","Site Region":"South Basin"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::embertundra4::store::HerbariumDB
+(
+  Schema herbarium
+  (
+    Table specimen
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      specimen_id INTEGER PRIMARY KEY,
+      specimen_code VARCHAR(16) NOT NULL,
+      taxon_name VARCHAR(80) NOT NULL,
+      family_code VARCHAR(8) NOT NULL,
+      sheet_count INTEGER NOT NULL,
+      height_cm DOUBLE NOT NULL,
+      collected_on DATE NOT NULL,
+      condition_code VARCHAR(4),
+      cabinet_id INTEGER,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table annotation
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      note_id INTEGER PRIMARY KEY,
+      specimen_id INTEGER NOT NULL,
+      note_code VARCHAR(16) NOT NULL,
+      author_name VARCHAR(60) NOT NULL,
+      verdict VARCHAR(30) NOT NULL,
+      noted_on DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table cabinet
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      cabinet_id INTEGER PRIMARY KEY,
+      cabinet_code VARCHAR(16) NOT NULL,
+      room_code VARCHAR(16) NOT NULL,
+      shelf_count INTEGER NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table curator
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      curator_id INTEGER PRIMARY KEY,
+      curator_code VARCHAR(16) NOT NULL,
+      curator_name VARCHAR(60) NOT NULL,
+      active_flag VARCHAR(1) NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+  )
+
+  Join SpecimenAnnotation(herbarium.specimen.specimen_id = herbarium.annotation.specimen_id)
+  Join SpecimenCabinet(herbarium.specimen.cabinet_id = herbarium.cabinet.cabinet_id)
+)

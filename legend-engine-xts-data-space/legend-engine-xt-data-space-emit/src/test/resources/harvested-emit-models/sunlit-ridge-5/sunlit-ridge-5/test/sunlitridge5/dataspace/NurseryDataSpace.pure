@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace <<test::sunlitridge5::domain::NurseryCatalog.curatedView>> {meta::pure::profiles::doc.doc = 'Governed entry point over the nursery register.', test::sunlitridge5::domain::NurseryCatalog.stewardTeam = 'Nursery Propagation', test::sunlitridge5::domain::NurseryCatalog.taxonomyNode = 'places/nursery/register'} test::sunlitridge5::dataspace::NurseryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'greenhouse';
+      description: 'Greenhouse tier pairing the nursery mapping with the greenhouse runtime.';
+      mapping: test::sunlitridge5::mapping::NurseryMapping;
+      defaultRuntime: test::sunlitridge5::runtime::NurseryGreenhouseRuntime;
+    }
+  ];
+  defaultExecutionContext: 'greenhouse';
+  title: 'Sunlit Nursery Register';
+  description: 'Seedling trays, planting beds and the cultivar catalogue of the nursery.';
+  elements:
+  [
+    test::sunlitridge5::domain::SeedlingTray,
+    test::sunlitridge5::domain::PlantingBed,
+    test::sunlitridge5::domain::Cultivar
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Tray roster by species';
+      description: 'Trays of the propagated species on a processing date.';
+      executable: test::sunlitridge5::service::TrayRosterBySpecies;
+    },
+    {
+      id: 2;
+      title: 'Bed roster as of';
+      description: 'Planting beds on a processing date.';
+      executable: test::sunlitridge5::service::BedRosterAsOf;
+    }
+  ];
+}

@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::hazelbeacon3::connection::BeaconH2Connection
+{
+  store: test::hazelbeacon3::store::BeaconRegistryDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists registry;',
+      'create schema registry;',
+      'drop schema if exists survey;',
+      'create schema survey;',
+      'create table registry.station_record (station_code varchar(24) primary key, station_name varchar(120) not null, coast_sector varchar(48) not null);',
+      'create table registry.lamp_record (lamp_code varchar(24) primary key, lamp_type varchar(48) not null, rated_hours integer);',
+      'create table registry.beacon_record (beacon_code varchar(24) primary key, beacon_name varchar(120) not null, station_code varchar(24) not null, lamp_code varchar(24), grade_code varchar(8), commissioned_on date not null, focal_height_m integer);',
+      'create table survey.inspection_record (inspection_ref varchar(24) primary key, beacon_code varchar(24) not null, inspected_on date not null, inspector_code varchar(24) not null, lens_score integer, battery_pct integer);',
+      'create table survey.defect_record (defect_ref varchar(24) primary key, inspection_ref varchar(24) not null, defect_code varchar(24) not null, severity_code varchar(8), raised_on date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

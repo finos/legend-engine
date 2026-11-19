@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::jadecavern3::store::CavernDatabase
+(
+  Schema KARST
+  (
+    Table SURVEY_LEG
+    (
+      milestoning
+      (
+        business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+      )
+      LEG_REF VARCHAR(24) PRIMARY KEY,
+      CAVE_CODE VARCHAR(24) NOT NULL,
+      GRADE_CODE VARCHAR(8) NOT NULL,
+      CREW_CODE VARCHAR(24) NOT NULL,
+      LOGGED_METRES DOUBLE NOT NULL,
+      SPOIL_METRES DOUBLE NOT NULL,
+      PERIOD_START DATE NOT NULL,
+      PERIOD_END DATE NOT NULL,
+      LOGGED_ON DATE NOT NULL,
+      PASSAGE_REF VARCHAR(24),
+      FROM_Z DATE PRIMARY KEY,
+      THRU_Z DATE
+    )
+    Table PASSAGE_RECORD
+    (
+      milestoning
+      (
+        business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+      )
+      PASSAGE_REF VARCHAR(24) PRIMARY KEY,
+      CAVE_CODE VARCHAR(24) NOT NULL,
+      ROOF_HEIGHT_METRES DOUBLE NOT NULL,
+      WIDTH_METRES DOUBLE NOT NULL,
+      SPEC_REF VARCHAR(24),
+      FROM_Z DATE PRIMARY KEY,
+      THRU_Z DATE
+    )
+    Table PASSAGE_SPEC
+    (
+      SPEC_REF VARCHAR(24) PRIMARY KEY,
+      SPEC_KIND VARCHAR(16) NOT NULL,
+      WATER_DEPTH_METRES DOUBLE,
+      FLOOR_AREA_SQM DOUBLE
+    )
+  )
+
+  Join SurveyLeg_PassageRecord(KARST.SURVEY_LEG.PASSAGE_REF = KARST.PASSAGE_RECORD.PASSAGE_REF)
+  Join PassageRecord_PassageSpec(KARST.PASSAGE_RECORD.SPEC_REF = KARST.PASSAGE_SPEC.SPEC_REF)
+)

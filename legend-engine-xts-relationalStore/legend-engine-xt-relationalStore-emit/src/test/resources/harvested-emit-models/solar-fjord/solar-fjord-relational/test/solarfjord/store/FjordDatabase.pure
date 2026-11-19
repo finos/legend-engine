@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarfjord::store::FjordDatabase
+(
+  Schema kelp
+  (
+    Table line_harvest
+    (
+      harvest_id INTEGER PRIMARY KEY,
+      lot_code VARCHAR(30) NOT NULL,
+      site_code VARCHAR(20) NOT NULL,
+      wet_mass_kg INTEGER NOT NULL,
+      blade_grade VARCHAR(30) NOT NULL,
+      qc_flag VARCHAR(10) NOT NULL
+    )
+
+    Table shore_gather
+    (
+      gather_id INTEGER PRIMARY KEY,
+      lot_code VARCHAR(30) NOT NULL,
+      site_code VARCHAR(20) NOT NULL,
+      wet_mass_kg INTEGER NOT NULL,
+      drift_grade VARCHAR(30)
+    )
+
+    Table farm_site
+    (
+      site_code VARCHAR(20) PRIMARY KEY,
+      site_name VARCHAR(120) NOT NULL,
+      fjord_arm VARCHAR(60) NOT NULL
+    )
+  )
+
+  Filter AcceptedHarvestFilter(trim(kelp.line_harvest.qc_flag) = 'ACCEPTED')
+
+  Join Line_Site(kelp.line_harvest.site_code = kelp.farm_site.site_code)
+  Join Gather_Site(kelp.shore_gather.site_code = kelp.farm_site.site_code)
+)

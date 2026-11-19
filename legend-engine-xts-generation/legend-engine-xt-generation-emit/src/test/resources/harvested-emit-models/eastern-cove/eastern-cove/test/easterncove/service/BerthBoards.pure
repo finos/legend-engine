@@ -1,0 +1,220 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easterncove::service::BerthTariffBoard
+{
+  pattern: '/cove/v1/berths/{env}/{minPassengers}';
+  title: 'Berth Tariff Board';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Berths carrying at least one busy sailing, dispatched on an environment key so the two keyed executions render the berth name through different mappings while answering the same question.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {minPassengers: Integer[1]|test::easterncove::domain::Berth.all()->filter(
+      b|$b.busySailings($minPassengers)->isNotEmpty()
+    )->project(
+      [
+        b|$b.berthCode,
+        b|$b.berthName,
+        b|$b.quayLabel(),
+        b|$b.maxLengthM
+      ],
+      [
+        'Berth',
+        'Name',
+        'Quay',
+        'MaxLength'
+      ]
+    )->sort([asc('Berth')])};
+    key: 'env';
+    executions['cove']:
+    {
+      mapping: test::easterncove::mapping::CoveMapping;
+      runtime: test::easterncove::runtime::CoveRuntime;
+    }
+    executions['tide']:
+    {
+      mapping: test::easterncove::mapping::CoveTideMapping;
+      runtime: test::easterncove::runtime::CoveTideRuntime;
+    }
+  }
+}
+
+Service test::easterncove::service::BerthTariffBoardCove
+{
+  pattern: '/cove/v1/berths/cove/{minPassengers}';
+  title: 'Berth Tariff Board (Cove Pinned)';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Pinned cove counterpart of the environment-keyed berth board, planned against a single execution stack so that branch is asserted directly.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minPassengers: Integer[1]|test::easterncove::domain::Berth.all()->filter(
+      b|$b.busySailings($minPassengers)->isNotEmpty()
+    )->project(
+      [
+        b|$b.berthCode,
+        b|$b.berthName,
+        b|$b.quayLabel(),
+        b|$b.maxLengthM
+      ],
+      [
+        'Berth',
+        'Name',
+        'Quay',
+        'MaxLength'
+      ]
+    )->sort([asc('Berth')])};
+    mapping: test::easterncove::mapping::CoveMapping;
+    runtime: test::easterncove::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    berthTariffSuiteCove:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              harbour.berth:
+                'berth_code,berth_name,quay_name,max_length_m\n'+
+                'BT-01,North Finger,Lantern Quay,90\n'+
+                'BT-02,South Finger,Lantern Quay,120\n'+
+                'BT-03,Slipway Nose,Tern Quay,45\n';
+              harbour.sailing:
+                'sailing_code,berth_code,route_name,passengers,sailed_on\n'+
+                'SL-01,BT-01,Harbour Loop,180,2026-05-01\n'+
+                'SL-02,BT-01,Outer Isles,60,2026-05-02\n'+
+                'SL-03,BT-02,Harbour Loop,240,2026-05-03\n'+
+                'SL-04,BT-03,Night Crossing,15,2026-05-04\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        busyBerths:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minPassengers = 50
+          ]
+          asserts:
+          [
+            berthRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Berth":"BT-01","Name":"North Finger","Quay":"Lantern Quay / North Finger","MaxLength":90},{"Berth":"BT-02","Name":"South Finger","Quay":"Lantern Quay / South Finger","MaxLength":120}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::easterncove::service::BerthTariffBoardTide
+{
+  pattern: '/cove/v1/berths/tide/{minPassengers}';
+  title: 'Berth Tariff Board (Tide Pinned)';
+  owners:
+  [
+    'cove-harbour-office'
+  ];
+  documentation: 'Pinned tide counterpart of the environment-keyed berth board, planned against a single execution stack so that branch is asserted directly.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minPassengers: Integer[1]|test::easterncove::domain::Berth.all()->filter(
+      b|$b.busySailings($minPassengers)->isNotEmpty()
+    )->project(
+      [
+        b|$b.berthCode,
+        b|$b.berthName,
+        b|$b.quayLabel(),
+        b|$b.maxLengthM
+      ],
+      [
+        'Berth',
+        'Name',
+        'Quay',
+        'MaxLength'
+      ]
+    )->sort([asc('Berth')])};
+    mapping: test::easterncove::mapping::CoveTideMapping;
+    runtime: test::easterncove::runtime::CoveTideRuntime;
+  }
+  testSuites:
+  [
+    berthTariffSuiteTide:
+    {
+      data:
+      [
+        connections:
+        [
+          coveTideConnection:
+            Relational
+            #{
+              harbour.berth:
+                'berth_code,berth_name,quay_name,max_length_m\n'+
+                'BT-01,North Finger,Lantern Quay,90\n'+
+                'BT-02,South Finger,Lantern Quay,120\n'+
+                'BT-03,Slipway Nose,Tern Quay,45\n';
+              harbour.sailing:
+                'sailing_code,berth_code,route_name,passengers,sailed_on\n'+
+                'SL-01,BT-01,Harbour Loop,180,2026-05-01\n'+
+                'SL-02,BT-01,Outer Isles,60,2026-05-02\n'+
+                'SL-03,BT-02,Harbour Loop,240,2026-05-03\n'+
+                'SL-04,BT-03,Night Crossing,15,2026-05-04\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        busyBerths:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minPassengers = 50
+          ]
+          asserts:
+          [
+            berthRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Berth":"BT-01","Name":"North Finger (tide)","Quay":"Lantern Quay / North Finger (tide)","MaxLength":90},{"Berth":"BT-02","Name":"South Finger (tide)","Quay":"Lantern Quay / South Finger (tide)","MaxLength":120}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

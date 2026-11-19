@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::ivorycove::data::CanopyData
+{
+  Relational
+  #{
+    inventory.tree_plot:
+      'plot_code,plot_name,planted_on,trunk_count,sheltered,grade_code,status_code,district_code\n'+
+      'P1,Reed Walk Plot,2019-04-01,18,true,BROAD,LIVE,D1\n'+
+      'P2,Dune Verge Plot,,9,false,NARROW,live,D9\n'+
+      'P3,Old Quarry Plot,2010-06-01,4,false,MIXED,RETIRED,D1\n';
+    inventory.plot_measure:
+      'plot_code,height_cm\n'+
+      'P1,420\n'+
+      'P3,150\n';
+    reference.district:
+      'district_code,district_name,borough_code\n'+
+      'D1,Harbourside District,B1\n'+
+      'D2,Ridge District,B2\n';
+    reference.borough:
+      'borough_code,borough_name\n'+
+      'B1,Lower Borough\n'+
+      'B2,Upper Borough\n';
+  }#
+}

@@ -1,0 +1,233 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedbeacon7::service::WatchRotaRollupService
+{
+  pattern: '/gildedbeacon7/watchRotaRollup/{watchDate}';
+  title: 'Coastal Beacon Network - Watch Hour Rollup As Of A Date';
+  owners:
+  [
+    'beacon-watch-desk',
+    'shore-rota-eng'
+  ];
+  documentation: 'Opens the beacon-station register as of the requested date, keeps the stations whose lamp is a light-emitting fitting standing in one of three rostered districts on the requested shore, and rolls the watch hours and the station count up behind the district and the keeper who holds the rota.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {watchDate: StrictDate[1], shoreLine: String[1]|test::gildedbeacon7::domain::BeaconStation.all($watchDate)->filter(
+      s|(($s.lampTier == test::gildedbeacon7::domain::LampTier.LED) && ($s.district.districtCode->toOne()->in(['DC-1', 'DC-2', 'DC-3']))) && ($s.district.shoreLine->toOne()->trim()->toUpper() == $shoreLine->toUpper())
+    )->groupBy(
+      [
+        s|$s.district.districtName,
+        s|$s.keeperName
+      ],
+      [
+        agg(s|$s.watchHours, y|$y->sum()),
+        agg(s|$s.stationCode, y|$y->count())
+      ],
+      [
+        'District',
+        'Keeper',
+        'Watch Hour Total',
+        'Station Count'
+      ]
+    )->sort(
+      [
+        asc('District'),
+        asc('Keeper')
+      ]
+    )};
+    mapping: test::gildedbeacon7::mapping::BeaconMapping;
+    runtime: test::gildedbeacon7::runtime::BeaconRuntime;
+  }
+  testSuites:
+  [
+    watchRotaRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconH2Connection:
+            Relational
+            #{
+              beacon_watch.beacon_station:
+                'station_id,station_code,keeper_name,lamp_tier,lens_grade,watch_hours,lux_reading,inspected_on,district_id,from_z,thru_z\n'+
+                '1,BS-101,Ash Warden,LED,fresnel,20,88.0,2026-05-02,10,2026-01-01,9999-12-31\n'+
+                '2,BS-102,Ash Warden,LED,prism,14,52.0,2026-04-18,10,2026-01-01,9999-12-31\n'+
+                '3,BS-103,Birch Warden,LED,,8,26.0,2026-03-09,20,2026-01-01,9999-12-31\n'+
+                '4,BS-104,Cedar Warden,HAL,lens-a,4,12.0,2026-02-14,20,2026-01-01,9999-12-31\n'+
+                '5,BS-105,Dune Warden,LED,fresnel,22,96.0,2026-06-01,10,2024-01-01,2026-01-01\n'+
+                '6,BS-106,Elm Warden,VAP,prism,16,64.0,2026-05-20,30,2026-01-01,9999-12-31\n'+
+                '7,BS-107,Fern Warden,LED,lens-b,9,36.0,2026-01-05,20,2026-01-01,9999-12-31\n';
+
+              beacon_watch.beacon_district:
+                'district_id,district_code,district_name,shore_line\n'+
+                '10,DC-1,North Cliff,north-cliff\n'+
+                '20,DC-2,East Reach,east-reach\n'+
+                '30,DC-9,Far Ledge,far-ledge\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosteredStationsOnTheNorthShore:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            watchDate = %2026-06-15,
+            shoreLine = 'NORTH-CLIFF'
+          ]
+          asserts:
+          [
+            oneRolledUpKeeperRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"North Cliff","Keeper":"Ash Warden","Watch Hour Total":34,"Station Count":2}]';
+                  }#;
+              }#
+          ]
+        },
+        dateStandingBeforeEveryStationWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            watchDate = %2019-03-01,
+            shoreLine = 'NORTH-CLIFF'
+          ]
+          asserts:
+          [
+            noStationStandsAtThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::gildedbeacon7::service::StationWatchBandService
+{
+  pattern: '/gildedbeacon7/stationWatchBand/{watchDate}';
+  title: 'Coastal Beacon Network - Station Watch Band As Of A Date';
+  owners:
+  [
+    'beacon-watch-desk',
+    'shore-rota-eng'
+  ];
+  documentation: 'Opens the beacon-station register as of the requested date, keeps the stations whose code carries the requested prefix and whose lens grade was recorded, and projects a four-armed watch band beside the rounded lux index and the elapsed days since the station was last inspected.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {watchDate: StrictDate[1], stationPrefix: String[1]|test::gildedbeacon7::domain::BeaconStation.all($watchDate)->filter(
+      s|($s.stationCode->startsWith($stationPrefix)) && ($s.lensGrade->isEmpty()->not())
+    )->project(
+      [
+        s|$s.stationCode,
+        s|if($s.watchHours >= 18,
+             | 'continuous-' + $s.lensGrade->toOne()->toUpper(),
+             | if($s.watchHours >= 12,
+                  | 'extended-' + $s.stationCode->substring(0, 2)->toLower(),
+                  | if($s.watchHours >= 6,
+                       | 'partial',
+                       | 'dark'))),
+        s|($s.luxReading / 4.0)->round(),
+        s|dateDiff($s.inspectedOn, %2026-07-01, DurationUnit.DAYS)
+      ],
+      [
+        'Station',
+        'Watch Band',
+        'Lux Index',
+        'Days Since Inspection'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Station')
+      ]
+    )};
+    mapping: test::gildedbeacon7::mapping::BeaconMapping;
+    runtime: test::gildedbeacon7::runtime::BeaconRuntime;
+  }
+  testSuites:
+  [
+    stationWatchBandSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          beaconH2Connection:
+            Relational
+            #{
+              beacon_watch.beacon_station:
+                'station_id,station_code,keeper_name,lamp_tier,lens_grade,watch_hours,lux_reading,inspected_on,district_id,from_z,thru_z\n'+
+                '1,BS-101,Ash Warden,LED,fresnel,20,88.0,2026-05-02,10,2026-01-01,9999-12-31\n'+
+                '2,BS-102,Ash Warden,LED,prism,14,52.0,2026-04-18,10,2026-01-01,9999-12-31\n'+
+                '3,BS-103,Birch Warden,LED,,8,26.0,2026-03-09,20,2026-01-01,9999-12-31\n'+
+                '4,BS-104,Cedar Warden,HAL,lens-a,4,12.0,2026-02-14,20,2026-01-01,9999-12-31\n'+
+                '5,BS-105,Dune Warden,LED,fresnel,22,96.0,2026-06-01,10,2024-01-01,2026-01-01\n'+
+                '6,BS-106,Elm Warden,VAP,prism,16,64.0,2026-05-20,30,2026-01-01,9999-12-31\n'+
+                '7,BS-107,Fern Warden,LED,lens-b,9,36.0,2026-01-05,20,2026-01-01,9999-12-31\n';
+
+              beacon_watch.beacon_district:
+                'district_id,district_code,district_name,shore_line\n'+
+                '10,DC-1,North Cliff,north-cliff\n'+
+                '20,DC-2,East Reach,east-reach\n'+
+                '30,DC-9,Far Ledge,far-ledge\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyWatchBandArmInWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            watchDate = %2026-06-15,
+            stationPrefix = 'BS-1'
+          ]
+          asserts:
+          [
+            fourBandedStationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"BS-101","Watch Band":"continuous-FRESNEL","Lux Index":22,"Days Since Inspection":60},{"Station":"BS-102","Watch Band":"extended-bs","Lux Index":13,"Days Since Inspection":74},{"Station":"BS-104","Watch Band":"dark","Lux Index":3,"Days Since Inspection":137},{"Station":"BS-106","Watch Band":"extended-bs","Lux Index":16,"Days Since Inspection":42},{"Station":"BS-107","Watch Band":"partial","Lux Index":9,"Days Since Inspection":177}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

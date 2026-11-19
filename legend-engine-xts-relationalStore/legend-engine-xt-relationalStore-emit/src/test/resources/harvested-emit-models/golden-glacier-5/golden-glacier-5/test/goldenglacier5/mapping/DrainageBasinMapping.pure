@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenglacier5::mapping::DrainageBasinMapping
+(
+  *test::goldenglacier5::domain::DrainageBasin[basin]: Relational
+  {
+    ~primaryKey
+    (
+      [test::goldenglacier5::store::MoraineDatabase]moraine.drainage_basin.basin_code
+    )
+    ~mainTable [test::goldenglacier5::store::MoraineDatabase]moraine.drainage_basin
+    basinCode: [test::goldenglacier5::store::MoraineDatabase]moraine.drainage_basin.basin_code,
+    basinName: [test::goldenglacier5::store::MoraineDatabase]moraine.drainage_basin.basin_name,
+    catchmentAreaKm2: [test::goldenglacier5::store::MoraineDatabase]moraine.drainage_basin.catchment_area_km2
+  }
+
+  testSuites:
+  [
+    basinProjectionSuite:
+    {
+      function: |test::goldenglacier5::domain::DrainageBasin.all()->project(
+  [
+    b|$b.basinCode,
+    b|$b.basinName,
+    b|$b.catchmentAreaKm2
+  ],
+  [
+    'BasinCode',
+    'BasinName',
+    'CatchmentAreaKm2'
+  ]
+)->sort(
+  [
+    asc('BasinCode')
+  ]
+);
+      tests:
+      [
+        basinRowsOnly:
+        {
+          doc: 'Binds the drainage basin table on its own, with no enumerated property and no join, so the basin projection is asserted independently of the station mapping.';
+          data:
+          [
+            test::goldenglacier5::store::MoraineDatabase:
+              Relational
+              #{
+                moraine.drainage_basin:
+                  'basin_code,basin_name,catchment_area_km2\n'+
+                  'DB-1,Upper Tarn Basin,42.75\n'+
+                  'DB-2,Lower Scree Basin,18.5\n';
+              }#
+          ];
+          asserts:
+          [
+            twoBasins:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BasinCode":"DB-1","BasinName":"Upper Tarn Basin","CatchmentAreaKm2":42.75},{"BasinCode":"DB-2","BasinName":"Lower Scree Basin","CatchmentAreaKm2":18.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

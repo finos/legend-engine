@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ambermarsh2::service::BarePeatStageBoard
+{
+  pattern: '/ambermarsh2/v1/barepeat/{minAreaM2}';
+  ownership: UserList { users: ['moorland-restoration-desk'] };
+  documentation: 'Reads the bare peat patch register, drops the patches still awaiting any intervention by comparing the restoration stage translated from the stored stage label, and returns the patch area beside a slope-weighted priority figure. An optional stage token restricts the board to a single translated stage.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minAreaM2: Float[1], stageToken: test::ambermarsh2::domain::RestorationStage[0..1]|test::ambermarsh2::domain::BarePeatPatch.all()->filter(
+      p|($p.areaM2 >= $minAreaM2) &&
+        ($p.stage != test::ambermarsh2::domain::RestorationStage.Surveyed) &&
+        ($stageToken->isEmpty() || ($p.stage == $stageToken->toOne()))
+    )->project(
+      [
+        p|$p.patchCode->toUpper(),
+        p|$p.stage,
+        p|$p.areaM2,
+        p|($p.areaM2 * $p.slopePct) / 100
+      ],
+      [
+        'Patch',
+        'Stage',
+        'AreaM2',
+        'SlopeWeightedArea'
+      ]
+    )->sort(
+      [
+        desc('SlopeWeightedArea'),
+        asc('Patch')
+      ]
+    )};
+    mapping: test::ambermarsh2::mapping::MoorlandMapping;
+    runtime: test::ambermarsh2::runtime::MoorlandCoreRuntime;
+  }
+}

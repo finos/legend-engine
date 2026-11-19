@@ -1,0 +1,48 @@
+name: coral-lantern-3
+title: Coral Lantern 3 Reef Hall Lighting
+description: >
+  A relational model in which a business-temporal display-tank register is resolved at an
+  explicit point in time supplied as a service parameter, rolled up to the hall that holds each
+  tank, and then joined inside the query body to a narrowed projection of the unmilestoned
+  lantern-fitting inventory, so the plan has to combine a grouped aggregate with a second read
+  rather than a single row-level select. A second service publishes the resolved tank extent as
+  a plain projection, and both suites carry a tank closed before the requested instant so the
+  milestoning filter is exercised rather than assumed.
+modelSources:
+  model:
+    root: coral-lantern-3
+    files:
+      - test/corallantern3/connection/ReefLightingConnections.pure
+      - test/corallantern3/domain/ReefLightingDomain.pure
+      - test/corallantern3/mapping/ReefLightingMapping.pure
+      - test/corallantern3/runtime/ReefLightingRuntimes.pure
+      - test/corallantern3/service/ReefHallLanternService.pure
+      - test/corallantern3/service/ReefTankRegisterService.pure
+      - test/corallantern3/store/ReefLightingDatabase.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - group-by
+  - h2
+  - point-in-time
+  - reef-hall
+  - tds-join

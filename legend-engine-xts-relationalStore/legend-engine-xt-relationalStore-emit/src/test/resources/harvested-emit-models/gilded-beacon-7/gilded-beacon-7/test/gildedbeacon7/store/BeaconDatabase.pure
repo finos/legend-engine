@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::gildedbeacon7::store::BeaconDatabase
+(
+  Schema beacon_watch
+  (
+    Table beacon_station
+    (
+      milestoning
+      (
+        business(BUS_FROM=from_z, BUS_THRU=thru_z)
+      )
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(24) NOT NULL,
+      keeper_name VARCHAR(80) NOT NULL,
+      lamp_tier VARCHAR(16) NOT NULL,
+      lens_grade VARCHAR(24),
+      watch_hours INTEGER NOT NULL,
+      lux_reading DOUBLE NOT NULL,
+      inspected_on DATE NOT NULL,
+      district_id INTEGER,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table beacon_district
+    (
+      district_id INTEGER PRIMARY KEY,
+      district_code VARCHAR(16) NOT NULL,
+      district_name VARCHAR(80) NOT NULL,
+      shore_line VARCHAR(48)
+    )
+  )
+
+  Join Station_District(beacon_watch.beacon_station.district_id = beacon_watch.beacon_district.district_id)
+)

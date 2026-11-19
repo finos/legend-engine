@@ -1,0 +1,63 @@
+name: dusky-fjord-8
+title: "Dusky Fjord 8 — A Fjord Plankton Tow Register Mapped Across Three Relations With A Store Filter And An Included Vessel Mapping"
+description: |
+  A coastal research programme records plankton tows taken in a fjord. Each tow is
+  logged against the vessel that took it and the mooring station it was launched
+  from, so the row source spans three relations of one store.
+
+  The tow class mapping declares an explicit primary key and main table and reaches
+  the vessel name, the vessel grade and the station name across two named equality
+  joins, one hop each; every other property is a plain column. A named store filter
+  built from dynamic SQL functions over three integer flag columns keeps only the
+  tows that are neither voided nor parked in review.
+
+  The vessel class is not mapped by the tow mapping at all: it is contributed by a
+  second mapping that the tow mapping pulls in by inclusion, and that included set
+  implementation declares its own primary key and main table.
+
+  Two mapping test suites cover the register: one projects the tow rows, showing a
+  row with no net count or depth, the two rows the store filter removes and the
+  join-reached columns resolving through both joins; the other projects the vessel
+  rows contributed by the included mapping.
+
+  A grouped view over the per-taxon catch rows totals, counts and bounds the individuals of
+  each tow. A third class is mapped onto that view: it bands the catch through an eight-armed
+  nested case that falls through to null and reaches the monitoring programme four joins out,
+  from the view through the tow, the station and the station region; a third suite covers
+  every band arm, the fallback and the programme reach.
+modelSources:
+  model:
+    root: dusky-fjord-8
+    files:
+      - test/duskyfjord8/connection/SurveyConnection.pure
+      - test/duskyfjord8/domain/SurveyDomain.pure
+      - test/duskyfjord8/mapping/TowMapping.pure
+      - test/duskyfjord8/mapping/VesselBaseMapping.pure
+      - test/duskyfjord8/runtime/SurveyRuntime.pure
+      - test/duskyfjord8/store/SurveyDb.pure
+features:
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-view-group-by
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - join-reached-column
+  - mapping-include
+  - mapping-test
+  - plankton-survey
+  - relational
+  - store-filter
+  - tabular-data-set

@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenotter7::mapping::RailwayEnumMappings
+(
+  test::goldenotter7::domain::PowerSource: EnumerationMapping PowerSourceMapping
+  {
+    STEAM: ['ST'],
+    DIESEL: ['DL'],
+    ELECTRIC: ['EL']
+  }
+
+  test::goldenotter7::domain::ServiceState: EnumerationMapping ServiceStateMapping
+  {
+    ACTIVE: ['AC'],
+    STORED: ['SD'],
+    WORKSHOP: ['WS']
+  }
+
+  test::goldenotter7::domain::TrackGauge: EnumerationMapping TrackGaugeMapping
+  {
+    NARROW: ['NG'],
+    METRE: ['MG'],
+    STANDARD: ['SG']
+  }
+
+  test::goldenotter7::domain::CarriageLayout: EnumerationMapping CarriageLayoutMapping
+  {
+    SALOON: ['SA'],
+    COMPARTMENT: ['CO'],
+    OBSERVATION: ['OB'],
+    BRAKE_END: ['BR']
+  }
+
+  test::goldenotter7::domain::InspectionOutcome: EnumerationMapping InspectionOutcomeMapping
+  {
+    PASSED: ['PA'],
+    ADVISORY: ['AD'],
+    FAILED: ['FA']
+  }
+
+  test::goldenotter7::domain::InspectorGrade: EnumerationMapping InspectorGradeMapping
+  {
+    SENIOR: ['SR'],
+    ROUTINE: ['RT'],
+    TRAINEE: ['TR']
+  }
+)

@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonquokka4::domain::*;
+import test::crimsonquokka4::profile::*;
+
+Class {PlanDoc.purpose = 'A request for dome time naming one pointing form, the blocks to run and the layout the frames leave in.'} test::crimsonquokka4::domain::ObservingProposal
+[
+  exactlyOnePointingForm: ($this.equatorialPointing->isNotEmpty() && ($this.cataloguePointing->isEmpty() && ($this.ephemerisPointing->isEmpty() && $this.sweepFieldLabel->isEmpty()))) || (($this.equatorialPointing->isEmpty() && ($this.cataloguePointing->isNotEmpty() && ($this.ephemerisPointing->isEmpty() && $this.sweepFieldLabel->isEmpty()))) || (($this.equatorialPointing->isEmpty() && ($this.cataloguePointing->isEmpty() && ($this.ephemerisPointing->isNotEmpty() && $this.sweepFieldLabel->isEmpty()))) || ($this.equatorialPointing->isEmpty() && ($this.cataloguePointing->isEmpty() && ($this.ephemerisPointing->isEmpty() && $this.sweepFieldLabel->isNotEmpty()))))),
+  proposalLabelWithinLength: $this.proposalLabel->trim()->length() <= 64,
+  slotPriorityWithinBound: $this.slotPriority->toOne() <= 9
+]
+{
+  {PlanDoc.note = 'Label the night astronomers refer to the proposal by.'} proposalLabel: String[1];
+  <<ColumnShape.readOnly>> submittedOn: StrictDate[1];
+  slotPriority: Integer[0..1];
+  equatorialPointing: EquatorialPointing[0..1];
+  cataloguePointing: CataloguePointing[0..1];
+  ephemerisPointing: EphemerisPointing[0..1];
+  sweepFieldLabel: String[0..1];
+  blocks: ObservingBlock[*];
+  routines: CalibrationRoutine[*];
+  layouts: ArchiveLayout[*];
+}
+
+Class {PlanDoc.purpose = 'The set of dome settings a night astronomer may override for one block, and the justification that has to accompany any of them.'} test::crimsonquokka4::domain::BlockOverrideSet
+[
+  overriddenNightIsJustified: ($this.overrideReason->isNotEmpty() && $this.overrideAuthor->isNotEmpty()) || ($this.filterOverride->isEmpty() && ($this.trackingOverride->isEmpty() && ($this.cadenceOverride->isEmpty() && ($this.dwellOverride->isEmpty() && ($this.binningOverride->isEmpty() && ($this.amplifierOverride->isEmpty() && ($this.ditherOverride->isEmpty() && ($this.guideStarOverride->isEmpty() && ($this.focusOverride->isEmpty() && ($this.rotatorOverride->isEmpty() && ($this.windowOverride->isEmpty() && ($this.readoutOverride->isEmpty() && ($this.slitOverride->isEmpty() && $this.calibrationOverride->isEmpty()))))))))))))),
+  exactlyOneTimingOverride: ($this.cadenceOverride->isNotEmpty() && ($this.dwellOverride->isEmpty() && $this.readoutOverride->isEmpty())) || (($this.cadenceOverride->isEmpty() && ($this.dwellOverride->isNotEmpty() && $this.readoutOverride->isEmpty())) || ($this.cadenceOverride->isEmpty() && ($this.dwellOverride->isEmpty() && $this.readoutOverride->isNotEmpty())))
+]
+{
+  overrideSetCode: String[1];
+  blockCode: String[1];
+  overrideReason: String[0..1];
+  overrideAuthor: String[0..1];
+  filterOverride: String[0..1];
+  trackingOverride: TrackingMode[0..1];
+  cadenceOverride: CadenceUnit[0..1];
+  dwellOverride: Integer[0..1];
+  binningOverride: Integer[0..1];
+  amplifierOverride: Float[0..1];
+  ditherOverride: Integer[0..1];
+  guideStarOverride: String[0..1];
+  focusOverride: Float[0..1];
+  rotatorOverride: Float[0..1];
+  windowOverride: String[0..1];
+  readoutOverride: Integer[0..1];
+  slitOverride: Float[0..1];
+  calibrationOverride: String[0..1];
+}
+
+Class {PlanDoc.purpose = 'One night of dome time, bounded by exactly one of the sky-limit forms the observatory recognises.'} test::crimsonquokka4::domain::NightPlan
+[
+  exactlyOneSkyLimitForm: ($this.hourAngleLimitDegrees->isNotEmpty() && ($this.airmassLimit->isEmpty() && ($this.altitudeFloorDegrees->isEmpty() && $this.horizonMaskLabel->isEmpty()))) || (($this.hourAngleLimitDegrees->isEmpty() && ($this.airmassLimit->isNotEmpty() && ($this.altitudeFloorDegrees->isEmpty() && $this.horizonMaskLabel->isEmpty()))) || (($this.hourAngleLimitDegrees->isEmpty() && ($this.airmassLimit->isEmpty() && ($this.altitudeFloorDegrees->isNotEmpty() && $this.horizonMaskLabel->isEmpty()))) || ($this.hourAngleLimitDegrees->isEmpty() && ($this.airmassLimit->isEmpty() && ($this.altitudeFloorDegrees->isEmpty() && $this.horizonMaskLabel->isNotEmpty()))))),
+  nightStateRecognised: $this.nightState->in(['SCHEDULED', 'OBSERVING', 'CLOSED_FOR_WEATHER', 'COMPLETE'])
+]
+{
+  nightCode: String[1];
+  <<ColumnShape.readOnly>> nightOf: StrictDate[1];
+  nightState: String[1];
+  hourAngleLimitDegrees: Float[0..1];
+  airmassLimit: Float[0..1];
+  altitudeFloorDegrees: Float[0..1];
+  horizonMaskLabel: String[0..1];
+  proposals: ObservingProposal[*];
+}
+
+Class {PlanDoc.purpose = 'What one finished observing block left behind in the dome archive.'} test::crimsonquokka4::domain::BlockRunSummary
+{
+  runRef: String[1];
+  blockCode: String[1];
+  seeingObserved: SeeingBand[1];
+  closedOn: StrictDate[1];
+  <<ColumnShape.wideInteger>> framesWritten: Integer[1];
+  observerNote: String[0..1];
+}
+
+Class {PlanDoc.purpose = 'One attempt at handing a finished archive layout to the astronomer who asked for it.'} test::crimsonquokka4::domain::HandoverAttempt
+{
+  attemptRef: String[1];
+  runRef: String[1];
+  compression: ArchiveCompression[1];
+  attemptedOn: StrictDate[1];
+  accepted: Boolean[1];
+}

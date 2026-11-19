@@ -1,0 +1,179 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigoquokka3::store::SkyAlmanacDb
+(
+  Schema almanac
+  (
+    Table star_magnitude_raw
+    (
+      star_code VARCHAR(16) PRIMARY KEY,
+      observed_on DATE PRIMARY KEY,
+      band_code VARCHAR(4),
+      magnitude DOUBLE,
+      magnitude_error DOUBLE,
+      airmass DOUBLE,
+      observer_code VARCHAR(16)
+    )
+    Table star_season_raw
+    (
+      star_code VARCHAR(16) PRIMARY KEY,
+      season_year INTEGER PRIMARY KEY,
+      mean_magnitude DOUBLE,
+      min_magnitude DOUBLE,
+      max_magnitude DOUBLE,
+      observation_count INTEGER,
+      last_observed_on DATE
+    )
+    Table comet_magnitude_raw
+    (
+      comet_code VARCHAR(16) PRIMARY KEY,
+      observed_on DATE PRIMARY KEY,
+      total_magnitude DOUBLE,
+      coma_arcmin DOUBLE,
+      tail_degrees DOUBLE,
+      observer_code VARCHAR(16)
+    )
+    Table comet_apparition_raw
+    (
+      comet_code VARCHAR(16) PRIMARY KEY,
+      apparition_year INTEGER PRIMARY KEY,
+      peak_magnitude DOUBLE,
+      perihelion_on DATE,
+      observation_count INTEGER
+    )
+    Table asteroid_magnitude_raw
+    (
+      asteroid_code VARCHAR(16) PRIMARY KEY,
+      observed_on DATE PRIMARY KEY,
+      reduced_magnitude DOUBLE,
+      phase_angle_deg DOUBLE,
+      rotation_hours DOUBLE
+    )
+    Table asteroid_opposition_raw
+    (
+      asteroid_code VARCHAR(16) PRIMARY KEY,
+      opposition_year INTEGER PRIMARY KEY,
+      mean_magnitude DOUBLE,
+      lightcurve_amplitude DOUBLE,
+      observation_count INTEGER,
+      opposition_on DATE
+    )
+    Table meteor_rate_raw
+    (
+      shower_code VARCHAR(8) PRIMARY KEY,
+      observed_on DATE PRIMARY KEY,
+      station_code VARCHAR(16) PRIMARY KEY,
+      hourly_rate INTEGER,
+      limiting_magnitude DOUBLE,
+      cloud_cover_pct INTEGER
+    )
+    Table meteor_season_raw
+    (
+      shower_code VARCHAR(8) PRIMARY KEY,
+      season_year INTEGER PRIMARY KEY,
+      peak_rate INTEGER,
+      peak_on DATE,
+      mean_rate DOUBLE
+    )
+    Table nova_magnitude_raw
+    (
+      nova_code VARCHAR(16) PRIMARY KEY,
+      observed_on DATE PRIMARY KEY,
+      visual_magnitude DOUBLE,
+      decline_rate DOUBLE,
+      observer_code VARCHAR(16)
+    )
+    View star_magnitude_vw
+    (
+      star_code: almanac.star_magnitude_raw.star_code PRIMARY KEY,
+      observed_on: almanac.star_magnitude_raw.observed_on PRIMARY KEY,
+      band_code: almanac.star_magnitude_raw.band_code,
+      magnitude: almanac.star_magnitude_raw.magnitude,
+      magnitude_error: almanac.star_magnitude_raw.magnitude_error,
+      airmass: almanac.star_magnitude_raw.airmass,
+      observer_code: almanac.star_magnitude_raw.observer_code
+    )
+    View star_season_vw
+    (
+      star_code: almanac.star_season_raw.star_code PRIMARY KEY,
+      season_year: almanac.star_season_raw.season_year PRIMARY KEY,
+      mean_magnitude: almanac.star_season_raw.mean_magnitude,
+      min_magnitude: almanac.star_season_raw.min_magnitude,
+      max_magnitude: almanac.star_season_raw.max_magnitude,
+      observation_count: almanac.star_season_raw.observation_count,
+      last_observed_on: almanac.star_season_raw.last_observed_on
+    )
+    View comet_magnitude_vw
+    (
+      comet_code: almanac.comet_magnitude_raw.comet_code PRIMARY KEY,
+      observed_on: almanac.comet_magnitude_raw.observed_on PRIMARY KEY,
+      total_magnitude: almanac.comet_magnitude_raw.total_magnitude,
+      coma_arcmin: almanac.comet_magnitude_raw.coma_arcmin,
+      tail_degrees: almanac.comet_magnitude_raw.tail_degrees,
+      observer_code: almanac.comet_magnitude_raw.observer_code
+    )
+    View comet_apparition_vw
+    (
+      comet_code: almanac.comet_apparition_raw.comet_code PRIMARY KEY,
+      apparition_year: almanac.comet_apparition_raw.apparition_year PRIMARY KEY,
+      peak_magnitude: almanac.comet_apparition_raw.peak_magnitude,
+      perihelion_on: almanac.comet_apparition_raw.perihelion_on,
+      observation_count: almanac.comet_apparition_raw.observation_count
+    )
+    View asteroid_magnitude_vw
+    (
+      asteroid_code: almanac.asteroid_magnitude_raw.asteroid_code PRIMARY KEY,
+      observed_on: almanac.asteroid_magnitude_raw.observed_on PRIMARY KEY,
+      reduced_magnitude: almanac.asteroid_magnitude_raw.reduced_magnitude,
+      phase_angle_deg: almanac.asteroid_magnitude_raw.phase_angle_deg,
+      rotation_hours: almanac.asteroid_magnitude_raw.rotation_hours
+    )
+    View asteroid_opposition_vw
+    (
+      asteroid_code: almanac.asteroid_opposition_raw.asteroid_code PRIMARY KEY,
+      opposition_year: almanac.asteroid_opposition_raw.opposition_year PRIMARY KEY,
+      mean_magnitude: almanac.asteroid_opposition_raw.mean_magnitude,
+      lightcurve_amplitude: almanac.asteroid_opposition_raw.lightcurve_amplitude,
+      observation_count: almanac.asteroid_opposition_raw.observation_count,
+      opposition_on: almanac.asteroid_opposition_raw.opposition_on
+    )
+    View meteor_rate_vw
+    (
+      shower_code: almanac.meteor_rate_raw.shower_code PRIMARY KEY,
+      observed_on: almanac.meteor_rate_raw.observed_on PRIMARY KEY,
+      station_code: almanac.meteor_rate_raw.station_code PRIMARY KEY,
+      hourly_rate: almanac.meteor_rate_raw.hourly_rate,
+      limiting_magnitude: almanac.meteor_rate_raw.limiting_magnitude,
+      cloud_cover_pct: almanac.meteor_rate_raw.cloud_cover_pct
+    )
+    View meteor_season_vw
+    (
+      shower_code: almanac.meteor_season_raw.shower_code PRIMARY KEY,
+      season_year: almanac.meteor_season_raw.season_year PRIMARY KEY,
+      peak_rate: almanac.meteor_season_raw.peak_rate,
+      peak_on: almanac.meteor_season_raw.peak_on,
+      mean_rate: almanac.meteor_season_raw.mean_rate
+    )
+    View nova_magnitude_vw
+    (
+      nova_code: almanac.nova_magnitude_raw.nova_code PRIMARY KEY,
+      observed_on: almanac.nova_magnitude_raw.observed_on PRIMARY KEY,
+      visual_magnitude: almanac.nova_magnitude_raw.visual_magnitude,
+      decline_rate: almanac.nova_magnitude_raw.decline_rate,
+      observer_code: almanac.nova_magnitude_raw.observer_code
+    )
+  )
+)

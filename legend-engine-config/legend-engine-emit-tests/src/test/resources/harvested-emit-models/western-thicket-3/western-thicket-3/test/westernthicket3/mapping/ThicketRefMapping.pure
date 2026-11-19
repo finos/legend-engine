@@ -1,0 +1,183 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernthicket3::mapping::ThicketRefMapping
+(
+  test::westernthicket3::domain::CanopyBand: EnumerationMapping CanopyBands
+  {
+    OPEN: ['O'],
+    MIXED: ['M'],
+    CLOSED: ['C']
+  }
+
+  *test::westernthicket3::domain::GroveRef[grove]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthicket3::store::ThicketSurveyDb]thref.grove_block.grove_id
+    )
+    ~mainTable [test::westernthicket3::store::ThicketSurveyDb]thref.grove_block
+    groveCode: [test::westernthicket3::store::ThicketSurveyDb]thref.grove_block.grove_code,
+    groveName: case(
+                 isNotEmpty([test::westernthicket3::store::ThicketSurveyDb]thref.grove_block.grove_name),
+                 rtrim([test::westernthicket3::store::ThicketSurveyDb]thref.grove_block.grove_name),
+                 concat('UNNAMED GROVE ', [test::westernthicket3::store::ThicketSurveyDb]thref.grove_block.grove_code)
+               ),
+    standTally: [test::westernthicket3::store::ThicketSurveyDb]@Grove_StandTally | [test::westernthicket3::store::ThicketSurveyDb]thref.grove_stand_tally.stand_tally
+  }
+
+  *test::westernthicket3::domain::StandRef[stand]: Relational
+  {
+    ~filter [test::westernthicket3::store::ThicketSurveyDb]StandInServiceFilter
+    ~primaryKey
+    (
+      [test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.stand_id
+    )
+    ~mainTable [test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand
+    standCode: [test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.stand_code,
+    standName: case(
+                 isNotEmpty([test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.stand_name),
+                 rtrim([test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.stand_name),
+                 concat('UNNAMED STAND ', [test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.stand_code)
+               ),
+    canopyBand: EnumerationMapping CanopyBands: toUpper(rtrim([test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.canopy_code)),
+    standNote: [test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.stand_note,
+    groveName: [test::westernthicket3::store::ThicketSurveyDb]@Stand_Grove | [test::westernthicket3::store::ThicketSurveyDb]thref.grove_block.grove_name
+  }
+
+  testSuites:
+  [
+    standRefSuite:
+    {
+      function: |test::westernthicket3::domain::StandRef.all()->project(
+        [
+          s|$s.standCode,
+          s|$s.standName,
+          s|$s.canopyBand,
+          s|$s.standNote,
+          s|$s.groveName
+        ],
+        [
+          'Stand',
+          'Name',
+          'Canopy',
+          'Note',
+          'Grove'
+        ]
+      )->sort([asc('Stand')]);
+      tests:
+      [
+        standsSurvivingTheStoreFilter:
+        {
+          doc: 'Reads the stand book over a fixture carrying a stand withdrawn from service, so the store filter on the aliased main table drops it, while the surviving stands fold a blank plan name into a default, band the canopy code through the enumeration mapping and resolve the grove one hop away including the grove whose name the plan leaves blank.';
+          data:
+          [
+            test::westernthicket3::store::ThicketSurveyDb:
+              Relational
+              #{
+                thref.grove_block:
+                  'grove_id,grove_code,grove_name,warden_code\n'+
+                  '1,GV-01,North Coppice Grove,WD-01\n'+
+                  '2,GV-02,,WD-02\n'+
+                  '3,GV-03,Hazel Ring Grove,WD-03\n';
+                thref.coppice_stand:
+                  'stand_id,stand_code,stand_name,grove_id,canopy_code,stand_note\n'+
+                  '1,ST-01,Hazel Ridge Stand,1,O,cut back in march\n'+
+                  '2,ST-02,,1,M,\n'+
+                  '3,ST-03,Ash Corner Stand,2,C,browsed along the edge\n'+
+                  '4,ST-04,Withdrawn Ledge Stand,3,X,out of service\n';
+                thref.warden_roster:
+                  'warden_code,warden_name,roster_kind,rota_code,certified_until,supplier_org\n'+
+                  'WD-01,a.holloway,GROVE,D,2027-03-31,\n'+
+                  'WD-02,m.fenwick,CONTRACT,,,Thicket Cutting Partnership\n'+
+                  'WD-03,s.oakden,GROVE,N,2026-09-30,\n';
+              }#
+          ];
+          asserts:
+          [
+            threeStandsInService:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stand":"ST-01","Name":"Hazel Ridge Stand","Canopy":"OPEN","Note":"cut back in march","Grove":"North Coppice Grove"},{"Stand":"ST-02","Name":"UNNAMED STAND ST-02","Canopy":"MIXED","Note":null,"Grove":"North Coppice Grove"},{"Stand":"ST-03","Name":"Ash Corner Stand","Canopy":"CLOSED","Note":"browsed along the edge","Grove":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    groveRefSuite:
+    {
+      function: |test::westernthicket3::domain::GroveRef.all()->project(
+        [
+          g|$g.groveCode,
+          g|$g.groveName,
+          g|$g.standTally
+        ],
+        [
+          'Grove',
+          'Name',
+          'Tally'
+        ]
+      )->sort([asc('Grove')]);
+      tests:
+      [
+        grovesTalliedOverTheView:
+        {
+          doc: 'Reads the grove book over the same fixture, resolving the stand tally of each grove across the join onto the grouped view rather than the base relation, so the withdrawn stand is still tallied, and folding the blank grove name into a default built from the grove code.';
+          data:
+          [
+            test::westernthicket3::store::ThicketSurveyDb:
+              Relational
+              #{
+                thref.grove_block:
+                  'grove_id,grove_code,grove_name,warden_code\n'+
+                  '1,GV-01,North Coppice Grove,WD-01\n'+
+                  '2,GV-02,,WD-02\n'+
+                  '3,GV-03,Hazel Ring Grove,WD-03\n';
+                thref.coppice_stand:
+                  'stand_id,stand_code,stand_name,grove_id,canopy_code,stand_note\n'+
+                  '1,ST-01,Hazel Ridge Stand,1,O,cut back in march\n'+
+                  '2,ST-02,,1,M,\n'+
+                  '3,ST-03,Ash Corner Stand,2,C,browsed along the edge\n'+
+                  '4,ST-04,Withdrawn Ledge Stand,3,X,out of service\n';
+                thref.warden_roster:
+                  'warden_code,warden_name,roster_kind,rota_code,certified_until,supplier_org\n'+
+                  'WD-01,a.holloway,GROVE,D,2027-03-31,\n'+
+                  'WD-02,m.fenwick,CONTRACT,,,Thicket Cutting Partnership\n'+
+                  'WD-03,s.oakden,GROVE,N,2026-09-30,\n';
+              }#
+          ];
+          asserts:
+          [
+            everyGroveTallied:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Grove":"GV-01","Name":"North Coppice Grove","Tally":2},{"Grove":"GV-02","Name":"UNNAMED GROVE GV-02","Tally":1},{"Grove":"GV-03","Name":"Hazel Ring Grove","Tally":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

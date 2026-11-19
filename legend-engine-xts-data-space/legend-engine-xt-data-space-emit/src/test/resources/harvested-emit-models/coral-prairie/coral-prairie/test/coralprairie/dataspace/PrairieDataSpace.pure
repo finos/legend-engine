@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::coralprairie::dataspace::PrairieDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'restoration';
+      description: 'Restoration tier - the governed prairie plot graph served from the restoration warehouse.';
+      mapping: test::coralprairie::mapping::PrairieMapping;
+      defaultRuntime: test::coralprairie::runtime::PrairieRuntime;
+    }
+  ];
+  defaultExecutionContext: 'restoration';
+  title: 'Prairie Restoration Register';
+  description: 'A governed entry point over the prairie restoration register - plots and the zones, seed mixes, soil series, technicians and burn units they navigate to - wiring the relational mapping, the runtime and the published tabular services for catalogue consumers.';
+  elements:
+  [
+    test::coralprairie::domain::RestorationPlot,
+    test::coralprairie::domain::ManagementZone,
+    test::coralprairie::domain::BurnUnit,
+    test::coralprairie::domain::SeedMix,
+    test::coralprairie::domain::SoilSeries,
+    test::coralprairie::domain::FieldTechnician
+  ];
+  executables:
+  [
+    {
+      id: plotRegister;
+      title: 'Plot register';
+      description: 'Sample executable resolving to the published plot register service.';
+      executable: test::coralprairie::service::PlotRegisterService;
+      executionContextKey: 'restoration';
+    },
+    {
+      id: zoneRegister;
+      title: 'Zone register';
+      description: 'Sample executable resolving to the published zone register service.';
+      executable: test::coralprairie::service::ZoneRegisterService;
+      executionContextKey: 'restoration';
+    },
+    {
+      id: tallgrassPlots;
+      title: 'Tallgrass plots';
+      description: 'Sample executable resolving to the filtered tallgrass plot selection service.';
+      executable: test::coralprairie::service::TallgrassPlotService;
+      executionContextKey: 'restoration';
+    }
+  ];
+}

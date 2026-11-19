@@ -1,0 +1,355 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedardelta3::service::OakCanopyRegister
+{
+  pattern: '/cedardelta3/v1/oak-canopy-register';
+  title: 'Cedar Delta 3 - Oak Canopy Register';
+  owners:
+  [
+    'arboriculture-inventory-desk'
+  ];
+  documentation: 'Narrows the street tree inventory to one ward with a recorded species, projects the tag, species and zone columns, then keeps only the projected rows whose species column mentions the oak genus name and de-duplicates what is left.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {| test::cedardelta3::domain::StreetTree.all()
+                ->filter(t | $t.wardCode == 'W-NORTH' && !$t.speciesName->isEmpty())
+                ->project([t | $t.treeTag, t | $t.speciesName, t | $t.plantingZone], ['Tag', 'Species', 'Zone'])
+                ->filter(r | $r.getString('Species')->contains('Oak'))
+                ->distinct()
+                ->sort([asc('Tag')])
+           };
+    mapping: test::cedardelta3::mapping::TreeInventoryMapping;
+    runtime: test::cedardelta3::runtime::TreeInventoryRuntime;
+  }
+  testSuites:
+  [
+    oakCanopySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          treeInventoryConnection:
+            Relational
+            #{
+              inventory.street_tree:
+                'tree_id,tree_tag,species_name,ward_code,condition_code,planting_zone,maintenance_note,trunk_diameter_cm\n'+
+                '1,TR-01,Quercus robur Oak,W-NORTH,GOOD,Z-1,Crown lifted in spring,42\n'+
+                '2,TR-02,Tilia cordata Lime,W-NORTH,FAIR,Z-1,Basal stump growth noted,38\n'+
+                '3,TR-03,Quercus rubra Oak,W-NORTH,GOOD,Z-2,,55\n'+
+                '4,TR-04,Acer campestre Maple,W-SOUTH,POOR,Z-2,Dead wood removed,26\n'+
+                '5,TR-05,Betula pendula Birch,W-NORTH,,Z-3,Storm damage recorded,30\n'+
+                '6,TR-06,Quercus petraea Oak,W-SOUTH,GOOD,Z-3,Crown thinned,48\n'+
+                '7,TR-07,Fraxinus excelsior Ash,W-NORTH,FAIR,Z-1,,33\n'+
+                '8,TR-08,Platanus acerifolia Plane,W-EAST,GOOD,Z-4,Stump grinding scheduled,61\n'+
+                '9,TR-09,,W-NORTH,GOOD,Z-1,Replacement planting,12\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyOaksInTheRequestedWardSurvive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tag":"TR-01","Species":"Quercus robur Oak","Zone":"Z-1"},{"Tag":"TR-03","Species":"Quercus rubra Oak","Zone":"Z-2"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedardelta3::service::QuercusPrefixRegister
+{
+  pattern: '/cedardelta3/v1/quercus-prefix-register';
+  title: 'Cedar Delta 3 - Quercus Prefix Register';
+  owners:
+  [
+    'arboriculture-inventory-desk'
+  ];
+  documentation: 'Same ward narrowing as the oak canopy register, but the projected rows are kept on a species prefix rather than a substring, so a genus recorded later in the species string falls out.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {| test::cedardelta3::domain::StreetTree.all()
+                ->filter(t | $t.wardCode == 'W-NORTH' && !$t.speciesName->isEmpty())
+                ->project([t | $t.treeTag, t | $t.speciesName, t | $t.plantingZone], ['Tag', 'Species', 'Zone'])
+                ->filter(r | $r.getString('Species')->startsWith('Quercus'))
+                ->distinct()
+                ->sort([asc('Tag')])
+           };
+    mapping: test::cedardelta3::mapping::TreeInventoryMapping;
+    runtime: test::cedardelta3::runtime::TreeInventoryRuntime;
+  }
+  testSuites:
+  [
+    quercusPrefixSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          treeInventoryConnection:
+            Relational
+            #{
+              inventory.street_tree:
+                'tree_id,tree_tag,species_name,ward_code,condition_code,planting_zone,maintenance_note,trunk_diameter_cm\n'+
+                '1,TR-01,Quercus robur Oak,W-NORTH,GOOD,Z-1,Crown lifted in spring,42\n'+
+                '2,TR-02,Tilia cordata Lime,W-NORTH,FAIR,Z-1,Basal stump growth noted,38\n'+
+                '3,TR-03,Quercus rubra Oak,W-NORTH,GOOD,Z-2,,55\n'+
+                '5,TR-05,Betula pendula Birch,W-NORTH,,Z-3,Storm damage recorded,30\n'+
+                '10,TR-10,Sorbus aria Whitebeam Quercus lookalike,W-NORTH,GOOD,Z-2,Watch list,18\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTheGenusPrefixedSpeciesSurvive:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tag":"TR-01","Species":"Quercus robur Oak","Zone":"Z-1"},{"Tag":"TR-03","Species":"Quercus rubra Oak","Zone":"Z-2"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedardelta3::service::UnremarkableSpeciesRegister
+{
+  pattern: '/cedardelta3/v1/unremarkable-species-register';
+  title: 'Cedar Delta 3 - Unremarkable Species Register';
+  owners:
+  [
+    'arboriculture-inventory-desk'
+  ];
+  documentation: 'Projects every inventory row that records a species and then rejects the three genus names the canopy programme already tracks, so the surviving rows are the species nobody has scheduled work against.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {| test::cedardelta3::domain::StreetTree.all()
+                ->filter(t | !$t.speciesName->isEmpty())
+                ->project([t | $t.treeTag, t | $t.speciesName, t | $t.wardCode], ['Tag', 'Species', 'Ward'])
+                ->filter(r | !$r.getString('Species')->contains('Oak') && (!$r.getString('Species')->contains('Lime') && !$r.getString('Species')->contains('Birch')))
+                ->distinct()
+                ->sort([asc('Tag')])
+           };
+    mapping: test::cedardelta3::mapping::TreeInventoryMapping;
+    runtime: test::cedardelta3::runtime::TreeInventoryRuntime;
+  }
+  testSuites:
+  [
+    unremarkableSpeciesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          treeInventoryConnection:
+            Relational
+            #{
+              inventory.street_tree:
+                'tree_id,tree_tag,species_name,ward_code,condition_code,planting_zone,maintenance_note,trunk_diameter_cm\n'+
+                '1,TR-01,Quercus robur Oak,W-NORTH,GOOD,Z-1,Crown lifted in spring,42\n'+
+                '2,TR-02,Tilia cordata Lime,W-NORTH,FAIR,Z-1,Basal stump growth noted,38\n'+
+                '4,TR-04,Acer campestre Maple,W-SOUTH,POOR,Z-2,Dead wood removed,26\n'+
+                '5,TR-05,Betula pendula Birch,W-NORTH,,Z-3,Storm damage recorded,30\n'+
+                '7,TR-07,Fraxinus excelsior Ash,W-NORTH,FAIR,Z-1,,33\n'+
+                '8,TR-08,Platanus acerifolia Plane,W-EAST,GOOD,Z-4,Stump grinding scheduled,61\n'+
+                '9,TR-09,,W-NORTH,GOOD,Z-1,Replacement planting,12\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theThreeTrackedGenusNamesAreRejected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tag":"TR-04","Species":"Acer campestre Maple","Ward":"W-SOUTH"},{"Tag":"TR-07","Species":"Fraxinus excelsior Ash","Ward":"W-NORTH"},{"Tag":"TR-08","Species":"Platanus acerifolia Plane","Ward":"W-EAST"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedardelta3::service::ZoneConditionCoverage
+{
+  pattern: '/cedardelta3/v1/zone-condition-coverage';
+  title: 'Cedar Delta 3 - Zone Condition Coverage';
+  owners:
+  [
+    'arboriculture-inventory-desk'
+  ];
+  documentation: 'Rejects the zone the depot has retired, keeps only the two condition grades the inventory treats as maintained and reports the distinct ward and zone pairs that remain, so a tree whose condition grade was never recorded drops out with the retired zone.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {| test::cedardelta3::domain::StreetTree.all()
+                ->filter(t | !$t.plantingZone->contains('Z-4') && $t.conditionCode->in(['GOOD', 'FAIR']))
+                ->project([t | $t.wardCode, t | $t.plantingZone], ['Ward', 'Zone'])
+                ->distinct()
+                ->sort([asc('Ward'), asc('Zone')])
+           };
+    mapping: test::cedardelta3::mapping::TreeInventoryMapping;
+    runtime: test::cedardelta3::runtime::TreeInventoryRuntime;
+  }
+  testSuites:
+  [
+    zoneConditionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          treeInventoryConnection:
+            Relational
+            #{
+              inventory.street_tree:
+                'tree_id,tree_tag,species_name,ward_code,condition_code,planting_zone,maintenance_note,trunk_diameter_cm\n'+
+                '1,TR-01,Quercus robur Oak,W-NORTH,GOOD,Z-1,Crown lifted in spring,42\n'+
+                '2,TR-02,Tilia cordata Lime,W-NORTH,FAIR,Z-1,Basal stump growth noted,38\n'+
+                '3,TR-03,Quercus rubra Oak,W-NORTH,GOOD,Z-2,,55\n'+
+                '4,TR-04,Acer campestre Maple,W-SOUTH,POOR,Z-2,Dead wood removed,26\n'+
+                '5,TR-05,Betula pendula Birch,W-NORTH,,Z-3,Storm damage recorded,30\n'+
+                '6,TR-06,Quercus petraea Oak,W-SOUTH,GOOD,Z-3,Crown thinned,48\n'+
+                '8,TR-08,Platanus acerifolia Plane,W-EAST,GOOD,Z-4,Stump grinding scheduled,61\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        retiredZoneAndUngradedTreesFallOut:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Ward":"W-NORTH","Zone":"Z-1"},{"Ward":"W-NORTH","Zone":"Z-2"},{"Ward":"W-SOUTH","Zone":"Z-3"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::cedardelta3::service::WidestTrunkRegister
+{
+  pattern: '/cedardelta3/v1/widest-trunk-register';
+  title: 'Cedar Delta 3 - Widest Trunk Register';
+  owners:
+  [
+    'arboriculture-inventory-desk'
+  ];
+  documentation: 'Orders the maintained inventory by trunk diameter and publishes the single widest trunk, which is the row the canopy survey uses as its reference tree.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {| test::cedardelta3::domain::StreetTree.all()
+                ->filter(t | $t.conditionCode->in(['GOOD', 'FAIR']))
+                ->project([t | $t.treeTag, t | $t.wardCode, t | $t.trunkDiameterCm], ['Tag', 'Ward', 'Diameter'])
+                ->distinct()
+                ->sort([desc('Diameter'), asc('Tag')])
+                ->limit(1)
+           };
+    mapping: test::cedardelta3::mapping::TreeInventoryMapping;
+    runtime: test::cedardelta3::runtime::TreeInventoryRuntime;
+  }
+  testSuites:
+  [
+    widestTrunkSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          treeInventoryConnection:
+            Relational
+            #{
+              inventory.street_tree:
+                'tree_id,tree_tag,species_name,ward_code,condition_code,planting_zone,maintenance_note,trunk_diameter_cm\n'+
+                '1,TR-01,Quercus robur Oak,W-NORTH,GOOD,Z-1,Crown lifted in spring,42\n'+
+                '4,TR-04,Acer campestre Maple,W-SOUTH,POOR,Z-2,Dead wood removed,99\n'+
+                '6,TR-06,Quercus petraea Oak,W-SOUTH,GOOD,Z-3,Crown thinned,48\n'+
+                '8,TR-08,Platanus acerifolia Plane,W-EAST,GOOD,Z-4,Stump grinding scheduled,61\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theUngradedWidestTrunkIsNotTheReferenceTree:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tag":"TR-08","Ward":"W-EAST","Diameter":61}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

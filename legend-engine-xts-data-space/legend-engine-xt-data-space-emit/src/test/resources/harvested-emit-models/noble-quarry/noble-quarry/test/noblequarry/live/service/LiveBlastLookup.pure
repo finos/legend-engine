@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblequarry::live::service::LiveBlastLookup
+{
+  pattern: '/noble-quarry/v1/live/blasts/{asOf}/{benchCode}';
+  title: 'Noble Quarry - Live Blast Lookup By Bench';
+  documentation: '# Live blast lookup\n\nReturns every **currently recorded** blast fired on one bench; the bench code is matched case-insensitively after trimming.\n\n- `asOf` - the reporting date the caller is working to\n- `benchCode` - the bench to look up\n\nBlast recordings superseded by a later correction are never returned.';
+  autoActivateUpdates: true;
+  mcpServer: liveBlastLookup;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], benchCode: String[1]|test::noblequarry::live::domain::BlastRecord.all(%latest)->filter(
+      b|$b.benchCode->toUpper() == $benchCode->trim()->toUpper()
+    )->project(
+      [
+        b|$b.blastRef,
+        b|$b.benchCode,
+        b|$b.siteRef,
+        b|$b.firedOn,
+        b|$b.chargeKg,
+        b|$b.holeCount
+      ],
+      [
+        'Blast Ref',
+        'Bench Code',
+        'Site Ref',
+        'Fired On',
+        'Charge Kg',
+        'Hole Count'
+      ]
+    )};
+    mapping: test::noblequarry::live::mapping::QuarryLiveMapping;
+    runtime: test::noblequarry::live::runtime::QuarryLiveRuntime;
+  }
+  testSuites:
+  [
+    liveBlastLookupSuite:
+    {
+      data: [connections: [quarryLiveStore: Reference #{test::noblequarry::data::LiveQuarryFixture}#]]
+      tests:
+      [
+        matchingBench:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-01,
+            benchCode = 'BENCH-B'
+          ]
+          asserts:
+          [
+            supersededBlastExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Blast Ref":"BL-2","Bench Code":"BENCH-B","Site Ref":"R-102","Fired On":"2026-04-15","Charge Kg":380.5,"Hole Count":16}]';
+                  }#;
+              }#
+          ]
+        },
+        nonMatchingBench:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-01,
+            benchCode = 'BENCH-Z'
+          ]
+          asserts:
+          [
+            noBlastsForUnknownBench:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

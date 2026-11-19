@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberquarry5::mapping::QuarryDigestM2M
+(
+  include mapping test::umberquarry5::mapping::QuarryRefMapping
+
+  *test::umberquarry5::payload::BlockTallyDigest[blockTallyDigest]: Pure
+  {
+    ~src test::umberquarry5::payload::BlockTally
+    tallyCode: $src.tallyCode,
+    grade: EnumerationMapping GradeCodes: [if($src.gradeCode->isEmpty(), | 'NULL', | if($src.gradeCode->toOne()->trim() == '', | 'BLANK', | $src.gradeCode->toOne()->trim()->toUpper()))]->toOne(),
+    shape: EnumerationMapping ShapeCodes: [if($src.shapeCode->isEmpty(), | 'IRR', | $src.shapeCode->toOne()->trim()->toUpper())]->toOne(),
+    family: EnumerationMapping StoneFamilyCodes: [if($src.familyCode->isEmpty(), | 'SED', | $src.familyCode->toOne()->trim()->toUpper())]->toOne(),
+    level: EnumerationMapping LevelCodes: [if($src.levelText->isEmpty(), | 1, | $src.levelText->toOne()->trim()->parseInteger())]->toOne()
+  }
+
+  testSuites:
+  [
+    tallyDigestSuite:
+    {
+      function: |test::umberquarry5::payload::BlockTallyDigest.all()->graphFetch(
+        #{
+          test::umberquarry5::payload::BlockTallyDigest
+          {
+            tallyCode,
+            grade,
+            shape,
+            family,
+            level
+          }
+        }#
+      )->serialize(
+        #{
+          test::umberquarry5::payload::BlockTallyDigest
+          {
+            tallyCode,
+            grade,
+            shape,
+            family,
+            level
+          }
+        }#
+      );
+      tests:
+      [
+        tallyCodesThroughSentinels:
+        {
+          doc: 'Tally codes are trimmed and upper cased before each enumeration lookup; an absent grade resolves through the null sentinel and a blank one through the blank sentinel, absent shape, family and level codes take their defaults and the level text is parsed to an integer.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::umberquarry5::payload::BlockTally:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tallyCode":"T-1","gradeCode":" p ","shapeCode":"plate","familyCode":"ign","levelText":" 2 "},{"tallyCode":"T-2","gradeCode":null,"shapeCode":null,"familyCode":null,"levelText":null},{"tallyCode":"T-3","gradeCode":"  ","shapeCode":"cube ","familyCode":" met","levelText":"3"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tallyCode":"T-1","grade":"PREMIUM","shape":"SLAB","family":"IGNEOUS","level":"MIDDLE"},{"tallyCode":"T-2","grade":"UNGRADED","shape":"IRREGULAR","family":"SEDIMENTARY","level":"UPPER"},{"tallyCode":"T-3","grade":"BLANK_GRADE","shape":"CUBE","family":"METAMORPHIC","level":"LOWER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

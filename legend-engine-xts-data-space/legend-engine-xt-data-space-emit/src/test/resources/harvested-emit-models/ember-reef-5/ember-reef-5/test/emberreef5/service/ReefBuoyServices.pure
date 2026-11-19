@@ -1,0 +1,590 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberreef5::service::CrestBuoyHourlyExtract
+{
+  pattern: '/emberreef5/v1/crestbuoyhourly';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the CrestBuoyHourly report at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::emberreef5::domain::CrestBuoyHourly.all(%latest)->project(
+      [
+        x|$x.reportCode,
+        x|$x.buoyCode,
+        x|$x.waterTempC,
+        x|$x.salinityPsu,
+        x|$x.phLevel,
+        x|$x.turbidityNtu,
+        x|$x.dissolvedOxygen,
+        x|$x.chlorophyllUg,
+        x|$x.parLight,
+        x|$x.currentSpeed,
+        x|$x.waveHeightM,
+        x|$x.readAt
+      ],
+      [
+        'ReportCode',
+        'BuoyCode',
+        'WaterTempC',
+        'SalinityPsu',
+        'PhLevel',
+        'TurbidityNtu',
+        'DissolvedOxygen',
+        'ChlorophyllUg',
+        'ParLight',
+        'CurrentSpeed',
+        'WaveHeightM',
+        'ReadAt'
+      ]
+    )->sort([asc('ReportCode')])};
+    mapping: test::emberreef5::mapping::ReefBuoyMapping;
+    runtime: test::emberreef5::runtime::ReefBuoyRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefBuoyConnection:
+            Relational
+            #{
+              reef.crest_buoy_hourly:
+                'report_code,buoy_code,water_temp_c,salinity_psu,ph_level,turbidity_ntu,dissolved_oxygen,chlorophyll_ug,par_light,current_speed,wave_height_m,read_at,in_z,out_z\n'+
+                'CH-01,B-1A,10.25,10.75,11.25,11.75,12.25,12.75,13.25,13.75,14.25,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                'CH-02,B-1B,20.25,,21.25,21.75,22.25,22.75,23.25,23.75,24.25,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                'CH-01,B-1A,30.25,30.75,31.25,31.75,32.25,32.75,33.25,33.75,34.25,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"CH-01","BuoyCode":"B-1A","WaterTempC":10.25,"SalinityPsu":10.75,"PhLevel":11.25,"TurbidityNtu":11.75,"DissolvedOxygen":12.25,"ChlorophyllUg":12.75,"ParLight":13.25,"CurrentSpeed":13.75,"WaveHeightM":14.25,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"CH-02","BuoyCode":"B-1B","WaterTempC":20.25,"SalinityPsu":null,"PhLevel":21.25,"TurbidityNtu":21.75,"DissolvedOxygen":22.25,"ChlorophyllUg":22.75,"ParLight":23.25,"CurrentSpeed":23.75,"WaveHeightM":24.25,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberreef5::service::CrestBuoyHourlyRevisedExtract
+{
+  pattern: '/emberreef5/v1/crestbuoyhourlyrev';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the CrestBuoyHourlyRevised report at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::emberreef5::domain::CrestBuoyHourlyRevised.all(%latest)->project(
+      [
+        x|$x.reportCode,
+        x|$x.buoyCode,
+        x|$x.waterTempC,
+        x|$x.salinityPsu,
+        x|$x.phLevel,
+        x|$x.turbidityNtu,
+        x|$x.dissolvedOxygen,
+        x|$x.chlorophyllUg,
+        x|$x.parLight,
+        x|$x.currentSpeed,
+        x|$x.waveHeightM,
+        x|$x.readAt
+      ],
+      [
+        'ReportCode',
+        'BuoyCode',
+        'WaterTempC',
+        'SalinityPsu',
+        'PhLevel',
+        'TurbidityNtu',
+        'DissolvedOxygen',
+        'ChlorophyllUg',
+        'ParLight',
+        'CurrentSpeed',
+        'WaveHeightM',
+        'ReadAt'
+      ]
+    )->sort([asc('ReportCode')])};
+    mapping: test::emberreef5::mapping::ReefBuoyMapping;
+    runtime: test::emberreef5::runtime::ReefBuoyRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefBuoyConnection:
+            Relational
+            #{
+              reef.crest_buoy_hourly_rev:
+                'report_code,buoy_code,water_temp_c,salinity_psu,ph_level,turbidity_ntu,dissolved_oxygen,chlorophyll_ug,par_light,current_speed,wave_height_m,read_at,in_z,out_z\n'+
+                'CR-01,B-2A,11.5,12.0,12.5,13.0,13.5,14.0,14.5,15.0,15.5,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                'CR-02,B-2B,21.5,,22.5,23.0,23.5,24.0,24.5,25.0,25.5,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                'CR-01,B-2A,31.5,32.0,32.5,33.0,33.5,34.0,34.5,35.0,35.5,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"CR-01","BuoyCode":"B-2A","WaterTempC":11.5,"SalinityPsu":12.0,"PhLevel":12.5,"TurbidityNtu":13.0,"DissolvedOxygen":13.5,"ChlorophyllUg":14.0,"ParLight":14.5,"CurrentSpeed":15.0,"WaveHeightM":15.5,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"CR-02","BuoyCode":"B-2B","WaterTempC":21.5,"SalinityPsu":null,"PhLevel":22.5,"TurbidityNtu":23.0,"DissolvedOxygen":23.5,"ChlorophyllUg":24.0,"ParLight":24.5,"CurrentSpeed":25.0,"WaveHeightM":25.5,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberreef5::service::LagoonBuoyDailyExtract
+{
+  pattern: '/emberreef5/v1/lagoonbuoydaily';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the LagoonBuoyDaily report at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::emberreef5::domain::LagoonBuoyDaily.all(%latest)->project(
+      [
+        x|$x.reportCode,
+        x|$x.buoyCode,
+        x|$x.meanTempC,
+        x|$x.maxTempC,
+        x|$x.minTempC,
+        x|$x.tidalRangeM,
+        x|$x.nitrateUm,
+        x|$x.phosphateUm,
+        x|$x.silicateUm,
+        x|$x.sedimentLoad,
+        x|$x.readAt
+      ],
+      [
+        'ReportCode',
+        'BuoyCode',
+        'MeanTempC',
+        'MaxTempC',
+        'MinTempC',
+        'TidalRangeM',
+        'NitrateUm',
+        'PhosphateUm',
+        'SilicateUm',
+        'SedimentLoad',
+        'ReadAt'
+      ]
+    )->sort([asc('ReportCode')])};
+    mapping: test::emberreef5::mapping::ReefBuoyMapping;
+    runtime: test::emberreef5::runtime::ReefBuoyRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefBuoyConnection:
+            Relational
+            #{
+              reef.lagoon_buoy_daily:
+                'report_code,buoy_code,mean_temp_c,max_temp_c,min_temp_c,tidal_range_m,nitrate_um,phosphate_um,silicate_um,sediment_load,read_at,in_z,out_z\n'+
+                'LD-01,B-3A,12.75,13.25,13.75,14.25,14.75,15.25,15.75,16.25,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                'LD-02,B-3B,22.75,,23.75,24.25,24.75,25.25,25.75,26.25,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                'LD-01,B-3A,32.75,33.25,33.75,34.25,34.75,35.25,35.75,36.25,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"LD-01","BuoyCode":"B-3A","MeanTempC":12.75,"MaxTempC":13.25,"MinTempC":13.75,"TidalRangeM":14.25,"NitrateUm":14.75,"PhosphateUm":15.25,"SilicateUm":15.75,"SedimentLoad":16.25,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"LD-02","BuoyCode":"B-3B","MeanTempC":22.75,"MaxTempC":null,"MinTempC":23.75,"TidalRangeM":24.25,"NitrateUm":24.75,"PhosphateUm":25.25,"SilicateUm":25.75,"SedimentLoad":26.25,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberreef5::service::LagoonBuoyDailyRevisedExtract
+{
+  pattern: '/emberreef5/v1/lagoonbuoydailyrev';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the LagoonBuoyDailyRevised report at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::emberreef5::domain::LagoonBuoyDailyRevised.all(%latest)->project(
+      [
+        x|$x.reportCode,
+        x|$x.buoyCode,
+        x|$x.meanTempC,
+        x|$x.maxTempC,
+        x|$x.minTempC,
+        x|$x.tidalRangeM,
+        x|$x.nitrateUm,
+        x|$x.phosphateUm,
+        x|$x.silicateUm,
+        x|$x.sedimentLoad,
+        x|$x.readAt
+      ],
+      [
+        'ReportCode',
+        'BuoyCode',
+        'MeanTempC',
+        'MaxTempC',
+        'MinTempC',
+        'TidalRangeM',
+        'NitrateUm',
+        'PhosphateUm',
+        'SilicateUm',
+        'SedimentLoad',
+        'ReadAt'
+      ]
+    )->sort([asc('ReportCode')])};
+    mapping: test::emberreef5::mapping::ReefBuoyMapping;
+    runtime: test::emberreef5::runtime::ReefBuoyRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefBuoyConnection:
+            Relational
+            #{
+              reef.lagoon_buoy_daily_rev:
+                'report_code,buoy_code,mean_temp_c,max_temp_c,min_temp_c,tidal_range_m,nitrate_um,phosphate_um,silicate_um,sediment_load,read_at,in_z,out_z\n'+
+                'LR-01,B-4A,14.0,14.5,15.0,15.5,16.0,16.5,17.0,17.5,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                'LR-02,B-4B,24.0,,25.0,25.5,26.0,26.5,27.0,27.5,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                'LR-01,B-4A,34.0,34.5,35.0,35.5,36.0,36.5,37.0,37.5,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"LR-01","BuoyCode":"B-4A","MeanTempC":14.0,"MaxTempC":14.5,"MinTempC":15.0,"TidalRangeM":15.5,"NitrateUm":16.0,"PhosphateUm":16.5,"SilicateUm":17.0,"SedimentLoad":17.5,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"LR-02","BuoyCode":"B-4B","MeanTempC":24.0,"MaxTempC":null,"MinTempC":25.0,"TidalRangeM":25.5,"NitrateUm":26.0,"PhosphateUm":26.5,"SilicateUm":27.0,"SedimentLoad":27.5,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberreef5::service::PolypTransectSurveyExtract
+{
+  pattern: '/emberreef5/v1/polyptransectsurvey';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the PolypTransectSurvey report at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::emberreef5::domain::PolypTransectSurvey.all(%latest)->project(
+      [
+        x|$x.reportCode,
+        x|$x.buoyCode,
+        x|$x.coverPct,
+        x|$x.bleachedPct,
+        x|$x.recruitDensity,
+        x|$x.algaeCoverPct,
+        x|$x.rugosityIndex,
+        x|$x.grazerDensity,
+        x|$x.fishBiomassKg,
+        x|$x.readAt
+      ],
+      [
+        'ReportCode',
+        'BuoyCode',
+        'CoverPct',
+        'BleachedPct',
+        'RecruitDensity',
+        'AlgaeCoverPct',
+        'RugosityIndex',
+        'GrazerDensity',
+        'FishBiomassKg',
+        'ReadAt'
+      ]
+    )->sort([asc('ReportCode')])};
+    mapping: test::emberreef5::mapping::ReefBuoyMapping;
+    runtime: test::emberreef5::runtime::ReefBuoyRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefBuoyConnection:
+            Relational
+            #{
+              reef.polyp_transect_survey:
+                'report_code,buoy_code,cover_pct,bleached_pct,recruit_density,algae_cover_pct,rugosity_index,grazer_density,fish_biomass_kg,read_at,in_z,out_z\n'+
+                'PT-01,B-5A,15.25,15.75,16.25,16.75,17.25,17.75,18.25,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                'PT-02,B-5B,25.25,,26.25,26.75,27.25,27.75,28.25,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                'PT-01,B-5A,35.25,35.75,36.25,36.75,37.25,37.75,38.25,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"PT-01","BuoyCode":"B-5A","CoverPct":15.25,"BleachedPct":15.75,"RecruitDensity":16.25,"AlgaeCoverPct":16.75,"RugosityIndex":17.25,"GrazerDensity":17.75,"FishBiomassKg":18.25,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"PT-02","BuoyCode":"B-5B","CoverPct":25.25,"BleachedPct":null,"RecruitDensity":26.25,"AlgaeCoverPct":26.75,"RugosityIndex":27.25,"GrazerDensity":27.75,"FishBiomassKg":28.25,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberreef5::service::PolypTransectSurveyRevisedExtract
+{
+  pattern: '/emberreef5/v1/polyptransectsurveyrev';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the PolypTransectSurveyRevised report at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::emberreef5::domain::PolypTransectSurveyRevised.all(%latest)->project(
+      [
+        x|$x.reportCode,
+        x|$x.buoyCode,
+        x|$x.coverPct,
+        x|$x.bleachedPct,
+        x|$x.recruitDensity,
+        x|$x.algaeCoverPct,
+        x|$x.rugosityIndex,
+        x|$x.grazerDensity,
+        x|$x.fishBiomassKg,
+        x|$x.readAt
+      ],
+      [
+        'ReportCode',
+        'BuoyCode',
+        'CoverPct',
+        'BleachedPct',
+        'RecruitDensity',
+        'AlgaeCoverPct',
+        'RugosityIndex',
+        'GrazerDensity',
+        'FishBiomassKg',
+        'ReadAt'
+      ]
+    )->sort([asc('ReportCode')])};
+    mapping: test::emberreef5::mapping::ReefBuoyMapping;
+    runtime: test::emberreef5::runtime::ReefBuoyRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefBuoyConnection:
+            Relational
+            #{
+              reef.polyp_transect_survey_rev:
+                'report_code,buoy_code,cover_pct,bleached_pct,recruit_density,algae_cover_pct,rugosity_index,grazer_density,fish_biomass_kg,read_at,in_z,out_z\n'+
+                'PR-01,B-6A,16.5,17.0,17.5,18.0,18.5,19.0,19.5,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                'PR-02,B-6B,26.5,,27.5,28.0,28.5,29.0,29.5,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                'PR-01,B-6A,36.5,37.0,37.5,38.0,38.5,39.0,39.5,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"PR-01","BuoyCode":"B-6A","CoverPct":16.5,"BleachedPct":17.0,"RecruitDensity":17.5,"AlgaeCoverPct":18.0,"RugosityIndex":18.5,"GrazerDensity":19.0,"FishBiomassKg":19.5,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"PR-02","BuoyCode":"B-6B","CoverPct":26.5,"BleachedPct":null,"RecruitDensity":27.5,"AlgaeCoverPct":28.0,"RugosityIndex":28.5,"GrazerDensity":29.0,"FishBiomassKg":29.5,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::emberreef5::service::ThermalStressIndexExtract
+{
+  pattern: '/emberreef5/v1/thermalstressindex';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the ThermalStressIndex report at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::emberreef5::domain::ThermalStressIndex.all(%latest)->project(
+      [
+        x|$x.reportCode,
+        x|$x.buoyCode,
+        x|$x.degreeHeatingWeeks,
+        x|$x.hotspotC,
+        x|$x.anomalyC,
+        x|$x.alertScore,
+        x|$x.cloudFraction,
+        x|$x.windSpeedMs,
+        x|$x.readAt
+      ],
+      [
+        'ReportCode',
+        'BuoyCode',
+        'DegreeHeatingWeeks',
+        'HotspotC',
+        'AnomalyC',
+        'AlertScore',
+        'CloudFraction',
+        'WindSpeedMs',
+        'ReadAt'
+      ]
+    )->distinct()->sort([asc('ReportCode')])};
+    mapping: test::emberreef5::mapping::ReefBuoyMapping;
+    runtime: test::emberreef5::runtime::ReefBuoyRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefBuoyConnection:
+            Relational
+            #{
+              reef.thermal_stress_index:
+                'report_code,buoy_code,degree_heating_weeks,hotspot_c,anomaly_c,alert_score,cloud_fraction,wind_speed_ms,read_at,in_z,out_z\n'+
+                'TS-01,B-7A,17.75,18.25,18.75,19.25,19.75,20.25,2026-03-01 06:15:00,2026-02-01,9999-12-31\n'+
+                'TS-02,B-7B,27.75,,28.75,29.25,29.75,30.25,2026-03-02 07:45:00,2026-02-01,9999-12-31\n'+
+                'TS-01,B-7A,37.75,38.25,38.75,39.25,39.75,40.25,2026-02-27 05:30:00,2026-01-01,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            supersededVersionIsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReportCode":"TS-01","BuoyCode":"B-7A","DegreeHeatingWeeks":17.75,"HotspotC":18.25,"AnomalyC":18.75,"AlertScore":19.25,"CloudFraction":19.75,"WindSpeedMs":20.25,"ReadAt":"2026-03-01T06:15:00.000000000+0000"},{"ReportCode":"TS-02","BuoyCode":"B-7B","DegreeHeatingWeeks":27.75,"HotspotC":null,"AnomalyC":28.75,"AlertScore":29.25,"CloudFraction":29.75,"WindSpeedMs":30.25,"ReadAt":"2026-03-02T07:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

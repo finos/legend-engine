@@ -1,0 +1,58 @@
+name: azure-fjord-2
+title: "Mountain Refuge Warden Sheets — Document-Sourced Stay Publication With Derived Source Reads, Schema Generation And An Embedded-Data Service Test"
+description: |
+  A mountain-refuge warden-sheet model that publishes an occupancy record without
+  any database taking part: the inbound sheet row is a class in its own right, and
+  two of its members are computed on the source side — one normalises the sheet
+  reference by trimming and upper-casing it, the other sums the two occupancy
+  columns into a chargeable night count — so the model-to-model mapping reads
+  those computed members rather than raw fields, and one published member is
+  therefore arithmetic over two inbound ones. The service binds that mapping to a
+  document connection, materialises the mapped tree and serialises it, so the
+  generated plan is produced entirely from the model binding, and its suite feeds
+  the sheet as embedded document data and asserts the transformed published record.
+  A standalone function keeps an explicit column list over the published records
+  with a computed person-night column, and a generation specification sequences two
+  document-schema generations, one per side of the transform, each declaring the
+  schema draft it targets.
+modelSources:
+  model:
+    root: azure-fjord-2
+    files:
+      - test/azurefjord2/domain/RefugeDomain.pure
+      - test/azurefjord2/function/RefugeFunctions.pure
+      - test/azurefjord2/generation/RefugeGeneration.pure
+      - test/azurefjord2/mapping/RefugeStayM2M.pure
+      - test/azurefjord2/runtime/RefugeRuntimes.pure
+      - test/azurefjord2/service/RefugeStayFeed.pure
+features:
+  - scaffolding:model-connection
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:graph-fetch
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property
+  - grammar:function
+  - mapping:m2m-derived-source-property
+  - mapping:m2m-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores:
+  - model-store
+complexity: intermediate
+tags:
+  - derived-source-property
+  - file-generation
+  - generation-specification
+  - graph-fetch-serialize
+  - json-schema
+  - m2m-mapping
+  - mountain-refuge
+  - plan-generation
+  - service-test
+  - test-data

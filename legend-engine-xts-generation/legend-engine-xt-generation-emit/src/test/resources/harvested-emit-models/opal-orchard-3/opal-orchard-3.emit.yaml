@@ -1,0 +1,34 @@
+name: opal-orchard-3
+title: "Opal Orchard 3 — herbarium specimen inheritance rendered through a JSON-schema generation specification"
+description: |
+  A store-less botanical-garden herbarium model centered on a catalogued specimen
+  and two specialized specimen forms. A local profile marks collection metadata
+  on the specimen classes, while a diagram lays out the inheritance hierarchy and
+  its related catalog classes. A JSON-schema file generation includes all related
+  types and is sequenced through one generation specification.
+modelSources:
+  model:
+    root: opal-orchard-3
+    files:
+      - test/opalorchard3/diagram/HerbariumDiagram.pure
+      - test/opalorchard3/domain/HerbariumDomain.pure
+      - test/opalorchard3/generation/HerbariumGeneration.pure
+      - test/opalorchard3/profile/HerbariumProfiles.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - botanical-garden
+  - class-inheritance
+  - diagram
+  - file-generation
+  - generation-specification
+  - herbarium
+  - json-schema
+  - profile

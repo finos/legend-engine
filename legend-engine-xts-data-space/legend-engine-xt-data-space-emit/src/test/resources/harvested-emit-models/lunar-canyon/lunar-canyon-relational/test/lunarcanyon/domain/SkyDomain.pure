@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::lunarcanyon::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One night of observing booked on a hill observatory telescope.'} test::lunarcanyon::domain::SkySession
+{
+  sessionCode: String[1];
+  observedOn: StrictDate[1];
+  startedAt: DateTime[0..1];
+  catalogueCode: String[1];
+  seeingIndex: Float[0..1];
+  exposureCount: Integer[1];
+  filterCode: String[0..1];
+  logNote: String[0..1];
+  domeCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An instrument in the observatory, reached from a session through the booking relationship.'} test::lunarcanyon::domain::Telescope
+{
+  telescopeCode: String[1];
+  telescopeName: String[0..1];
+  mirrorCm: Float[0..1];
+  mountKind: String[0..1];
+  domeCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rostered observer, reached from a session through the roster relationship.'} test::lunarcanyon::domain::Observer
+{
+  observerCode: String[1];
+  observerName: String[0..1];
+  certifications: String[0..1];
+  homeSite: String[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Books a session onto the instrument it was observed with.'} test::lunarcanyon::domain::Session_Telescope
+{
+  sessions: SkySession[*];
+  telescope: Telescope[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Rosters a session against the observer who filed it.'} test::lunarcanyon::domain::Session_Observer
+{
+  filedSessions: SkySession[*];
+  observer: Observer[0..1];
+}

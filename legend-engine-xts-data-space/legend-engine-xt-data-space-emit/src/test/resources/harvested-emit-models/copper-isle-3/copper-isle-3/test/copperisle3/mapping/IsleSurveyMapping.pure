@@ -1,0 +1,233 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::copperisle3::mapping::IsleSurveyMapping
+(
+  *test::copperisle3::domain::ColonyCount[colony_count]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperisle3::store::IsleSurveyDb]isle.colony_count.count_id
+    )
+    ~mainTable [test::copperisle3::store::IsleSurveyDb]isle.colony_count
+    countId: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.count_id,
+    sectorCode: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.sector_code,
+    speciesCode: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.species_code,
+    nestCount: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.nest_count,
+    chickCount: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.chick_count,
+    adultCount: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.adult_count,
+    countDate: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.count_date,
+    surveyMethod: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.survey_method,
+    tideState: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.tide_state,
+    visibilityClass: [test::copperisle3::store::IsleSurveyDb]isle.colony_count.visibility_class
+  }
+
+  *test::copperisle3::domain::IsleSector[isle_sector]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperisle3::store::IsleSurveyDb]isle.isle_sector.sector_code
+    )
+    ~mainTable [test::copperisle3::store::IsleSurveyDb]isle.isle_sector
+    sectorCode: [test::copperisle3::store::IsleSurveyDb]isle.isle_sector.sector_code,
+    sectorName: [test::copperisle3::store::IsleSurveyDb]isle.isle_sector.sector_name,
+    cliffHeightM: [test::copperisle3::store::IsleSurveyDb]isle.isle_sector.cliff_height_m,
+    accessGrade: [test::copperisle3::store::IsleSurveyDb]isle.isle_sector.access_grade,
+    habitatClass: [test::copperisle3::store::IsleSurveyDb]isle.isle_sector.habitat_class
+  }
+
+  *test::copperisle3::domain::ObserverShift[observer_shift]: Relational
+  {
+    ~primaryKey
+    (
+      [test::copperisle3::store::IsleSurveyDb]isle.observer_shift.shift_id
+    )
+    ~mainTable [test::copperisle3::store::IsleSurveyDb]isle.observer_shift
+    shiftId: [test::copperisle3::store::IsleSurveyDb]isle.observer_shift.shift_id,
+    observerName: [test::copperisle3::store::IsleSurveyDb]isle.observer_shift.observer_name,
+    shiftDate: [test::copperisle3::store::IsleSurveyDb]isle.observer_shift.shift_date,
+    hoursLogged: [test::copperisle3::store::IsleSurveyDb]isle.observer_shift.hours_logged,
+    stationCode: [test::copperisle3::store::IsleSurveyDb]isle.observer_shift.station_code
+  }
+
+  testSuites:
+  [
+    colonyCountSuite:
+    {
+      function: |test::copperisle3::domain::ColonyCount.all()->project(
+        [
+          c|$c.sectorCode,
+          c|$c.speciesCode,
+          c|$c.nestCount,
+          c|($c.chickCount + $c.adultCount),
+          c|$c.countDate,
+          c|$c.tideState
+        ],
+        [
+          'Sector Code',
+          'Species Code',
+          'Nest Count',
+          'Bird Total',
+          'Count Date',
+          'Tide State'
+        ]
+      )->sort(
+        [
+          asc('Sector Code')
+        ]
+      );
+      tests:
+      [
+        everyCountRowBinds:
+        {
+          doc: 'Reads the colony count table through its own set implementation so the declared primary key, the main-table alias and every column binding on the counted class are proven.';
+          data:
+          [
+            test::copperisle3::store::IsleSurveyDb:
+              Relational
+              #{
+                isle.colony_count:
+                  'count_id,sector_code,species_code,nest_count,chick_count,adult_count,count_date,survey_method,tide_state,visibility_class\n'+
+                  '1,CI-N,PUFFIN,120,86,240,2026-05-18,BOAT_TRANSECT,EBB,GOOD\n'+
+                  '2,CI-E,KITTIWAKE,310,180,620,2026-05-19,CLIFF_SCAN,FLOOD,GOOD\n'+
+                  '3,CI-S,PUFFIN,45,20,95,2026-05-20,BOAT_TRANSECT,SLACK,POOR\n'+
+                  '4,CI-W,PUFFIN,210,150,430,2026-05-21,CLIFF_SCAN,EBB,MODERATE\n';
+              }#
+          ];
+          asserts:
+          [
+            allSectorsCounted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector Code":"CI-E","Species Code":"KITTIWAKE","Nest Count":310,"Bird Total":800,"Count Date":"2026-05-19","Tide State":"FLOOD"},{"Sector Code":"CI-N","Species Code":"PUFFIN","Nest Count":120,"Bird Total":326,"Count Date":"2026-05-18","Tide State":"EBB"},{"Sector Code":"CI-S","Species Code":"PUFFIN","Nest Count":45,"Bird Total":115,"Count Date":"2026-05-20","Tide State":"SLACK"},{"Sector Code":"CI-W","Species Code":"PUFFIN","Nest Count":210,"Bird Total":580,"Count Date":"2026-05-21","Tide State":"EBB"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    isleSectorSuite:
+    {
+      function: |test::copperisle3::domain::IsleSector.all()->project(
+        [
+          s|$s.sectorCode,
+          s|$s.sectorName->toUpper(),
+          s|$s.accessGrade,
+          s|$s.habitatClass
+        ],
+        [
+          'Sector Code',
+          'Sector Name',
+          'Access Grade',
+          'Habitat Class'
+        ]
+      )->sort(
+        [
+          asc('Sector Code')
+        ]
+      );
+      tests:
+      [
+        everySectorRowBinds:
+        {
+          doc: 'Reads the sector register through its own set implementation in the same multi-table store, proving the second main-table alias and primary key.';
+          data:
+          [
+            test::copperisle3::store::IsleSurveyDb:
+              Relational
+              #{
+                isle.isle_sector:
+                  'sector_code,sector_name,cliff_height_m,access_grade,habitat_class\n'+
+                  'CI-N,North Stack,86.5,MODERATE,SEA_CLIFF\n'+
+                  'CI-E,East Geo,42.0,EASY,BOULDER_SHORE\n'+
+                  'CI-S,South Skerry,18.5,HARD,LOW_SKERRY\n'+
+                  'CI-W,West Wall,110.0,HARD,SEA_CLIFF\n';
+              }#
+          ];
+          asserts:
+          [
+            allSectorsRegistered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector Code":"CI-E","Sector Name":"EAST GEO","Access Grade":"EASY","Habitat Class":"BOULDER_SHORE"},{"Sector Code":"CI-N","Sector Name":"NORTH STACK","Access Grade":"MODERATE","Habitat Class":"SEA_CLIFF"},{"Sector Code":"CI-S","Sector Name":"SOUTH SKERRY","Access Grade":"HARD","Habitat Class":"LOW_SKERRY"},{"Sector Code":"CI-W","Sector Name":"WEST WALL","Access Grade":"HARD","Habitat Class":"SEA_CLIFF"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    observerShiftSuite:
+    {
+      function: |test::copperisle3::domain::ObserverShift.all()->project(
+        [
+          o|$o.shiftId,
+          o|$o.observerName,
+          o|$o.shiftDate,
+          o|$o.stationCode
+        ],
+        [
+          'Shift Id',
+          'Observer Name',
+          'Shift Date',
+          'Station Code'
+        ]
+      )->sort(
+        [
+          asc('Shift Id')
+        ]
+      );
+      tests:
+      [
+        everyShiftRowBinds:
+        {
+          doc: 'Reads the observer shift roster, the third relation of the multi-table store, through its own set implementation.';
+          data:
+          [
+            test::copperisle3::store::IsleSurveyDb:
+              Relational
+              #{
+                isle.observer_shift:
+                  'shift_id,observer_name,shift_date,hours_logged,station_code\n'+
+                  '1,Rowan Vance,2026-05-18,7.5,STN-A\n'+
+                  '2,Talia Moss,2026-05-19,6.0,STN-B\n'+
+                  '3,Aden Hollis,2026-05-20,8.25,STN-A\n';
+              }#
+          ];
+          asserts:
+          [
+            allShiftsRostered:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shift Id":1,"Observer Name":"Rowan Vance","Shift Date":"2026-05-18","Station Code":"STN-A"},{"Shift Id":2,"Observer Name":"Talia Moss","Shift Date":"2026-05-19","Station Code":"STN-B"},{"Shift Id":3,"Observer Name":"Aden Hollis","Shift Date":"2026-05-20","Station Code":"STN-A"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

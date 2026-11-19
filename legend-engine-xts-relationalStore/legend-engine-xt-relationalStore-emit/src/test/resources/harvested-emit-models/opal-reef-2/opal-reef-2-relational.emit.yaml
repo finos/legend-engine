@@ -1,0 +1,49 @@
+name: opal-reef-2-relational
+title: "Intertidal Rock-Pool Survey — Compound-Filter Group-By Services with a Sort-Limit and an Environment-Keyed Multi-Execution"
+description: |
+  An intertidal survey EMIT model in which three services share one query
+  shape: a compound predicate combining a species membership test with four
+  equality comparisons, an aggregation grouping counted observations by species
+  and shore zone, and an ordering. One service adds a single-row limit on the
+  ordered aggregate, and one is a multi-execution service that selects its
+  mapping-and-runtime binding from an environment key while reusing the same
+  query body. Both single-execution services carry assertion-backed tabular
+  test suites over a seeded rock-pool dataset.
+modelSources:
+  model:
+    root: opal-reef-2-relational
+    files:
+      - test/opalreef2/connection/ReefH2Connection.pure
+      - test/opalreef2/domain/ReefSurveyDomain.pure
+      - test/opalreef2/mapping/ReefSurveyMapping.pure
+      - test/opalreef2/runtime/ReefSurveyRuntime.pure
+      - test/opalreef2/runtime/ReefSurveyStandbyRuntime.pure
+      - test/opalreef2/service/SpeciesTallyByEnv.pure
+      - test/opalreef2/service/SpeciesTallyByZone.pure
+      - test/opalreef2/service/TopSpeciesTally.pure
+      - test/opalreef2/store/ReefSurveyDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - query:filter
+  - query:group-by
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - aggregation
+  - compound-filter
+  - group-by
+  - h2
+  - intertidal
+  - multi-execution
+  - relational
+  - service-test
+  - sort-limit
+  - tabular-data-set

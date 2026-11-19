@@ -1,0 +1,50 @@
+name: coral-vineyard-4
+title: "Coral Vineyard 4 - High Route Refuge Directory"
+description: |
+  A non-financial mountain refuge network. Nested refuge submissions carrying
+  dormitories and bunks, keeper rosters and trail stages arrive through four
+  JSON model connections split across two engine runtimes, and three
+  model-to-model mappings reshape them into a published directory whose refuge
+  type inherits the identity and reachability rules of a mountain site.
+  A checked mapping test reports site-rule breaches beside the produced value,
+  and two deployment-owned services fetch and serialise the nested directory
+  and the archived stage board.
+modelSources:
+  model:
+    root: coral-vineyard-4
+    files:
+      - test/coralvineyard4/connection/FeedConnections.pure
+      - test/coralvineyard4/diagram/RefugeDiagrams.pure
+      - test/coralvineyard4/domain/RefugeDomain.pure
+      - test/coralvineyard4/mapping/KeeperMapping.pure
+      - test/coralvineyard4/mapping/RefugeMapping.pure
+      - test/coralvineyard4/mapping/StageMapping.pure
+      - test/coralvineyard4/runtime/RefugeRuntimes.pure
+      - test/coralvineyard4/service/RefugeServices.pure
+      - test/coralvineyard4/text/RefugeNotes.pure
+features:
+  - scaffolding:model-connection
+  - execution:mapping-test
+  - execution:service
+  - execution:service-ownership
+  - execution:service-test
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:diagram
+  - grammar:tagged-value
+  - grammar:text-element
+  - mapping:m2m-transform
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - checked-graph-fetch
+  - constraint
+  - diagram
+  - graph-fetch
+  - inheritance
+  - model-to-model
+  - refuge
+  - service-test

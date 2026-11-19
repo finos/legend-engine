@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::cobaltarboretum::domain::*;
+
+Association {meta::pure::profiles::doc.doc = 'A site revision head owns the measures asserted by that revision; both ends are milestoned so navigation propagates temporal arguments.'} test::cobaltarboretum::domain::SiteRevisionHead_SiteMeasure
+{
+  revisionHead: SiteRevisionHead[1];
+  measures: SiteMeasure[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A site revision head owns its append-only history rows.'} test::cobaltarboretum::domain::SiteRevisionHead_RevisionLogEntry
+{
+  loggedRevision: SiteRevisionHead[1];
+  logEntries: RevisionLogEntry[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A measure resolves its unit and precision through the measure-kind vocabulary.'} test::cobaltarboretum::domain::SiteMeasure_MeasureKindDescriptor
+{
+  measures: SiteMeasure[*];
+  kindDescriptor: MeasureKindDescriptor[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A park zone groups the attribution rows recorded against it.'} test::cobaltarboretum::domain::ParkZone_ZoneAttribution
+{
+  zone: ParkZone[1];
+  attributions: ZoneAttribution[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A canopy hierarchy snapshot is the extent that resolver profiles evaluate against.'} test::cobaltarboretum::domain::CanopyHierarchySnapshot_ResolverProfile
+{
+  snapshot: CanopyHierarchySnapshot[1];
+  resolvers: ResolverProfile[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A canopy site is stewarded by exactly one team.'} test::cobaltarboretum::domain::TreeCanopySite_StewardTeam
+{
+  canopySites: TreeCanopySite[*];
+  stewardTeam: StewardTeam[1];
+}

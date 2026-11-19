@@ -1,0 +1,58 @@
+name: meadow-summit
+title: "Meadow Summit - Alpine trail upkeep register with a grouped view, an association and district-keyed execution"
+description: |
+  An alpine meadow trail-upkeep register whose segments, maintenance visits,
+  crews and depots span two schemas and are navigated over inner joins, a
+  two-hop crew-to-depot path and a bidirectional association between segments
+  and their visits. A grouped view rolls visit counts and hours per segment,
+  eight labelled surface arms fall back to a null sentinel, and the same
+  projection is served both from a single execution and from a district-keyed
+  multi-execution stack.
+modelSources:
+  model:
+    root: meadow-summit
+    files:
+      - test/meadowsummit/connection/SummitConnection.pure
+      - test/meadowsummit/data/SummitFixture.pure
+      - test/meadowsummit/domain/SummitDomain.pure
+      - test/meadowsummit/mapping/SummitMapping.pure
+      - test/meadowsummit/runtime/SummitRuntimes.pure
+      - test/meadowsummit/service/TrailWorkBoard.pure
+      - test/meadowsummit/store/SummitStore.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-group-by
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - execution:mapping-test
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - alpine-trail-upkeep
+  - association-mapping
+  - conditional-transform
+  - grouped-view
+  - h2
+  - multi-execution
+  - multi-hop-join
+  - null-sentinel
+  - relational
+  - service-test
+  - tabular-data-set

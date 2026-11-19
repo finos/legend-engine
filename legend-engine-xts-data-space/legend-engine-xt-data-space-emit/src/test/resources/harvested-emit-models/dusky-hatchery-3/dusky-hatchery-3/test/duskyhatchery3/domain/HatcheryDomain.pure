@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::duskyhatchery3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A brood batch of fry reared in a hatchery tank.'} test::duskyhatchery3::domain::BroodBatch
+{
+  batchCode: String[1];
+  speciesCode: String[1];
+  fryCount: Integer[1];
+  healthCode: String[1];
+  batchLabel: String[1];
+  healthLabel() {if($this.healthCode == 'H1', |'THRIVING', |'MONITORED')}: String[1];
+  densityBand() {if($this.fryCount > 8000, |'DENSE', |if($this.fryCount > 2000, |'MODERATE', |'SPARSE'))}: String[1];
+  speciesTag() {$this.speciesCode->toLower() + '/' + $this.batchCode}: String[1];
+  isViable() {$this.fryCount > 0 && ($this.healthCode != 'H9')}: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rearing tank holding brood batches within a hatchery site.'} test::duskyhatchery3::domain::RearingTank
+{
+  tankCode: String[1];
+  tankLabel: String[1];
+  volumeLitres: Integer[1];
+  capacityBand() {if($this.volumeLitres >= 5000, |'LARGE', |'STANDARD')}: String[1];
+  tankTag() {$this.tankCode->toUpper() + ' (' + $this.volumeLitres->toString() + 'L)'}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A hatchery site whose facility record anchors the rearing tanks it operates.'} test::duskyhatchery3::domain::HatcherySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  regionLabel: String[1];
+  siteTag() {$this.siteCode + '::' + $this.regionLabel->toUpper()}: String[1];
+  displayName() {$this.siteName->toUpper()}: String[1];
+}
+
+Association test::duskyhatchery3::domain::BatchTank
+{
+  tank: RearingTank[0..1];
+  batches: BroodBatch[*];
+}
+
+Association test::duskyhatchery3::domain::TankSite
+{
+  site: HatcherySite[0..1];
+  tanks: RearingTank[*];
+}

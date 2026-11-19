@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::coppertundra3::data::CensusSeasonData
+{
+  Relational
+  #{
+    reserve.enclosure_census:
+      'census_id,enclosure_code,census_status,habitat_tier,zone_name,zone_description,sector_name,sector_description,reserve_name,reserve_description,keeper_team,steward_name,survey_method,access_level,substrate_class,region_code,observed_on,certified_through,patrol_days,day_count,fenced_flag,shaded_flag,watered_flag,signed_flag,gated_flag,paved_flag,locked_flag,mapped_flag,headcount,forage_kg,bus_from,bus_thru\n'+
+      '1,ENC-NORTH-RIDGE,CONFIRMED,TIER-UPLAND,Upland Heath,Wind-clipped heath above the tree line,Ridge Sector,Northern ridge and its saddle,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,NORTH,2026-03-04 08:15:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,40,12.5,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+      '2,ENC-NORTH-RIDGE,CONFIRMED,TIER-UPLAND,Upland Heath,Wind-clipped heath above the tree line,Ridge Sector,Northern ridge and its saddle,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,NORTH,2026-03-04 08:15:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,25,7.5,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+      '3,ENC-NORTH-RIDGE,CONFIRMED,TIER-UPLAND,Upland Heath,Wind-clipped heath above the tree line,Ridge Sector,Northern ridge and its saddle,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,PERMIT,PEAT,NORTH,2026-03-04 08:15:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,9,3.0,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+      '4,ENC-CLOSED-WINDOW,CONFIRMED,TIER-UPLAND,Upland Heath,Wind-clipped heath above the tree line,Ridge Sector,Northern ridge and its saddle,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,NORTH,2026-03-04 08:15:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,999,99.0,2020-01-01 00:00:00,2021-01-01 00:00:00\n'+
+      '5,ENC-FUTURE-WINDOW,CONFIRMED,TIER-UPLAND,Upland Heath,Wind-clipped heath above the tree line,Ridge Sector,Northern ridge and its saddle,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,NORTH,2026-03-04 08:15:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,888,88.0,2027-01-01 00:00:00,9999-12-31 00:00:00\n'+
+      '6,ENC-EAST-FLAT,CONFIRMED,TIER-UPLAND,Upland Heath,Wind-clipped heath above the tree line,Ridge Sector,Northern ridge and its saddle,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,EAST,2026-03-04 08:15:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,7,2.0,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+      '7,ENC-EARLY-VISIT,CONFIRMED,TIER-UPLAND,Upland Heath,Wind-clipped heath above the tree line,Ridge Sector,Northern ridge and its saddle,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,NORTH,2025-11-02 06:00:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,6,1.0,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+      '8,ENC-MIRE-HOLLOW,CONFIRMED,TIER-UPLAND,Fell Mire,Waterlogged hollow below the ridge,Mire Sector,Southern mire and its outflow,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,MIDLAND,2026-03-04 08:15:00,2099-01-31,12,94,Y,N,Y,Y,N,N,N,Y,15,5.5,2026-01-01 00:00:00,9999-12-31 00:00:00\n'+
+      '9,ENC-LAPSED,CONFIRMED,TIER-UPLAND,Lapsed Paddock,Paddock whose certificate has lapsed,Lapsed Sector,Retired sector kept for the record,Tundra Reserve,Cold-climate reserve of open ground,ROTA-EARLY,Ivo Thorne,WALKED-TRANSECT,OPEN,PEAT,SOUTH,2026-03-04 08:15:00,2001-04-05,12,94,Y,N,Y,Y,N,N,N,Y,3,1.5,2026-01-01 00:00:00,9999-12-31 00:00:00\n';
+  }#
+}

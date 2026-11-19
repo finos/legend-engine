@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::teallantern4::mapping::TideGaugeMapping
+(
+  *test::teallantern4::domain::TideReading: Relational
+  {
+    ~mainTable [test::teallantern4::store::TideGaugeDb]tides.gauge_reading
+    readingCode: [test::teallantern4::store::TideGaugeDb]tides.gauge_reading.reading_code,
+    stationCode: toUpper(trim([test::teallantern4::store::TideGaugeDb]tides.gauge_reading.station_code)),
+    gaugeKind: toUpper(trim([test::teallantern4::store::TideGaugeDb]tides.gauge_reading.gauge_kind)),
+    qualityFlag: case(isEmpty(trim([test::teallantern4::store::TideGaugeDb]tides.gauge_reading.quality_flag)), 'UNCHECKED', toUpper(trim([test::teallantern4::store::TideGaugeDb]tides.gauge_reading.quality_flag))),
+    readingDate: [test::teallantern4::store::TideGaugeDb]tides.gauge_reading.reading_date,
+    heightCm: [test::teallantern4::store::TideGaugeDb]tides.gauge_reading.height_cm
+  }
+
+  testSuites:
+  [
+    gaugeNormalisationSuite:
+    {
+      function: test::teallantern4::domain::TideReading.all()->project(~[readingCode: r|$r.readingCode, stationCode: r|$r.stationCode, gaugeKind: r|$r.gaugeKind, qualityFlag: r|$r.qualityFlag, heightCm: r|$r.heightCm])->sort(~readingCode->ascending());
+      tests:
+      [
+        stationAndFlagNormalisation:
+        {
+          doc: 'Station and gauge codes are trimmed and upper-cased, and a reading whose quality flag is missing or blank is reported as unchecked rather than dropped.';
+          data:
+          [
+            test::teallantern4::store::TideGaugeDb:
+              Relational
+              #{
+                tides.gauge_reading:
+                  'reading_code,station_code,gauge_kind,quality_flag,reading_date,height_cm\n'+
+                  'TR-1, pier-north ,float,good,2026-07-14,312\n'+
+                  'TR-2,PIER-SOUTH,RADAR,suspect,2026-07-14,298\n'+
+                  'TR-3,breakwater,Float,,2026-07-15,305\n';
+              }#
+          ];
+          asserts:
+          [
+            normalisedReadings:
+              Relation
+              #{
+                readingCode,stationCode,gaugeKind,qualityFlag,heightCm
+                TR-1,PIER-NORTH,FLOAT,GOOD,312
+                TR-2,PIER-SOUTH,RADAR,SUSPECT,298
+                TR-3,BREAKWATER,FLOAT,UNCHECKED,305;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

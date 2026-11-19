@@ -1,0 +1,191 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantisle4::service::DispatchBoard
+{
+  pattern: '/verdantisle4/v1/dispatch-board';
+  title: 'Island Nursery - Banded Dispatch Board';
+  documentation: 'Bands every released dispatch by tray count through an eight-arm conditional cascade with an empty fallback arm, and defaults each reference column that the register cannot resolve. The zone and state collections are optional: an empty collection widens the board rather than emptying it.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'island-nursery-desk'
+  ];
+  execution: Single
+  {
+    query: {states: String[*], zoneCodes: String[*], fromDate: StrictDate[1], thruDate: StrictDate[1]|test::verdantisle4::domain::DispatchRecord.all()->filter(
+      d|(($states->isEmpty()) || ($d.dispatchState->in($states))) && (($d.dispatchedOn >= $fromDate) && (($d.dispatchedOn <= $thruDate) && (($zoneCodes->isEmpty()) || ($d.zoneRef->in($zoneCodes)))))
+    )->project(
+      [
+        col(
+          d|$d.dispatchCode,
+          'Dispatch'
+        ),
+        col(
+          d|if($d.zone.zoneName->isEmpty(),
+            | 'UNZONED',
+            | $d.zone.zoneName->toOne()),
+          'Zone'
+        ),
+        col(
+          d|if($d.lot.lotState->isEmpty(),
+            | 'UNKNOWN',
+            | $d.lot.lotState->toOne()),
+          'LotState'
+        ),
+        col(
+          d|if($d.lot.cultivar.cultivarName->isEmpty(),
+            | 'UNLISTED',
+            | $d.lot.cultivar.cultivarName->toOne()),
+          'Cultivar'
+        ),
+        col(
+          d|if($d.bench.benchName->isEmpty(),
+            | 'UNBENCHED',
+            | $d.bench.benchName->toOne()),
+          'Bench'
+        ),
+        col(
+          d|$d.trayCount,
+          'Trays'
+        ),
+        col(
+          d|if($d.trayCount >= 96,
+            | 'BAND-A',
+            | if($d.trayCount >= 72,
+              | 'BAND-B',
+              | if($d.trayCount >= 48,
+                | 'BAND-C',
+                | if($d.trayCount >= 32,
+                  | 'BAND-D',
+                  | if($d.trayCount >= 24,
+                    | 'BAND-E',
+                    | if($d.trayCount >= 16,
+                      | 'BAND-F',
+                      | if($d.trayCount >= 8,
+                        | 'BAND-G',
+                        | if($d.trayCount >= 1,
+                          | 'BAND-H',
+                          | '')))))))),
+          'Band'
+        )
+      ]
+    )->sort([asc('Dispatch')])};
+    mapping: test::verdantisle4::mapping::NurseryPublishedMapping;
+    runtime: test::verdantisle4::runtime::NurseryVerificationRuntime;
+  }
+  testSuites:
+  [
+    dispatchBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryVerificationH2:
+            Relational
+            #{
+              benchreg.bench:
+                'bench_code,bench_name,house_code,keeper_code\n'+
+                'BN-01,North Bench,HS-1,KP-1\n'+
+                'BN-02,South Bench,HS-1,KP-2\n';
+
+              islandref.island_zone:
+                'zone_code,zone_name,island_name\n'+
+                'ZN-1,North Terrace,Isle of Verdance\n'+
+                'ZN-2,South Terrace,Isle of Verdance\n';
+
+              nurserylocal.dispatch_record:
+                'dispatch_id,dispatch_code,lot_code,zone_code,dispatch_state,tray_count,dispatched_on\n'+
+                '1,DR-001,SL-001,ZN-1,RELEASED,120,2026-04-01\n'+
+                '2,DR-002,SL-001,ZN-1,RELEASED,80,2026-04-01\n'+
+                '3,DR-003,SL-002,ZN-2,RELEASED,60,2026-04-02\n'+
+                '4,DR-004,SL-002,ZN-2,RELEASED,36,2026-04-02\n'+
+                '5,DR-005,SL-003,ZN-1,RELEASED,28,2026-04-03\n'+
+                '6,DR-006,SL-003,ZN-1,RELEASED,20,2026-04-03\n'+
+                '7,DR-007,SL-001,ZN-2,RELEASED,10,2026-04-04\n'+
+                '8,DR-008,SL-002,ZN-2,RELEASED,4,2026-04-04\n'+
+                '9,DR-009,SL-003,ZN-1,RELEASED,0,2026-04-05\n'+
+                '10,DR-010,SL-404,ZN-9,RELEASED,50,2026-04-05\n'+
+                '11,DR-011,SL-001,ZN-1,HELD,90,2026-04-06\n'+
+                '12,DR-012,SL-001,ZN-1,RELEASED,70,2026-05-20\n';
+
+              seedreg.cultivar:
+                'cultivar_code,cultivar_name,species_group,germination_days\n'+
+                'CV-FERN,Island Shield Fern,FERN,21\n'+
+                'CV-SEDGE,Dune Sedge,GRASS,14\n';
+
+              seedreg.seed_lot:
+                'lot_id,lot_code,cultivar_code,bench_code,keeper_code,lot_state,seed_count,viability_pct,sown_on\n'+
+                '1,SL-001,CV-FERN,BN-01,KP-1,SOWN,400,96.0,2026-03-02\n'+
+                '2,SL-002,cv-sedge,BN-02,KP-2,HELD,250,88.5,2026-03-03\n'+
+                '3,SL-003,CV-MOSS,BN-02,KP-2,SOWN,120,55.0,2026-03-04\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyBandHitWithOpenZoneCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            states = ['RELEASED'],
+            zoneCodes = [],
+            fromDate = %2026-04-01,
+            thruDate = %2026-04-30
+          ]
+          asserts:
+          [
+            bandedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Dispatch":"DR-001","Zone":"North Terrace","LotState":"SOWN","Cultivar":"Island Shield Fern","Bench":"North Bench","Trays":120,"Band":"BAND-A"},{"Dispatch":"DR-002","Zone":"North Terrace","LotState":"SOWN","Cultivar":"Island Shield Fern","Bench":"North Bench","Trays":80,"Band":"BAND-B"},{"Dispatch":"DR-003","Zone":"South Terrace","LotState":"HELD","Cultivar":"Dune Sedge","Bench":"South Bench","Trays":60,"Band":"BAND-C"},{"Dispatch":"DR-004","Zone":"South Terrace","LotState":"HELD","Cultivar":"Dune Sedge","Bench":"South Bench","Trays":36,"Band":"BAND-D"},{"Dispatch":"DR-005","Zone":"North Terrace","LotState":"SOWN","Cultivar":"UNLISTED","Bench":"South Bench","Trays":28,"Band":"BAND-E"},{"Dispatch":"DR-006","Zone":"North Terrace","LotState":"SOWN","Cultivar":"UNLISTED","Bench":"South Bench","Trays":20,"Band":"BAND-F"},{"Dispatch":"DR-007","Zone":"South Terrace","LotState":"SOWN","Cultivar":"Island Shield Fern","Bench":"North Bench","Trays":10,"Band":"BAND-G"},{"Dispatch":"DR-008","Zone":"South Terrace","LotState":"HELD","Cultivar":"Dune Sedge","Bench":"South Bench","Trays":4,"Band":"BAND-H"},{"Dispatch":"DR-009","Zone":"North Terrace","LotState":"SOWN","Cultivar":"UNLISTED","Bench":"South Bench","Trays":0,"Band":""},{"Dispatch":"DR-010","Zone":"UNZONED","LotState":"UNKNOWN","Cultivar":"UNLISTED","Bench":"UNBENCHED","Trays":50,"Band":"BAND-C"}]';
+                  }#;
+              }#
+          ]
+        },
+        narrowedZoneCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            states = ['RELEASED'],
+            zoneCodes = ['ZN-1'],
+            fromDate = %2026-04-01,
+            thruDate = %2026-04-30
+          ]
+          asserts:
+          [
+            northTerraceRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Dispatch":"DR-001","Zone":"North Terrace","LotState":"SOWN","Cultivar":"Island Shield Fern","Bench":"North Bench","Trays":120,"Band":"BAND-A"},{"Dispatch":"DR-002","Zone":"North Terrace","LotState":"SOWN","Cultivar":"Island Shield Fern","Bench":"North Bench","Trays":80,"Band":"BAND-B"},{"Dispatch":"DR-005","Zone":"North Terrace","LotState":"SOWN","Cultivar":"UNLISTED","Bench":"South Bench","Trays":28,"Band":"BAND-E"},{"Dispatch":"DR-006","Zone":"North Terrace","LotState":"SOWN","Cultivar":"UNLISTED","Bench":"South Bench","Trays":20,"Band":"BAND-F"},{"Dispatch":"DR-009","Zone":"North Terrace","LotState":"SOWN","Cultivar":"UNLISTED","Bench":"South Bench","Trays":0,"Band":""}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

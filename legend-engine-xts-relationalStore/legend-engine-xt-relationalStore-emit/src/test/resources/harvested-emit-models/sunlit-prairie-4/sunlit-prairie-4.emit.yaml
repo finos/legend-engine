@@ -1,0 +1,49 @@
+name: sunlit-prairie-4
+title: "Sunlit Prairie 4 - inherited patch register reaching its warden over a two-hop join path across an included mapping, with an association implementation and a distinct sighting list"
+description: |
+  A prairie grassland monitoring register built over one plain relational store. A base survey class carries
+  the survey code, patch code, survey date and stem tally, and a burn-patch subtype extends it with the grass
+  name, seed code and patch area plus two warden properties that are not columns of its own table but are
+  reached over a two-hop join path through the tract table onto the warden desk. A second class describes the
+  prairie tract, an association links tract and patches bidirectionally, and a sighting class is bound with a
+  distinct set implementation so the repeated grass sightings of the same tract collapse to one row. A base
+  mapping binds the tract with an explicit main-table alias and primary key, and the main mapping includes it,
+  binds the subtype through the hierarchy, realises the association as a relational association implementation
+  over the named tract join, and keeps the distinct sighting list. The suites prove the two-hop warden hit
+  across every patch, an edge patch whose tract has no warden desk row, and the collapse of duplicate
+  sightings.
+modelSources:
+  model:
+    root: sunlit-prairie-4
+    files:
+      - test/sunlitprairie4/domain/PrairieDomain.pure
+      - test/sunlitprairie4/mapping/PrairieBaseMapping.pure
+      - test/sunlitprairie4/mapping/PrairieMapping.pure
+      - test/sunlitprairie4/store/PrairieDb.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-distinct
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+stores:
+  - relational
+complexity: basic
+tags:
+  - association
+  - association-implementation
+  - class-inheritance
+  - distinct-set-implementation
+  - duckdb
+  - main-table-alias
+  - mapping-include
+  - multi-hop-join-path
+  - prairie-monitoring
+  - primary-key
+  - relation-mapping-tests
+  - relational

@@ -1,0 +1,31 @@
+name: cobalt-harbor
+title: "Cobalt Harbor - museum specimen curation with a banded intake digest"
+description: >
+  A self-contained herbarium curation model. Field intake records - a base record type and
+  the specimen subtype that extends it - are folded onto a curated specimen through a
+  model-to-model mapping whose transforms delegate to four reusable rule functions: a paired
+  condition test that only seals a case when both the condition and the cabinet agree, a
+  label summary that tags each note against an allowed set and falls back when there are no
+  notes, and a freshness band derived from the collection date against a fixed day budget.
+modelSources:
+  model:
+    root: cobalt-harbor
+    files:
+      - test/cobaltharbor/domain/SpecimenDomain.pure
+      - test/cobaltharbor/function/CurationRules.pure
+      - test/cobaltharbor/mapping/SpecimenCurationM2M.pure
+tds_variant: none
+complexity: intermediate
+stores: []
+tags:
+  - curation
+  - emit
+  - herbarium
+  - m2m
+features:
+  - execution:mapping-test
+  - grammar:class-inheritance
+  - grammar:function
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping

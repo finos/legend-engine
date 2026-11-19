@@ -1,0 +1,45 @@
+name: meadow-arboretum-3-services
+title: "Meadow Arboretum 3 — two rolling-window canopy survey services"
+description: |
+  Two query-only services over the street-tree canopy survey extent, both
+  computing their date threshold inside the query by winding the current date
+  back over a fixed number of days rather than taking it as a parameter, so the
+  temporal arithmetic is part of the pushed-down predicate. The first conjoins
+  two attribute equalities with that rolling window, a membership test against a
+  collection parameter and a recorded-value check, then groups the survivors by
+  species class and crew team and sums the seedling count and canopy spread
+  within each group, de-duplicating and ordering the groups; an empty collection
+  parameter makes its conjunct false rather than faulting, so the result is
+  empty instead of an error. The second conjoins three equalities with the same
+  rolling window and projects two columns that it de-duplicates, so the
+  projection carries set semantics rather than one row per survey. Both suites
+  assert on the surfaced rows and include a scenario whose survey date falls
+  outside the rolling window.
+
+modelSources:
+  model:
+    root: meadow-arboretum-3-services
+    files:
+      - test/meadowarboretum3/service/SeedlingYieldByWard.pure
+      - test/meadowarboretum3/service/SpeciesClassesSurveyed.pure
+  dependencies:
+    - source: meadow-arboretum-3-canopy.emit.yaml
+
+features:
+  - execution:service
+  - execution:service-test
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+stores: []
+complexity: basic
+tags:
+  - aggregation
+  - collection-parameter
+  - distinct
+  - h2
+  - rolling-date-window
+  - service-test
+  - street-tree-canopy

@@ -1,0 +1,51 @@
+name: nursery-inventory
+title: "Scarlet Vineyard - Nursery Propagation Inventory with Data Space, Profile and Projected Service"
+description: |
+  A nursery propagation inventory whose two sibling domain types are bound to
+  two tables of one relational schema with explicit primary keys and main-table
+  aliases. A profile supplies the stereotype and tagged values carried by the
+  domain types and by the data space, which groups the mapping with a local and
+  a warehouse runtime and advertises the published register endpoint plus a
+  support target. The service and the mapping each project a flat tabular
+  result whose labels are normalised in the projection.
+modelSources:
+  model:
+    root: nursery-inventory
+    files:
+      - test/scarletvineyard/connection/NurseryH2Connection.pure
+      - test/scarletvineyard/connection/NurseryWarehouseConnection.pure
+      - test/scarletvineyard/dataspace/NurseryDataSpace.pure
+      - test/scarletvineyard/domain/NurseryDomain.pure
+      - test/scarletvineyard/mapping/NurseryMapping.pure
+      - test/scarletvineyard/profile/NurseryProfile.pure
+      - test/scarletvineyard/runtime/NurseryRuntime.pure
+      - test/scarletvineyard/runtime/NurseryWarehouseRuntime.pure
+      - test/scarletvineyard/service/SeedlingRegister.pure
+      - test/scarletvineyard/store/NurseryDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - h2
+  - main-table-alias
+  - primary-key
+  - profile
+  - projection
+  - relational
+  - snowflake
+  - support-info

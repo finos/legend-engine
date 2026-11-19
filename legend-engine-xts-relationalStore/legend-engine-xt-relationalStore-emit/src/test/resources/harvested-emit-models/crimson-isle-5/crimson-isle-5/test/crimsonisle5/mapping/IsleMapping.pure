@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonisle5::mapping::IsleMapping
+(
+  *test::crimsonisle5::domain::PlotCensus[census]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle5::store::IsleDb]isle.plot_census.census_ref
+    )
+    ~mainTable [test::crimsonisle5::store::IsleDb]isle.plot_census
+    censusRef: [test::crimsonisle5::store::IsleDb]isle.plot_census.census_ref,
+    plotCode: [test::crimsonisle5::store::IsleDb]isle.plot_census.plot_code,
+    nestCount: [test::crimsonisle5::store::IsleDb]isle.plot_census.nest_count,
+    fledgedCount: [test::crimsonisle5::store::IsleDb]isle.plot_census.fledged_count,
+    surveyedOn: [test::crimsonisle5::store::IsleDb]isle.plot_census.surveyed_on,
+    unfledgedCount: minus([test::crimsonisle5::store::IsleDb]isle.plot_census.nest_count,
+                          [test::crimsonisle5::store::IsleDb]isle.plot_census.fledged_count),
+    effortIndex: times(plus([test::crimsonisle5::store::IsleDb]isle.plot_census.nest_count,
+                            [test::crimsonisle5::store::IsleDb]isle.plot_census.fledged_count), 2),
+    plotLabel: concat(concat(toUpper([test::crimsonisle5::store::IsleDb]@Census_Plot | [test::crimsonisle5::store::IsleDb]isle.isle_plot.plot_name), ' / '),
+                      [test::crimsonisle5::store::IsleDb]@Census_Plot | [test::crimsonisle5::store::IsleDb]isle.isle_plot.habitat_code),
+    plot[islePlot]: [test::crimsonisle5::store::IsleDb]@Census_Plot
+  }
+
+  *test::crimsonisle5::domain::IslePlot[islePlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonisle5::store::IsleDb]isle.isle_plot.plot_code
+    )
+    ~mainTable [test::crimsonisle5::store::IsleDb]isle.isle_plot
+    plotCode: [test::crimsonisle5::store::IsleDb]isle.isle_plot.plot_code,
+    plotName: [test::crimsonisle5::store::IsleDb]isle.isle_plot.plot_name,
+    habitatCode: [test::crimsonisle5::store::IsleDb]isle.isle_plot.habitat_code
+  }
+
+  testSuites:
+  [
+    censusGraphSuite:
+    {
+      function: |test::crimsonisle5::domain::PlotCensus.all()->graphFetch(
+        #{
+          test::crimsonisle5::domain::PlotCensus
+          {
+            censusRef,
+            plotCode,
+            nestCount,
+            fledgedCount,
+            surveyedOn,
+            unfledgedCount,
+            effortIndex,
+            plotLabel,
+            plot
+            {
+              plotCode,
+              plotName,
+              habitatCode
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::crimsonisle5::domain::PlotCensus
+          {
+            censusRef,
+            plotCode,
+            nestCount,
+            fledgedCount,
+            surveyedOn,
+            unfledgedCount,
+            effortIndex,
+            plotLabel,
+            plot
+            {
+              plotCode,
+              plotName,
+              habitatCode
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        derivedCountsAndTheJoinReachedPlot:
+        {
+          doc: 'Graph-fetches every sweep with its derived unfledged remainder and doubled effort index, the plot label built from the join-reached plot name and habitat code, and the nested plot itself, so the plot carried by no sweep never surfaces through the inner join.';
+          data:
+          [
+            test::crimsonisle5::store::IsleDb:
+              Relational
+              #{
+                isle.isle_plot:
+                  'plot_code,habitat_code,plot_name\n'+
+                  'PL-1,dune,North Dune Plot\n'+
+                  'PL-2,cliff,South Cliff Plot\n'+
+                  'PL-3,spit,West Spit Plot\n';
+                isle.plot_census:
+                  'census_id,census_ref,fledged_count,nest_count,plot_code,surveyed_on\n'+
+                  '1,PC-001,9,12,PL-1,2026-04-02\n'+
+                  '2,PC-002,5,8,PL-1,2026-04-03\n'+
+                  '3,PC-003,14,20,PL-2,2026-04-04\n'+
+                  '4,PC-004,1,6,PL-2,2026-04-05\n';
+              }#
+          ];
+          asserts:
+          [
+            fourSweepsAndNoPlotWithoutASweep:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"censusRef":"PC-001","plotCode":"PL-1","nestCount":12,"fledgedCount":9,"surveyedOn":"2026-04-02","unfledgedCount":3,"effortIndex":42,"plotLabel":"NORTH DUNE PLOT / dune","plot":{"plotCode":"PL-1","plotName":"North Dune Plot","habitatCode":"dune"}},{"censusRef":"PC-002","plotCode":"PL-1","nestCount":8,"fledgedCount":5,"surveyedOn":"2026-04-03","unfledgedCount":3,"effortIndex":26,"plotLabel":"NORTH DUNE PLOT / dune","plot":{"plotCode":"PL-1","plotName":"North Dune Plot","habitatCode":"dune"}},{"censusRef":"PC-003","plotCode":"PL-2","nestCount":20,"fledgedCount":14,"surveyedOn":"2026-04-04","unfledgedCount":6,"effortIndex":68,"plotLabel":"SOUTH CLIFF PLOT / cliff","plot":{"plotCode":"PL-2","plotName":"South Cliff Plot","habitatCode":"cliff"}},{"censusRef":"PC-004","plotCode":"PL-2","nestCount":6,"fledgedCount":1,"surveyedOn":"2026-04-05","unfledgedCount":5,"effortIndex":14,"plotLabel":"SOUTH CLIFF PLOT / cliff","plot":{"plotCode":"PL-2","plotName":"South Cliff Plot","habitatCode":"cliff"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

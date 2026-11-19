@@ -1,0 +1,44 @@
+name: ember-estuary-3
+title: "Ember Estuary 3 — A Tide Gauge Reading Register Mapped Across Two Relations And Published By A Single-Execution Projection Service"
+description: |
+  An estuary tide-gauge register: gauge readings live in one relation and the gauges
+  that produced them live in another, and each class is mapped onto its own main
+  table with its own primary key and its own table-alias columns.
+
+  A single-execution service projects the readings of one requested gauge as a
+  tabular data set, so the same relational mapping is exercised once by a mapping
+  test suite and once by the service test suite behind the service plan.
+modelSources:
+  model:
+    root: ember-estuary-3
+    files:
+      - test/emberestuary3/connection/EstuaryConnection.pure
+      - test/emberestuary3/data/GaugeReadingData.pure
+      - test/emberestuary3/domain/EstuaryDomain.pure
+      - test/emberestuary3/mapping/EstuaryMapping.pure
+      - test/emberestuary3/runtime/EstuaryRuntime.pure
+      - test/emberestuary3/service/GaugeReadingService.pure
+      - test/emberestuary3/store/EstuaryDb.pure
+features:
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - projection
+  - relational
+  - service-test
+  - tabular-data-set
+  - tide-gauge

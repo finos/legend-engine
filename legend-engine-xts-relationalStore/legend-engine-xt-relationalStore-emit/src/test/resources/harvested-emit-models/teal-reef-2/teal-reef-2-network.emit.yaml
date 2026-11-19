@@ -1,0 +1,35 @@
+name: teal-reef-2-network
+title: "Teal Reef 2 Network Reference — Shared Zone and Pump Lookups, Pinned Relations and a Governance Profile"
+description: |
+  The shared reference layer of a water distribution flow-testing model: a zone
+  register and a pump station register, each mapped with its own single-column
+  identity and its relation pinned by an explicit main table alias, and a
+  governance profile whose stereotypes and tags are applied by the layer that
+  includes this one. It declares no queries of its own and exists to be included
+  by the flow-testing store and mapping.
+
+modelSources:
+  model:
+    root: teal-reef-2-network
+    files:
+      - test/tealreef2/domain/NetworkDomain.pure
+      - test/tealreef2/mapping/NetworkMapping.pure
+      - test/tealreef2/profile/FlowGovernance.pure
+      - test/tealreef2/store/NetworkDb.pure
+
+features:
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - governance-profile
+  - main-table-alias
+  - network-reference
+  - primary-key
+  - shared-domain

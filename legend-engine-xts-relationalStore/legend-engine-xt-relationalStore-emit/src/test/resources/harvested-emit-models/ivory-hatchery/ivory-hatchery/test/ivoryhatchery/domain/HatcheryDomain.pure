@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ivoryhatchery::domain::*;
+
+Enum test::ivoryhatchery::domain::ClutchVigour
+{
+  STRONG,
+  STEADY,
+  WEAK
+}
+
+Enum test::ivoryhatchery::domain::RationClass
+{
+  STARTER,
+  GROWER
+}
+
+Enum test::ivoryhatchery::domain::SizeBand
+{
+  BANTAM,
+  STANDARD,
+  JUMBO
+}
+
+Class test::ivoryhatchery::domain::TrayStamp
+{
+  stampLabel: String[1];
+  stampCabinet: String[0..1];
+}
+
+Class test::ivoryhatchery::domain::LotTally
+{
+  tallyBand: String[1];
+  tallyLabel: String[1];
+}
+
+Class test::ivoryhatchery::domain::EggLot
+{
+  lotCode: String[1];
+  lotName: String[1];
+  trayCount: Integer[1];
+  eggCount: Integer[1];
+  eggsPerTray: Float[0..1];
+  growthBand: String[0..1];
+  noteLabel: String[1];
+  rosterTag: String[1];
+  codeStem: String[1];
+  nameSize: Integer[1];
+  bandListed: Boolean[1];
+  vigour: ClutchVigour[0..1];
+  ration: RationClass[0..1];
+  fitBand: SizeBand[0..1];
+  gradeLabel: String[0..1];
+  cabinetName: String[0..1];
+  barnName: String[0..1];
+  regionName: String[0..1];
+  stamp: TrayStamp[1];
+  tally: LotTally[1];
+
+  bandLabel()
+  {
+    if($this.growthBand->isEmpty(), |'unbanded', |$this.growthBand->toOne())
+  }: String[1];
+
+  gradeText()
+  {
+    if($this.gradeLabel->isEmpty(), |'no grade', |$this.gradeLabel->toOne())
+  }: String[1];
+
+  cabinetText()
+  {
+    if($this.cabinetName->isEmpty(), |'no cabinet', |$this.cabinetName->toOne())
+  }: String[1];
+
+  barnText()
+  {
+    if($this.barnName->isEmpty(), |'no barn', |$this.barnName->toOne())
+  }: String[1];
+
+  regionText()
+  {
+    if($this.regionName->isEmpty(), |'no region', |$this.regionName->toOne())
+  }: String[1];
+
+  stampCabinetText()
+  {
+    if($this.stamp.stampCabinet->isEmpty(), |'no cabinet', |$this.stamp.stampCabinet->toOne())
+  }: String[1];
+}

@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarhatchery2::service::SpeciesFamilyRoster
+{
+  pattern: '/cedarhatchery/v1/species-family-roster';
+  title: 'Cedar Hatchery - Species Family Roster';
+  documentation: 'Projects the reared species reference rows and their family names, the plain lookup extent behind the join-reached species column of the lot board.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {|test::cedarhatchery2::domain::Species.all()->project(
+      [
+        s|$s.speciesCode,
+        s|$s.speciesName,
+        s|$s.familyName
+      ],
+      [
+        'Species Code',
+        'Species Name',
+        'Family'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Species Code')
+      ]
+    )->limit(10)};
+    mapping: test::cedarhatchery2::mapping::HatcheryCoreMapping;
+    runtime: test::cedarhatchery2::runtime::HatcheryCoreWarehouseRuntime;
+  }
+  testSuites:
+  [
+    speciesFamilyRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              hatchery.species:
+                'species_code,species_name,family_name\n'+
+                'SP-TR,Speckled Trout,Salmonidae\n'+
+                'SP-CH,Mountain Char,Salmonidae\n'+
+                'SP-MN,Marsh Minnow,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everySpeciesIncludingOneWithoutAFamily:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeSpecies:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Species Code":"SP-CH","Species Name":"Mountain Char","Family":"Salmonidae"},{"Species Code":"SP-MN","Species Name":"Marsh Minnow","Family":null},{"Species Code":"SP-TR","Species Name":"Speckled Trout","Family":"Salmonidae"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

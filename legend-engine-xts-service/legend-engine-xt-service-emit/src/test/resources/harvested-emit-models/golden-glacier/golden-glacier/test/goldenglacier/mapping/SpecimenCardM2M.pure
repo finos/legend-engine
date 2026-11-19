@@ -1,0 +1,169 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::goldenglacier::mapping::SpecimenCardM2M
+(
+  test::goldenglacier::domain::SpecimenGrade: EnumerationMapping GradeCodeMapping
+  {
+    HERBARIUM: ['HERB'],
+    LIVING: ['LIVE'],
+    PRESERVED: ['PRES'],
+    UNGRADED: ['UNGRADED']
+  }
+
+  *test::goldenglacier::domain::SpecimenCard[specimenCardSet]: Pure
+  {
+    ~src test::goldenglacier::feed::SpecimenFeed
+    accessionRef: $src.accessionRef->toOne(),
+    curatorLabel: 'C' + $src.revision->toOne()->toString() + '-' + $src.record.curatorCode->toOne()->toUpper()->trim(),
+    grade: EnumerationMapping GradeCodeMapping: [if($src.record.gradeCode->isEmpty(), | 'UNGRADED', | $src.record.gradeCode->toOne()->toUpper()->trim())]->toOne(),
+    moistureBand: if($src.record.moisturePct->isEmpty(),
+                     | 'BAND-NONE',
+                     | if($src.record.moisturePct->toOne() >= 75,
+                          | 'BAND-4',
+                          | if($src.record.moisturePct->toOne() >= 50,
+                               | 'BAND-3',
+                               | if($src.record.moisturePct->toOne() >= 25,
+                                    | 'BAND-2',
+                                    | 'BAND-1')))),
+    cabinetHint: if($src.record.cabinet.cabinetCode->isEmpty(), | 'UNSHELVED', | 'CAB/' + $src.record.cabinet.cabinetCode->toOne()->toUpper()->trim()),
+    wingLabel: $src.record.cabinet.wing,
+    tagLabel: if($src.record.cabinet.tag.tagSeries->isEmpty(),
+                 | 'NOTAG',
+                 | $src.record.cabinet.tag.tagSeries->toOne()->toUpper()->trim() + '-' + $src.record.cabinet.tag.tagNumber->toOne()->toString()),
+    tagSeason: if($src.record.cabinet.tag.season->isEmpty(), | 'UNKNOWN-SEASON', | $src.record.cabinet.tag.season->toOne()->toUpper()->trim()),
+    cuttingCount: $src.record.cuttings->size(),
+    collectedOn: $src.record.collectedOn,
+    cuttingRefs: $src.record.cuttings.cuttingRef,
+    cuttings[cuttingCardSet]: $src.record.cuttings
+  }
+
+  *test::goldenglacier::domain::CuttingCard[cuttingCardSet]: Pure
+  {
+    ~src test::goldenglacier::feed::CuttingNode
+    cuttingRef: $src.cuttingRef->toOne(),
+    heightCm: $src.heightCm->toOne()->toFloat(),
+    heightLabel: 'H' + $src.heightCm->toOne()->toString() + 'CM',
+    sizeClassLabel: if($src.sizeClass->isEmpty(), | 'UNSIZED', | $src.sizeClass->toOne()->toUpper()->trim())
+  }
+
+  *test::goldenglacier::domain::TagStamp[tagStampSet]: Pure
+  {
+    ~src test::goldenglacier::feed::TagNode
+    tagSeries: $src.tagSeries->toOne(),
+    tagNumber: $src.tagNumber->toOne(),
+    issuer: $src.issuer->toOne(),
+    season: $src.season->toOne()
+  }
+
+  testSuites:
+  [
+    checkedSpecimenCardSuite:
+    {
+      function: |test::goldenglacier::domain::SpecimenCard.all()->graphFetchChecked(
+        #{
+          test::goldenglacier::domain::SpecimenCard
+          {
+            accessionRef,
+            curatorLabel,
+            grade,
+            moistureBand,
+            cabinetHint,
+            wingLabel,
+            tagLabel,
+            tagSeason,
+            cuttingCount,
+            collectedOn,
+            cuttings
+            {
+              cuttingRef,
+              heightCm,
+              heightLabel,
+              sizeClassLabel
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::goldenglacier::domain::SpecimenCard
+          {
+            accessionRef,
+            curatorLabel,
+            grade,
+            moistureBand,
+            cabinetHint,
+            tagLabel,
+            tagSeason,
+            cuttingCount,
+            collectedOn,
+            wingLabel,
+            cuttings
+            {
+              cuttingRef,
+              heightCm,
+              heightLabel,
+              sizeClassLabel
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        populatedEmptyAndCoercedFixtures:
+        {
+          doc: 'Runs the checked traversal over one document with two cuttings, one whose cutting collection and cabinet structure are absent, and one whose cutting height arrives in a different numeric type family, so the defect envelope pins the absence of conversion defects for all three.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::goldenglacier::feed::SpecimenFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"accessionRef":"AC-001","revision":4,"record":{"curatorCode":" cur-a ","gradeCode":"herb","moisturePct":82,"collectedOn":"2026-03-04","cabinet":{"cabinetCode":"cb-1","wing":"north-wing","tag":{"tagSeries":"ts","tagNumber":17,"issuer":"conservatory-office","season":"spring"}},"cuttings":[{"cuttingRef":"CT-001-A","heightCm":12,"sizeClass":"tall"},{"cuttingRef":"CT-001-B","heightCm":7}]}},{"accessionRef":"AC-002","revision":5,"record":{"curatorCode":"cur-b","gradeCode":"live","cuttings":[]}},{"accessionRef":"AC-003","revision":6,"record":{"curatorCode":"cur-c","gradeCode":"pres","moisturePct":30,"collectedOn":"2026-05-06","cabinet":{"cabinetCode":"cb-3","tag":{"tagSeries":"tz","tagNumber":3,"issuer":"conservatory-office","season":"autumn"}},"cuttings":[{"cuttingRef":"CT-003-A","heightCm":21,"sizeClass":" mid "}]}}]';
+                  }#,
+                test::goldenglacier::feed::CuttingNode:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"cuttingRef":"CT-900-A","heightCm":5,"sizeClass":"short"}]';
+                  }#,
+                test::goldenglacier::feed::TagNode:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tagSeries":"ts","tagNumber":91,"issuer":"conservatory-office","season":"winter"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeCheckedCards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"accessionRef\\":\\"AC-001\\",\\"revision\\":4,\\"record\\":{\\"curatorCode\\":\\" cur-a \\",\\"gradeCode\\":\\"herb\\",\\"moisturePct\\":82,\\"collectedOn\\":\\"2026-03-04\\",\\"cabinet\\":{\\"cabinetCode\\":\\"cb-1\\",\\"wing\\":\\"north-wing\\",\\"tag\\":{\\"tagSeries\\":\\"ts\\",\\"tagNumber\\":17,\\"issuer\\":\\"conservatory-office\\",\\"season\\":\\"spring\\"}},\\"cuttings\\":[{\\"cuttingRef\\":\\"CT-001-A\\",\\"heightCm\\":12,\\"sizeClass\\":\\"tall\\"},{\\"cuttingRef\\":\\"CT-001-B\\",\\"heightCm\\":7}]}}"},"value":{"accessionRef":"AC-001","record":{"cabinet":{"cabinetCode":"cb-1","tag":{"season":"spring","tagNumber":17,"tagSeries":"ts"},"wing":"north-wing"},"collectedOn":"2026-03-04","curatorCode":" cur-a ","cuttings":[{"cuttingRef":"CT-001-A","heightCm":12,"sizeClass":"tall"},{"cuttingRef":"CT-001-B","heightCm":7,"sizeClass":null}],"gradeCode":"herb","moisturePct":82},"revision":4}},"value":{"accessionRef":"AC-001","curatorLabel":"C4-CUR-A","grade":"HERBARIUM","moistureBand":"BAND-4","cabinetHint":"CAB/CB-1","tagLabel":"TS-17","tagSeason":"SPRING","cuttingCount":2,"collectedOn":"2026-03-04","wingLabel":"north-wing","cuttings":[{"cuttingRef":"CT-001-A","heightCm":12.0,"heightLabel":"H12CM","sizeClassLabel":"TALL"},{"cuttingRef":"CT-001-B","heightCm":7.0,"heightLabel":"H7CM","sizeClassLabel":"UNSIZED"}]}},{"defects":[],"source":{"defects":[],"source":{"number":2,"record":"{\\"accessionRef\\":\\"AC-002\\",\\"revision\\":5,\\"record\\":{\\"curatorCode\\":\\"cur-b\\",\\"gradeCode\\":\\"live\\",\\"cuttings\\":[]}}"},"value":{"accessionRef":"AC-002","record":{"cabinet":null,"collectedOn":null,"curatorCode":"cur-b","cuttings":[],"gradeCode":"live","moisturePct":null},"revision":5}},"value":{"accessionRef":"AC-002","curatorLabel":"C5-CUR-B","grade":"LIVING","moistureBand":"BAND-NONE","cabinetHint":"UNSHELVED","tagLabel":"NOTAG","tagSeason":"UNKNOWN-SEASON","cuttingCount":0,"collectedOn":null,"wingLabel":null,"cuttings":[]}},{"defects":[],"source":{"defects":[],"source":{"number":3,"record":"{\\"accessionRef\\":\\"AC-003\\",\\"revision\\":6,\\"record\\":{\\"curatorCode\\":\\"cur-c\\",\\"gradeCode\\":\\"pres\\",\\"moisturePct\\":30,\\"collectedOn\\":\\"2026-05-06\\",\\"cabinet\\":{\\"cabinetCode\\":\\"cb-3\\",\\"tag\\":{\\"tagSeries\\":\\"tz\\",\\"tagNumber\\":3,\\"issuer\\":\\"conservatory-office\\",\\"season\\":\\"autumn\\"}},\\"cuttings\\":[{\\"cuttingRef\\":\\"CT-003-A\\",\\"heightCm\\":21,\\"sizeClass\\":\\" mid \\"}]}}"},"value":{"accessionRef":"AC-003","record":{"cabinet":{"cabinetCode":"cb-3","tag":{"season":"autumn","tagNumber":3,"tagSeries":"tz"},"wing":null},"collectedOn":"2026-05-06","curatorCode":"cur-c","cuttings":[{"cuttingRef":"CT-003-A","heightCm":21,"sizeClass":" mid "}],"gradeCode":"pres","moisturePct":30},"revision":6}},"value":{"accessionRef":"AC-003","curatorLabel":"C6-CUR-C","grade":"PRESERVED","moistureBand":"BAND-2","cabinetHint":"CAB/CB-3","tagLabel":"TZ-3","tagSeason":"AUTUMN","cuttingCount":1,"collectedOn":"2026-05-06","wingLabel":null,"cuttings":[{"cuttingRef":"CT-003-A","heightCm":21.0,"heightLabel":"H21CM","sizeClassLabel":"MID"}]}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

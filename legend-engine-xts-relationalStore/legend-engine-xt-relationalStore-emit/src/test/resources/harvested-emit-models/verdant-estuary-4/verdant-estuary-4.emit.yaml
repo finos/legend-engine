@@ -1,0 +1,44 @@
+name: verdant-estuary-4
+title: "Verdant Estuary 4 - A Union Of Two Survey Waves With Banded State Codes And A Closed Salinity Set"
+description: |
+  A saltmarsh reed register whose plot extent is assembled algebraically rather than read from
+  one relation. Two relational class mappings bind the same table under their own explicit main-table
+  alias, declared primary key and wave filter, and an operation mapping unions them, so instances of
+  the plot class come from both survey waves of the register and each wave stamps its own literal
+  wave label.
+
+  Each wave translates the plot state code through an eight-arm conditional chain that ends in a
+  null sentinel, so a plot whose state code falls outside the declared codes keeps every other
+  column and loses only its band. The salinity property is typed by a closed enumeration and read
+  through an enumeration mapping over the raw code column, so a plot whose code is outside the
+  mapped set arrives with no band at all, and plots with no note take a literal default instead of
+  an empty string. One mapping test walks all eight arms, the unclassed plot and the defaulted
+  notes in a single projection over the unioned extent.
+modelSources:
+  model:
+    root: verdant-estuary-4
+    files:
+      - test/verdantestuary4/domain/ReedDomain.pure
+      - test/verdantestuary4/mapping/ReedMapping.pure
+      - test/verdantestuary4/store/ReedDb.pure
+features:
+  - execution:mapping-test
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:operation-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+complexity: advanced
+tags:
+  - enumeration-mapping
+  - h2
+  - operation-mapping
+  - reed-survey
+  - state-code-bands
+stores:
+  - relational

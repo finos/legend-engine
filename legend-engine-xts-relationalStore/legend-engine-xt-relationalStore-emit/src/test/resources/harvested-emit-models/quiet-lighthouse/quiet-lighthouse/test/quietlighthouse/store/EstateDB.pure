@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietlighthouse::store::EstateDB
+(
+  Schema harbour
+  (
+    Table station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(16) NOT NULL,
+      station_name VARCHAR(64) NOT NULL,
+      first_lit DATE NOT NULL
+    )
+
+    Table lamp
+    (
+      lamp_id INTEGER PRIMARY KEY,
+      lamp_code VARCHAR(16) NOT NULL,
+      lamp_type VARCHAR(32) NOT NULL,
+      wattage INTEGER NOT NULL
+    )
+
+    Table lens
+    (
+      lens_id INTEGER PRIMARY KEY,
+      lens_code VARCHAR(16) NOT NULL,
+      lens_order VARCHAR(16) NOT NULL,
+      focal_length_mm INTEGER NOT NULL
+    )
+
+    Table foghorn
+    (
+      foghorn_id INTEGER PRIMARY KEY,
+      horn_code VARCHAR(16) NOT NULL,
+      blast_seconds DOUBLE NOT NULL
+    )
+
+    Table cottage
+    (
+      cottage_id INTEGER PRIMARY KEY,
+      cottage_code VARCHAR(16) NOT NULL,
+      cottage_name VARCHAR(64) NOT NULL,
+      bedrooms INTEGER NOT NULL
+    )
+
+    Table jetty
+    (
+      jetty_id INTEGER PRIMARY KEY,
+      jetty_code VARCHAR(16) NOT NULL,
+      jetty_name VARCHAR(64) NOT NULL,
+      length_m DOUBLE NOT NULL
+    )
+
+    Table paint_cycle
+    (
+      cycle_id INTEGER PRIMARY KEY,
+      cycle_code VARCHAR(16) NOT NULL,
+      cycle_year INTEGER NOT NULL,
+      coats INTEGER NOT NULL
+    )
+  )
+)

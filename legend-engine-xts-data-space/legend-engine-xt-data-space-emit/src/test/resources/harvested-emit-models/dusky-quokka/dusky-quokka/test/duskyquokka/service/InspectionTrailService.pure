@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyquokka::service::InspectionTrailService
+{
+  pattern: '/transit/v1/inspection-trail';
+  title: 'Inspection Trail';
+  owners:
+  [
+    'transit-network-operations',
+    'rolling-stock-engineering'
+  ];
+  documentation: 'Projects inspection outcomes beside the fleet number reached through the railcar join, pairing a numeric odometer column with the joined identifier.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::duskyquokka::domain::InspectionLog.all()->project(
+      [
+        col(
+          i|$i.inspectedFleetNumber,
+          'Fleet'
+        ),
+        col(
+          i|$i.outcome,
+          'Outcome'
+        ),
+        col(
+          i|$i.inspectorName,
+          'Inspector'
+        )
+      ]
+    );
+    mapping: test::duskyquokka::mapping::TransitMapping;
+    runtime: test::duskyquokka::runtime::TransitRuntime;
+  }
+  testSuites:
+  [
+    inspectionTrailSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              transit.railcar:
+                'railcar_id,fleet_number,propulsion,seated_capacity,tare_mass_tonnes,line_id\n'+
+                '1,RC-101,ELECTRIC,84,31.500,1\n'+
+                '2,RC-102,HYBRID,72,28.250,2\n';
+
+              transit.inspection_log:
+                'log_id,inspected_on,inspector_name,outcome,odometer_km,railcar_id\n'+
+                '1,2025-03-04,Ines Vardy,PASS,124500.75,1\n'+
+                '2,2025-03-06,Owen Blake,DEFECT,98230.10,2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        inspectionsWithFleet:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoInspectionRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Fleet":"RC-101","Outcome":"PASS","Inspector":"Ines Vardy"},{"Fleet":"RC-102","Outcome":"DEFECT","Inspector":"Owen Blake"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

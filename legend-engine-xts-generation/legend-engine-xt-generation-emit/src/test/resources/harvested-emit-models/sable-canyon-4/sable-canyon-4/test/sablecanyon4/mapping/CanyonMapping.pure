@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablecanyon4::mapping::CanyonMapping
+(
+  *test::sablecanyon4::domain::TrailSegment[trailSegment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablecanyon4::store::CanyonDB]canyon.trail_segment.segment_id
+    )
+    ~mainTable [test::sablecanyon4::store::CanyonDB]canyon.trail_segment
+    segmentCode: [test::sablecanyon4::store::CanyonDB]canyon.trail_segment.segment_code,
+    trailName: [test::sablecanyon4::store::CanyonDB]canyon.trail_segment.trail_name,
+    surface: EnumerationMapping SurfaceGradeMapping: [test::sablecanyon4::store::CanyonDB]canyon.trail_segment.surface,
+    washoutIndex: [test::sablecanyon4::store::CanyonDB]canyon.trail_segment.washout_index,
+    surfaceNote: [test::sablecanyon4::store::CanyonDB]canyon.trail_segment.surface_note,
+    patrolCount: [test::sablecanyon4::store::CanyonDB]canyon.trail_segment.patrol_count
+  }
+
+  test::sablecanyon4::domain::SurfaceGrade: EnumerationMapping SurfaceGradeMapping
+  {
+    SLICKROCK: ['SLICKROCK'],
+    GRAVEL: ['GRAVEL'],
+    SAND: ['SAND'],
+    TALUS: ['TALUS']
+  }
+)

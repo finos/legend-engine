@@ -1,0 +1,35 @@
+name: amber-tundra-3
+title: "Amber Tundra - caribou range graph service"
+description: |
+  A tundra herd survey model for collared caribou and their seasonal ranges. The relational mapping
+  classifies six collar-status arms with two conditional transforms, while a multi-execution service
+  filters by a date window and traverses the associated range collection before serialising a graph.
+modelSources:
+  model:
+    root: amber-tundra-3
+    files:
+      - test/ambertundra3/connection/TundraConnection.pure
+      - test/ambertundra3/domain/HerdDomain.pure
+      - test/ambertundra3/mapping/HerdMapping.pure
+      - test/ambertundra3/runtime/TundraRuntime.pure
+      - test/ambertundra3/service/CaribouRangeView.pure
+      - test/ambertundra3/store/TundraDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - caribou
+  - collection-op
+  - conditional-mapping
+  - graph-fetch
+  - h2
+  - tundra

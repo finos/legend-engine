@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernlighthouse3::service::LightWatchList
+{
+  pattern: '/harbourlight/v1/watch-list/{processingDate}/{minFocal}';
+  title: 'Navigation Light Watch List';
+  owners:
+  [
+    'harbour-light-watch'
+  ];
+  documentation: 'Lists the serviceable navigation lights of the requested coast sectors as of a processing date, keeping only the lights whose last inspection precedes a point derived from that date by date arithmetic, and reaching the station and the fitted lamp through the declared join paths.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], sectors: String[*], minFocal: Float[1]|test::westernlighthouse3::domain::NavigationLight.all($processingDate)->filter(
+      l|((($l.homeStation.coastSector->toOne()->in($sectors)) && ($l.focalHeightM >= $minFocal)) && ($l.statusCode == 'ACTIVE')) && ($l.lastInspected <= $processingDate->adjust(-30, meta::pure::functions::date::DurationUnit.DAYS))
+    )->project(
+      [
+        l|$l.lightCode,
+        l|$l.homeStation.stationName,
+        l|$l.homeStation.coastSector,
+        l|$l.characterCode,
+        l|$l.focalHeightM,
+        l|$l.fittedLamp.lampType
+      ],
+      [
+        'LightCode',
+        'StationName',
+        'CoastSector',
+        'Character',
+        'FocalHeightM',
+        'LampType'
+      ]
+    )->distinct()->sort([asc('LightCode')])};
+    mapping: test::westernlighthouse3::mapping::HarbourLightMapping;
+    runtime: test::westernlighthouse3::runtime::HarbourWatchRuntime;
+  }
+  testSuites:
+  [
+    lightWatchListSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          watch_connection:
+            Relational
+            #{
+              harbour.navigation_light:
+                'light_code,station_code,lamp_code,character_code,focal_height_m,range_nm,status_code,last_inspected,in_z,out_z\n'+
+                'NL-01,HS-01,LU-01,Fl W 5s,18.5,12.0,ACTIVE,2025-11-02,2026-01-01,9999-12-31\n'+
+                'NL-02,HS-01,LU-02,Oc R 3s,9.0,7.5,MAINTENANCE,2026-02-14,2026-01-01,9999-12-31\n'+
+                'NL-03,HS-02,LU-01,Fl G 4s,12.25,9.0,ACTIVE,2024-08-19,2026-01-01,9999-12-31\n'+
+                'NL-04,HS-02,LU-03,Iso W 6s,22.0,14.0,ACTIVE,2023-05-05,2024-01-01,2025-06-30\n'+
+                'NL-05,HS-01,LU-02,Fl W 3s,8.0,5.0,ACTIVE,2024-04-01,2026-01-01,9999-12-31\n'+
+                'NL-06,HS-01,LU-01,Fl W 6s,20.0,13.0,ACTIVE,2026-05-20,2026-01-01,9999-12-31\n'+
+                'NL-07,HS-03,LU-01,Fl Y 4s,15.0,10.0,ACTIVE,2024-09-09,2026-01-01,9999-12-31\n';
+              harbour.lamp_unit:
+                'lamp_code,lamp_type,wattage,installed_on\n'+
+                'LU-01,LED array,45,2024-03-01\n'+
+                'LU-02,Halogen bulb,120,2022-07-15\n'+
+                'LU-03,Metal halide,150,2019-04-09\n';
+              harbour.harbour_station:
+                'station_code,station_name,coast_sector\n'+
+                'HS-01,North Mole Station,Outer Approach\n'+
+                'HS-02,South Quay Station,Inner Basin\n'+
+                'HS-03,East Spit Station,Outer Roads\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sectorWatchList:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            sectors = ['Outer Approach', 'Inner Basin'],
+            minFocal = 10.0
+          ]
+          asserts:
+          [
+            twoServiceableLights:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LightCode":"NL-01","StationName":"North Mole Station","CoastSector":"Outer Approach","Character":"Fl W 5s","FocalHeightM":18.5,"LampType":"LED array"},{"LightCode":"NL-03","StationName":"South Quay Station","CoastSector":"Inner Basin","Character":"Fl G 4s","FocalHeightM":12.25,"LampType":"LED array"}]';
+                  }#;
+              }#
+          ]
+        },
+        sectorWithNoQualifyingLight:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-06-01,
+            sectors = ['Outer Roads'],
+            minFocal = 18.0
+          ]
+          asserts:
+          [
+            nothingAboveFocalFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

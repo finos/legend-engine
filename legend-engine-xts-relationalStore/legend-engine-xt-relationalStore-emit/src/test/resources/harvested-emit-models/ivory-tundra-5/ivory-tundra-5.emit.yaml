@@ -1,0 +1,43 @@
+name: ivory-tundra-5
+title: "Ivory Tundra 5 — Point-In-Time Instrument Register With A Collection Predicate"
+description: |
+  A tundra field-station instrument register whose single testable element is one
+  single-execution service. The query retrieves a business-milestoned deployment
+  set at one date supplied as a service parameter and threads that same date
+  through every navigation to the milestoned observation station, including the
+  two-hop reach onto the station's custodian. The predicate conjoins a state
+  equality comparison and a parameter-driven interval comparison with an
+  existence test over the to-many calibration-check navigation and a negated
+  emptiness test on a point-in-time reached label, then the surviving rows are
+  projected onto a wide positional label list that includes a string-width
+  measure, a trimmed upper-cased station tag and a conditional cadence band,
+  deduplicated and ordered on two ascending keys. The suite seeds all four tables
+  and drops both a station version and a deployment version whose business window
+  closed before the requested date.
+modelSources:
+  model:
+    root: ivory-tundra-5
+    files:
+      - test/ivorytundra5/connection/StationConnection.pure
+      - test/ivorytundra5/domain/StationDomain.pure
+      - test/ivorytundra5/mapping/StationRegisterMapping.pure
+      - test/ivorytundra5/runtime/StationRuntime.pure
+      - test/ivorytundra5/service/StationRegisterService.pure
+      - test/ivorytundra5/store/StationDb.pure
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-op
+  - h2
+  - point-in-time
+  - service-test
+  - station-register
+  - tabular-data-set

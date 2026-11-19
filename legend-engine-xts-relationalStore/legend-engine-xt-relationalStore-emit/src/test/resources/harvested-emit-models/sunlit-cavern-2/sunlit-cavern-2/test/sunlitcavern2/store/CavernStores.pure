@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sunlitcavern2::store::ChamberDb
+(
+  Schema chamber
+  (
+    Table cave_chamber
+    (
+      chamber_id INTEGER PRIMARY KEY,
+      chamber_name VARCHAR(120) NOT NULL,
+      passage_grade VARCHAR(24) NOT NULL,
+      floor_depth_m DECIMAL(9,2) NOT NULL,
+      surveyed_on DATE NOT NULL,
+      gated_flag VARCHAR(1) NOT NULL
+    )
+
+    Table chamber_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      chamber_id INTEGER NOT NULL,
+      humidity_pct DECIMAL(9,2) NOT NULL,
+      recorded_on DATE NOT NULL,
+      probe_label VARCHAR(60)
+    )
+
+    View chamber_latest_view
+    (
+      ~groupBy
+      (
+        chamber.chamber_reading.chamber_id
+      )
+      chamber_id: chamber.chamber_reading.chamber_id PRIMARY KEY,
+      latest_reading_on: max(chamber.chamber_reading.recorded_on),
+      reading_count: count(chamber.chamber_reading.reading_id)
+    )
+  )
+)
+
+Database test::sunlitcavern2::store::RouteDb
+(
+  Schema route
+  (
+    Table access_route
+    (
+      route_id INTEGER PRIMARY KEY,
+      route_label VARCHAR(120) NOT NULL,
+      rope_metres DECIMAL(9,2) NOT NULL,
+      opened_on DATE NOT NULL,
+      rigged_flag VARCHAR(1) NOT NULL
+    )
+  )
+)
+
+Database test::sunlitcavern2::store::BiotaDb
+(
+  Schema biota
+  (
+    Table bat_roost
+    (
+      roost_id INTEGER PRIMARY KEY,
+      colony_name VARCHAR(120) NOT NULL,
+      individuals DECIMAL(9,2) NOT NULL,
+      counted_on DATE NOT NULL,
+      maternity_flag VARCHAR(1) NOT NULL
+    )
+  )
+)
+
+Database test::sunlitcavern2::store::ClimateDb
+(
+  Schema climate
+  (
+    Table climate_log
+    (
+      log_id INTEGER PRIMARY KEY,
+      station_label VARCHAR(120) NOT NULL,
+      air_temp_c DECIMAL(9,2) NOT NULL,
+      logged_on DATE NOT NULL,
+      calibrated_flag VARCHAR(1) NOT NULL
+    )
+  )
+)
+
+Database test::sunlitcavern2::store::CavernDb
+(
+  include test::sunlitcavern2::store::ChamberDb
+  include test::sunlitcavern2::store::RouteDb
+  include test::sunlitcavern2::store::BiotaDb
+  include test::sunlitcavern2::store::ClimateDb
+)

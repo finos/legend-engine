@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::ivoryhatchery::data::HatcheryTestData
+{
+  Relational
+  #{
+    reg.grow_region:
+      'region_code,region_name\n'+
+      'RG1,Cedar reach region\n';
+
+    reg.brooder_barn:
+      'barn_code,barn_name,region_code\n'+
+      'BN1,Willow barn,RG1\n'+
+      'BN2,Sedge barn,RG9\n';
+
+    reg.setter_cabinet:
+      'cabinet_code,cabinet_name,barn_code\n'+
+      'CB1,North cabinet,BN1\n'+
+      'CB2,South cabinet,BN9\n'+
+      'CB3,West cabinet,BN2\n';
+
+    reg.clutch_grade:
+      'grade_code,grade_label,cabinet_code\n'+
+      'CG1,Prime clutch,CB1\n'+
+      'CG2,Spare clutch,CB9\n'+
+      'CG3,Third clutch,CB2\n'+
+      'CG4,Fourth clutch,CB3\n';
+
+    hatch.egg_lot:
+      'lot_id,lot_name,tray_count,egg_count,band_code,vigour_code,ration_code,size_code,grade_code,note_text\n'+
+      '1,alder lot,4,90,A,STRONG,STARTER,BANTAM,CG1,ridge check\n'+
+      '2,bramble lot,2,45,B,STEADY,GROWER,STANDARD,CG1,shelf check\n'+
+      '3,cattail lot,4,50,C,WEAK,STARTER,JUMBO,CG1,\n'+
+      '4,duckweed lot,4,70,D,STRONG,GROWER,BANTAM,CG1,pier check\n'+
+      '5,elodea lot,2,55,E,STEADY,STARTER,STANDARD,CG1,arch check\n'+
+      '6,fenwort lot,4,30,F,WEAK,GROWER,JUMBO,CG1,\n'+
+      '7,grassmat lot,4,110,G,FRAIL,STARTER,BANTAM,CG1,notch check\n'+
+      '8,hornwort lot,4,26,H,STRONG,GROWER,STANDARD,CG1,gully check\n'+
+      '9,quiet lot,2,35,,STEADY,STARTER,JUMBO,CG1,\n'+
+      '10,boulder lot,4,130,A,STRONG,STARTER,BANTAM,CG9,field check\n'+
+      '11,mystery lot,4,48,B,STEADY,GROWER,STANDARD,CG2,mystery check\n'+
+      '12,birchbark lot,3,45,C,WEAK,STARTER,JUMBO,CG3,birch check\n'+
+      '13,cobble lot,5,60,D,STRONG,GROWER,BANTAM,CG4,cobble check\n'+
+      '14,brisk lot,4,64,E,BRISK,STARTER,STANDARD,CG1,brisk check\n'+
+      '15,tidy lot,2,38,F,STEADY,GROWER,STANDARD,CG1,\n';
+  }#
+}

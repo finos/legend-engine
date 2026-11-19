@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::hazelwillow::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A single reef monitoring station; the hub of the survey graph.'} test::hazelwillow::domain::SurveyStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  gridReference: String[1];
+  depthCentimetres: Integer[1];
+  transectLengthMetres: Integer[0..1];
+  visibilityMetres: Integer[0..1];
+  sectorReference: String[1];
+  leadObserverReference: String[0..1];
+  commissionedOn: DateTime[1];
+  lastVisitedOn: DateTime[0..1];
+  insertedByUser: String[1];
+  insertedOn: DateTime[1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stretch of reef grouping several stations; also an intermediate hop to patches and counts.'} test::hazelwillow::domain::ReefSector
+{
+  sectorCode: String[1];
+  sectorName: String[1];
+  shorelineDistanceMetres: Integer[1];
+  areaHectares: Integer[0..1];
+  substrateLabel: String[1];
+  exposureLabel: String[0..1];
+  protectionZoneReference: String[0..1];
+  surveyedFrom: DateTime[1];
+  surveyedThru: DateTime[0..1];
+  insertedByUser: String[1];
+  insertedOn: DateTime[1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A delimited patch of coral scored during a survey visit.'} test::hazelwillow::domain::CoralPatch
+{
+  patchCode: String[1];
+  dominantGenus: String[1];
+  liveCoverPercent: Integer[1];
+  bleachedCoverPercent: Integer[0..1];
+  rugosityScore: Integer[0..1];
+  patchAreaSquareMetres: Integer[1];
+  stationReference: String[0..1];
+  sectorReference: String[1];
+  scoredOn: DateTime[1];
+  insertedByUser: String[1];
+  insertedOn: DateTime[1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tally of fish observed on one transect pass.'} test::hazelwillow::domain::FishCount
+{
+  countCode: String[1];
+  speciesLabel: String[1];
+  individualsObserved: Integer[1];
+  juvenilesObserved: Integer[0..1];
+  passNumber: Integer[1];
+  transectMinutes: Integer[0..1];
+  stationReference: String[0..1];
+  sectorReference: String[1];
+  countedOn: DateTime[1];
+  insertedByUser: String[1];
+  insertedOn: DateTime[1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A water quality sample drawn at a station.'} test::hazelwillow::domain::WaterSample
+{
+  sampleCode: String[1];
+  temperatureCelsius: Integer[1];
+  salinityPartsPerThousand: Integer[1];
+  turbidityUnits: Integer[0..1];
+  dissolvedOxygenTenths: Integer[0..1];
+  sampleDepthCentimetres: Integer[1];
+  stationReference: String[1];
+  drawnOn: DateTime[1];
+  analysedOn: DateTime[0..1];
+  insertedByUser: String[1];
+  insertedOn: DateTime[1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A station belongs to exactly one reef sector; a sector groups many stations.'} test::hazelwillow::domain::Station_Sector
+{
+  sector: ReefSector[1];
+  stations: SurveyStation[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Direct route from a station to the coral patches it scored; the owning station is optional.'} test::hazelwillow::domain::Station_CoralPatch
+{
+  patchStation: SurveyStation[0..1];
+  coralPatches: CoralPatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Direct route from a station to its fish counts; the owning station is optional.'} test::hazelwillow::domain::Station_FishCount
+{
+  countStation: SurveyStation[0..1];
+  fishCounts: FishCount[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A station always owns the water samples drawn at it.'} test::hazelwillow::domain::Station_WaterSample
+{
+  sampleStation: SurveyStation[1];
+  waterSamples: WaterSample[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Indirect route: a sector also reaches coral patches without going through a station.'} test::hazelwillow::domain::Sector_CoralPatch
+{
+  patchSector: ReefSector[1];
+  sectorCoralPatches: CoralPatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Indirect route: a sector also reaches fish counts without going through a station.'} test::hazelwillow::domain::Sector_FishCount
+{
+  countSector: ReefSector[1];
+  sectorFishCounts: FishCount[*];
+}

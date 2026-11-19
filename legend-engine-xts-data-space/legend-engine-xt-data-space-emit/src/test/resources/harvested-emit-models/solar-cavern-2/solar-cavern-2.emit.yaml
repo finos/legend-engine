@@ -1,0 +1,53 @@
+name: solar-cavern-2
+title: "Solar Cavern Chamber Monitoring — Sentinel-Guarded Encoded Dates Behind One Flat Tabular Register"
+description: |
+  A show-cave monitoring model built around a single wide relation: one flat reading
+  class binds every column of one aliased table through an explicit primary key, three
+  of its required dates are reconstructed inside the mapping from a compact numeric
+  encoding - each testing its column against the zero 'no date' sentinel, substituting
+  a fixed earliest-date digit string and otherwise rendering the number as text before
+  parsing it under a literal pattern - and one property is supplied by the mapping as a
+  constant. A tabular endpoint projects the register with explicit labels and no
+  predicate, and a catalogued data space carrying a stereotype and taxonomy, licence
+  and provider tags publishes the same mapping and runtime as a featured executable.
+modelSources:
+  model:
+    root: solar-cavern-2
+    files:
+      - test/solarcavern2/connection/CavernConnection.pure
+      - test/solarcavern2/dataspace/CavernDataSpace.pure
+      - test/solarcavern2/domain/CavernDomain.pure
+      - test/solarcavern2/mapping/CavernMapping.pure
+      - test/solarcavern2/profile/CavernMeta.pure
+      - test/solarcavern2/runtime/CavernRuntime.pure
+      - test/solarcavern2/service/ChamberReadingService.pure
+      - test/solarcavern2/store/CavernDb.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - grammar:profile
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - data-space
+  - encoded-date
+  - h2
+  - literal-mapping
+  - relational
+  - sentinel-value
+  - snowflake
+  - tabular-data-set

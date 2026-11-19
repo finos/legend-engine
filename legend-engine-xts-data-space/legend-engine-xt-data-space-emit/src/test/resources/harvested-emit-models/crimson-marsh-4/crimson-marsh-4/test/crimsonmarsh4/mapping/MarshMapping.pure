@@ -1,0 +1,166 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonmarsh4::mapping::MarshMapping
+(
+  include mapping test::crimsonmarsh4::mapping::MarshBaseMapping
+
+  *test::crimsonmarsh4::domain::ReedCensus[census]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonmarsh4::store::MarshDb]marsh.reed_census.census_ref
+    )
+    ~mainTable [test::crimsonmarsh4::store::MarshDb]marsh.reed_census
+    censusRef: [test::crimsonmarsh4::store::MarshDb]marsh.reed_census.census_ref,
+    bedCode: [test::crimsonmarsh4::store::MarshDb]marsh.reed_census.bed_code,
+    stemGrade: [test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade,
+    stemDensity: [test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_density,
+    waterDepthCm: [test::crimsonmarsh4::store::MarshDb]marsh.reed_census.water_depth_cm,
+    densityBand: case(
+                   equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 1),
+                   'BAND-SPARSE',
+                   case(
+                     equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 2),
+                     'BAND-THIN',
+                     case(
+                       equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 3),
+                       'BAND-OPEN',
+                       case(
+                         equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 4),
+                         'BAND-STEADY',
+                         case(
+                           equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 5),
+                           'BAND-FULL',
+                           case(
+                             equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 6),
+                             'BAND-DENSE',
+                             case(
+                               equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 7),
+                               'BAND-CROWDED',
+                               case(
+                                 equal([test::crimsonmarsh4::store::MarshDb]marsh.reed_census.stem_grade, 8),
+                                 'BAND-CHOKED',
+                                 sqlNull()
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    bedLabel: concat(
+                concat(
+                  toUpper([test::crimsonmarsh4::store::MarshDb]@Census_Bed | marsh.reed_bed.bed_name),
+                  ' / '
+                ),
+                [test::crimsonmarsh4::store::MarshDb]@Census_Bed | marsh.reed_bed.warden_code
+              )
+  }
+
+  test::crimsonmarsh4::domain::Bed_Census: Relational
+  {
+    AssociationMapping
+    (
+      censuses[bed, census]: [test::crimsonmarsh4::store::MarshDb]@Census_Bed,
+      bed[census, bed]: [test::crimsonmarsh4::store::MarshDb]@Census_Bed
+    )
+  }
+
+  testSuites:
+  [
+    censusBandSuite:
+    {
+      function: |test::crimsonmarsh4::domain::ReedCensus.all(%2026-06-01)->graphFetch(
+        #{
+          test::crimsonmarsh4::domain::ReedCensus{
+            censusRef,
+            stemGrade,
+            stemDensity,
+            waterDepthCm,
+            densityBand,
+            bedLabel,
+            bed{
+              bedCode,
+              bedName,
+              wardenCode
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::crimsonmarsh4::domain::ReedCensus{
+            censusRef,
+            stemGrade,
+            stemDensity,
+            waterDepthCm,
+            densityBand,
+            bedLabel,
+            bed{
+              bedCode,
+              bedName,
+              wardenCode
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyBandArmAndTheNullFallback:
+        {
+          doc: 'Graph-fetches every census effective on the queried business date so each of the eight grade arms of the banding ladder lands on its own row, the unrecognised grade falls through to the null sentinel, and the census whose validity window closed before the date is out of range and absent.';
+          data:
+          [
+            test::crimsonmarsh4::store::MarshDb:
+              Relational
+              #{
+                marsh.reed_bed:
+                  'bed_code,bed_name,warden_code\n'+
+                  'BD-1,North Reed Bed,WD-1\n'+
+                  'BD-2,South Reed Bed,WD-2\n'+
+                  'BD-3,West Reed Bed,WD-3\n';
+                marsh.reed_census:
+                  'census_ref,bed_code,stem_grade,stem_density,water_depth_cm,from_z,thru_z\n'+
+                  'RC-0001,BD-1,1,120,10,2026-01-01,9999-12-31\n'+
+                  'RC-0002,BD-1,2,240,12,2026-01-01,9999-12-31\n'+
+                  'RC-0003,BD-2,3,360,14,2026-01-01,9999-12-31\n'+
+                  'RC-0004,BD-2,4,480,16,2026-01-01,9999-12-31\n'+
+                  'RC-0005,BD-1,5,600,18,2026-01-01,9999-12-31\n'+
+                  'RC-0006,BD-2,6,720,20,2026-01-01,9999-12-31\n'+
+                  'RC-0007,BD-1,7,840,22,2026-01-01,9999-12-31\n'+
+                  'RC-0008,BD-2,8,960,24,2026-01-01,9999-12-31\n'+
+                  'RC-0009,BD-1,9,1080,26,2026-01-01,9999-12-31\n'+
+                  'RC-0010,BD-3,4,480,16,2024-01-01,2025-06-30\n';
+              }#
+          ];
+          asserts:
+          [
+            bandLadderAcrossEveryArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"censusRef":"RC-0001","stemGrade":1,"stemDensity":120,"waterDepthCm":10,"densityBand":"BAND-SPARSE","bedLabel":"NORTH REED BED / WD-1","bed":{"bedCode":"BD-1","bedName":"North Reed Bed","wardenCode":"WD-1"}},{"censusRef":"RC-0002","stemGrade":2,"stemDensity":240,"waterDepthCm":12,"densityBand":"BAND-THIN","bedLabel":"NORTH REED BED / WD-1","bed":{"bedCode":"BD-1","bedName":"North Reed Bed","wardenCode":"WD-1"}},{"censusRef":"RC-0003","stemGrade":3,"stemDensity":360,"waterDepthCm":14,"densityBand":"BAND-OPEN","bedLabel":"SOUTH REED BED / WD-2","bed":{"bedCode":"BD-2","bedName":"South Reed Bed","wardenCode":"WD-2"}},{"censusRef":"RC-0004","stemGrade":4,"stemDensity":480,"waterDepthCm":16,"densityBand":"BAND-STEADY","bedLabel":"SOUTH REED BED / WD-2","bed":{"bedCode":"BD-2","bedName":"South Reed Bed","wardenCode":"WD-2"}},{"censusRef":"RC-0005","stemGrade":5,"stemDensity":600,"waterDepthCm":18,"densityBand":"BAND-FULL","bedLabel":"NORTH REED BED / WD-1","bed":{"bedCode":"BD-1","bedName":"North Reed Bed","wardenCode":"WD-1"}},{"censusRef":"RC-0006","stemGrade":6,"stemDensity":720,"waterDepthCm":20,"densityBand":"BAND-DENSE","bedLabel":"SOUTH REED BED / WD-2","bed":{"bedCode":"BD-2","bedName":"South Reed Bed","wardenCode":"WD-2"}},{"censusRef":"RC-0007","stemGrade":7,"stemDensity":840,"waterDepthCm":22,"densityBand":"BAND-CROWDED","bedLabel":"NORTH REED BED / WD-1","bed":{"bedCode":"BD-1","bedName":"North Reed Bed","wardenCode":"WD-1"}},{"censusRef":"RC-0008","stemGrade":8,"stemDensity":960,"waterDepthCm":24,"densityBand":"BAND-CHOKED","bedLabel":"SOUTH REED BED / WD-2","bed":{"bedCode":"BD-2","bedName":"South Reed Bed","wardenCode":"WD-2"}},{"censusRef":"RC-0009","stemGrade":9,"stemDensity":1080,"waterDepthCm":26,"densityBand":null,"bedLabel":"NORTH REED BED / WD-1","bed":{"bedCode":"BD-1","bedName":"North Reed Bed","wardenCode":"WD-1"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

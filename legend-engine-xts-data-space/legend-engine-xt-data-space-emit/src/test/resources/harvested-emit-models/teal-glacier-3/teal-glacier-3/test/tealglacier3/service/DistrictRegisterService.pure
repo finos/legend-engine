@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::tealglacier3::service::DistrictRegisterService
+{
+  pattern: '/tealglacier3/v1/district-register';
+  title: 'Teal Glacier 3 - District Register';
+  ownership: UserList { users: ['alpine-trail-register-desk'] };
+  documentation: 'Publishes the district references the footbridges quote together with the names the register carries for them, read from the same store relation the bridge register reaches across its join so the relation is planned once as a join target and once as an extent in its own right.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {|demo::tealglacier3::domain::TrailDistrict.all()->project(
+      [
+        d|$d.districtCode,
+        d|$d.districtName
+      ],
+      [
+        'District',
+        'DistrictName'
+      ]
+    )};
+    mapping: demo::tealglacier3::mapping::TrailMapping;
+    runtime: demo::tealglacier3::runtime::TrailRegisterRuntime;
+  }
+
+  testSuites:
+  [
+    districtRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailRegister:
+            Relational
+            #{
+              alpine.district:
+                'district_code,district_name\n'+
+                'DT-01,North Cirque\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        districtRowFromTheRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            districtRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"DT-01","DistrictName":"North Cirque"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

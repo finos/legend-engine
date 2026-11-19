@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::gildedsummit3::store::SpringDB
+(
+  Schema gauge
+  (
+    Table spring_source
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      source_code VARCHAR(12) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      out_z DATE NOT NULL,
+      spring_name VARCHAR(64) NOT NULL
+    )
+
+    Table spring_identity
+    (
+      source_code VARCHAR(12) PRIMARY KEY,
+      catchment_code VARCHAR(12),
+      cairn_code VARCHAR(12),
+      survey_tag VARCHAR(12)
+    )
+
+    Table spring_traits
+    (
+      source_code VARCHAR(12) PRIMARY KEY,
+      aspect VARCHAR(8) NOT NULL,
+      elevation_m INTEGER NOT NULL,
+      window_code VARCHAR(12)
+    )
+
+    Table gauging_window
+    (
+      window_code VARCHAR(12) PRIMARY KEY,
+      opened_on DATE NOT NULL,
+      closed_on DATE
+    )
+
+    Table flow_rate_change
+    (
+      change_code VARCHAR(12) PRIMARY KEY,
+      source_code VARCHAR(12) NOT NULL,
+      changed_on DATE NOT NULL,
+      litres_per_minute DOUBLE NOT NULL
+    )
+
+    Table seasonal_closure
+    (
+      closure_code VARCHAR(12) PRIMARY KEY,
+      source_code VARCHAR(12) NOT NULL,
+      notice_code VARCHAR(12)
+    )
+
+    Table closure_notice
+    (
+      notice_code VARCHAR(12) PRIMARY KEY,
+      reason_code VARCHAR(12)
+    )
+
+    Table closure_reason
+    (
+      reason_code VARCHAR(12) PRIMARY KEY,
+      reason_text VARCHAR(64) NOT NULL,
+      hazard_level INTEGER NOT NULL
+    )
+  )
+
+  Join Source_Identity(gauge.spring_source.source_code = gauge.spring_identity.source_code)
+  Join Source_Traits(gauge.spring_source.source_code = gauge.spring_traits.source_code)
+  Join Traits_Window(gauge.spring_traits.window_code = gauge.gauging_window.window_code)
+  Join Traits_Flow(gauge.spring_traits.source_code = gauge.flow_rate_change.source_code)
+  Join Source_Closure(gauge.spring_source.source_code = gauge.seasonal_closure.source_code)
+  Join Closure_Notice(gauge.seasonal_closure.notice_code = gauge.closure_notice.notice_code)
+  Join Notice_Reason(gauge.closure_notice.reason_code = gauge.closure_reason.reason_code)
+)

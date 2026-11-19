@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralcove::store::DuneDb
+(
+  Schema dune
+  (
+    Table plot_register
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      plot_code VARCHAR(24) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      sector_code VARCHAR(12),
+      plot_name VARCHAR(120),
+      crest_height_m FLOAT,
+      stabilised_area_ha DECIMAL(9, 3),
+      surveyed_on DATE,
+      last_checked_at TIMESTAMP,
+      warden VARCHAR(80),
+      out_z DATE NOT NULL
+    )
+
+    Table planting_batch
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      batch_id INTEGER PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      plot_code VARCHAR(24),
+      species_code VARCHAR(12),
+      culm_count INTEGER,
+      survival_rate FLOAT,
+      mean_culm_height_cm DECIMAL(7, 2),
+      planted_on DATE,
+      recorded_at TIMESTAMP,
+      out_z DATE NOT NULL
+    )
+
+    Table fence_run
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      fence_code VARCHAR(24) PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      sector_code VARCHAR(12),
+      fence_material VARCHAR(24),
+      fence_length_m DECIMAL(8, 2),
+      drift_capture_ratio FLOAT,
+      installed_on DATE,
+      inspected_at TIMESTAMP,
+      out_z DATE NOT NULL
+    )
+  )
+)

@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantridge4::domain::*;
+
+Enum test::verdantridge4::domain::Atmosphere
+{
+  OXIDISING,
+  REDUCING,
+  NEUTRAL
+}
+
+Enum test::verdantridge4::domain::GlazeKind
+{
+  CELADON,
+  TENMOKU,
+  SHINO,
+  RAW
+}
+
+Enum test::verdantridge4::domain::ClayBody
+{
+  STONEWARE,
+  PORCELAIN,
+  EARTHENWARE
+}
+
+Enum test::verdantridge4::domain::ConeGrade
+{
+  CONE_06,
+  CONE_08,
+  CONE_10,
+  UNKNOWN
+}
+
+Enum test::verdantridge4::domain::PieceForm
+{
+  BOWL,
+  VASE,
+  PLATE,
+  TILE
+}
+
+Class test::verdantridge4::domain::PieceIntakeRecord
+{
+  pieceTag: String[1];
+  formCode: String[1];
+  heightCm: Float[1];
+  wallMm: Integer[0..1];
+}
+
+Class test::verdantridge4::domain::FiringIntakeRecord
+{
+  firingRef: Integer[1];
+  kilnLabel: String[1];
+  firedOn: StrictDate[1];
+  peakTempC: Float[1];
+  holdMinutes: Integer[1];
+  atmosphereCode: String[1];
+  glazeCode: String[1];
+  clayCode: String[1];
+  coneCode: String[0..1];
+  operatorAlias: String[1];
+  shelfBlock: String[1];
+  shelfSlot: String[1];
+  warpNote: String[0..1];
+  pieceTally: Integer[1];
+  pieces: PieceIntakeRecord[*];
+}
+
+Class test::verdantridge4::domain::FiringIntakeEnvelope
+{
+  batchLabel: String[1];
+  firing: FiringIntakeRecord[1];
+  rackTags: String[*];
+}
+
+Class test::verdantridge4::domain::StudioRecord
+{
+  firingId: Integer[1];
+  firingName: String[1];
+  firedOn: StrictDate[1];
+  batchLabel: String[1];
+}
+
+Class test::verdantridge4::domain::StudioPiece
+{
+  pieceTag: String[1];
+}
+
+Class test::verdantridge4::domain::KilnFiring extends StudioRecord
+{
+  atmosphere: Atmosphere[1];
+  glaze: GlazeKind[1];
+  clay: ClayBody[1];
+  cone: ConeGrade[1];
+  peakTempC: Float[1];
+  holdMinutes: Integer[1];
+  shelfReference: String[1];
+  warpNote: String[1];
+  operatorAlias: String[1];
+  pieceCount: Integer[1];
+  rackTags: String[*];
+  pieces: FiredPiece[*];
+}
+
+Class test::verdantridge4::domain::FiredPiece extends StudioPiece
+{
+  form: PieceForm[1];
+  heightCm: Float[1];
+  wallNote: String[1];
+}

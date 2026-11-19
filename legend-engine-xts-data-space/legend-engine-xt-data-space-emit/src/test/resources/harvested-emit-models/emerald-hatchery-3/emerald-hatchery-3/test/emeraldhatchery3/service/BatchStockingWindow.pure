@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldhatchery3::service::BatchStockingWindow
+{
+  pattern: '/hatchery/v1/batches/window';
+  title: 'Hatchery - Unreleased Batches Stocked Before a Date';
+  documentation: 'Reports the cohorts still on site as of a supplied date whose fry count clears a floor, with normalised codes and the number of days each cohort has been growing out.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], minFry: Integer[1]|test::emeraldhatchery3::domain::RearingBatch.all()->filter(
+      b|(($b.stockedOn <= $asOfDate) && ($b.fryCount >= $minFry)) && $b.releasedOn->isEmpty()
+    )->project(
+      [
+        b|$b.batchCode->toUpper(),
+        b|$b.speciesGroup->toUpper(),
+        b|$b.fryCount,
+        b|$b.stockedOn->dateDiff($asOfDate, meta::pure::functions::date::DurationUnit.DAYS)
+      ],
+      [
+        'BatchCode',
+        'SpeciesGroup',
+        'FryCount',
+        'DaysStocked'
+      ]
+    )->sort([desc('FryCount')])};
+    mapping: test::emeraldhatchery3::mapping::HatcheryMapping;
+    runtime: test::emeraldhatchery3::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    stockingWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              rearing.rearing_batch:
+                'batch_id,batch_code,pond_code,species_group,fry_count,stocked_on,released_on\n'+
+                '1,B-9001,P-101,trout,4000,2026-01-10,\n'+
+                '2,B-9002,P-101,trout,3500,2026-02-14,2026-05-01\n'+
+                '3,B-9003,P-103,char,2000,2026-01-20,\n'+
+                '4,B-9004,P-103,trout,1500,2026-03-05,\n'+
+                '5,B-9005,P-104,char,600,2026-02-02,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        unreleasedCohorts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-03-31,
+            minFry = 1500
+          ]
+          asserts:
+          [
+            threeGrowingCohorts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BatchCode":"B-9001","SpeciesGroup":"TROUT","FryCount":4000,"DaysStocked":80},{"BatchCode":"B-9003","SpeciesGroup":"CHAR","FryCount":2000,"DaysStocked":70},{"BatchCode":"B-9004","SpeciesGroup":"TROUT","FryCount":1500,"DaysStocked":26}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

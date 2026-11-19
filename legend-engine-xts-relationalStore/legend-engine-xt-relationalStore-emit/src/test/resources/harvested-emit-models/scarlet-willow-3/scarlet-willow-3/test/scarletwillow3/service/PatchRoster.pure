@@ -1,0 +1,296 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletwillow3::service::PatchRoster
+{
+  pattern: '/scarletwillow/v1/patch-roster/{asOf}';
+  title: 'Reserve Estate - Patch Roster';
+  documentation: 'Resolves the habitat patches recorded at one processing instant, keeps the ones whose site is requested and whose code and size clear the guards, and assembles each row from a directly bound column, a conditional transform, a literal, an enumeration translation, a view-backed aggregate, a three-hop warden path and a constant-predicate attribute join before de-duplicating, ordering and truncating.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], siteNames: String[*]|test::scarletwillow3::domain::HabitatPatch.all($asOf)->filter(
+      p|(($p.site.siteName->in($siteNames)) && ($p.patchCode->toUpper()->startsWith('HP'))) && !(($p.areaHectares < 1.0) || ($p.wetnessPct < 10))
+    )->project(
+      [
+        p|$p.patchCode,
+        p|$p.habitatKind,
+        p|$p.scrubDensity,
+        p|$p.displayLabel,
+        p|$p.handlingNote,
+        p|$p.schemeName,
+        p|$p.wardenName,
+        p|$p.site.siteName,
+        p|$p.site.regionName,
+        p|$p.sitePatchCount,
+        p|$p.drainageNote,
+        p|$p.areaBand()
+      ],
+      [
+        'Patch/Code',
+        'Patch/Habitat',
+        'Patch/Scrub',
+        'Patch/Label',
+        'Patch/Handling',
+        'Patch/Scheme',
+        'Warden/Name',
+        'Site/Name',
+        'Site/Region',
+        'Site/PatchCount',
+        'Patch/Drainage',
+        'Patch/AreaBand'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Patch/Code')
+      ]
+    )->limit(10)};
+    mapping: test::scarletwillow3::mapping::ReserveWarehouseMapping;
+    runtime: test::scarletwillow3::runtime::ReserveWarehouseRuntime;
+  }
+  testSuites:
+  [
+    patchRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          warehouseConnection: Reference
+            #{
+              test::scarletwillow3::data::ReserveWarehouseData
+            }#
+        ]
+      ]
+      tests:
+      [
+        translatedHabitats:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            siteNames = ['Willow Carr Reserve', 'Reed Levels Reserve']
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch/Code": "hp-1", "Patch/Habitat": "CARR", "Patch/Scrub": "DENSE", "Patch/Label": "HP-1-WILLOW CARR", "Patch/Handling": "WIDE ACCESS", "Patch/Scheme": "RESERVE-SCHEME-1", "Warden/Name": "Ash Warden", "Site/Name": "Willow Carr Reserve", "Site/Region": "Northern Levels", "Site/PatchCount": 3, "Patch/Drainage": "DITCH CLEARED", "Patch/AreaBand": "LARGE"}, {"Patch/Code": "hp-2", "Patch/Habitat": "FEN", "Patch/Scrub": null, "Patch/Label": "HP-2-FEN", "Patch/Handling": "BOARDWALK-HP-2", "Patch/Scheme": "RESERVE-SCHEME-1", "Warden/Name": "Ash Warden", "Site/Name": "Willow Carr Reserve", "Site/Region": "Northern Levels", "Site/PatchCount": 3, "Patch/Drainage": null, "Patch/AreaBand": "SMALL"}]';
+                  }#;
+              }#
+          ]
+        },
+        narrowedSiteSelection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            siteNames = ['Willow Carr Reserve']
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch/Code": "hp-1", "Patch/Habitat": "CARR", "Patch/Scrub": "DENSE", "Patch/Label": "HP-1-WILLOW CARR", "Patch/Handling": "WIDE ACCESS", "Patch/Scheme": "RESERVE-SCHEME-1", "Warden/Name": "Ash Warden", "Site/Name": "Willow Carr Reserve", "Site/Region": "Northern Levels", "Site/PatchCount": 3, "Patch/Drainage": "DITCH CLEARED", "Patch/AreaBand": "LARGE"}, {"Patch/Code": "hp-2", "Patch/Habitat": "FEN", "Patch/Scrub": null, "Patch/Label": "HP-2-FEN", "Patch/Handling": "BOARDWALK-HP-2", "Patch/Scheme": "RESERVE-SCHEME-1", "Warden/Name": "Ash Warden", "Site/Name": "Willow Carr Reserve", "Site/Region": "Northern Levels", "Site/PatchCount": 3, "Patch/Drainage": null, "Patch/AreaBand": "SMALL"}]';
+                  }#;
+              }#
+          ]
+        },
+        supersededProcessingWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2020-06-01,
+            siteNames = ['Willow Carr Reserve', 'Reed Levels Reserve']
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::scarletwillow3::service::PatchRosterByEnvironment
+{
+  pattern: '/scarletwillow/v1/patch-roster-by-environment/{env}/{asOf}';
+  title: 'Reserve Estate - Patch Roster Keyed By Environment';
+  documentation: 'The same point-in-time roster body planned against one execution stack per physical environment: the warehouse family, the lake family reached through the store-substituted inclusion, and a mirror key resolving to the warehouse stack again. An environment key with no execution has no fallback.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1], siteNames: String[*]|test::scarletwillow3::domain::HabitatPatch.all($asOf)->filter(
+      p|($p.site.siteName->in($siteNames)) && ($p.wetnessPct >= 10)
+    )->project(
+      [
+        p|$p.patchCode,
+        p|$p.displayLabel,
+        p|$p.wardenName,
+        p|$p.sitePatchCount
+      ],
+      [
+        'Patch/Code',
+        'Patch/Label',
+        'Warden/Name',
+        'Site/PatchCount'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Patch/Code')
+      ]
+    )};
+    key: 'env';
+    executions['warehouse']:
+    {
+      mapping: test::scarletwillow3::mapping::ReserveWarehouseMapping;
+      runtime: test::scarletwillow3::runtime::ReserveWarehouseRuntime;
+    }
+    executions['lake']:
+    {
+      mapping: test::scarletwillow3::mapping::ReserveLakeMapping;
+      runtime: test::scarletwillow3::runtime::ReserveLakeRuntime;
+    }
+    executions['mirror']:
+    {
+      mapping: test::scarletwillow3::mapping::ReserveWarehouseMapping;
+      runtime: test::scarletwillow3::runtime::ReserveWarehouseRuntime;
+    }
+  }
+}
+
+###Service
+Service test::scarletwillow3::service::LakePatchRoster
+{
+  pattern: '/scarletwillow/v1/lake-patch-roster/{asOf}';
+  title: 'Reserve Estate - Patch Roster (Lake Family)';
+  documentation: 'Lake-pinned counterpart of the environment-keyed roster: the same class bindings resolved through the inclusion whose store is substituted for the lake family, so the identical query reads a different physical estate.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::scarletwillow3::domain::HabitatPatch.all($asOf)->project(
+      [
+        p|$p.patchCode,
+        p|$p.habitatKind,
+        p|$p.displayLabel,
+        p|$p.handlingNote,
+        p|$p.wardenName,
+        p|$p.drainageNote
+      ],
+      [
+        'Patch/Code',
+        'Patch/Habitat',
+        'Patch/Label',
+        'Patch/Handling',
+        'Warden/Name',
+        'Patch/Drainage'
+      ]
+    )->sort(
+      [
+        asc('Patch/Code')
+      ]
+    )};
+    mapping: test::scarletwillow3::mapping::ReserveLakeMapping;
+    runtime: test::scarletwillow3::runtime::ReserveLakeRuntime;
+  }
+  testSuites:
+  [
+    lakePatchRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lakeConnection: Reference
+            #{
+              test::scarletwillow3::data::ReserveLakeData
+            }#
+        ]
+      ]
+      tests:
+      [
+        substitutedStoreRead:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch/Code": "hp-1", "Patch/Habitat": "CARR", "Patch/Label": "HP-1-WILLOW CARR", "Patch/Handling": "BOARDWALK-HP-1", "Warden/Name": "Alder Warden", "Patch/Drainage": "LAKE DITCH"}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyLakeWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2020-06-01
+          ]
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+name: boreal-estuary-3-domain
+title: "Boreal Estuary — Annotated Night-Sky Programme Traversed Through Three Bidirectional Associations"
+description: |
+  A store-less Pure domain for an observatory night-sky programme. Sites, telescopes,
+  observation sessions and catalogued sky targets carry text, integral, decimal, float,
+  date and date-time properties at both required and optional multiplicities, plus a
+  direct reference from a telescope to its home site. Three associations chain the four
+  types with mixed to-one and to-many ends, and qualified properties walk that chain in
+  both directions - three hops from a target back to the hosting site names and from a
+  telescope forward to the catalogued targets it logged. A profile contributes two
+  stereotypes and three tagged values applied at class and property level.
+
+modelSources:
+  model:
+    root: boreal-estuary-3-domain
+    files:
+      - test/borealestuary3/domain/SkyAssociations.pure
+      - test/borealestuary3/domain/SkyDomain.pure
+
+features:
+  - grammar:association
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - astronomy
+  - bidirectional-traversal
+  - qualified-property
+  - stereotype
+  - store-less
+  - tagged-value

@@ -1,0 +1,404 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralfossil2::service::SpecimenRoster
+{
+  pattern: '/coralfossil2/v1/specimens';
+  title: 'Coral Fossil 2 - Specimen Roster';
+  documentation: 'Every catalogued fossil specimen projected into renamed columns, with the specimen reference repeated as the catalogue key.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::coralfossil2::domain::Specimen.all()->project(
+      [
+        s|$s.specimenRef,
+        s|$s.surveyDate,
+        s|$s.siteCode,
+        s|$s.taxonName,
+        s|$s.lengthMm,
+        s|$s.collectorName,
+        s|$s.specimenRef
+      ],
+      [
+        'Specimen',
+        'Survey Date',
+        'Site Code',
+        'Taxon',
+        'Length Mm',
+        'Collector',
+        'Catalogue Key'
+      ]
+    )->sort(
+      [
+        asc('Specimen')
+      ]
+    );
+    mapping: test::coralfossil2::mapping::FossilMapping;
+    runtime: test::coralfossil2::runtime::FossilRuntime;
+  }
+  testSuites:
+  [
+    specimenRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fossilWarehouse:
+            Relational
+            #{
+              fossil.specimen:
+                'specimen_ref,survey_date,site_code,taxon_name,length_mm,collector_name,cataloged_at\n'+
+                'SP-01,2026-04-14,DS-01,Favites fossilis,42.5,Ines Varga,2026-04-14 12:00:00\n'+
+                'SP-02,2026-04-21,DS-01,Porites antiqua,18.25,Ines Varga,2026-04-21 12:30:00\n'+
+                'SP-03,2026-04-14,DS-02,Acropora vetusta,63.5,Tomas Reid,2026-04-14 13:10:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everySpecimenProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen":"SP-01","Survey Date":"2026-04-14","Site Code":"DS-01","Taxon":"Favites fossilis","Length Mm":42.5,"Collector":"Ines Varga","Catalogue Key":"SP-01"},{"Specimen":"SP-02","Survey Date":"2026-04-21","Site Code":"DS-01","Taxon":"Porites antiqua","Length Mm":18.25,"Collector":"Ines Varga","Catalogue Key":"SP-02"},{"Specimen":"SP-03","Survey Date":"2026-04-14","Site Code":"DS-02","Taxon":"Acropora vetusta","Length Mm":63.5,"Collector":"Tomas Reid","Catalogue Key":"SP-03"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::coralfossil2::service::SpecimensOnSurveyDate
+{
+  pattern: '/coralfossil2/v1/specimens/{surveyDate}';
+  title: 'Coral Fossil 2 - Specimens On One Survey Date';
+  documentation: 'The catalogued specimens of one requested survey date; specimens surveyed on any other date are excluded before projection.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {surveyDate: StrictDate[1]|test::coralfossil2::domain::Specimen.all()->filter(
+      s|$s.surveyDate == $surveyDate
+    )->project(
+      [
+        s|$s.specimenRef,
+        s|$s.surveyDate,
+        s|$s.siteCode,
+        s|$s.taxonName,
+        s|$s.lengthMm,
+        s|$s.collectorName,
+        s|$s.specimenRef
+      ],
+      [
+        'Specimen',
+        'Survey Date',
+        'Site Code',
+        'Taxon',
+        'Length Mm',
+        'Collector',
+        'Catalogue Key'
+      ]
+    )->sort(
+      [
+        asc('Specimen')
+      ]
+    )};
+    mapping: test::coralfossil2::mapping::FossilMapping;
+    runtime: test::coralfossil2::runtime::FossilRuntime;
+  }
+  testSuites:
+  [
+    specimensOnSurveyDateSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fossilWarehouse:
+            Relational
+            #{
+              fossil.specimen:
+                'specimen_ref,survey_date,site_code,taxon_name,length_mm,collector_name,cataloged_at\n'+
+                'SP-01,2026-04-14,DS-01,Favites fossilis,42.5,Ines Varga,2026-04-14 12:00:00\n'+
+                'SP-02,2026-04-21,DS-01,Porites antiqua,18.25,Ines Varga,2026-04-21 12:30:00\n'+
+                'SP-03,2026-04-14,DS-02,Acropora vetusta,63.5,Tomas Reid,2026-04-14 13:10:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTheRequestedSurveyDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyDate = %2026-04-14
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen":"SP-01","Survey Date":"2026-04-14","Site Code":"DS-01","Taxon":"Favites fossilis","Length Mm":42.5,"Collector":"Ines Varga","Catalogue Key":"SP-01"},{"Specimen":"SP-03","Survey Date":"2026-04-14","Site Code":"DS-02","Taxon":"Acropora vetusta","Length Mm":63.5,"Collector":"Tomas Reid","Catalogue Key":"SP-03"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::coralfossil2::service::DigSiteRegister
+{
+  pattern: '/coralfossil2/v1/dig-sites';
+  title: 'Coral Fossil 2 - Deep Dig Site Register';
+  documentation: 'Dig-site surveys exposed at two metres or deeper with a recorded stratum, ordered by site and survey date and capped at fifty rows.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::coralfossil2::domain::DigSite.all()->filter(
+      d|($d.depthM >= 2.0) && $d.stratumLabel->isNotEmpty()
+    )->project(
+      [
+        d|$d.siteCode,
+        d|$d.surveyDate,
+        d|$d.siteName,
+        d|$d.stratumLabel,
+        d|$d.depthM
+      ],
+      [
+        'Site Code',
+        'Survey Date',
+        'Site Name',
+        'Stratum',
+        'Depth M'
+      ]
+    )->sort(
+      [
+        asc('Site Code'),
+        asc('Survey Date')
+      ]
+    )->take(50);
+    mapping: test::coralfossil2::mapping::FossilMapping;
+    runtime: test::coralfossil2::runtime::FossilRuntime;
+  }
+  testSuites:
+  [
+    digSiteRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fossilWarehouse:
+            Relational
+            #{
+              fossil.dig_site:
+                'site_code,survey_date,site_name,stratum_label,depth_m,recorded_at\n'+
+                'DS-01,2026-04-14,Terrace North,Upper Reef Flat,2.5,2026-04-14 08:15:00\n'+
+                'DS-01,2026-04-21,Terrace North,Lower Reef Flat,3.25,2026-04-21 08:40:00\n'+
+                'DS-02,2026-04-14,Lagoon Cut,Back Reef,1.75,2026-04-14 10:05:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        deepSitesOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site Code":"DS-01","Survey Date":"2026-04-14","Site Name":"Terrace North","Stratum":"Upper Reef Flat","Depth M":2.5},{"Site Code":"DS-01","Survey Date":"2026-04-21","Site Name":"Terrace North","Stratum":"Lower Reef Flat","Depth M":3.25}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::coralfossil2::service::CoralColonyRegister
+{
+  pattern: '/coralfossil2/v1/coral-colonies';
+  title: 'Coral Fossil 2 - Coral Colony Register';
+  documentation: 'Every fossil coral colony reading projected into renamed columns; repeated readings of one colony on one survey date stay distinct by recording instant.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::coralfossil2::domain::CoralColony.all()->project(
+      [
+        c|$c.colonyRef,
+        c|$c.surveyDate,
+        c|$c.growthForm,
+        c|$c.diameterMm
+      ],
+      [
+        'Colony',
+        'Survey Date',
+        'Growth Form',
+        'Diameter Mm'
+      ]
+    )->sort(
+      [
+        asc('Colony'),
+        asc('Diameter Mm')
+      ]
+    );
+    mapping: test::coralfossil2::mapping::FossilMapping;
+    runtime: test::coralfossil2::runtime::FossilRuntime;
+  }
+  testSuites:
+  [
+    coralColonyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fossilWarehouse:
+            Relational
+            #{
+              fossil.coral_colony:
+                'colony_ref,survey_date,recorded_at,growth_form,diameter_mm\n'+
+                'CC-01,2026-04-14,2026-04-14 09:00:00,Massive,310.5\n'+
+                'CC-01,2026-04-14,2026-04-14 15:00:00,Massive,311.25\n'+
+                'CC-02,2026-04-21,2026-04-21 09:30:00,Branching,145.75\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyColonyReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Colony":"CC-01","Survey Date":"2026-04-14","Growth Form":"Massive","Diameter Mm":310.5},{"Colony":"CC-01","Survey Date":"2026-04-14","Growth Form":"Massive","Diameter Mm":311.25},{"Colony":"CC-02","Survey Date":"2026-04-21","Growth Form":"Branching","Diameter Mm":145.75}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::coralfossil2::service::FieldCollectorRegister
+{
+  pattern: '/coralfossil2/v1/field-collectors';
+  title: 'Coral Fossil 2 - Field Collector Register';
+  documentation: 'Every field collector per survey date, including collectors with no recorded affiliation.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::coralfossil2::domain::FieldCollector.all()->project(
+      [
+        f|$f.collectorCode,
+        f|$f.surveyDate,
+        f|$f.collectorName,
+        f|$f.affiliation
+      ],
+      [
+        'Collector Code',
+        'Survey Date',
+        'Collector',
+        'Affiliation'
+      ]
+    )->sort(
+      [
+        asc('Collector Code'),
+        asc('Survey Date')
+      ]
+    );
+    mapping: test::coralfossil2::mapping::FossilMapping;
+    runtime: test::coralfossil2::runtime::FossilRuntime;
+  }
+  testSuites:
+  [
+    fieldCollectorRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          fossilWarehouse:
+            Relational
+            #{
+              fossil.field_collector:
+                'collector_code,survey_date,collector_name,affiliation\n'+
+                'FC-01,2026-04-14,Ines Varga,Reef Terrace Museum\n'+
+                'FC-01,2026-04-21,Ines Varga,Reef Terrace Museum\n'+
+                'FC-02,2026-04-14,Tomas Reid,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyCollectorPerSurvey:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Collector Code":"FC-01","Survey Date":"2026-04-14","Collector":"Ines Varga","Affiliation":"Reef Terrace Museum"},{"Collector Code":"FC-01","Survey Date":"2026-04-21","Collector":"Ines Varga","Affiliation":"Reef Terrace Museum"},{"Collector Code":"FC-02","Survey Date":"2026-04-14","Collector":"Tomas Reid","Affiliation":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

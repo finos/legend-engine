@@ -1,0 +1,70 @@
+name: silver-orchard-3
+title: "Silver Orchard 3 — Batch-Versioned Apiary Register Feeds With Extension Associations, Point-In-Time And Full-History Services"
+description: |
+  A regional apiary register delivers hive and apiary site datasets in batches. Each delivered row is
+  versioned by the batch identifiers and calendar days that opened and closed it and keyed on those
+  identifiers, a row digest and the register identifier, with processing milestoning over the batch
+  days. Base and extension feeds live in separate databases that a third database includes and joins
+  one-to-one on the register identifier. Two processing-temporal record classes inherit the shared
+  batch fields from an abstract parent and are linked to their extension classes by associations. A
+  base mapping is included by the mapping that adds the extensions and association mappings. Five
+  services read the register as of a supplied processing day or across every version, filter on
+  identifier membership, label fragments and emptiness, and are featured by two regional data spaces
+  bound to two public-key Snowflake connections.
+modelSources:
+  model:
+    root: silver-orchard-3
+    files:
+      - test/silverorchard3/connection/RegisterConnections.pure
+      - test/silverorchard3/data/ApiaryRegisterData.pure
+      - test/silverorchard3/dataspace/RegisterDataSpaces.pure
+      - test/silverorchard3/domain/ApiaryRegister.pure
+      - test/silverorchard3/mapping/ApiaryMapping.pure
+      - test/silverorchard3/mapping/RegisterMapping.pure
+      - test/silverorchard3/runtime/RegisterRuntimes.pure
+      - test/silverorchard3/service/RegisterServices.pure
+      - test/silverorchard3/store/ApiaryStores.pure
+features:
+  - connection:snowflake
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-user-ownership
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:tagged-value
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-join-path
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:all-versions-query
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:let-binding
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - all-versions
+  - apiary-register
+  - association
+  - data-space
+  - h2
+  - inheritance
+  - mapping-include
+  - point-in-time
+  - processing-milestoning
+  - service
+  - snowflake

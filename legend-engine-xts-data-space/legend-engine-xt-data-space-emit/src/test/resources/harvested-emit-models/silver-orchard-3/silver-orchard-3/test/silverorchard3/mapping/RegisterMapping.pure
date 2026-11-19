@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverorchard3::mapping::RegisterMapping
+(
+  *test::silverorchard3::domain::HiveRecord[hive_record]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.batch_in_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.batch_out_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.row_digest,
+      [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.global_id
+    )
+    ~mainTable [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base
+    globalId: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.global_id,
+    batchInId: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.batch_in_id,
+    batchOutId: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.batch_out_id,
+    batchInOn: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.batch_in_on,
+    batchOutOn: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.batch_out_on,
+    rowDigest: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.row_digest,
+    hiveLabel: trim([test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.hive_label),
+    colonyStrain: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.colony_strain,
+    frameCount: [test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.frame_count,
+    regionCode: toUpper([test::silverorchard3::store::ApiaryDb]bee_ref.hive_base.region_code)
+  }
+
+  *test::silverorchard3::domain::ApiaryRecord[apiary_record]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.batch_in_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.batch_out_id,
+      [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.row_digest,
+      [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.global_id
+    )
+    ~mainTable [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base
+    globalId: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.global_id,
+    batchInId: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.batch_in_id,
+    batchOutId: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.batch_out_id,
+    batchInOn: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.batch_in_on,
+    batchOutOn: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.batch_out_on,
+    rowDigest: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.row_digest,
+    apiaryName: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.apiary_name,
+    altitudeM: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.altitude_m,
+    forageKind: [test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.forage_kind,
+    regionCode: toUpper([test::silverorchard3::store::ApiaryDb]bee_ref.apiary_base.region_code)
+  }
+
+  testSuites:
+  [
+    registerBaseSuite:
+    {
+      function: |test::silverorchard3::domain::HiveRecord.all(%2026-03-15)->project([h|$h.globalId, h|$h.hiveLabel, h|$h.regionCode, h|$h.batchInId, h|$h.rowDigest], ['Hive', 'Label', 'Region', 'Batch In Id', 'Digest'])->sort('Hive');
+      tests:
+      [
+        hiveVersionsAsOfMidMarch:
+        {
+          doc: 'The superseded first version of HV-01 and the version of HV-03 opened after the query day are both out of range, so only the current versions of HV-01 and HV-02 surface, with the label trimmed and the region upper-cased.';
+          data:
+          [
+            test::silverorchard3::store::ApiaryDb:
+              Relational
+              #{
+              bee_ref.hive_base:
+                'batch_in_id,batch_out_id,batch_in_on,batch_out_on,row_digest,global_id,hive_label,colony_strain,frame_count,region_code\n'+
+                '1,2,2026-01-01,2026-02-01,d-h1a,HV-01,Clover Row One,carniolan,8,north\n'+
+                '2,999999999,2026-02-01,9999-12-31,d-h1b,HV-01, Clover Row One ,carniolan,10,north\n'+
+                '1,999999999,2026-01-01,9999-12-31,d-h2,HV-02,Heather Knoll,buckfast,,north\n'+
+                '3,999999999,2026-04-01,9999-12-31,d-h3,HV-03,Lime Walk,,6,south\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheVersionsOpenOnTheDaySurface:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hive":"HV-01","Label":"Clover Row One","Region":"NORTH","Batch In Id":2,"Digest":"d-h1b"},{"Hive":"HV-02","Label":"Heather Knoll","Region":"NORTH","Batch In Id":1,"Digest":"d-h2"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    apiaryBaseSuite:
+    {
+      function: |test::silverorchard3::domain::ApiaryRecord.all(%2026-02-15)->project([a|$a.globalId, a|$a.altitudeM, a|$a.forageKind, a|$a.batchOutOn], ['Apiary', 'Altitude', 'Forage', 'Batch Out'])->sort('Apiary');
+      tests:
+      [
+        apiaryVersionsBeforeTheResurvey:
+        {
+          doc: 'Before the March resurvey the first version of AP-03 is still open, and the undeclared forage of AP-02 passes through as empty.';
+          data:
+          [
+            test::silverorchard3::store::ApiaryDb:
+              Relational
+              #{
+              bee_ref.apiary_base:
+                'batch_in_id,batch_out_id,batch_in_on,batch_out_on,row_digest,global_id,apiary_name,altitude_m,forage_kind,region_code\n'+
+                '1,999999999,2026-01-01,9999-12-31,d-a1,AP-01,Willow Meadow,120,clover,south\n'+
+                '1,999999999,2026-01-01,9999-12-31,d-a2,AP-02,Stone Barn,340,,south\n'+
+                '1,2,2026-01-01,2026-03-01,d-a3a,AP-03,Moor Edge,410,heather,south\n'+
+                '2,999999999,2026-03-01,9999-12-31,d-a3b,AP-03,Moor Edge,415,heather,south\n';
+              }#
+          ];
+          asserts:
+          [
+            theFirstSurveyOfMoorEdgeIsStillOpen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Apiary":"AP-01","Altitude":120,"Forage":"clover","Batch Out":"9999-12-31"},{"Apiary":"AP-02","Altitude":340,"Forage":null,"Batch Out":"9999-12-31"},{"Apiary":"AP-03","Altitude":410,"Forage":"heather","Batch Out":"2026-03-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

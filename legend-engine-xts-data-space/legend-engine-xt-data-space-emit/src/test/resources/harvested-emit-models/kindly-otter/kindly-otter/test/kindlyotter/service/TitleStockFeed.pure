@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyotter::service::TitleStockFeed
+{
+  pattern: '/kindlylibrary/v1/title-stock';
+  title: 'Kindly Library - Shelved Stock And Reservations';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the shelved stock lines with their reservation queue at full width, resolved over the mirrored estate so the same declared relations are read under the mirror namespace.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::kindlyotter::domain::TitleStock.all()->project(
+      [
+        x|$x.stockCode,
+        x|$x.branchCode,
+        x|$x.mediaType,
+        x|$x.copyCount,
+        x|$x.holdCount,
+        x|$x.retiredFlag
+      ],
+      [
+        'StockCode',
+        'BranchCode',
+        'MediaType',
+        'CopyCount',
+        'HoldCount',
+        'RetiredFlag'
+      ]
+    )->sort([asc('StockCode')]);
+    mapping: test::kindlyotter::mapping::LibraryBranchMapping;
+    runtime: test::kindlyotter::runtime::LibraryMirrorRuntime;
+  }
+  testSuites:
+  [
+    titleStockFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          libraryMirror:
+            Relational
+            #{
+              libmain.title_stock:
+                'stock_code,branch_code,media_type,copy_count,hold_count,retired_flag\n'+
+                'ST-01,BR-01,large print,6,2,N\n'+
+                'ST-02,BR-01,audio,3,3,N\n'+
+                'ST-03,BR-02,reference,1,0,Y\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        stockAtFullWidth:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            queueAtAndBelowCopyCount:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StockCode":"ST-01","BranchCode":"BR-01","MediaType":"LARGE PRINT","CopyCount":6,"HoldCount":2,"RetiredFlag":"N"},{"StockCode":"ST-02","BranchCode":"BR-01","MediaType":"AUDIO","CopyCount":3,"HoldCount":3,"RetiredFlag":"N"},{"StockCode":"ST-03","BranchCode":"BR-02","MediaType":"REFERENCE","CopyCount":1,"HoldCount":0,"RetiredFlag":"Y"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

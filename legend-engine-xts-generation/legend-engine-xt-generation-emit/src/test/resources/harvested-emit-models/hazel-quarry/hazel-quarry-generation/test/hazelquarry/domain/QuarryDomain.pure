@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::hazelquarry::domain::*;
+
+Profile test::hazelquarry::domain::QuarryProfile
+{
+  stereotypes: [surveyed, provisional];
+  tags: [steward, cadence];
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Broad rock family recorded for an extracted block.'} test::hazelquarry::domain::RockFamily
+{
+  Granite,
+  Limestone,
+  Slate,
+  Basalt
+}
+
+Class <<QuarryProfile.surveyed>> {QuarryProfile.steward = 'quarry-survey-desk', meta::pure::profiles::doc.doc = 'A working face of a stone quarry from which blocks are extracted.'} test::hazelquarry::domain::ExtractionSite
+{
+  siteCode: String[1];
+  name: String[1];
+  benchHeightMeters: Integer[1];
+  activeSince: StrictDate[1];
+}
+
+Class <<QuarryProfile.surveyed>> {QuarryProfile.cadence = 'per-extraction', meta::pure::profiles::doc.doc = 'A single quarried stone block with its measured mass and rock family.'} test::hazelquarry::domain::StoneBlock
+{
+  blockRef: String[1];
+  family: RockFamily[1];
+  massKilograms: Integer[1];
+  site: ExtractionSite[1];
+}
+
+Class <<QuarryProfile.provisional>> {QuarryProfile.cadence = 'weekly', meta::pure::profiles::doc.doc = 'A provisional geological reading captured at an extraction site.'} test::hazelquarry::domain::SurveyReading
+{
+  readingRef: String[1];
+  moisturePercent: Integer[1];
+  inspector: String[1];
+  takenOn: StrictDate[1];
+  site: ExtractionSite[1];
+}

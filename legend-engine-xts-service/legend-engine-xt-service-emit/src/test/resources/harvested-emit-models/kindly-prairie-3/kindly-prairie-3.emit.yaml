@@ -1,0 +1,45 @@
+name: kindly-prairie-3
+title: "Kindly Prairie 3 - store-free grassland ringing digests refined by constrained model-to-model transforms"
+description: |
+  A non-financial EMIT model in a grassland bird-ringing domain that maps model to model only:
+  there is no database and no physical read anywhere. Transcribed ringing and station sheet rows,
+  each carrying a nested capture or visit collection and derived source properties, are refined
+  into published digests by two Pure mappings whose transforms narrow, band, fold and default
+  every transcribed value. Both source rows and both digests declare boolean constraints over
+  their own properties, and one digest constraint delegates its banding predicate to a standalone
+  function rather than inlining it. Both mappings carry embedded tests over JSON source
+  instances, and two single-execution services publish narrowed projections of the digests over
+  runtimes declared inline on the service itself, so plan generation is exercised on each.
+modelSources:
+  model:
+    root: kindly-prairie-3
+    files:
+      - test/kindlyprairie3/domain/PrairieRingingDomain.pure
+      - test/kindlyprairie3/function/RingingChecks.pure
+      - test/kindlyprairie3/mapping/RingingDigestM2M.pure
+      - test/kindlyprairie3/mapping/StationDigestM2M.pure
+      - test/kindlyprairie3/service/RingingDigestFeed.pure
+      - test/kindlyprairie3/service/StationDigestFeed.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - grammar:constraint
+  - grammar:constraint-function-call
+  - mapping:m2m-derived-source-property
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - banded-label
+  - constraint-function-call
+  - derived-source-property
+  - grassland-ringing
+  - inline-runtime
+  - json-model-connection
+  - literal-default
+  - mapping-test
+  - model-to-model
+  - wildlife-survey

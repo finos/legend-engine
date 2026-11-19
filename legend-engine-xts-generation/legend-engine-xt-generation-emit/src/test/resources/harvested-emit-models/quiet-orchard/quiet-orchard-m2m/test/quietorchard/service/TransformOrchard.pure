@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietorchard::service::TransformOrchard
+{
+  pattern: '/orchard/v1/curate';
+  title: 'Orchard - Curate Feed (M2M)';
+  owners:
+  [
+    'orchard-survey-platform',
+    'cultivation-eng'
+  ];
+  documentation: 'Single-execution model-to-model service that accepts an inbound orchard feed record as JSON and returns the graph-fetched orchard object tree, flattening the nested tree entries into a cultivar name collection.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::quietorchard::domain::Orchard.all()->graphFetch(
+      #{
+        test::quietorchard::domain::Orchard{
+          id,
+          name,
+          region,
+          cultivars
+        }
+      }#
+    )->serialize(
+      #{
+        test::quietorchard::domain::Orchard{
+          id,
+          name,
+          region,
+          cultivars
+        }
+      }#
+    );
+    mapping: test::quietorchard::mapping::OrchardMapping;
+    runtime: test::quietorchard::runtime::OrchardRuntime;
+  }
+  testSuites:
+  [
+    transformOrchardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          orchardFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"orchardId":4,"orchardName":"Hillside Rows","region":"North Ridge","trees":[{"cultivar":"Braeburn","ageYears":6},{"cultivar":"Gala","ageYears":9}]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        hillsideRows:
+        {
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"id":4,"name":"Hillside Rows","region":"North Ridge","cultivars":["Braeburn","Gala"]}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

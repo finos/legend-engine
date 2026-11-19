@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedcove3::service::KelpPlotRegister
+{
+  pattern: '/gildedcove3/kelp-plot-register/{surveyedAsOf}';
+  title: 'Gilded Cove - Kelp Plot Register As Of';
+  documentation: 'Resolves the business-temporal kelp plot register at a requested date, keeps only the requested canopy classes, and publishes the composed plot label, the defaulted frond count and the bed name resolved over one join hop, so a plot whose business window closed before the requested date is left out of the register.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'kelp-plot-register',
+    'cove-survey-divers'
+  ];
+  execution: Single
+  {
+    query: {surveyedAsOf: StrictDate[1], canopyClasses: String[*]|test::gildedcove3::domain::KelpPlot.all($surveyedAsOf)->filter(
+      p|$p.canopyClass->in($canopyClasses) &&
+        ($p.frondCount > 0 &&
+          ($p.surveyedOn <= $surveyedAsOf)
+        )
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.plotLabel,
+        p|$p.canopyClass,
+        p|$p.frondCount,
+        p|$p.bedName
+      ],
+      [
+        'Plot/Code',
+        'Plot/Label',
+        'Plot/Canopy',
+        'Plot/Fronds',
+        'Plot/Bed'
+      ]
+    )->sort(
+      [
+        asc('Plot/Code')
+      ]
+    )};
+    mapping: test::gildedcove3::mapping::CoveKelpMapping;
+    runtime: test::gildedcove3::runtime::CoveKelpH2Runtime;
+  }
+  testSuites:
+  [
+    kelpPlotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kelpConnection:
+            Relational
+            #{
+              kelp.kelp_plot:
+                'plot_id,plot_code,bed_code,canopy_class,frond_count,surveyed_on,from_z,thru_z\n'+
+                '1,KP-0001,BD-01,DENSE,42,2026-03-04,2026-01-01,9999-12-31\n'+
+                '2,KP-0002,BD-01,DENSE,18,2021-05-06,2020-01-01,2021-12-31\n'+
+                '3,KP-0003,BD-02,PATCHY,20,2026-03-08,2026-01-01,9999-12-31\n'+
+                '4,KP-0004,BD-02,DENSE,,2026-03-09,2026-01-01,9999-12-31\n';
+              kelp.kelp_bed:
+                'bed_code,bed_name\n'+
+                'BD-01,Inner Kelp Bed\n'+
+                'BD-02,Outer Kelp Bed\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theClosedBusinessWindowPlotIsLeftOutOfTheRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            surveyedAsOf = %2026-06-01,
+            canopyClasses = ['DENSE']
+          ]
+          asserts:
+          [
+            oneLivePlot:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot/Code":"KP-0001","Plot/Label":"DENSE @ BD-01","Plot/Canopy":"DENSE","Plot/Fronds":42,"Plot/Bed":"Inner Kelp Bed"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

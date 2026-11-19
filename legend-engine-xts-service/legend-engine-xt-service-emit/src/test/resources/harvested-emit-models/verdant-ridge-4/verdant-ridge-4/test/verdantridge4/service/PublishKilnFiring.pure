@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantridge4::service::PublishKilnFiring
+{
+  pattern: '/kiln/v1/firing/publish';
+  title: 'Kiln - Publish Fired Batch (M2M)';
+  owners:
+  [
+    'studio-kiln-platform',
+    'ceramics-records-eng'
+  ];
+  documentation: 'Single-execution model-to-model service that accepts an inbound firing intake envelope as JSON and returns the graph-fetched kiln firing with its fired pieces, including the inherited studio-record identity and the decoded enumeration values.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::verdantridge4::domain::KilnFiring.all()->graphFetch(
+      #{
+        test::verdantridge4::domain::KilnFiring{
+          firingId,
+          firingName,
+          firedOn,
+          batchLabel,
+          atmosphere,
+          glaze,
+          clay,
+          cone,
+          shelfReference,
+          warpNote,
+          pieceCount,
+          rackTags,
+          pieces{
+            pieceTag,
+            form,
+            heightCm,
+            wallNote
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::verdantridge4::domain::KilnFiring{
+          firingId,
+          firingName,
+          firedOn,
+          batchLabel,
+          atmosphere,
+          glaze,
+          clay,
+          cone,
+          shelfReference,
+          warpNote,
+          pieceCount,
+          rackTags,
+          pieces{
+            pieceTag,
+            form,
+            heightCm,
+            wallNote
+          }
+        }
+      }#
+    );
+    mapping: test::verdantridge4::mapping::KilnFiringMapping;
+    runtime: test::verdantridge4::runtime::KilnRuntime;
+  }
+  testSuites:
+  [
+    publishKilnFiringSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          firingIntakeConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"batchLabel":"autumn-glaze-run","firing":{"firingRef":57,"kilnLabel":"north ridge kiln","firedOn":"2026-04-09","peakTempC":1265.5,"holdMinutes":45,"atmosphereCode":"RED","glazeCode":" CEL ","clayCode":"STONE","coneCode":"C10","operatorAlias":"studio-lead-b","shelfBlock":"NR","shelfSlot":"0312","warpNote":"  slight lean on rim  ","pieceTally":2,"pieces":[{"pieceTag":"P-01","formCode":"BWL","heightCm":9.5,"wallMm":4},{"pieceTag":"P-02","formCode":"VSE","heightCm":21.5}]},"rackTags":["upper","door"]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northRidgeFiring:
+        {
+          asserts:
+          [
+            published:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"firingId":57,"firingName":"NORTH RIDGE KILN","firedOn":"2026-04-09","batchLabel":"autumn-glaze-run","atmosphere":"REDUCING","glaze":"CELADON","clay":"STONEWARE","cone":"CONE_10","shelfReference":"NR-0312","warpNote":"slight lean on rim","pieceCount":2,"rackTags":["upper","door"],"pieces":[{"pieceTag":"P-01","form":"BOWL","heightCm":9.5,"wallNote":"wall 4mm"},{"pieceTag":"P-02","form":"VASE","heightCm":21.5,"wallNote":"wall not measured"}]}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

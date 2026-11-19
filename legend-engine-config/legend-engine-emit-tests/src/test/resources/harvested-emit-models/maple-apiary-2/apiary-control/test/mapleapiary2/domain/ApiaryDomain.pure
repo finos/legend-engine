@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class demo::mapleapiary2::domain::KeeperData
+{
+  {meta::pure::profiles::doc.doc = 'Handle of the keeper enriched onto the event.'} keeperHandle: String[1];
+  {meta::pure::profiles::doc.doc = ''} keeperTeam: String[0..1];
+}
+
+Class demo::mapleapiary2::domain::SystemData
+{
+  {meta::pure::profiles::doc.doc = ''} sourceApp: String[1];
+  {meta::pure::profiles::doc.doc = ''} ingestKind: String[0..1];
+}
+
+Class demo::mapleapiary2::domain::RawContent
+{
+  {meta::pure::profiles::doc.doc = ''} contentKind: String[1];
+  {meta::pure::profiles::doc.doc = ''} contentBody: String[0..1];
+}
+
+Class demo::mapleapiary2::domain::InspectionPayload
+{
+  {meta::pure::profiles::doc.doc = ''} forageRef: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} frameNote: String[0..1];
+}
+
+Class demo::mapleapiary2::domain::HiveConditions
+{
+  {meta::pure::profiles::doc.doc = 'Temperature band recorded inside the brood chamber.'} broodTemperatureBand: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} humidityPercent: Integer[0..1];
+}
+
+Class demo::mapleapiary2::domain::QueenRecord
+{
+  {meta::pure::profiles::doc.doc = 'Colour mark painted on the queen thorax.'} queenMark: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} queenSeasons: Integer[0..1];
+}
+
+Class demo::mapleapiary2::domain::FeedingRecord
+{
+  {meta::pure::profiles::doc.doc = 'Kind of feed given at the inspection.'} feedKind: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} feedLitres: Float[0..1];
+}
+
+Class demo::mapleapiary2::domain::TreatmentRecord
+{
+  {meta::pure::profiles::doc.doc = 'Mite treatment applied at the inspection.'} treatmentKind: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} stripCount: Integer[0..1];
+}
+
+Class demo::mapleapiary2::domain::ColonyInspectionReport
+{
+  {meta::pure::profiles::doc.doc = 'Identifier of the colony inspection event.'} eventRef: String[1];
+  {meta::pure::profiles::doc.doc = ''} eventVersion: Integer[1];
+  {meta::pure::profiles::doc.doc = ''} colonyRef: String[1];
+  {meta::pure::profiles::doc.doc = ''} workItemRef: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} apiarySite: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} inspectionStatus: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} completionState: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} severityScore: Integer[0..1];
+  {meta::pure::profiles::doc.doc = ''} careBand: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} broodTag: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} recordedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = ''} recordedAt: DateTime[0..1];
+  {meta::pure::profiles::doc.doc = ''} frameCount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = ''} regionLabel: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} forageLabel: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} latestVersion: Integer[0..1];
+  {meta::pure::profiles::doc.doc = ''} commentText: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} keeperData: demo::mapleapiary2::domain::KeeperData[0..1];
+  {meta::pure::profiles::doc.doc = ''} systemData: demo::mapleapiary2::domain::SystemData[0..1];
+  {meta::pure::profiles::doc.doc = ''} rawContent: demo::mapleapiary2::domain::RawContent[0..1];
+  {meta::pure::profiles::doc.doc = ''} inspectionPayload: demo::mapleapiary2::domain::InspectionPayload[0..1];
+  {meta::pure::profiles::doc.doc = 'Brood-chamber conditions parsed from the hive sub-document of the inspection payload.'} hiveConditions: demo::mapleapiary2::domain::HiveConditions[0..1];
+  {meta::pure::profiles::doc.doc = 'Queen sighting parsed from the queen sub-document of the inspection payload.'} queenRecord: demo::mapleapiary2::domain::QueenRecord[0..1];
+  {meta::pure::profiles::doc.doc = 'Feeding parsed from the feeding sub-document of the inspection payload.'} feedingRecord: demo::mapleapiary2::domain::FeedingRecord[0..1];
+  {meta::pure::profiles::doc.doc = 'Treatment parsed from the treatment sub-document of the inspection payload.'} treatmentRecord: demo::mapleapiary2::domain::TreatmentRecord[0..1];
+  ageInDays() {$this.recordedOn->dateDiff(%2024-04-01, meta::pure::functions::date::DurationUnit.DAYS)}: Integer[1];
+  recordedLabel() {$this.recordedOn->toString()}: String[1];
+  reportLink() {'apiary/colony/' + $this.colonyRef}: String[1];
+}
+
+Class demo::mapleapiary2::domain::InspectionDerivedFields
+{
+  {meta::pure::profiles::doc.doc = ''} eventRef: String[1];
+  {meta::pure::profiles::doc.doc = ''} colonyRef: String[1];
+  {meta::pure::profiles::doc.doc = ''} recordedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = ''} recordedAt: DateTime[0..1];
+  settledInDays() {if($this.recordedAt->isNotEmpty(), |$this.recordedOn->dateDiff($this.recordedAt->toOne(), meta::pure::functions::date::DurationUnit.DAYS), |[])}: Integer[0..1];
+  ageInDays() {$this.recordedOn->dateDiff(%2024-04-01, meta::pure::functions::date::DurationUnit.DAYS)}: Integer[1];
+  colonyLink() {'apiary/colony/' + $this.colonyRef + '/event/' + $this.eventRef}: String[1];
+}
+
+Class demo::mapleapiary2::domain::ColonyExceptionReport
+{
+  {meta::pure::profiles::doc.doc = ''} exceptionRef: String[1];
+  {meta::pure::profiles::doc.doc = ''} apiarySite: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} exceptionStatus: String[0..1];
+  {meta::pure::profiles::doc.doc = ''} sourceKind: String[0..1];
+}

@@ -1,0 +1,57 @@
+name: crimson-aviary
+title: "Crimson Aviary — Point-in-Time Cohort Totals over a Milestoned Association"
+description: |
+  A bird-sanctuary cohort register whose single service threads one survey date
+  through a business-temporal extent retrieval and through the milestoned
+  enclosure association it traverses, so both ends of the traversal resolve at
+  the same instant. The relation projection names its output columns
+  independently of the properties behind them and the grouping collapses the
+  projected rows to one total per species, enclosure and plumage stage.
+modelSources:
+  model:
+    root: crimson-aviary
+    files:
+      - test/crimsonaviary/connection/AviaryConnection.pure
+      - test/crimsonaviary/domain/AviaryDomain.pure
+      - test/crimsonaviary/mapping/AviaryMapping.pure
+      - test/crimsonaviary/runtime/AviaryRuntime.pure
+      - test/crimsonaviary/service/CohortFledglingsAsOf.pure
+      - test/crimsonaviary/store/AviaryDb.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - as-of-date
+  - aviary-conservation
+  - business-temporal
+  - duckdb
+  - h2
+  - milestoned-association
+  - relation-projection
+  - service-test

@@ -1,0 +1,193 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantmeadow5::mapping::MeadowMapping
+(
+  *test::verdantmeadow5::domain::HayCut[hayCut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantmeadow5::store::MeadowDb]meadow.hay_cut.cut_code
+    )
+    ~mainTable [test::verdantmeadow5::store::MeadowDb]meadow.hay_cut
+    cutCode: [test::verdantmeadow5::store::MeadowDb]meadow.hay_cut.cut_code,
+    parcelCode: [test::verdantmeadow5::store::MeadowDb]meadow.hay_cut.parcel_code,
+    seasonLabel: [test::verdantmeadow5::store::MeadowDb]meadow.hay_cut.season_label,
+    cutWeek: [test::verdantmeadow5::store::MeadowDb]meadow.hay_cut.cut_week,
+    yieldBales: [test::verdantmeadow5::store::MeadowDb]meadow.hay_cut.yield_bales
+  }
+
+  *test::verdantmeadow5::domain::PollinatorTransect[pollinatorTransect]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantmeadow5::store::MeadowDb]meadow.pollinator_transect.transect_code
+    )
+    ~mainTable [test::verdantmeadow5::store::MeadowDb]meadow.pollinator_transect
+    transectCode: [test::verdantmeadow5::store::MeadowDb]meadow.pollinator_transect.transect_code,
+    parcelCode: [test::verdantmeadow5::store::MeadowDb]meadow.pollinator_transect.parcel_code,
+    beeCount: [test::verdantmeadow5::store::MeadowDb]meadow.pollinator_transect.bee_count,
+    butterflyCount: [test::verdantmeadow5::store::MeadowDb]meadow.pollinator_transect.butterfly_count
+  }
+
+  *test::verdantmeadow5::domain::MeadowParcel[meadowParcel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel.parcel_code
+    )
+    ~mainTable [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel
+    parcelCode: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel.parcel_code,
+    parcelName: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel.parcel_name,
+    quarterName: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel.quarter_name,
+    areaHectares: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel.area_hectares
+  }
+
+  *test::verdantmeadow5::domain::MeadowParcelLatest[meadowParcelLatest]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel_latest.parcel_code
+    )
+    ~mainTable [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel_latest
+    parcelCode: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel_latest.parcel_code,
+    parcelName: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel_latest.parcel_name,
+    quarterName: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel_latest.quarter_name,
+    areaHectares: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel_latest.area_hectares,
+    snapshotTag: [test::verdantmeadow5::store::MeadowDb]meadow.meadow_parcel_latest.snapshot_tag
+  }
+
+  *test::verdantmeadow5::domain::SwardSample[swardSample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantmeadow5::store::MeadowDb]meadow.sward_sample.sample_code
+    )
+    ~mainTable [test::verdantmeadow5::store::MeadowDb]meadow.sward_sample
+    sampleCode: [test::verdantmeadow5::store::MeadowDb]meadow.sward_sample.sample_code,
+    parcelCode: [test::verdantmeadow5::store::MeadowDb]meadow.sward_sample.parcel_code,
+    herbCoverPct: [test::verdantmeadow5::store::MeadowDb]meadow.sward_sample.herb_cover_pct,
+    grassCoverPct: [test::verdantmeadow5::store::MeadowDb]meadow.sward_sample.grass_cover_pct,
+    samplerAlias: [test::verdantmeadow5::store::MeadowDb]meadow.sward_sample.sampler_alias
+  }
+
+  testSuites:
+  [
+    hayCutProjectionSuite:
+    {
+      function: |test::verdantmeadow5::domain::HayCut.all()->filter(
+  c|($c.seasonLabel->in(['summer', 'autumn'])) && ($c.yieldBales >= 80)
+)->project(
+  [
+    c|$c.cutCode,
+    c|$c.parcelCode,
+    c|$c.seasonLabel,
+    c|$c.yieldBales
+  ],
+  [
+    'Cut Code',
+    'Parcel Code',
+    'Season Label',
+    'Yield Bales'
+  ]
+)->sort([asc('Cut Code')])->distinct();
+      tests:
+      [
+        seasonSetAndBaleFloor:
+        {
+          doc: 'Each cut is read off its own driving table alias under its own primary key, and the enumerated season test combined with the bale floor drops the spring cut and the thin autumn cut while keeping both heavier cuts.';
+          data:
+          [
+            test::verdantmeadow5::store::MeadowDb:
+              Relational
+              #{
+                meadow.hay_cut:
+                  'cut_code,parcel_code,season_label,cut_week,yield_bales\n'+
+                  'HC-01,MP-01,summer,24,180\n'+
+                  'HC-02,MP-02,summer,26,140\n'+
+                  'HC-03,MP-01,autumn,36,60\n'+
+                  'HC-04,MP-03,spring,18,200\n';
+              }#
+          ];
+          asserts:
+          [
+            twoHeavyCuts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cut Code":"HC-01","Parcel Code":"MP-01","Season Label":"summer","Yield Bales":180},{"Cut Code":"HC-02","Parcel Code":"MP-02","Season Label":"summer","Yield Bales":140}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    parcelSnapshotSuite:
+    {
+      function: |test::verdantmeadow5::domain::MeadowParcelLatest.all()->filter(
+  p|($p.snapshotTag == 'latest') && ($p.areaHectares >= 3.0)
+)->project(
+  [
+    p|$p.parcelCode,
+    p|$p.parcelName,
+    p|$p.quarterName,
+    p|$p.areaHectares
+  ],
+  [
+    'Parcel Code',
+    'Parcel Name',
+    'Quarter Name',
+    'Area Hectares'
+  ]
+)->sort([asc('Parcel Code')]);
+      tests:
+      [
+        latestSnapshotOverAreaFloor:
+        {
+          doc: 'The latest-snapshot surface keeps one row per parcel, so tagging the snapshot and applying the area floor together leaves only the two larger current parcels and excludes both the superseded snapshot row and the small paddock.';
+          data:
+          [
+            test::verdantmeadow5::store::MeadowDb:
+              Relational
+              #{
+                meadow.meadow_parcel_latest:
+                  'parcel_code,parcel_name,quarter_name,area_hectares,snapshot_tag\n'+
+                  'MP-01,Long Meadow,North Quarter,6.5,latest\n'+
+                  'MP-02,Brook Meadow,North Quarter,4.0,latest\n'+
+                  'MP-03,Nettle Paddock,West Quarter,1.5,latest\n'+
+                  'MP-04,Old Ley,West Quarter,9.0,superseded\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLargeCurrentParcels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Parcel Code":"MP-01","Parcel Name":"Long Meadow","Quarter Name":"North Quarter","Area Hectares":6.5},{"Parcel Code":"MP-02","Parcel Name":"Brook Meadow","Quarter Name":"North Quarter","Area Hectares":4.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,290 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantisle3::mapping::GraftDigestM2M
+(
+  *test::verdantisle3::domain::GraftDigest[graftDigest]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    graftKey: $src.sheetRef->trim()->toUpper() + '/' + if($src.rawRootstock->isEmpty(),
+                                                          | 'UNK',
+                                                          | $src.rawRootstock->toOne()->trim()->toUpper()),
+    registerLabel: 'community orchard graft register',
+    inspectorLabel: if($src.payload->isEmpty(),
+                       | 'UNINSPECTED',
+                       | if($src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).inspectorTag->isEmpty(),
+                            | 'UNSIGNED',
+                            | $src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).inspectorTag->toOne()->trim()->toUpper())),
+    takeRateLabel: if($src.payload->isEmpty(),
+                      | 'NO PAYLOAD',
+                      | if(($src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).takeCount + $src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).failCount) == 0,
+                           | 'EMPTY BATCH',
+                           | if(($src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).takeCount * 100) / ($src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).takeCount + $src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).failCount) >= 75,
+                                | 'STRONG TAKE',
+                                | if(($src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).takeCount * 100) / ($src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).takeCount + $src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).failCount) >= 40,
+                                     | 'MIXED TAKE',
+                                     | 'WEAK TAKE')))),
+    noteDigest: if($src.notes->isEmpty(),
+                   | [],
+                   | $src.notes->filter(n|$n.noteText->isNotEmpty())->map(n|if($n.noteKind->isEmpty(),
+                                                                              | $n.noteText->toOne()->trim()->toUpper(),
+                                                                              | $n.noteKind->toOne()->trim()->toUpper() + ':' + $n.noteText->toOne()->trim()->toUpper()))->joinStrings(' | ')),
+    takeCount: if($src.payload->isEmpty(),
+                  | [],
+                  | $src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).takeCount),
+    failCount: if($src.payload->isEmpty(),
+                  | [],
+                  | $src.payload->toOne()->cast(@test::verdantisle3::domain::DetailedGraftPayload).failCount),
+    rootstock[graftRootstock]: $src,
+    scion[graftScion]: $src,
+    plot[graftPlot]: $src,
+    grafter[graftGrafter]: $src,
+    tool[graftTool]: $src,
+    health[graftHealth]: $src,
+    window[graftWindow]: $src
+  }
+
+  test::verdantisle3::domain::RootstockRef[graftRootstock]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    code: if($src.rawRootstock->isEmpty(),
+             | 'UNKNOWN ROOTSTOCK',
+             | $src.rawRootstock->toOne()->trim()->toUpper())
+  }
+
+  test::verdantisle3::domain::ScionRef[graftScion]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    code: if($src.rawScion->isEmpty(),
+             | 'UNKNOWN SCION',
+             | $src.rawScion->toOne()->trim()->toUpper())
+  }
+
+  test::verdantisle3::domain::PlotRef[graftPlot]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    plotCode: if($src.rawPlot->isEmpty(),
+                 | 'UNPLOTTED',
+                 | 'PLOT-' + $src.rawPlot->toOne()->trim()->toUpper())
+  }
+
+  test::verdantisle3::domain::GrafterTag[graftGrafter]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    initials: if($src.rawGrafter->isEmpty(),
+                 | 'NN',
+                 | $src.rawGrafter->toOne()->trim()->toUpper()->substring(0, 2))
+  }
+
+  test::verdantisle3::domain::ToolTag[graftTool]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    toolCode: if($src.rawTool->isEmpty(),
+                 | 'UNASSIGNED',
+                 | $src.rawTool->toOne()->trim()->toUpper())
+  }
+
+  test::verdantisle3::domain::HealthBand[graftHealth]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    band: if($src.rawHealthScore->isEmpty(),
+             | 'UNSCORED',
+             | if($src.rawHealthScore->toOne()->trim()->parseInteger() >= 8,
+                  | 'VIGOROUS',
+                  | if($src.rawHealthScore->toOne()->trim()->parseInteger() >= 5,
+                       | 'STEADY',
+                       | 'FRAGILE')))
+  }
+
+  test::verdantisle3::domain::SeasonWindow[graftWindow]: Pure
+  {
+    ~src test::verdantisle3::domain::GraftSheetRow
+    opensOn: if($src.rawWindowOpen->isEmpty(),
+                | 'UNDATED',
+                | $src.rawWindowOpen->toOne()->trim()),
+    closesOn: if($src.rawWindowClose->isEmpty(),
+                 | 'UNDATED',
+                 | $src.rawWindowClose->toOne()->trim())
+  }
+
+  testSuites:
+  [
+    graftDigestSuite:
+    {
+      function: |test::verdantisle3::domain::GraftDigest.all()->graphFetch(
+        #{
+          test::verdantisle3::domain::GraftDigest{
+            graftKey,
+            registerLabel,
+            inspectorLabel,
+            takeRateLabel,
+            noteDigest,
+            takeCount,
+            failCount,
+            rootstock{
+              code
+            },
+            scion{
+              code
+            },
+            plot{
+              plotCode
+            },
+            grafter{
+              initials
+            },
+            tool{
+              toolCode
+            },
+            health{
+              band
+            },
+            window{
+              opensOn,
+              closesOn
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::verdantisle3::domain::GraftDigest{
+            graftKey,
+            registerLabel,
+            inspectorLabel,
+            takeRateLabel,
+            noteDigest,
+            takeCount,
+            failCount,
+            rootstock{
+              code
+            },
+            scion{
+              code
+            },
+            plot{
+              plotCode
+            },
+            grafter{
+              initials
+            },
+            tool{
+              toolCode
+            },
+            health{
+              band
+            },
+            window{
+              opensOn,
+              closesOn
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        populatedRowsHitEveryTakeAndHealthArm:
+        {
+          doc: 'Drives the strong, mixed and weak take-rate arms and the vigorous, steady and fragile health arms over fully populated sheet rows, including the kinded and unkinded note-digest arms.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantisle3::domain::GraftSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetRef":" gs-1101 ","rawRootstock":" m26 ","rawScion":" bramley ","rawPlot":" north-4 ","rawGrafter":"ada lovelace","rawTool":" knife-7 ","rawHealthScore":" 9 ","rawWindowOpen":"2026-02-10","rawWindowClose":"2026-03-05","notes":[{"noteKind":"union","noteText":" callus formed "}],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v2","takeCount":18,"failCount":2,"inspectorTag":" jo m "}},{"sheetRef":"gs-1102","rawRootstock":"mm106","rawScion":"discovery","rawPlot":"south-2","rawGrafter":"benedikt ros","rawTool":"knife-3","rawHealthScore":"6","rawWindowOpen":"2026-02-12","rawWindowClose":"2026-03-07","notes":[{"noteText":"scion slightly dry"}],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v2","takeCount":6,"failCount":4,"inspectorTag":"pk"}},{"sheetRef":"gs-1103","rawRootstock":"m9","rawScion":"egremont","rawPlot":"east-1","rawGrafter":"cai wren","rawTool":"knife-1","rawHealthScore":"2","rawWindowOpen":"2026-02-14","rawWindowClose":"2026-03-09","notes":[{"noteKind":"union","noteText":"graft dried out"},{"noteText":"rebind advised"}],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v1","takeCount":2,"failCount":8,"inspectorTag":"ry"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"graftKey":"GS-1101/M26","registerLabel":"community orchard graft register","inspectorLabel":"JO M","takeRateLabel":"STRONG TAKE","noteDigest":"UNION:CALLUS FORMED","takeCount":18,"failCount":2,"rootstock":{"code":"M26"},"scion":{"code":"BRAMLEY"},"plot":{"plotCode":"PLOT-NORTH-4"},"grafter":{"initials":"AD"},"tool":{"toolCode":"KNIFE-7"},"health":{"band":"VIGOROUS"},"window":{"opensOn":"2026-02-10","closesOn":"2026-03-05"}},{"graftKey":"GS-1102/MM106","registerLabel":"community orchard graft register","inspectorLabel":"PK","takeRateLabel":"MIXED TAKE","noteDigest":"SCION SLIGHTLY DRY","takeCount":6,"failCount":4,"rootstock":{"code":"MM106"},"scion":{"code":"DISCOVERY"},"plot":{"plotCode":"PLOT-SOUTH-2"},"grafter":{"initials":"BE"},"tool":{"toolCode":"KNIFE-3"},"health":{"band":"STEADY"},"window":{"opensOn":"2026-02-12","closesOn":"2026-03-07"}},{"graftKey":"GS-1103/M9","registerLabel":"community orchard graft register","inspectorLabel":"RY","takeRateLabel":"WEAK TAKE","noteDigest":"UNION:GRAFT DRIED OUT | REBIND ADVISED","takeCount":2,"failCount":8,"rootstock":{"code":"M9"},"scion":{"code":"EGREMONT"},"plot":{"plotCode":"PLOT-EAST-1"},"grafter":{"initials":"CA"},"tool":{"toolCode":"KNIFE-1"},"health":{"band":"FRAGILE"},"window":{"opensOn":"2026-02-14","closesOn":"2026-03-09"}}]';
+                  }#;
+              }#
+          ];
+        },
+        absentSourcesFallBackToDefaults:
+        {
+          doc: 'A row with nothing but its sheet reference falls back to every literal default, and a row whose payload carries no inspector and an empty batch hits the unsigned and empty-batch arms.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantisle3::domain::GraftSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetRef":"gs-1104"},{"sheetRef":"gs-1105","rawRootstock":"m27","rawScion":"katy","rawPlot":"west-3","rawGrafter":"di","rawTool":"knife-9","rawHealthScore":"5","rawWindowOpen":"2026-02-16","rawWindowClose":"2026-03-11","notes":[],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v2","takeCount":0,"failCount":0}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            defaultedDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"graftKey":"GS-1104/UNK","registerLabel":"community orchard graft register","inspectorLabel":"UNINSPECTED","takeRateLabel":"NO PAYLOAD","noteDigest":null,"takeCount":null,"failCount":null,"rootstock":{"code":"UNKNOWN ROOTSTOCK"},"scion":{"code":"UNKNOWN SCION"},"plot":{"plotCode":"UNPLOTTED"},"grafter":{"initials":"NN"},"tool":{"toolCode":"UNASSIGNED"},"health":{"band":"UNSCORED"},"window":{"opensOn":"UNDATED","closesOn":"UNDATED"}},{"graftKey":"GS-1105/M27","registerLabel":"community orchard graft register","inspectorLabel":"UNSIGNED","takeRateLabel":"EMPTY BATCH","noteDigest":null,"takeCount":0,"failCount":0,"rootstock":{"code":"M27"},"scion":{"code":"KATY"},"plot":{"plotCode":"PLOT-WEST-3"},"grafter":{"initials":"DI"},"tool":{"toolCode":"KNIFE-9"},"health":{"band":"STEADY"},"window":{"opensOn":"2026-02-16","closesOn":"2026-03-11"}}]';
+                  }#;
+              }#
+          ];
+        },
+        notesPresentButTextlessDigestToEmpty:
+        {
+          doc: 'A row whose only note carries a kind but no text keeps the note branch yet digests to an empty string, and its take rate sits exactly on the strong-take boundary.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::verdantisle3::domain::GraftSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetRef":"gs-1106","rawRootstock":"m25","rawScion":"pitmaston","rawPlot":"north-9","rawGrafter":"eli","rawTool":"knife-2","rawHealthScore":"8","rawWindowOpen":"2026-02-18","rawWindowClose":"2026-03-13","notes":[{"noteKind":"union"}],"payload":{"@type":"test::verdantisle3::domain::DetailedGraftPayload","payloadVersion":"v2","takeCount":15,"failCount":5,"inspectorTag":"mo"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            textlessNoteDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"graftKey":"GS-1106/M25","registerLabel":"community orchard graft register","inspectorLabel":"MO","takeRateLabel":"STRONG TAKE","noteDigest":"","takeCount":15,"failCount":5,"rootstock":{"code":"M25"},"scion":{"code":"PITMASTON"},"plot":{"plotCode":"PLOT-NORTH-9"},"grafter":{"initials":"EL"},"tool":{"toolCode":"KNIFE-2"},"health":{"band":"VIGOROUS"},"window":{"opensOn":"2026-02-18","closesOn":"2026-03-13"}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::nobledelta4::mapping::GaugeMapping
+(
+  *test::nobledelta4::domain::RiverGauge: Relational
+  {
+    ~primaryKey
+    (
+      [test::nobledelta4::store::GaugeLogDb]gauge.river_gauge.gauge_code
+    )
+    ~mainTable [test::nobledelta4::store::GaugeLogDb]gauge.river_gauge
+    gaugeCode: [test::nobledelta4::store::GaugeLogDb]gauge.river_gauge.gauge_code,
+    channelName: [test::nobledelta4::store::GaugeLogDb]gauge.river_gauge.channel_name
+  }
+
+  *test::nobledelta4::domain::GaugeReading: Relational
+  {
+    ~primaryKey
+    (
+      [test::nobledelta4::store::GaugeLogDb]gauge.reading_log.reading_code
+    )
+    ~mainTable [test::nobledelta4::store::GaugeLogDb]gauge.reading_log
+    readingCode: [test::nobledelta4::store::GaugeLogDb]gauge.reading_log.reading_code,
+    gaugeCode: [test::nobledelta4::store::GaugeLogDb]gauge.reading_log.gauge_code,
+    levelCm: parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.level_text),
+    flowLitres: parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.flow_text),
+    settledLevelCm: case(
+      equal(toString(parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.level_text)), '0'),
+      parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.flow_text),
+      parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.level_text)
+    ),
+    crestBand: case(
+      equal(toString(parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.crest_text)), '0'),
+      'DRY CHANNEL',
+      case(
+        greaterThan(parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.crest_text), 300),
+        'OVERTOPPING',
+        case(
+          greaterThan(parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.crest_text), 150),
+          'HIGH WATER',
+          case(
+            greaterThan(parseInteger([test::nobledelta4::store::GaugeLogDb]gauge.reading_log.crest_text), 0),
+            'NORMAL FLOW',
+            sqlNull()
+          )
+        )
+      )
+    )
+  }
+
+  testSuites:
+  [
+    gaugeReadingSuite:
+    {
+      function: |test::nobledelta4::domain::GaugeReading.all()->project([r|$r.readingCode, r|$r.levelCm, r|$r.flowLitres, r|$r.settledLevelCm, r|$r.crestBand], ['readingCode', 'levelCm', 'flowLitres', 'settledLevelCm', 'crestBand'])->sort('readingCode');
+      tests:
+      [
+        everyCrestArmAndCanonicalCheck:
+        {
+          doc: 'Hits the dry, overtopping, high-water and normal crest arms plus the null fallback for a negative crest, and covers both outcomes of the canonical-zero level check including a zero-padded level text.';
+          data:
+          [
+            test::nobledelta4::store::GaugeLogDb:
+              Relational
+              #{
+                gauge.reading_log:
+                  'reading_code,gauge_code,level_text,flow_text,crest_text\n'+
+                  'RD-01,GA-1,120,4300,0\n'+
+                  'RD-02,GA-1,0,5100,340\n'+
+                  'RD-03,GA-2,000,2700,210\n'+
+                  'RD-04,GA-2,045,1900,80\n'+
+                  'RD-05,GA-3,88,600,-5\n'+
+                  'RD-06,GA-3,15,900,0007\n';
+              }#
+          ];
+          asserts:
+          [
+            sixParsedReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"readingCode":"RD-01","levelCm":120,"flowLitres":4300,"settledLevelCm":120,"crestBand":"DRY CHANNEL"},{"readingCode":"RD-02","levelCm":0,"flowLitres":5100,"settledLevelCm":5100,"crestBand":"OVERTOPPING"},{"readingCode":"RD-03","levelCm":0,"flowLitres":2700,"settledLevelCm":2700,"crestBand":"HIGH WATER"},{"readingCode":"RD-04","levelCm":45,"flowLitres":1900,"settledLevelCm":45,"crestBand":"NORMAL FLOW"},{"readingCode":"RD-05","levelCm":88,"flowLitres":600,"settledLevelCm":88,"crestBand":null},{"readingCode":"RD-06","levelCm":15,"flowLitres":900,"settledLevelCm":15,"crestBand":"NORMAL FLOW"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    riverGaugeSuite:
+    {
+      function: |test::nobledelta4::domain::RiverGauge.all()->project([g|$g.gaugeCode, g|$g.channelName], ['gaugeCode', 'channelName'])->sort('gaugeCode');
+      tests:
+      [
+        gaugeChannels:
+        {
+          doc: 'Reads every gauge with the channel it stands on.';
+          data:
+          [
+            test::nobledelta4::store::GaugeLogDb:
+              Relational
+              #{
+                gauge.river_gauge:
+                  'gauge_code,channel_name\n'+
+                  'GA-1,East Distributary\n'+
+                  'GA-2,West Distributary\n';
+              }#
+          ];
+          asserts:
+          [
+            twoGauges:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"gaugeCode":"GA-1","channelName":"East Distributary"},{"gaugeCode":"GA-2","channelName":"West Distributary"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

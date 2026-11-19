@@ -1,0 +1,30 @@
+name: ember-reef-3
+title: "Observatory Instrument Register — Inherited Business-Temporal Artifact Types"
+description: |
+  A store-less domain model over an astronomical observatory's instrument
+  register. Two abstract business-temporal roots each carry the register
+  identity and are specialised two levels deep, so the leaf types inherit both
+  their properties and the single business timeline the register is published
+  against rather than restating either. Inherited property navigation and the
+  temporal dimension both have to survive compilation for the model to be
+  usable downstream.
+modelSources:
+  model:
+    root: ember-reef-3
+    files:
+      - test/emberreef3/domain/InstrumentRegister.pure
+      - test/emberreef3/domain/ObservingRoster.pure
+features:
+  - grammar:class-inheritance
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - astronomy
+  - business-temporal
+  - class-inheritance
+  - inherited-properties
+  - milestoning
+  - model-only
+  - observatory

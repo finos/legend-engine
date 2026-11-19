@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::emberglacier::diagram::SkywatchDiagram
+{
+  classView observatory
+  {
+    class: test::emberglacier::domain::Observatory;
+    position: (40.0, 40.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView dome
+  {
+    class: test::emberglacier::domain::Dome;
+    position: (380.0, 40.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView telescope
+  {
+    class: test::emberglacier::domain::Telescope;
+    position: (720.0, 40.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView instrument
+  {
+    class: test::emberglacier::domain::Instrument;
+    position: (1060.0, 40.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView session
+  {
+    class: test::emberglacier::domain::ObservingSession;
+    position: (720.0, 260.0);
+    rectangle: (260.0, 160.0);
+  }
+  classView observer
+  {
+    class: test::emberglacier::domain::Observer;
+    position: (380.0, 260.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView target
+  {
+    class: test::emberglacier::domain::SkyTarget;
+    position: (1060.0, 260.0);
+    rectangle: (240.0, 140.0);
+  }
+  classView reading
+  {
+    class: test::emberglacier::domain::SeeingReading;
+    position: (720.0, 500.0);
+    rectangle: (260.0, 140.0);
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Observatory_Dome.domes;
+    source: observatory;
+    target: dome;
+    points: [(160.0, 110.0), (500.0, 100.0)];
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Dome_Telescope.telescopes;
+    source: dome;
+    target: telescope;
+    points: [(500.0, 100.0), (840.0, 100.0)];
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Telescope_Instrument.instruments;
+    source: telescope;
+    target: instrument;
+    points: [(840.0, 100.0), (1180.0, 100.0)];
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Telescope_Session.telescopeSessions;
+    source: telescope;
+    target: session;
+    points: [(840.0, 100.0), (850.0, 340.0)];
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Observer_Session.observerSessions;
+    source: observer;
+    target: session;
+    points: [(500.0, 320.0), (850.0, 340.0)];
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Target_Session.targetSessions;
+    source: target;
+    target: session;
+    points: [(1180.0, 330.0), (850.0, 340.0)];
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Instrument_Session.instrumentSessions;
+    source: instrument;
+    target: session;
+    points: [(1180.0, 100.0), (850.0, 340.0)];
+  }
+  propertyView
+  {
+    property: test::emberglacier::domain::Session_Reading.readings;
+    source: session;
+    target: reading;
+    points: [(850.0, 340.0), (850.0, 570.0)];
+  }
+}

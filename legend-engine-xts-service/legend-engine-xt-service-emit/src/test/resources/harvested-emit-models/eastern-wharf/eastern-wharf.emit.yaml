@@ -1,0 +1,47 @@
+name: eastern-wharf
+title: "Eastern Wharf - store-less tray summaries defaulted out of a nested propagation document"
+description: |
+  A plant-nursery propagation document arrives three levels deep - run, glasshouse bench, seed
+  tray - with an optional tray identifier, an optional growing stage and a collection of pricked-out
+  seedlings whose vigour class and measured height may both be absent. One flat published tray
+  summary is projected out of it by a store-less model-to-model mapping: a guarded stage label
+  whose present arm composes an optionality test with a stage inequality and then nests a second
+  conditional inside a normalising helper function, a tray label whose defaulted literal is passed
+  through the same helper, two further two-armed conditionals over the bench hop and the vigorous
+  seedling selection, a count over that selection and a tallest-height selection defaulting to a
+  negative sentinel. A mapping test suite walks the branch matrix document by document, and a
+  single-execution service delegates its whole query body to a publishing function that graph-fetches
+  and serialises the same tree over a model-store runtime.
+modelSources:
+  model:
+    root: eastern-wharf
+    files:
+      - test/easternwharf/domain/TraySummary.pure
+      - test/easternwharf/function/TrayLabels.pure
+      - test/easternwharf/mapping/TraySummaryMapping.pure
+      - test/easternwharf/runtime/TraySummaryRuntime.pure
+      - test/easternwharf/service/TraySummaries.pure
+      - test/easternwharf/source/PropagationRunFeed.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - branch-coverage
+  - conditional-transform
+  - graph-fetch
+  - helper-function
+  - literal-default
+  - model-to-model
+  - nested-source
+  - sentinel-fallback
+  - store-less

@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedquokka::service::SightingCardFeed
+{
+  pattern: '/reserve-tracking/v1/sighting-cards';
+  title: 'Reserve Tracking - Sighting Card Feed';
+  documentation: 'Refines every inbound sighting document into a field card through the model-to-model mapping, then graph-fetches and serialises the card with its nested placement and observer roster.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::frostedquokka::domain::SightingCard.all()->graphFetch(
+      #{
+        test::frostedquokka::domain::SightingCard
+        {
+          cardTag,
+          zoneLabel,
+          healthFlag,
+          observerCount,
+          observers,
+          place
+          {
+            burrowCode,
+            habitatZone,
+            weatherNote
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::frostedquokka::domain::SightingCard
+        {
+          cardTag,
+          zoneLabel,
+          healthFlag,
+          observerCount,
+          observers,
+          place
+          {
+            burrowCode,
+            habitatZone,
+            weatherNote
+          }
+        }
+      }#
+    );
+    mapping: test::frostedquokka::mapping::SightingCardMapping;
+    runtime: test::frostedquokka::runtime::SightingCardRuntime;
+  }
+  testSuites:
+  [
+    fullRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sightingDocConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"sightingId":"SGT-7101","reserveCode":"RSV-04","trackerTag":"trk-12","seasonLabel":"2026-SPRING","burrowCode":"BRW-31","habitatZone":" heath-thicket ","weatherNote":"light drizzle","forageNote":"browsing on sedge","healthNote":"coat glossy, alert","observerCode":"OBS-5","auditNote":"round closed","observerTags":["OBS-5","OBS-7"]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        cardWithRosterAndPlace:
+        {
+          asserts:
+          [
+            cardDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"cardTag":"RSV-04/TRK-12","zoneLabel":"HEATH-THICKET","healthFlag":"RECORDED","observerCount":2,"observers":["obs-5","obs-7"],"place":{"burrowCode":"BRW-31","habitatZone":" heath-thicket ","weatherNote":"light drizzle"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    sparseDocumentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sightingDocConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"sightingId":"SGT-7102","reserveCode":"RSV-09","trackerTag":"trk-40","seasonLabel":"2026-AUTUMN","habitatZone":"dune-scrub","observerCode":"OBS-1","observerTags":[]}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        cardWithEmptyRoster:
+        {
+          asserts:
+          [
+            sparseCardDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"cardTag":"RSV-09/TRK-40","zoneLabel":"DUNE-SCRUB","healthFlag":"UNRECORDED","observerCount":0,"observers":[],"place":{"burrowCode":null,"habitatZone":"dune-scrub","weatherNote":null}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::oliveharbor::service::SailingNoticeDocument
+{
+  pattern: '/oliveharbor/v1/sailing-notice';
+  title: 'Olive Harbor - Sailing Notice Document';
+  owners:
+  [
+    'terminal-platform',
+    'sailing-notice-eng'
+  ];
+  documentation: 'Normalises a delimited ferry sailing-notice payload into a JSON document carrying the terminal code, the surviving berth allocation and the advisory note. The payload is the only source: the execution binds no mapping and no runtime, so the compile-time contract is the transformation function signature.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {payload: String[1]|test::oliveharbor::function::sailingNoticeDocument($payload)};
+  }
+  testSuites:
+  [
+    populatedAdvisorySuite:
+    {
+      tests:
+      [
+        advisoryPresent:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            payload = 'TERMINAL:north-quay|NOTES:fog advisory until noon|BERTHS:b1;b2'
+          ]
+          asserts:
+          [
+            advisoryPublished:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"terminal":"NORTH-QUAY","berthCount":2,"berths":["B1","B2"],"advisory":"fog advisory until noon"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    absentAdvisorySuite:
+    {
+      tests:
+      [
+        advisoryAbsent:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            payload = 'TERMINAL:south-slip|BERTHS:s7'
+          ]
+          asserts:
+          [
+            advisoryNulled:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"terminal":"SOUTH-SLIP","berthCount":1,"berths":["S7"],"advisory":null}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    uncodedBerthSuite:
+    {
+      tests:
+      [
+        uncodedBerthDropped:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            payload = 'TERMINAL:east-mole|BERTHS:e1;;e3|NOTES:swell warning'
+          ]
+          asserts:
+          [
+            uncodedEntryDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"terminal":"EAST-MOLE","berthCount":2,"berths":["E1","E3"],"advisory":"swell warning"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+name: ember-tundra-4
+title: "Ember Tundra 4 — A Bitemporal Herbarium Register With An Eight-Armed Size Band, Let-Bound Collection Windows, Confirmed-Note Exists Tests And A Family Rollup"
+description: |
+  A herbarium keeps bitemporal specimen sheets, business-dated determination notes and storage
+  cabinets, and a processing-dated curator roll in one Snowflake store. The mapping bands each
+  sheet height through an eight-armed size cascade falling through to an explicit null. Four
+  single-execution services resolve the bitemporal roots with processing and business dates:
+  one filters on a family membership set, projects the band and the collection year and extends
+  a display column choosing between the band and a fixed label; one binds a window end that
+  defaults to the current date, keeps sheets with a confirming note through a milestoned
+  to-many exists test with upper-cased contains, and de-duplicates the projected note authors;
+  one filters through a cabinet exists or an empty condition, drops empty sheets after
+  projection, extends a stature column and groups by family and stature with sum, count and
+  max; and one reads the processing-temporal curator roll with a case-insensitive prefix. A data
+  space packages the execution context and a diagram; three OAuth connections are bound by
+  three engine runtimes, each seeded by the service test suites.
+modelSources:
+  model:
+    root: ember-tundra-4
+    files:
+      - test/embertundra4/connection/HerbariumConnections.pure
+      - test/embertundra4/dataspace/HerbariumDataSpace.pure
+      - test/embertundra4/diagram/HerbariumDiagram.pure
+      - test/embertundra4/domain/HerbariumDomain.pure
+      - test/embertundra4/mapping/HerbariumMapping.pure
+      - test/embertundra4/runtime/HerbariumRuntimes.pure
+      - test/embertundra4/service/ActiveCurators.pure
+      - test/embertundra4/service/AnnotatedSpecimens.pure
+      - test/embertundra4/service/FamilyRollup.pure
+      - test/embertundra4/service/SpecimenSizeBands.pure
+      - test/embertundra4/store/HerbariumDB.pure
+features:
+  - execution:data-space
+  - execution:test-data
+  - execution:service
+  - execution:service-test
+  - execution:service-user-ownership
+  - grammar:milestoned-property-call
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:processing-temporal
+  - query:collection-op
+  - query:date-comparison
+  - query:date-today
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:let-binding
+  - query:membership-test
+  - execution:service-parameter
+  - query:post-projection-filter
+  - query:project
+  - query:string-function
+  - query:tds-extend
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - data-space
+  - h2
+  - herbarium
+  - let-binding
+  - parameterised-service
+  - snowflake

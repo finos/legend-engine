@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::verdantotter2::service::PassagesAsOf
+{
+  pattern: '/waterway/v1/passages/{processingDate}';
+  title: 'Waterway - Lock Passages As Of';
+  owners:
+  [
+    'waterway-navigation',
+    'lock-keeper-roster'
+  ];
+  documentation: 'Returns the recorded lock passages whose processing window is in force on the requested processing date, projecting the passage, the lock and vessel codes carried on the row, the crew size, the water level and the log date. The milestoning window is the only predicate the plan carries.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|demo::verdantotter2::domain::LockPassage.all($processingDate)->project(
+      [
+        p|$p.passageCode,
+        p|$p.lockCode,
+        p|$p.vesselCode,
+        p|$p.crewSize,
+        p|$p.waterLevelMetres,
+        p|$p.loggedOn
+      ],
+      [
+        'Passage',
+        'Lock',
+        'Vessel',
+        'Crew',
+        'WaterLevel',
+        'Logged'
+      ]
+    )};
+    mapping: demo::verdantotter2::mapping::PassageMapping;
+    runtime: demo::verdantotter2::runtime::PassageRuntime;
+  }
+  testSuites:
+  [
+    passagesAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          passageConnection:
+            Relational
+            #{
+              waterway.passage:
+                'passage_id,passage_code,lock_code,vessel_code,crew_size,dwell_minutes,water_level_metres,logged_on,recorded_at,in_z,out_z\n'+
+                '1,PS-0001,LK-001,VS-100,3,18.50,2.40,2026-04-02,2026-04-02 08:30:00,2026-04-01,9999-12-31\n'+
+                '2,PS-0002,LK-002,VS-101,2,22.75,3.10,2025-03-04,2025-03-04 07:45:00,2025-01-01,2025-06-30\n'+
+                '3,PS-0003,LK-001,VS-102,4,15.00,2.10,2026-08-19,2026-08-19 16:05:00,2026-09-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTheWindowedPassage:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-05-01
+          ]
+          asserts:
+          [
+            oneInForcePassage:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Passage":"PS-0001","Lock":"LK-001","Vessel":"VS-100","Crew":3,"WaterLevel":2.4,"Logged":"2026-04-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

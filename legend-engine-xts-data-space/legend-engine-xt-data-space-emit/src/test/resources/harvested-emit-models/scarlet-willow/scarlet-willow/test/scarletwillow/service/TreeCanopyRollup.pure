@@ -1,0 +1,166 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletwillow::service::TreeCanopyRollup
+{
+  pattern: '/planning/v1/canopy-rollup';
+  title: 'Planning - Canopy Rollup (multi-environment)';
+  owners:
+  [
+    'example-planning-team'
+  ];
+  documentation: 'Multi-execution service selecting an environment-keyed mapping/runtime binding at execution time; aggregates total canopy height per species group and region for trees passing a nested membership, height and derived-date filter.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {districtCodes: String[*], minHeight: Float[1], plantedWithinDays: Integer[0..1], currentDate: StrictDate[1]|test::scarletwillow::domain::Tree.all()->filter(
+      t|(($districtCodes->isEmpty()) || ($t.site.district.districtCode->in($districtCodes))) && ($t.heightMeters > $minHeight) && (($plantedWithinDays->isEmpty()) || ($t.plantedOn > adjust($currentDate, -($plantedWithinDays->toOne()), meta::pure::functions::date::DurationUnit.DAYS)))
+    )->groupBy(
+      [
+        t|$t.species.group.groupName,
+        t|$t.site.district.region.regionName
+      ],
+      [
+        agg(
+          t|$t.heightMeters,
+          y|$y->sum()
+        )
+      ],
+      [
+        'GroupName',
+        'RegionName',
+        'TotalHeight'
+      ]
+    )->sort([asc('GroupName'), asc('RegionName')])};
+    key: 'environment';
+    executions['primary']:
+    {
+      mapping: test::scarletwillow::mapping::PlanningMapping;
+      runtime: test::scarletwillow::runtime::PlanningPrimaryRuntime;
+    }
+    executions['secondary']:
+    {
+      mapping: test::scarletwillow::mapping::PlanningMapping;
+      runtime: test::scarletwillow::runtime::PlanningSecondaryRuntime;
+    }
+  }
+}
+
+Service test::scarletwillow::service::TreeCanopyRollupLocal
+{
+  pattern: '/planning/v1/canopy-rollup-local';
+  title: 'Planning - Canopy Rollup (local)';
+  owners:
+  [
+    'example-planning-team'
+  ];
+  documentation: 'Single-execution counterpart of the keyed canopy-rollup service, pinned to the primary runtime; it carries the executed test suite for the aggregation query shape.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {districtCodes: String[*], minHeight: Float[1], plantedWithinDays: Integer[0..1], currentDate: StrictDate[1]|test::scarletwillow::domain::Tree.all()->filter(
+      t|(($districtCodes->isEmpty()) || ($t.site.district.districtCode->in($districtCodes))) && ($t.heightMeters > $minHeight) && (($plantedWithinDays->isEmpty()) || ($t.plantedOn > adjust($currentDate, -($plantedWithinDays->toOne()), meta::pure::functions::date::DurationUnit.DAYS)))
+    )->groupBy(
+      [
+        t|$t.species.group.groupName,
+        t|$t.site.district.region.regionName
+      ],
+      [
+        agg(
+          t|$t.heightMeters,
+          y|$y->sum()
+        )
+      ],
+      [
+        'GroupName',
+        'RegionName',
+        'TotalHeight'
+      ]
+    )->sort([asc('GroupName'), asc('RegionName')])};
+    mapping: test::scarletwillow::mapping::PlanningMapping;
+    runtime: test::scarletwillow::runtime::PlanningPrimaryRuntime;
+  }
+  testSuites:
+  [
+    canopyRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          primaryConnection:
+            Relational
+            #{
+              reference.SPECIES_GROUP:
+                'group_id,group_code,group_name\n'+
+                '1,BROAD,Broadleaf\n'+
+                '2,CONIF,Conifer\n';
+              reference.SPECIES:
+                'species_id,common_name,group_id\n'+
+                '1,Silver Willow,1\n'+
+                '2,Red Maple,1\n'+
+                '3,Blue Spruce,2\n';
+              reference.ZONE:
+                'zone_id,zone_name\n'+
+                '1,Northern Uplands\n';
+              reference.REGION:
+                'region_id,region_code,region_name,zone_id\n'+
+                '1,RGN-N,North Region,1\n';
+              reference.DISTRICT:
+                'district_id,district_code,district_name,region_id\n'+
+                '1,DST-1,Riverside,1\n'+
+                '2,DST-2,Hilltop,1\n';
+              sites.SITE:
+                'site_id,site_code,site_name,site_status,district_id\n'+
+                '1,STE-1,Elm Commons,ACTIVE,1\n'+
+                '2,STE-2,Oak Terrace,ACTIVE,2\n';
+              inventory.TREE:
+                'tree_id,tree_tag,planted_on,height_meters,retired_code,site_id,species_id\n'+
+                '1,TR-100,2024-05-01,12.5,,1,1\n'+
+                '2,TR-101,2024-06-01,9.0,,1,2\n'+
+                '3,TR-102,2024-07-01,3.0,,2,1\n'+
+                '4,TR-103,2024-08-01,20.0,,2,3\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        broadleafRiversideRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districtCodes = ['DST-1'],
+            minHeight = 5.0,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "GroupName" : "Broadleaf",\n  "RegionName" : "North Region",\n  "TotalHeight" : 21.5\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

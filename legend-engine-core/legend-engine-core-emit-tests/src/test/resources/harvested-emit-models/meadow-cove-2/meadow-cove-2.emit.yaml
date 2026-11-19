@@ -1,0 +1,43 @@
+name: meadow-cove-2
+title: "Kelp Survey Flattening — Enveloped Payload to Flat Record with a Validity Sentinel"
+description: |
+  A store-less model-to-model unit that flattens an enveloped kelp-survey payload
+  onto a single-level record. Two parallel inheritance hierarchies supply the
+  transport envelope and the registration/observation payload, so every payload
+  binding is a two-hop read through the envelope content and inherited attributes
+  are reached at the same depth as declared ones. An equality-key stereotype
+  declares record identity on two of the flat target's properties, an absent
+  validity bound is replaced by a far-future date-time sentinel, and optional
+  measurements fall back to literal defaults so the flat record can take part in
+  temporal comparisons without null handling.
+modelSources:
+  model:
+    root: meadow-cove-2
+    files:
+      - test/meadowcove2/domain/FlatObservation.pure
+      - test/meadowcove2/domain/ObservationRecords.pure
+      - test/meadowcove2/domain/SurveyEnvelope.pure
+      - test/meadowcove2/mapping/KelpFlattening.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:class-inheritance
+  - grammar:profile
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:relational-null-sentinel
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - conditional-transform
+  - equality-key-stereotype
+  - flattening
+  - graph-fetch
+  - inheritance
+  - marine-survey
+  - model-to-model
+  - null-sentinel

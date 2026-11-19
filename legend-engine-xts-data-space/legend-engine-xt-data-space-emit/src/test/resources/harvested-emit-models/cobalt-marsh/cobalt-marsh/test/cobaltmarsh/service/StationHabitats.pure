@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltmarsh::service::StationHabitats
+{
+  pattern: '/cobaltmarsh/stationHabitats/{asOf}';
+  owners:
+  [
+    'wetland-monitoring'
+  ];
+  documentation: 'Projects the wetland monitoring stations visible on a requested processing date with their classified habitat, depth note and literal survey programme.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::cobaltmarsh::domain::SamplingStation.all($asOf)->project(
+      [
+        x|$x.stationId,
+        x|$x.habitat,
+        x|$x.depthNote,
+        x|$x.surveyProgram
+      ],
+      [
+        'StationId',
+        'Habitat',
+        'DepthNote',
+        'Program'
+      ]
+    )->sort(
+      [
+        asc('StationId')
+      ]
+    )};
+    mapping: test::cobaltmarsh::mapping::MarshMapping;
+    runtime: test::cobaltmarsh::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    stationHabitatsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+                marsh.sampling_station:
+                  'station_id,station_name,habitat_code,depth_cm,is_tidal,installed_on,in_z,out_z\n'+
+                  'ST-01,Lower Mudflat,MF,120,true,2019-04-01,2024-01-01,9999-12-31\n'+
+                  'ST-07,Dune Hollow,DN,,false,2022-01-01,2024-01-01,9999-12-31\n'+
+                  'ST-08,Sluice Corner,ZZ,25,true,2022-09-01,2024-01-01,9999-12-31\n'+
+                  'ST-09,Retired Platform,MF,140,true,2018-01-01,2018-01-01,2023-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        projectedRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2024-06-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationId":"ST-01","Habitat":"Mudflat","DepthNote":"Depth Low logged","Program":"Wetland Watch"},{"StationId":"ST-07","Habitat":"Dune Slack","DepthNote":"Depth unrecorded","Program":"Wetland Watch"},{"StationId":"ST-08","Habitat":"Unclassified","DepthNote":"Depth Slu logged","Program":"Wetland Watch"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

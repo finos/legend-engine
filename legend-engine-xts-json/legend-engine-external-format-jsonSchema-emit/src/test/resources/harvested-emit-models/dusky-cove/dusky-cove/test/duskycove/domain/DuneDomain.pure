@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::duskycove::domain::*;
+
+Profile test::duskycove::domain::DuneStewardship
+{
+  stereotypes: [governed, published];
+  tags: [steward, surveyCadence];
+}
+
+Enum test::duskycove::domain::SandClass
+{
+  Mobile,
+  SemiFixed,
+  Fixed,
+  Unclassed
+}
+
+Enum test::duskycove::domain::ExposureClass
+{
+  Sheltered,
+  Moderate,
+  Blasted,
+  Unrecorded
+}
+
+Enum test::duskycove::domain::SurveyMethod
+{
+  Walkover,
+  Quadrat,
+  Drone,
+  Unrecorded
+}
+
+Enum test::duskycove::domain::MarramState
+{
+  Dense,
+  Patchy,
+  Absent,
+  Unknown
+}
+
+Class <<DuneStewardship.governed>> {DuneStewardship.steward = 'dune-planting-register', doc.doc = 'Shared stewardship header carried by every registered dune element: the register code, the optional free-text steward note, and the derived label that folds the missing note onto a fixed sentinel.'} test::duskycove::domain::RegisteredRecord
+{
+  registerCode: String[1];
+  stewardNote: String[0..1];
+  stewardLabel() {if($this.stewardNote->isEmpty(), | 'UNVISITED', | $this.stewardNote->toOne()->trim()->toUpper())}: String[1];
+}
+
+Class <<DuneStewardship.published>> {doc.doc = 'One marram planting plot of the dune restoration scheme. Carries the two enumerated site classifications, the stability index, the vigour label resolved from the stored vigour code, the approach note, and three properties reached through join paths of increasing length: the transect plot tally and placard label from views one and two hops out, and the reserve sector tally four hops out.'} test::duskycove::domain::PlantingPlot extends RegisteredRecord
+{
+  plotCode: String[1];
+  plotName: String[1];
+  sandClass: SandClass[1];
+  exposureClass: ExposureClass[1];
+  stabilityIndex: Integer[1];
+  vigourLabel: String[1];
+  approachNote: String[1];
+  transectPlotCount: Integer[0..1];
+  placardLabel: String[0..1];
+  reserveSectorCount: Integer[0..1];
+  stabilityBand() {test::duskycove::function::stabilityBand($this.stabilityIndex)}: String[1];
+  displayName() {$this.plotName->toUpper()->trim()}: String[1];
+  patrolLabel(method: String[1]) {$method->toUpper() + ' PATROL ' + $this.plotCode}: String[1];
+  plantingDigest() {if($this.stabilityIndex >= 80, | test::duskycove::function::stabilityBand($this.stabilityIndex) + ' / ' + $this.plotCode->substring(0, 4)->toUpper(), | if($this.plotName->length() > 12, | test::duskycove::function::stabilityBand($this.stabilityIndex) + ' / ' + $this.plotName->substring(0, 8)->toUpper(), | test::duskycove::function::stabilityBand($this.stabilityIndex) + ' / SHORT NAME'))}: String[1];
+}
+
+Class {doc.doc = 'A planting transect grouping several plots, sitting between the plot and the sector on the stewardship hierarchy.'} test::duskycove::domain::PlantingTransect extends RegisteredRecord
+{
+  transectCode: String[1];
+  transectName: String[1];
+  transectLengthMeters: Integer[1];
+  longTransect() {$this.transectLengthMeters >= 4000}: Boolean[1];
+}
+
+Class {doc.doc = 'A dune sector: the third hop of the stewardship hierarchy, owning transects and belonging to one coastal reserve.'} test::duskycove::domain::DuneSector
+{
+  sectorCode: String[1];
+  sectorName: String[1];
+}
+
+Class {doc.doc = 'A coastal reserve: the fourth hop of the hierarchy, the level at which the grouped sector tally is published.'} test::duskycove::domain::CoastalReserve
+{
+  reserveCode: String[1];
+  reserveName: String[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A condition survey recorded against one plot, milestoned on the processing window so the register can be resolved at an arbitrary past instant. Both enumerated classifications are resolved from computed source expressions and the reserve sector tally is reached five hops out.'} test::duskycove::domain::PlotSurvey extends RegisteredRecord
+{
+  surveyId: Integer[1];
+  surveyorName: String[1];
+  methodUsed: SurveyMethod[1];
+  marramAssessed: MarramState[1];
+  surveyedOn: StrictDate[1];
+  stabilityIndex: Integer[1];
+  reserveSectorCount: Integer[0..1];
+  headline(asOf: StrictDate[1]) {test::duskycove::function::plotHeadline($this.stabilityIndex, $this.surveyedOn, $asOf, $this.stewardNote)}: String[1];
+}
+
+Class {doc.doc = 'A retired planting plot kept in the register for audit: the same stewardship header over the retirement table, so the hierarchy is exercised on a second extent of the same store.'} test::duskycove::domain::RetiredPlot extends RegisteredRecord
+{
+  plotCode: String[1];
+  plotName: String[1];
+  retirementLabel: String[1];
+}
+
+Association test::duskycove::domain::Plot_Transect
+{
+  plots: PlantingPlot[*];
+  transect: PlantingTransect[1];
+}
+
+Association test::duskycove::domain::Transect_Sector
+{
+  transects: PlantingTransect[*];
+  sector: DuneSector[1];
+}
+
+Association test::duskycove::domain::Sector_Reserve
+{
+  sectors: DuneSector[*];
+  reserve: CoastalReserve[1];
+}
+
+Association test::duskycove::domain::Survey_Plot
+{
+  surveys: PlotSurvey[*];
+  surveyedPlot: PlantingPlot[1];
+}

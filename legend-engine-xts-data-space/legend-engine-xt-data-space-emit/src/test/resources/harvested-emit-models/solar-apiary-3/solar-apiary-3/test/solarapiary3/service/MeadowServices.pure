@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarapiary3::service::PollinatorCountsByVisitFloor
+{
+  pattern: '/meadow/v1/pollinator-counts/{minVisits}';
+  title: 'Solar Apiary - Pollinator Counts Above A Visit Floor';
+  owners:
+  [
+    'pollinator-meadow-survey',
+    'habitat-monitoring'
+  ];
+  documentation: 'Returns the pollinator transect counts whose recorded visit rate reaches the supplied floor, banding each station by its bloom cover, ordered by station code and capped to the leading rows.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minVisits: Float[1]|test::solarapiary3::domain::PollinatorCount.all()->filter(
+      c|$c.visitsPerHour >= $minVisits
+    )->project(
+      [
+        c|$c.stationCode,
+        c|$c.habitatBand,
+        c|if($c.bloomCoverPct >= 50.0, |'BROAD', |'SPARSE'),
+        c|$c.visitsPerHour
+      ],
+      [
+        'StationCode',
+        'HabitatBand',
+        'BloomBand',
+        'VisitsPerHour'
+      ]
+    )->sort(
+      [
+        asc('StationCode')
+      ]
+    )->take(5)};
+    mapping: test::solarapiary3::mapping::MeadowMapping;
+    runtime: test::solarapiary3::runtime::MeadowH2Runtime;
+  }
+  testSuites:
+  [
+    pollinatorCountSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowConnection:
+            Relational
+            #{
+              meadow.pollinator_count:
+                'count_id,station_code,habitat_band,visits_per_hour,bloom_cover_pct,observed_on\n'+
+                '1,ST-01,VERGE,6.5,72.5,2026-04-01\n'+
+                '2,ST-02,HEDGE,3.25,40.5,2026-04-02\n'+
+                '3,ST-03,ORCHARD,9.25,35.5,2026-04-03\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        aboveVisitFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minVisits = 4.0
+          ]
+          asserts:
+          [
+            bandedStationsInOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"ST-01","HabitatBand":"VERGE","BloomBand":"BROAD","VisitsPerHour":6.5},{"StationCode":"ST-03","HabitatBand":"ORCHARD","BloomBand":"SPARSE","VisitsPerHour":9.25}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::solarapiary3::service::PollinatorCountsOnWarehouse
+{
+  pattern: '/meadow/v1/warehouse/pollinator-counts/{minVisits}';
+  title: 'Solar Apiary - Pollinator Counts Above A Visit Floor, Warehouse Tier';
+  owners:
+  [
+    'pollinator-meadow-survey',
+    'habitat-monitoring'
+  ];
+  documentation: 'Warehouse-tier counterpart of the transect count query: the same banded projection planned against the vault-authenticated warehouse runtime, so the binding is compiled and plan-generated without an in-process fixture.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minVisits: Float[1]|test::solarapiary3::domain::PollinatorCount.all()->filter(
+      c|$c.visitsPerHour >= $minVisits
+    )->project(
+      [
+        c|$c.stationCode,
+        c|$c.habitatBand,
+        c|if($c.bloomCoverPct >= 50.0, |'BROAD', |'SPARSE'),
+        c|$c.visitsPerHour
+      ],
+      [
+        'StationCode',
+        'HabitatBand',
+        'BloomBand',
+        'VisitsPerHour'
+      ]
+    )->sort(
+      [
+        asc('StationCode')
+      ]
+    )->take(5)};
+    mapping: test::solarapiary3::mapping::MeadowMapping;
+    runtime: test::solarapiary3::runtime::MeadowWarehouseRuntime;
+  }
+}

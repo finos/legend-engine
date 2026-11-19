@@ -1,0 +1,297 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedthicket::mapping::CanopyMapping
+(
+  include test::gildedthicket::mapping::CanopyEnumMappings
+  include test::gildedthicket::mapping::GreenwayBaseMapping
+
+  *test::gildedthicket::domain::CanopySurvey[canopySurvey]: Relational
+  {
+    ~filter [test::gildedthicket::store::CanopyStore]SurveyCoded
+    ~primaryKey
+    (
+      [test::gildedthicket::store::CanopyStore]survey.canopy_survey.survey_id
+    )
+    ~mainTable [test::gildedthicket::store::CanopyStore]survey.canopy_survey
+    surveyCode: [test::gildedthicket::store::CanopyStore]survey.canopy_survey.survey_code,
+    spreadMetres: [test::gildedthicket::store::CanopyStore]survey.canopy_survey.spread_m,
+    conditionBand: case(
+      isEmpty([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code),
+      sqlNull(),
+      case(
+        equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C1'),
+        'CANOPY_FULL',
+        case(
+          equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C2'),
+          'CANOPY_HEALTHY',
+          case(
+            equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C3'),
+            'CANOPY_THINNING',
+            case(
+              equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C4'),
+              'CANOPY_PATCHY',
+              case(
+                equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C5'),
+                'CANOPY_SPARSE',
+                case(
+                  equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C6'),
+                  'CANOPY_BARE',
+                  case(
+                    equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C7'),
+                    'CANOPY_STORM_HIT',
+                    'CANOPY_UNSURVEYED'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    noteLabel: case(
+      isEmpty([test::gildedthicket::store::CanopyStore]survey.canopy_survey.note_text),
+      sqlNull(),
+      toUpper(trim([test::gildedthicket::store::CanopyStore]survey.canopy_survey.note_text))
+    ),
+    conditionGrade: EnumerationMapping GradeMapping: case(
+      isEmpty([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code),
+      sqlNull(),
+      case(
+        or(
+          equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C1'),
+          equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C2')
+        ),
+        'GRADE/1',
+        case(
+          equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C3'),
+          'GRADE/2',
+          case(
+            equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C4'),
+            'GRADE/3',
+            case(
+              equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.condition_code, 'C5'),
+              'GRADE/4',
+              'GRADE/9'
+            )
+          )
+        )
+      )
+    ),
+    crownForm: EnumerationMapping CrownMapping: case(
+      equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.crown_code, 'W'),
+      'CROWN/3',
+      case(
+        equal([test::gildedthicket::store::CanopyStore]survey.canopy_survey.crown_code, 'K'),
+        'CROWN/2',
+        'CROWN/1'
+      )
+    ),
+    surfaceType: EnumerationMapping SurfaceMapping: case(
+      equal([test::gildedthicket::store::CanopyStore]@Survey_Tree > @Tree_Block | survey.street_block.surface_code, 'PV'),
+      'SURFACE/1',
+      case(
+        equal([test::gildedthicket::store::CanopyStore]@Survey_Tree > @Tree_Block | survey.street_block.surface_code, 'GR'),
+        'SURFACE/2',
+        'SURFACE/3'
+      )
+    ),
+    careTier: EnumerationMapping CareMapping: case(
+      greaterThan([test::gildedthicket::store::CanopyStore]survey.canopy_survey.spread_m, 12.0),
+      'CARE/1',
+      case(
+        greaterThan([test::gildedthicket::store::CanopyStore]survey.canopy_survey.spread_m, 6.0),
+        'CARE/2',
+        'CARE/3'
+      )
+    ),
+    boroughName: [test::gildedthicket::store::CanopyStore]@Survey_Tree > @Tree_Block > @Block_Ward > @Ward_District > @District_Borough | [test::gildedthicket::store::GreenwayStore]arbor.borough.borough_name,
+    blockWardName: [test::gildedthicket::store::CanopyStore]@Survey_Tree > @Tree_BlockView | survey.block_canopy_vw.ward_name,
+    location
+    (
+      blockCode: [test::gildedthicket::store::CanopyStore]@Survey_Tree > @Tree_Block | survey.street_block.block_code,
+      streetLabel: toUpper([test::gildedthicket::store::CanopyStore]@Survey_Tree > @Tree_Block | survey.street_block.street_label)
+    )
+  }
+
+  *test::gildedthicket::domain::SurveyEntry[surveyEntry]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(liveEntry, archiveEntry)
+  }
+
+  test::gildedthicket::domain::SurveyEntry[liveEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedthicket::store::CanopyStore]survey.canopy_survey.survey_id
+    )
+    ~mainTable [test::gildedthicket::store::CanopyStore]survey.canopy_survey
+    entryCode: [test::gildedthicket::store::CanopyStore]survey.canopy_survey.survey_code,
+    sourceTag: concat('LIVE-', [test::gildedthicket::store::CanopyStore]survey.canopy_survey.survey_code),
+    spreadMetres: [test::gildedthicket::store::CanopyStore]survey.canopy_survey.spread_m
+  }
+
+  test::gildedthicket::domain::SurveyEntry[archiveEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedthicket::store::CanopyStore]survey.canopy_survey_archive.survey_id
+    )
+    ~mainTable [test::gildedthicket::store::CanopyStore]survey.canopy_survey_archive
+    entryCode: [test::gildedthicket::store::CanopyStore]survey.canopy_survey_archive.survey_code,
+    sourceTag: concat('ARCHIVE-', [test::gildedthicket::store::CanopyStore]survey.canopy_survey_archive.survey_code),
+    spreadMetres: [test::gildedthicket::store::CanopyStore]survey.canopy_survey_archive.spread_m
+  }
+
+  testSuites:
+  [
+    canopySurveySuite:
+    {
+      function: |test::gildedthicket::domain::CanopySurvey.all()->project(
+        [
+          s|$s.surveyCode,
+          s|$s.conditionBand,
+          s|$s.conditionGrade,
+          s|$s.crownForm,
+          s|$s.surfaceType,
+          s|$s.careTier,
+          s|$s.boroughName,
+          s|$s.blockWardName,
+          s|$s.noteLabel,
+          s|$s.location.blockCode
+        ],
+        [
+          'Survey',
+          'Band',
+          'Grade',
+          'Crown',
+          'Surface',
+          'Care',
+          'Borough',
+          'Ward',
+          'Note',
+          'Block'
+        ]
+      )->sort([asc('Survey')]);
+      tests:
+      [
+        everyBandArmAndJoinHop:
+        {
+          doc: 'Seeds one survey per condition arm plus an unclassified survey, a survey whose graded source value has no enumeration entry, and a survey suppressed by the store filter, while every surviving row resolves the five-hop borough chain and the view-backed ward name.';
+          data:
+          [
+            test::gildedthicket::store::CanopyStore:
+              Relational
+              #{
+                survey.canopy_survey:
+                  'survey_id,survey_code,tree_id,condition_code,crown_code,care_code,spread_m,note_text\n'+
+                  '1,SV-01,1,C1,B,X,14.0,leafy crown\n'+
+                  '2,SV-02,1,C2,K,X,8.0,\n'+
+                  '3,SV-03,1,C3,W,X,3.0,thin canopy\n'+
+                  '4,SV-04,2,C4,B,X,5.0,\n'+
+                  '5,SV-05,2,C5,B,X,7.0,storm damage\n'+
+                  '6,SV-06,2,C6,B,X,2.0,\n'+
+                  '7,SV-07,3,C7,B,X,20.0,broad spread\n'+
+                  '8,SV-08,3,C8,B,X,1.0,\n'+
+                  '9,SV-09,3,,B,X,4.0,\n'+
+                  '10,,1,C1,B,X,9.0,suppressed row\n';
+                survey.street_tree:
+                  'tree_id,tree_code,species_code,block_id\n'+
+                  '1,TR-001,SPC-ALPHA,1\n'+
+                  '2,TR-002,SPC-BETA,2\n'+
+                  '3,TR-003,SPC-GAMMA,1\n';
+                survey.street_block:
+                  'block_id,block_code,ward_id,surface_code,street_label\n'+
+                  '1,BK-01,1,PV,elm row\n'+
+                  '2,BK-02,2,GR,fern way\n';
+                arbor.ward:
+                  'ward_id,district_id,ward_code,ward_name\n'+
+                  '1,1,WD-01,Willow Ward\n'+
+                  '2,1,WD-02,Hillside Ward\n';
+                arbor.district:
+                  'district_id,borough_id,district_code,district_name\n'+
+                  '1,1,DS-01,Central District\n';
+                arbor.borough:
+                  'borough_id,borough_code,borough_name\n'+
+                  '1,BR-01,Northgate Borough\n';
+              }#
+          ];
+          asserts:
+          [
+            bandsGradesAndHops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"SV-01","Band":"CANOPY_FULL","Grade":"THRIVING","Crown":"BROAD","Surface":"PAVED","Care":"PRIORITY","Borough":"Northgate Borough","Ward":"Willow Ward","Note":"LEAFY CROWN","Block":"BK-01"},{"Survey":"SV-02","Band":"CANOPY_HEALTHY","Grade":"THRIVING","Crown":"COLUMNAR","Surface":"PAVED","Care":"ROUTINE","Borough":"Northgate Borough","Ward":"Willow Ward","Note":null,"Block":"BK-01"},{"Survey":"SV-03","Band":"CANOPY_THINNING","Grade":"STABLE","Crown":"WEEPING","Surface":"PAVED","Care":"WATCH","Borough":"Northgate Borough","Ward":"Willow Ward","Note":"THIN CANOPY","Block":"BK-01"},{"Survey":"SV-04","Band":"CANOPY_PATCHY","Grade":"STRESSED","Crown":"BROAD","Surface":"GRASS","Care":"WATCH","Borough":"Northgate Borough","Ward":"Hillside Ward","Note":null,"Block":"BK-02"},{"Survey":"SV-05","Band":"CANOPY_SPARSE","Grade":"DECLINING","Crown":"BROAD","Surface":"GRASS","Care":"ROUTINE","Borough":"Northgate Borough","Ward":"Hillside Ward","Note":"STORM DAMAGE","Block":"BK-02"},{"Survey":"SV-06","Band":"CANOPY_BARE","Grade":null,"Crown":"BROAD","Surface":"GRASS","Care":"WATCH","Borough":"Northgate Borough","Ward":"Hillside Ward","Note":null,"Block":"BK-02"},{"Survey":"SV-07","Band":"CANOPY_STORM_HIT","Grade":null,"Crown":"BROAD","Surface":"PAVED","Care":"PRIORITY","Borough":"Northgate Borough","Ward":"Willow Ward","Note":"BROAD SPREAD","Block":"BK-01"},{"Survey":"SV-08","Band":"CANOPY_UNSURVEYED","Grade":null,"Crown":"BROAD","Surface":"PAVED","Care":"WATCH","Borough":"Northgate Borough","Ward":"Willow Ward","Note":null,"Block":"BK-01"},{"Survey":"SV-09","Band":null,"Grade":null,"Crown":"BROAD","Surface":"PAVED","Care":"WATCH","Borough":"Northgate Borough","Ward":"Willow Ward","Note":null,"Block":"BK-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveyEntrySuite:
+    {
+      function: |test::gildedthicket::domain::SurveyEntry.all()->project(
+        [
+          e|$e.entryCode,
+          e|$e.sourceTag,
+          e|$e.spreadMetres
+        ],
+        [
+          'Entry',
+          'Source',
+          'Spread'
+        ]
+      )->sort([asc('Source')]);
+      tests:
+      [
+        unionOfLiveAndArchive:
+        {
+          doc: 'Unions the live register with the retired archive so both routed set implementations surface under one operation root.';
+          data:
+          [
+            test::gildedthicket::store::CanopyStore:
+              Relational
+              #{
+                survey.canopy_survey:
+                  'survey_id,survey_code,tree_id,condition_code,crown_code,care_code,spread_m,note_text\n'+
+                  '1,SV-21,1,C1,B,X,11.0,\n'+
+                  '2,SV-22,1,C2,B,X,6.5,\n';
+                survey.canopy_survey_archive:
+                  'survey_id,survey_code,tree_id,spread_m\n'+
+                  '31,SV-31,1,4.25\n';
+              }#
+          ];
+          asserts:
+          [
+            threeEntries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Entry":"SV-31","Source":"ARCHIVE-SV-31","Spread":4.25},{"Entry":"SV-21","Source":"LIVE-SV-21","Spread":11.0},{"Entry":"SV-22","Source":"LIVE-SV-22","Spread":6.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

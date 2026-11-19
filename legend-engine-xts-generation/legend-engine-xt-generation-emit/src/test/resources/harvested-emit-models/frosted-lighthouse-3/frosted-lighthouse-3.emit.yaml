@@ -1,0 +1,51 @@
+name: frosted-lighthouse-3
+title: "Frosted Lighthouse 3 — A Nullable Herbarium Lookup Contract With Enumerated Code Constraints And A Standalone OpenAPI Schema Generation"
+description: |
+  A herbarium specimen lookup contract expressed entirely as small record classes: a
+  parameter-style request of optional scalars and a repeated preservation-code filter, a
+  published sheet record, a published collecting-site record and a numeric roll-up returned
+  beside them. Nothing nests beyond one level and no property is mandatory, so the whole
+  contract is nullable and a caller may omit any field.
+
+  Two of the record classes carry a class-level constraint that validates an optional code
+  property against a closed literal set — five preservation codes on the sheet record and
+  three habitat codes on the site record. Each constraint is a guarded conditional whose
+  guard tests non-emptiness, whose true arm narrows the optional to one value, upper-cases it
+  and applies set membership, and whose false arm returns a boolean literal, so an absent code
+  is vacuously valid. Neither constraint carries a failure message, so a violation surfaces as
+  a plain error.
+
+  A single profile declares a payload stereotype and a tag vocabulary — scalar type, an
+  example-presence flag, a field note and an indexing hint — applied per property across the
+  record classes, with repeated indexing hints on the collection-shaped properties and
+  platform documentation annotations mixed in beside the locally declared tags.
+
+  The only generation-side element is a JSON-schema file generation scoped to the whole class
+  package with an OpenAPI-flavoured YAML schema specification. It stands alone: no generation
+  specification sequences it, yet it still resolves the package transitively, including both
+  constrained classes, and reads the profile's tags as the scalar-typing metadata for the
+  generated schema.
+
+modelSources:
+  model:
+    root: frosted-lighthouse-3
+    files:
+      - test/frostedlighthouse3/domain/HerbariumContract.pure
+      - test/frostedlighthouse3/generation/HerbariumSchema.pure
+
+features:
+  - execution:file-generation
+  - grammar:constraint
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - enumerated-code-constraint
+  - file-generation
+  - herbarium-lookup-contract
+  - json-schema
+  - nullable-record-classes
+  - openapi-yaml
+  - profile-tagged-values
+  - standalone-generation

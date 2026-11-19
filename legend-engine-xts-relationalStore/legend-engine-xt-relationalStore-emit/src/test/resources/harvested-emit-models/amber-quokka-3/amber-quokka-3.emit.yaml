@@ -1,0 +1,48 @@
+name: amber-quokka-3
+title: "Alpine Refuge Occupancy — bitemporal point-in-time service extracts and a windowed stay digest"
+description: |
+  A mountain refuge occupancy register whose refuge, dormitory-room and stay records are all
+  bitemporal, so every read is pinned to one processing and one business instant bound from the
+  requested date. One single-execution service qualifies refuges above the tree line through a
+  nested existence test over rooms and their permitted stays — party size, stay kind membership
+  and a sixty-day arrival window — then projects the instant-parameterized zone, room and stay
+  chains, deduplicates and sorts on three keys. A second service groups permitted stays inside a
+  caller-sized window by stay kind, summing guest-nights computed from the arrival-to-departure
+  day difference times the party size and counting the contributing stays. Service test suites
+  execute both shapes against embedded relational fixtures, including rows that fall outside the
+  requested instant on the business and on the processing axis.
+modelSources:
+  model:
+    root: amber-quokka-3
+    files:
+      - test/amberquokka3/connection/RefugeRegisterConnection.pure
+      - test/amberquokka3/domain/RefugeDomain.pure
+      - test/amberquokka3/mapping/RefugeMapping.pure
+      - test/amberquokka3/runtime/RefugeRuntime.pure
+      - test/amberquokka3/service/RefugeStayDigest.pure
+      - test/amberquokka3/service/RefugeStayExtract.pure
+      - test/amberquokka3/store/RefugeRegisterDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - bitemporal
+  - collection-op
+  - date-arithmetic
+  - group-by
+  - h2
+  - milestoning
+  - mountain-refuge
+  - point-in-time
+  - relational
+  - service-test

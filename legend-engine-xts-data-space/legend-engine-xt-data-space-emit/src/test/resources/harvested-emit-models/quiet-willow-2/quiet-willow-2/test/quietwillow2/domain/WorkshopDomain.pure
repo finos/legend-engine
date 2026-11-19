@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::quietwillow2::domain::*;
+
+Enum test::quietwillow2::domain::CarriageClass
+{
+  BRAKE_THIRD,
+  COMPOSITE,
+  OBSERVATION,
+  SALOON
+}
+
+Enum test::quietwillow2::domain::OverhaulGrade
+{
+  LIGHT,
+  INTERMEDIATE,
+  HEAVY
+}
+
+Class test::quietwillow2::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+}
+
+Class test::quietwillow2::domain::Depot
+{
+  depotCode: String[1];
+  depotName: String[1];
+}
+
+Class test::quietwillow2::domain::WorksSite
+{
+  worksCode: String[1];
+  worksName: String[1];
+}
+
+Class test::quietwillow2::domain::Fitter
+{
+  fitterCode: String[1];
+  fitterName: String[1];
+  worksName: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A carriage of a narrow-gauge heritage railway, held on a business validity window so the sheet describing it can be superseded and a window that opens after the queried day falls out of range.'} test::quietwillow2::domain::Carriage
+{
+  carriageCode: String[1];
+  carriageName: String[1];
+  carriageClass: CarriageClass[1];
+  seats: Integer[1];
+  tareTonnes: Float[1];
+  depotName: String[0..1];
+  regionName: String[0..1];
+  inspectionNote: String[0..1];
+  overhaulCount: Integer[0..1];
+  labourHours: Integer[0..1];
+  fleetLabel: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'One overhaul of one carriage at one works site, also carried on a business validity window so the queried day pins both sides of the relationship rather than only the carriage.'} test::quietwillow2::domain::Overhaul
+{
+  overhaulCode: String[1];
+  grade: OverhaulGrade[1];
+  labourHours: Integer[1];
+  worksName: String[0..1];
+  worksRegionName: String[0..1];
+  carriageRegionName: String[0..1];
+}
+
+Association {doc.doc = 'Binds a carriage to the overhauls booked against it. The carriage end is optional so an overhaul may resolve to nothing, and the overhaul end repeats, so a query over it fans out and has to fold back to one value per carriage.'} test::quietwillow2::domain::CarriageOverhauls
+{
+  carriage: Carriage[0..1];
+  overhauls: Overhaul[*];
+}

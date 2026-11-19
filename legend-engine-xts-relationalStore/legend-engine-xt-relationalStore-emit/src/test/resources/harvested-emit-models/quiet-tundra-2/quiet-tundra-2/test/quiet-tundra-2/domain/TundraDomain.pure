@@ -1,0 +1,171 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::quiettundra2::domain::*;
+
+Profile test::quiettundra2::domain::TundraProfile
+{
+  stereotypes: [fieldVerified, remoteFeed];
+  tags: [steward, maxLength];
+}
+
+Enum {doc.doc = 'Vegetation habitat a tundra plot was laid in.'} test::quiettundra2::domain::PlotHabitat
+{
+  HEATH,
+  SEDGE,
+  MOSS,
+  BARREN
+}
+
+Enum {doc.doc = 'What a sample bag taken from a plot holds.'} test::quiettundra2::domain::SampleKind
+{
+  SOIL,
+  PLANT,
+  MELTWATER
+}
+
+Class <<typemodifiers.abstract, TundraProfile.remoteFeed>> {doc.doc = 'Anything the tundra field programme tracks under a stable field code.', TundraProfile.steward = 'tundra-field-programme'} test::quiettundra2::domain::FieldEntity
+{
+  {doc.doc = 'Stable field code.', TundraProfile.maxLength = '12'} code: String[1];
+}
+
+Class <<typemodifiers.abstract>> {doc.doc = 'A field entity revisited season by season.'} test::quiettundra2::domain::SurveyedEntity extends FieldEntity
+{
+  {doc.doc = 'Field season the record belongs to.', TundraProfile.maxLength = '8'} season: String[0..1];
+}
+
+Class <<TundraProfile.fieldVerified>> {doc.doc = 'One vegetation plot of the tundra transects with its cover, samples, station and site facts.'} test::quiettundra2::domain::Plot extends SurveyedEntity
+[
+  codeShape
+  (
+    ~function: $this.code->startsWith('PL-')
+    ~enforcementLevel: Warn
+    ~message: 'A plot code starts with the plot prefix'
+  ),
+  vegetatedPlotHasBand
+  (
+    ~function: if($this.habitat->isEmpty(), |true, |if($this.habitat == PlotHabitat.BARREN, |true, |$this.coverBand->isNotEmpty()))
+    ~enforcementLevel: Warn
+    ~message: 'A vegetated plot carries a cover band'
+  ),
+  coverRatioInRange
+  (
+    ~function: $this.coverRatio()->isEmpty() || ($this.coverRatio()->toOne() <= 1.0)
+    ~enforcementLevel: Warn
+    ~message: 'Covered quadrats never outnumber the quadrats laid'
+  ),
+  stationKnown
+  (
+    ~function: $this.station->isNotEmpty()
+    ~enforcementLevel: Warn
+    ~message: 'A plot is placed at a known station'
+  )
+]
+{
+  {doc.doc = 'First letters of the plot name.', TundraProfile.maxLength = '6'} shortLabel: String[0..1];
+  {doc.doc = 'Habitat the plot was laid in.'} habitat: PlotHabitat[0..1];
+  {doc.doc = 'Band of vegetation cover recorded on the plot.', TundraProfile.maxLength = '8'} coverBand: String[0..1];
+  {doc.doc = 'Number of quadrats laid on the plot.'} quadratCount: Integer[0..1];
+  {doc.doc = 'Number of quadrats found covered.'} coveredCount: Integer[0..1];
+  {doc.doc = 'Short tags of the sample bags taken from the plot.'} sampleLabels: String[*];
+  {doc.doc = 'Label of the live zone the plot station sits in, reached through the station and its ridge.'} zoneLabel: String[0..1];
+  {doc.doc = 'Code of the zone reached through the inner-joined zone view.'} zoneCode: String[0..1];
+  {doc.doc = 'Name of the plot this plot was split from.'} parentName: String[0..1];
+  {doc.doc = 'Number of sample bags kept.'} keptSamples: Integer[0..1];
+  {doc.doc = 'Mass of the heaviest sample bag, in grams.'} heaviestSampleG: Float[0..1];
+  {doc.doc = 'Slope and aspect recorded at the plot.'} siteFacts: SiteFacts[0..1];
+  {doc.doc = 'Share of the laid quadrats found covered; empty when either count is missing or no quadrat was laid.'} coverRatio() {if($this.quadratCount->isEmpty() || $this.coveredCount->isEmpty(), |[], |if($this.quadratCount->toOne() == 0, |[], |$this.coveredCount->toOne() / $this.quadratCount->toOne()))}: Float[0..1];
+}
+
+Class {doc.doc = 'Slope and aspect facts of a plot site, carried on the plot row.'} test::quiettundra2::domain::SiteFacts
+[
+  slopeWithinRange
+  (
+    ~function: $this.slopeDeg->isEmpty() || (($this.slopeDeg->toOne() >= 0) && ($this.slopeDeg->toOne() <= 90))
+    ~enforcementLevel: Warn
+    ~message: 'A plot slope lies between flat and vertical'
+  ),
+  aspectIsCompassPoint
+  (
+    ~function: $this.aspect->isEmpty() || $this.aspect->toOne()->toUpper()->in(['NORTH', 'EAST', 'SOUTH', 'WEST'])
+    ~enforcementLevel: Warn
+    ~message: 'A plot aspect names a compass point'
+  )
+]
+{
+  {doc.doc = 'Slope of the plot, in degrees.'} slopeDeg: Integer[0..1];
+  {doc.doc = 'Compass aspect the plot faces.'} aspect: String[0..1];
+}
+
+Class {doc.doc = 'A field hut or camp that plots are walked from.'} test::quiettundra2::domain::Station extends FieldEntity
+{
+  {doc.doc = 'Name of the station.'} stationName: String[0..1];
+  {doc.doc = 'Code of the ridge the station sits on.', TundraProfile.maxLength = '8'} ridgeCode: String[0..1];
+}
+
+Class {doc.doc = 'One sample bag taken from a plot.'} test::quiettundra2::domain::PlotSample
+[
+  sampleTagShape
+  (
+    ~function: $this.sampleCode->startsWith('SM-')
+    ~enforcementLevel: Warn
+    ~message: 'A sample bag tag starts with the bag prefix'
+  ),
+  massPositive
+  (
+    ~function: $this.massG->isEmpty() || ($this.massG->toOne() > 0.0)
+    ~enforcementLevel: Warn
+    ~message: 'A weighed sample bag has a positive mass'
+  )
+]
+{
+  {doc.doc = 'Tag of the sample bag.', TundraProfile.maxLength = '12'} sampleCode: String[1];
+  {doc.doc = 'What the bag holds.'} kind: SampleKind[0..1];
+  {doc.doc = 'Mass of the bag, in grams.'} massG: Float[0..1];
+}
+
+Class {doc.doc = 'One distinct pairing of a plot code with a kind of sample taken there.'} test::quiettundra2::domain::PlotKindPair
+{
+  {doc.doc = 'Code of the plot.'} plotCode: String[1];
+  {doc.doc = 'Kind of sample taken there.'} kind: SampleKind[0..1];
+}
+
+Class {doc.doc = 'A walking crew of the field programme.'} test::quiettundra2::domain::Crew extends FieldEntity
+[
+  walksInPairs
+  (
+    ~function: $this.memberCount >= 2
+    ~enforcementLevel: Warn
+    ~message: 'A crew walks the tundra in pairs at least'
+  )
+]
+{
+  {doc.doc = 'Name of the crew lead.'} leadName: String[0..1];
+  {doc.doc = 'Number of crew members.'} memberCount: Integer[1];
+  {doc.doc = 'Crew member names.'} roster: String[*];
+}
+
+Association {doc.doc = 'Places plots at the station they are walked from.'} test::quiettundra2::domain::PlotStation
+{
+  plots: Plot[*];
+  station: Station[0..1];
+}
+
+Association {doc.doc = 'Links a plot to the sample bags taken from it.'} test::quiettundra2::domain::PlotSamples
+{
+  plot: Plot[0..1];
+  samples: PlotSample[*];
+}

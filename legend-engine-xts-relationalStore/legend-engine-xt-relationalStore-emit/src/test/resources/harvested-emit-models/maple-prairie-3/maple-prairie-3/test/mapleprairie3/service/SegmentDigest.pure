@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::mapleprairie3::service::SegmentDigest
+{
+  pattern: '/trails/v1/segment-digest';
+  title: 'Maple Prairie - Segment digest';
+  owners:
+  [
+    'alpine-trail-desk',
+    'mountain-hut-wardens'
+  ];
+  documentation: 'A distinct segment digest filtered by an explicit segment set and the year of each segment opening.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {segmentCodes: String[*]|test::mapleprairie3::domain::TrailSegment.all()->filter(
+      s|$s.segmentCode->in($segmentCodes) && ($s.segmentCode->in(['T-7', 'T-8']) && $s.openedOn->year()->in([2023, 2024]))
+    )->project(
+      [
+        s|$s.segmentCode,
+        s|$s.segmentName,
+        s|$s.gradeCode,
+        s|$s.distanceKm
+      ],
+      [
+        'Segment/Code',
+        'Segment/Name',
+        'Segment/Grade',
+        'Segment/Distance'
+      ]
+    )->distinct()};
+    mapping: test::mapleprairie3::mapping::TrailMapping;
+    runtime: test::mapleprairie3::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    segmentDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailConnection:
+            Relational
+            #{
+              highland.trail_segment:
+                'segment_code,segment_name,grade_code,distance_km,opened_on\n'+
+                'T-7,granite approach,BLUE,8,2024-05-01\n'+
+                'T-8,icefall traverse,RED,11,2023-08-15\n'+
+                'T-9,forest spur,GREEN,4,2022-07-10\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentSegments:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            segmentCodes = ['T-7', 'T-8']
+          ]
+          asserts:
+          [
+            twoSegments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment/Code":"T-7","Segment/Name":"GRANITE APPROACH","Segment/Grade":"BLUE","Segment/Distance":8},{"Segment/Code":"T-8","Segment/Name":"ICEFALL TRAVERSE","Segment/Grade":"RED","Segment/Distance":11}]';
+                  }#;
+              }#
+          ]
+        },
+        noMatchingSegment:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            segmentCodes = ['T-0']
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

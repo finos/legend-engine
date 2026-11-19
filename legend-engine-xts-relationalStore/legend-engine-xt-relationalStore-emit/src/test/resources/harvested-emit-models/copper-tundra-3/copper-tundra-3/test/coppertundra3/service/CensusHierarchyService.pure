@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coppertundra3::service::CensusHierarchyService
+{
+  pattern: '/coppertundra3/censusHierarchy';
+  title: 'Distinct Census Hierarchy Labels Still In Certificate';
+  owners:
+  [
+    'reserve-census-desk'
+  ];
+  documentation: 'Resolves the enclosure census extent at the supplied business date, keeps only the rows whose certificate still runs on or after the evaluation date, projects the seven hierarchy label and note columns, and deduplicates them, because the milestoned extent repeats the same hierarchy once per censused enclosure.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], currentDate: StrictDate[1]|test::coppertundra3::domain::EnclosureCensus.all($businessDate)->filter(
+      c|$c.certifiedThrough >= $currentDate
+    )->project(
+      [
+        c|$c.habitatTier,
+        c|$c.zoneName,
+        c|$c.zoneDescription,
+        c|$c.sectorName,
+        c|$c.sectorDescription,
+        c|$c.reserveName,
+        c|$c.reserveDescription
+      ],
+      [
+        'Habitat Tier Label',
+        'Zone',
+        'Zone Note',
+        'Sector',
+        'Sector Note',
+        'Reserve',
+        'Reserve Note'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Zone')
+      ]
+    )};
+    mapping: test::coppertundra3::mapping::CensusMapping;
+    runtime: test::coppertundra3::runtime::CensusRuntime;
+  }
+  testSuites:
+  [
+    censusHierarchySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          censusH2Connection:
+            Reference
+            #{
+              test::coppertundra3::data::CensusSeasonData
+            }#
+        ]
+      ]
+      tests:
+      [
+        distinctHierarchyAtBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-06-15,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Habitat Tier Label":"TIER-UPLAND","Zone":"Fell Mire","Zone Note":"Waterlogged hollow below the ridge","Sector":"Mire Sector","Sector Note":"Southern mire and its outflow","Reserve":"Tundra Reserve","Reserve Note":"Cold-climate reserve of open ground"},{"Habitat Tier Label":"TIER-UPLAND","Zone":"Upland Heath","Zone Note":"Wind-clipped heath above the tree line","Sector":"Ridge Sector","Sector Note":"Northern ridge and its saddle","Reserve":"Tundra Reserve","Reserve Note":"Cold-climate reserve of open ground"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

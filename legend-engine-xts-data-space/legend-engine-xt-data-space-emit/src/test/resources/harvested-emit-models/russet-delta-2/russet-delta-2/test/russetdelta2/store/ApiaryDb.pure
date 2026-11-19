@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::russetdelta2::store::ApiaryDb
+(
+  Schema apiary
+  (
+    Table apiary_yard
+    (
+      yard_code VARCHAR(16) PRIMARY KEY,
+      yard_name VARCHAR(64) NOT NULL,
+      district_code VARCHAR(16),
+      hive_slots INTEGER,
+      terrain_code VARCHAR(8)
+    )
+    Table hive
+    (
+      hive_code VARCHAR(16) PRIMARY KEY,
+      yard_code VARCHAR(16),
+      frame_count INTEGER,
+      queen_year INTEGER,
+      hive_status VARCHAR(1)
+    )
+    Table inspection
+    (
+      inspection_code VARCHAR(16) PRIMARY KEY,
+      hive_code VARCHAR(16),
+      inspected_on DATE,
+      brood_frames INTEGER,
+      mite_count INTEGER,
+      inspector_note VARCHAR(128)
+    )
+    Table forage_patch
+    (
+      patch_code VARCHAR(16) PRIMARY KEY,
+      yard_code VARCHAR(16),
+      patch_name VARCHAR(64),
+      bloom_code VARCHAR(8),
+      hectares INTEGER
+    )
+  )
+
+  Join Hive_Yard(apiary.hive.yard_code = apiary.apiary_yard.yard_code)
+  Join Inspection_Hive(apiary.inspection.hive_code = apiary.hive.hive_code)
+  Join Patch_Yard(apiary.forage_patch.yard_code = apiary.apiary_yard.yard_code)
+)

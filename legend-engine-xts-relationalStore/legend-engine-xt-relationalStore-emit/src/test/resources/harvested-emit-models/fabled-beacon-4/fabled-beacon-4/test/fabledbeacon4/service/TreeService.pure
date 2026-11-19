@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledbeacon4::service::TreeService
+{
+  pattern: '/fabledbeacon4/trees';
+  documentation: 'Returns healthy in-range canopy trees with their cross-schema habitat zone.';
+  ownership: UserList { users: ['canopy-stewardship-team'] };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::fabledbeacon4::domain::TreeRecord.all($asOf)->filter(
+      t|$t.healthyFlag == true
+    )->project(
+      [
+        t|$t.treeCode,
+        t|$t.treeName,
+        t|$t.measuredAt,
+        t|$t.healthyFlag,
+        t|$t.zone.zoneName
+      ],
+      [
+        'Tree',
+        'Name',
+        'MeasuredAt',
+        'Healthy',
+        'Zone'
+      ]
+    )};
+    mapping: test::fabledbeacon4::mapping::BeaconMapping;
+    runtime: test::fabledbeacon4::runtime::BeaconRuntime;
+  }
+  testSuites:
+  [
+    treeServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection: Reference
+            #{
+              test::fabledbeacon4::data::BeaconTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        excludesExpiredTree:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            currentRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tree":"TR-1","Name":"Juniper Rise","MeasuredAt":"2026-04-01T08:00:00.000000000+0000","Healthy":true,"Zone":"North Canopy"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

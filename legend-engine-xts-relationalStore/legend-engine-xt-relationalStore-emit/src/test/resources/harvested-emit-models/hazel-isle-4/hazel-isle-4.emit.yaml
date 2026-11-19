@@ -1,0 +1,50 @@
+name: hazel-isle-4
+title: "Island Allotment Register — Shared Enumeration Mappings and Embedded Notice Blocks over a Three-Table Store"
+description: |
+  An island allotment site of let plots, the growers holding them and the tool
+  sheds standing on the site. One enumeration-only mapping declares the soil,
+  tenure and shed-kind decodes with two accepted source values per member, and
+  two separate relational mappings include it rather than restating it. Each
+  class mapping pins a primary key, names its main table explicitly, reads every
+  scalar property as a table-alias column, repeats a register label as a literal
+  and carries an embedded block whose labels re-read the decoded code columns —
+  one of them supplying a literal site label inside the embedded block. Mapping
+  test suites drive all three main tables with fixtures that include an
+  unlisted code and a null code so the undecoded outcomes are pinned.
+
+modelSources:
+  model:
+    root: hazel-isle-4
+    files:
+      - test/hazelisle4/domain/AllotmentDomain.pure
+      - test/hazelisle4/mapping/AllotmentBaseMapping.pure
+      - test/hazelisle4/mapping/AllotmentEnumMappings.pure
+      - test/hazelisle4/mapping/ToolShedMapping.pure
+      - test/hazelisle4/store/AllotmentDb.pure
+
+features:
+  - grammar:enumeration
+  - mapping:mapping-include
+  - mapping:relational-embedded
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - allotment-site
+  - embedded-property
+  - enumeration-mapping
+  - h2
+  - literal-mapping
+  - main-table-alias
+  - mapping-include
+  - mapping-test
+  - multi-table
+  - relational

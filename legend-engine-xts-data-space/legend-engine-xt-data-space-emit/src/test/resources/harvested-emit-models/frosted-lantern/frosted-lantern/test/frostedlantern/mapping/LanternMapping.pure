@@ -1,0 +1,181 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedlantern::mapping::LanternMapping
+(
+  *test::frostedlantern::domain::Workshop[workshop]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedlantern::store::LanternDb]catalogue.workshop.workshop_code
+    )
+    ~mainTable [test::frostedlantern::store::LanternDb]catalogue.workshop
+    workshopCode: [test::frostedlantern::store::LanternDb]catalogue.workshop.workshop_code,
+    workshopName: [test::frostedlantern::store::LanternDb]catalogue.workshop.workshop_name,
+    townName: [test::frostedlantern::store::LanternDb]catalogue.workshop.town_name,
+    guildCode: [test::frostedlantern::store::LanternDb]catalogue.workshop.guild_code
+  }
+
+  *test::frostedlantern::domain::FinishLot[finishLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedlantern::store::LanternDb]catalogue.finish_lot.lot_code
+    )
+    ~mainTable [test::frostedlantern::store::LanternDb]catalogue.finish_lot
+    lotCode: [test::frostedlantern::store::LanternDb]catalogue.finish_lot.lot_code,
+    finishCode: [test::frostedlantern::store::LanternDb]catalogue.finish_lot.finish_code,
+    lotLabel: [test::frostedlantern::store::LanternDb]catalogue.finish_lot.lot_label,
+    lotYear: [test::frostedlantern::store::LanternDb]catalogue.finish_lot.lot_year
+  }
+
+  *test::frostedlantern::domain::LanternItem[lanternItem]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedlantern::store::LanternDb]catalogue.lantern_item.item_code
+    )
+    ~mainTable [test::frostedlantern::store::LanternDb]catalogue.lantern_item
+    itemCode: [test::frostedlantern::store::LanternDb]catalogue.lantern_item.item_code,
+    itemName: [test::frostedlantern::store::LanternDb]catalogue.lantern_item.item_name,
+    glassType: [test::frostedlantern::store::LanternDb]catalogue.lantern_item.glass_type,
+    finishCode: [test::frostedlantern::store::LanternDb]catalogue.lantern_item.finish_code,
+    paneCount: [test::frostedlantern::store::LanternDb]catalogue.lantern_item.pane_count,
+    catalogueYear: [test::frostedlantern::store::LanternDb]catalogue.lantern_item.catalogue_year,
+    workshop[workshop]: [test::frostedlantern::store::LanternDb]@Item_Workshop
+  }
+
+  testSuites:
+  [
+    itemThroughWorkshopSuite:
+    {
+      function: |test::frostedlantern::domain::LanternItem.all()->project(
+  [
+    i|$i.itemCode,
+    i|$i.glassType,
+    i|$i.finishCode,
+    i|$i.paneCount,
+    i|$i.workshop.workshopName,
+    i|$i.workshop.townName,
+    i|$i.workshop.guildCode
+  ],
+  [
+    'ItemCode',
+    'GlassType',
+    'FinishCode',
+    'PaneCount',
+    'WorkshopName',
+    'TownName',
+    'GuildCode'
+  ]
+)->sort(
+  [
+    asc('ItemCode')
+  ]
+);
+      tests:
+      [
+        itemsWithAndWithoutAWorkshop:
+        {
+          doc: 'Covers the item main table alias, the workshop reached through the join and an item whose workshop reference resolves to nothing.';
+          data:
+          [
+            test::frostedlantern::store::LanternDb:
+              Relational
+              #{
+                catalogue.workshop:
+                  'workshop_code,workshop_name,town_name,guild_code\n'+
+                  'WS-1,Frost Glassworks,Rimehaven,GLAZIERS\n'+
+                  'WS-2,Pane And Pane,Rimehaven,GLAZIERS\n'+
+                  'WS-3,Lantern Loft,Bellmoor,SMITHS\n'+
+                  'WS-4,Clearlight Shed,Coldwater,GLAZIERS\n';
+                catalogue.lantern_item:
+                  'item_code,item_name,glass_type,finish_code,workshop_code,pane_count,catalogue_year\n'+
+                  'LI-1,Harbour Lantern,SODA,FROSTED,WS-1,6,1899\n'+
+                  'LI-2,Cellar Lantern,LEAD,FROSTED,WS-2,4,1901\n'+
+                  'LI-7,Attic Lantern,SODA,ETCHED,WS-9,2,1912\n';
+              }#
+          ];
+          asserts:
+          [
+            threeItemsTwoJoined:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ItemCode":"LI-1","GlassType":"SODA","FinishCode":"FROSTED","PaneCount":6,"WorkshopName":"Frost Glassworks","TownName":"Rimehaven","GuildCode":"GLAZIERS"},{"ItemCode":"LI-2","GlassType":"LEAD","FinishCode":"FROSTED","PaneCount":4,"WorkshopName":"Pane And Pane","TownName":"Rimehaven","GuildCode":"GLAZIERS"},{"ItemCode":"LI-7","GlassType":"SODA","FinishCode":"ETCHED","PaneCount":2,"WorkshopName":null,"TownName":null,"GuildCode":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    finishLotSuite:
+    {
+      function: |test::frostedlantern::domain::FinishLot.all()->project(
+  [
+    l|$l.lotCode,
+    l|$l.finishCode,
+    l|$l.lotLabel,
+    l|$l.lotYear
+  ],
+  [
+    'LotCode',
+    'FinishCode',
+    'LotLabel',
+    'LotYear'
+  ]
+)->sort(
+  [
+    asc('LotCode')
+  ]
+);
+      tests:
+      [
+        threeFinishLots:
+        {
+          doc: 'Reads the finish lot main table alias on its own so alias qualification is exercised on a second table.';
+          data:
+          [
+            test::frostedlantern::store::LanternDb:
+              Relational
+              #{
+                catalogue.finish_lot:
+                  'lot_code,finish_code,lot_label,lot_year\n'+
+                  'FL-1,FROSTED,frosted winter lot,1899\n'+
+                  'FL-2,CLEAR,clear autumn lot,1902\n'+
+                  'FL-3,ETCHED,etched spring lot,1911\n';
+              }#
+          ];
+          asserts:
+          [
+            lotsInCodeOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LotCode":"FL-1","FinishCode":"FROSTED","LotLabel":"frosted winter lot","LotYear":1899},{"LotCode":"FL-2","FinishCode":"CLEAR","LotLabel":"clear autumn lot","LotYear":1902},{"LotCode":"FL-3","FinishCode":"ETCHED","LotLabel":"etched spring lot","LotYear":1911}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::oliveprairie::mapping::PrairieMapping
+(
+  *test::oliveprairie::domain::Field[field]: Relational
+  {
+    ~primaryKey
+    (
+      [test::oliveprairie::store::PrairieDB]prairie.field.field_id
+    )
+    ~mainTable [test::oliveprairie::store::PrairieDB]prairie.field
+    fieldId: [test::oliveprairie::store::PrairieDB]prairie.field.field_id,
+    name: [test::oliveprairie::store::PrairieDB]prairie.field.name,
+    region: [test::oliveprairie::store::PrairieDB]prairie.field.region,
+    plots: [test::oliveprairie::store::PrairieDB]@Field_Plot
+  }
+
+  *test::oliveprairie::domain::Plot[plot]: Relational
+  {
+    ~filter [test::oliveprairie::store::PrairieDB]BigPlots
+    ~primaryKey
+    (
+      [test::oliveprairie::store::PrairieDB]prairie.plot.plot_id
+    )
+    ~mainTable [test::oliveprairie::store::PrairieDB]prairie.plot
+    plotId: [test::oliveprairie::store::PrairieDB]prairie.plot.plot_id,
+    cropCount: [test::oliveprairie::store::PrairieDB]prairie.plot.crop_count,
+    field: [test::oliveprairie::store::PrairieDB]@Field_Plot
+  }
+)

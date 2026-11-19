@@ -1,0 +1,32 @@
+name: copper-willow-4
+title: "Coppice Woodland Stool-Grading Register"
+description: |
+  A coppice woodland register that maps stool records and cut cycles from a
+  small relational store. The stool mapping normalizes a field condition code,
+  classifies eight woodland grades with a distinct fallback, and preserves
+  nullable field notes as optional values.
+modelSources:
+  model:
+    root: copper-willow-4
+    files:
+      - test/copperwillow4/domain/CoppiceDomain.pure
+      - test/copperwillow4/mapping/CoppiceMapping.pure
+      - test/copperwillow4/store/CoppiceDatabase.pure
+features:
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - coppice
+  - grading
+  - h2
+  - relational
+  - woodland

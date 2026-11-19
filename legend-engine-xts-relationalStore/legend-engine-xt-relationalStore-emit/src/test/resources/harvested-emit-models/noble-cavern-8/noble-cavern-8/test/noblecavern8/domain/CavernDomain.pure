@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A named cave system as the karst register holds it, the unit every permit and every survey run hangs from.'} test::noblecavern8::domain::CaveSystem
+{
+  systemCode: String[1];
+  systemName: String[1];
+  karstRegion: String[1];
+  regionName: String[1];
+}
+
+Class {doc.doc = 'A permit granting entry to one cave system, held in the reference schema beside the system it admits to.'} test::noblecavern8::domain::AccessPermit
+{
+  permitRef: String[1];
+  permitHolder: String[1];
+}
+
+Class {doc.doc = 'A survey crew, held in its own schema so a run reaches its crew across the schema boundary.'} test::noblecavern8::domain::SurveyCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  baseCamp: String[1];
+}
+
+Class {doc.doc = 'One trip underground: the run a crew made through a cave system on a given day, and the parent of the legs measured on it.'} test::noblecavern8::domain::SurveyRun
+{
+  runRef: String[1];
+  surveyedOn: StrictDate[1];
+}
+
+Class {doc.doc = 'A measured passage leg belonging to one survey run, carrying the length and depth booked for it.'} test::noblecavern8::domain::PassageLeg
+{
+  legRef: String[1];
+  lengthMetres: Integer[1];
+  depthMetres: Integer[1];
+}
+
+Class {doc.doc = 'A single station reading taken along a passage leg: the compass bearing and the inclination booked at that station.'} test::noblecavern8::domain::StationReading
+{
+  stationRef: String[1];
+  azimuthDegrees: Integer[1];
+  inclinationDegrees: Integer[1];
+}
+
+Association {doc.doc = 'A cave system and the permits admitting to it, both held in the reference schema.'} test::noblecavern8::domain::CaveSystemPermits
+{
+  system: test::noblecavern8::domain::CaveSystem[1];
+  permits: test::noblecavern8::domain::AccessPermit[*];
+}
+
+Association {doc.doc = 'A survey run and the cave system it went into, reached across the schema boundary into the reference register.'} test::noblecavern8::domain::SurveyRunSystem
+{
+  surveyedSystem: test::noblecavern8::domain::CaveSystem[1];
+  runs: test::noblecavern8::domain::SurveyRun[*];
+}
+
+Association {doc.doc = 'A survey run and the crew that made it, reached across the schema boundary into the crew schema.'} test::noblecavern8::domain::SurveyRunCrew
+{
+  crew: test::noblecavern8::domain::SurveyCrew[1];
+  crewRuns: test::noblecavern8::domain::SurveyRun[*];
+}
+
+Association {doc.doc = 'A survey run and the passage legs measured on it.'} test::noblecavern8::domain::SurveyRunLegs
+{
+  run: test::noblecavern8::domain::SurveyRun[1];
+  legs: test::noblecavern8::domain::PassageLeg[*];
+}
+
+Association {doc.doc = 'A passage leg and the station readings taken along it.'} test::noblecavern8::domain::PassageLegReadings
+{
+  leg: test::noblecavern8::domain::PassageLeg[1];
+  readings: test::noblecavern8::domain::StationReading[*];
+}

@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantisle4::service::DispatchRankBoard
+{
+  pattern: '/verdantisle4/v1/dispatch-rank-board';
+  title: 'Island Nursery - Dispatch Rank Board';
+  documentation: 'Ranks released dispatches by tray count inside each zone with a dense window rank, so ties share a rank without leaving a gap behind them, and trims the ranked board.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'island-nursery-desk'
+  ];
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], thruDate: StrictDate[1]|test::verdantisle4::domain::DispatchRecord.all()->filter(
+      d|($d.dispatchState == 'RELEASED') && (($d.dispatchedOn >= $fromDate) && ($d.dispatchedOn <= $thruDate))
+    )->project(
+      [
+        col(
+          d|$d.zoneRef,
+          'Zone'
+        ),
+        col(
+          d|$d.dispatchCode,
+          'Dispatch'
+        ),
+        col(
+          d|$d.trayCount,
+          'Trays'
+        )
+      ]
+    )->olapGroupBy(
+      ['Zone'],
+      desc('Trays'),
+      w|$w->denseRank(),
+      'Rank'
+    )->sort(
+      [
+        asc('Zone'),
+        asc('Rank'),
+        asc('Dispatch')
+      ]
+    )->limit(20)};
+    mapping: test::verdantisle4::mapping::NurseryPublishedMapping;
+    runtime: test::verdantisle4::runtime::NurseryVerificationRuntime;
+  }
+  testSuites:
+  [
+    dispatchRankBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryVerificationH2:
+            Relational
+            #{
+              nurserylocal.dispatch_record:
+                'dispatch_id,dispatch_code,lot_code,zone_code,dispatch_state,tray_count,dispatched_on\n'+
+                '1,DR-001,SL-001,ZN-1,RELEASED,120,2026-04-01\n'+
+                '2,DR-002,SL-001,ZN-1,RELEASED,80,2026-04-01\n'+
+                '3,DR-003,SL-002,ZN-2,RELEASED,60,2026-04-02\n'+
+                '4,DR-004,SL-002,ZN-2,RELEASED,36,2026-04-02\n'+
+                '5,DR-005,SL-003,ZN-1,RELEASED,28,2026-04-03\n'+
+                '6,DR-006,SL-003,ZN-1,RELEASED,20,2026-04-03\n'+
+                '7,DR-007,SL-001,ZN-2,RELEASED,10,2026-04-04\n'+
+                '8,DR-008,SL-002,ZN-2,RELEASED,4,2026-04-04\n'+
+                '9,DR-009,SL-003,ZN-1,RELEASED,0,2026-04-05\n'+
+                '10,DR-010,SL-404,ZN-9,RELEASED,50,2026-04-05\n'+
+                '11,DR-011,SL-001,ZN-1,HELD,90,2026-04-06\n'+
+                '12,DR-012,SL-001,ZN-1,RELEASED,70,2026-05-20\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        denseRankedDispatchesPerZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-04-01,
+            thruDate = %2026-04-30
+          ]
+          asserts:
+          [
+            rankedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"ZN-1","Dispatch":"DR-001","Trays":120,"Rank":1},{"Zone":"ZN-1","Dispatch":"DR-002","Trays":80,"Rank":2},{"Zone":"ZN-1","Dispatch":"DR-005","Trays":28,"Rank":3},{"Zone":"ZN-1","Dispatch":"DR-006","Trays":20,"Rank":4},{"Zone":"ZN-1","Dispatch":"DR-009","Trays":0,"Rank":5},{"Zone":"ZN-2","Dispatch":"DR-003","Trays":60,"Rank":1},{"Zone":"ZN-2","Dispatch":"DR-004","Trays":36,"Rank":2},{"Zone":"ZN-2","Dispatch":"DR-007","Trays":10,"Rank":3},{"Zone":"ZN-2","Dispatch":"DR-008","Trays":4,"Rank":4},{"Zone":"ZN-9","Dispatch":"DR-010","Trays":50,"Rank":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

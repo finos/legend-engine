@@ -1,0 +1,31 @@
+name: maple-delta-3
+title: "Maple Delta 3 — sugarbush stand rollup served from a primary and an archive extent"
+description: |
+  An invented sugarbush model whose collection runs are filtered by a deep
+  predicate, de-duplicated and rolled up per maple stand, with the same rollup
+  exposed under two execution keys.
+modelSources:
+  model:
+    root: maple-delta-3
+    files:
+      - test/mapledelta3/connection/SugarbushConnections.pure
+      - test/mapledelta3/domain/SugarbushDomain.pure
+      - test/mapledelta3/mapping/SugarbushMapping.pure
+      - test/mapledelta3/runtime/SugarbushRuntimes.pure
+      - test/mapledelta3/service/StandYieldRollupService.pure
+      - test/mapledelta3/store/SugarbushDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+stores: []
+complexity: basic
+tags:
+  - group-by
+  - h2
+  - multi-execution
+  - stand-rollup
+  - tabular-data-set

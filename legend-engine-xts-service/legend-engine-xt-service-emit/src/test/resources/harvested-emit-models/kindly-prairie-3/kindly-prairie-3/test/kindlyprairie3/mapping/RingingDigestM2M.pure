@@ -1,0 +1,188 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlyprairie3::mapping::RingingDigestM2M
+(
+  *test::kindlyprairie3::domain::RingingDigest[ringingDigest]: Pure
+  {
+    ~src test::kindlyprairie3::domain::RingingSheetRow
+    ringKey: $src.sheetRef->trim()->toUpper(),
+    registerLabel: 'prairie grassland ringing register',
+    speciesLabel: if($src.rawSpeciesCode->isEmpty(),
+                     | 'UNIDENTIFIED',
+                     | 'SPECIES ' + $src.rawSpeciesCode->toOne()->trim()->toUpper()),
+    observerLabel: $src.observerInitials() + ' (' + $src.ringedCaptureTally()->toString() + ' ringed)',
+    conditionLabel: if($src.rawMassGrams->isEmpty(),
+                       | 'UNWEIGHED',
+                       | if($src.rawMassGrams->toOne()->trim()->parseFloat() >= 25.0,
+                            | 'HEAVY ' + $src.rawMassGrams->toOne()->trim(),
+                            | 'LIGHT ' + $src.rawMassGrams->toOne()->trim())),
+    captureSummary: $src.captureNoteDigest(),
+    wingChordMm: if($src.rawWingChordMm->isEmpty(),
+                    | [],
+                    | $src.rawWingChordMm->toOne()->trim()->parseInteger()),
+    massGrams: if($src.rawMassGrams->isEmpty(),
+                  | 8.0,
+                  | $src.rawMassGrams->toOne()->trim()->parseFloat()),
+    ring[ringingRingRef]: $src,
+    habitat[ringingHabitatBand]: $src,
+    visit[ringingVisitWindow]: $src
+  }
+
+  test::kindlyprairie3::domain::RingRef[ringingRingRef]: Pure
+  {
+    ~src test::kindlyprairie3::domain::RingingSheetRow
+    code: if($src.rawRingCode->isEmpty(),
+             | 'UNRINGED',
+             | 'RING-' + $src.rawRingCode->toOne()->trim()->toUpper())
+  }
+
+  test::kindlyprairie3::domain::HabitatBand[ringingHabitatBand]: Pure
+  {
+    ~src test::kindlyprairie3::domain::RingingSheetRow
+    band: if($src.rawHabitat->isEmpty(),
+             | 'UNSURVEYED',
+             | if($src.rawHabitat->toOne()->trim()->toUpper() == 'TALLGRASS',
+                  | 'TALLGRASS SWARD',
+                  | 'MIXED SWARD'))
+  }
+
+  test::kindlyprairie3::domain::VisitWindow[ringingVisitWindow]: Pure
+  {
+    ~src test::kindlyprairie3::domain::RingingSheetRow
+    recordedOn: if($src.rawVisitDate->isEmpty(),
+                   | 'UNVISITED',
+                   | $src.rawVisitDate->toOne()->trim()),
+    seasonLabel: if($src.rawVisitDate->isEmpty(),
+                    | 'UNSCHEDULED',
+                    | 'SEASON ' + $src.rawVisitDate->toOne()->trim()->substring(0, 4))
+  }
+
+  testSuites:
+  [
+    ringingLabelSuite:
+    {
+      function: |test::kindlyprairie3::domain::RingingDigest.all()->graphFetch(
+        #{
+          test::kindlyprairie3::domain::RingingDigest{
+            ringKey,
+            registerLabel,
+            speciesLabel,
+            observerLabel,
+            conditionLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlyprairie3::domain::RingingDigest{
+            ringKey,
+            registerLabel,
+            speciesLabel,
+            observerLabel,
+            conditionLabel
+          }
+        }#
+      );
+      tests:
+      [
+        heavyBareAndLightRowsHitEveryLabelArm:
+        {
+          doc: 'A heavy transcribed row, a bare row that falls back to every default and a light row cover both weight arms, both species arms and both observer arms.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::kindlyprairie3::domain::RingingSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetRef":" prs-101 ","registryCode":"Prairie-Ringing","rawSpeciesCode":" scw ","rawRingCode":" rg-771 ","rawObserver":" ela ","rawWingChordMm":" 78 ","rawMassGrams":" 31.5 ","rawHabitat":" tallgrass ","rawVisitDate":"2026-04-18","captures":[{"captureCode":"c-1","ringApplied":true,"wingBandCode":"wb-1"},{"captureCode":"c-2","ringApplied":false}]},{"sheetRef":"prs-102","registryCode":"prairie-ringing","captures":[]},{"sheetRef":"prs-103","registryCode":"prairie-ringing","rawSpeciesCode":"gsp","rawRingCode":"rg-802","rawObserver":"tmo","rawWingChordMm":"64","rawMassGrams":"18.25","rawHabitat":"shortgrass","rawVisitDate":"2026-05-02","captures":[{"captureCode":"c-9","ringApplied":false}]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            threeLabelledDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ringKey":"PRS-101","registerLabel":"prairie grassland ringing register","speciesLabel":"SPECIES SCW","observerLabel":"ELA (1 ringed)","conditionLabel":"HEAVY 31.5"},{"ringKey":"PRS-102","registerLabel":"prairie grassland ringing register","speciesLabel":"UNIDENTIFIED","observerLabel":"UNSIGNED (0 ringed)","conditionLabel":"UNWEIGHED"},{"ringKey":"PRS-103","registerLabel":"prairie grassland ringing register","speciesLabel":"SPECIES GSP","observerLabel":"TMO (0 ringed)","conditionLabel":"LIGHT 18.25"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    ringingMeasurementSuite:
+    {
+      function: |test::kindlyprairie3::domain::RingingDigest.all()->graphFetch(
+        #{
+          test::kindlyprairie3::domain::RingingDigest{
+            ringKey,
+            captureSummary,
+            wingChordMm,
+            massGrams
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlyprairie3::domain::RingingDigest{
+            ringKey,
+            captureSummary,
+            wingChordMm,
+            massGrams
+          }
+        }#
+      );
+      tests:
+      [
+        measurementsFoldNestedCapturesAndDefaultTheMissingReadings:
+        {
+          doc: 'The nested capture collection is folded into one digest string, an absent wing chord stays null and an absent mass falls back to the lowest banded literal.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::kindlyprairie3::domain::RingingSheetRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sheetRef":"prs-201","registryCode":"prairie-ringing","rawWingChordMm":" 81 ","rawMassGrams":" 27.75 ","captures":[{"captureCode":" c-11 ","ringApplied":true},{"captureCode":"c-12","ringApplied":true}]},{"sheetRef":"prs-202","registryCode":"prairie-ringing","captures":[]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            twoMeasuredDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ringKey":"PRS-201","captureSummary":"C-11/true; C-12/true","wingChordMm":81,"massGrams":27.75},{"ringKey":"PRS-202","captureSummary":null,"wingChordMm":null,"massGrams":8.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

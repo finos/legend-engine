@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::wistfulorchard3::store::OrchardDB
+(
+  Schema harvest
+  (
+    Table orchard_block
+    (
+      block_code VARCHAR(24) PRIMARY KEY,
+      block_label VARCHAR(80),
+      grove_code VARCHAR(24),
+      parent_block_code VARCHAR(24),
+      canopy_style VARCHAR(24),
+      soil_code VARCHAR(24)
+    )
+    Table grove
+    (
+      grove_code VARCHAR(24) PRIMARY KEY,
+      grove_label VARCHAR(80),
+      estate_code VARCHAR(24)
+    )
+    Table estate
+    (
+      estate_code VARCHAR(24) PRIMARY KEY,
+      estate_label VARCHAR(80),
+      district_code VARCHAR(24)
+    )
+    Table district
+    (
+      district_code VARCHAR(24) PRIMARY KEY,
+      district_label VARCHAR(80),
+      warden_name VARCHAR(80)
+    )
+    Table harvest_lot
+    (
+      lot_code VARCHAR(24) PRIMARY KEY,
+      block_code VARCHAR(24),
+      inspector_code VARCHAR(24),
+      picked_on DATE,
+      crate_count INTEGER,
+      ripeness_score INTEGER,
+      blemish_code VARCHAR(24),
+      moisture_pct INTEGER,
+      status_code VARCHAR(16)
+    )
+    Table inspector
+    (
+      inspector_code VARCHAR(24) PRIMARY KEY,
+      inspector_label VARCHAR(80),
+      station_code VARCHAR(24)
+    )
+    Table station
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_label VARCHAR(80)
+    )
+    Table block_day_tally
+    (
+      tally_code VARCHAR(24) PRIMARY KEY,
+      block_code VARCHAR(24),
+      tally_day DATE,
+      crate_total INTEGER
+    )
+  )
+
+  Filter PickedLotFilter(isNotNull(harvest.harvest_lot.picked_on) and harvest.harvest_lot.status_code != 'VOID')
+
+  Join LotToBlock(harvest.harvest_lot.block_code = harvest.orchard_block.block_code)
+  Join BlockToGrove(harvest.orchard_block.grove_code = harvest.grove.grove_code)
+  Join GroveToEstate(harvest.grove.estate_code = harvest.estate.estate_code)
+  Join EstateToDistrict(harvest.estate.district_code = harvest.district.district_code)
+  Join LotToInspector(harvest.harvest_lot.inspector_code = harvest.inspector.inspector_code)
+  Join InspectorToStation(harvest.inspector.station_code = harvest.station.station_code)
+)

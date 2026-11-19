@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedlagoon3::store::LagoonDb
+(
+  Schema lagoon
+  (
+    Table oyster_tray
+    (
+      tray_id INTEGER PRIMARY KEY,
+      tray_code VARCHAR(16) NOT NULL,
+      tray_name VARCHAR(64) NOT NULL,
+      trestle_code VARCHAR(16),
+      grade_code VARCHAR(8),
+      shell_length_mm INTEGER,
+      notes_text VARCHAR(128)
+    )
+    Table trestle
+    (
+      trestle_code VARCHAR(16) PRIMARY KEY,
+      trestle_name VARCHAR(64) NOT NULL,
+      bed_code VARCHAR(16)
+    )
+    Table oyster_bed
+    (
+      bed_code VARCHAR(16) PRIMARY KEY,
+      bed_name VARCHAR(64) NOT NULL,
+      zone_code VARCHAR(16)
+    )
+    Table lagoon_zone
+    (
+      zone_code VARCHAR(16) PRIMARY KEY,
+      zone_name VARCHAR(64) NOT NULL
+    )
+    Table basket_entry
+    (
+      entry_id INTEGER PRIMARY KEY,
+      tray_code VARCHAR(16) NOT NULL,
+      basket_kg DOUBLE NOT NULL,
+      gathered_on DATE
+    )
+  )
+
+  Join Tray_Trestle(lagoon.oyster_tray.trestle_code = lagoon.trestle.trestle_code)
+
+  Join Trestle_Bed(lagoon.trestle.bed_code = lagoon.oyster_bed.bed_code)
+
+  Join Bed_Zone(lagoon.oyster_bed.zone_code = lagoon.lagoon_zone.zone_code)
+)

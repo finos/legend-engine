@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralcanyon4::mapping::OutcropDigestMapping
+(
+  *test::coralcanyon4::domain::OutcropDigest[outcropDigest]: Pure
+  {
+    ~src test::coralcanyon4::domain::OutcropBundle
+    bundleCode: $src.bundleCode->toUpper(),
+    gammaCount: $src.readings->filter(r|($r.kind == 'GAMMA') && ($r.reading->isEmpty() || ($r.reading->toOne() > 5)))->size(),
+    datingLabel: if($src.readings->filter(r|$r.takenOn->isNotEmpty())->isEmpty(),
+                    | 'undated',
+                    | if($src.readings->filter(r|$r.takenOn->isEmpty())->isNotEmpty(),
+                         | 'partly dated',
+                         | 'fully dated'))
+  }
+
+  testSuites:
+  [
+    outcropDigestSuite:
+    {
+      function: |test::coralcanyon4::domain::OutcropDigest.all()->graphFetch(
+        #{
+          test::coralcanyon4::domain::OutcropDigest{
+            bundleCode,
+            gammaCount,
+            datingLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::coralcanyon4::domain::OutcropDigest{
+            bundleCode,
+            gammaCount,
+            datingLabel
+          }
+        }#
+      );
+      tests:
+      [
+        gammaFilterAndDatingArms:
+        {
+          doc: 'Counts gamma readings above the threshold or unread, and hits the partly dated, undated and fully dated arms including a bundle with no readings at all.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::coralcanyon4::domain::OutcropBundle:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"bundleCode":"b-1","readings":[{"kind":"GAMMA","reading":8,"takenOn":"2026-01-01"},{"kind":"GAMMA","reading":3,"takenOn":"2026-01-02"},{"kind":"BETA","reading":9}]},{"bundleCode":"b-2","readings":[{"kind":"GAMMA"}]},{"bundleCode":"b-3","readings":[]},{"bundleCode":"b-4","readings":[{"kind":"GAMMA","reading":6,"takenOn":"2026-02-02"}]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"bundleCode":"B-1","gammaCount":1,"datingLabel":"partly dated"},{"bundleCode":"B-2","gammaCount":1,"datingLabel":"undated"},{"bundleCode":"B-3","gammaCount":0,"datingLabel":"undated"},{"bundleCode":"B-4","gammaCount":1,"datingLabel":"fully dated"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::umberapiary3::domain::*;
+
+Class {doc.doc = 'An apiary site, holding the reference the hives and inspections key on.'} test::umberapiary3::domain::ApiarySite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  standCount: Integer[1];
+  dominantForage: ForageSource[0..1];
+}
+
+Class {doc.doc = 'A hive on an apiary stand, described by its box arrangement and the queen it runs.'} test::umberapiary3::domain::Hive
+{
+  hiveCode: String[1];
+  siteCode: String[1];
+  broodBoxCount: Integer[1];
+  superCount: Integer[0..1];
+  queenMarkColour: String[0..1];
+}
+
+Class {doc.doc = 'An inspection of a hive, grading its temperament and noting what the frames showed.'} test::umberapiary3::domain::HiveInspection
+{
+  inspectionCode: String[1];
+  inspectedOn: StrictDate[1];
+  temperGrade: TemperGrade[1];
+  broodFrameTally: Integer[0..1];
+  observedForage: ForageSource[*];
+  frameNote: String[0..1];
+}
+
+Class {doc.doc = 'A honey harvest drawn off a hive, kept separate from the inspection record.'} test::umberapiary3::domain::HoneyHarvest
+{
+  harvestCode: String[1];
+  drawnOn: StrictDate[1];
+  frameCount: Integer[1];
+  netKilograms: Float[0..1];
+  harvestNote: String[0..1];
+}

@@ -1,0 +1,42 @@
+name: emerald-lighthouse
+title: "Emerald Lighthouse - Annotation-Driven Record Model and Split File Generations"
+description: |
+  A store-less record model for a coastal beacon network: eighteen flat classes
+  whose only structure comes from a dense six-tag annotation block drawn from a
+  locally declared profile with dotted, quote-requiring tag names, and from
+  thirteen enumerations of deliberately inconsistent value spellings. The
+  organisational-unit enumeration is declared twice under one simple name, once
+  in the model namespace and once in a namespace mirroring generated code, so a
+  JSON-schema generation over the model, enumeration and profile packages and a
+  protobuf generation over the generated namespace split the model between them.
+  One generation specification lists both nodes in an order that does not match
+  their declaration order.
+modelSources:
+  model:
+    root: emerald-lighthouse
+    files:
+      - test/emeraldlighthouse/domain/Domain.pure
+      - test/emeraldlighthouse/enumeration/Enumerations.pure
+      - test/emeraldlighthouse/generated/TransportEnvelope.pure
+      - test/emeraldlighthouse/generated/model/StationUnit.pure
+      - test/emeraldlighthouse/generation/LighthouseGeneration.pure
+      - test/emeraldlighthouse/profile/TransportProfile.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:duplicate-enumeration
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:stereotype-tag-metadata
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - annotations
+  - enumeration
+  - file-generation
+  - generation-specification
+  - json-schema
+  - profile
+  - protobuf
+  - store-less

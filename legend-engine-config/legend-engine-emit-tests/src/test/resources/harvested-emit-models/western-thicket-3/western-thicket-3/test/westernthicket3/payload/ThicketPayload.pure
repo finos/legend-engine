@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::westernthicket3::payload::*;
+import test::westernthicket3::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'The raw codes a cutting round is written down with on the tally sheet before anything is banded.'} test::westernthicket3::payload::CutTallyRecord
+{
+  {doc.doc = 'Code the regrowth of the stools is written down with.'} regrowthCode: String[0..1];
+  {doc.doc = 'Code the canopy of the stand is written down with.'} canopyCode: String[0..1];
+  {doc.doc = 'How the stand was cut, as the sheet spells it out.'} cutText: String[1];
+  {doc.doc = 'Counted stems as the sheet spells them out.'} stemText: String[1];
+}
+
+Class {doc.doc = 'One cutting round as the wood writes it down, ahead of any banding.'} test::westernthicket3::payload::CutTallyPayload
+{
+  {doc.doc = 'Code the survey is quoted by on the tally sheet.'} surveyCode: String[1];
+  {doc.doc = 'Code the stand is quoted by on the tally sheet.'} standCode: String[1];
+  {doc.doc = 'The raw codes of the cutting round.'} record: CutTallyRecord[1];
+}
+
+Class {doc.doc = 'One cutting round after the wood codes have been banded, tagged and resolved to the closed code domains.'} test::westernthicket3::payload::CutTallyDigest
+{
+  {doc.doc = 'Code the survey is quoted by.'} surveyCode: String[1];
+  {doc.doc = 'Stand code stamped with the wood prefix.'} standTag: String[1];
+  {doc.doc = 'Cut stamped with the wood prefix.'} cutTag: String[1];
+  {doc.doc = 'Band the spelled-out stem count falls in.'} stemBand: String[1];
+  {doc.doc = 'Regrowth the tally code resolves to.'} regrowthGrade: RegrowthGrade[1];
+  {doc.doc = 'Canopy band the tally code resolves to.'} canopyBand: CanopyBand[1];
+}

@@ -1,0 +1,451 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledfjord3::mapping::ShoreRelationalMappings
+(
+  include mapping test::fabledfjord3::mapping::ShoreEnumMapping
+  include mapping test::fabledfjord3::mapping::ShoreDigestMapping
+
+  *test::fabledfjord3::domain::ShoreSite[site]: Relational
+  {
+    ~filter [test::fabledfjord3::store::ShoreSurveyStore]SiteFilter
+    ~primaryKey
+    (
+      [test::fabledfjord3::store::ShoreSurveyStore]coast.shore_site.site_code
+    )
+    ~mainTable [test::fabledfjord3::store::ShoreSurveyStore]coast.shore_site
+    siteCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.shore_site.site_code,
+    siteName: [test::fabledfjord3::store::ShoreSurveyStore]coast.shore_site.site_name,
+    zoneCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.shore_site.zone_code
+  }
+
+  *test::fabledfjord3::domain::KelpSample[sample]: Relational
+  {
+    ~filter [test::fabledfjord3::store::ShoreSurveyStore]SampleFilter
+    ~primaryKey
+    (
+      [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.sample_code
+    )
+    ~mainTable [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample
+    sampleCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.sample_code,
+    siteCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.site_code,
+    sourceCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code,
+    density: [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.density,
+    band: EnumerationMapping BandSource: case(
+      equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.band_code, 'A'),
+      'A',
+      case(
+        equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.band_code, 'B'),
+        'B',
+        case(
+          equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.band_code, 'C'),
+          'C',
+          sqlNull()
+        )
+      )
+    ),
+    sourceBand: EnumerationMapping BandSource: case(
+      equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-1'),
+      'A',
+      'B'
+    ),
+    densityBand: EnumerationMapping BandSource: case(
+      greaterThan([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.density, 0.7),
+      'A',
+      'C'
+    ),
+    fallbackBand: EnumerationMapping BandSource: case(
+      equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'UNKNOWN'),
+      'C',
+      'B'
+    ),
+    bandLabel: case(
+      equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-1'),
+      'ARM-1',
+      case(
+        equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-2'),
+        'ARM-2',
+        case(
+          equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-3'),
+          'ARM-3',
+          case(
+            equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-4'),
+            'ARM-4',
+            case(
+              equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-5'),
+              'ARM-5',
+              case(
+                equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-6'),
+                'ARM-6',
+                case(
+                  equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-7'),
+                  'ARM-7',
+                  case(
+                    equal([test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.source_code, 'ARM-8'),
+                    'ARM-8',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  }
+
+  *test::fabledfjord3::domain::SurveyVisit[visit]: Relational
+  {
+    ~filter [test::fabledfjord3::store::ShoreSurveyStore]VisitDateFilter
+    ~primaryKey
+    (
+      [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.visit_code
+    )
+    ~mainTable [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit
+    visitCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.visit_code,
+    siteCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.site_code,
+    visitedOn: [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.visited_on
+  }
+
+  *test::fabledfjord3::domain::SurveyVisitArchive[archive]: Relational
+  {
+    ~filter [test::fabledfjord3::store::ShoreSurveyStore]VisitFilter
+    ~primaryKey
+    (
+      [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.visit_code
+    )
+    ~mainTable [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit
+    visitCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.visit_code,
+    siteCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.site_code,
+    visitedOn: [test::fabledfjord3::store::ShoreSurveyStore]coast.survey_visit.visited_on
+  }
+
+  *test::fabledfjord3::domain::DenseKelpSample[dense]: Relational
+  {
+    ~filter [test::fabledfjord3::store::ShoreSurveyStore]SampleDensityFilter
+    ~primaryKey
+    (
+      [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.sample_code
+    )
+    ~mainTable [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample
+    sampleCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.sample_code,
+    density: [test::fabledfjord3::store::ShoreSurveyStore]coast.kelp_sample.density
+  }
+
+  *test::fabledfjord3::domain::SampleSummary[summary]: Relational
+  {
+    ~filter [test::fabledfjord3::store::ShoreSurveyStore]SampleBandFilter
+    ~primaryKey
+    (
+      [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.sample_code
+    )
+    ~mainTable [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary
+    sampleCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.sample_code,
+    siteCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.site_code,
+    density: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.density,
+    bandCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.band_code
+  }
+
+  *test::fabledfjord3::domain::SampleSummaryNamed[namedSummary]: Relational
+  {
+    ~filter [test::fabledfjord3::store::ShoreSurveyStore]SiteNameFilter
+    ~primaryKey
+    (
+      [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.sample_code
+    )
+    ~mainTable [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary
+    sampleCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.sample_code,
+    siteCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.site_code,
+    density: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.density,
+    bandCode: [test::fabledfjord3::store::ShoreSurveyStore]coast.sample_summary.band_code
+  }
+
+  testSuites:
+  [
+    shorelineRowsSuite:
+    {
+      function: |test::fabledfjord3::domain::ShoreSite.all()->project(
+        [s|$s.siteCode, s|$s.siteName, s|$s.zoneCode],
+        ['Site', 'Name', 'Zone']
+      )->sort([asc('Site')]);
+      tests:
+      [
+        tenSurveyRows:
+        {
+          data:
+          [
+            test::fabledfjord3::store::ShoreSurveyStore:
+              Relational
+              #{
+                coast.shore_site:
+                  'site_code,site_name,zone_code\n'+
+                  'P-01,Drift Reach,Z-1\n'+
+                  'P-02,Drift Reach,Z-1\n'+
+                  'P-03,Outer Shelf,Z-2\n'+
+                  'P-04,Outer Shelf,Z-2\n'+
+                  'P-05,Spine Ledge,Z-3\n'+
+                  'P-06,Spine Ledge,Z-3\n'+
+                  'P-07,Quiet Inlet,Z-4\n'+
+                  'P-08,Quiet Inlet,Z-4\n'+
+                  'P-09,Far Tide,Z-5\n'+
+                  'P-10,Far Tide,Z-5\n';
+              }#
+          ];
+          asserts:
+          [
+            tenSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"P-01","Name":"Drift Reach","Zone":"Z-1"},{"Site":"P-02","Name":"Drift Reach","Zone":"Z-1"},{"Site":"P-03","Name":"Outer Shelf","Zone":"Z-2"},{"Site":"P-04","Name":"Outer Shelf","Zone":"Z-2"},{"Site":"P-05","Name":"Spine Ledge","Zone":"Z-3"},{"Site":"P-06","Name":"Spine Ledge","Zone":"Z-3"},{"Site":"P-07","Name":"Quiet Inlet","Zone":"Z-4"},{"Site":"P-08","Name":"Quiet Inlet","Zone":"Z-4"},{"Site":"P-09","Name":"Far Tide","Zone":"Z-5"},{"Site":"P-10","Name":"Far Tide","Zone":"Z-5"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    kelpSampleSuite:
+    {
+      function: |test::fabledfjord3::domain::KelpSample.all()->project(
+        [s|$s.sampleCode, s|$s.bandLabel, s|$s.band, s|$s.sourceBand, s|$s.densityBand, s|$s.fallbackBand],
+        ['Sample', 'Label', 'Band', 'SourceBand', 'DensityBand', 'FallbackBand']
+      )->sort([asc('Sample')]);
+      tests:
+      [
+        everyConditionalArmAndEnumOutcome:
+        {
+          data:
+          [
+            test::fabledfjord3::store::ShoreSurveyStore:
+              Relational
+              #{
+                coast.kelp_sample:
+                  'sample_code,site_code,source_code,density,band_code\n'+
+                  'S-01,P-01,ARM-1,0.9,A\n'+
+                  'S-02,P-01,ARM-2,0.9,B\n'+
+                  'S-03,P-02,ARM-3,0.9,B\n'+
+                  'S-04,P-02,ARM-4,0.9,B\n'+
+                  'S-05,P-03,ARM-5,0.9,B\n'+
+                  'S-06,P-03,ARM-6,0.9,B\n'+
+                  'S-07,P-04,ARM-7,0.9,B\n'+
+                  'S-08,P-04,ARM-8,0.9,B\n'+
+                  'S-09,P-05,UNKNOWN,0.4,B\n'+
+                  'S-10,P-05,OUTSIDE,0.1,Z\n';
+              }#
+          ];
+          asserts:
+          [
+            tenMappedSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"S-01","Label":"ARM-1","Band":"A","SourceBand":"A","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-02","Label":"ARM-2","Band":"B","SourceBand":"B","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-03","Label":"ARM-3","Band":"B","SourceBand":"B","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-04","Label":"ARM-4","Band":"B","SourceBand":"B","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-05","Label":"ARM-5","Band":"B","SourceBand":"B","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-06","Label":"ARM-6","Band":"B","SourceBand":"B","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-07","Label":"ARM-7","Band":"B","SourceBand":"B","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-08","Label":"ARM-8","Band":"B","SourceBand":"B","DensityBand":"A","FallbackBand":"B"},{"Sample":"S-09","Label":null,"Band":"B","SourceBand":"B","DensityBand":"C","FallbackBand":"C"},{"Sample":"S-10","Label":null,"Band":null,"SourceBand":"B","DensityBand":"C","FallbackBand":"B"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    denseSampleSuite:
+    {
+      function: |test::fabledfjord3::domain::DenseKelpSample.all()->project(
+        [s|$s.sampleCode, s|$s.density],
+        ['Sample', 'Density']
+      )->sort([asc('Sample')]);
+      tests:
+      [
+        densityFloorExcludesShallowSample:
+        {
+          data:
+          [
+            test::fabledfjord3::store::ShoreSurveyStore:
+              Relational
+              #{
+                coast.kelp_sample:
+                  'sample_code,site_code,source_code,density,band_code\n'+
+                  'D-01,P-01,ARM-1,0.8,A\n'+
+                  'D-02,P-01,ARM-2,0.2,B\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyDenseSample:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"D-01","Density":0.8}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveyVisitSuite:
+    {
+      function: |test::fabledfjord3::domain::SurveyVisit.all()->project(
+        [v|$v.visitCode, v|$v.siteCode, v|$v.visitedOn],
+        ['Visit', 'Site', 'Visited']
+      )->sort([asc('Visit')]);
+      tests:
+      [
+        datedVisits:
+        {
+          data:
+          [
+            test::fabledfjord3::store::ShoreSurveyStore:
+              Relational
+              #{
+                coast.survey_visit:
+                  'visit_code,site_code,visited_on\n'+
+                  'V-01,P-01,2026-02-01\n'+
+                  'V-02,P-02,2026-02-02\n';
+              }#
+          ];
+          asserts:
+          [
+            twoVisits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"V-01","Site":"P-01","Visited":"2026-02-01"},{"Visit":"V-02","Site":"P-02","Visited":"2026-02-02"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveyVisitArchiveSuite:
+    {
+      function: |test::fabledfjord3::domain::SurveyVisitArchive.all()->project(
+        [v|$v.visitCode, v|$v.siteCode],
+        ['Visit', 'Site']
+      );
+      tests:
+      [
+        visitFilterRows:
+        {
+          data:
+          [
+            test::fabledfjord3::store::ShoreSurveyStore:
+              Relational
+              #{
+                coast.survey_visit:
+                  'visit_code,site_code,visited_on\n'+
+                  'A-01,P-01,2026-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            oneVisitFilterRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"A-01","Site":"P-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sampleSummarySuite:
+    {
+      function: |test::fabledfjord3::domain::SampleSummary.all()->project(
+        [s|$s.sampleCode, s|$s.siteCode, s|$s.density, s|$s.bandCode],
+        ['Sample', 'Site', 'Density', 'Band']
+      )->sort([asc('Sample')]);
+      tests:
+      [
+        viewRows:
+        {
+          data:
+          [
+            test::fabledfjord3::store::ShoreSurveyStore:
+              Relational
+              #{
+                coast.kelp_sample:
+                  'sample_code,site_code,source_code,density,band_code\n'+
+                  'V-01,P-01,ARM-1,0.8,A\n'+
+                  'V-02,P-02,ARM-2,0.4,B\n';
+              }#
+          ];
+          asserts:
+          [
+            twoViewRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"V-01","Site":"P-01","Density":0.8,"Band":"A"},{"Sample":"V-02","Site":"P-02","Density":0.4,"Band":"B"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    namedSampleSummarySuite:
+    {
+      function: |test::fabledfjord3::domain::SampleSummaryNamed.all()->project(
+        [s|$s.sampleCode, s|$s.siteCode],
+        ['Sample', 'Site']
+      );
+      tests:
+      [
+        namedViewRows:
+        {
+          data:
+          [
+            test::fabledfjord3::store::ShoreSurveyStore:
+              Relational
+              #{
+                coast.kelp_sample:
+                  'sample_code,site_code,source_code,density,band_code\n'+
+                  'N-01,P-01,ARM-1,0.8,A\n';
+              }#
+          ];
+          asserts:
+          [
+            oneNamedViewRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"N-01","Site":"P-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

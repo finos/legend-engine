@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonprairie3::mapping::PrairieMapping
+(
+  *test::crimsonprairie3::domain::PlotReading[plotReadingSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.reading_digest
+    )
+    ~mainTable [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading
+    readingDigest: [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.reading_digest,
+    readingRef: [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.reading_ref,
+    plotName: [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.plot_name,
+    grassCoverPct: [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.grass_cover_pct,
+    observedOn: [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.observed_on,
+    lakeBatchIn: [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.lake_batch_in,
+    lakeBatchOut: [test::crimsonprairie3::store::PrairieDB]grassland.plot_reading.lake_batch_out
+  }
+
+  testSuites:
+  [
+    plotReadingSuite:
+    {
+      function: test::crimsonprairie3::domain::PlotReading.all()->filter(r|$r.grassCoverPct->toOne() >= 25.0)->project(~[readingRef: r|$r.readingRef, plotTag: r|$r.plotName->toUpper(), coverStep: r|$r.grassCoverPct->toOne()->round()->toString(), digestTag: r|$r.readingDigest->substr(0, 5)->toUpper(), batchIn: r|$r.lakeBatchIn, batchOut: r|$r.lakeBatchOut]);
+      tests:
+      [
+        coveredReadingsCarryBatchWindow:
+        {
+          doc: 'Reads the reading extent whose identity is the digest bookkeeping column rather than a payload column, and projects the payload alongside both batch boundary markers so the lake columns travel with every row the class yields.';
+          data:
+          [
+            test::crimsonprairie3::store::PrairieDB:
+              Relational
+              #{
+                grassland.plot_reading:
+                  'reading_digest,reading_ref,plot_name,grass_cover_pct,observed_on,lake_batch_in,lake_batch_out\n'+
+                  'D-AAA1,RD-01,north swale,42.400,2025-04-02,1001,999999999\n'+
+                  'D-BBB2,RD-02,mid ridge,27.200,2025-04-09,1002,999999999\n'+
+                  'D-CCC3,RD-03,south hollow,11.750,2025-04-16,1003,1004\n';
+              }#
+          ];
+          asserts:
+          [
+            twoCoveredReadings:
+              Relation
+              #{
+                readingRef,plotTag,coverStep,digestTag,batchIn,batchOut
+                RD-01,NORTH SWALE,42,D-AAA,1001,999999999
+                RD-02,MID RIDGE,27,D-BBB,1002,999999999;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

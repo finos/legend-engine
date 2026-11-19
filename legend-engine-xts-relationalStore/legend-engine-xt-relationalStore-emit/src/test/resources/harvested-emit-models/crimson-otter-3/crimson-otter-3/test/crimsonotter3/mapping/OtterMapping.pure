@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::crimsonotter3::mapping::OtterMapping
+(
+  *demo::crimsonotter3::domain::RiverReach[reach]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::crimsonotter3::store::OtterDB]survey.river_reach.reach_code
+    )
+    ~mainTable [demo::crimsonotter3::store::OtterDB]survey.river_reach
+    reachCode: [demo::crimsonotter3::store::OtterDB]survey.river_reach.reach_code,
+    reachName: [demo::crimsonotter3::store::OtterDB]survey.river_reach.reach_name,
+    catchmentCode: [demo::crimsonotter3::store::OtterDB]survey.river_reach.catchment_code
+  }
+
+  *demo::crimsonotter3::domain::OtterHolt[holt]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::crimsonotter3::store::OtterDB]survey.otter_holt.holt_code
+    )
+    ~mainTable [demo::crimsonotter3::store::OtterDB]survey.otter_holt
+    holtCode: [demo::crimsonotter3::store::OtterDB]survey.otter_holt.holt_code,
+    holtName: [demo::crimsonotter3::store::OtterDB]survey.otter_holt.holt_name,
+    gradeCode: [demo::crimsonotter3::store::OtterDB]survey.otter_holt.grade_code,
+    bankSide: [demo::crimsonotter3::store::OtterDB]survey.otter_holt.bank_side,
+    lastVisitedOn: [demo::crimsonotter3::store::OtterDB]survey.otter_holt.last_visited_on,
+    spraintCount: [demo::crimsonotter3::store::OtterDB]survey.otter_holt.spraint_count,
+    catchmentCode: [demo::crimsonotter3::store::OtterDB]@Holt_Reach | [demo::crimsonotter3::store::OtterDB]survey.river_reach.catchment_code
+  }
+
+  *demo::crimsonotter3::domain::HoltVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::crimsonotter3::store::OtterDB]survey.holt_visit.visit_code
+    )
+    ~mainTable [demo::crimsonotter3::store::OtterDB]survey.holt_visit
+    visitCode: [demo::crimsonotter3::store::OtterDB]survey.holt_visit.visit_code,
+    visitedOn: [demo::crimsonotter3::store::OtterDB]survey.holt_visit.visited_on,
+    outcomeCode: [demo::crimsonotter3::store::OtterDB]survey.holt_visit.outcome_code,
+    observerName: [demo::crimsonotter3::store::OtterDB]survey.holt_visit.observer_name,
+    minutesSpent: [demo::crimsonotter3::store::OtterDB]survey.holt_visit.minutes_spent
+  }
+
+  demo::crimsonotter3::domain::Holt_Visits: Relational
+  {
+    AssociationMapping
+    (
+      holt[visit, holt]: [demo::crimsonotter3::store::OtterDB]@Holt_Visits,
+      visits[holt, visit]: [demo::crimsonotter3::store::OtterDB]@Holt_Visits
+    )
+  }
+)

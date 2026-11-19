@@ -1,0 +1,68 @@
+name: crimson-wharf-4
+title: "Crimson Wharf 4 — community pottery firings graded by a deep temperature ladder and exposed as tabular endpoints"
+description: |
+  A community pottery register over two relational stores: the kiln store holds
+  firings, the pieces they carried, the glaze batches those pieces wear and the
+  reviews each firing collects, while a small reference store holds the studios.
+  Store-declared predicates drop the unlogged firings and the unnamed pieces,
+  one predicate spans two tables to keep only the reviewed firings, and a
+  trimming predicate shows a function running inside the store itself. Each
+  extent is keyed explicitly and rooted at a declared main table; the firing
+  band walks an eight-arm temperature ladder that falls back to no value above
+  its top edge, and two properties resolve one and two joins away from the piece
+  table. Three bidirectional associations let both ends navigate, a locally
+  declared profile marks the curated extents, and four endpoints cover an
+  unfiltered projection, a projection filtered by a supplied firing code, a
+  count across a to-many end and a projection over the second mapping. Mapping
+  and endpoint suites pin every ladder arm, the fallback with no band, the
+  trimmed potter, the join-reached review outcome and the rows the store
+  predicates remove.
+modelSources:
+  model:
+    root: crimson-wharf-4
+    files:
+      - test/crimsonwharf4/connection/KilnConnections.pure
+      - test/crimsonwharf4/domain/KilnDomain.pure
+      - test/crimsonwharf4/mapping/KilnMapping.pure
+      - test/crimsonwharf4/mapping/StudioMapping.pure
+      - test/crimsonwharf4/runtime/KilnRuntimes.pure
+      - test/crimsonwharf4/service/KilnServices.pure
+      - test/crimsonwharf4/store/KilnDB.pure
+      - test/crimsonwharf4/store/StudioRefDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - grammar:profile
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-table-filter
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - conditional-ladder
+  - cross-table-filter
+  - delegated-kerberos
+  - derived-property
+  - h2
+  - kiln-firing
+  - memsql
+  - pottery
+  - service-test
+  - store-filter
+  - tabular-data-set

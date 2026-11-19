@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantmeadow5::service::SwardSampleCoverSearch
+{
+  pattern: '/meadow/v1/sward-samples/{minHerbCover}';
+  title: 'Hay Meadow - Sward Sample Cover Search';
+  ownership: DID { identifier: 'meadow-fieldwork' };
+  documentation: 'Narrows the sward samples to the parcels of interest whose herb cover reaches the given floor, then projects the labelled cover columns in sample order.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {parcelCodes: String[*], minHerbCover: Integer[1]|test::verdantmeadow5::domain::SwardSample.all()->filter(
+      s|($s.parcelCode->in($parcelCodes)) && ($s.herbCoverPct >= $minHerbCover)
+    )->project(
+      [
+        s|$s.sampleCode,
+        s|$s.parcelCode,
+        s|$s.herbCoverPct,
+        s|$s.grassCoverPct,
+        s|$s.samplerAlias
+      ],
+      [
+        'Sample Code',
+        'Parcel Code',
+        'Herb Cover Pct',
+        'Grass Cover Pct',
+        'Sampler Alias'
+      ]
+    )->sort([asc('Sample Code')])->distinct()};
+    mapping: test::verdantmeadow5::mapping::MeadowMapping;
+    runtime: test::verdantmeadow5::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    swardSampleCoverSearchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowCuratedConnection:
+            Relational
+            #{
+              meadow.sward_sample:
+                'sample_code,parcel_code,herb_cover_pct,grass_cover_pct,sampler_alias\n'+
+                'SS-01,MP-01,48,52,surveyor-ash\n'+
+                'SS-02,MP-01,22,78,surveyor-ash\n'+
+                'SS-03,MP-02,61,39,surveyor-birch\n'+
+                'SS-04,MP-03,70,30,surveyor-cedar\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        herbRichSamplesInTwoParcels:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            parcelCodes = ['MP-01', 'MP-02'],
+            minHerbCover = 40
+          ]
+          asserts:
+          [
+            twoHerbRichSamples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample Code":"SS-01","Parcel Code":"MP-01","Herb Cover Pct":48,"Grass Cover Pct":52,"Sampler Alias":"surveyor-ash"},{"Sample Code":"SS-03","Parcel Code":"MP-02","Herb Cover Pct":61,"Grass Cover Pct":39,"Sampler Alias":"surveyor-birch"}]';
+                  }#;
+              }#
+          ]
+        },
+        coverFloorAboveEveryReading:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            parcelCodes = ['MP-01', 'MP-02'],
+            minHerbCover = 90
+          ]
+          asserts:
+          [
+            noSampleReachesTheFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

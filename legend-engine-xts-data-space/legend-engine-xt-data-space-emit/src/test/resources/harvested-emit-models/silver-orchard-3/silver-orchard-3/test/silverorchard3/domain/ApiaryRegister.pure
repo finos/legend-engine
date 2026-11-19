@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Common shape of every record published by the regional apiary register. Each delivered batch stamps the record with the batch that opened it and the batch that closed it, the calendar days of those two batches and a digest of the delivered row, so that a consumer can tell any two deliveries of the same register identifier apart.'} test::silverorchard3::domain::RegisterRecord
+{
+  {meta::pure::profiles::doc.doc = 'Register-wide identifier of the hive or apiary, stable across every delivered batch.'} globalId: String[1];
+  {meta::pure::profiles::doc.doc = 'Identifier of the batch whose delivery opened this version of the record.'} batchInId: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Identifier of the batch whose delivery closed this version of the record; the open sentinel while the version is still current.'} batchOutId: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Calendar day of the batch that opened this version.'} batchInOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Calendar day of the batch that closed this version; the far-future sentinel while current.'} batchOutOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Digest of the delivered row, used together with the batch identifiers to key a version.'} rowDigest: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One registered hive as delivered by the regional apiary register, versioned by delivery batch. The region-specific fields describe the colony housed in the hive and the region the hive is registered under.'} test::silverorchard3::domain::HiveRecord extends test::silverorchard3::domain::RegisterRecord
+{
+  {meta::pure::profiles::doc.doc = 'Painted label of the hive, trimmed of surrounding blanks.'} hiveLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Strain of the colony housed in the hive, when the keeper declared it.'} colonyStrain: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Number of brood frames counted at the last inspection, when recorded.'} frameCount: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Upper-cased code of the region the hive is registered under.'} regionCode: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One registered apiary site as delivered by the regional apiary register, versioned by delivery batch. The region-specific fields describe the site and the forage around it.'} test::silverorchard3::domain::ApiaryRecord extends test::silverorchard3::domain::RegisterRecord
+{
+  {meta::pure::profiles::doc.doc = 'Name the keeper gives to the apiary site.'} apiaryName: String[1];
+  {meta::pure::profiles::doc.doc = 'Altitude of the site above sea level in metres, when surveyed.'} altitudeM: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Dominant forage within flying range of the site, when declared.'} forageKind: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Upper-cased code of the region the site is registered under.'} regionCode: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'Extension feed of the hive register carrying the inspection attributes of a hive, delivered separately from the base hive feed and joined back to it on the register identifier.'} test::silverorchard3::domain::HiveDetail
+{
+  {meta::pure::profiles::doc.doc = 'Register-wide identifier of the hive this detail extends.'} globalId: String[1];
+  {meta::pure::profiles::doc.doc = 'Year the current queen was marked, when known.'} queenYear: Integer[0..1];
+  {meta::pure::profiles::doc.doc = 'Temperament of the colony noted at the last inspection.'} temperament: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Digest of the delivered extension row.'} rowDigest: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'Extension feed of the apiary register carrying the site attributes of an apiary, delivered separately from the base apiary feed and joined back to it on the register identifier.'} test::silverorchard3::domain::ApiaryDetail
+{
+  {meta::pure::profiles::doc.doc = 'Register-wide identifier of the apiary this detail extends.'} globalId: String[1];
+  {meta::pure::profiles::doc.doc = 'Kind of shelter protecting the hives from the prevailing wind.'} shelterKind: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Water source the bees use near the site.'} waterSource: String[0..1];
+  {meta::pure::profiles::doc.doc = 'Digest of the delivered extension row.'} rowDigest: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a delivered hive to the inspection extension delivered for the same register identifier.'} test::silverorchard3::domain::HiveRecord_Detail
+{
+  hive: test::silverorchard3::domain::HiveRecord[1];
+  hiveDetail: test::silverorchard3::domain::HiveDetail[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a delivered apiary to the site extension delivered for the same register identifier.'} test::silverorchard3::domain::ApiaryRecord_Detail
+{
+  apiary: test::silverorchard3::domain::ApiaryRecord[1];
+  apiaryDetail: test::silverorchard3::domain::ApiaryDetail[0..1];
+}

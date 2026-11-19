@@ -1,0 +1,34 @@
+name: opal-orchard
+title: "Community Pottery Studio — Store-less Class Graph With Enumerated Reference Data And Literal-Defaulted Derivations"
+description: |
+  A store-less model of a community pottery studio. Ten classes carry the
+  studio's buildings, kilns, firings, shelves, clay bodies, glazes, glaze coats,
+  pieces, members and membership terms, linked through typed properties rather
+  than associations so the graph stands on its own with no store behind it. Four
+  enumerations hold the studio's controlled reference data — the heat source a
+  kiln fires with, the atmosphere a firing runs under, the stage a piece has
+  reached and the surface a glaze leaves. Derived properties published on the
+  kiln, the firing, the glaze, the piece and the member render those
+  enumerations as label wording and default an absent note or nickname to a
+  fixed literal, so a shelf or unpacking label can be produced without any
+  optional value being present.
+modelSources:
+  model:
+    root: opal-orchard
+    files:
+      - test/opalorchard/domain/StudioDomain.pure
+      - test/opalorchard/domain/StudioReference.pure
+features:
+  - grammar:derived-property
+  - grammar:enumeration
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - community-studio
+  - derived-property
+  - enumeration
+  - literal-default
+  - model-only
+  - pottery
+  - reference-data

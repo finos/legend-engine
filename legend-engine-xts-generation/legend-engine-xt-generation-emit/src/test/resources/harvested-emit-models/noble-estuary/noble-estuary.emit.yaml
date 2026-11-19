@@ -1,0 +1,57 @@
+name: noble-estuary
+title: "Museum Curation - Model-to-Model Fan-Out, Graph-Fetch Services, Diagram and File Generation"
+description: |
+  A museum-curation corpus with no store at all. One wide flat intake record is fanned out by a
+  model-to-model mapping into an exhibit hub plus its location, steward and audience spokes, with
+  association properties satisfied by assigning the source object itself. A second mapping reshapes
+  a subtype record into a flat summary with a duplicated label and a nested address, and carries a
+  mapping-level test suite whose function is the same fetch-and-serialize expression a service uses.
+  Two single-execution services return object graphs rather than tables under two different ownership
+  conventions, one of them annotated with a profile stereotype. A diagram documents the class
+  hierarchies and association properties, and five file-generation elements with deliberately
+  overlapping scopes sit beside a generation specification that sequences only one of them.
+modelSources:
+  model:
+    root: noble-estuary
+    files:
+      - test/nobleestuary/connection/IntakeConnections.pure
+      - test/nobleestuary/diagram/CurationDiagram.pure
+      - test/nobleestuary/domain/CurationDomain.pure
+      - test/nobleestuary/generation/CurationGeneration.pure
+      - test/nobleestuary/mapping/IntakeFanOutMapping.pure
+      - test/nobleestuary/mapping/SpecimenSummaryMapping.pure
+      - test/nobleestuary/runtime/CurationRuntimes.pure
+      - test/nobleestuary/service/CurationServices.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:m2m-transform
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - association
+  - class-inheritance
+  - diagram
+  - enumeration
+  - fan-out
+  - file-generation
+  - generation-specification
+  - graph-fetch
+  - mapping-test
+  - model-to-model
+  - museum-curation
+  - profile
+  - service-test

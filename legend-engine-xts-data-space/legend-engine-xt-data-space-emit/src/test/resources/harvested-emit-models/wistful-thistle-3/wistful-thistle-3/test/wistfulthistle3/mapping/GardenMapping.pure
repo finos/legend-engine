@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulthistle3::mapping::GardenMapping
+(
+  *test::wistfulthistle3::domain::PlantAccession[accession]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulthistle3::store::GardenDb]garden.plant_accession.accession_code
+    )
+    ~mainTable [test::wistfulthistle3::store::GardenDb]garden.plant_accession
+    accessionCode: [test::wistfulthistle3::store::GardenDb]garden.plant_accession.accession_code,
+    taxonName: [test::wistfulthistle3::store::GardenDb]garden.plant_accession.taxon_name,
+    familyName: [test::wistfulthistle3::store::GardenDb]garden.plant_accession.family_name,
+    originRegion: [test::wistfulthistle3::store::GardenDb]garden.plant_accession.origin_region,
+    bedCode: [test::wistfulthistle3::store::GardenDb]garden.plant_accession.bed_code,
+    heightCm: [test::wistfulthistle3::store::GardenDb]garden.plant_accession.height_cm,
+    hardinessZone: [test::wistfulthistle3::store::GardenDb]garden.plant_accession.hardiness_zone
+  }
+
+  *test::wistfulthistle3::domain::GardenBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulthistle3::store::GardenDb]garden.garden_bed.bed_code
+    )
+    ~mainTable [test::wistfulthistle3::store::GardenDb]garden.garden_bed
+    bedCode: [test::wistfulthistle3::store::GardenDb]garden.garden_bed.bed_code,
+    bedName: [test::wistfulthistle3::store::GardenDb]garden.garden_bed.bed_name,
+    quarterName: [test::wistfulthistle3::store::GardenDb]garden.garden_bed.quarter_name,
+    exposure: [test::wistfulthistle3::store::GardenDb]garden.garden_bed.exposure,
+    areaSqm: [test::wistfulthistle3::store::GardenDb]garden.garden_bed.area_sqm
+  }
+
+  *test::wistfulthistle3::domain::HerbariumSheet[sheet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulthistle3::store::GardenDb]garden.herbarium_sheet.sheet_code
+    )
+    ~mainTable [test::wistfulthistle3::store::GardenDb]garden.herbarium_sheet
+    sheetCode: [test::wistfulthistle3::store::GardenDb]garden.herbarium_sheet.sheet_code,
+    accessionCode: [test::wistfulthistle3::store::GardenDb]garden.herbarium_sheet.accession_code,
+    collectorName: [test::wistfulthistle3::store::GardenDb]garden.herbarium_sheet.collector_name,
+    cabinetCode: [test::wistfulthistle3::store::GardenDb]garden.herbarium_sheet.cabinet_code,
+    duplicateCount: [test::wistfulthistle3::store::GardenDb]garden.herbarium_sheet.duplicate_count
+  }
+
+  testSuites:
+  [
+    accessionNarrowingSuite:
+    {
+      function: |test::wistfulthistle3::domain::PlantAccession.all()->filter(
+  a|(($a.originRegion == 'Anatolia') && ($a.familyName->in(['Asteraceae', 'Lamiaceae']))) && ($a.taxonName->contains('Cirsium'))
+)->project(
+  [
+    a|$a.accessionCode,
+    a|$a.taxonName,
+    a|$a.familyName,
+    a|$a.heightCm
+  ],
+  [
+    'Accession',
+    'Taxon',
+    'Family',
+    'HeightCm'
+  ]
+)->sort([asc('Accession')])->distinct();
+      tests:
+      [
+        anatolianThistles:
+        {
+          doc: 'The three-way predicate keeps only the Anatolian material whose family is one of the two named and whose accepted name carries the thistle genus, so a matching region with the wrong family, the right family with the wrong genus and a matching name from another region all drop out.';
+          data:
+          [
+            test::wistfulthistle3::store::GardenDb:
+              Relational
+              #{
+                garden.plant_accession:
+                  'accession_code,taxon_name,family_name,origin_region,bed_code,height_cm,hardiness_zone,propagation_note\n'+
+                  'ACC-001,Cirsium eriophorum,Asteraceae,Anatolia,BED-A,120,6,division\n'+
+                  'ACC-002,Cirsium palustre,Asteraceae,Anatolia,BED-A,95,5,seed\n'+
+                  'ACC-003,Cirsium vulgare,Rosaceae,Anatolia,BED-B,140,6,seed\n'+
+                  'ACC-004,Salvia officinalis,Lamiaceae,Anatolia,BED-B,60,7,cuttings\n'+
+                  'ACC-005,Cirsium arvense,Asteraceae,Caucasus,BED-C,110,5,division\n';
+              }#
+          ];
+          asserts:
+          [
+            twoAnatolianThistles:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"ACC-001","Taxon":"Cirsium eriophorum","Family":"Asteraceae","HeightCm":120},{"Accession":"ACC-002","Taxon":"Cirsium palustre","Family":"Asteraceae","HeightCm":95}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    bedLayoutSuite:
+    {
+      function: |test::wistfulthistle3::domain::GardenBed.all()->filter(
+  b|($b.exposure->in(['FULL_SUN', 'PART_SHADE'])) && ($b.areaSqm >= 40)
+)->project(
+  [
+    b|$b.bedCode,
+    b|$b.bedName,
+    b|$b.quarterName,
+    b|$b.areaSqm
+  ],
+  [
+    'Bed',
+    'Name',
+    'Quarter',
+    'AreaSqm'
+  ]
+)->sort([asc('Bed')]);
+      tests:
+      [
+        lightBedsOverThreshold:
+        {
+          doc: 'The bed extent is mapped onto its own driving table with its own primary key, and the enumerated exposure test combined with the area floor keeps only the larger sunlit and part-shaded beds.';
+          data:
+          [
+            test::wistfulthistle3::store::GardenDb:
+              Relational
+              #{
+                garden.garden_bed:
+                  'bed_code,bed_name,quarter_name,exposure,area_sqm\n'+
+                  'BED-A,Thistle Terrace,North Quarter,FULL_SUN,64\n'+
+                  'BED-B,Sage Walk,North Quarter,PART_SHADE,42\n'+
+                  'BED-C,Fern Hollow,West Quarter,DEEP_SHADE,80\n'+
+                  'BED-D,Alpine Trough,West Quarter,FULL_SUN,18\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLightBeds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bed":"BED-A","Name":"Thistle Terrace","Quarter":"North Quarter","AreaSqm":64},{"Bed":"BED-B","Name":"Sage Walk","Quarter":"North Quarter","AreaSqm":42}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

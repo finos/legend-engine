@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskylighthouse2::mapping::SkyWatchLogMapping
+(
+  include mapping test::duskylighthouse2::mapping::SkyWatchEnumMappings
+  include mapping test::duskylighthouse2::mapping::SkyWatchReferenceMapping
+
+  *test::duskylighthouse2::domain::NightWatchLog[nightWatchLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.log_code
+    )
+    ~mainTable [test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log
+    logCode: [test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.log_code,
+    loggedOn: [test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.logged_on,
+    patrolLevel: [test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.patrol_level,
+    seeingGrade: EnumerationMapping SeeingGradeMapping: toUpper([test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.seeing_code),
+    catalogVersion: toUpper([test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.catalog_version),
+    seasonYear: [test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.season_year,
+    exposureMinutes: [test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.exposure_minutes,
+    lampTag: coalesce(toUpper([test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.lamp_note), 'NO-TAG'),
+    lampTagWidth: length(coalesce([test::duskylighthouse2::store::SkyWatchDB]skywatch.night_watch_log.lamp_note, 'NA')),
+    site[observingSite]: [test::duskylighthouse2::store::SkyWatchDB]@Log_Site
+  }
+)

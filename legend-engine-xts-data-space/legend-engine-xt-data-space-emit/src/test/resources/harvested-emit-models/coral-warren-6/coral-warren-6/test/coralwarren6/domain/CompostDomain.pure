@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A municipal composting site that operates windrows on behalf of one ward.'} test::coralwarren6::domain::CompostSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  wardCode: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A composting windrow whose feedstock, aeration, moisture and turn record are restated over business time.'} test::coralwarren6::domain::Windrow
+{
+  windrowCode: String[1];
+  siteCode: String[1];
+  wardCode: String[1];
+  feedstockGrade: String[1];
+  aerationMode: String[1];
+  moisturePct: Integer[1];
+  turnCount: Integer[1];
+  tonnage: Integer[1];
+  windrowState: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A temperature probe installed in a windrow, graded by how deep into the pile it reads.'} test::coralwarren6::domain::TemperatureProbe
+{
+  probeCode: String[1];
+  windrowCode: String[1];
+  probeGrade: String[1];
+}
+
+Association test::coralwarren6::domain::Windrow_Site
+{
+  compostSite: test::coralwarren6::domain::CompostSite[1];
+  windrows: test::coralwarren6::domain::Windrow[*];
+}
+
+Association test::coralwarren6::domain::Windrow_Probe
+{
+  windrow: test::coralwarren6::domain::Windrow[1];
+  probes: test::coralwarren6::domain::TemperatureProbe[*];
+}

@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'Inbound denormalised orchard feed record carrying a nested collection of tree entries.'} test::quietorchard::domain::OrchardFeed
+{
+  orchardId: Integer[1];
+  orchardName: String[1];
+  region: String[1];
+  trees: test::quietorchard::domain::TreeFeed[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single tree entry inside the inbound orchard feed record.'} test::quietorchard::domain::TreeFeed
+{
+  cultivar: String[1];
+  ageYears: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Curated orchard with the flattened collection of cultivar names planted within it.'} test::quietorchard::domain::Orchard
+{
+  id: Integer[1];
+  name: String[1];
+  region: String[1];
+  cultivars: String[*];
+}

@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::frostedfossil4::dataspace::IceArchiveDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'archive';
+      description: 'Archive tier - the milestoned ice core register, the segments cut from each core and the drill sites the cores were lifted from.';
+      mapping: test::frostedfossil4::mapping::IceArchiveMapping;
+      defaultRuntime: test::frostedfossil4::runtime::IceArchiveRuntime;
+    }
+  ];
+  defaultExecutionContext: 'archive';
+  title: 'Ice Core Archive';
+  description: 'A governed entry point over the glacier ice core archive - the point-in-time catalogue of cores, the depth-windowed selection and the segment register, each resolved at a caller supplied processing instant.';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Core Depth Window';
+      description: 'The depth-bounded selection of the core versions standing at a processing instant.';
+      executable: test::frostedfossil4::service::CoreDepthWindowService;
+    },
+    {
+      id: 2;
+      title: 'Core Segment Register';
+      description: 'The segment register as it stood at a processing instant.';
+      executable: test::frostedfossil4::service::SegmentRegisterService;
+    },
+    {
+      id: 3;
+      title: 'Core Catalogue';
+      description: 'The unfiltered core catalogue with the join-reached drill site columns.';
+      executable: test::frostedfossil4::service::CoreCatalogueService;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'ice-archive-desk@icearchive.invalid';
+  };
+}

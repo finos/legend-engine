@@ -1,0 +1,76 @@
+name: meadow-marsh-2
+title: "Meadow Marsh — Association-Navigated Marsh Bike-Share Fleet Over One Multi-Schema Store"
+description: |
+  A marsh-side community bike-share network models its stations, the docks bolted to
+  them, the bicycles parked in those docks, the riders and rides that move them and
+  the maintenance tickets raised against them as six flat mapped classes over a single
+  two-schema store. What makes the project interesting is that the linkage layer is
+  declared twice in two different registers: five explicit associations give the model
+  named, typed property ends so query bodies can navigate between classes without
+  restating anything, and each of those ends is given a relational implementation that
+  resolves it onto exactly one of the five named store joins. Alongside those model
+  traversals, three property bindings reach a column across a join path instead of the
+  main table, so the same physical join simultaneously backs an association end and a
+  scalar column binding, and a projection can mix a navigated property, a join-bound
+  column and a direct read of the same row. Every class mapping fixes its root relation
+  with a bracketed store reference and declares an explicit primary key over it. The
+  query surface is three single-execution endpoints over one mapping and one runtime —
+  a ward-narrowed dock roster, a deduplicated ride log reached through two different
+  association ends, and a per-model ticket digest whose grouping key and both aggregates
+  are themselves association traversals rather than local columns — and a data space
+  catalogues the mapping, its default runtime and all three endpoints behind one
+  contact address.
+
+modelSources:
+  model:
+    root: meadow-marsh-2
+    files:
+      - test/meadowmarsh2/connection/MarshConnection.pure
+      - test/meadowmarsh2/dataspace/MarshDataSpace.pure
+      - test/meadowmarsh2/domain/MarshDomain.pure
+      - test/meadowmarsh2/mapping/MarshMapping.pure
+      - test/meadowmarsh2/runtime/MarshRuntime.pure
+      - test/meadowmarsh2/service/MarshServices.pure
+      - test/meadowmarsh2/store/MarshDB.pure
+
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - bike-share
+  - cross-schema-join
+  - data-space
+  - group-by
+  - h2
+  - join-path-property
+  - main-table-alias
+  - primary-key
+  - property-navigation
+  - relational
+  - service-test
+  - snowflake
+  - tabular-data-set

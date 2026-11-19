@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::jadeglacier::domain::*;
+
+Class test::jadeglacier::domain::PlantAccession
+{
+  accessionCode: String[1];
+  taxonName: String[1];
+  glasshouseCode: String[1];
+  potSizeCm: Integer[0..1];
+  acquiredYear: Integer[0..1];
+  curatorNote: String[1];
+  census: GlasshouseCensus[0..1];
+}
+
+Class test::jadeglacier::domain::GlasshouseCensus
+{
+  glasshouseCode: String[1];
+  accessionCount: Integer[1];
+  largestPotCm: Integer[0..1];
+}

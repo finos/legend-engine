@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarmeadow::mapping::CellarMapping
+(
+  *test::lunarmeadow::domain::CheeseWheel[wheel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarmeadow::store::CellarDatabase]dairy.wheel.wheel_id
+    )
+    ~mainTable [test::lunarmeadow::store::CellarDatabase]dairy.wheel
+    wheelId: [test::lunarmeadow::store::CellarDatabase]dairy.wheel.wheel_id,
+    wheelCode: [test::lunarmeadow::store::CellarDatabase]dairy.wheel.wheel_code,
+    milkType: [test::lunarmeadow::store::CellarDatabase]dairy.wheel.milk_type,
+    formedOn: [test::lunarmeadow::store::CellarDatabase]dairy.wheel.formed_on,
+    weightGrams: [test::lunarmeadow::store::CellarDatabase]dairy.wheel.weight_grams,
+    chamberName: [test::lunarmeadow::store::CellarDatabase]@Wheel_Rack > @Rack_Chamber | [test::lunarmeadow::store::CellarDatabase]cellar.chamber.chamber_name,
+    humidityPct: [test::lunarmeadow::store::CellarDatabase]@Wheel_Rack > @Rack_Chamber | [test::lunarmeadow::store::CellarDatabase]cellar.chamber.humidity_pct,
+    makerName: [test::lunarmeadow::store::CellarDatabase]@Wheel_Rack > @Rack_Maker | [test::lunarmeadow::store::CellarDatabase]roster.cheesemaker.maker_name,
+    rack[rack]: [test::lunarmeadow::store::CellarDatabase]@Wheel_Rack
+  }
+
+  *test::lunarmeadow::domain::RipeningRack[rack]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarmeadow::store::CellarDatabase]dairy.rack.rack_code
+    )
+    ~mainTable [test::lunarmeadow::store::CellarDatabase]dairy.rack
+    rackCode: [test::lunarmeadow::store::CellarDatabase]dairy.rack.rack_code,
+    rackTier: [test::lunarmeadow::store::CellarDatabase]dairy.rack.rack_tier
+  }
+
+  *test::lunarmeadow::domain::CaveChamber[chamber]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarmeadow::store::CellarDatabase]cellar.chamber.chamber_code
+    )
+    ~mainTable [test::lunarmeadow::store::CellarDatabase]cellar.chamber
+    chamberCode: [test::lunarmeadow::store::CellarDatabase]cellar.chamber.chamber_code,
+    chamberName: [test::lunarmeadow::store::CellarDatabase]cellar.chamber.chamber_name,
+    humidityPct: [test::lunarmeadow::store::CellarDatabase]cellar.chamber.humidity_pct,
+    tempCelsius: [test::lunarmeadow::store::CellarDatabase]cellar.chamber.temp_celsius
+  }
+
+  *test::lunarmeadow::domain::Cheesemaker[maker]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarmeadow::store::CellarDatabase]roster.cheesemaker.maker_code
+    )
+    ~mainTable [test::lunarmeadow::store::CellarDatabase]roster.cheesemaker
+    makerCode: [test::lunarmeadow::store::CellarDatabase]roster.cheesemaker.maker_code,
+    makerName: [test::lunarmeadow::store::CellarDatabase]roster.cheesemaker.maker_name,
+    certifiedOn: [test::lunarmeadow::store::CellarDatabase]roster.cheesemaker.certified_on
+  }
+
+  testSuites:
+  [
+    wheelChamberSuite:
+    {
+      function: |test::lunarmeadow::domain::CheeseWheel.all()->project(
+        [
+          w|$w.wheelCode,
+          w|$w.makerName,
+          w|$w.humidityPct
+        ],
+        [
+          'WheelCode',
+          'Maker',
+          'Humidity'
+        ]
+      )->sort([asc('WheelCode')]);
+      tests:
+      [
+        wheelsWalkBothMultiHopPaths:
+        {
+          doc: 'Projects each wheel with the cheesemaker reached over the two-hop rack-to-roster join path and the humidity reached over the two-hop rack-to-cellar path, exercising the main-table aliases, the primary keys and all three cross-schema inner joins.';
+          data:
+          [
+            test::lunarmeadow::store::CellarDatabase:
+              Relational
+              #{
+                dairy.wheel:
+                  'wheel_id,wheel_code,milk_type,rack_code,formed_on,weight_grams\n'+
+                  '1,W-001,GOAT,R1,2024-01-10,4200\n'+
+                  '2,W-002,SHEEP,R2,2024-02-15,5100\n'+
+                  '3,W-003,COW,R1,2024-03-20,9800\n'+
+                  '4,W-004,GOAT,R3,2025-06-01,3000\n'+
+                  '5,W-005,BUFFALO,R4,2024-04-05,2500\n'+
+                  '6,W-006,GOAT,R1,2099-01-01,6000\n';
+
+                dairy.rack:
+                  'rack_code,chamber_code,maker_code,rack_tier\n'+
+                  'R1,C-NORTH,M1,1\n'+
+                  'R2,C-SOUTH,M2,3\n'+
+                  'R3,C-NORTH,M1,2\n'+
+                  'R4,C-WEST,M3,4\n';
+
+                cellar.chamber:
+                  'chamber_code,chamber_name,humidity_pct,temp_celsius\n'+
+                  'C-NORTH,NORTHVAULT,88,11\n'+
+                  'C-SOUTH,SOUTHVAULT,84,13\n'+
+                  'C-WEST,WESTVAULT,80,12\n';
+
+                roster.cheesemaker:
+                  'maker_code,maker_name,certified_on\n'+
+                  'M1,Rowan Pike,2019-05-01\n'+
+                  'M2,Ines Fell,2021-08-12\n'+
+                  'M3,Tomas Kerr,2020-02-02\n';
+              }#
+          ];
+          asserts:
+          [
+            sixWheelsWithMakerAndHumidity:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WheelCode":"W-001","Maker":"Rowan Pike","Humidity":88},{"WheelCode":"W-002","Maker":"Ines Fell","Humidity":84},{"WheelCode":"W-003","Maker":"Rowan Pike","Humidity":88},{"WheelCode":"W-004","Maker":"Rowan Pike","Humidity":88},{"WheelCode":"W-005","Maker":"Tomas Kerr","Humidity":80},{"WheelCode":"W-006","Maker":"Rowan Pike","Humidity":88}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

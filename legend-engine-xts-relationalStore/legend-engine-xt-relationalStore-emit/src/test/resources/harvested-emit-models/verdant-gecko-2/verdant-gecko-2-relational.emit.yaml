@@ -1,0 +1,62 @@
+name: verdant-gecko-2-relational
+title: "Tram Network Registry — Validity-Filtered Views, Association Join Paths, Wide Register Services"
+description: |
+  An advanced relational EMIT model over a tram network registry. One store
+  holds eight base tables, each carrying a change-attribution column and a
+  validity-window timestamp pair, and exposes one inline view per relation that
+  projects a named column subset, promotes the surrogate identifier to the
+  view's primary key and attaches a named validity filter, so every relation is
+  read as a sub-select of currently valid rows only. The mapping binds every
+  class to its view through a main-table alias and a single-column primary key
+  and binds seven association ends to the joins declared between those views, so
+  a projected column can require up to three chained ends before its value is
+  reachable. Three single execution services publish wide flat registers off the
+  count, stop and vehicle extents, and the mapping suites assert one surviving
+  row each against fixtures holding superseded and filtered-out rows.
+modelSources:
+  model:
+    root: verdant-gecko-2-relational
+    files:
+      - test/verdantgecko2/connection/TramRegistryConnection.pure
+      - test/verdantgecko2/domain/TramNetworkDomain.pure
+      - test/verdantgecko2/mapping/TramNetworkMapping.pure
+      - test/verdantgecko2/runtime/TramNetworkRuntime.pure
+      - test/verdantgecko2/service/FleetAllocationRegister.pure
+      - test/verdantgecko2/service/RidershipRegister.pure
+      - test/verdantgecko2/service/StopRegister.pure
+      - test/verdantgecko2/store/TramNetworkDB.pure
+features:
+  - execution:service
+  - grammar:association
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - db2
+  - duckdb
+  - h2
+  - inline-view
+  - mapping-test
+  - multi-hop-join
+  - plan-generation
+  - relational
+  - service-test
+  - store-filter
+  - tabular-data-set
+  - tram-network
+  - validity-window

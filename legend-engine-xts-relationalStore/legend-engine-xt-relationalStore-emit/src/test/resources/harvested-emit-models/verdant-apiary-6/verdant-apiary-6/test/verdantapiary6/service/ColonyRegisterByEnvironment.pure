@@ -1,0 +1,174 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantapiary6::service::ColonyRegisterByEnvironment
+{
+  pattern: '/verdantapiary6/v1/colony-register/{environment}';
+  title: 'Verdant Apiary - Hive Colonies Of One Apiary As Of A Supplied Effective Date';
+  documentation: 'Resolves the hive colonies as of the supplied effective date, keeps the colonies of one named apiary and projects the colony code, the upper-cased apiary name, the frame count and the queen line into a tabular result. The single query body is planned under two keyed environments that differ only in the runtime and connection they route through.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['apiary-hive-desk'] };
+  execution: Multi
+  {
+    query: {businessDate: StrictDate[1], apiary: String[1]|test::verdantapiary6::domain::HiveColony.all($businessDate)->filter(
+      c|$c.apiaryName == $apiary
+    )->project(
+      [
+        c|$c.colonyCode,
+        c|$c.apiaryName->toUpper(),
+        c|$c.frameCount,
+        c|$c.queenLine
+      ],
+      [
+        'ColonyCode',
+        'Apiary',
+        'FrameCount',
+        'QueenLine'
+      ]
+    )->sort(
+      [
+        asc('ColonyCode')
+      ]
+    )};
+    key: 'environment';
+    executions['live']:
+    {
+      mapping: test::verdantapiary6::mapping::ApiaryMapping;
+      runtime: test::verdantapiary6::runtime::ApiaryLiveRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::verdantapiary6::mapping::ApiaryMapping;
+      runtime: test::verdantapiary6::runtime::ApiaryArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    liveColonyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryLive:
+            Relational
+            #{
+              apiary.hive_colony:
+                'colony_id,colony_code,apiary_name,frame_count,queen_line,from_z,thru_z\n'+
+                '1,HC-01,Willow Row,24,QL-A,2026-01-01,2026-06-01\n'+
+                '2,HC-01,Willow Row,30,QL-A,2026-06-01,9999-12-31\n'+
+                '3,HC-02,Willow Row,18,QL-B,2026-01-01,9999-12-31\n'+
+                '4,HC-03,Heather Knoll,12,QL-C,2026-01-01,9999-12-31\n'+
+                '5,HC-04,Willow Row,40,QL-D,2026-08-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        liveKeyResolvesTheEffectiveVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['live'];
+          parameters:
+          [
+            businessDate = %2026-07-01,
+            apiary = 'Willow Row'
+          ]
+          asserts:
+          [
+            effectiveColonyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ColonyCode":"HC-01","Apiary":"WILLOW ROW","FrameCount":30,"QueenLine":"QL-A"},{"ColonyCode":"HC-02","Apiary":"WILLOW ROW","FrameCount":18,"QueenLine":"QL-B"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    archiveColonyRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryArchive:
+            Relational
+            #{
+              apiary.hive_colony:
+                'colony_id,colony_code,apiary_name,frame_count,queen_line,from_z,thru_z\n'+
+                '1,HC-01,Willow Row,24,QL-A,2026-01-01,2026-06-01\n'+
+                '2,HC-01,Willow Row,30,QL-A,2026-06-01,9999-12-31\n'+
+                '3,HC-02,Willow Row,18,QL-B,2026-01-01,9999-12-31\n'+
+                '5,HC-04,Willow Row,40,QL-D,2026-08-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        archiveKeyResolvesTheEarlierVersion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            businessDate = %2026-03-01,
+            apiary = 'Willow Row'
+          ]
+          asserts:
+          [
+            earlierColonyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ColonyCode":"HC-01","Apiary":"WILLOW ROW","FrameCount":24,"QueenLine":"QL-A"},{"ColonyCode":"HC-02","Apiary":"WILLOW ROW","FrameCount":18,"QueenLine":"QL-B"}]';
+                  }#;
+              }#
+          ]
+        },
+        anEffectiveDateBeforeEveryVersionSelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            businessDate = %2025-12-01,
+            apiary = 'Willow Row'
+          ]
+          asserts:
+          [
+            noColonyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

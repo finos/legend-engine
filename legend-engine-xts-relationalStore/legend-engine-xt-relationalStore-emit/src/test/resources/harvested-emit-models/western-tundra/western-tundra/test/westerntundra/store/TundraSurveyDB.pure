@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::westerntundra::store::TundraSurveyDB
+(
+  Schema tundra
+  (
+    Table reserve
+    (
+      reserve_id INTEGER PRIMARY KEY,
+      reserve_code VARCHAR(24) NOT NULL,
+      reserve_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(24) NOT NULL
+    )
+    Table plot
+    (
+      plot_id INTEGER PRIMARY KEY,
+      reserve_id INTEGER NOT NULL,
+      plot_code VARCHAR(24) NOT NULL,
+      elevation_m INTEGER NOT NULL
+    )
+    Table quadrat
+    (
+      quadrat_id INTEGER PRIMARY KEY,
+      plot_id INTEGER NOT NULL,
+      quadrat_code VARCHAR(24) NOT NULL,
+      area_m2 INTEGER NOT NULL
+    )
+    Table taxon
+    (
+      taxon_id INTEGER PRIMARY KEY,
+      taxon_code VARCHAR(24) NOT NULL,
+      taxon_name VARCHAR(120) NOT NULL,
+      growth_form VARCHAR(24) NOT NULL
+    )
+    Table cover_record
+    (
+      cover_record_id INTEGER PRIMARY KEY,
+      quadrat_id INTEGER NOT NULL,
+      taxon_id INTEGER NOT NULL,
+      cover_pct INTEGER NOT NULL,
+      recorded_on DATE NOT NULL
+    )
+
+    View reserve_roster_vw
+    (
+      reserve_id: tundra.reserve.reserve_id PRIMARY KEY,
+      reserve_code: tundra.reserve.reserve_code,
+      region_code: tundra.reserve.region_code
+    )
+    View plot_profile_vw
+    (
+      plot_id: tundra.plot.plot_id PRIMARY KEY,
+      plot_code: tundra.plot.plot_code,
+      elevation_m: tundra.plot.elevation_m
+    )
+    View taxon_profile_vw
+    (
+      taxon_id: tundra.taxon.taxon_id PRIMARY KEY,
+      taxon_code: tundra.taxon.taxon_code,
+      growth_form: tundra.taxon.growth_form
+    )
+  )
+
+  Join CoverRecord_Quadrat(tundra.cover_record.quadrat_id = tundra.quadrat.quadrat_id)
+  Join Quadrat_Plot(tundra.quadrat.plot_id = tundra.plot.plot_id)
+  Join Plot_Reserve(tundra.plot.reserve_id = tundra.reserve.reserve_id)
+  Join CoverRecord_Taxon(tundra.cover_record.taxon_id = tundra.taxon.taxon_id)
+  Join Quadrat_PlotProfile(tundra.quadrat.plot_id = tundra.plot_profile_vw.plot_id)
+  Join Reserve_ReserveRoster(tundra.reserve.reserve_id = tundra.reserve_roster_vw.reserve_id)
+  Join Taxon_TaxonProfile(tundra.taxon.taxon_id = tundra.taxon_profile_vw.taxon_id)
+)

@@ -1,0 +1,60 @@
+name: golden-arboretum-2
+title: "Golden Arboretum - alias-qualified join-path projections behind a catalogued data space with curated layout diagrams"
+description: |
+  An arboretum collection and propagation model. Two relational stores hold the collection tables and
+  the propagation tables, and each mapped class names its own main table with an explicit primary key
+  while the specimen attributes for bed, soil, grove and cultivar are bound through one-hop and
+  two-hop join paths so alias qualification is exercised in several places at once. Two endpoints
+  expose structurally different query bodies over the collection mapping, two layout diagrams record
+  the curated class views, and a data space groups both execution contexts, both diagrams and both
+  featured endpoints behind one support address.
+modelSources:
+  model:
+    root: golden-arboretum-2
+    files:
+      - test/goldenarboretum2/connection/ArboretumH2Connection.pure
+      - test/goldenarboretum2/connection/NurseryLakeConnection.pure
+      - test/goldenarboretum2/dataspace/ArboretumDataSpace.pure
+      - test/goldenarboretum2/diagram/CanopyDiagram.pure
+      - test/goldenarboretum2/diagram/NurseryDiagram.pure
+      - test/goldenarboretum2/domain/ArboretumDomain.pure
+      - test/goldenarboretum2/domain/NurseryDomain.pure
+      - test/goldenarboretum2/mapping/ArboretumMapping.pure
+      - test/goldenarboretum2/mapping/NurseryMapping.pure
+      - test/goldenarboretum2/runtime/ArboretumH2Runtime.pure
+      - test/goldenarboretum2/runtime/NurseryLakeRuntime.pure
+      - test/goldenarboretum2/service/CanopyRoster.pure
+      - test/goldenarboretum2/service/SurveyTrace.pure
+      - test/goldenarboretum2/store/ArboretumDB.pure
+      - test/goldenarboretum2/store/NurseryDB.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - grammar:diagram
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - alias-column
+  - data-space
+  - diagram
+  - h2
+  - inner-join
+  - main-table-alias
+  - multi-store
+  - oauth
+  - snowflake
+  - two-hop-join-path

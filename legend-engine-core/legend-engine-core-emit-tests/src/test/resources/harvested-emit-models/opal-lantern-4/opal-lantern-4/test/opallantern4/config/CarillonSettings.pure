@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::opallantern4::profile::*;
+
+Class <<CarillonMeta.towerScoped>> {doc.doc = 'Configuration descriptor for how a single tower bell may be struck. The stored property names the attribute being configured; the derived properties declare, as behaviour rather than as metadata, which hierarchy level the attribute attaches to, which authorisation domain and role govern it, and what its permitted value vocabulary is.'} test::opallantern4::config::BellStrikeSetting
+{
+  {doc.doc = 'Name of the strike attribute this descriptor configures.'} strikeAttribute: String[1];
+  {doc.doc = 'Hierarchy level the attribute attaches to, declared as a constant.'} hierarchyLevel() {'tower'}: String[1];
+  {doc.doc = 'Authorisation domain governing changes to the attribute.'} authorisationDomain() {'carillon-estate'}: String[1];
+  {doc.doc = 'Role permitted to change the attribute.'} governingRole() {'tower-keeper'}: String[1];
+  {doc.doc = 'Permitted strike modes as one comma-space delimited string; splitting the vocabulary is left to the consumer.'} permittedStrikeModes() {['FULL_CIRCLE', 'HALF_SWING', 'CHIME']->joinStrings(', ')}: String[1];
+}
+
+Class <<CarillonMeta.practiceScoped>> test::opallantern4::config::PracticeSessionSetting
+{
+  {doc.doc = 'Stored vocabulary recorded for a practice session, shadowed by the derived property of the same name.'} permittedValues: String[1];
+  {doc.doc = 'Hierarchy level the practice attribute attaches to.'} hierarchyLevel() {'practice-room'}: String[1];
+  {doc.doc = 'Authorisation domain governing practice-room configuration.'} authorisationDomain() {'carillon-school'}: String[1];
+  {doc.doc = 'Role permitted to change practice-room configuration.'} governingRole() {'practice-warden'}: String[1];
+  {doc.doc = 'Declared vocabulary as one bare-comma delimited string, shadowing the stored property of the same name; a consumer that splits on a comma-space separator instead yields values with a leading space.'} permittedValues() {'MUTED,OPEN,DUMB_KEYBOARD'}: String[1];
+}
+
+Class <<CarillonMeta.courseScoped>> {doc.doc = 'Configuration descriptor for a tuning course. The prose documentation restates the very contract the derived properties encode - hierarchy level, permitted values and governing policy - so the contract is stated twice and the two statements can drift without any compile error.', CarillonMeta.hierarchyNote = 'attaches at the tuning-course level', CarillonMeta.vocabularyContract = 'EQUAL_TEMPERAMENT, MEANTONE', CarillonMeta.governingPolicy = 'changed only by the carillon-estate tuning committee'} test::opallantern4::config::TuningCourseSetting
+{
+  {doc.doc = 'Name of the tuning attribute this descriptor configures.'} tuningAttribute: String[1];
+  {doc.doc = 'Hierarchy level the tuning attribute attaches to.'} hierarchyLevel() {'tuning-course'}: String[1];
+  {doc.doc = 'Authorisation domain governing tuning changes.'} authorisationDomain() {'carillon-estate'}: String[1];
+  {doc.doc = 'Role permitted to change the tuning attribute.'} governingRole() {'tuning-committee'}: String[1];
+  {doc.doc = 'Permitted temperaments as a single-value list, deliberately narrower than the vocabulary the documentation tag advertises.'} permittedTemperaments() {'EQUAL_TEMPERAMENT'}: String[1];
+}

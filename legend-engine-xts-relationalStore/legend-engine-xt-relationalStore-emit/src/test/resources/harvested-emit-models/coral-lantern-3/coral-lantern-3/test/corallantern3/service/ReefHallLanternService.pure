@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::corallantern3::service::ReefHallLanternService
+{
+  pattern: '/coral-lantern-3/v1/reef-hall-lantern/{businessDate}/{hallCode}/{minLumens}';
+  title: 'Coral Lantern 3 - Reef Hall Lantern Pairing';
+  documentation: 'Resolves the display tanks standing at a business instant, rolls their filled volume up to the hall that holds them, and pairs each rolled hall with the lantern fittings recorded above one requested hall so only the fittings bright enough to be worth reporting survive.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['reef-hall-curators'] };
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], hallCode: String[1], minLumens: Integer[1]|test::corallantern3::domain::ReefTank.all($businessDate)->groupBy(
+      [
+        t|$t.hallCode
+      ],
+      [
+        agg(t|$t.waterLitres, y|$y->sum())
+      ],
+      [
+        'Hall',
+        'Litres'
+      ]
+    )->join(
+      test::corallantern3::domain::LanternFitting.all()->project(
+        [
+          f|$f.hallCode,
+          f|$f.fittingCode,
+          f|$f.lumens
+        ],
+        [
+          'FitHall',
+          'Fitting',
+          'Lumens'
+        ]
+      )->filter(
+        r|$r.getString('FitHall') == $hallCode
+      ),
+      meta::relational::metamodel::join::JoinType.INNER,
+      {l, r|$l.getString('Hall') == $r.getString('FitHall')}
+    )->filter(
+      t|$t.getInteger('Lumens') >= $minLumens
+    )};
+    mapping: test::corallantern3::mapping::ReefLightingMapping;
+    runtime: test::corallantern3::runtime::ReefLightingRuntime;
+  }
+  testSuites:
+  [
+    reefHallLanternSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefLighting:
+            Relational
+            #{
+              reefhall.reef_tank:
+                'tank_id,tank_code,hall_code,hall_name,water_litres,tank_grade,inspected_on,from_z,thru_z\n'+
+                '1,RT-01,RH-A,Coral Atrium,4200,PRIME,2026-03-05,2026-01-01,2026-03-01\n'+
+                '2,RT-02,RH-A,Coral Atrium,5200,PRIME,2026-03-12,2026-01-01,9999-12-31\n'+
+                '3,RT-03,RH-A,Coral Atrium,3100,STANDARD,2026-03-18,2026-01-01,9999-12-31\n'+
+                '4,RT-04,RH-B,Kelp Gallery,2600,STANDARD,2026-03-20,2026-01-01,9999-12-31\n';
+
+              reefhall.lantern_fitting:
+                'fitting_id,fitting_code,hall_code,lumens,fitting_type,installed_on\n'+
+                '1,LF-01,RH-A,900,SPOT,2026-02-10\n'+
+                '2,LF-02,RH-B,400,WASH,2026-02-14\n'+
+                '3,LF-03,RH-A,300,WASH,2026-02-20\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        requestedHallPairedWithItsBrightFittings:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-04-01,
+            hallCode = 'RH-A',
+            minLumens = 500
+          ]
+          asserts:
+          [
+            closedTankIsExcludedFromTheRollupAndOnlyTheBrightFittingSurvives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Hall":"RH-A","Litres":8300,"FitHall":"RH-A","Fitting":"LF-01","Lumens":900}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

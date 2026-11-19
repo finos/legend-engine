@@ -1,0 +1,55 @@
+name: ivory-ridge
+title: "Ridge Trail Task Star — Five Keyed Class Mappings, Hand-Rolled Interval Keys And Graph-Fetched Mapping Tests As The Only Verification Surface"
+description: |
+  A ridge-reserve trail maintenance model held in one relational schema shaped as
+  a star: a wide trail-task table with two dozen mostly nullable columns, the
+  pairing table that is the navigational hub, the classification and trailer
+  spokes that share the task reference, and the pairing-detail table downstream
+  of the hub on its own identifier. Five classes mirror the five tables and four
+  associations are realised by naming the store's joins, so reaching a detail
+  from a task is a two-step traversal through the hub. Two enumerations close the
+  exception-kind and resolution-status vocabularies and are decoded by
+  enumeration mappings declared inline in the same mapping. Three class mappings
+  fold the interval-closing column into their declared key with no milestoning
+  anywhere in the model, so the open row is the one carrying the sentinel and the
+  convention is the consumer's to apply. There is no service: the model's whole
+  verification surface is five inline mapping tests, each fetching and serialising
+  a named property tree over one class extent against embedded tabular fixtures
+  that cover a fully populated row, empty nullable columns, an open and a closed
+  interval, and a hop into a missing counterpart.
+modelSources:
+  model:
+    root: ivory-ridge
+    files:
+      - test/ivoryridge/domain/RidgeDomain.pure
+      - test/ivoryridge/mapping/RidgeMapping.pure
+      - test/ivoryridge/store/RidgeDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-sentinel-key-column
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-navigation
+  - enumeration-mapping
+  - graph-fetch
+  - h2
+  - mapping-test
+  - sentinel-key
+  - star-schema
+  - trail-maintenance

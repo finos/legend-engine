@@ -1,0 +1,179 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantfossil::mapping::DigMapping
+(
+  *test::verdantfossil::domain::DigSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantfossil::store::DigDb]dig.site.site_code
+    )
+    ~mainTable [test::verdantfossil::store::DigDb]dig.site
+    siteCode: [test::verdantfossil::store::DigDb]dig.site.site_code,
+    siteName: [test::verdantfossil::store::DigDb]dig.site.site_name,
+    regionName: [test::verdantfossil::store::DigDb]dig.site.region_name,
+    openedYear: [test::verdantfossil::store::DigDb]dig.site.opened_year
+  }
+
+  *test::verdantfossil::domain::Trench[trench]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantfossil::store::DigDb]dig.trench.trench_code
+    )
+    ~mainTable [test::verdantfossil::store::DigDb]dig.trench
+    trenchCode: [test::verdantfossil::store::DigDb]dig.trench.trench_code,
+    trenchLabel: [test::verdantfossil::store::DigDb]dig.trench.trench_label,
+    depthCm: [test::verdantfossil::store::DigDb]dig.trench.depth_cm,
+    siteName: [test::verdantfossil::store::DigDb]@Trench_Site | [test::verdantfossil::store::DigDb]dig.site.site_name
+  }
+
+  *test::verdantfossil::domain::Stratum[stratum]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantfossil::store::DigDb]dig.stratum.stratum_code
+    )
+    ~mainTable [test::verdantfossil::store::DigDb]dig.stratum
+    stratumCode: [test::verdantfossil::store::DigDb]dig.stratum.stratum_code,
+    stratumName: [test::verdantfossil::store::DigDb]dig.stratum.stratum_name,
+    periodName: [test::verdantfossil::store::DigDb]dig.stratum.period_name
+  }
+
+  *test::verdantfossil::domain::Find[find]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantfossil::store::DigDb]dig.find.find_id
+    )
+    ~mainTable [test::verdantfossil::store::DigDb]dig.find
+    findId: [test::verdantfossil::store::DigDb]dig.find.find_id,
+    specimenLabel: [test::verdantfossil::store::DigDb]dig.find.specimen_label,
+    massG: [test::verdantfossil::store::DigDb]dig.find.mass_g,
+    conditionCode: [test::verdantfossil::store::DigDb]dig.find.condition_code,
+    trenchLabel: [test::verdantfossil::store::DigDb]@Find_Trench | [test::verdantfossil::store::DigDb]dig.trench.trench_label,
+    siteName: [test::verdantfossil::store::DigDb]@Find_Trench > @Trench_Site | [test::verdantfossil::store::DigDb]dig.site.site_name,
+    stratumName: [test::verdantfossil::store::DigDb]@Find_Stratum | [test::verdantfossil::store::DigDb]dig.stratum.stratum_name
+  }
+
+  *test::verdantfossil::domain::Preparator[preparator]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantfossil::store::DigDb]dig.preparator.preparator_code
+    )
+    ~mainTable [test::verdantfossil::store::DigDb]dig.preparator
+    preparatorCode: [test::verdantfossil::store::DigDb]dig.preparator.preparator_code,
+    preparatorName: [test::verdantfossil::store::DigDb]dig.preparator.preparator_name
+  }
+
+  *test::verdantfossil::domain::Crate[crate]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantfossil::store::DigDb]dig.crate.crate_code
+    )
+    ~mainTable [test::verdantfossil::store::DigDb]dig.crate
+    crateCode: [test::verdantfossil::store::DigDb]dig.crate.crate_code,
+    crateLabel: [test::verdantfossil::store::DigDb]dig.crate.crate_label,
+    preparatorName: [test::verdantfossil::store::DigDb]@Crate_Preparator | [test::verdantfossil::store::DigDb]dig.preparator.preparator_name
+  }
+
+  *test::verdantfossil::domain::FieldSeason[season]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantfossil::store::DigDb]dig.season.season_code
+    )
+    ~mainTable [test::verdantfossil::store::DigDb]dig.season
+    seasonCode: [test::verdantfossil::store::DigDb]dig.season.season_code,
+    seasonYear: [test::verdantfossil::store::DigDb]dig.season.season_year,
+    fieldLead: [test::verdantfossil::store::DigDb]dig.season.field_lead,
+    siteName: [test::verdantfossil::store::DigDb]@Season_Site | [test::verdantfossil::store::DigDb]dig.site.site_name
+  }
+
+  test::verdantfossil::domain::SiteTrenches: Relational
+  {
+    AssociationMapping
+    (
+      site[trench, site]: [test::verdantfossil::store::DigDb]@Trench_Site,
+      trenches[site, trench]: [test::verdantfossil::store::DigDb]@Trench_Site
+    )
+  }
+
+  testSuites:
+  [
+    testSuite_Find:
+    {
+      function: |test::verdantfossil::domain::Find.all()->project(
+        [
+          x|$x.labelLine(),
+          x|$x.trenchLabel,
+          x|$x.siteName,
+          x|$x.stratumName
+        ],
+        [
+          'Find',
+          'Trench',
+          'Site',
+          'Stratum'
+        ]
+      )->sort([asc('Find')]);
+      tests:
+      [
+        test_multi_hop_join_path:
+        {
+          doc: 'Resolves the trench label at one hop and the site name at two hops from the find main table.';
+          data:
+          [
+            test::verdantfossil::store::DigDb:
+              Relational
+              #{
+                dig.find:
+                  'find_id,trench_code,stratum_code,specimen_label,mass_g,condition_code,crate_code\n'+
+                  'FD-01,TR-01,ST-01,Ammonite Cast,820,A,CR-01\n'+
+                  'FD-02,TR-02,ST-02,Fern Frond Slab,240,B,CR-02\n'+
+                  'FD-03,TR-01,ST-02,Tooth Fragment,45,C,CR-01\n';
+                dig.trench:
+                  'trench_code,site_code,trench_label,depth_cm\n'+
+                  'TR-01,SI-01,North Cutting,240\n'+
+                  'TR-02,SI-02,Ridge Step,120\n';
+                dig.site:
+                  'site_code,site_name,region_name,opened_year\n'+
+                  'SI-01,Larch Ridge Quarry,Upland Moor,2016\n'+
+                  'SI-02,Willow Bend Pit,River Terrace,2019\n';
+                dig.stratum:
+                  'stratum_code,stratum_name,period_name\n'+
+                  'ST-01,Grey Marl,Middle Beds\n'+
+                  'ST-02,Green Shale,Upper Beds\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Find":"FD-01 / Ammonite Cast","Trench":"North Cutting","Site":"Larch Ridge Quarry","Stratum":"Grey Marl"},{"Find":"FD-02 / Fern Frond Slab","Trench":"Ridge Step","Site":"Willow Bend Pit","Stratum":"Green Shale"},{"Find":"FD-03 / Tooth Fragment","Trench":"North Cutting","Site":"Larch Ridge Quarry","Stratum":"Green Shale"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,435 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlywharf::mapping::WharfMapping
+(
+  *test::kindlywharf::domain::BerthCall[call]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlywharf::store::WharfDB]wharf.berth_call.call_ref,
+      [test::kindlywharf::store::WharfDB]wharf.berth_call.berth_code,
+      [test::kindlywharf::store::WharfDB]wharf.berth_call.call_date,
+      [test::kindlywharf::store::WharfDB]wharf.berth_call.cut_code,
+      [test::kindlywharf::store::WharfDB]wharf.berth_call.lane_code,
+      [test::kindlywharf::store::WharfDB]wharf.berth_call.valid_from
+    )
+    ~mainTable [test::kindlywharf::store::WharfDB]wharf.berth_call
+    callRef: [test::kindlywharf::store::WharfDB]wharf.berth_call.call_ref,
+    berthCode: [test::kindlywharf::store::WharfDB]wharf.berth_call.berth_code,
+    callDate: [test::kindlywharf::store::WharfDB]wharf.berth_call.call_date,
+    cutCode: [test::kindlywharf::store::WharfDB]wharf.berth_call.cut_code,
+    laneCode: [test::kindlywharf::store::WharfDB]wharf.berth_call.lane_code,
+    validFrom: [test::kindlywharf::store::WharfDB]wharf.berth_call.valid_from,
+    validThru: [test::kindlywharf::store::WharfDB]wharf.berth_call.valid_thru,
+    vesselName: [test::kindlywharf::store::WharfDB]wharf.berth_call.vessel_name,
+    moorKind: [test::kindlywharf::store::WharfDB]wharf.berth_call.moor_kind,
+    tonnageT: [test::kindlywharf::store::WharfDB]wharf.berth_call.tonnage_t,
+    teuCount: [test::kindlywharf::store::WharfDB]wharf.berth_call.teu_count,
+    pilotName: [test::kindlywharf::store::WharfDB]wharf.berth_call.pilot_name,
+    groupCode: [test::kindlywharf::store::WharfDB]wharf.berth_call.group_code,
+    callLabel: concat(concat(toUpper(trim([test::kindlywharf::store::WharfDB]wharf.berth_call.berth_code)), '/'), [test::kindlywharf::store::WharfDB]wharf.berth_call.call_ref)
+  }
+
+  *test::kindlywharf::domain::CraneShift[shift]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlywharf::store::WharfDB]wharf.crane_shift.shift_ref,
+      [test::kindlywharf::store::WharfDB]wharf.crane_shift.crane_code,
+      [test::kindlywharf::store::WharfDB]wharf.crane_shift.shift_date,
+      [test::kindlywharf::store::WharfDB]wharf.crane_shift.cut_code,
+      [test::kindlywharf::store::WharfDB]wharf.crane_shift.valid_from
+    )
+    ~mainTable [test::kindlywharf::store::WharfDB]wharf.crane_shift
+    shiftRef: [test::kindlywharf::store::WharfDB]wharf.crane_shift.shift_ref,
+    craneCode: [test::kindlywharf::store::WharfDB]wharf.crane_shift.crane_code,
+    shiftDate: [test::kindlywharf::store::WharfDB]wharf.crane_shift.shift_date,
+    cutCode: [test::kindlywharf::store::WharfDB]wharf.crane_shift.cut_code,
+    validFrom: [test::kindlywharf::store::WharfDB]wharf.crane_shift.valid_from,
+    validThru: [test::kindlywharf::store::WharfDB]wharf.crane_shift.valid_thru,
+    operatorName: [test::kindlywharf::store::WharfDB]wharf.crane_shift.operator_name,
+    liftCount: [test::kindlywharf::store::WharfDB]wharf.crane_shift.lift_count,
+    movedT: [test::kindlywharf::store::WharfDB]wharf.crane_shift.moved_t,
+    idleMin: [test::kindlywharf::store::WharfDB]wharf.crane_shift.idle_min,
+    activeMin: minus(480, [test::kindlywharf::store::WharfDB]wharf.crane_shift.idle_min),
+    groupCode: [test::kindlywharf::store::WharfDB]wharf.crane_shift.group_code,
+    shiftLabel: concat(concat(toUpper(trim([test::kindlywharf::store::WharfDB]wharf.crane_shift.crane_code)), '#'), [test::kindlywharf::store::WharfDB]wharf.crane_shift.shift_ref)
+  }
+
+  *test::kindlywharf::domain::GateMove[move]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlywharf::store::WharfDB]wharf.gate_move.move_ref
+    )
+    ~mainTable [test::kindlywharf::store::WharfDB]wharf.gate_move
+    moveRef: [test::kindlywharf::store::WharfDB]wharf.gate_move.move_ref,
+    gateCode: [test::kindlywharf::store::WharfDB]wharf.gate_move.gate_code,
+    moveDate: [test::kindlywharf::store::WharfDB]wharf.gate_move.move_date,
+    haulierName: [test::kindlywharf::store::WharfDB]wharf.gate_move.haulier_name,
+    boxRef: [test::kindlywharf::store::WharfDB]wharf.gate_move.box_ref,
+    boxKind: [test::kindlywharf::store::WharfDB]wharf.gate_move.box_kind,
+    sealRef: [test::kindlywharf::store::WharfDB]wharf.gate_move.seal_ref,
+    laneCode: [test::kindlywharf::store::WharfDB]wharf.gate_move.lane_code,
+    inboundFlag: [test::kindlywharf::store::WharfDB]wharf.gate_move.inbound_flag,
+    grossT: [test::kindlywharf::store::WharfDB]wharf.gate_move.gross_t,
+    tareT: [test::kindlywharf::store::WharfDB]wharf.gate_move.tare_t,
+    dwellHours: [test::kindlywharf::store::WharfDB]wharf.gate_move.dwell_hours,
+    reeferSetpointC: [test::kindlywharf::store::WharfDB]wharf.gate_move.reefer_setpoint_c,
+    inspectCode: [test::kindlywharf::store::WharfDB]wharf.gate_move.inspect_code,
+    releaseCode: [test::kindlywharf::store::WharfDB]wharf.gate_move.release_code,
+    depotCode: [test::kindlywharf::store::WharfDB]wharf.gate_move.depot_code,
+    driverNote: [test::kindlywharf::store::WharfDB]wharf.gate_move.driver_note,
+    queuePosition: [test::kindlywharf::store::WharfDB]wharf.gate_move.queue_position,
+    arriveAt: [test::kindlywharf::store::WharfDB]wharf.gate_move.arrive_at,
+    departAt: [test::kindlywharf::store::WharfDB]wharf.gate_move.depart_at,
+    moveLabel: concat(concat(toUpper(trim([test::kindlywharf::store::WharfDB]wharf.gate_move.gate_code)), '-'), [test::kindlywharf::store::WharfDB]wharf.gate_move.move_ref)
+  }
+
+  *test::kindlywharf::domain::LotTally[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlywharf::store::WharfDB]wharf.lot_tally.lot_ref
+    )
+    ~mainTable [test::kindlywharf::store::WharfDB]wharf.lot_tally
+    lotRef: [test::kindlywharf::store::WharfDB]wharf.lot_tally.lot_ref,
+    lotKind: [test::kindlywharf::store::WharfDB]wharf.lot_tally.lot_kind,
+    tallyDate: [test::kindlywharf::store::WharfDB]wharf.lot_tally.tally_date,
+    boxCount: [test::kindlywharf::store::WharfDB]wharf.lot_tally.box_count,
+    grossT: [test::kindlywharf::store::WharfDB]wharf.lot_tally.gross_t,
+    depotCode: [test::kindlywharf::store::WharfDB]wharf.lot_tally.depot_code,
+    lotBand: case(
+               greaterThanEqual([test::kindlywharf::store::WharfDB]wharf.lot_tally.box_count, 100),
+               'bulk-lot',
+               case(
+                 greaterThanEqual([test::kindlywharf::store::WharfDB]wharf.lot_tally.box_count, 10),
+                 'mid-lot',
+                 'light-lot'
+               )
+             ),
+    kindPrefix: toLower(trim([test::kindlywharf::store::WharfDB]wharf.lot_tally.lot_kind)),
+    noteLength: length([test::kindlywharf::store::WharfDB]wharf.lot_tally.tally_note)
+  }
+
+  testSuites:
+  [
+    berthCallSuite:
+    {
+      function: |test::kindlywharf::domain::BerthCall.all()->graphFetch(
+        #{
+          test::kindlywharf::domain::BerthCall
+          {
+            callRef,
+            berthCode,
+            callDate,
+            cutCode,
+            laneCode,
+            validFrom,
+            validThru,
+            vesselName,
+            moorKind,
+            tonnageT,
+            teuCount,
+            pilotName,
+            groupCode,
+            callLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlywharf::domain::BerthCall
+          {
+            callRef,
+            berthCode,
+            callDate,
+            cutCode,
+            laneCode,
+            validFrom,
+            validThru,
+            vesselName,
+            moorKind,
+            tonnageT,
+            teuCount,
+            pilotName,
+            groupCode,
+            callLabel
+          }
+        }#
+      );
+      tests:
+      [
+        callVersionsSerialize:
+        {
+          doc: 'Two validity versions of one composite key beside a second call, covering an empty optional pilot and group column, the far-future validity sentinel and the composed berth label.';
+          data:
+          [
+            test::kindlywharf::store::WharfDB:
+              Relational
+              #{
+                wharf.berth_call:
+                  'call_ref,berth_code,call_date,cut_code,lane_code,valid_from,valid_thru,vessel_name,moor_kind,tonnage_t,teu_count,pilot_name,group_code,note_text\n'+
+                  'BC-01,BR-1,2026-03-02,CUT-A,LN-1,2026-03-02,9999-12-31,Northern Kestrel,starboard,18450.2500,1120,Ida Moor,GRP-1,full call\n'+
+                  'BC-01,BR-1,2026-03-02,CUT-A,LN-1,2026-03-05,9999-12-31,Northern Kestrel,starboard,18500.0000,1125,,,\n'+
+                  'BC-02, br-2 ,2026-03-06,CUT-B,LN-2,2026-03-06,2026-03-31,Coastal Petrel,port,7320.5000,640,Uri Vane,,quiet call\n';
+              }#
+          ];
+          asserts:
+          [
+            threeCallVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"callRef":"BC-01","berthCode":"BR-1","callDate":"2026-03-02","cutCode":"CUT-A","laneCode":"LN-1","validFrom":"2026-03-02","validThru":"9999-12-31","vesselName":"Northern Kestrel","moorKind":"starboard","tonnageT":18450.2500,"teuCount":1120,"pilotName":"Ida Moor","groupCode":"GRP-1","callLabel":"BR-1/BC-01"},{"callRef":"BC-01","berthCode":"BR-1","callDate":"2026-03-02","cutCode":"CUT-A","laneCode":"LN-1","validFrom":"2026-03-05","validThru":"9999-12-31","vesselName":"Northern Kestrel","moorKind":"starboard","tonnageT":18500.0000,"teuCount":1125,"pilotName":null,"groupCode":null,"callLabel":"BR-1/BC-01"},{"callRef":"BC-02","berthCode":" br-2 ","callDate":"2026-03-06","cutCode":"CUT-B","laneCode":"LN-2","validFrom":"2026-03-06","validThru":"2026-03-31","vesselName":"Coastal Petrel","moorKind":"port","tonnageT":7320.5000,"teuCount":640,"pilotName":"Uri Vane","groupCode":null,"callLabel":"BR-2/BC-02"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    craneShiftSuite:
+    {
+      function: |test::kindlywharf::domain::CraneShift.all()->graphFetch(
+        #{
+          test::kindlywharf::domain::CraneShift
+          {
+            shiftRef,
+            craneCode,
+            shiftDate,
+            cutCode,
+            validFrom,
+            validThru,
+            operatorName,
+            liftCount,
+            movedT,
+            idleMin,
+            activeMin,
+            groupCode,
+            shiftLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlywharf::domain::CraneShift
+          {
+            shiftRef,
+            craneCode,
+            shiftDate,
+            cutCode,
+            validFrom,
+            validThru,
+            operatorName,
+            liftCount,
+            movedT,
+            idleMin,
+            activeMin,
+            groupCode,
+            shiftLabel
+          }
+        }#
+      );
+      tests:
+      [
+        shiftVersionsSerialize:
+        {
+          doc: 'Two validity versions of one crane shift, the arithmetic active-minute transform over the idle column and an absent optional group column.';
+          data:
+          [
+            test::kindlywharf::store::WharfDB:
+              Relational
+              #{
+                wharf.crane_shift:
+                  'shift_ref,crane_code,shift_date,cut_code,valid_from,valid_thru,operator_name,lift_count,moved_t,idle_min,group_code,remark_text\n'+
+                  'CS-01,CR-1,2026-03-02,CUT-A,2026-03-02,9999-12-31,Ola Reeve,88,1240.5000,45,GRP-1,steady shift\n'+
+                  'CS-01,CR-1,2026-03-02,CUT-A,2026-03-06,9999-12-31,Ola Reeve,91,1301.0000,30,,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoShiftVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"shiftRef":"CS-01","craneCode":"CR-1","shiftDate":"2026-03-02","cutCode":"CUT-A","validFrom":"2026-03-02","validThru":"9999-12-31","operatorName":"Ola Reeve","liftCount":88,"movedT":1240.5000,"idleMin":45,"activeMin":435,"groupCode":"GRP-1","shiftLabel":"CR-1#CS-01"},{"shiftRef":"CS-01","craneCode":"CR-1","shiftDate":"2026-03-02","cutCode":"CUT-A","validFrom":"2026-03-06","validThru":"9999-12-31","operatorName":"Ola Reeve","liftCount":91,"movedT":1301.0000,"idleMin":30,"activeMin":450,"groupCode":null,"shiftLabel":"CR-1#CS-01"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    gateMoveSuite:
+    {
+      function: |test::kindlywharf::domain::GateMove.all()->graphFetch(
+        #{
+          test::kindlywharf::domain::GateMove
+          {
+            moveRef,
+            gateCode,
+            moveDate,
+            haulierName,
+            boxRef,
+            boxKind,
+            sealRef,
+            laneCode,
+            inboundFlag,
+            grossT,
+            tareT,
+            dwellHours,
+            reeferSetpointC,
+            inspectCode,
+            releaseCode,
+            depotCode,
+            driverNote,
+            queuePosition,
+            arriveAt,
+            departAt,
+            moveLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlywharf::domain::GateMove
+          {
+            moveRef,
+            gateCode,
+            moveDate,
+            haulierName,
+            boxRef,
+            boxKind,
+            sealRef,
+            laneCode,
+            inboundFlag,
+            grossT,
+            tareT,
+            dwellHours,
+            reeferSetpointC,
+            inspectCode,
+            releaseCode,
+            depotCode,
+            driverNote,
+            queuePosition,
+            arriveAt,
+            departAt,
+            moveLabel
+          }
+        }#
+      );
+      tests:
+      [
+        wideMoveSerialize:
+        {
+          doc: 'The widest property tree over one fully populated gate move beside a move whose eighteen optional columns are all empty, so every absent property is observable in the serialized document.';
+          data:
+          [
+            test::kindlywharf::store::WharfDB:
+              Relational
+              #{
+                wharf.gate_move:
+                  'move_ref,gate_code,move_date,haulier_name,box_ref,box_kind,seal_ref,lane_code,inbound_flag,gross_t,tare_t,dwell_hours,reefer_setpoint_c,inspect_code,release_code,depot_code,driver_note,queue_position,arrive_at,depart_at\n'+
+                  'GM-01,GT-1,2026-03-02,Harbor Haulage,BX-9001,dry-box,SL-771,LN-1,in,24.5000,3.2000,18,-18.50,IN-OK,RL-2,DP-1,gate cleared,3,2026-03-02 06:15:00,2026-03-02 07:05:00\n'+
+                  'GM-02,GT-2,,,,,,,,,,,,,,,,,,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoWideMoves:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"moveRef":"GM-01","gateCode":"GT-1","moveDate":"2026-03-02","haulierName":"Harbor Haulage","boxRef":"BX-9001","boxKind":"dry-box","sealRef":"SL-771","laneCode":"LN-1","inboundFlag":"in","grossT":24.5000,"tareT":3.2000,"dwellHours":18,"reeferSetpointC":-18.50,"inspectCode":"IN-OK","releaseCode":"RL-2","depotCode":"DP-1","driverNote":"gate cleared","queuePosition":3,"arriveAt":"2026-03-02T06:15:00.000000000","departAt":"2026-03-02T07:05:00.000000000","moveLabel":"GT-1-GM-01"},{"moveRef":"GM-02","gateCode":"GT-2","moveDate":null,"haulierName":null,"boxRef":null,"boxKind":null,"sealRef":null,"laneCode":null,"inboundFlag":null,"grossT":null,"tareT":null,"dwellHours":null,"reeferSetpointC":null,"inspectCode":null,"releaseCode":null,"depotCode":null,"driverNote":null,"queuePosition":null,"arriveAt":null,"departAt":null,"moveLabel":"GT-2-GM-02"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    lotTallySuite:
+    {
+      function: |test::kindlywharf::domain::LotTally.all()->graphFetch(
+        #{
+          test::kindlywharf::domain::LotTally
+          {
+            lotRef,
+            lotKind,
+            tallyDate,
+            boxCount,
+            grossT,
+            depotCode,
+            lotBand,
+            kindPrefix,
+            noteLength
+          }
+        }#
+      )->serialize(
+        #{
+          test::kindlywharf::domain::LotTally
+          {
+            lotRef,
+            lotKind,
+            tallyDate,
+            boxCount,
+            grossT,
+            depotCode,
+            lotBand,
+            kindPrefix,
+            noteLength
+          }
+        }#
+      );
+      tests:
+      [
+        lotBandArmsSerialize:
+        {
+          doc: 'Drives all three arms of the tally band, the lower-cased trimmed kind prefix and the note-length transform over a row whose note column is empty.';
+          data:
+          [
+            test::kindlywharf::store::WharfDB:
+              Relational
+              #{
+                wharf.lot_tally:
+                  'lot_ref,lot_kind,tally_date,box_count,gross_t,depot_code,tally_note\n'+
+                  'LT-01, BULK ,2026-03-02,240,3120.0000,DP-1,mixed bulk lot\n'+
+                  'LT-02,MID,2026-03-04,42,510.2500,,\n'+
+                  'LT-03,Light,2026-03-05,4,38.7500,DP-2,short\n';
+              }#
+          ];
+          asserts:
+          [
+            threeBandedLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lotRef":"LT-01","lotKind":" BULK ","tallyDate":"2026-03-02","boxCount":240,"grossT":3120.0000,"depotCode":"DP-1","lotBand":"bulk-lot","kindPrefix":"bulk","noteLength":14},{"lotRef":"LT-02","lotKind":"MID","tallyDate":"2026-03-04","boxCount":42,"grossT":510.2500,"depotCode":null,"lotBand":"mid-lot","kindPrefix":"mid","noteLength":null},{"lotRef":"LT-03","lotKind":"Light","tallyDate":"2026-03-05","boxCount":4,"grossT":38.7500,"depotCode":"DP-2","lotBand":"light-lot","kindPrefix":"light","noteLength":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

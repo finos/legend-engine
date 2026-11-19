@@ -1,0 +1,35 @@
+name: noble-cove-3-model
+title: "Noble Cove — intertidal taxon lattice over a multi-table shoreline store"
+description: |
+  A rocky-shore monitoring domain in which a stereotyped profile decorates a
+  three-level organism inheritance lattice, so inherited to-one attributes and
+  locally-declared to-many collections coexist on the same instance. A shoreline
+  relational store carries the matching tables — single and composite keys across
+  string, numeric, date, timestamp and boolean column families — plus the joins
+  that a downstream mapping would resolve against.
+modelSources:
+  model:
+    root: noble-cove-3-model
+    files:
+      - test/noblecove3/domain/IntertidalProfile.pure
+      - test/noblecove3/domain/Organism.pure
+      - test/noblecove3/domain/SurveyDomain.pure
+      - test/noblecove3/store/TidePoolDb.pure
+features:
+  - grammar:class-inheritance
+  - grammar:profile
+  - scaffolding:class
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - test::noblecove3::store::TidePoolDb
+complexity: basic
+tags:
+  - composite-key
+  - inheritance
+  - intertidal
+  - marine-biology
+  - multi-table
+  - profile
+  - relational-store
+  - stereotype

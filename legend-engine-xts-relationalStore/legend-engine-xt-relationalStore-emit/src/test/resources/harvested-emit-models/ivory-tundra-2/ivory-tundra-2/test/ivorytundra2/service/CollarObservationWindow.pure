@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivorytundra2::service::CollarObservationWindow
+{
+  pattern: '/tundra/v1/collar-observations/window/{fromDate}/{toDate}';
+  title: 'Tundra - Collar Observation Date Window';
+  documentation: 'Narrow four-column counterpart over the same mapping and runtime. Its predicate conjoins a lower-bound and an upper-bound observation-date comparison with an equality against a survey-method enumeration literal, so the plan carries a range restriction and an enumeration restriction on one relational node.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'tundra-collar-programme',
+    'herd-range-monitoring'
+  ];
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1]|test::ivorytundra2::domain::ObservationRecord.all()->filter(
+      o|($o.observedOn >= $fromDate) && (($o.observedOn <= $toDate) && ($o.surveyMethod == test::ivorytundra2::domain::SurveyMethod.AERIAL_TRANSECT))
+    )->project(
+      [
+        o|$o.recordCode,
+        o|$o.observedOn,
+        o|$o.surveyMethod,
+        o|$o.sightingCount
+      ],
+      [
+        'Observation/RecordCode',
+        'Observation/ObservedOn',
+        'Observation/SurveyMethod',
+        'Observation/SightingCount'
+      ]
+    )};
+    mapping: test::ivorytundra2::mapping::TundraMapping;
+    runtime: test::ivorytundra2::runtime::TundraH2Runtime;
+  }
+  testSuites:
+  [
+    collarObservationWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              tundra.field_station:
+                'station_id,station_name,region_code\n'+
+                '1,Kaskan Ridge Station,NORTH-01\n';
+
+              tundra.range_zone:
+                'zone_id,zone_name,terrain_class,station_id\n'+
+                '100,Kaskan Uplands,ALPINE,1\n';
+
+              tundra.herd_season:
+                'season_id,season_label,forage_index,zone_id,in_z,out_z,from_z,thru_z\n'+
+                '10,Autumn Rut 2026,72,100,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+
+              tundra.observation:
+                'observation_id,record_code,herd_code,collar_code,observer_code,observed_on,survey_method,verified,sighting_count,season_id\n'+
+                '1,OBS-2001,H-KASKAN,C-77,SV-11,2026-03-02,AERIAL_TRANSECT,true,128,10\n'+
+                '2,OBS-2002,H-KASKAN,C-78,SV-11,2026-02-27,AERIAL_TRANSECT,true,44,10\n'+
+                '3,OBS-2003,H-KASKAN,C-79,SV-11,2026-04-04,AERIAL_TRANSECT,true,71,10\n'+
+                '4,OBS-2004,H-KASKAN,C-80,SV-11,2026-03-10,GROUND_TRANSECT,true,19,10\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        insideAndOutsideTheWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-03-01,
+            toDate = %2026-03-31
+          ]
+          asserts:
+          [
+            onlyTheAerialRowInsideTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observation/RecordCode":"OBS-2001","Observation/ObservedOn":"2026-03-02","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/SightingCount":128}]';
+                  }#;
+              }#
+          ]
+        },
+        widenedWindowKeepsBothBounds:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-02-01,
+            toDate = %2026-04-30
+          ]
+          asserts:
+          [
+            everyAerialRowInTheWiderWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observation/RecordCode":"OBS-2001","Observation/ObservedOn":"2026-03-02","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/SightingCount":128},{"Observation/RecordCode":"OBS-2002","Observation/ObservedOn":"2026-02-27","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/SightingCount":44},{"Observation/RecordCode":"OBS-2003","Observation/ObservedOn":"2026-04-04","Observation/SurveyMethod":"AERIAL_TRANSECT","Observation/SightingCount":71}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

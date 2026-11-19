@@ -1,0 +1,44 @@
+name: crimson-isle-4
+title: "Crimson Isle 4 — island bird observatory"
+description: |
+  A relational bird-observatory ringing register for an island station. A
+  profiled visit class is mapped to one ringing table and exposed through a
+  station-selection function. Two DB2 delegated-Kerberos connections and two
+  engine runtimes exercise the operational scaffolding, while a single
+  service projects a v1 tabular response after filtering by wing span.
+modelSources:
+  model:
+    root: crimson-isle-4
+    files:
+      - test/crimsonisle4/connection/RingingConnections.pure
+      - test/crimsonisle4/data/RingingData.pure
+      - test/crimsonisle4/domain/RingingDomain.pure
+      - test/crimsonisle4/function/RingingSelections.pure
+      - test/crimsonisle4/mapping/RingingMapping.pure
+      - test/crimsonisle4/profile/ObservatoryProfile.pure
+      - test/crimsonisle4/runtime/RingingRuntimes.pure
+      - test/crimsonisle4/service/RingingBoardService.pure
+      - test/crimsonisle4/store/RingingDb.pure
+features:
+  - execution:data-element
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - grammar:profile
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - db2
+  - h2
+  - observatory
+  - relational
+  - service
+  - wildlife

@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarbeacon::mapping::RegionMapping
+(
+  *test::solarbeacon::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarbeacon::store::SolarDB]solar.region.region_code
+    )
+    ~mainTable [test::solarbeacon::store::SolarDB]solar.region
+    regionCode: [test::solarbeacon::store::SolarDB]solar.region.region_code,
+    name: [test::solarbeacon::store::SolarDB]solar.region.name,
+    panelCount: [test::solarbeacon::store::SolarDB]@Region_Stats | [test::solarbeacon::store::SolarDB]solar.region_panel_stats.panel_count
+  }
+
+  testSuites:
+  [
+    regionSuite:
+    {
+      function: |test::solarbeacon::domain::Region.all()->project(
+        [
+          r|$r.regionCode,
+          r|$r.name,
+          r|$r.panelCount
+        ],
+        [
+          'RegionCode',
+          'RegionName',
+          'PanelCount'
+        ]
+      )->sort([asc('RegionCode')]);
+      tests:
+      [
+        regionRows:
+        {
+          doc: 'Projects each region with a panel count derived from the region_panel_stats inline view, traversing the Region_Stats inner join.';
+          data:
+          [
+            test::solarbeacon::store::SolarDB:
+              Relational
+              #{
+                solar.region:
+                  'region_code,name\n'+
+                  'RG-01,Eastern Grid\n'+
+                  'RG-02,Western Grid\n';
+
+                solar.panel:
+                  'panel_code,rated_kw,region_code\n'+
+                  'PN-01,5.5,RG-01\n'+
+                  'PN-02,6.0,RG-01\n'+
+                  'PN-03,4.5,RG-02\n';
+              }#
+          ];
+          asserts:
+          [
+            twoRegions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RegionCode":"RG-01","RegionName":"Eastern Grid","PanelCount":2},{"RegionCode":"RG-02","RegionName":"Western Grid","PanelCount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

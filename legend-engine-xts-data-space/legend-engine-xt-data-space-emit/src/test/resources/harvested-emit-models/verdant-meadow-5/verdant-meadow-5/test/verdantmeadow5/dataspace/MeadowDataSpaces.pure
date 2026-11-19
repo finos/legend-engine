@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::verdantmeadow5::dataspace::MeadowFieldworkDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'curatedFieldwork';
+      description: 'Curated fieldwork context - the shared meadow mapping served through the curated warehouse runtime.';
+      mapping: test::verdantmeadow5::mapping::MeadowMapping;
+      defaultRuntime: test::verdantmeadow5::runtime::MeadowRuntime;
+    }
+  ];
+  defaultExecutionContext: 'curatedFieldwork';
+  title: 'Hay Meadow Fieldwork';
+  description: 'Discovery surface over the fieldwork side of the holding: the hay cuts lifted off each parcel, the sward samples describing how the cover splits between herbs and grasses, and the pollinator transects walked across the meadow.';
+  elements:
+  [
+    test::verdantmeadow5::domain::HayCut,
+    test::verdantmeadow5::domain::PollinatorTransect,
+    test::verdantmeadow5::domain::SwardSample
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Cut Yield Search';
+      description: 'The season-and-parcel narrowing over the cut register with a bale floor.';
+      executable: test::verdantmeadow5::service::HayCutYieldSearch;
+    },
+    {
+      id: 2;
+      title: 'Sward Sample Cover Search';
+      description: 'The herb-cover floor over the sward samples of the parcels of interest.';
+      executable: test::verdantmeadow5::service::SwardSampleCoverSearch;
+    },
+    {
+      id: 3;
+      title: 'Pollinator Transect Register';
+      description: 'Every walked transect with its bee and butterfly counts.';
+      executable: test::verdantmeadow5::service::PollinatorTransectRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'meadow-fieldwork@hayholding.invalid';
+  };
+}
+
+###DataSpace
+DataSpace test::verdantmeadow5::dataspace::MeadowRegistryDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'curatedRegistry';
+      description: 'Curated registry context - the same shared mapping and runtime, entered from the parcel registry side.';
+      mapping: test::verdantmeadow5::mapping::MeadowMapping;
+      defaultRuntime: test::verdantmeadow5::runtime::MeadowRuntime;
+    }
+  ];
+  defaultExecutionContext: 'curatedRegistry';
+  title: 'Hay Meadow Parcel Registry';
+  description: 'Discovery surface over the parcel registry, where the full-history parcel rows stand beside the latest-snapshot surface that keeps one tagged row per parcel.';
+  elements:
+  [
+    test::verdantmeadow5::domain::MeadowParcel,
+    test::verdantmeadow5::domain::MeadowParcelLatest
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Parcel Register';
+      description: 'Every parcel row the holding has recorded.';
+      executable: test::verdantmeadow5::service::MeadowParcelRegister;
+    },
+    {
+      id: 2;
+      title: 'Parcel Register, Latest Snapshot';
+      description: 'One tagged row per parcel, read off the latest snapshot.';
+      executable: test::verdantmeadow5::service::MeadowParcelLatestRegister;
+    },
+    {
+      id: 3;
+      title: 'Cut Register';
+      description: 'The whole cut register, projected without a narrowing predicate.';
+      executable: test::verdantmeadow5::service::HayCutRegister;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'meadow-registry@hayholding.invalid';
+  };
+}

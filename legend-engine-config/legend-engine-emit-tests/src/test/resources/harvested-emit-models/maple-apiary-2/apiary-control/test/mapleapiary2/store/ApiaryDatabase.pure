@@ -1,0 +1,161 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::mapleapiary2::store::ApiaryDatabase
+(
+  Schema HIVE_EVENT
+  (
+    Table COLONY_EVENT_ALL_VERSIONS
+    (
+      EVENT_REF VARCHAR(24) PRIMARY KEY,
+      EVENT_VERSION INTEGER PRIMARY KEY,
+      COLONY_REF VARCHAR(24) NOT NULL,
+      WORK_ITEM_REF VARCHAR(24),
+      APIARY_SITE VARCHAR(40),
+      INSPECTION_STATUS VARCHAR(24),
+      COMPLETION_STATE VARCHAR(24),
+      SEVERITY_SCORE INTEGER,
+      BROOD_PATTERN VARCHAR(24),
+      FRAME_COUNT INTEGER,
+      RECORDED_ON DATE NOT NULL,
+      RECORDED_AT TIMESTAMP,
+      KEEPER_DATA SEMISTRUCTURED,
+      SYSTEM_DATA SEMISTRUCTURED,
+      RAW_CONTENT SEMISTRUCTURED,
+      INSPECTION_PAYLOAD SEMISTRUCTURED,
+      BATCH_IN_ID INTEGER,
+      BATCH_OUT_ID INTEGER,
+      SOURCE_PARTITION VARCHAR(16),
+      IS_WITHDRAWN VARCHAR(1)
+    )
+
+    Table SITUATION_ALL_VERSIONS
+    (
+      SITUATION_REF VARCHAR(24) PRIMARY KEY,
+      SITUATION_VERSION INTEGER PRIMARY KEY,
+      APIARY_SITE VARCHAR(40),
+      SITUATION_STATUS VARCHAR(24),
+      BATCH_IN_ID INTEGER,
+      SOURCE_PARTITION VARCHAR(16)
+    )
+
+    Table FORAGE_EXTENSION
+    (
+      FORAGE_REF VARCHAR(24) PRIMARY KEY,
+      FORAGE_LABEL VARCHAR(40)
+    )
+  )
+
+  Schema WORK_ITEM
+  (
+    Table TASK_VERSION
+    (
+      WORK_ITEM_REF VARCHAR(24) PRIMARY KEY,
+      TASK_VERSION_NO INTEGER PRIMARY KEY,
+      ASSIGNEE_HANDLE VARCHAR(40),
+      TASK_STATE VARCHAR(24),
+      IS_WITHDRAWN VARCHAR(1)
+    )
+
+    Table TASK_COMMENT
+    (
+      COMMENT_REF VARCHAR(24) PRIMARY KEY,
+      WORK_ITEM_REF VARCHAR(24),
+      COMMENT_TEXT VARCHAR(200)
+    )
+  )
+
+  Schema PRESENTATION
+  (
+    Table KEEPER_DIRECTORY
+    (
+      KEEPER_HANDLE VARCHAR(40) PRIMARY KEY,
+      KEEPER_NAME VARCHAR(60),
+      TEAM_CODE VARCHAR(24)
+    )
+
+    Table KEEPER_TEAM
+    (
+      TEAM_CODE VARCHAR(24) PRIMARY KEY,
+      TEAM_LABEL VARCHAR(40),
+      REGION_CODE VARCHAR(24)
+    )
+
+    Table APIARY_REGION
+    (
+      REGION_CODE VARCHAR(24) PRIMARY KEY,
+      REGION_LABEL VARCHAR(40)
+    )
+
+    View COLONY_EVENT_MAX_VERSION_VW
+    (
+      ~groupBy
+      (
+        HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.EVENT_REF
+      )
+      eventRef: HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.EVENT_REF PRIMARY KEY,
+      maxVersion: max(HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.EVENT_VERSION),
+      latestSite: max(HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.APIARY_SITE),
+      latestStatus: max(HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.INSPECTION_STATUS)
+    )
+
+    View TASK_MAX_VERSION_VW
+    (
+      ~groupBy
+      (
+        WORK_ITEM.TASK_VERSION.WORK_ITEM_REF
+      )
+      workItemRef: WORK_ITEM.TASK_VERSION.WORK_ITEM_REF PRIMARY KEY,
+      maxVersion: max(WORK_ITEM.TASK_VERSION.TASK_VERSION_NO)
+    )
+  )
+
+  Join ColonyEvent_LatestVersion
+  (
+    HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.EVENT_REF = PRESENTATION.COLONY_EVENT_MAX_VERSION_VW.eventRef
+      and HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.EVENT_VERSION = PRESENTATION.COLONY_EVENT_MAX_VERSION_VW.maxVersion
+  )
+
+  Join ColonyEvent_Task
+  (
+    HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.WORK_ITEM_REF = WORK_ITEM.TASK_VERSION.WORK_ITEM_REF
+      and WORK_ITEM.TASK_VERSION.IS_WITHDRAWN = 'N'
+  )
+
+  Join Task_Keeper
+  (
+    WORK_ITEM.TASK_VERSION.ASSIGNEE_HANDLE = PRESENTATION.KEEPER_DIRECTORY.KEEPER_HANDLE
+  )
+
+  Join Keeper_Team
+  (
+    PRESENTATION.KEEPER_DIRECTORY.TEAM_CODE = PRESENTATION.KEEPER_TEAM.TEAM_CODE
+  )
+
+  Join Team_Region
+  (
+    PRESENTATION.KEEPER_TEAM.REGION_CODE = PRESENTATION.APIARY_REGION.REGION_CODE
+  )
+
+  Join Task_Comment
+  (
+    WORK_ITEM.TASK_VERSION.WORK_ITEM_REF = WORK_ITEM.TASK_COMMENT.WORK_ITEM_REF
+  )
+
+  Join ColonyEvent_ForageExtension
+  (
+    extractFromSemiStructured(HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS.INSPECTION_PAYLOAD, 'forageRef', 'VARCHAR') = HIVE_EVENT.FORAGE_EXTENSION.FORAGE_REF
+  )
+)

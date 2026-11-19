@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblelantern::service::StationDigestService
+{
+  pattern: '/noble-lantern/v1/station-digest';
+  title: 'Noble Lantern - Station Digest';
+  owners:
+  [
+    'harbor-light-register-desk',
+    'coastal-navigation-ops'
+  ];
+  documentation: 'Publishes a one-line digest per lantern station: the station banner is assembled from the station and district names, carried beside the optic class and the focal height, ordered by station code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::noblelantern::domain::LanternStation.all()->project(
+      [
+        s|$s.stationCode,
+        s|$s.stationName + ' / ' + $s.districtName,
+        s|$s.opticClass,
+        s|$s.focalHeightM
+      ],
+      [
+        'Station',
+        'Banner',
+        'Optic',
+        'FocalHeight'
+      ]
+    )->sort(
+      [
+        asc('Station')
+      ]
+    );
+    mapping: test::noblelantern::mapping::HarborLightMapping;
+    runtime: test::noblelantern::runtime::HarborLightRuntime;
+  }
+  testSuites:
+  [
+    stationDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborLightConnection:
+            Relational
+            #{
+              beacon.lantern_station:
+                'station_code,station_name,district_name,optic_class,station_kind,focal_height_m,tower_height_m,commissioned_on,inspected_at\n'+
+                'LS-01,North Head,NORTHERN APPROACH,FIRST_ORDER,MAINLAND,18.5,24.0,1902-05-14,2026-04-02 09:15:00\n'+
+                'LS-02,Shoal Point,Southern Reach,SECOND_ORDER,MAINLAND,9.0,,1948-08-01,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        stationDigestRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            bannerPerStation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"LS-01","Banner":"North Head / NORTHERN APPROACH","Optic":"FIRST_ORDER","FocalHeight":18.5},{"Station":"LS-02","Banner":"Shoal Point / Southern Reach","Optic":"SECOND_ORDER","FocalHeight":9.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

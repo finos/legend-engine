@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarfjord::mapping::FjordMapping
+(
+  *test::solarfjord::domain::HarvestLot[allLots]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(lineLot,shoreLot)
+  }
+
+  test::solarfjord::domain::HarvestLot[lineLot]: Relational
+  {
+    ~filter [test::solarfjord::store::FjordDatabase]AcceptedHarvestFilter
+    ~primaryKey
+    (
+      [test::solarfjord::store::FjordDatabase]kelp.line_harvest.harvest_id
+    )
+    ~mainTable [test::solarfjord::store::FjordDatabase]kelp.line_harvest
+    lotCode: [test::solarfjord::store::FjordDatabase]kelp.line_harvest.lot_code,
+    siteName: [test::solarfjord::store::FjordDatabase]@Line_Site | kelp.farm_site.site_name,
+    fjordArm: [test::solarfjord::store::FjordDatabase]@Line_Site | kelp.farm_site.fjord_arm,
+    gradeLabel: concat(
+                  concat(
+                    toUpper(trim([test::solarfjord::store::FjordDatabase]kelp.line_harvest.blade_grade)),
+                    ' / '
+                  ),
+                  'LINE'
+                ),
+    channel: 'LINE',
+    wetMassKg: [test::solarfjord::store::FjordDatabase]kelp.line_harvest.wet_mass_kg
+  }
+
+  test::solarfjord::domain::HarvestLot[shoreLot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarfjord::store::FjordDatabase]kelp.shore_gather.gather_id
+    )
+    ~mainTable [test::solarfjord::store::FjordDatabase]kelp.shore_gather
+    lotCode: [test::solarfjord::store::FjordDatabase]kelp.shore_gather.lot_code,
+    siteName: [test::solarfjord::store::FjordDatabase]@Gather_Site | kelp.farm_site.site_name,
+    fjordArm: [test::solarfjord::store::FjordDatabase]@Gather_Site | kelp.farm_site.fjord_arm,
+    gradeLabel: concat(
+                  concat(
+                    toUpper(coalesce([test::solarfjord::store::FjordDatabase]kelp.shore_gather.drift_grade, 'ungraded')),
+                    ' / '
+                  ),
+                  'SHORE'
+                ),
+    channel: 'SHORE',
+    wetMassKg: [test::solarfjord::store::FjordDatabase]kelp.shore_gather.wet_mass_kg
+  }
+
+  testSuites:
+  [
+    harvestLotSuite:
+    {
+      function: |test::solarfjord::domain::HarvestLot.all()->project(
+  [
+    l|$l.lotCode,
+    l|$l.siteName,
+    l|$l.fjordArm,
+    l|$l.gradeLabel,
+    l|$l.channel,
+    l|$l.wetMassKg
+  ],
+  [
+    'Lot',
+    'Site',
+    'Arm',
+    'Grade',
+    'Channel',
+    'WetMassKg'
+  ]
+)->sort(
+  [
+    asc('Lot')
+  ]
+);
+      tests:
+      [
+        unionedChannels:
+        {
+          doc: 'Projects the union of the line-harvest and shore-gather set implementations; the accepted-harvest store filter drops the held line lot, the padded quality flag is trimmed, and the shore lot without a recorded drift grade falls back to the ungraded sentinel.';
+          data:
+          [
+            test::solarfjord::store::FjordDatabase:
+              Relational
+              #{
+                kelp.farm_site:
+                  'site_code,site_name,fjord_arm\n'+
+                  'FS-1,Inner Arm Kelp Beds,Inner Arm\n'+
+                  'FS-2,Outer Arm Kelp Beds,Outer Arm\n';
+
+                kelp.line_harvest:
+                  'harvest_id,lot_code,site_code,wet_mass_kg,blade_grade,qc_flag\n'+
+                  '1,LH-101,FS-1,420,premium, ACCEPTED\n'+
+                  '2,LH-102,FS-2,150,standard,HELD\n'+
+                  '3,LH-103,FS-2,600,standard,ACCEPTED\n';
+
+                kelp.shore_gather:
+                  'gather_id,lot_code,site_code,wet_mass_kg,drift_grade\n'+
+                  '1,SG-201,FS-1,90,cast\n'+
+                  '2,SG-202,FS-2,500,drift\n'+
+                  '3,SG-203,FS-1,300,\n';
+              }#
+          ];
+          asserts:
+          [
+            fiveSurfacedLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LH-101","Site":"Inner Arm Kelp Beds","Arm":"Inner Arm","Grade":"PREMIUM / LINE","Channel":"LINE","WetMassKg":420},{"Lot":"LH-103","Site":"Outer Arm Kelp Beds","Arm":"Outer Arm","Grade":"STANDARD / LINE","Channel":"LINE","WetMassKg":600},{"Lot":"SG-201","Site":"Inner Arm Kelp Beds","Arm":"Inner Arm","Grade":"CAST / SHORE","Channel":"SHORE","WetMassKg":90},{"Lot":"SG-202","Site":"Outer Arm Kelp Beds","Arm":"Outer Arm","Grade":"DRIFT / SHORE","Channel":"SHORE","WetMassKg":500},{"Lot":"SG-203","Site":"Inner Arm Kelp Beds","Arm":"Inner Arm","Grade":"UNGRADED / SHORE","Channel":"SHORE","WetMassKg":300}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

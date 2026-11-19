@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::cedardelta::domain::*;
+import test::cedardelta::function::*;
+
+function {meta::pure::profiles::doc.doc = 'Size class of a street tree from its trunk girth in centimetres, from the widest heritage trunks down to young saplings.'} test::cedardelta::function::sizeClass(trunkCm: Integer[1]): String[1]
+{
+  if($trunkCm >= 120,
+     | 'HERITAGE',
+     | if($trunkCm >= 60,
+          | 'MATURE',
+          | if($trunkCm >= 25,
+               | 'SEMI',
+               | 'YOUNG')))
+}
+
+function {meta::pure::profiles::doc.doc = 'Canopy remark for a survey code, lower-cased when the code is one of the accepted states and flagged otherwise.'} test::cedardelta::function::canopyRemark(canopyState: String[1]): String[1]
+{
+  if($canopyState->in(['FULL', 'THINNING', 'SPARSE', 'BARE']),
+     | $canopyState->toLower(),
+     | 'state-not-recognised')
+}
+
+function {meta::pure::profiles::doc.doc = 'Upper-cased crew note, or a placeholder when the survey line carries no note at all.'} test::cedardelta::function::noteDigest(crewNote: String[0..1]): String[1]
+{
+  if($crewNote->isEmpty(),
+     | 'note-absent',
+     | $crewNote->toOne()->trim()->toUpper())
+}
+
+function {meta::pure::profiles::doc.doc = 'Health grade of a tree combining its size class and canopy remark: prime heritage in full canopy, marginal when sparse or bare, standard otherwise.'} test::cedardelta::function::healthGrade(trunkCm: Integer[1], canopyState: String[1]): String[1]
+{
+  if((sizeClass($trunkCm) == 'HERITAGE') && (canopyRemark($canopyState) == 'full'),
+     | 'PRIME',
+     | if((canopyRemark($canopyState) == 'sparse') || (canopyRemark($canopyState) == 'bare'),
+          | 'MARGINAL',
+          | 'STANDARD'))
+}
+
+function {meta::pure::profiles::doc.doc = 'One-line summary of a survey line: its size class and canopy remark, the note digest and the derived health grade.'} test::cedardelta::function::rowSummary(trunkCm: Integer[1], canopyState: String[1], crewNote: String[0..1]): String[1]
+{
+  sizeClass($trunkCm) + '/' + canopyRemark($canopyState) + ':' + healthGrade($trunkCm, $canopyState) + '[' + noteDigest($crewNote) + ']'
+}
+
+function {meta::pure::profiles::doc.doc = 'Rollup of a collection of canopy states: each distinct remark paired with whether it was accepted or flagged, de-duplicated, sorted and joined.'} test::cedardelta::function::canopyRollup(canopyStates: String[*]): String[1]
+{
+  $canopyStates->filter(c | $c->length() > 0)->map(c | canopyRemark($c) + ':' + if(canopyRemark($c) == 'state-not-recognised', | 'flagged', | 'accepted'))->removeDuplicates()->sort()->joinStrings(',')
+}
+
+function {meta::pure::profiles::doc.doc = 'Tabular projection of the published tree rows for the requested wards and species, keeping only rows at or above a minimum height and skipping each membership test whose parameter collection is empty.'} test::cedardelta::function::censusTable(rows: TreeRow[*], wards: String[*], speciesCodes: String[*], minHeight: Integer[1]): TabularDataSet[1]
+{
+  $rows->filter(t | ($t.heightM >= $minHeight) && ((!$t.ward->isEmpty()) && (($wards->isEmpty() || $t.ward->in($wards)) && ($speciesCodes->isEmpty() || $t.speciesCode->in($speciesCodes)))))->project(
+    [
+      col(t | $t.recordId, 'Record'),
+      col(t | $t.ward, 'Ward'),
+      col(t | $t.speciesCode, 'Species'),
+      col(t | $t.sizeClass, 'Size'),
+      col(t | $t.healthGrade, 'Health'),
+      col(t | $t.rowSummary, 'Summary')
+    ]
+  )->sort([asc('Record')])
+}

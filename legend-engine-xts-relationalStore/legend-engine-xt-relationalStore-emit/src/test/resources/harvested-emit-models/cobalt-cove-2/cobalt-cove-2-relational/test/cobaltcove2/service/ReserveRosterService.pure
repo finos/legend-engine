@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltcove2::service::ReserveRosterService
+{
+  pattern: '/cobaltcove/v1/reserves/{businessDate}';
+  title: 'Monitored Reserve Roster';
+  owners:
+  [
+    'cove-monitoring',
+    'reserve-wardens'
+  ];
+  documentation: 'Lists the distinct reserves that still have a monitored trail segment as of the requested business date, so duplicate projected rows collapse after the temporal rewrite.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|test::cobaltcove2::domain::TrailSegment.all($businessDate)->project(
+      [
+        s|$s.reserveName
+      ],
+      [
+        'ReserveName'
+      ]
+    )->distinct()->sort(
+      [
+        asc('ReserveName')
+      ]
+    )};
+    mapping: test::cobaltcove2::mapping::CoveMapping;
+    runtime: test::cobaltcove2::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    reserveRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              cove.trail_segment:
+                'segment_code,reserve_name,surface_grade,from_z,thru_z\n'+
+                'TS-01,Kelp Cove Reserve,3,2024-01-01,9999-12-31\n'+
+                'TS-02,Kelp Cove Reserve,5,2024-01-01,9999-12-31\n'+
+                'TS-03,Otter Point Reserve,2,2024-01-01,9999-12-31\n'+
+                'TS-05,Gannet Ledge Reserve,1,2022-01-01,2023-06-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentReserves:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2024-06-01
+          ]
+          asserts:
+          [
+            twoDistinctReserves:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReserveName":"Kelp Cove Reserve"},{"ReserveName":"Otter Point Reserve"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

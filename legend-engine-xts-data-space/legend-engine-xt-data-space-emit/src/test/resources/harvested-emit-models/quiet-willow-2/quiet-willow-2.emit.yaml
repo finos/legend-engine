@@ -1,0 +1,81 @@
+name: quiet-willow-2
+title: "Quiet Willow - a business-temporal carriage workshop register read across four schemas, an aggregate tally view and a two-hop reference chain"
+description: |
+  The carriage workshop of a narrow-gauge heritage railway, carried as two business-temporal relations - the
+  carriage sheets themselves and the overhauls booked against them - so a sheet that only opens later in the
+  year is out of range on an earlier day and a booking whose window has closed drops out of that day's totals.
+  Both sides declare an explicit primary key and a main-table alias, and the reference data they resolve
+  against lives in three further schemas: the depot a carriage sits at is reached through one declared join and
+  its region through the two-hop chain beyond it, the works site of an overhaul is reached the same way, and
+  the fitters of a site are read back across the staff schema. Every one of those reference properties is
+  optional, so the joins are outer rather than inner, while the carriage-to-overhaul relationship is realised
+  as an association implementation over a third join and stays inner. Alongside the register the workshop keeps
+  a billable-hours tally sheet, aggregated in the store itself as a grouped inline view and joined back onto the
+  carriage so the same numbers can be read either by folding the relationship or by reading the view. The
+  reference mappings and the enumeration mappings are brought in through two mapping includes rather than
+  restated. Above the store sit an as-of register narrowed by a named region, a seating floor and the classes
+  kept in traffic, a workload endpoint that fans the bookings out and folds them back to one count and one
+  total per carriage before ordering and truncating, and a roster endpoint over the unmilestoned staff schema.
+  A governed access point names the tier and its three endpoints, and the mapping and service suites cover a
+  multi-hop reference hit, a sheet outside the queried window, a superseded booking and an empty result.
+modelSources:
+  model:
+    root: quiet-willow-2
+    files:
+      - test/quietwillow2/connection/WorkshopConnections.pure
+      - test/quietwillow2/dataspace/WorkshopDataSpace.pure
+      - test/quietwillow2/domain/WorkshopDomain.pure
+      - test/quietwillow2/mapping/WorkshopMapping.pure
+      - test/quietwillow2/runtime/WorkshopRuntimes.pure
+      - test/quietwillow2/service/CarriageRegisterAsOf.pure
+      - test/quietwillow2/service/CarriageWorkloadAsOf.pure
+      - test/quietwillow2/service/FitterRoster.pure
+      - test/quietwillow2/store/WorkshopDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-outer-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - business-temporal
+  - data-space
+  - enumeration-mapping
+  - h2
+  - heritage-railway
+  - inline-view
+  - mapping-test
+  - multi-hop-join
+  - outer-join
+  - point-in-time
+  - service-test
+  - snowflake

@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::amberestuary::mapping::EstuaryMapping
+(
+  test::amberestuary::domain::GaugeStation: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberestuary::store::EstuaryDatabase]tideflat.gauge_station.station_code
+    )
+    ~mainTable [test::amberestuary::store::EstuaryDatabase]tideflat.gauge_station
+    stationCode: [test::amberestuary::store::EstuaryDatabase]tideflat.gauge_station.station_code,
+    stationName: [test::amberestuary::store::EstuaryDatabase]tideflat.gauge_station.station_name,
+    tidalZone: [test::amberestuary::store::EstuaryDatabase]tideflat.gauge_station.tidal_zone
+  }
+
+  test::amberestuary::domain::SedimentReading: Relational
+  {
+    ~primaryKey
+    (
+      [test::amberestuary::store::EstuaryDatabase]tideflat.sediment_reading.reading_id
+    )
+    ~mainTable [test::amberestuary::store::EstuaryDatabase]tideflat.sediment_reading
+    readingId: [test::amberestuary::store::EstuaryDatabase]tideflat.sediment_reading.reading_id,
+    stationName: [test::amberestuary::store::EstuaryDatabase]tideflat.sediment_reading.station_name,
+    tidalZone: [test::amberestuary::store::EstuaryDatabase]tideflat.sediment_reading.tidal_zone,
+    siltMgPerL: [test::amberestuary::store::EstuaryDatabase]tideflat.sediment_reading.silt_mg_per_l
+  }
+
+  testSuites:
+  [
+    stationSuite:
+    {
+      function: |test::amberestuary::domain::GaugeStation.all()->project(
+        [
+          x|$x.stationCode,
+          x|$x.stationName->toUpper(),
+          x|$x.tidalZone
+        ],
+        [
+          'Station',
+          'Name',
+          'Zone'
+        ]
+      );
+      tests:
+      [
+        stationsProjectedWithUppercasedName:
+        {
+          doc: 'Projects the declared primary key column together with an upper-cased name so the main-table alias and the key binding are both exercised.';
+          data:
+          [
+            test::amberestuary::store::EstuaryDatabase:
+              Relational
+              #{
+                tideflat.gauge_station:
+                  'station_code,station_name,tidal_zone\n'+
+                  'GS-01,Marsh Head,upper-flat\n'+
+                  'GS-02,Sand Bar,lower-flat\n';
+              }#
+          ];
+          asserts:
+          [
+            twoStationsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"GS-01","Name":"MARSH HEAD","Zone":"upper-flat"},{"Station":"GS-02","Name":"SAND BAR","Zone":"lower-flat"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    readingSuite:
+    {
+      function: |test::amberestuary::domain::SedimentReading.all()->project(
+        [
+          x|$x.readingId,
+          x|$x.siltMgPerL,
+          x|if(
+            $x.siltMgPerL >= 60,
+            |'turbid',
+            |if(
+              $x.siltMgPerL >= 40,
+              |'murky',
+              |'clear'
+            )
+          )
+        ],
+        [
+          'Reading',
+          'Silt',
+          'Band'
+        ]
+      );
+      tests:
+      [
+        readingsBandedBySiltLoad:
+        {
+          doc: 'Bands each reading by silt load so all three arms of the nested band expression surface from the mapped reading table.';
+          data:
+          [
+            test::amberestuary::store::EstuaryDatabase:
+              Relational
+              #{
+                tideflat.sediment_reading:
+                  'reading_id,station_name,tidal_zone,silt_mg_per_l\n'+
+                  'SR-01,Marsh Head,upper-flat,72\n'+
+                  'SR-02,Marsh Head,upper-flat,45\n'+
+                  'SR-03,Sand Bar,lower-flat,12\n';
+              }#
+          ];
+          asserts:
+          [
+            threeReadingsBanded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"SR-01","Silt":72,"Band":"turbid"},{"Reading":"SR-02","Silt":45,"Band":"murky"},{"Reading":"SR-03","Silt":12,"Band":"clear"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

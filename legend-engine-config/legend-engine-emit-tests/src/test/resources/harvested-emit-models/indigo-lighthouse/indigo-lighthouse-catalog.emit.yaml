@@ -1,0 +1,43 @@
+name: indigo-lighthouse-catalog
+title: "Indigo Lighthouse — Processing-Temporal Curatorial Circles (Milestoned Associations, Enumerations, Diagram)"
+description: |
+  A curatorial head/member/pseudonym/taxonomy graph in which every local class
+  is processing-temporal, so each extent takes a system-time argument and the
+  whole graph — including a property-less taxonomy branch that exists only as
+  versioned reference vocabulary — is versioned rather than one entity of it.
+  Three associations exercise milestoned navigation: a local one-to-many link
+  from a circle to its members whose both ends are milestoned, and two links
+  that cross into registry types declared in a separate module, propagating the
+  system-time argument outside the local graph. Two enumerations are used as
+  property types on the milestoned classes rather than as query literals, and a
+  diagram lays out ten class views with explicit coordinates and rectangles plus
+  property views along the association ends.
+
+modelSources:
+  model:
+    root: indigo-lighthouse-catalog
+    files:
+      - test/indigolighthouse/catalog/CircleAssociations.pure
+      - test/indigolighthouse/catalog/CircleDomain.pure
+      - test/indigolighthouse/catalog/CircleGraphDiagram.pure
+      - test/indigolighthouse/catalog/CircleVocabulary.pure
+  dependencies:
+    - source: indigo-lighthouse-registry.emit.yaml
+
+features:
+  - grammar:association
+  - grammar:diagram
+  - grammar:enumeration
+  - milestoning:milestoned-association
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - curatorial-circles
+  - diagram
+  - enumeration
+  - milestoned-association
+  - processing-temporal
+  - self-reference

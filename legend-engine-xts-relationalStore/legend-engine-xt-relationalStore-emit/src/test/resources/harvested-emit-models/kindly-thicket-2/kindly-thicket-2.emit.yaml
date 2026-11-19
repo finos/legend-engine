@@ -1,0 +1,55 @@
+name: kindly-thicket-2
+title: "Thicket Trail Node Register — Milestoned Hierarchy Served In Memory"
+description: |
+  A nature-reserve trail corpus whose business-temporally milestoned node class
+  carries, on every node, the descriptive name and the identifier of each level
+  it hangs under. Two parameterless single-execution services project the whole
+  extent of that hierarchy through one shared model-to-model mapping resolved in
+  memory: one at a fixed far-future instant over a rectangular five-level shape,
+  the other at the default extent over a wider shape that descends into the
+  spur, station and waypoint half-levels and substitutes a literal placeholder
+  for an absent waypoint name. The mapping the services name carries no property
+  transforms at all: it declares only which classes are resolvable, and the
+  instances reach it through a model chain over a second mapping. A record class
+  is declared alongside the hierarchy class with no source instances of its own.
+modelSources:
+  model:
+    root: kindly-thicket-2
+    files:
+      - test/kindlythicket2/connection/ThicketConnection.pure
+      - test/kindlythicket2/domain/ThicketDomain.pure
+      - test/kindlythicket2/mapping/ThicketM2M.pure
+      - test/kindlythicket2/mapping/ThicketNodeMapping.pure
+      - test/kindlythicket2/runtime/ThicketRuntime.pure
+      - test/kindlythicket2/service/TrailNodeRegisterAsOf.pure
+      - test/kindlythicket2/service/TrailNodeRegisterDeep.pure
+      - test/kindlythicket2/store/ThicketDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:m2m-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - hierarchy
+  - m2m
+  - model-chain
+  - model-store
+  - point-in-time
+  - service-test
+  - tabular-data-set

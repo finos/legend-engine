@@ -1,0 +1,235 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldthistle3::service::SpecimenSheetExtract
+{
+  pattern: '/herbarium/v1/specimens/{asOfDate}/sheet';
+  title: 'Herbarium Specimen Sheet Extract';
+  owners:
+  [
+    'emerald-thistle-herbarium',
+    'garden-records-platform'
+  ];
+  documentation: 'Fixed-arity specimen sheet extract taken at one business instant: the requested date is bound to a local variable, the specimen extent is opened at that instant, and a single wide projection carries direct specimen columns, one-hop gathering columns, a five-hop descent through bed, plot, section and reserve into the to-many steward collection, two repeated traversals under alternate aliases, one conditional tag-prefix derivation over a single-value coercion, and thirteen empty-literal columns that pad the sheet to the width a downstream consumer expects.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1]|let businessInstant = $asOfDate;
+      test::emeraldthistle3::domain::Specimen.all($businessInstant)->project(
+        [
+          s|$s.specimenCode,
+          s|$s.tagCode,
+          s|if($s.tagCode->toOne()->indexOf('-') > 0, |$s.tagCode->toOne()->substring(0, $s.tagCode->toOne()->indexOf('-')), |$s.tagCode->toOne()),
+          s|$s.speciesLabel,
+          s|$s.habitLabel,
+          s|$s.collectCode,
+          s|$s.formLabel,
+          s|$s.statusLabel,
+          s|$s.noteLabel,
+          s|$s.accession($businessInstant).accessionCode,
+          s|$s.accession($businessInstant).sourceLabel,
+          s|$s.accession($businessInstant).gatherRegion,
+          s|$s.bed($businessInstant).bedCode,
+          s|$s.bed($businessInstant).bedLabel,
+          s|$s.bed($businessInstant).bedLabel,
+          s|$s.bed($businessInstant).plot($businessInstant).plotCode,
+          s|$s.bed($businessInstant).plot($businessInstant).plotLabel,
+          s|$s.bed($businessInstant).plot($businessInstant).section($businessInstant).sectionCode,
+          s|$s.bed($businessInstant).plot($businessInstant).section($businessInstant).sectionLabel,
+          s|$s.bed($businessInstant).plot($businessInstant).section($businessInstant).reserve($businessInstant).reserveCode,
+          s|$s.bed($businessInstant).plot($businessInstant).section($businessInstant).reserve($businessInstant).reserveLabel,
+          s|$s.bed($businessInstant).plot($businessInstant).section($businessInstant).reserve($businessInstant).reserveLabel,
+          s|$s.bed($businessInstant).plot($businessInstant).section($businessInstant).reserve($businessInstant).stewards($businessInstant).stewardCode,
+          s|$s.bed($businessInstant).plot($businessInstant).section($businessInstant).reserve($businessInstant).stewards($businessInstant).stewardName,
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|'',
+          s|''
+        ],
+        [
+          'Specimen/Code',
+          'Specimen/Tag',
+          'Specimen/TagPrefix',
+          'Specimen/Species',
+          'Specimen/Habit',
+          'Specimen/Collect',
+          'Specimen/Form',
+          'Specimen/Status',
+          'Specimen/Note',
+          'Accession/Code',
+          'Accession/Source',
+          'Accession/Region',
+          'Bed/Code',
+          'Bed/Label',
+          'Bed/LabelRepeat',
+          'Plot/Code',
+          'Plot/Label',
+          'Section/Code',
+          'Section/Label',
+          'Reserve/Code',
+          'Reserve/Label',
+          'Reserve/LabelRepeat',
+          'Steward/Code',
+          'Steward/Name',
+          'Pad/01',
+          'Pad/02',
+          'Pad/03',
+          'Pad/04',
+          'Pad/05',
+          'Pad/06',
+          'Pad/07',
+          'Pad/08',
+          'Pad/09',
+          'Pad/10',
+          'Pad/11',
+          'Pad/12',
+          'Pad/13'
+        ]
+      )->sort(
+        [
+          asc('Specimen/Code'),
+          asc('Steward/Code')
+        ]
+      );};
+    mapping: test::emeraldthistle3::mapping::SpecimenMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::emeraldthistle3::mapping::SpecimenMapping
+      ];
+      connections:
+      [
+        test::emeraldthistle3::store::HerbariumDB:
+        [
+          inlineHerbariumConnection:
+          #{
+            RelationalDatabaseConnection
+            {
+              store: test::emeraldthistle3::store::HerbariumDB;
+              type: H2;
+              specification: LocalH2
+              {
+              };
+              auth: DefaultH2;
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    specimenSheetSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inlineHerbariumConnection:
+            Relational
+            #{
+              herbarium.accession_record:
+                'accession_code,source_label,gather_region,from_z,thru_z\n'+
+                'AR-1,Coast Ridge Gathering,north headland,2026-01-01,9999-12-31\n'+
+                'AR-2,Fen Margin Gathering,inland fen,2026-01-01,9999-12-31\n';
+              herbarium.garden_plot:
+                'plot_code,plot_label,section_code,from_z,thru_z\n'+
+                'GP-1,Terrace Plot,GS-1,2026-01-01,9999-12-31\n'+
+                'GP-2,Shade Plot,GS-2,2026-01-01,9999-12-31\n'+
+                'GP-3,Gravel Plot,,2026-01-01,9999-12-31\n';
+              herbarium.garden_section:
+                'section_code,section_label,reserve_code,from_z,thru_z\n'+
+                'GS-1,Upper Terrace Section,NR-1,2026-01-01,9999-12-31\n'+
+                'GS-2,Woodland Section,NR-2,2026-01-01,9999-12-31\n';
+              herbarium.growing_bed:
+                'bed_code,bed_label,plot_code,from_z,thru_z\n'+
+                'GB-1,Thistle Bed,GP-1,2026-01-01,9999-12-31\n'+
+                'GB-2,Sedge Bed,GP-2,2026-01-01,9999-12-31\n'+
+                'GB-3,Gravel Bed,GP-3,2026-01-01,9999-12-31\n';
+              herbarium.nature_reserve:
+                'reserve_code,reserve_label,from_z,thru_z\n'+
+                'NR-1,Emerald Headland Reserve,2026-01-01,9999-12-31\n'+
+                'NR-2,Willow Fen Reserve,2026-01-01,9999-12-31\n';
+              herbarium.reserve_steward:
+                'steward_code,steward_name,rota_label,reserve_code,from_z,thru_z\n'+
+                'RS-1,Ada Wrenfield,rota-early,NR-1,2026-01-01,9999-12-31\n'+
+                'RS-2,Bram Coltsfoot,rota-late,NR-1,2026-01-01,9999-12-31\n';
+              herbarium.specimen:
+                'specimen_code,tag_code,species_label,habit_label,collect_code,form_label,status_label,note_label,accession_code,bed_code,from_z,thru_z\n'+
+                'SP-1,THI-0091,Cirsium palustre,upright herb,CL-1,pressed sheet,mounted,two duplicate sheets held,AR-1,GB-1,2026-01-01,9999-12-31\n'+
+                'SP-2,SEDGE0042,Carex nigra,tufted sedge,CL-2,pressed sheet,mounted,single sheet held,AR-2,GB-2,2026-01-01,9999-12-31\n'+
+                'SP-3,-GRAVEL7,Sedum acre,mat forming,CL-3,pressed sheet,unmounted,awaiting mounting,AR-1,GB-3,2026-01-01,9999-12-31\n'+
+                'SP-4,MOSS-0007,Sphagnum fallax,cushion moss,CL-4,spirit jar,archived,withdrawn from the sheet run,AR-2,GB-1,2026-01-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sheetAtCurrentInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            everyCurrentSpecimenRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen/Code":"SP-1","Specimen/Tag":"THI-0091","Specimen/TagPrefix":"THI-","Specimen/Species":"Cirsium palustre","Specimen/Habit":"upright herb","Specimen/Collect":"CL-1","Specimen/Form":"pressed sheet","Specimen/Status":"mounted","Specimen/Note":"two duplicate sheets held","Accession/Code":"AR-1","Accession/Source":"Coast Ridge Gathering","Accession/Region":"north headland","Bed/Code":"GB-1","Bed/Label":"Thistle Bed","Bed/LabelRepeat":"Thistle Bed","Plot/Code":"GP-1","Plot/Label":"Terrace Plot","Section/Code":"GS-1","Section/Label":"Upper Terrace Section","Reserve/Code":"NR-1","Reserve/Label":"Emerald Headland Reserve","Reserve/LabelRepeat":"Emerald Headland Reserve","Steward/Code":"RS-1","Steward/Name":"Ada Wrenfield","Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-1","Specimen/Tag":"THI-0091","Specimen/TagPrefix":"THI-","Specimen/Species":"Cirsium palustre","Specimen/Habit":"upright herb","Specimen/Collect":"CL-1","Specimen/Form":"pressed sheet","Specimen/Status":"mounted","Specimen/Note":"two duplicate sheets held","Accession/Code":"AR-1","Accession/Source":"Coast Ridge Gathering","Accession/Region":"north headland","Bed/Code":"GB-1","Bed/Label":"Thistle Bed","Bed/LabelRepeat":"Thistle Bed","Plot/Code":"GP-1","Plot/Label":"Terrace Plot","Section/Code":"GS-1","Section/Label":"Upper Terrace Section","Reserve/Code":"NR-1","Reserve/Label":"Emerald Headland Reserve","Reserve/LabelRepeat":"Emerald Headland Reserve","Steward/Code":"RS-2","Steward/Name":"Bram Coltsfoot","Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-2","Specimen/Tag":"SEDGE0042","Specimen/TagPrefix":"SEDGE0042","Specimen/Species":"Carex nigra","Specimen/Habit":"tufted sedge","Specimen/Collect":"CL-2","Specimen/Form":"pressed sheet","Specimen/Status":"mounted","Specimen/Note":"single sheet held","Accession/Code":"AR-2","Accession/Source":"Fen Margin Gathering","Accession/Region":"inland fen","Bed/Code":"GB-2","Bed/Label":"Sedge Bed","Bed/LabelRepeat":"Sedge Bed","Plot/Code":"GP-2","Plot/Label":"Shade Plot","Section/Code":"GS-2","Section/Label":"Woodland Section","Reserve/Code":"NR-2","Reserve/Label":"Willow Fen Reserve","Reserve/LabelRepeat":"Willow Fen Reserve","Steward/Code":null,"Steward/Name":null,"Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-3","Specimen/Tag":"-GRAVEL7","Specimen/TagPrefix":"-","Specimen/Species":"Sedum acre","Specimen/Habit":"mat forming","Specimen/Collect":"CL-3","Specimen/Form":"pressed sheet","Specimen/Status":"unmounted","Specimen/Note":"awaiting mounting","Accession/Code":"AR-1","Accession/Source":"Coast Ridge Gathering","Accession/Region":"north headland","Bed/Code":"GB-3","Bed/Label":"Gravel Bed","Bed/LabelRepeat":"Gravel Bed","Plot/Code":"GP-3","Plot/Label":"Gravel Plot","Section/Code":null,"Section/Label":null,"Reserve/Code":null,"Reserve/Label":null,"Reserve/LabelRepeat":null,"Steward/Code":null,"Steward/Name":null,"Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""}]';
+                  }#;
+              }#
+          ]
+        },
+        sheetBeforeWithdrawnSpecimenClosed:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-02-01
+          ]
+          asserts:
+          [
+            withdrawnSpecimenStillInWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Specimen/Code":"SP-1","Specimen/Tag":"THI-0091","Specimen/TagPrefix":"THI-","Specimen/Species":"Cirsium palustre","Specimen/Habit":"upright herb","Specimen/Collect":"CL-1","Specimen/Form":"pressed sheet","Specimen/Status":"mounted","Specimen/Note":"two duplicate sheets held","Accession/Code":"AR-1","Accession/Source":"Coast Ridge Gathering","Accession/Region":"north headland","Bed/Code":"GB-1","Bed/Label":"Thistle Bed","Bed/LabelRepeat":"Thistle Bed","Plot/Code":"GP-1","Plot/Label":"Terrace Plot","Section/Code":"GS-1","Section/Label":"Upper Terrace Section","Reserve/Code":"NR-1","Reserve/Label":"Emerald Headland Reserve","Reserve/LabelRepeat":"Emerald Headland Reserve","Steward/Code":"RS-1","Steward/Name":"Ada Wrenfield","Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-1","Specimen/Tag":"THI-0091","Specimen/TagPrefix":"THI-","Specimen/Species":"Cirsium palustre","Specimen/Habit":"upright herb","Specimen/Collect":"CL-1","Specimen/Form":"pressed sheet","Specimen/Status":"mounted","Specimen/Note":"two duplicate sheets held","Accession/Code":"AR-1","Accession/Source":"Coast Ridge Gathering","Accession/Region":"north headland","Bed/Code":"GB-1","Bed/Label":"Thistle Bed","Bed/LabelRepeat":"Thistle Bed","Plot/Code":"GP-1","Plot/Label":"Terrace Plot","Section/Code":"GS-1","Section/Label":"Upper Terrace Section","Reserve/Code":"NR-1","Reserve/Label":"Emerald Headland Reserve","Reserve/LabelRepeat":"Emerald Headland Reserve","Steward/Code":"RS-2","Steward/Name":"Bram Coltsfoot","Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-2","Specimen/Tag":"SEDGE0042","Specimen/TagPrefix":"SEDGE0042","Specimen/Species":"Carex nigra","Specimen/Habit":"tufted sedge","Specimen/Collect":"CL-2","Specimen/Form":"pressed sheet","Specimen/Status":"mounted","Specimen/Note":"single sheet held","Accession/Code":"AR-2","Accession/Source":"Fen Margin Gathering","Accession/Region":"inland fen","Bed/Code":"GB-2","Bed/Label":"Sedge Bed","Bed/LabelRepeat":"Sedge Bed","Plot/Code":"GP-2","Plot/Label":"Shade Plot","Section/Code":"GS-2","Section/Label":"Woodland Section","Reserve/Code":"NR-2","Reserve/Label":"Willow Fen Reserve","Reserve/LabelRepeat":"Willow Fen Reserve","Steward/Code":null,"Steward/Name":null,"Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-3","Specimen/Tag":"-GRAVEL7","Specimen/TagPrefix":"-","Specimen/Species":"Sedum acre","Specimen/Habit":"mat forming","Specimen/Collect":"CL-3","Specimen/Form":"pressed sheet","Specimen/Status":"unmounted","Specimen/Note":"awaiting mounting","Accession/Code":"AR-1","Accession/Source":"Coast Ridge Gathering","Accession/Region":"north headland","Bed/Code":"GB-3","Bed/Label":"Gravel Bed","Bed/LabelRepeat":"Gravel Bed","Plot/Code":"GP-3","Plot/Label":"Gravel Plot","Section/Code":null,"Section/Label":null,"Reserve/Code":null,"Reserve/Label":null,"Reserve/LabelRepeat":null,"Steward/Code":null,"Steward/Name":null,"Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-4","Specimen/Tag":"MOSS-0007","Specimen/TagPrefix":"MOSS-","Specimen/Species":"Sphagnum fallax","Specimen/Habit":"cushion moss","Specimen/Collect":"CL-4","Specimen/Form":"spirit jar","Specimen/Status":"archived","Specimen/Note":"withdrawn from the sheet run","Accession/Code":"AR-2","Accession/Source":"Fen Margin Gathering","Accession/Region":"inland fen","Bed/Code":"GB-1","Bed/Label":"Thistle Bed","Bed/LabelRepeat":"Thistle Bed","Plot/Code":"GP-1","Plot/Label":"Terrace Plot","Section/Code":"GS-1","Section/Label":"Upper Terrace Section","Reserve/Code":"NR-1","Reserve/Label":"Emerald Headland Reserve","Reserve/LabelRepeat":"Emerald Headland Reserve","Steward/Code":"RS-1","Steward/Name":"Ada Wrenfield","Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""},{"Specimen/Code":"SP-4","Specimen/Tag":"MOSS-0007","Specimen/TagPrefix":"MOSS-","Specimen/Species":"Sphagnum fallax","Specimen/Habit":"cushion moss","Specimen/Collect":"CL-4","Specimen/Form":"spirit jar","Specimen/Status":"archived","Specimen/Note":"withdrawn from the sheet run","Accession/Code":"AR-2","Accession/Source":"Fen Margin Gathering","Accession/Region":"inland fen","Bed/Code":"GB-1","Bed/Label":"Thistle Bed","Bed/LabelRepeat":"Thistle Bed","Plot/Code":"GP-1","Plot/Label":"Terrace Plot","Section/Code":"GS-1","Section/Label":"Upper Terrace Section","Reserve/Code":"NR-1","Reserve/Label":"Emerald Headland Reserve","Reserve/LabelRepeat":"Emerald Headland Reserve","Steward/Code":"RS-2","Steward/Name":"Bram Coltsfoot","Pad/01":"","Pad/02":"","Pad/03":"","Pad/04":"","Pad/05":"","Pad/06":"","Pad/07":"","Pad/08":"","Pad/09":"","Pad/10":"","Pad/11":"","Pad/12":"","Pad/13":""}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

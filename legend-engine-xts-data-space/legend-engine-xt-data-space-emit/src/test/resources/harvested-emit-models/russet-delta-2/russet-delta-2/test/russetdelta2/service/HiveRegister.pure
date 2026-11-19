@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::russetdelta2::service::HiveRegister
+{
+  pattern: '/russetdelta/v1/hive-register/{district}/{minFrames}';
+  title: 'Russet Delta - Hive Register';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the working hives of one district at or above a requested frame count: the conjunctive parameterised predicate narrows the row source, the projection names the composed hive label and the decoded strength band alongside the district reached through the inner hop, a second predicate over the projected relation drops empty boxes, and the result is ordered and capped.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {district: String[1], minFrames: Integer[1]|test::russetdelta2::domain::Hive.all()->filter(
+      h|($h.hiveStatus->toOne() == 'A') && (($h.frameCount->toOne() >= $minFrames) && ($h.yardDistrict->toOne() == $district))
+    )->project(
+      ~[
+        HiveCode: h|$h.hiveCode,
+        HiveLabel: h|$h.hiveLabel->toOne(),
+        StrengthBand: h|$h.strengthBand->toOne(),
+        District: h|$h.yardDistrict->toOne(),
+        FrameCount: h|$h.frameCount->toOne()
+      ]
+    )->filter(
+      r|$r.FrameCount >= 1
+    )->sort(~HiveCode->ascending())->limit(10);};
+    mapping: test::russetdelta2::mapping::ApiaryMapping;
+    runtime: test::russetdelta2::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    hiveRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryConnection:
+            Relational
+            #{
+              apiary.apiary_yard:
+                'yard_code,yard_name,district_code,hive_slots,terrain_code\n'+
+                'YD-1,Willow Bank,D-NORTH,12,LEVEL\n'+
+                'YD-2,Clover Rise,D-SOUTH,8,SLOPED\n';
+
+              apiary.hive:
+                'hive_code,yard_code,frame_count,queen_year,hive_status\n'+
+                'HV-01,YD-1,24,2025,A\n'+
+                'HV-02,YD-1,14,2024,A\n'+
+                'HV-03,YD-1,4,2023,N\n'+
+                'HV-04,YD-2,22,2025,A\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        workingHivesOfOneDistrict:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'D-NORTH',
+            minFrames = 10
+          ]
+          asserts:
+          [
+            twoWorkingHives:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HiveCode":"HV-01","HiveLabel":"HV-01@YD-1","StrengthBand":"STRONG","District":"D-NORTH","FrameCount":24},{"HiveCode":"HV-02","HiveLabel":"HV-02@YD-1","StrengthBand":"BUILDING","District":"D-NORTH","FrameCount":14}]';
+                  }#;
+              }#
+          ]
+        },
+        otherDistrictOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'D-SOUTH',
+            minFrames = 10
+          ]
+          asserts:
+          [
+            oneWorkingHive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HiveCode":"HV-04","HiveLabel":"HV-04@YD-2","StrengthBand":"STRONG","District":"D-SOUTH","FrameCount":22}]';
+                  }#;
+              }#
+          ]
+        },
+        frameFloorNoHiveReaches:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            district = 'D-NORTH',
+            minFrames = 40
+          ]
+          asserts:
+          [
+            emptyRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

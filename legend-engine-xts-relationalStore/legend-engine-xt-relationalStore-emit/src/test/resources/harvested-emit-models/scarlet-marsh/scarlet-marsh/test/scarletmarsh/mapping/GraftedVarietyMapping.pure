@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletmarsh::mapping::GraftedVarietyMapping
+(
+  test::scarletmarsh::domain::GraftedVariety[graftedVariety]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.graft_code
+    )
+    ~mainTable [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log
+    graftCode: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.graft_code,
+    rootstock: [test::scarletmarsh::store::OrchardCoreDB]orchard.graft_log.rootstock,
+    varietyName: [test::scarletmarsh::store::OrchardCoreDB]@Graft_Variety | [test::scarletmarsh::store::OrchardCoreDB]reference.variety.variety_name,
+    ripening: [test::scarletmarsh::store::OrchardCoreDB]@Graft_Variety | [test::scarletmarsh::store::OrchardCoreDB]reference.variety.ripening
+  }
+
+  testSuites:
+  [
+    graftedVarietySuite:
+    {
+      function: test::scarletmarsh::domain::GraftedVariety.all()->project(~[graft: g|$g.graftCode, rootstock: g|$g.rootstock, variety: g|$g.varietyName, ripening: g|$g.ripening]);
+      tests:
+      [
+        graftRowsCarryTheirVarietySeason:
+        {
+          doc: 'Projects each graft through the plain relational class mapping, reaching the variety name and ripening season across the graft-to-variety join.';
+          data:
+          [
+            test::scarletmarsh::store::OrchardCoreDB:
+              Relational
+              #{
+                reference.variety:
+                  'variety_code,variety_name,ripening\n'+
+                  'V-1,Warren Russet,LATE\n'+
+                  'V-2,Marsh Pippin,EARLY\n';
+                orchard.graft_log:
+                  'graft_code,plot_code,variety_code,rootstock,keeper_code,grade_code,graft_status,grafted_on,survival_score\n'+
+                  'G-1,P-1,V-1,STOCK-A,K-1,PRIME,ACTIVE,2026-02-01,40\n'+
+                  'G-2,P-1,V-2,STOCK-B,K-3,STANDARD,ACTIVE,2026-02-03,24\n';
+              }#
+          ];
+          asserts:
+          [
+            twoGraftRows:
+              Relation
+              #{
+                graft,rootstock,variety,ripening
+                G-1,STOCK-A,Warren Russet,LATE
+                G-2,STOCK-B,Marsh Pippin,EARLY;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

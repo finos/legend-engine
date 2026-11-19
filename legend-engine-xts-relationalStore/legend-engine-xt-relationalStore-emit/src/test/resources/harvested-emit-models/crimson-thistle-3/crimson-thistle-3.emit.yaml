@@ -1,0 +1,61 @@
+name: crimson-thistle-3
+title: "Crimson Thistle 3 — Botanic accession registry with two inheritance shapes, duplicated complex blocks and a recursive parent link"
+description: |
+  A store-less botanic-garden accession registry of flat primitive-typed domain classes
+  layered with two one-level inheritance shapes: a minimal label base carrying a single
+  required text field is specialised by a subtype that adds four identifier and
+  classification properties, while a heavy accession holding class is specialised by a
+  subtype that adds exactly one required bed reference. The holding class declares the same
+  growth-measure type twice under different names — a current block and a period-over-period
+  delta block, both required — alongside required lookup references and an optional
+  self-typed parent link that gives an unbounded, optionality-terminated accession chain.
+  A herbarium store backs a relational mapping in which the labelled-specimen class mapping
+  extends the label class mapping, inheriting its trimmed upper-cased label text while adding
+  an eight-armed life-form case with a null fallback, a two-armed conservation case and a
+  sheet code reached over a one-hop join, covered by a mapping test suite. Fully documented
+  dossier and review classes add bounded and unbounded collection properties, an optional
+  self-typed nesting of sub-dossiers and a documented curation-stage enumeration.
+modelSources:
+  model:
+    root: crimson-thistle-3
+    files:
+      - test/crimsonthistle3/domain/AccessionDossier.pure
+      - test/crimsonthistle3/domain/AccessionHolding.pure
+      - test/crimsonthistle3/domain/CollectionLabel.pure
+      - test/crimsonthistle3/domain/GardenReference.pure
+      - test/crimsonthistle3/domain/GrowthMeasure.pure
+      - test/crimsonthistle3/mapping/HerbariumLabelMapping.pure
+      - test/crimsonthistle3/store/HerbariumDb.pure
+features:
+  - execution:mapping-test
+  - grammar:class-inheritance
+  - grammar:collection-multiplicity-bound
+  - grammar:complex-typed-property
+  - grammar:tagged-value
+  - grammar:enumeration
+  - grammar:self-referencing-property
+  - mapping:relational-case-expression
+  - scaffolding:relational-mapping
+  - mapping:relational-class-mapping-extends
+  - mapping:relational-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-store
+  - store:relational-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - accession
+  - botanic-garden
+  - class-mapping-extends
+  - collection-multiplicity
+  - complex-typed-property
+  - crimson
+  - documentation
+  - h2
+  - herbarium
+  - inheritance
+  - optional-multiplicity
+  - recursive-parent
+  - relational

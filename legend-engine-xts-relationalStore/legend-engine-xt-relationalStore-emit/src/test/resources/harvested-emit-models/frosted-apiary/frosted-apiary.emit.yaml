@@ -1,0 +1,40 @@
+name: frosted-apiary
+title: "Frosted Apiary — Wide Calendar Class over a Main-Table Alias with Cross-Store Directory Joins"
+description: |
+  A hive-inspection scheduling model in which one wide domain class of roughly thirty
+  properties is bound to a single locally declared table through an explicit main table
+  alias, so unqualified column bindings resolve against the alias and the join-qualified
+  bindings are visibly the exception. The schedule store includes an inspector directory
+  store and a hive site store and declares the joins that reach them, one of them keyed on
+  an email-style contact string rather than a surrogate key, and a mapping test suite
+  asserts a projection that mixes alias-resolved and join-reached columns.
+modelSources:
+  model:
+    root: frosted-apiary
+    files:
+      - test/frostedapiary/domain/ApiaryDomain.pure
+      - test/frostedapiary/mapping/ApiaryScheduleMapping.pure
+      - test/frostedapiary/store/ApiaryDirectoryStore.pure
+      - test/frostedapiary/store/ApiaryScheduleStore.pure
+      - test/frostedapiary/store/ApiarySiteStore.pure
+features:
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - apiary
+  - calendar
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - relational
+  - store-inclusion
+  - wide-class

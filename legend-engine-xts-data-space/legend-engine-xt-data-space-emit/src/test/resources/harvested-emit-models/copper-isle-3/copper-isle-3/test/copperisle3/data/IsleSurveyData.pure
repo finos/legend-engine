@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::copperisle3::data::IsleSurveyData
+{
+  Relational
+  #{
+    isle.colony_count:
+      'count_id,sector_code,species_code,nest_count,chick_count,adult_count,count_date,survey_method,tide_state,visibility_class\n'+
+      '1,CI-N,PUFFIN,120,86,240,2026-05-18,BOAT_TRANSECT,EBB,GOOD\n'+
+      '2,CI-E,KITTIWAKE,310,180,620,2026-05-19,CLIFF_SCAN,FLOOD,GOOD\n'+
+      '3,CI-S,PUFFIN,45,20,95,2026-05-20,BOAT_TRANSECT,SLACK,POOR\n'+
+      '4,CI-W,PUFFIN,210,150,430,2026-05-21,CLIFF_SCAN,EBB,MODERATE\n';
+
+    isle.isle_sector:
+      'sector_code,sector_name,cliff_height_m,access_grade,habitat_class\n'+
+      'CI-N,North Stack,86.5,MODERATE,SEA_CLIFF\n'+
+      'CI-E,East Geo,42.0,EASY,BOULDER_SHORE\n'+
+      'CI-S,South Skerry,18.5,HARD,LOW_SKERRY\n'+
+      'CI-W,West Wall,110.0,HARD,SEA_CLIFF\n';
+
+    isle.observer_shift:
+      'shift_id,observer_name,shift_date,hours_logged,station_code\n'+
+      '1,Rowan Vance,2026-05-18,7.5,STN-A\n'+
+      '2,Talia Moss,2026-05-19,6.0,STN-B\n'+
+      '3,Aden Hollis,2026-05-20,8.25,STN-A\n';
+  }#
+}

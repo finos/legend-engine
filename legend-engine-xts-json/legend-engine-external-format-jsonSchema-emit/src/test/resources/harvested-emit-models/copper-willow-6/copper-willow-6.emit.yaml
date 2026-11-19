@@ -1,0 +1,74 @@
+name: copper-willow-6
+title: "Copper Willow 6 — Trail Stewardship Directives Across Snowflake and MemSQL Connections"
+description: |
+  Trail stewardship directives, volunteers, walking clubs, trail days and
+  erosion measures published over three layered relational stores:
+
+    * `StewardshipCoreDB` — directive and participant schemas; the lead
+      volunteer join conjoins the key equality with the open-batch sentinel.
+    * `StewardshipEventDB` — includes the core store and adds trail days and
+      measures; its directive join also only reaches open-batch directives.
+    * `StewardshipArchiveDB` — includes the event store and adds a closed
+      directive history.
+
+  Three relational mappings layer by mapping include. The steward label is a
+  depth-five nested dyna-function transform (trim, substring, upper-case and
+  two concatenations) and two properties are reached over one-hop joins.
+  Four Snowflake connections authenticate with OAuth over a shared scope and
+  rename schemas and tables through mapper post-processors; two MemSQL
+  connections over the directive store use a static datasource with
+  delegated Kerberos. Six engine runtimes each bind one mapping and store to
+  one connection, and two JSON bindings include the directive and roster
+  classes. Mapping tests assert the label, the open-batch join filtering and
+  the cross-store include.
+modelSources:
+  model:
+    root: copper-willow-6
+    files:
+      - test/copperwillow6/binding/StewardshipBindings.pure
+      - test/copperwillow6/connection/StewardshipConnections.pure
+      - test/copperwillow6/domain/StewardshipDomain.pure
+      - test/copperwillow6/mapping/StewardshipArchiveMapping.pure
+      - test/copperwillow6/mapping/StewardshipCoreMapping.pure
+      - test/copperwillow6/mapping/StewardshipEventMapping.pure
+      - test/copperwillow6/runtime/StewardshipRuntimes.pure
+      - test/copperwillow6/store/StewardshipArchiveDB.pure
+      - test/copperwillow6/store/StewardshipCoreDB.pure
+      - test/copperwillow6/store/StewardshipEventDB.pure
+features:
+  - connection:delegated-kerberos-authentication
+  - connection:oauth-authentication
+  - connection:mapper-postprocessor
+  - connection:snowflake
+  - connection:static-datasource
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - mapping:mapping-include
+  - scaffolding:relational-mapping
+  - mapping:relational-join-path
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - delegated-kerberos
+  - duckdb
+  - json-binding
+  - mapper-postprocessor
+  - mapping-include
+  - memsql
+  - oauth
+  - snowflake
+  - static-datasource
+  - store-include
+  - trail-stewardship

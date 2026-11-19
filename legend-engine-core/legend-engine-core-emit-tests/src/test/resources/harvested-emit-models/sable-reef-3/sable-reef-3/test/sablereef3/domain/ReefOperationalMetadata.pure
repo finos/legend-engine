@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sablereef3::domain::*;
+import test::sablereef3::profile::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Base operational-metadata record of the reef monitoring platform: a surrogate identifier annotated for wide integral storage plus the audit stamps every record carries.'} test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} recordId: Integer[1];
+  recordedOn: DateTime[1];
+  recordedBy: String[1];
+  revisionNumber: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A run of a reef survey pipeline against one deployed dataset. The deployment is reachable both by association and through the stored identifier property that duplicates it.'} test::sablereef3::domain::SurveyPipelineRun extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} pipelineRunId: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} datasetDeploymentRef: Integer[1];
+  operation: SurveyOperation[1];
+  status: OperationStatus[1];
+  exceptionCode: ExceptionCode[1];
+  severity: ExceptionSeverity[0..1];
+  attemptCount: Integer[1];
+  observationCount: Integer[0..1];
+  startedOn: DateTime[1];
+  finishedOn: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A reef observation dataset deployed into one environment. The hub record of the metadata layer, reached from runs, triggers, loads, provisions and dependency edges.'} test::sablereef3::domain::DatasetDeployment extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} datasetDeploymentId: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} datasetMetadataRef: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} deploymentMetadataRef: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} jobIdentifierRef: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} definitionDeploymentRef: Integer[0..1];
+  environment: DeploymentEnvironment[1];
+  activity: ActivityStatus[1];
+  deploymentExceptionCode: DeploymentExceptionCode[1];
+  severity: ExceptionSeverity[0..1];
+  storageTechnology: StorageTechnology[1];
+  publishedFormats: SerializationFormat[*];
+  deployedVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An operator-initiated reef survey outside the scheduled cadence, pointing at both a deployment and the storage location it drained.'} test::sablereef3::domain::AdHocTrigger extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} adHocTriggerId: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} datasetDeploymentRef: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} storageLocationRef: Integer[1];
+  requestedBy: String[1];
+  reason: String[0..1];
+  status: OperationStatus[1];
+  exceptionCode: ExceptionCode[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A physical location reef observation files are read from or written to.'} test::sablereef3::domain::StorageLocation extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} storageLocationId: Integer[1];
+  locationUri: String[1];
+  storageTechnology: StorageTechnology[1];
+  retentionDays: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The scheduler job that drives a reef dataset deployment.'} test::sablereef3::domain::JobIdentifier extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} jobIdentifierId: Integer[1];
+  jobName: String[1];
+  cronExpression: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Descriptive metadata about the reef observation dataset itself, independent of any deployment.'} test::sablereef3::domain::DatasetMetadata extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} datasetMetadataId: Integer[1];
+  datasetName: String[1];
+  reefName: String[1];
+  sensorCount: Integer[1];
+  steward: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Metadata about how a reef dataset is deployed: cadence, expected volume and contact point.'} test::sablereef3::domain::DeploymentMetadata extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} deploymentMetadataId: Integer[1];
+  cadence: String[1];
+  expectedRowCount: Integer[0..1];
+  contactList: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The deployed pipeline definition a reef dataset deployment was built from.'} test::sablereef3::domain::DefinitionDeployment extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} definitionDeploymentId: Integer[1];
+  definitionName: String[1];
+  definitionVersion: Integer[1];
+  environment: DeploymentEnvironment[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An edge between two reef dataset deployments, carrying both endpoints as stored identifier references.'} test::sablereef3::domain::DependencyEdge extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} dependencyEdgeId: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} upstreamDeploymentRef: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} downstreamDeploymentRef: Integer[1];
+  dependencyKind: DependencyKind[1];
+  hopCount: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One load of reef observations performed inside a pipeline run.'} test::sablereef3::domain::LoadRecord extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} loadRecordId: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} pipelineRunRef: Integer[1];
+  loadedRowCount: Integer[1];
+  rejectedRowCount: Integer[1];
+  format: SerializationFormat[1];
+  status: OperationStatus[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The provisioning of storage and credentials that precedes a reef dataset deployment.'} test::sablereef3::domain::ProvisionRecord extends test::sablereef3::domain::MetadataRecord
+{
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} provisionRecordId: Integer[1];
+  <<ReefPlatform.wideIdentifier>> {ReefPlatform.storageWidth = 'wide-integral'} datasetDeploymentRef: Integer[1];
+  environment: DeploymentEnvironment[1];
+  status: OperationStatus[1];
+  deploymentExceptionCode: DeploymentExceptionCode[1];
+  provisionedQuotaGb: Integer[0..1];
+}

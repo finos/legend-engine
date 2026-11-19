@@ -1,0 +1,451 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::umberaviary4::service::RingingRecordExtract
+{
+  pattern: '/umberaviary4/v1/ringingrecord';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the RingingRecord log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::RingingRecord.all(%latest)->project([x|$x.ringCode, x|$x.speciesCode, x|$x.ageClass, x|$x.wingMm, x|$x.massG, x|$x.ringedOn, x|$x.createdAt, x|$x.updatedAt], ['RingCode', 'SpeciesCode', 'AgeClass', 'WingMm', 'MassG', 'RingedOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('RingCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.ringing_record:
+                'ring_code,species_code,age_class,wing_mm,mass_g,ringed_on,created_at,updated_at,in_z,out_z\n'+
+                'RR-01,SP-WREN,juvenile,3.25,4.25,2026-03-10,2026-03-10 06:15:00,2026-03-10 07:15:00,2026-03-01,9999-12-31\n'+
+                'RR-02,SP-LINNET,adult,,14.25,2026-03-11,2026-03-11 06:15:00,2026-03-11 07:15:00,2026-03-01,9999-12-31\n'+
+                'RR-01,SP-WREN,juvenile,8.25,9.25,2026-03-10,2026-03-10 07:15:00,2026-03-10 08:15:00,2026-02-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RingCode":"RR-01","SpeciesCode":"SP-WREN","AgeClass":"juvenile","WingMm":3.25,"MassG":4.25,"RingedOn":"2026-03-10","CreatedAt":"2026-03-10T06:15:00.000000000+0000","UpdatedAt":"2026-03-10T07:15:00.000000000+0000"},{"RingCode":"RR-02","SpeciesCode":"SP-LINNET","AgeClass":"adult","WingMm":null,"MassG":14.25,"RingedOn":"2026-03-11","CreatedAt":"2026-03-11T06:15:00.000000000+0000","UpdatedAt":"2026-03-11T07:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umberaviary4::service::NestBoxCheckExtract
+{
+  pattern: '/umberaviary4/v1/nestboxcheck';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the NestBoxCheck log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::NestBoxCheck.all(%latest)->project([x|$x.checkCode, x|$x.boxCode, x|$x.nestStage, x|$x.eggCount, x|$x.chickCount, x|$x.checkedOn, x|$x.createdAt, x|$x.updatedAt], ['CheckCode', 'BoxCode', 'NestStage', 'EggCount', 'ChickCount', 'CheckedOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('CheckCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.nest_box_check:
+                'check_code,box_code,nest_stage,egg_count,chick_count,checked_on,created_at,updated_at,in_z,out_z\n'+
+                'NBC-01,BX-01,eggs,3.25,4.25,2026-03-10,2026-03-10 06:15:00,2026-03-10 07:15:00,2026-03-01,9999-12-31\n'+
+                'NBC-02,BX-02,chicks,,14.25,2026-03-11,2026-03-11 06:15:00,2026-03-11 07:15:00,2026-03-01,9999-12-31\n'+
+                'NBC-01,BX-01,eggs,8.25,9.25,2026-03-10,2026-03-10 07:15:00,2026-03-10 08:15:00,2026-02-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"NBC-01","BoxCode":"BX-01","NestStage":"eggs","EggCount":3.25,"ChickCount":4.25,"CheckedOn":"2026-03-10","CreatedAt":"2026-03-10T06:15:00.000000000+0000","UpdatedAt":"2026-03-10T07:15:00.000000000+0000"},{"CheckCode":"NBC-02","BoxCode":"BX-02","NestStage":"chicks","EggCount":null,"ChickCount":14.25,"CheckedOn":"2026-03-11","CreatedAt":"2026-03-11T06:15:00.000000000+0000","UpdatedAt":"2026-03-11T07:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umberaviary4::service::FeederVisitExtract
+{
+  pattern: '/umberaviary4/v1/feedervisit';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the FeederVisit log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::FeederVisit.all(%latest)->project([x|$x.visitCode, x|$x.feederCode, x|$x.seedMix, x|$x.visitTally, x|$x.countedOn, x|$x.createdAt, x|$x.updatedAt], ['VisitCode', 'FeederCode', 'SeedMix', 'VisitTally', 'CountedOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('VisitCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.feeder_visit:
+                'visit_code,feeder_code,seed_mix,visit_tally,counted_on,created_at,updated_at,in_z,out_z\n'+
+                'FV-01,FD-01,millet,3.25,2026-03-10,2026-03-10 08:15:00,2026-03-10 06:15:00,2026-03-01,9999-12-31\n'+
+                'FV-02,FD-02,sunflower,,2026-03-11,2026-03-11 08:15:00,2026-03-11 06:15:00,2026-03-01,9999-12-31\n'+
+                'FV-01,FD-01,millet,8.25,2026-03-10,2026-03-10 09:15:00,2026-03-10 07:15:00,2026-02-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"FV-01","FeederCode":"FD-01","SeedMix":"millet","VisitTally":3.25,"CountedOn":"2026-03-10","CreatedAt":"2026-03-10T08:15:00.000000000+0000","UpdatedAt":"2026-03-10T06:15:00.000000000+0000"},{"VisitCode":"FV-02","FeederCode":"FD-02","SeedMix":"sunflower","VisitTally":null,"CountedOn":"2026-03-11","CreatedAt":"2026-03-11T08:15:00.000000000+0000","UpdatedAt":"2026-03-11T06:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umberaviary4::service::MoultScoreExtract
+{
+  pattern: '/umberaviary4/v1/moultscore';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the MoultScore log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::MoultScore.all(%latest)->project([x|$x.scoreCode, x|$x.ringCode, x|$x.moultPhase, x|$x.primaryScore, x|$x.scoredOn, x|$x.createdAt, x|$x.updatedAt], ['ScoreCode', 'RingCode', 'MoultPhase', 'PrimaryScore', 'ScoredOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('ScoreCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.moult_score:
+                'score_code,ring_code,moult_phase,primary_score,scored_on,created_at,updated_at,in_z,out_z\n'+
+                'MS-01,RG-01,active,3.25,2026-03-10,2026-03-10 08:15:00,2026-03-10 06:15:00,2026-03-01,9999-12-31\n'+
+                'MS-02,RG-02,complete,,2026-03-11,2026-03-11 08:15:00,2026-03-11 06:15:00,2026-03-01,9999-12-31\n'+
+                'MS-01,RG-01,active,8.25,2026-03-10,2026-03-10 09:15:00,2026-03-10 07:15:00,2026-02-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ScoreCode":"MS-01","RingCode":"RG-01","MoultPhase":"active","PrimaryScore":3.25,"ScoredOn":"2026-03-10","CreatedAt":"2026-03-10T08:15:00.000000000+0000","UpdatedAt":"2026-03-10T06:15:00.000000000+0000"},{"ScoreCode":"MS-02","RingCode":"RG-02","MoultPhase":"complete","PrimaryScore":null,"ScoredOn":"2026-03-11","CreatedAt":"2026-03-11T08:15:00.000000000+0000","UpdatedAt":"2026-03-11T06:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umberaviary4::service::FlightHallInspectionExtract
+{
+  pattern: '/umberaviary4/v1/flighthallinspection';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the FlightHallInspection log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::FlightHallInspection.all(%latest)->project([x|$x.inspectionCode, x|$x.hallCode, x|$x.meshState, x|$x.perchCount, x|$x.inspectedOn, x|$x.createdAt, x|$x.updatedAt], ['InspectionCode', 'HallCode', 'MeshState', 'PerchCount', 'InspectedOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('InspectionCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.flight_hall_inspection:
+                'inspection_code,hall_code,mesh_state,perch_count,inspected_on,created_at,updated_at,in_z,out_z\n'+
+                'FHI-01,HL-01,intact,3.25,2026-03-10,2026-03-10 08:15:00,2026-03-10 06:15:00,2026-03-01,9999-12-31\n'+
+                'FHI-02,HL-02,patched,,2026-03-11,2026-03-11 08:15:00,2026-03-11 06:15:00,2026-03-01,9999-12-31\n'+
+                'FHI-01,HL-01,intact,8.25,2026-03-10,2026-03-10 09:15:00,2026-03-10 07:15:00,2026-02-01,2026-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"InspectionCode":"FHI-01","HallCode":"HL-01","MeshState":"intact","PerchCount":3.25,"InspectedOn":"2026-03-10","CreatedAt":"2026-03-10T08:15:00.000000000+0000","UpdatedAt":"2026-03-10T06:15:00.000000000+0000"},{"InspectionCode":"FHI-02","HallCode":"HL-02","MeshState":"patched","PerchCount":null,"InspectedOn":"2026-03-11","CreatedAt":"2026-03-11T08:15:00.000000000+0000","UpdatedAt":"2026-03-11T06:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umberaviary4::service::DietRationExtract
+{
+  pattern: '/umberaviary4/v1/dietration';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the DietRation log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::DietRation.all(%latest)->project([x|$x.rationCode, x|$x.groupCode, x|$x.foodKind, x|$x.gramsPerBird, x|$x.plannedOn, x|$x.createdAt, x|$x.updatedAt], ['RationCode', 'GroupCode', 'FoodKind', 'GramsPerBird', 'PlannedOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('RationCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.diet_ration:
+                'ration_code,group_code,food_kind,grams_per_bird,planned_on,created_at,updated_at\n'+
+                'DR-01,GP-01,mealworm,3.25,2026-03-10,2026-03-10 08:15:00,2026-03-10 06:15:00\n'+
+                'DR-02,GP-02,fruit,,2026-03-11,2026-03-11 08:15:00,2026-03-11 06:15:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RationCode":"DR-01","GroupCode":"GP-01","FoodKind":"mealworm","GramsPerBird":3.25,"PlannedOn":"2026-03-10","CreatedAt":"2026-03-10T08:15:00.000000000+0000","UpdatedAt":"2026-03-10T06:15:00.000000000+0000"},{"RationCode":"DR-02","GroupCode":"GP-02","FoodKind":"fruit","GramsPerBird":null,"PlannedOn":"2026-03-11","CreatedAt":"2026-03-11T08:15:00.000000000+0000","UpdatedAt":"2026-03-11T06:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umberaviary4::service::HealthCheckExtract
+{
+  pattern: '/umberaviary4/v1/healthcheck';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the HealthCheck log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::HealthCheck.all(%latest)->project([x|$x.healthCode, x|$x.ringCode, x|$x.plumageNote, x|$x.bodyCondition, x|$x.checkedOn, x|$x.createdAt, x|$x.updatedAt], ['HealthCode', 'RingCode', 'PlumageNote', 'BodyCondition', 'CheckedOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('HealthCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.health_check:
+                'health_code,ring_code,plumage_note,body_condition,checked_on,created_at,updated_at\n'+
+                'HC-01,RG-01,glossy,3.25,2026-03-10,2026-03-10 08:15:00,2026-03-10 06:15:00\n'+
+                'HC-02,RG-02,frayed tips,,2026-03-11,2026-03-11 08:15:00,2026-03-11 06:15:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HealthCode":"HC-01","RingCode":"RG-01","PlumageNote":"glossy","BodyCondition":3.25,"CheckedOn":"2026-03-10","CreatedAt":"2026-03-10T08:15:00.000000000+0000","UpdatedAt":"2026-03-10T06:15:00.000000000+0000"},{"HealthCode":"HC-02","RingCode":"RG-02","PlumageNote":"frayed tips","BodyCondition":null,"CheckedOn":"2026-03-11","CreatedAt":"2026-03-11T08:15:00.000000000+0000","UpdatedAt":"2026-03-11T06:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::umberaviary4::service::PerchSurveyExtract
+{
+  pattern: '/umberaviary4/v1/perchsurvey';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes every property of the PerchSurvey log at its latest processing version as a tabular result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::umberaviary4::domain::PerchSurvey.all(%latest)->project([x|$x.surveyCode, x|$x.hallCode, x|$x.roostSide, x|$x.birdsRoosting, x|$x.surveyedOn, x|$x.createdAt, x|$x.updatedAt], ['SurveyCode', 'HallCode', 'RoostSide', 'BirdsRoosting', 'SurveyedOn', 'CreatedAt', 'UpdatedAt'])->sort([asc('SurveyCode')]);
+    mapping: test::umberaviary4::mapping::AviaryLogMapping;
+    runtime: test::umberaviary4::runtime::AviaryLogRuntime;
+  }
+  testSuites:
+  [
+    latestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          aviaryLogConnection:
+            Relational
+            #{
+              aviary.perch_survey:
+                'survey_code,hall_code,roost_side,birds_roosting,surveyed_on,created_at,updated_at\n'+
+                'PS-01,HL-01,north,3.25,2026-03-10,2026-03-10 08:15:00,2026-03-10 06:15:00\n'+
+                'PS-02,HL-02,east,,2026-03-11,2026-03-11 08:15:00,2026-03-11 06:15:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        latestVersions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            latestRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SurveyCode":"PS-01","HallCode":"HL-01","RoostSide":"north","BirdsRoosting":3.25,"SurveyedOn":"2026-03-10","CreatedAt":"2026-03-10T08:15:00.000000000+0000","UpdatedAt":"2026-03-10T06:15:00.000000000+0000"},{"SurveyCode":"PS-02","HallCode":"HL-02","RoostSide":"east","BirdsRoosting":null,"SurveyedOn":"2026-03-11","CreatedAt":"2026-03-11T08:15:00.000000000+0000","UpdatedAt":"2026-03-11T06:15:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

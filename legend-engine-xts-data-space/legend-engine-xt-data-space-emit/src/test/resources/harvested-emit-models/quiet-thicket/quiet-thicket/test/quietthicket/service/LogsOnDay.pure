@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietthicket::service::LogsOnDay
+{
+  pattern: '/thicket/v1/maintenance/on/{day}';
+  title: 'Turbine Telemetry - Maintenance Logs On A Day';
+  documentation: 'The same day-equality shape published under a second temporal entry point, this time over the instant a maintenance crew closed the job. It navigates the log-to-turbine association end to label the turbine the entry was raised against.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'turbine-telemetry',
+    'wind-fleet-ops'
+  ];
+  execution: Single
+  {
+    query: {day: StrictDate[1]|test::quietthicket::domain::MaintenanceLog.all()->filter(
+      l|$l.loggedAt->datePart() == $day
+    )->project(
+      [
+        l|$l.logCode,
+        l|$l.loggedAt->datePart(),
+        l|$l.crewCode,
+        l|$l.hoursSpent,
+        l|$l.notes,
+        l|$l.loggedTurbine.turbineNameText,
+        l|$l.loggedTurbine.ratedKw
+      ],
+      [
+        'Log/Code',
+        'Log/Day',
+        'Log/CrewCode',
+        'Log/HoursSpent',
+        'Log/Notes',
+        'Fleet/TurbineName',
+        'Fleet/RatedKw'
+      ]
+    )->sort(
+      [
+        asc('Log/Code')
+      ]
+    )};
+    mapping: test::quietthicket::mapping::TurbineMapping;
+    runtime: test::quietthicket::runtime::ThicketUatRuntime;
+  }
+  testSuites:
+  [
+    logsOnDaySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          thicketConnection:
+            Relational
+            #{
+              fleet.maintenance_log:
+                'log_code,turbine_code,logged_at,crew_code,hours_spent,notes\n'+
+                'LG-01,TB-01,2026-04-11 07:00:00,CR-NORTH,3,Blade edge dressed\n'+
+                'LG-02,TB-02,2026-04-11 22:15:00,CR-SOUTH,5,\n'+
+                'LG-03,TB-01,2026-04-12 09:30:00,CR-NORTH,2,Yaw gear greased\n'+
+                'LG-04,,2026-04-11 12:45:00,CR-RELIEF,1,Unassigned callout\n';
+
+              fleet.turbine:
+                'turbine_code,turbine_name,site_code,rated_kw,commissioned_on\n'+
+                'TB-01,Ridge Head 1,ST-01,1800,2024-05-06\n'+
+                'TB-02,Ridge Head 2,ST-02,2400,2024-09-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        entriesClosedOnTheSuppliedDay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            day = %2026-04-11
+          ]
+          asserts:
+          [
+            nullNoteAndUnattributedEntryBothSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log/Code":"LG-01","Log/Day":"2026-04-11","Log/CrewCode":"CR-NORTH","Log/HoursSpent":3,"Log/Notes":"Blade edge dressed","Fleet/TurbineName":"Ridge Head 1","Fleet/RatedKw":1800},{"Log/Code":"LG-02","Log/Day":"2026-04-11","Log/CrewCode":"CR-SOUTH","Log/HoursSpent":5,"Log/Notes":null,"Fleet/TurbineName":"Ridge Head 2","Fleet/RatedKw":2400},{"Log/Code":"LG-04","Log/Day":"2026-04-11","Log/CrewCode":"CR-RELIEF","Log/HoursSpent":1,"Log/Notes":"Unassigned callout","Fleet/TurbineName":null,"Fleet/RatedKw":null}]';
+                  }#;
+              }#
+          ]
+        },
+        theFollowingDayKeepsOneEntry:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            day = %2026-04-12
+          ]
+          asserts:
+          [
+            onlyTheYawGearEntry:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log/Code":"LG-03","Log/Day":"2026-04-12","Log/CrewCode":"CR-NORTH","Log/HoursSpent":2,"Log/Notes":"Yaw gear greased","Fleet/TurbineName":"Ridge Head 1","Fleet/RatedKw":1800}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

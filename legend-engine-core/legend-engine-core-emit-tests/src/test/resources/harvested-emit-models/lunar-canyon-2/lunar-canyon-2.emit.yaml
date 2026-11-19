@@ -1,0 +1,37 @@
+name: lunar-canyon-2
+title: "Lunar Canyon Cavern Register — Annotated Class Hierarchy with Literal-Defaulted Derivations"
+description: |
+  A store-less cavern conservation register expressed entirely in Pure class grammar. A single
+  annotated base class carries the registry code, the recording surveyor and the survey method,
+  and is specialised twice over — a cave-feature layer adding the moisture regime and the year the
+  feature was mapped, and, below that, a passage layer adding the passage grade, the surveyed
+  length and the ceiling height — so the deepest branch of the hierarchy is three classes tall.
+  Sibling classes for chambers and survey stations attach to the same ancestry, and free-standing
+  classes for entrance gates, monitoring visits and lichen patches round out the register without
+  inheritance. Six derived properties all resolve to an invented literal: two fall back to a
+  literal when the optional notation is absent or when the survey method is only a sketch, three
+  band an enumerated or numeric measure through nested conditionals, and one classifies a passage
+  by surveyed length. Three enumerations — passage grade, moisture regime and survey method —
+  supply the enumerated operands, and two profiles annotate classes, individual properties and the
+  enumerations themselves, including a stereotype-only annotation with no tagged value.
+modelSources:
+  model:
+    root: lunar-canyon-2
+    files:
+      - test/lunarcanyon2/domain/CavernDomain.pure
+      - test/lunarcanyon2/domain/CavernEnums.pure
+      - test/lunarcanyon2/profile/CavernProfiles.pure
+features:
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - cavern-register
+  - class-hierarchy
+  - literal-default
+  - nested-conditional
+  - store-less-model

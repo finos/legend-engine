@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelcove::service::ColonyProfileFeed
+{
+  pattern: '/colony-census/v1/profiles';
+  title: 'Colony Census - Published Colony Profiles';
+  owners:
+  [
+    'seabird-survey-platform',
+    'colony-census-eng'
+  ];
+  documentation: 'Keyed multi-execution service republishing the remote colony records as published profiles, so the same fetch tree and transform layer can be pointed at either environment of the census API.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::hazelcove::domain::ColonyProfile.all()->graphFetch(
+      #{
+        test::hazelcove::domain::ColonyProfile
+        {
+          colonyRef,
+          siteLabel,
+          leadWarden,
+          occupancyIndex,
+          densityBand
+        }
+      }#
+    )->serialize(
+      #{
+        test::hazelcove::domain::ColonyProfile
+        {
+          colonyRef,
+          siteLabel,
+          leadWarden,
+          occupancyIndex,
+          densityBand
+        }
+      }#
+    );
+    mapping: test::hazelcove::mapping::CensusApiMapping;
+    runtime: test::hazelcove::runtime::CensusPrimaryRuntime;
+  }
+  testSuites:
+  [
+    profileFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          censusApiConnection:
+            ServiceStore
+            #{
+              [
+                {
+                  request:
+                  {
+                    method: GET;
+                    url: '/census/colonies/records';
+                  };
+                  response:
+                  {
+                    body:
+                      ExternalFormat
+                      #{
+                        contentType: 'application/json';
+                        data: '[{"colonyRef":"CL-001","siteLabel":"Gannet Stack","nestTally":4,"plotHectares":2.0,"wardens":["ivo reed"]},{"colonyRef":"CL-002","siteLabel":"Tern Spit","nestTally":12,"plotHectares":4.0,"wardens":["mira dune","ivo reed"]},{"colonyRef":"CL-003","siteLabel":"Puffin Ledge","nestTally":30,"plotHectares":5.0,"wardens":["mira dune"]},{"colonyRef":"CL-004","siteLabel":"Skua Bight","nestTally":75,"plotHectares":6.0,"wardens":["nils vale"]},{"colonyRef":"CL-005","siteLabel":"Guillemot Wall","nestTally":150,"plotHectares":8.0,"wardens":["nils vale"]},{"colonyRef":"CL-006","siteLabel":"Kittiwake Arch","nestTally":300,"plotHectares":10.0,"wardens":["sela crag"]},{"colonyRef":"CL-007","siteLabel":"Shearwater Dunes","nestTally":600,"plotHectares":12.0,"wardens":["sela crag"]},{"colonyRef":"CL-008","siteLabel":"Fulmar Head","nestTally":900,"plotHectares":15.0,"wardens":["ivo reed"]},{"colonyRef":"CL-009","siteLabel":"Storm Petrel Cove","wardens":[]}]';
+                      }#;
+                  };
+                }
+              ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyDensityArmAndTheNullFallback:
+        {
+          asserts:
+          [
+            profileRowsPerArm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"colonyRef":"CL-001","siteLabel":"Gannet Stack","leadWarden":"ivo reed","occupancyIndex":2.0,"densityBand":"BAND-1-SPARSE"},{"colonyRef":"CL-002","siteLabel":"Tern Spit","leadWarden":"mira dune","occupancyIndex":3.0,"densityBand":"BAND-2-THIN"},{"colonyRef":"CL-003","siteLabel":"Puffin Ledge","leadWarden":"mira dune","occupancyIndex":6.0,"densityBand":"BAND-3-MODEST"},{"colonyRef":"CL-004","siteLabel":"Skua Bight","leadWarden":"nils vale","occupancyIndex":12.5,"densityBand":"BAND-4-STEADY"},{"colonyRef":"CL-005","siteLabel":"Guillemot Wall","leadWarden":"nils vale","occupancyIndex":18.75,"densityBand":"BAND-5-BUSY"},{"colonyRef":"CL-006","siteLabel":"Kittiwake Arch","leadWarden":"sela crag","occupancyIndex":30.0,"densityBand":"BAND-6-CROWDED"},{"colonyRef":"CL-007","siteLabel":"Shearwater Dunes","leadWarden":"sela crag","occupancyIndex":50.0,"densityBand":"BAND-7-DENSE"},{"colonyRef":"CL-008","siteLabel":"Fulmar Head","leadWarden":"ivo reed","occupancyIndex":60.0,"densityBand":"BAND-8-SATURATED"},{"colonyRef":"CL-009","siteLabel":"Storm Petrel Cove","leadWarden":null,"occupancyIndex":null,"densityBand":null}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::hazelcove::service::ColonyProfilesByEnvironment
+{
+  pattern: '/colony-census/v1/profiles-by-env';
+  title: 'Colony Census - ColonyProfile by Environment';
+  owners:
+  [
+    'seabird-survey-platform',
+    'colony-census-eng'
+  ];
+  documentation: 'Keyed multi-execution variant of the published feed: the same fetch tree and transform layer are routed to one census environment per key, so a caller selects the environment instead of the endpoint.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |test::hazelcove::domain::ColonyProfile.all()->graphFetch(
+      #{
+        test::hazelcove::domain::ColonyProfile
+        {
+          colonyRef,
+          siteLabel,
+          leadWarden,
+          occupancyIndex,
+          densityBand
+        }
+      }#
+    )->serialize(
+      #{
+        test::hazelcove::domain::ColonyProfile
+        {
+          colonyRef,
+          siteLabel,
+          leadWarden,
+          occupancyIndex,
+          densityBand
+        }
+      }#
+    );
+    key: 'env';
+    executions['primary']:
+    {
+      mapping: test::hazelcove::mapping::CensusApiMapping;
+      runtime: test::hazelcove::runtime::CensusPrimaryRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::hazelcove::mapping::CensusApiMapping;
+      runtime: test::hazelcove::runtime::CensusStandbyRuntime;
+    }
+  }
+}

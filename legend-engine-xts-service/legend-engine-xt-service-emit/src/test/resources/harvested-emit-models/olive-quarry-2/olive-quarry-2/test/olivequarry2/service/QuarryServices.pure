@@ -1,0 +1,402 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::olivequarry2::service::StoneBlockRegister
+{
+  pattern: '/oliveQuarry2/v1/stoneBlocks';
+  title: 'Olive Quarry Stone Block Register';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Accepts dispatch documents and returns each stone block with its label, mapped grade and finish and its mass band.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::olivequarry2::domain::StoneBlock.all()->graphFetch(
+      #{
+        test::olivequarry2::domain::StoneBlock
+        {
+          dispatchRef,
+          blockLabel,
+          grade,
+          finish,
+          sizeBand
+        }
+      }#
+    )->serialize(
+      #{
+        test::olivequarry2::domain::StoneBlock
+        {
+          dispatchRef,
+          blockLabel,
+          grade,
+          finish,
+          sizeBand
+        }
+      }#
+    );
+    mapping: test::olivequarry2::mapping::BlockDispatchMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::olivequarry2::mapping::BlockDispatchMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          registerDispatchConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::olivequarry2::source::BlockDispatch;
+              url: 'executor:default';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          registerDispatchConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"dispatchRef":"DS-01","blockCode":"fb-1","gradeText":"freestone","finishText":"tooled","massKg":8200,"faceCount":6},{"dispatchRef":"DS-02","gradeText":"basalt","faceCount":3}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bandedRegister:
+        {
+          asserts:
+          [
+            expectedEnvelope:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"dispatchRef":"DS-01","blockLabel":"FB-1/6","grade":"FREESTONE","finish":"TOOLED","sizeBand":"BAND-8"},{"dispatchRef":"DS-02","blockLabel":"Q-DS-0","grade":null,"finish":null,"sizeBand":null}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::olivequarry2::service::BlockLocationBoard
+{
+  pattern: '/oliveQuarry2/v1/blockLocations';
+  title: 'Olive Quarry Block Locations';
+  ownership: UserList { users: ['quarry-survey-desk'] };
+  documentation: 'Accepts dispatch documents and returns where each block was cut, with the unbenched and unsurveyed fallbacks and an absent location for a dispatch with no site element.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::olivequarry2::domain::StoneBlock.all()->graphFetch(
+      #{
+        test::olivequarry2::domain::StoneBlock
+        {
+          dispatchRef,
+          location
+          {
+            quarryName,
+            benchLabel,
+            elevationBand
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::olivequarry2::domain::StoneBlock
+        {
+          dispatchRef,
+          location
+          {
+            quarryName,
+            benchLabel,
+            elevationBand
+          }
+        }
+      }#
+    );
+    mapping: test::olivequarry2::mapping::BlockDispatchMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::olivequarry2::mapping::BlockDispatchMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          locationDispatchConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::olivequarry2::source::BlockDispatch;
+              url: 'executor:default';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    locationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          locationDispatchConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"dispatchRef":"DS-11","faceCount":2,"site":{"quarryName":"South Cut","benchLabel":"b1","elevationM":320}},{"dispatchRef":"DS-12","faceCount":1}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        sitedAndUnsitedBlocks:
+        {
+          asserts:
+          [
+            expectedEnvelope:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"dispatchRef":"DS-11","location":{"quarryName":"South Cut","benchLabel":"B1","elevationBand":"UPPER"}},{"dispatchRef":"DS-12","location":null}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::olivequarry2::service::BlockIdentifierBoard
+{
+  pattern: '/oliveQuarry2/v1/blockIdentifiers';
+  title: 'Olive Quarry Block Identifiers';
+  ownership: UserList { users: ['quarry-marking-desk', 'quarry-survey-desk'] };
+  documentation: 'Accepts dispatch documents and returns the legacy and live tag identifiers of each block, stacked onto one repeated sub-object.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::olivequarry2::domain::StoneBlock.all()->graphFetch(
+      #{
+        test::olivequarry2::domain::StoneBlock
+        {
+          blockLabel,
+          identifiers
+          {
+            scheme,
+            identifierValue
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::olivequarry2::domain::StoneBlock
+        {
+          blockLabel,
+          identifiers
+          {
+            scheme,
+            identifierValue
+          }
+        }
+      }#
+    );
+    mapping: test::olivequarry2::mapping::BlockDispatchMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::olivequarry2::mapping::BlockDispatchMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          identifierDispatchConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::olivequarry2::source::BlockDispatch;
+              url: 'executor:default';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    identifierSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          identifierDispatchConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"dispatchRef":"DS-21","blockCode":"rg-2","faceCount":4,"legacyCode":"lg-21","tags":[{"scheme":"PAINT","tagValue":" amber-5 "}]},{"dispatchRef":"DS-22","faceCount":1,"tags":[]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        taggedAndUntaggedBlocks:
+        {
+          asserts:
+          [
+            expectedEnvelope:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"blockLabel":"RG-2/4","identifiers":[{"scheme":"LEGACY","identifierValue":"LG-21"},{"scheme":"TAG","identifierValue":"amber-5"}]},{"blockLabel":"Q-DS-2","identifiers":[{"scheme":"LEGACY","identifierValue":"NONE"},{"scheme":"TAG","identifierValue":"UNTAGGED"}]}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::olivequarry2::service::BlockReviewBoard
+{
+  pattern: '/oliveQuarry2/v1/blockReviews';
+  title: 'Olive Quarry Block Reviews';
+  ownership: UserList { users: ['quarry-conservation-desk'] };
+  documentation: 'Accepts dispatch documents and returns a conservation review per block with its mass and grade notes.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::olivequarry2::domain::BlockReview.all()->graphFetch(
+      #{
+        test::olivequarry2::domain::BlockReview
+        {
+          dispatchRef,
+          grade,
+          faceSummary,
+          notes
+          {
+            topic,
+            detail
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::olivequarry2::domain::BlockReview
+        {
+          dispatchRef,
+          grade,
+          faceSummary,
+          notes
+          {
+            topic,
+            detail
+          }
+        }
+      }#
+    );
+    mapping: test::olivequarry2::mapping::BlockReviewMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::olivequarry2::mapping::BlockReviewMapping
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          reviewDispatchConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::olivequarry2::source::BlockDispatch;
+              url: 'executor:default';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    reviewSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reviewDispatchConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"dispatchRef":"DS-31","gradeText":"ragstone","massKg":640,"faceCount":2},{"dispatchRef":"DS-32","massKg":0,"faceCount":1}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        weighedReviews:
+        {
+          asserts:
+          [
+            expectedEnvelope:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"dispatchRef":"DS-31","grade":"RAGSTONE","faceSummary":"2 faces","notes":[{"topic":"MASS","detail":"640 kg"},{"topic":"GRADE","detail":"ragstone"}]},{"dispatchRef":"DS-32","grade":null,"faceSummary":"1 face","notes":[{"topic":"MASS","detail":"0 kg"},{"topic":"GRADE","detail":"UNGRADED"}]}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

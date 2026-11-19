@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A staffed or unstaffed fire lookout tower read from the tower card view.'} test::borealridge4::domain::LookoutTower
+{
+  towerCode: String[1];
+  towerName: String[0..1];
+  regionName: String[0..1];
+  elevationM: Integer[0..1];
+  elevationBand: String[0..1];
+  staffedLabel: String[1];
+  parentTowerName: String[0..1];
+  siting: test::borealridge4::domain::TowerSiting[1];
+  beacon: test::borealridge4::domain::TowerBeacon[0..1];
+}
+
+Class test::borealridge4::domain::TowerSiting
+{
+  aspectCode: String[0..1];
+  elevationText: String[0..1];
+}
+
+Class test::borealridge4::domain::TowerBeacon
+{
+  beaconColor: String[0..1];
+  beaconRangeKm: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One numbered watch shift at a lookout tower, with its crew and the administering district and land agency.'} test::borealridge4::domain::WatchPosting
+{
+  towerCode: String[1];
+  shiftNo: Integer[1];
+  crewName: String[0..1];
+  postingLabel: String[1];
+  districtName: String[0..1];
+  agencyName: String[0..1];
+}
+
+Association test::borealridge4::domain::TowerWatchPostings
+{
+  postedTower: test::borealridge4::domain::LookoutTower[0..1];
+  watchPostings: test::borealridge4::domain::WatchPosting[*];
+}
+
+Enum test::borealridge4::domain::SlopeAspect
+{
+  NORTH,
+  EAST,
+  SOUTH,
+  WEST,
+  UNSURVEYED
+}
+
+Enum test::borealridge4::domain::WatchDuty
+{
+  DAWN,
+  DAY,
+  DUSK,
+  IDLE
+}
+
+Enum test::borealridge4::domain::BeaconHue
+{
+  AMBER,
+  CRIMSON,
+  WHITE,
+  DARK
+}
+
+Class test::borealridge4::domain::TowerSheetRow
+{
+  sheetCode: String[1];
+  aspectText: String[0..1];
+  dutyText: String[0..1];
+  hueText: String[0..1];
+  elevationM: Integer[0..1];
+  staffedFlag: String[0..1];
+}
+
+Class test::borealridge4::domain::TowerDigest
+{
+  sheetCode: String[1];
+  aspect: test::borealridge4::domain::SlopeAspect[1];
+  duty: test::borealridge4::domain::WatchDuty[1];
+  hue: test::borealridge4::domain::BeaconHue[1];
+  ridgeGrade: String[1];
+  staffed: Boolean[1];
+}

@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A botanical plant family that groups the seed varieties held by the community seed library.'} test::coralwarren9::domain::PlantFamily
+{
+  familyCode: String[1];
+  familyLabel: String[1];
+  habitCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A seed variety catalogued by the library with its sowing season and days from sowing to harvest.'} test::coralwarren9::domain::SeedVariety
+{
+  varietyCode: String[1];
+  varietyLabel: String[1];
+  sowSeason: String[1];
+  daysToHarvest: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A neighbourhood branch of the seed library that keeps a shelf of donated packets.'} test::coralwarren9::domain::LibraryBranch
+{
+  branchCode: String[1];
+  branchLabel: String[1];
+  townLabel: String[0..1];
+  branchTag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A gardener who donates saved seed back to the library.'} test::coralwarren9::domain::Gardener
+{
+  gardenerCode: String[1];
+  gardenerName: String[1];
+  plotCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A packet of saved seed of one variety, donated by a gardener in a harvest year and shelved at one branch.'} test::coralwarren9::domain::SeedPacket
+{
+  packetCode: String[1];
+  branchCode: String[1];
+  harvestYear: Integer[1];
+  gramWeight: Integer[1];
+}
+
+Association test::coralwarren9::domain::VarietyFamily
+{
+  family: test::coralwarren9::domain::PlantFamily[1];
+  varieties: test::coralwarren9::domain::SeedVariety[*];
+}
+
+Association test::coralwarren9::domain::PacketVariety
+{
+  variety: test::coralwarren9::domain::SeedVariety[1];
+  packets: test::coralwarren9::domain::SeedPacket[*];
+}
+
+Association test::coralwarren9::domain::PacketBranch
+{
+  branch: test::coralwarren9::domain::LibraryBranch[1];
+  shelvedPackets: test::coralwarren9::domain::SeedPacket[*];
+}
+
+Association test::coralwarren9::domain::PacketDonor
+{
+  donor: test::coralwarren9::domain::Gardener[1];
+  donatedPackets: test::coralwarren9::domain::SeedPacket[*];
+}

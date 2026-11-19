@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::emeraldlantern::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Condition of the lens panels as recorded by the last keeper visit.'} test::emeraldlantern::domain::LensState
+{
+  Clear,
+  Hazed,
+  Cracked,
+  Unrecorded
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How urgently the station is queued for a keeper visit.'} test::emeraldlantern::domain::ServiceTier
+{
+  Routine,
+  Priority,
+  Critical
+}
+
+Class {meta::pure::profiles::doc.doc = 'Anything on the coast the harbour board keeps a plate and a district against.'} test::emeraldlantern::domain::BeaconStructure
+{
+  stationCode: String[1];
+  stationName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lantern-room station: its keeper, its lamp, the lens condition and tier vocabularies stored as codes, and its measured optics.'} test::emeraldlantern::domain::LanternStation extends BeaconStructure
+{
+  keeperName: String[1];
+  lampKind: String[1];
+  lensState: LensState[1];
+  serviceTier: ServiceTier[1];
+  focalMetres: Float[1];
+  candelaRating: Float[1];
+  lensDiameterMetres: Float[1];
+  commissionedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A station whose optic turns, so it carries a beam label and a rotation period the fixed stations have no counterpart for.'} test::emeraldlantern::domain::RotatingLantern extends LanternStation
+{
+  rotationLabel: String[1];
+  rotationPeriodSeconds: Float[1];
+}

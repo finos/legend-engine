@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulharbor3::mapping::ColonyMapping
+(
+  *test::wistfulharbor3::domain::Colony[colony]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulharbor3::store::ColonyDb]census.colony.colony_code
+    )
+    ~mainTable [test::wistfulharbor3::store::ColonyDb]census.colony
+    colonyCode: [test::wistfulharbor3::store::ColonyDb]census.colony.colony_code,
+    colonyName: [test::wistfulharbor3::store::ColonyDb]census.colony.colony_name,
+    headlandName: [test::wistfulharbor3::store::ColonyDb]census.colony.headland_name
+  }
+
+  *test::wistfulharbor3::domain::Observer[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulharbor3::store::ColonyDb]census.observer.observer_code
+    )
+    ~mainTable [test::wistfulharbor3::store::ColonyDb]census.observer
+    observerCode: [test::wistfulharbor3::store::ColonyDb]census.observer.observer_code,
+    displayName: [test::wistfulharbor3::store::ColonyDb]census.observer.display_name
+  }
+
+  *test::wistfulharbor3::domain::NestCount[nestCount]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulharbor3::store::ColonyDb]census.nest_count.record_code
+    )
+    ~mainTable [test::wistfulharbor3::store::ColonyDb]census.nest_count
+    recordCode: [test::wistfulharbor3::store::ColonyDb]census.nest_count.record_code,
+    surveyDate: [test::wistfulharbor3::store::ColonyDb]census.nest_count.survey_date,
+    speciesName: [test::wistfulharbor3::store::ColonyDb]census.nest_count.species_name,
+    occupiedNests: [test::wistfulharbor3::store::ColonyDb]census.nest_count.occupied_nests,
+    colony[colony]: [test::wistfulharbor3::store::ColonyDb]@NestColony
+  }
+
+  *test::wistfulharbor3::domain::FledglingTally[fledglingTally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulharbor3::store::ColonyDb]census.fledgling_tally.record_code
+    )
+    ~mainTable [test::wistfulharbor3::store::ColonyDb]census.fledgling_tally
+    recordCode: [test::wistfulharbor3::store::ColonyDb]census.fledgling_tally.record_code,
+    surveyDate: [test::wistfulharbor3::store::ColonyDb]census.fledgling_tally.survey_date,
+    fledglings: [test::wistfulharbor3::store::ColonyDb]census.fledgling_tally.fledglings,
+    observer[observer]: [test::wistfulharbor3::store::ColonyDb]@TallyObserver
+  }
+
+  testSuites:
+  [
+    nestCountSuite:
+    {
+      function: |test::wistfulharbor3::domain::NestCount.all()->project(
+        [
+          x|$x.recordCode,
+          x|$x.speciesName,
+          x|$x.occupiedNests,
+          x|$x.colony.colonyName,
+          x|$x.colony.headlandName
+        ],
+        [
+          'Record',
+          'Species',
+          'Nests',
+          'Colony',
+          'Headland'
+        ]
+      )->sort([asc('Record')]);
+      tests:
+      [
+        nestCountsWithColony:
+        {
+          data:
+          [
+            test::wistfulharbor3::store::ColonyDb: Reference
+              #{
+                test::wistfulharbor3::data::ColonyFixture
+              }#
+          ];
+          asserts:
+          [
+            countsAndColonies: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Record":"NC-01","Species":"Kittiwake","Nests":42,"Colony":"North Stack","Headland":"Gull Point"},{"Record":"NC-02","Species":"Puffin","Nests":17,"Colony":"Puffin Ledge","Headland":null},{"Record":"NC-03","Species":"Fulmar","Nests":9,"Colony":"North Stack","Headland":"Gull Point"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    fledglingSuite:
+    {
+      function: |test::wistfulharbor3::domain::FledglingTally.all()->project(
+        [
+          x|$x.recordCode,
+          x|$x.fledglings,
+          x|$x.observer.displayName
+        ],
+        [
+          'Record',
+          'Fledglings',
+          'Observer'
+        ]
+      )->sort([asc('Record')]);
+      tests:
+      [
+        talliesWithObserver:
+        {
+          data:
+          [
+            test::wistfulharbor3::store::ColonyDb: Reference
+              #{
+                test::wistfulharbor3::data::ColonyFixture
+              }#
+          ];
+          asserts:
+          [
+            talliesAndObservers: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Record":"FT-01","Fledglings":12,"Observer":"Ridge Walker"},{"Record":"FT-02","Fledglings":5,"Observer":"Cliff Watcher"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,43 @@
+name: cedar-apiary-4
+title: "Cedar Apiary 4 — A Document-Fed Seed Library With A Bound Endpoint Surface And A Two-Class Model-To-Model Refinement"
+description: |
+  A community seed-library model whose external lot and keeper documents arrive as JSON through an
+  external-format binding shared by every operation of a request-response endpoint store. Two
+  document groups expose a lot feed, a keyed lot lookup, a two-parameter lot search, a keeper feed
+  and a keyed keeper lookup, all responding with bound documents. A model-to-model mapping refines
+  those documents into library-side lots and keepers: padded text is trimmed and folded, packet
+  weights are totalled, packet codes are deduplicated and ordered into a single summary string,
+  germination rates are averaged over only the rated packets behind a two-arm band, and absent
+  season and shed names fall back on sentinel labels. An engine runtime binds the endpoint store
+  connection alongside two document connections. Assertion-backed coverage: five mapping tests
+  across two suites drive the rated, packet-less and duplicate-code lot arms and both keeper arms.
+  The endpoint store, the binding and the runtime are parse/compile validated.
+modelSources:
+  model:
+    root: cedar-apiary-4
+    files:
+      - test/cedarapiary4/binding/SeedExchangeBinding.pure
+      - test/cedarapiary4/connection/SeedExchangeConnections.pure
+      - test/cedarapiary4/domain/SeedLibraryDomain.pure
+      - test/cedarapiary4/external/SeedExchangeDocs.pure
+      - test/cedarapiary4/mapping/SeedLotM2M.pure
+      - test/cedarapiary4/runtime/SeedExchangeRuntime.pure
+      - test/cedarapiary4/store/SeedExchangeApi.pure
+features:
+  - execution:external-format-binding
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - model
+  - service-store
+tags:
+  - binding
+  - conditional-transform
+  - external-format
+  - m2m
+  - seed-library
+  - service-store
+complexity: basic

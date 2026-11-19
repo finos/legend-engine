@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cedarbeacon6::store::BeaconDb
+(
+  Schema network
+  (
+    Table beacon_station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(20) NOT NULL,
+      station_name VARCHAR(120) NOT NULL,
+      massif_code VARCHAR(12) NOT NULL,
+      altitude_m INTEGER NOT NULL,
+      commissioned_on DATE NOT NULL
+    )
+  )
+
+  Schema power
+  (
+    Table battery_check
+    (
+      check_id INTEGER PRIMARY KEY,
+      check_code VARCHAR(20) NOT NULL,
+      station_code VARCHAR(20) NOT NULL,
+      checked_on DATE NOT NULL,
+      charge_percent DOUBLE NOT NULL,
+      cell_kind VARCHAR(16) NOT NULL
+    )
+  )
+)
+
+Database test::cedarbeacon6::store::SignalDb
+(
+  Schema telemetry
+  (
+    Table signal_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      reading_code VARCHAR(20) NOT NULL,
+      station_code VARCHAR(20) NOT NULL,
+      recorded_on DATE NOT NULL,
+      signal_strength_db DOUBLE NOT NULL,
+      receiver_code VARCHAR(20) NOT NULL
+    )
+  )
+
+  Schema terrain
+  (
+    Table patrol_route
+    (
+      route_id INTEGER PRIMARY KEY,
+      route_code VARCHAR(20) NOT NULL,
+      route_name VARCHAR(120) NOT NULL,
+      massif_code VARCHAR(12) NOT NULL,
+      distance_km DOUBLE NOT NULL,
+      waypoint_count INTEGER NOT NULL
+    )
+  )
+)

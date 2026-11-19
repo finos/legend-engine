@@ -1,0 +1,72 @@
+name: cedar-beacon-6
+title: "Cedar Beacon 6 — A Mountain Beacon Network Read Across Two Kerberos-Delegated DB2 Stores Through Four Single-Execution Registers Whose Reporting Spans Are Computed From Their Arguments"
+description: |
+  A mountain-rescue radio network booking the beacons it maintains and the samples it hears
+  from them. Four classes are held apart across two relational stores, each of which carries
+  two schemas: the network store keeps the beacon relation in one schema and the battery
+  inspections in another, and the telemetry store keeps the samples in one schema and the
+  walked patrol routes in another, so no register can be satisfied without crossing a schema
+  boundary. Each class is mapped on its own, keyed on its own surrogate identifier and bound
+  to a fully-qualified table alias column for every property, and each of the four mappings
+  carries an embedded testSuite that separates it from a mapping whose properties were bound
+  to the neighbouring columns.
+
+  Almost all of the logic sits in the four registers rather than in the mappings. The station
+  register reads the whole beacon relation and derives two columns from it, raising the
+  standing altitude by the survey margin and reducing the commissioning date to the calendar
+  month it fell in. The battery register admits an inspection only if it was opened on or
+  before a requested date, still held at least a requested charge, and fell no earlier than
+  thirty days before that same requested date — a floor shifted off the caller's argument
+  rather than stored anywhere — and one fixture pack is excluded by each of the three arms in
+  turn, and a second run shifts the same window back so a pack that was too old on the first
+  run clears the floor on the second. The quality register closes its span at both ends, so a
+  sample before the requested start and a sample past the summer cutoff are each struck for a
+  different reason while a strong sample inside the span is struck for a third. The reach
+  register carries a massif and a distance floor and publishes nothing at all for a massif
+  whose routes are all short.
+
+  Two Kerberos-delegated DB2 connections stand over the two stores, and four runtimes pair one
+  mapping with one of them, so the same network is read through four independent stacks.
+modelSources:
+  model:
+    root: cedar-beacon-6
+    files:
+      - test/cedarbeacon6/connection/BeaconConnections.pure
+      - test/cedarbeacon6/domain/BeaconDomain.pure
+      - test/cedarbeacon6/mapping/BeaconMappings.pure
+      - test/cedarbeacon6/runtime/BeaconRuntimes.pure
+      - test/cedarbeacon6/service/BeaconServices.pure
+      - test/cedarbeacon6/store/BeaconDb.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - argument-derived-window
+  - cross-schema
+  - date-arithmetic
+  - db2
+  - delegated-kerberos
+  - h2
+  - mapping-test
+  - mountain-beacon-network
+  - relational
+  - service-test
+  - single-execution

@@ -1,0 +1,149 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonfossil9::mapping::FieldJacketMapping
+(
+  test::crimsonfossil9::domain::ConservationStage: EnumerationMapping ConservationCodeMapping
+  {
+    STABILIZED: ['STB'],
+    CLEANING: ['CLN'],
+    CONSOLIDATING: ['CNS'],
+    UNASSESSED: ['UNA']
+  }
+
+  test::crimsonfossil9::domain::MatrixFamily: EnumerationMapping MatrixCodeMapping
+  {
+    SHALE: ['SHL'],
+    LIMESTONE: ['LMS'],
+    SANDSTONE: ['SND'],
+    UNKNOWN: ['UNK']
+  }
+
+  test::crimsonfossil9::domain::QueueTier: EnumerationMapping QueueCodeMapping
+  {
+    IMMEDIATE: ['I1'],
+    STANDARD: ['S2'],
+    DEFERRED: ['D3'],
+    UNQUEUED: ['U4']
+  }
+
+  *test::crimsonfossil9::domain::PreparationRecord[preparation_record]: Pure
+  {
+    ~src test::crimsonfossil9::domain::FieldJacketIntake
+    recordRef: 'JKT-' + $src.jacketTag->trim()->toUpper()->replace(' ', '-'),
+    localityLabel: if($src.localityHint->isEmpty(),
+                      | 'LOCALITY/UNRECORDED',
+                      | $src.localityHint->toOne()->trim()->toUpper()),
+    conditionBand: if($src.completeness->isEmpty(),
+                      | [],
+                      | if($src.completeness->toOne() >= 95, | 'BAND-8',
+                        | if($src.completeness->toOne() >= 85, | 'BAND-7',
+                          | if($src.completeness->toOne() >= 75, | 'BAND-6',
+                            | if($src.completeness->toOne() >= 65, | 'BAND-5',
+                              | if($src.completeness->toOne() >= 55, | 'BAND-4',
+                                | if($src.completeness->toOne() >= 45, | 'BAND-3',
+                                  | if($src.completeness->toOne() >= 35, | 'BAND-2', | 'BAND-1')))))))),
+    conservation: EnumerationMapping ConservationCodeMapping:
+      [if($src.conservationCode->isEmpty(), | 'UNA',
+        | if($src.conservationCode->toOne()->trim()->toUpper()->in(['STB', 'CLN', 'CNS']),
+             | $src.conservationCode->toOne()->trim()->toUpper(), | 'UNA'))]->toOne(),
+    matrix: EnumerationMapping MatrixCodeMapping:
+      [if($src.matrixCode->isEmpty(), | 'UNK',
+        | if($src.matrixCode->toOne()->trim()->toUpper()->in(['SHL', 'LMS', 'SND']),
+             | $src.matrixCode->toOne()->trim()->toUpper(), | 'UNK'))]->toOne(),
+    queue: EnumerationMapping QueueCodeMapping:
+      [if($src.queueCode->isEmpty(), | 'U4',
+        | if($src.queueCode->toOne()->trim()->toUpper()->in(['I1', 'S2', 'D3', 'U4']),
+             | $src.queueCode->toOne()->trim()->toUpper(), | 'U4'))]->toOne(),
+    arrivalYear: if($src.arrivalStamp->isEmpty(),
+                    | 1900,
+                    | $src.arrivalStamp->toOne()->trim()->substring(0, 4)->parseInteger()),
+    priorityFlag: if($src.completeness->isEmpty() || $src.weightKg->isEmpty(),
+                     | true,
+                     | if(($src.completeness->toOne() < 45) && ($src.weightKg->toOne() > 80.0), | true, | false)),
+    handlingNote: if($src.crewCode->isEmpty(),
+                     | 'CREW/UNASSIGNED',
+                     | 'CREW/' + $src.crewCode->toOne()->trim()->toUpper() + '/' + $src.jacketTag->trim()->length()->toString())
+  }
+
+  testSuites:
+  [
+    preparationRecordSuite:
+    {
+      function: |test::crimsonfossil9::domain::PreparationRecord.all()->filter(r|$r.recordRef->isNotEmpty())->graphFetch(
+        #{
+          test::crimsonfossil9::domain::PreparationRecord{
+            recordRef,
+            localityLabel,
+            conditionBand,
+            conservation,
+            matrix,
+            queue,
+            arrivalYear,
+            priorityFlag,
+            handlingNote
+          }
+        }#
+      )->serialize(
+        #{
+          test::crimsonfossil9::domain::PreparationRecord{
+            recordRef,
+            localityLabel,
+            conditionBand,
+            conservation,
+            matrix,
+            queue,
+            arrivalYear,
+            priorityFlag,
+            handlingNote
+          }
+        }#
+      );
+      tests:
+      [
+        everyConditionalArm:
+        {
+          doc: 'conditional-arm-1-hit through conditional-arm-8-hit cover the eight completeness bands; conditional-fallback-null covers an intake with no completeness score. The same rows exercise conservative defaults, queue-code fallback, locality fallback and priority calculation.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::crimsonfossil9::domain::FieldJacketIntake:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"jacketTag":"fj 001","localityHint":"ridge","matrixCode":"SHL","conservationCode":"STB","queueCode":"I1","completeness":99,"weightKg":12.0,"arrivalStamp":"2019-04-12","crewCode":"alpha"},{"jacketTag":"fj 002","localityHint":"basin","matrixCode":"LMS","conservationCode":"CLN","queueCode":"S2","completeness":90,"weightKg":22.0,"arrivalStamp":"2020-05-02","crewCode":"beta"},{"jacketTag":"fj 003","localityHint":"gulch","matrixCode":"SND","conservationCode":"CNS","queueCode":"D3","completeness":80,"weightKg":35.0,"arrivalStamp":"2021-06-19","crewCode":"gamma"},{"jacketTag":"fj 004","localityHint":"mesa","matrixCode":"shl","queueCode":"U4","completeness":70,"weightKg":40.0,"arrivalStamp":"2018-03-08"},{"jacketTag":"fj 005","localityHint":"ridge","conservationCode":"stb","queueCode":"I1","completeness":60,"weightKg":20.0,"arrivalStamp":"2017-08-21","crewCode":"alpha"},{"jacketTag":"fj 006","localityHint":"shelf","matrixCode":"LMS","conservationCode":"CLN","queueCode":"S2","completeness":50,"weightKg":18.0,"arrivalStamp":"2016-02-14","crewCode":"delta"},{"jacketTag":"fj 007","localityHint":"basin","matrixCode":"SND","conservationCode":"CNS","queueCode":"D3","completeness":40,"weightKg":100.0,"arrivalStamp":"2015-11-30","crewCode":"beta"},{"jacketTag":"fj 008","localityHint":"gulch","matrixCode":"SHL","conservationCode":"STB","queueCode":"U4","completeness":30,"weightKg":90.0,"arrivalStamp":"2014-07-04","crewCode":"gamma"},{"jacketTag":"fj 009","weightKg":10.0}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            allConditionalArmsMapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordRef":"JKT-FJ-001","localityLabel":"RIDGE","conditionBand":"BAND-8","conservation":"STABILIZED","matrix":"SHALE","queue":"IMMEDIATE","arrivalYear":2019,"priorityFlag":false,"handlingNote":"CREW/ALPHA/6"},{"recordRef":"JKT-FJ-002","localityLabel":"BASIN","conditionBand":"BAND-7","conservation":"CLEANING","matrix":"LIMESTONE","queue":"STANDARD","arrivalYear":2020,"priorityFlag":false,"handlingNote":"CREW/BETA/6"},{"recordRef":"JKT-FJ-003","localityLabel":"GULCH","conditionBand":"BAND-6","conservation":"CONSOLIDATING","matrix":"SANDSTONE","queue":"DEFERRED","arrivalYear":2021,"priorityFlag":false,"handlingNote":"CREW/GAMMA/6"},{"recordRef":"JKT-FJ-004","localityLabel":"MESA","conditionBand":"BAND-5","conservation":"UNASSESSED","matrix":"SHALE","queue":"UNQUEUED","arrivalYear":2018,"priorityFlag":false,"handlingNote":"CREW/UNASSIGNED"},{"recordRef":"JKT-FJ-005","localityLabel":"RIDGE","conditionBand":"BAND-4","conservation":"STABILIZED","matrix":"UNKNOWN","queue":"IMMEDIATE","arrivalYear":2017,"priorityFlag":false,"handlingNote":"CREW/ALPHA/6"},{"recordRef":"JKT-FJ-006","localityLabel":"SHELF","conditionBand":"BAND-3","conservation":"CLEANING","matrix":"LIMESTONE","queue":"STANDARD","arrivalYear":2016,"priorityFlag":false,"handlingNote":"CREW/DELTA/6"},{"recordRef":"JKT-FJ-007","localityLabel":"BASIN","conditionBand":"BAND-2","conservation":"CONSOLIDATING","matrix":"SANDSTONE","queue":"DEFERRED","arrivalYear":2015,"priorityFlag":true,"handlingNote":"CREW/BETA/6"},{"recordRef":"JKT-FJ-008","localityLabel":"GULCH","conditionBand":"BAND-1","conservation":"STABILIZED","matrix":"SHALE","queue":"UNQUEUED","arrivalYear":2014,"priorityFlag":true,"handlingNote":"CREW/GAMMA/6"},{"recordRef":"JKT-FJ-009","localityLabel":"LOCALITY/UNRECORDED","conditionBand":null,"conservation":"UNASSESSED","matrix":"UNKNOWN","queue":"UNQUEUED","arrivalYear":1900,"priorityFlag":true,"handlingNote":"CREW/UNASSIGNED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

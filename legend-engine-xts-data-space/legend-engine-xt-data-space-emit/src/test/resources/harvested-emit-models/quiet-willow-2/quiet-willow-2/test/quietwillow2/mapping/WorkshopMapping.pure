@@ -1,0 +1,210 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietwillow2::mapping::WorkshopEnumMappings
+(
+  test::quietwillow2::domain::CarriageClass: EnumerationMapping CarriageClassMapping
+  {
+    BRAKE_THIRD: ['BT'],
+    COMPOSITE: ['CO'],
+    OBSERVATION: ['OB'],
+    SALOON: ['SA']
+  }
+
+  test::quietwillow2::domain::OverhaulGrade: EnumerationMapping OverhaulGradeMapping
+  {
+    LIGHT: ['L'],
+    INTERMEDIATE: ['I'],
+    HEAVY: ['H']
+  }
+)
+
+###Mapping
+Mapping test::quietwillow2::mapping::WorkshopReferenceMapping
+(
+  *test::quietwillow2::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwillow2::store::WorkshopDB]depots.region.region_code
+    )
+    ~mainTable [test::quietwillow2::store::WorkshopDB]depots.region
+    regionCode: [test::quietwillow2::store::WorkshopDB]depots.region.region_code,
+    regionName: [test::quietwillow2::store::WorkshopDB]depots.region.region_name
+  }
+
+  *test::quietwillow2::domain::Depot[depot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwillow2::store::WorkshopDB]depots.depot.depot_code
+    )
+    ~mainTable [test::quietwillow2::store::WorkshopDB]depots.depot
+    depotCode: [test::quietwillow2::store::WorkshopDB]depots.depot.depot_code,
+    depotName: [test::quietwillow2::store::WorkshopDB]depots.depot.depot_name
+  }
+
+  *test::quietwillow2::domain::WorksSite[works]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwillow2::store::WorkshopDB]works.works_site.works_code
+    )
+    ~mainTable [test::quietwillow2::store::WorkshopDB]works.works_site
+    worksCode: [test::quietwillow2::store::WorkshopDB]works.works_site.works_code,
+    worksName: [test::quietwillow2::store::WorkshopDB]works.works_site.works_name
+  }
+
+  *test::quietwillow2::domain::Fitter[fitter]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwillow2::store::WorkshopDB]staff.fitter.fitter_code
+    )
+    ~mainTable [test::quietwillow2::store::WorkshopDB]staff.fitter
+    fitterCode: [test::quietwillow2::store::WorkshopDB]staff.fitter.fitter_code,
+    fitterName: [test::quietwillow2::store::WorkshopDB]staff.fitter.fitter_name,
+    worksName: [test::quietwillow2::store::WorkshopDB]@Works_Fitter | [test::quietwillow2::store::WorkshopDB]works.works_site.works_name
+  }
+)
+
+###Mapping
+Mapping test::quietwillow2::mapping::WorkshopMapping
+(
+  include mapping test::quietwillow2::mapping::WorkshopEnumMappings
+  include mapping test::quietwillow2::mapping::WorkshopReferenceMapping
+
+  *test::quietwillow2::domain::Carriage[carriage]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwillow2::store::WorkshopDB]fleet.carriage.carriage_code
+    )
+    ~mainTable [test::quietwillow2::store::WorkshopDB]fleet.carriage
+    carriageCode: [test::quietwillow2::store::WorkshopDB]fleet.carriage.carriage_code,
+    carriageName: [test::quietwillow2::store::WorkshopDB]fleet.carriage.carriage_name,
+    carriageClass: EnumerationMapping CarriageClassMapping: [test::quietwillow2::store::WorkshopDB]fleet.carriage.class_code,
+    seats: [test::quietwillow2::store::WorkshopDB]fleet.carriage.seats,
+    tareTonnes: [test::quietwillow2::store::WorkshopDB]fleet.carriage.tare_tonnes,
+    depotName: [test::quietwillow2::store::WorkshopDB]@Carriage_Depot | [test::quietwillow2::store::WorkshopDB]depots.depot.depot_name,
+    regionName: [test::quietwillow2::store::WorkshopDB]@Carriage_Depot > @Depot_Region | [test::quietwillow2::store::WorkshopDB]depots.region.region_name,
+    inspectionNote: [test::quietwillow2::store::WorkshopDB]@Carriage_Inspection | [test::quietwillow2::store::WorkshopDB]records.inspection.note_text,
+    overhaulCount: [test::quietwillow2::store::WorkshopDB]@Carriage_Hours | [test::quietwillow2::store::WorkshopDB]records.carriage_hours_vw.overhaul_count,
+    labourHours: [test::quietwillow2::store::WorkshopDB]@Carriage_Hours | [test::quietwillow2::store::WorkshopDB]records.carriage_hours_vw.labour_hours,
+    fleetLabel: concat(concat([test::quietwillow2::store::WorkshopDB]fleet.carriage.class_code, '-'), [test::quietwillow2::store::WorkshopDB]fleet.carriage.carriage_code)
+  }
+
+  *test::quietwillow2::domain::Overhaul[overhaul]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwillow2::store::WorkshopDB]works.overhaul.overhaul_code
+    )
+    ~mainTable [test::quietwillow2::store::WorkshopDB]works.overhaul
+    overhaulCode: [test::quietwillow2::store::WorkshopDB]works.overhaul.overhaul_code,
+    grade: EnumerationMapping OverhaulGradeMapping: [test::quietwillow2::store::WorkshopDB]works.overhaul.grade_code,
+    labourHours: [test::quietwillow2::store::WorkshopDB]works.overhaul.labour_hours,
+    worksName: [test::quietwillow2::store::WorkshopDB]@Overhaul_Works | [test::quietwillow2::store::WorkshopDB]works.works_site.works_name,
+    worksRegionName: [test::quietwillow2::store::WorkshopDB]@Overhaul_Works > @Works_Region | [test::quietwillow2::store::WorkshopDB]depots.region.region_name,
+    carriageRegionName: [test::quietwillow2::store::WorkshopDB]@Carriage_Overhaul > @Carriage_Depot > @Depot_Region | [test::quietwillow2::store::WorkshopDB]depots.region.region_name
+  }
+
+  test::quietwillow2::domain::CarriageOverhauls: Relational
+  {
+    AssociationMapping
+    (
+      overhauls[carriage, overhaul]: [test::quietwillow2::store::WorkshopDB]@Carriage_Overhaul,
+      carriage[overhaul, carriage]: [test::quietwillow2::store::WorkshopDB]@Carriage_Overhaul
+    )
+  }
+
+  testSuites:
+  [
+    carriageRegisterSuite:
+    {
+      function: |test::quietwillow2::domain::Carriage.all(%2026-06-01)->project(
+        [
+          c|$c.carriageCode,
+          c|$c.carriageName,
+          c|$c.depotName,
+          c|$c.regionName,
+          c|$c.overhauls->count(),
+          c|$c.overhauls->map(o|$o.labourHours)->sum()
+        ],
+        [
+          'CarriageCode',
+          'CarriageName',
+          'DepotName',
+          'RegionName',
+          'Overhauls',
+          'LabourHours'
+        ]
+      )->sort(
+        [
+          asc('CarriageCode')
+        ]
+      );
+      tests:
+      [
+        carriagesCurrentAtTheQueriedDay:
+        {
+          doc: 'At the queried day the two carriage sheets that are still open resolve their depot through one join and their region through the two-hop chain, while the overhauls current on the same day fold back to a count and a total of booked hours. The third sheet only opens two months later, so it is out of range, and the overhaul whose window closed in March is excluded from the totals of the first carriage.';
+          data:
+          [
+            test::quietwillow2::store::WorkshopDB:
+              Relational
+              #{
+                fleet.carriage:
+                  'carriage_code,carriage_name,class_code,seats,tare_tonnes,depot_code,from_z,thru_z\n'+
+                  'CR-01,Larch Saloon,SA,42,14.5,DP-01,2026-01-01,9999-12-31\n'+
+                  'CR-02,Rowan Composite,CO,36,12.0,DP-02,2026-02-01,9999-12-31\n'+
+                  'CR-03,Alder Observation,OB,24,11.5,DP-02,2026-08-01,9999-12-31\n';
+
+                works.overhaul:
+                  'overhaul_code,carriage_code,works_code,grade_code,labour_hours,from_z,thru_z\n'+
+                  'OV-01,CR-01,WK-01,H,180,2026-01-01,9999-12-31\n'+
+                  'OV-02,CR-01,WK-01,L,40,2026-01-01,9999-12-31\n'+
+                  'OV-03,CR-01,WK-02,I,95,2026-01-01,2026-03-01\n'+
+                  'OV-04,CR-02,WK-02,I,110,2026-02-01,9999-12-31\n';
+
+                depots.depot:
+                  'depot_code,depot_name,region_code\n'+
+                  'DP-01,Lakeside Depot,RG-01\n'+
+                  'DP-02,Moorfoot Depot,RG-02\n';
+
+                depots.region:
+                  'region_code,region_name\n'+
+                  'RG-01,Northern Fells\n'+
+                  'RG-02,Southern Moors\n';
+              }#
+          ];
+          asserts:
+          [
+            twoCurrentCarriages:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CarriageCode":"CR-01","CarriageName":"Larch Saloon","DepotName":"Lakeside Depot","RegionName":"Northern Fells","Overhauls":2,"LabourHours":220},{"CarriageCode":"CR-02","CarriageName":"Rowan Composite","DepotName":"Moorfoot Depot","RegionName":"Southern Moors","Overhauls":1,"LabourHours":110}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,293 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverreef2::mapping::ReefMapping
+(
+  test::silverreef2::domain::CoralHealth: EnumerationMapping CoralHealthMapping
+  {
+    THRIVING: ['THR'],
+    STABLE: ['STB'],
+    STRESSED: ['STR'],
+    BLEACHED: ['BLC']
+  }
+
+  test::silverreef2::domain::TideState: EnumerationMapping TideStateMapping
+  {
+    SLACK: ['SLK'],
+    FLOOD: ['FLD'],
+    EBB: ['EBB'],
+    SPRING: ['SPR']
+  }
+
+  *test::silverreef2::domain::ReefSurvey[survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverreef2::store::ReefDB]reef.reef_survey.survey_no
+    )
+    ~mainTable [test::silverreef2::store::ReefDB]reef.reef_survey
+    surveyNo: [test::silverreef2::store::ReefDB]reef.reef_survey.survey_no,
+    siteCode: [test::silverreef2::store::ReefDB]reef.reef_survey.site_code,
+    surveyDate: [test::silverreef2::store::ReefDB]reef.reef_survey.survey_date,
+    health: EnumerationMapping CoralHealthMapping: toUpper(trim([test::silverreef2::store::ReefDB]reef.reef_survey.health_code)),
+    tide: EnumerationMapping TideStateMapping: toUpper(trim([test::silverreef2::store::ReefDB]reef.reef_survey.tide_code)),
+    observerName: [test::silverreef2::store::ReefDB]reef.reef_survey.observer_name,
+    transectM: [test::silverreef2::store::ReefDB]reef.reef_survey.transect_m,
+    coralCoverPct: [test::silverreef2::store::ReefDB]reef.reef_survey.coral_cover_pct,
+    rubblePct: [test::silverreef2::store::ReefDB]reef.reef_survey.rubble_pct,
+    waterTempC: [test::silverreef2::store::ReefDB]reef.reef_survey.water_temp_c,
+    visibilityM: [test::silverreef2::store::ReefDB]reef.reef_survey.visibility_m,
+    speciesCount: [test::silverreef2::store::ReefDB]reef.reef_survey.species_count,
+    bleachIndex: [test::silverreef2::store::ReefDB]reef.reef_survey.bleach_index,
+    lagoonName: [test::silverreef2::store::ReefDB]reef.reef_survey.lagoon_name,
+    surveyLabel: concat(concat(toUpper(trim([test::silverreef2::store::ReefDB]reef.reef_survey.site_code)), '/'), [test::silverreef2::store::ReefDB]reef.reef_survey.survey_no),
+    coverBand: case(
+                 greaterThanEqual([test::silverreef2::store::ReefDB]reef.reef_survey.coral_cover_pct, 60),
+                 'dense-cover',
+                 case(
+                   greaterThanEqual([test::silverreef2::store::ReefDB]reef.reef_survey.coral_cover_pct, 25),
+                   'patchy-cover',
+                   'sparse-cover'
+                 )
+               ),
+    healthLabel: [test::silverreef2::store::ReefDB]@Survey_HealthCode | [test::silverreef2::store::ReefDB]reef.code_list.code_label,
+    zoneLabel: [test::silverreef2::store::ReefDB]@Survey_ZoneCode | [test::silverreef2::store::ReefDB]reef.code_list.code_label,
+    depthProfile[depth]: [test::silverreef2::store::ReefDB]@Survey_Depth,
+    gearRecord[gear]: [test::silverreef2::store::ReefDB]@Survey_Gear
+  }
+
+  *test::silverreef2::domain::SurveyDepth[depth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverreef2::store::ReefDB]reef.survey_depth.survey_no
+    )
+    ~mainTable [test::silverreef2::store::ReefDB]reef.survey_depth
+    surveyNo: [test::silverreef2::store::ReefDB]reef.survey_depth.survey_no,
+    minDepthM: [test::silverreef2::store::ReefDB]reef.survey_depth.min_depth_m,
+    maxDepthM: [test::silverreef2::store::ReefDB]reef.survey_depth.max_depth_m,
+    profileNote: [test::silverreef2::store::ReefDB]reef.survey_depth.profile_note
+  }
+
+  *test::silverreef2::domain::SurveyGear[gear]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverreef2::store::ReefDB]reef.survey_gear.survey_no
+    )
+    ~mainTable [test::silverreef2::store::ReefDB]reef.survey_gear
+    surveyNo: [test::silverreef2::store::ReefDB]reef.survey_gear.survey_no,
+    gearKind: [test::silverreef2::store::ReefDB]reef.survey_gear.gear_kind,
+    gearSerial: [test::silverreef2::store::ReefDB]reef.survey_gear.gear_serial,
+    calibratedFlag: [test::silverreef2::store::ReefDB]reef.survey_gear.calibrated_flag
+  }
+
+  *test::silverreef2::domain::CodeEntry[code]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverreef2::store::ReefDB]reef.code_list.category_code,
+      [test::silverreef2::store::ReefDB]reef.code_list.code_value
+    )
+    ~mainTable [test::silverreef2::store::ReefDB]reef.code_list
+    categoryCode: [test::silverreef2::store::ReefDB]reef.code_list.category_code,
+    codeValue: [test::silverreef2::store::ReefDB]reef.code_list.code_value,
+    codeLabel: [test::silverreef2::store::ReefDB]reef.code_list.code_label
+  }
+
+  testSuites:
+  [
+    reefSurveySuite:
+    {
+      function: |test::silverreef2::domain::ReefSurvey.all()->graphFetch(
+        #{
+          test::silverreef2::domain::ReefSurvey
+          {
+            surveyNo,
+            siteCode,
+            surveyDate,
+            health,
+            tide,
+            observerName,
+            transectM,
+            coralCoverPct,
+            rubblePct,
+            waterTempC,
+            visibilityM,
+            speciesCount,
+            bleachIndex,
+            lagoonName,
+            surveyLabel,
+            coverBand,
+            healthLabel,
+            zoneLabel,
+            depthProfile
+            {
+              surveyNo,
+              minDepthM,
+              maxDepthM,
+              profileNote
+            },
+            gearRecord
+            {
+              surveyNo,
+              gearKind,
+              gearSerial,
+              calibratedFlag
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::silverreef2::domain::ReefSurvey
+          {
+            surveyNo,
+            siteCode,
+            surveyDate,
+            health,
+            tide,
+            observerName,
+            transectM,
+            coralCoverPct,
+            rubblePct,
+            waterTempC,
+            visibilityM,
+            speciesCount,
+            bleachIndex,
+            lagoonName,
+            surveyLabel,
+            coverBand,
+            healthLabel,
+            zoneLabel,
+            depthProfile
+            {
+              surveyNo,
+              minDepthM,
+              maxDepthM,
+              profileNote
+            },
+            gearRecord
+            {
+              surveyNo,
+              gearKind,
+              gearSerial,
+              calibratedFlag
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        surveysResolveTheirSatellites:
+        {
+          doc: 'A survey with both satellites and both category-restricted lookup slices present, a survey whose code columns are all empty and whose satellites are missing, and a survey whose zone code exists only under another category so the restricted join drops it.';
+          data:
+          [
+            test::silverreef2::store::ReefDB:
+              Relational
+              #{
+                reef.reef_survey:
+                  'survey_no,site_code,survey_date,health_code,tide_code,zone_code,observer_name,transect_m,coral_cover_pct,rubble_pct,water_temp_c,visibility_m,species_count,bleach_index,lagoon_name,survey_note\n'+
+                  'SV-01, rf-1 ,2026-05-04,THR,FLD,FORE,Neve Palma,120.00,64.50,8.25,27.40,14,63,2,North Lagoon,full transect\n'+
+                  'SV-02,RF-2,2026-05-06,,,,,80.00,31.25,22.50,28.10,9,28,5,,\n'+
+                  'SV-03,RF-3,2026-05-08,STB,EBB,TIDE,Ines Kalo,45.00,12.00,54.75,29.60,4,11,7,South Lagoon,short swim\n';
+                reef.survey_depth:
+                  'survey_no,min_depth_m,max_depth_m,profile_note\n'+
+                  'SV-01,3.50,18.20,gentle slope\n'+
+                  'SV-03,1.00,4.80,\n';
+                reef.survey_gear:
+                  'survey_no,gear_kind,gear_serial,calibrated_flag\n'+
+                  'SV-01,quadrat,QD-118,yes\n';
+                reef.code_list:
+                  'category_code,code_value,code_label\n'+
+                  'HEALTH,THR,Thriving Reef Flat\n'+
+                  'HEALTH,STB,Stable Reef Flat\n'+
+                  'TIDE,FLD,Flood Tide\n'+
+                  'TIDE,TIDE,Tidal Channel Zone\n'+
+                  'ZONE,FORE,Fore Reef Zone\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"surveyNo":"SV-01","siteCode":" rf-1 ","surveyDate":"2026-05-04","health":"THRIVING","tide":"FLOOD","observerName":"Neve Palma","transectM":120.00,"coralCoverPct":64.50,"rubblePct":8.25,"waterTempC":27.40,"visibilityM":14,"speciesCount":63,"bleachIndex":2,"lagoonName":"North Lagoon","surveyLabel":"RF-1/SV-01","coverBand":"dense-cover","healthLabel":"Thriving Reef Flat","zoneLabel":"Fore Reef Zone","depthProfile":{"surveyNo":"SV-01","minDepthM":3.50,"maxDepthM":18.20,"profileNote":"gentle slope"},"gearRecord":{"surveyNo":"SV-01","gearKind":"quadrat","gearSerial":"QD-118","calibratedFlag":"yes"}},{"surveyNo":"SV-02","siteCode":"RF-2","surveyDate":"2026-05-06","health":null,"tide":null,"observerName":null,"transectM":80.00,"coralCoverPct":31.25,"rubblePct":22.50,"waterTempC":28.10,"visibilityM":9,"speciesCount":28,"bleachIndex":5,"lagoonName":null,"surveyLabel":"RF-2/SV-02","coverBand":"patchy-cover","healthLabel":null,"zoneLabel":null,"depthProfile":null,"gearRecord":null},{"surveyNo":"SV-03","siteCode":"RF-3","surveyDate":"2026-05-08","health":"STABLE","tide":"EBB","observerName":"Ines Kalo","transectM":45.00,"coralCoverPct":12.00,"rubblePct":54.75,"waterTempC":29.60,"visibilityM":4,"speciesCount":11,"bleachIndex":7,"lagoonName":"South Lagoon","surveyLabel":"RF-3/SV-03","coverBand":"sparse-cover","healthLabel":"Stable Reef Flat","zoneLabel":null,"depthProfile":{"surveyNo":"SV-03","minDepthM":1.00,"maxDepthM":4.80,"profileNote":null},"gearRecord":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    codeEntrySuite:
+    {
+      function: |test::silverreef2::domain::CodeEntry.all()->graphFetch(
+        #{
+          test::silverreef2::domain::CodeEntry
+          {
+            categoryCode,
+            codeValue,
+            codeLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::silverreef2::domain::CodeEntry
+          {
+            categoryCode,
+            codeValue,
+            codeLabel
+          }
+        }#
+      );
+      tests:
+      [
+        oneCodeValueUnderTwoCategories:
+        {
+          doc: 'The composite category-and-value key is what keeps one code value distinct under two categories, which is exactly the identity the restricted lookup joins rely on.';
+          data:
+          [
+            test::silverreef2::store::ReefDB:
+              Relational
+              #{
+                reef.code_list:
+                  'category_code,code_value,code_label\n'+
+                  'HEALTH,THR,Thriving Reef Flat\n'+
+                  'TIDE,THR,Through-Channel Tide\n'+
+                  'ZONE,FORE,Fore Reef Zone\n';
+              }#
+          ];
+          asserts:
+          [
+            threeCodeEntries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"categoryCode":"HEALTH","codeValue":"THR","codeLabel":"Thriving Reef Flat"},{"categoryCode":"TIDE","codeValue":"THR","codeLabel":"Through-Channel Tide"},{"categoryCode":"ZONE","codeValue":"FORE","codeLabel":"Fore Reef Zone"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

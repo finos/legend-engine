@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westerndelta::mapping::RingMapping
+(
+  *test::westerndelta::domain::RingRecord[ringRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerndelta::store::DeltaRingDB]ringing.ring_record.record_id
+    )
+    ~mainTable [test::westerndelta::store::DeltaRingDB]ringing.ring_record
+    ringSerial: [test::westerndelta::store::DeltaRingDB]ringing.ring_record.ring_serial,
+    controlId: [test::westerndelta::store::DeltaRingDB]ringing.ring_record.control_id,
+    reasonCode: [test::westerndelta::store::DeltaRingDB]ringing.ring_record.reason_code,
+    subReasonCode: [test::westerndelta::store::DeltaRingDB]ringing.ring_record.sub_reason_code,
+    createdAt: [test::westerndelta::store::DeltaRingDB]ringing.ring_record.created_at,
+    dueAt: [test::westerndelta::store::DeltaRingDB]ringing.ring_record.due_at,
+    completedAt: [test::westerndelta::store::DeltaRingDB]ringing.ring_record.completed_at,
+    primaryLink[markedSightingLink]: [test::westerndelta::store::DeltaRingDB]@Record_Link
+  }
+
+  *test::westerndelta::domain::DeltaObserver[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerndelta::store::DeltaRingDB]ringing.observer.observer_id
+    )
+    ~mainTable [test::westerndelta::store::DeltaRingDB]ringing.observer
+    observerName: [test::westerndelta::store::DeltaRingDB]ringing.observer.observer_name
+  }
+
+  *test::westerndelta::domain::Station[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerndelta::store::DeltaRingDB]ringing.station.station_id
+    )
+    ~mainTable [test::westerndelta::store::DeltaRingDB]ringing.station
+    stationName: [test::westerndelta::store::DeltaRingDB]ringing.station.station_name
+  }
+
+  *test::westerndelta::domain::HabitatZone[habitatZone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerndelta::store::DeltaRingDB]ringing.habitat_zone.zone_id
+    )
+    ~mainTable [test::westerndelta::store::DeltaRingDB]ringing.habitat_zone
+    zoneName: [test::westerndelta::store::DeltaRingDB]ringing.habitat_zone.zone_name
+  }
+
+  *test::westerndelta::domain::DeltaRegion[deltaRegion]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerndelta::store::DeltaRingDB]ringing.delta_region.region_id
+    )
+    ~mainTable [test::westerndelta::store::DeltaRingDB]ringing.delta_region
+    regionName: [test::westerndelta::store::DeltaRingDB]ringing.delta_region.region_name
+  }
+
+  test::westerndelta::domain::Record_Observer: Relational
+  {
+    AssociationMapping
+    (
+      observer[ringRecord, observer]: [test::westerndelta::store::DeltaRingDB]@Record_Observer,
+      records[observer, ringRecord]: [test::westerndelta::store::DeltaRingDB]@Record_Observer
+    )
+  }
+
+  test::westerndelta::domain::Observer_Station: Relational
+  {
+    AssociationMapping
+    (
+      station[observer, station]: [test::westerndelta::store::DeltaRingDB]@Observer_Station,
+      observers[station, observer]: [test::westerndelta::store::DeltaRingDB]@Observer_Station
+    )
+  }
+
+  test::westerndelta::domain::Station_Zone: Relational
+  {
+    AssociationMapping
+    (
+      zone[station, habitatZone]: [test::westerndelta::store::DeltaRingDB]@Station_Zone,
+      stations[habitatZone, station]: [test::westerndelta::store::DeltaRingDB]@Station_Zone
+    )
+  }
+
+  test::westerndelta::domain::Zone_Region: Relational
+  {
+    AssociationMapping
+    (
+      region[habitatZone, deltaRegion]: [test::westerndelta::store::DeltaRingDB]@Zone_Region,
+      zones[deltaRegion, habitatZone]: [test::westerndelta::store::DeltaRingDB]@Zone_Region
+    )
+  }
+
+  *test::westerndelta::domain::SightingLink[sightingLink]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westerndelta::store::DeltaRingDB]ringing.sighting_link.link_id
+    )
+    ~mainTable [test::westerndelta::store::DeltaRingDB]ringing.sighting_link
+    linkKind: [test::westerndelta::store::DeltaRingDB]ringing.sighting_link.link_kind,
+    linkRef: [test::westerndelta::store::DeltaRingDB]ringing.sighting_link.link_ref
+  }
+
+  *test::westerndelta::domain::MarkedSightingLink[markedSightingLink] extends [sightingLink]: Relational
+  {
+    markedRef: [test::westerndelta::store::DeltaRingDB]ringing.sighting_link.marked_ref
+  }
+)

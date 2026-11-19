@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::copperwillow6::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A trail work directive issued to a stewardship crew.'} test::copperwillow6::domain::WorkDirective
+{
+  directiveCode: String[0..1];
+  titleText: String[0..1];
+  regionCode: String[0..1];
+  stewardLabel: String[0..1];
+  effortHours: Integer[0..1];
+  leadVolunteerName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One ordered step inside a work directive.'} test::copperwillow6::domain::DirectiveStep
+{
+  stepCode: String[0..1];
+  directiveCode: String[0..1];
+  stepOrder: Integer[0..1];
+  stepNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A registered trail volunteer.'} test::copperwillow6::domain::Volunteer
+{
+  volunteerId: String[0..1];
+  fullName: String[0..1];
+  clubCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A walking club that sponsors volunteers.'} test::copperwillow6::domain::StewardClub
+{
+  clubCode: String[0..1];
+  clubName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A scheduled trail day on which a directive is worked.'} test::copperwillow6::domain::TrailDay
+{
+  dayCode: String[0..1];
+  directiveCode: String[0..1];
+  dayDate: StrictDate[0..1];
+  directiveTitle: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A measured trail condition reading taken on a trail day.'} test::copperwillow6::domain::TrailMeasure
+{
+  measureCode: String[0..1];
+  dayCode: String[0..1];
+  erosionScore: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An archived copy of a closed work directive.'} test::copperwillow6::domain::DirectiveArchiveEntry
+{
+  directiveCode: String[0..1];
+  closedNote: String[0..1];
+}
+
+Association test::copperwillow6::domain::Directive_Steps
+{
+  stepDirective: WorkDirective[0..1];
+  steps: DirectiveStep[*];
+}
+
+Association test::copperwillow6::domain::Club_Volunteers
+{
+  club: StewardClub[0..1];
+  members: Volunteer[*];
+}
+
+Association test::copperwillow6::domain::Day_Measures
+{
+  measureDay: TrailDay[0..1];
+  measures: TrailMeasure[*];
+}

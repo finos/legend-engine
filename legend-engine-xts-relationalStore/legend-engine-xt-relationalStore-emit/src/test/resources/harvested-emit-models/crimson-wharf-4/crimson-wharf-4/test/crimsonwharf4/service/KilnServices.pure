@@ -1,0 +1,348 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonwharf4::service::FiringRosterService
+{
+  pattern: '/crimsonwharf4/firingRoster';
+  title: 'Firing Roster';
+  owners:
+  [
+    'kiln-rota-desk'
+  ];
+  documentation: 'Projects every logged firing as a tabular data set, keeping the composed label, the graded temperature band, the trimmed lead potter and the derived hold fraction, ordered by firing code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::crimsonwharf4::domain::KilnFiring.all()->project(
+      [
+        f|$f.firingCode,
+        f|$f.firingLabel,
+        f|$f.firingBand,
+        f|$f.leadPotter,
+        f|$f.holdFraction
+      ],
+      [
+        'Firing',
+        'Label',
+        'Band',
+        'Potter',
+        'Hold'
+      ]
+    )->sort([asc('Firing')])};
+    mapping: test::crimsonwharf4::mapping::KilnMapping;
+    runtime: test::crimsonwharf4::runtime::KilnTestRuntime;
+  }
+  testSuites:
+  [
+    firingRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kilnH2Connection:
+            Relational
+            #{
+              pottery.kiln_firing:
+                'firing_code,kiln_code,studio_code,firing_date,started_at,peak_celsius,hold_minutes,firing_state,firing_note,lead_potter\n'+
+                'F-31,K-1,S-1,2026-05-01,2026-05-01 08:00:00,1240,30,1,long hold, rosa quill \n'+
+                'F-32,K-2,S-2,2026-05-02,2026-05-02 08:00:00,960,15,1,,ada plumtree\n'+
+                'F-33,K-2,S-2,2026-05-03,2026-05-03 08:00:00,1460,45,1,over the top,ivo marsh\n'+
+                'F-34,K-3,S-1,2026-05-04,2026-05-04 08:00:00,1100,30,0,kiln offline,iris fenwick\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        loggedFiringsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Firing":"F-31","Label":"F-31 / LONG HOLD","Band":"STONEWARE","Potter":"rosa quill","Hold":0.5},{"Firing":"F-32","Label":"UNLOGGED FIRING","Band":"BISQUE HIGH","Potter":"ada plumtree","Hold":0.25},{"Firing":"F-33","Label":"F-33 / OVER THE TOP","Band":null,"Potter":"ivo marsh","Hold":0.75}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::crimsonwharf4::service::PieceLogService
+{
+  pattern: '/crimsonwharf4/pieceLog/{firingCode}';
+  title: 'Piece Log By Firing';
+  owners:
+  [
+    'kiln-rota-desk'
+  ];
+  documentation: 'Filters the named pieces down to one firing by navigating the firing end of the association, then projects the trimmed name, the glazing arm, the lead potter reached one hop away and the review outcome reached two hops away.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {firingCode: String[1]|test::crimsonwharf4::domain::PotteryPiece.all()->filter(
+      p|$p.firing.firingCode == $firingCode
+    )->project(
+      [
+        p|$p.pieceCode,
+        p|$p.pieceName,
+        p|$p.glazeMode,
+        p|$p.firingLeadPotter,
+        p|$p.reviewFlag
+      ],
+      [
+        'Piece',
+        'Name',
+        'Glazing',
+        'Potter',
+        'Review'
+      ]
+    )->sort([asc('Piece')])};
+    mapping: test::crimsonwharf4::mapping::KilnMapping;
+    runtime: test::crimsonwharf4::runtime::KilnTestRuntime;
+  }
+  testSuites:
+  [
+    pieceLogSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kilnH2Connection:
+            Relational
+            #{
+              pottery.kiln_firing:
+                'firing_code,kiln_code,studio_code,firing_date,started_at,peak_celsius,hold_minutes,firing_state,firing_note,lead_potter\n'+
+                'F-41,K-1,S-1,2026-06-01,2026-06-01 08:00:00,1240,30,1,long hold,rosa quill\n'+
+                'F-42,K-2,S-2,2026-06-02,2026-06-02 08:00:00,960,30,1,third bisque,ivo marsh\n';
+
+              pottery.pottery_piece:
+                'piece_code,firing_code,glaze_code,piece_name,clay_body,wall_mm,mass_grams,piece_state\n'+
+                'P-41,F-41,G-1, tall jar ,Stoneware,9.5,1450,1\n'+
+                'P-42,F-41,G-2,thin bowl,Porcelain,4.0,320,1\n'+
+                'P-43,F-42,G-1,wide platter,Earthenware,6.5,2100,1\n'+
+                'P-44,F-41,G-1,   ,Stoneware,7.0,800,1\n';
+
+              pottery.glaze_batch:
+                'glaze_code,glaze_name,cone_number,matte_flag,batch_state\n'+
+                'G-1,ash celadon,10,N,1\n'+
+                'G-2,tin white,8,Y,1\n';
+
+              pottery.firing_review:
+                'review_code,firing_code,passed_flag,reviewed_at,reviewer_name\n'+
+                'R-41,F-41,Y,2026-06-03 09:00:00,noor bellweather\n'+
+                'R-42,F-42,N,2026-06-04 09:00:00,iris fenwick\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        firstFiringPieces:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            firingCode = 'F-41'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Piece":"P-41","Name":"tall jar","Glazing":"DIPPED","Potter":"rosa quill","Review":"Y"},{"Piece":"P-42","Name":"thin bowl","Glazing":"SPRAYED","Potter":"rosa quill","Review":"Y"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::crimsonwharf4::service::FiringLoadService
+{
+  pattern: '/crimsonwharf4/firingLoad';
+  title: 'Firing Load';
+  owners:
+  [
+    'kiln-rota-desk'
+  ];
+  documentation: 'Projects each logged firing with how many pieces it carried and how many of them are heavy, counting across the to-many association end and over a collection narrowed in the projection itself.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::crimsonwharf4::domain::KilnFiring.all()->project(
+      [
+        f|$f.firingCode,
+        f|$f.firingBand,
+        f|$f.pieces->map(p|$p.pieceCode)->count(),
+        f|$f.pieces->filter(p|$p.massGrams > 1000)->map(p|$p.pieceCode)->count()
+      ],
+      [
+        'Firing',
+        'Band',
+        'Pieces',
+        'HeavyPieces'
+      ]
+    )->sort([asc('Firing')])};
+    mapping: test::crimsonwharf4::mapping::KilnMapping;
+    runtime: test::crimsonwharf4::runtime::KilnTestRuntime;
+  }
+  testSuites:
+  [
+    firingLoadSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kilnH2Connection:
+            Relational
+            #{
+              pottery.kiln_firing:
+                'firing_code,kiln_code,studio_code,firing_date,started_at,peak_celsius,hold_minutes,firing_state,firing_note,lead_potter\n'+
+                'F-51,K-1,S-1,2026-07-01,2026-07-01 08:00:00,1240,30,1,long hold,rosa quill\n'+
+                'F-52,K-2,S-2,2026-07-02,2026-07-02 08:00:00,860,30,1,second bisque,ivo marsh\n';
+
+              pottery.pottery_piece:
+                'piece_code,firing_code,glaze_code,piece_name,clay_body,wall_mm,mass_grams,piece_state\n'+
+                'P-51,F-51,G-1,tall jar,Stoneware,9.5,1450,1\n'+
+                'P-52,F-51,G-2,thin bowl,Porcelain,4.0,320,1\n'+
+                'P-53,F-52,G-1,wide platter,Earthenware,6.5,2100,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        pieceCountsPerFiring:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Firing":"F-51","Band":"STONEWARE","Pieces":2,"HeavyPieces":1},{"Firing":"F-52","Band":"BISQUE MID","Pieces":1,"HeavyPieces":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::crimsonwharf4::service::StudioRosterService
+{
+  pattern: '/crimsonwharf4/studioRoster/{studioCode}';
+  title: 'Studio Roster';
+  owners:
+  [
+    'kiln-rota-desk'
+  ];
+  documentation: 'Filters the live studios of the reference store down to one code and projects the composed label and the derived wheels-per-kiln ratio, running against a second mapping over its own store.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {studioCode: String[1]|test::crimsonwharf4::domain::Studio.all()->filter(
+      s|$s.studioCode == $studioCode
+    )->project(
+      [
+        s|$s.studioCode,
+        s|$s.studioLabel,
+        s|$s.wheelCount,
+        s|$s.stationRatio
+      ],
+      [
+        'Studio',
+        'Label',
+        'Wheels',
+        'Ratio'
+      ]
+    )->sort([asc('Studio')])};
+    mapping: test::crimsonwharf4::mapping::StudioMapping;
+    runtime: test::crimsonwharf4::runtime::StudioTestRuntime;
+  }
+  testSuites:
+  [
+    studioRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          studioRefH2Connection:
+            Relational
+            #{
+              studioref.studio:
+                'studio_code,studio_name,wheel_count,kiln_count,studio_state\n'+
+                'S-1,ridge pottery,12,3,1\n'+
+                'S-2, vale pottery ,6,2,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        oneLiveStudio:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            studioCode = 'S-1'
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Studio":"S-1","Label":"S-1 - RIDGE POTTERY","Wheels":12,"Ratio":4.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

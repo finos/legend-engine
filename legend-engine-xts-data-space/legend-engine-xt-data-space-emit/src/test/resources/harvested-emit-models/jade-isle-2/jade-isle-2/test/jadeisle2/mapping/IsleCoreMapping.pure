@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadeisle2::mapping::IsleCoreMapping
+(
+  *test::jadeisle2::domain::TrailSegment[segment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeisle2::store::IsleCoreDb]trail.trail_segment.segment_code
+    )
+    ~mainTable [test::jadeisle2::store::IsleCoreDb]trail.trail_segment
+    segmentCode: [test::jadeisle2::store::IsleCoreDb]trail.trail_segment.segment_code,
+    segmentName: [test::jadeisle2::store::IsleCoreDb]trail.trail_segment.segment_name,
+    lengthM: [test::jadeisle2::store::IsleCoreDb]trail.trail_segment.length_m,
+    habitatName: [test::jadeisle2::store::IsleCoreDb]@Segment_Habitat_J | [test::jadeisle2::store::IsleCoreDb]habitat.habitat_zone.habitat_name
+  }
+
+  *test::jadeisle2::domain::HabitatZone[habitat_zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeisle2::store::IsleCoreDb]habitat.habitat_zone.habitat_code
+    )
+    ~mainTable [test::jadeisle2::store::IsleCoreDb]habitat.habitat_zone
+    habitatCode: [test::jadeisle2::store::IsleCoreDb]habitat.habitat_zone.habitat_code,
+    habitatName: [test::jadeisle2::store::IsleCoreDb]habitat.habitat_zone.habitat_name,
+    protectionLevel: [test::jadeisle2::store::IsleCoreDb]habitat.habitat_zone.protection_level
+  }
+
+  *test::jadeisle2::domain::VisitorCount[visit_tally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::jadeisle2::store::IsleCoreDb]trail.visitor_count.count_code
+    )
+    ~mainTable [test::jadeisle2::store::IsleCoreDb]trail.visitor_count
+    countCode: [test::jadeisle2::store::IsleCoreDb]trail.visitor_count.count_code,
+    visitors: [test::jadeisle2::store::IsleCoreDb]trail.visitor_count.visitors
+  }
+
+  test::jadeisle2::domain::Segment_Habitat: Relational
+  {
+    AssociationMapping
+    (
+      habitatSegments[habitat_zone, segment]: [test::jadeisle2::store::IsleCoreDb]@Segment_Habitat_J,
+      habitat[segment, habitat_zone]: [test::jadeisle2::store::IsleCoreDb]@Segment_Habitat_J
+    )
+  }
+
+  test::jadeisle2::domain::Segment_Visits: Relational
+  {
+    AssociationMapping
+    (
+      visits[segment, visit_tally]: [test::jadeisle2::store::IsleCoreDb]@Segment_Visit_J,
+      visitSegment[visit_tally, segment]: [test::jadeisle2::store::IsleCoreDb]@Segment_Visit_J
+    )
+  }
+
+  testSuites:
+  [
+    segmentSuite:
+    {
+      function: |test::jadeisle2::domain::TrailSegment.all()->project(
+        [
+          s|$s.segmentCode,
+          s|$s.segmentName,
+          s|$s.lengthM,
+          s|$s.habitatName,
+          s|$s.habitat.protectionLevel
+        ],
+        [
+          'Segment',
+          'Name',
+          'Length',
+          'Habitat',
+          'Protection'
+        ]
+      )->sort([asc('Segment')]);
+      tests:
+      [
+        crossSchemaHabitatReach:
+        {
+          doc: 'The habitat name is reached across the schema boundary, and the segment whose habitat code resolves to nothing keeps its row with empty habitat columns.';
+          data:
+          [
+            test::jadeisle2::store::IsleCoreDb:
+              Relational
+              #{
+                trail.trail_segment:
+                  'segment_code,habitat_code,segment_name,length_m\n'+
+                  'SEG-1,HAB-1,Kelp Shore Path,1200\n'+
+                  'SEG-2,HAB-2,Fern Hollow Loop,900\n'+
+                  'SEG-3,HAB-9,Drift Line Spur,400\n';
+                habitat.habitat_zone:
+                  'habitat_code,habitat_name,protection_level\n'+
+                  'HAB-1,Rocky Foreshore,strict\n'+
+                  'HAB-2,Coastal Fernland,managed\n';
+              }#
+          ];
+          asserts:
+          [
+            segmentRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"SEG-1","Name":"Kelp Shore Path","Length":1200,"Habitat":"Rocky Foreshore","Protection":"strict"},{"Segment":"SEG-2","Name":"Fern Hollow Loop","Length":900,"Habitat":"Coastal Fernland","Protection":"managed"},{"Segment":"SEG-3","Name":"Drift Line Spur","Length":400,"Habitat":null,"Protection":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

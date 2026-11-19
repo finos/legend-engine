@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::duskythicket2::domain::*;
+
+Class <<temporal.businesstemporal>> {doc.doc = 'One inspected state of a footbridge on the trail network, versioned along business time so a re-inspection supersedes the version it replaces and a version whose validity window does not contain the queried instant disappears without an explicit filter.'} test::duskythicket2::domain::BridgeInspection
+{
+  inspectionCode: String[1];
+  structureCode: String[1];
+  districtCode: String[1];
+  inspectionKind: String[1];
+  inspectedOn: StrictDate[1];
+  spanMetres: Float[1];
+  deckScore: Integer[1];
+  railScore: Integer[1];
+  rustPct: Integer[1];
+  clearanceCm: Integer[1];
+  footfallPerDay: Integer[1];
+  inspectorNote: String[0..1];
+
+  {doc.doc = 'Eight ordered condition arms with an empty fallback, so a version that trips none of them projects no grade at all.'}
+  conditionGrade()
+  {
+    if($this.deckScore <= 20, | 'DECK_CRITICAL',
+      | if($this.railScore <= 20, | 'RAIL_CRITICAL',
+        | if($this.rustPct >= 70, | 'CORRODED',
+          | if($this.spanMetres >= 40.0, | 'LONG_SPAN',
+            | if($this.clearanceCm <= 50, | 'LOW_CLEARANCE',
+              | if($this.footfallPerDay >= 500, | 'BUSY_CROSSING',
+                | if($this.deckScore >= 95, | 'PRISTINE',
+                  | if($this.inspectorNote->isNotEmpty(), | 'NOTED',
+                    | []))))))))
+  }: String[0..1];
+
+  {doc.doc = 'Day count separating the inspection date from a fixed review cut-off.'}
+  daysBeforeReview()
+  {
+    dateDiff($this.inspectedOn, %2026-07-01, meta::pure::functions::date::DurationUnit.DAYS)
+  }: Integer[1];
+
+  {doc.doc = 'Footfall projected over a whole week rather than a single day.'}
+  weeklyFootfall()
+  {
+    $this.footfallPerDay * 7
+  }: Integer[1];
+}

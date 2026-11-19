@@ -1,0 +1,49 @@
+name: dusky-beacon-6
+title: "Dusky Beacon 6 — a kept-watch register dispatched through a single and a station-keyed multi execution"
+description: |
+  A coastal beacon watch-keeping model over one relational store. The watch class is bound
+  onto its primary-keyed main table with the burn hours and the sighted distance defaulted so
+  an unrecorded watch falls under every positive floor, and two H2 connections stand for a
+  coast station and a harbour station, each carried by its own runtime. A parameterised single
+  execution service narrows the watches to one lamp, to the kept state and to burn hours over
+  a supplied floor through a three-operand boolean filter, and a second service dispatches the
+  same body through two station-keyed executions. Both services carry assertion-backed suites,
+  including one that pins the defaulted null burn hours below the floor and one that resolves
+  the register through both station executions.
+modelSources:
+  model:
+    root: dusky-beacon-6
+    files:
+      - test/duskybeacon6/connection/BeaconConnections.pure
+      - test/duskybeacon6/domain/BeaconDomain.pure
+      - test/duskybeacon6/mapping/BeaconMapping.pure
+      - test/duskybeacon6/runtime/BeaconRuntimes.pure
+      - test/duskybeacon6/service/LampWatchRegister.pure
+      - test/duskybeacon6/service/LampWatchRegisterByStation.pure
+      - test/duskybeacon6/store/BeaconDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - beacon-watch
+  - h2
+  - multi-execution
+  - null-default
+  - parameterised-service
+  - service-test
+  - tabular-data-set

@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberotter::service::HoltRegister
+{
+  pattern: '/otter/v1/holts/{minChamberCount}';
+  title: 'Holt Register';
+  documentation: 'Projects the second query root on its own, with a parameterised chamber floor, so the plan is a single select over the holt table and the null-bearing chamber row is dropped by the three-valued predicate.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'otter-survey',
+    'river-stewards'
+  ];
+  execution: Single
+  {
+    query: {minChamberCount: Integer[1]|test::emberotter::domain::HoltSurvey.all()->filter(
+      h|($h.chamberCount >= $minChamberCount) && (($h.shoreHeightMetres >= 0.5) || ($h.substrateLabel == 'ROOT MAT'))
+    )->project(
+      [
+        h|$h.recordCode,
+        h|$h.holtCode,
+        h|$h.observerName,
+        h|$h.chamberCount,
+        h|$h.shoreHeightMetres,
+        h|$h.substrateLabel
+      ],
+      [
+        'RecordCode',
+        'HoltCode',
+        'ObserverName',
+        'ChamberCount',
+        'ShoreHeightMetres',
+        'SubstrateLabel'
+      ]
+    )->sort(
+      [
+        asc('RecordCode')
+      ]
+    )};
+    mapping: test::emberotter::mapping::OtterMapping;
+    runtime: test::emberotter::runtime::OtterRuntime;
+  }
+  testSuites:
+  [
+    holtRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          otterConnection:
+            Relational
+            #{
+              otter.holt_survey:
+                  'survey_code,reach_code,observer_name,holt_code,chamber_count,shore_height_m,surveyed_on,substrate_label\n'+
+                  'HS-001,RE-01,Wren Halloway,HO-01,3,1.75,2026-01-20,ROOT MAT\n'+
+                  'HS-002,RE-02,,HO-02,,0.9,2026-01-21,SHINGLE\n'+
+                  'HS-003,RE-03,Marek Loach,HO-03,5,2.25,2026-01-22,SANDY SHORE\n';
+              otter.otter_sighting:
+                  'sighting_code,reach_code,observer_name,otter_count,water_temp_c,sighted_on,logged_at,pup_flag,holt_code\n'+
+                  'OS-001,RE-01,Wren Halloway,3,8.5,2026-02-03,2026-02-03 07:15:00,Y,HO-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        chamberFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minChamberCount = 3
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"HS-001","HoltCode":"HO-01","ObserverName":"Wren Halloway","ChamberCount":3,"ShoreHeightMetres":1.75,"SubstrateLabel":"ROOT MAT"},{"RecordCode":"HS-003","HoltCode":"HO-03","ObserverName":"Marek Loach","ChamberCount":5,"ShoreHeightMetres":2.25,"SubstrateLabel":"SANDY SHORE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::zephyrwillow2::service::GradeDirectory
+{
+  pattern: '/zephyrwillow2/v1/grade-directory';
+  title: 'Metro Waste - material grade directory';
+  ownership: DID { identifier: 'metro-waste-register' };
+  documentation: 'Lists the material grades of the reference tier on the requested side of the recyclable flag, resolved through the reference mapping and its own runtime rather than the network binding.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {recyclable: Integer[1]|test::zephyrwillow2::domain::MaterialGrade.all()->filter(
+      g|$g.recyclableFlag == $recyclable
+    )->project(
+      [
+        g|$g.gradeCode,
+        g|$g.gradeName
+      ],
+      [
+        'Grade',
+        'GradeName'
+      ]
+    )->sort([asc('Grade')])};
+    mapping: test::zephyrwillow2::mapping::GradeReferenceMapping;
+    runtime: test::zephyrwillow2::runtime::GradeReferenceRuntime;
+  }
+  testSuites:
+  [
+    gradeDirectorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          referenceConnection:
+            Reference
+            #{
+              test::zephyrwillow2::data::GradeReferenceTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothRecyclableGrades:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            recyclable = 1
+          ]
+          asserts:
+          [
+            twoRecyclableGrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Grade":"GL","GradeName":"Glass"},{"Grade":"PA","GradeName":"Paper And Card"}]';
+                  }#;
+              }#
+          ]
+        },
+        theResidualGrade:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            recyclable = 0
+          ]
+          asserts:
+          [
+            oneResidualGrade:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Grade":"MX","GradeName":"Mixed Residual"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::zephyrwillow2::service::DraftRoundBoard
+{
+  pattern: '/zephyrwillow2/v1/draft-round-board';
+  title: 'Metro Waste - draft rounds awaiting review';
+  ownership: DID { identifier: 'metro-waste-register' };
+  documentation: 'Lists the staged draft rounds whose review state is one of the supplied states, resolved through the draft mapping that composes the reference tier into itself.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {states: String[*]|test::zephyrwillow2::domain::DraftRound.all()->filter(
+      d|$states->contains($d.reviewState)
+    )->project(
+      [
+        d|$d.draftId,
+        d|$d.gradeCode,
+        d|$d.grossKg
+      ],
+      [
+        'Draft',
+        'Grade',
+        'GrossKg'
+      ]
+    )->sort([asc('Draft')])};
+    mapping: test::zephyrwillow2::mapping::DraftMapping;
+    runtime: test::zephyrwillow2::runtime::DraftStagingRuntime;
+  }
+  testSuites:
+  [
+    draftRoundBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          stagingConnection:
+            Reference
+            #{
+              test::zephyrwillow2::data::DraftStagingTestData
+            }#,
+          referenceConnection:
+            Reference
+            #{
+              test::zephyrwillow2::data::GradeReferenceTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        draftsNotYetInReview:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            states = ['DRAFT']
+          ]
+          asserts:
+          [
+            twoDrafts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Draft":"D-01","Grade":"PA","GrossKg":410.5},{"Draft":"D-03","Grade":"MX","GrossKg":88.5}]';
+                  }#;
+              }#
+          ]
+        },
+        everyStagedDraft:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            states = ['DRAFT', 'REVIEW']
+          ]
+          asserts:
+          [
+            threeDrafts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Draft":"D-01","Grade":"PA","GrossKg":410.5},{"Draft":"D-02","Grade":"GL","GrossKg":120.25},{"Draft":"D-03","Grade":"MX","GrossKg":88.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

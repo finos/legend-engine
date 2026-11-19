@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::kindlyotter::service::BranchMonthSeriesFeed
+{
+  pattern: '/kindlylibrary/v1/branch-month-series';
+  title: 'Kindly Library - Branch Monthly Lending Series';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Publishes the full width of the branch lending record: every monthly count of the series, the declared annual total and the conditional series note, exposed without a parameter or predicate so the whole extent is served.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::kindlyotter::domain::BranchMonthSeries.all()->project(
+      [
+        x|$x.branchCode,
+        x|$x.periodCode,
+        x|$x.checkoutsM01,
+        x|$x.checkoutsM02,
+        x|$x.checkoutsM03,
+        x|$x.checkoutsM04,
+        x|$x.checkoutsM05,
+        x|$x.checkoutsM06,
+        x|$x.checkoutsM07,
+        x|$x.checkoutsM08,
+        x|$x.checkoutsM09,
+        x|$x.checkoutsM10,
+        x|$x.checkoutsM11,
+        x|$x.checkoutsM12,
+        x|$x.annualTotal,
+        x|$x.noteText
+      ],
+      [
+        'BranchCode',
+        'PeriodCode',
+        'CheckoutsM01',
+        'CheckoutsM02',
+        'CheckoutsM03',
+        'CheckoutsM04',
+        'CheckoutsM05',
+        'CheckoutsM06',
+        'CheckoutsM07',
+        'CheckoutsM08',
+        'CheckoutsM09',
+        'CheckoutsM10',
+        'CheckoutsM11',
+        'CheckoutsM12',
+        'AnnualTotal',
+        'NoteText'
+      ]
+    )->sort([asc('BranchCode'), asc('PeriodCode')]);
+    mapping: test::kindlyotter::mapping::LibraryBranchMapping;
+    runtime: test::kindlyotter::runtime::LibraryPrimaryRuntime;
+  }
+  testSuites:
+  [
+    monthSeriesFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          libraryPrimary:
+            Relational
+            #{
+              libmain.branch_month:
+                'branch_code,period_code,checkouts_m01,checkouts_m02,checkouts_m03,checkouts_m04,checkouts_m05,checkouts_m06,checkouts_m07,checkouts_m08,checkouts_m09,checkouts_m10,checkouts_m11,checkouts_m12,annual_total,note_text\n'+
+                'BR-01,2026,410,388,402,377,395,430,466,451,398,404,389,412,4922,Refurbished in March\n'+
+                'BR-02,2026,120,118,131,127,140,155,168,161,142,138,129,133,1662,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        fullWidthSeries:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            everyMonthColumnAndBothNoteArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BranchCode":"BR-01","PeriodCode":"2026","CheckoutsM01":410,"CheckoutsM02":388,"CheckoutsM03":402,"CheckoutsM04":377,"CheckoutsM05":395,"CheckoutsM06":430,"CheckoutsM07":466,"CheckoutsM08":451,"CheckoutsM09":398,"CheckoutsM10":404,"CheckoutsM11":389,"CheckoutsM12":412,"AnnualTotal":4922,"NoteText":"Refurbished in March"},{"BranchCode":"BR-02","PeriodCode":"2026","CheckoutsM01":120,"CheckoutsM02":118,"CheckoutsM03":131,"CheckoutsM04":127,"CheckoutsM05":140,"CheckoutsM06":155,"CheckoutsM07":168,"CheckoutsM08":161,"CheckoutsM09":142,"CheckoutsM10":138,"CheckoutsM11":129,"CheckoutsM12":133,"AnnualTotal":1662,"NoteText":"NO SERIES NOTE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

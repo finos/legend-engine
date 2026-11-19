@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberthistle3::store::StudioDB
+(
+  Schema studio
+  (
+    Table kiln_booking
+    (
+      booking_ref VARCHAR(24) PRIMARY KEY,
+      member_ref VARCHAR(24),
+      kiln_ref VARCHAR(24),
+      slot_ref VARCHAR(24),
+      glaze_ref VARCHAR(24),
+      booked_on DATE,
+      firing_hours INTEGER,
+      piece_count INTEGER,
+      status_ref VARCHAR(16),
+      note_text VARCHAR(200)
+    )
+    Table studio_member
+    (
+      member_ref VARCHAR(24) PRIMARY KEY,
+      member_name VARCHAR(120),
+      tier_ref VARCHAR(24),
+      region_name VARCHAR(80)
+    )
+  )
+)

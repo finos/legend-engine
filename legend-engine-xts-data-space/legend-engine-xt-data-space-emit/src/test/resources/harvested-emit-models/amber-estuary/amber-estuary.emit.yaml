@@ -1,0 +1,46 @@
+name: amber-estuary
+title: "Amber Estuary - data-space published sediment survey over a Snowflake-backed tide-flat store"
+description: |
+  A tide-flat sediment survey mapped relationally: gauge stations and their silt readings each
+  bind to an explicit main table with a declared primary key, and both projections band the
+  recorded silt load through a nested conditional. A single-execution service publishes the
+  banded readings for one tidal zone under a url pattern, and a data space groups that service
+  with the mapping and the Snowflake-backed engine runtime, advertising an email support target
+  to catalogue consumers. Mapping and service test suites execute the projections against
+  embedded relational fixtures.
+modelSources:
+  model:
+    root: amber-estuary
+    files:
+      - test/amberestuary/connection/EstuaryWarehouseConnection.pure
+      - test/amberestuary/dataspace/EstuaryDataSpace.pure
+      - test/amberestuary/domain/Domain.pure
+      - test/amberestuary/mapping/EstuaryMapping.pure
+      - test/amberestuary/runtime/EstuaryRuntime.pure
+      - test/amberestuary/service/ReadingsByZoneService.pure
+      - test/amberestuary/store/EstuaryDatabase.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - estuary
+  - h2
+  - relational
+  - sediment
+  - service-test
+  - snowflake
+  - tabular-data-set

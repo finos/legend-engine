@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::azureisle::data::IsleSurveyData
+{
+  Relational
+  #{
+    reserve.reserve_area:
+      'reserve_code,reserve_name,warden_team\n'+
+      'R1,Azure Sound Reserve,North Wardens\n';
+    reserve.island:
+      'island_code,island_name,reserve_code,area_ha\n'+
+      'I1,Gull Rock,R1,12\n'+
+      'I2,Puffin Holm,R9,30\n';
+    reserve.species:
+      'species_code,common_name,conservation_tier\n'+
+      'SP1,Atlantic Puffin,AMBER\n'+
+      'SP2,Black Guillemot,GREEN\n';
+    reserve.colony:
+      'colony_code,colony_name,island_code,species_code,founded_on\n'+
+      'C1,North Ledge,I1,SP1,2010-05-01\n'+
+      'C2,East Stack,I2,SP2,2015-04-01\n';
+    survey.nest_plot:
+      'plot_code,colony_code,habitat_kind,slope_deg\n'+
+      'P1,C1,grass,20\n'+
+      'P2,C2,boulder,35\n'+
+      'P3,C9,scree,10\n';
+    survey.observer:
+      'observer_code,observer_name,team_code\n'+
+      'O1,Ada Wren,TEAM-A\n'+
+      'O1,Ada Wren,TEAM-A\n'+
+      'O2,Bo Tern,TEAM-B\n'+
+      'O3,Cy Skua,RETIRED\n';
+    survey.census_visit:
+      'visit_id,colony_code,visited_at,visit_status,headcount\n'+
+      '1,C1,2026-05-01 08:00:00,DONE,400\n'+
+      '2,C1,2026-06-01 08:00:00,VERIFIED,450\n'+
+      '3,C1,2026-06-10 08:00:00,ABANDONED,0\n'+
+      '4,C2,2026-05-15 09:00:00,DONE,120\n'+
+      '5,C2,2026-06-05 09:00:00,DONE,90\n';
+    survey.nest_count:
+      'count_id,plot_code,counted_on,nest_total,chick_total,observer_code,weather_code,count_method,in_z,out_z\n'+
+      '1,P1,2026-05-02,120,40,O1,C,D,2026-05-03,9999-12-31\n'+
+      '2,P1,2026-05-09,80,0,O1,W,G,2026-05-10,9999-12-31\n'+
+      '3,P1,2026-06-01,95,,O2,R,B,2026-06-02,9999-12-31\n'+
+      '4,P2,2026-07-03,60,12,O2,F,D,2026-07-04,9999-12-31\n'+
+      '5,P2,2026-07-10,150,30,O1,,G,2026-07-11,9999-12-31\n'+
+      '6,P3,2026-07-12,30,5,O9,S,B,2026-07-13,9999-12-31\n'+
+      '7,P1,2026-04-20,70,10,O1,C,G,2026-04-21,2026-05-01\n'+
+      '8,P1,2026-08-01,110,20,O3,W,D,2026-09-05,9999-12-31\n';
+  }#
+}

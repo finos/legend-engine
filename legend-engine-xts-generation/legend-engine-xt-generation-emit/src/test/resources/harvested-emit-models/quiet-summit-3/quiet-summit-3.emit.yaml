@@ -1,0 +1,31 @@
+name: quiet-summit-3
+title: "Weather Station Registry — nested class graph with JSON-schema generation and a documentation diagram"
+description: |
+  A store-less weather-observation model whose four classes form a three-level
+  containment graph, with a two-valued enumeration typing a reading-quality
+  property and a person-shaped operator class reached from the innermost data
+  class. A JSON-schema file-generation specification scopes to the registry
+  class and walks the type graph into a nested schema, and a diagram documents
+  the registry, record and reading classes with property views along the
+  containment chain.
+modelSources:
+  model:
+    root: quiet-summit-3
+    files:
+      - test/quietsummit3/diagram/WeatherDiagram.pure
+      - test/quietsummit3/domain/WeatherDomain.pure
+      - test/quietsummit3/generation/WeatherGeneration.pure
+features:
+  - execution:file-generation
+  - grammar:enumeration
+  - scaffolding:class
+  - grammar:diagram
+stores: []
+complexity: basic
+tags:
+  - class-graph
+  - diagram
+  - enumeration
+  - file-generation
+  - json-schema
+  - weather

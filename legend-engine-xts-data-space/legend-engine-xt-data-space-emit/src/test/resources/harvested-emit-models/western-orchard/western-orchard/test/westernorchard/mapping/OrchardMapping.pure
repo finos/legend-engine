@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::westernorchard::mapping::OrchardMapping
+(
+  *demo::westernorchard::domain::Cultivar[cultivar]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::westernorchard::store::OrchardDB]orchard.cultivar.cultivar_code
+    )
+    ~mainTable [demo::westernorchard::store::OrchardDB]orchard.cultivar
+    cultivarCode: [demo::westernorchard::store::OrchardDB]orchard.cultivar.cultivar_code,
+    cultivarName: [demo::westernorchard::store::OrchardDB]orchard.cultivar.cultivar_name,
+    rootstock: [demo::westernorchard::store::OrchardDB]orchard.cultivar.rootstock
+  }
+
+  *demo::westernorchard::domain::OrchardBlock[block]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::westernorchard::store::OrchardDB]orchard.orchard_block.block_code
+    )
+    ~mainTable [demo::westernorchard::store::OrchardDB]orchard.orchard_block
+    blockCode: [demo::westernorchard::store::OrchardDB]orchard.orchard_block.block_code,
+    blockName: [demo::westernorchard::store::OrchardDB]orchard.orchard_block.block_name,
+    hectares: [demo::westernorchard::store::OrchardDB]orchard.orchard_block.hectares,
+    plantedOn: [demo::westernorchard::store::OrchardDB]orchard.orchard_block.planted_on,
+    irrigated: [demo::westernorchard::store::OrchardDB]orchard.orchard_block.irrigated
+  }
+
+  *demo::westernorchard::domain::PickingCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::westernorchard::store::OrchardDB]orchard.picking_crew.crew_code
+    )
+    ~mainTable [demo::westernorchard::store::OrchardDB]orchard.picking_crew
+    crewCode: [demo::westernorchard::store::OrchardDB]orchard.picking_crew.crew_code,
+    crewName: [demo::westernorchard::store::OrchardDB]orchard.picking_crew.crew_name,
+    headcount: [demo::westernorchard::store::OrchardDB]orchard.picking_crew.headcount
+  }
+
+  *demo::westernorchard::domain::HarvestLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::westernorchard::store::OrchardDB]orchard.harvest_lot.lot_ref
+    )
+    ~mainTable [demo::westernorchard::store::OrchardDB]orchard.harvest_lot
+    lotRef: [demo::westernorchard::store::OrchardDB]orchard.harvest_lot.lot_ref,
+    pickedOn: [demo::westernorchard::store::OrchardDB]orchard.harvest_lot.picked_on,
+    binCount: [demo::westernorchard::store::OrchardDB]orchard.harvest_lot.bin_count,
+    gradeLabel: [demo::westernorchard::store::OrchardDB]orchard.harvest_lot.grade_label
+  }
+
+  demo::westernorchard::domain::BlockCultivar: Relational
+  {
+    AssociationMapping
+    (
+      cultivar[block, cultivar]: [demo::westernorchard::store::OrchardDB]@Block_Cultivar,
+      plantedBlocks[cultivar, block]: [demo::westernorchard::store::OrchardDB]@Block_Cultivar
+    )
+  }
+
+  demo::westernorchard::domain::BlockLot: Relational
+  {
+    AssociationMapping
+    (
+      block[lot, block]: [demo::westernorchard::store::OrchardDB]@Block_Lot,
+      lots[block, lot]: [demo::westernorchard::store::OrchardDB]@Block_Lot
+    )
+  }
+
+  demo::westernorchard::domain::LotCrew: Relational
+  {
+    AssociationMapping
+    (
+      crew[lot, crew]: [demo::westernorchard::store::OrchardDB]@Lot_Crew,
+      pickedLots[crew, lot]: [demo::westernorchard::store::OrchardDB]@Lot_Crew
+    )
+  }
+
+  testSuites:
+  [
+    blockPlantingSuite:
+    {
+      function: |demo::westernorchard::domain::OrchardBlock.all()->filter(
+  b|$b.blockCode == 'BK-01'
+)->project(
+  [
+    b|$b.blockCode,
+    b|$b.blockName,
+    b|$b.hectares,
+    b|$b.irrigated,
+    b|$b.cultivar.cultivarName
+  ],
+  [
+    'BlockCode',
+    'BlockName',
+    'Hectares',
+    'Irrigated',
+    'CultivarName'
+  ]
+);
+      tests:
+      [
+        northSlopePlanting:
+        {
+          doc: 'The anchored block binding resolves its own typed columns and reaches the planted variety across the declared association.';
+          data:
+          [
+            demo::westernorchard::store::OrchardDB:
+              Relational
+              #{
+                orchard.cultivar:
+                  'cultivar_code,cultivar_name,rootstock\n'+
+                  'CV-1,Braeburn,M9\n'+
+                  'CV-2,Gala,M26\n';
+
+                orchard.orchard_block:
+                  'block_code,block_name,hectares,planted_on,irrigated,cultivar_code\n'+
+                  'BK-01,North Slope,4.5,2018-04-12,true,CV-1\n'+
+                  'BK-02,Windbreak Row,2.25,2020-09-30,false,CV-2\n';
+              }#
+          ];
+          asserts:
+          [
+            plantingRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BlockCode":"BK-01","BlockName":"North Slope","Hectares":4.5,"Irrigated":true,"CultivarName":"Braeburn"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

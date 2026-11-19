@@ -1,0 +1,28 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One propagation lot of seed sown in a plant nursery, graded once the tray has germinated.'} test::frostedlighthouse4::domain::SeedLot
+{
+  lotId: Integer[1];
+  lotCode: String[1];
+  speciesCode: String[1];
+  houseCode: String[1];
+  statusCode: String[1];
+  trayCount: Integer[1];
+  germinationPct: Float[0..1];
+  sownOn: StrictDate[1];
+  gradedAt: DateTime[0..1];
+  batchNote: String[0..1];
+}

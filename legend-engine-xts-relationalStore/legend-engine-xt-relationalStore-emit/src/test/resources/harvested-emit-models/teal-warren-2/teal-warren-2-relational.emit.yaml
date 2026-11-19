@@ -1,0 +1,51 @@
+name: teal-warren-2-relational
+title: "Teal Warren — business-temporal colony monitoring with concatenated relational transforms and keyed as-of services"
+description: |
+  A wildlife-monitoring model over rabbit warren colonies versioned on a business timeline. The
+  colony class carries a parameterised qualified property and a derived density tier delegating to a
+  standalone function, while the relational mapping binds an aliased main table and builds two of its
+  properties with relational string-concatenation transforms. A single-execution service answers the
+  as-of query with a burrow threshold and carries the executed test suite; a multi-execution
+  counterpart exposes the same query under one execution key per monitoring region. The mapping test
+  suite and the service test suite both seed a fixture whose retired colony lies outside the queried
+  business window.
+modelSources:
+  model:
+    root: teal-warren-2-relational
+    files:
+      - test/tealwarren2/connection/WarrenConnection.pure
+      - test/tealwarren2/domain/WarrenColony.pure
+      - test/tealwarren2/function/WarrenTier.pure
+      - test/tealwarren2/mapping/WarrenMapping.pure
+      - test/tealwarren2/runtime/WarrenRuntime.pure
+      - test/tealwarren2/service/ColoniesAsOf.pure
+      - test/tealwarren2/store/WarrenDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - grammar:qualified-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - h2
+  - main-table-alias
+  - multi-execution
+  - point-in-time
+  - qualified-property
+  - service-test
+  - string-transform
+  - warren
+  - wildlife

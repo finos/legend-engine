@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedfjord2::mapping::PatchToSkyObject
+(
+  *test::frostedfjord2::domain::SkyObject: Pure
+  {
+    ~src test::frostedfjord2::source::PatchRow
+    objectId: $src.patchRef,
+    displayLabel: $src.origin.constellation->toUpper()->trim() + ' / ' + $src.origin.sector->trim()
+  }
+
+  testSuites:
+  [
+    patchCompositionSuite:
+    {
+      function: |test::frostedfjord2::domain::SkyObject.all()->graphFetch(
+        #{
+          test::frostedfjord2::domain::SkyObject{
+            objectId,
+            displayLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::frostedfjord2::domain::SkyObject{
+            objectId,
+            displayLabel
+          }
+        }#
+      );
+      tests:
+      [
+        composedLabel:
+        {
+          doc: 'A re-observed patch composes its label from the constellation and sector reached through the nested survey row.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::frostedfjord2::source::PatchRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"patchRef":"PR-0007","origin":{"rowRef":"SR-0001","constellation":"lyra","sector":"NW-04"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            composedFromNestedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"objectId":"PR-0007","displayLabel":"LYRA / NW-04"}';
+                  }#;
+              }#
+          ];
+        },
+        blankOperands:
+        {
+          doc: 'Both composition operands arrive blank, so only the separating literal survives in the label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::frostedfjord2::source::PatchRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"patchRef":"PR-0008","origin":{"rowRef":"SR-0002","constellation":"","sector":""}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            separatorOnlyLabel:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"objectId":"PR-0008","displayLabel":" / "}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    patchLabelOnlySuite:
+    {
+      function: |test::frostedfjord2::domain::SkyObject.all()->graphFetch(
+        #{
+          test::frostedfjord2::domain::SkyObject{
+            displayLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::frostedfjord2::domain::SkyObject{
+            displayLabel
+          }
+        }#
+      );
+      tests:
+      [
+        labelOnlyTree:
+        {
+          doc: 'The same transform asserted under a narrower property tree that omits the catalogue identifier.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::frostedfjord2::source::PatchRow:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"patchRef":"PR-0009","origin":{"rowRef":"SR-0003","constellation":"vela","sector":"SE-11"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            labelWithoutIdentifier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"displayLabel":"VELA / SE-11"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

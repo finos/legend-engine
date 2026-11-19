@@ -1,0 +1,32 @@
+name: azure-aviary-2
+title: Aviary processing history
+description: Current observation projections over processing history, with warehouse runtime and an executable data space.
+modelSources:
+  model:
+    root: azure-aviary-2
+    files:
+      - test/azureaviary2/Aviary.pure
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - grammar:tagged-value
+  - scaffolding:relational-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aviary
+  - h2
+  - processing-history
+  - snowflake

@@ -1,0 +1,167 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarreef2::mapping::ReefMirrorM2M
+(
+  test::lunarreef2::domain::HealthGrade: EnumerationMapping GradeCodeMapping
+  {
+    THRIVING: ['T'],
+    STABLE: ['S'],
+    BLEACHING: ['B'],
+    DEGRADED: ['D']
+  }
+
+  *test::lunarreef2::domain::ReefTransect[reefTransectSet]: Pure
+  {
+    ~src test::lunarreef2::domain::TransectFeed
+    transectCode: $src.feedRow->split('|')->at(0),
+    reefLabel: $src.feedRow->split('|')->at(1)->trim()->toUpper(),
+    shoreZone: $src.feedRow->split('|')->at(2),
+    depthTag: $src.depthReading->map(d|$d->cast(@Float)->toString()),
+    surveyorRoster: $src.surveyorNames->sort()->joinStrings(', '),
+    colonyTotal: $src.colonyTallies->sum(),
+    healthGrade: EnumerationMapping GradeCodeMapping: [$src.gradeCode->toUpper()->trim()]->toOne()
+  }
+
+  *test::lunarreef2::domain::ColonyDigest[colonyDigestSet]: Pure
+  {
+    ~src test::lunarreef2::domain::TransectFeed
+    digestKey: $src.feedRow->split('|')->at(0)->toUpper() + '/' + $src.colonyTallies->size()->toString(),
+    tallyBand: 'BAND-' + ($src.colonyTallies->sum() / 25)->floor()->toString(),
+    rosterSize: $src.surveyorNames->size()
+  }
+
+  testSuites:
+  [
+    transectMirrorSuite:
+    {
+      function: |test::lunarreef2::domain::ReefTransect.all()->graphFetch(
+        #{
+          test::lunarreef2::domain::ReefTransect
+          {
+            transectCode,
+            reefLabel,
+            shoreZone,
+            depthTag,
+            surveyorRoster,
+            colonyTotal,
+            healthGrade
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarreef2::domain::ReefTransect
+          {
+            transectCode,
+            reefLabel,
+            shoreZone,
+            depthTag,
+            surveyorRoster,
+            colonyTotal,
+            healthGrade
+          }
+        }#
+      );
+      tests:
+      [
+        splitFoldedTransects:
+        {
+          doc: 'A fully populated feed row, a row whose optional depth reading is absent so the mapped tag stays empty, a row whose tally and surveyor collections hold several elements, and a row reaching the last grade literal - each folded out of the same delimited feed string.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::lunarreef2::domain::TransectFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"feedRow":"LR-01|Coral Terrace|outer slope","gradeCode":" t ","colonyTallies":[40,35,30],"surveyorNames":["Nadia","Ivo"],"depthReading":18.5},{"feedRow":"LR-02|Lagoon Bench|inner flat","gradeCode":"s","colonyTallies":[12],"surveyorNames":["Rhea"]},{"feedRow":"LR-03|Fore Reef|crest","gradeCode":"B","colonyTallies":[5,7,9,11],"surveyorNames":["Zoya","Amir","Bo"],"depthReading":7.25},{"feedRow":"LR-04|Patch Field|back reef","gradeCode":" D ","colonyTallies":[100,50],"surveyorNames":["Kai"]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourFoldedTransects:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"transectCode":"LR-01","reefLabel":"CORAL TERRACE","shoreZone":"outer slope","depthTag":"18.5","surveyorRoster":"Ivo, Nadia","colonyTotal":105,"healthGrade":"THRIVING"},{"transectCode":"LR-02","reefLabel":"LAGOON BENCH","shoreZone":"inner flat","depthTag":null,"surveyorRoster":"Rhea","colonyTotal":12,"healthGrade":"STABLE"},{"transectCode":"LR-03","reefLabel":"FORE REEF","shoreZone":"crest","depthTag":"7.25","surveyorRoster":"Amir, Bo, Zoya","colonyTotal":32,"healthGrade":"BLEACHING"},{"transectCode":"LR-04","reefLabel":"PATCH FIELD","shoreZone":"back reef","depthTag":null,"surveyorRoster":"Kai","colonyTotal":150,"healthGrade":"DEGRADED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    digestMirrorSuite:
+    {
+      function: |test::lunarreef2::domain::ColonyDigest.all()->graphFetch(
+        #{
+          test::lunarreef2::domain::ColonyDigest
+          {
+            digestKey,
+            tallyBand,
+            rosterSize
+          }
+        }#
+      )->serialize(
+        #{
+          test::lunarreef2::domain::ColonyDigest
+          {
+            digestKey,
+            tallyBand,
+            rosterSize
+          }
+        }#
+      );
+      tests:
+      [
+        bandedDigests:
+        {
+          doc: 'The same feed rows reduced to a digest key built from the leading delimited token and the tally count, an arithmetic tally band floored onto twenty-five-unit steps, and the roster size of the surveyor collection.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::lunarreef2::domain::TransectFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"feedRow":"LR-01|Coral Terrace|outer slope","gradeCode":" t ","colonyTallies":[40,35,30],"surveyorNames":["Nadia","Ivo"],"depthReading":18.5},{"feedRow":"LR-02|Lagoon Bench|inner flat","gradeCode":"s","colonyTallies":[12],"surveyorNames":["Rhea"]},{"feedRow":"LR-03|Fore Reef|crest","gradeCode":"B","colonyTallies":[5,7,9,11],"surveyorNames":["Zoya","Amir","Bo"],"depthReading":7.25},{"feedRow":"LR-04|Patch Field|back reef","gradeCode":" D ","colonyTallies":[100,50],"surveyorNames":["Kai"]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourBandedDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestKey":"LR-01/3","tallyBand":"BAND-4","rosterSize":2},{"digestKey":"LR-02/1","tallyBand":"BAND-0","rosterSize":1},{"digestKey":"LR-03/4","tallyBand":"BAND-1","rosterSize":3},{"digestKey":"LR-04/2","tallyBand":"BAND-6","rosterSize":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

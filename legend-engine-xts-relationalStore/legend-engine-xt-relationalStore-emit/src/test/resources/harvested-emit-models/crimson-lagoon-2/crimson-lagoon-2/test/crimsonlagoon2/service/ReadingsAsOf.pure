@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonlagoon2::service::ReadingsAsOf
+{
+  pattern: '/wetland/v1/readings/{asOfDate}';
+  title: 'Water Readings As Of';
+  owners:
+  [
+    'wetland-survey',
+    'hydro-ops'
+  ];
+  documentation: 'Returns the wetland turbidity readings visible as of a supplied processing date, projecting the sample year and a rendered turbidity value. Exercises processing-temporal point-in-time resolution and date arithmetic over the in-process H2 WetlandRuntime.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1]|test::crimsonlagoon2::domain::WaterReading.all($asOfDate)->project(
+      [
+        x|$x.stationName,
+        x|$x.turbidityNtu,
+        x|$x.sampledOn->year(),
+        x|$x.turbidityNtu->toString()
+      ],
+      [
+        'Station',
+        'TurbidityNtu',
+        'SampleYear',
+        'TurbidityText'
+      ]
+    )->distinct()->sort([asc('Station')])};
+    mapping: test::crimsonlagoon2::mapping::WetlandMapping;
+    runtime: test::crimsonlagoon2::runtime::WetlandRuntime;
+  }
+  testSuites:
+  [
+    readingsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              wetland.water_reading:
+                'reading_id,station_name,turbidity_ntu,sampled_on,in_z,out_z\n'+
+                '1,Marsh Pool,4.5,2023-03-15,2023-01-01,9999-12-31\n'+
+                '2,Reed Shallows,9.0,2023-02-10,2023-01-01,2023-03-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        openWindowAsOf:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2023-06-01
+          ]
+          asserts:
+          [
+            onlyOpenReading:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"Marsh Pool","TurbidityNtu":4.5,"SampleYear":2023,"TurbidityText":"4.5"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

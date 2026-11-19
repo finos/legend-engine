@@ -1,0 +1,62 @@
+name: crimson-glacier-2
+title: "Rainfall Gauge Network — Joined Reading Register Behind Single and Multi Execution Services"
+description: |
+  A rainfall observation corpus in which every reading hangs off a gauge through
+  a bidirectional association, so each query has to cross a relational join
+  before it can filter or group. A single-execution service registers the
+  readings visible at a caller-supplied instant: an optional region collection
+  narrows the joined gauge, a rolling window measured backwards from that
+  instant bounds the reading date, an unreviewed reading falls out on its empty
+  quality flag, and the projection carries a three-armed intensity grade, the
+  branched altitude band of the joined gauge and the day count separating the
+  reading from a fixed review cut-off. A network-keyed multi-execution twin
+  groups the same joined set by region and derived intensity, totalling
+  millimetres and counting readings, so one query function is planned against
+  two keyed execution stacks. Both services carry test suites over a shared
+  relational fixture whose rows cover every intensity arm, an out-of-window
+  reading and a reading with no quality flag at all.
+
+modelSources:
+  model:
+    root: crimson-glacier-2
+    files:
+      - test/crimsonglacier2/connection/RainfallConnection.pure
+      - test/crimsonglacier2/domain/RainfallDomain.pure
+      - test/crimsonglacier2/mapping/RainfallMapping.pure
+      - test/crimsonglacier2/runtime/RainfallRuntime.pure
+      - test/crimsonglacier2/service/RainfallServices.pure
+      - test/crimsonglacier2/store/RainfallDb.pure
+
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - collection-op
+  - date-arithmetic
+  - group-by
+  - h2
+  - multi-execution
+  - rainfall-network
+  - relational-join
+  - service-test

@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryquokka2::mapping::ColonyBaseMapping
+(
+  include mapping test::ivoryquokka2::mapping::ColonyEnumMappings
+
+  *test::ivoryquokka2::domain::ColonyMember[member]: Relational
+  {
+    ~filter [test::ivoryquokka2::store::SanctuaryDb]NamedMembers
+    ~primaryKey
+    (
+      [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.member_code
+    )
+    ~mainTable [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member
+    memberCode: [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.member_code,
+    givenName: [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.given_name,
+    weightGrams: [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.weight_grams,
+    weighedAt: [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.weighed_at,
+    habit: EnumerationMapping HabitMapping: [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.forage_habit_code,
+    health: EnumerationMapping HealthMapping: [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.health_code,
+    pouch: EnumerationMapping PouchMapping: [test::ivoryquokka2::store::SanctuaryDb]sanctuary.colony_member.pouch_code,
+    enclosureName: [test::ivoryquokka2::store::SanctuaryDb]@Member_Enclosure | [test::ivoryquokka2::store::SanctuaryDb]sanctuary.enclosure_record.enclosure_name
+  }
+
+  testSuites:
+  [
+    colonyRegisterSuite:
+    {
+      function: |test::ivoryquokka2::domain::ColonyMember.all()->project(
+  [
+    m|$m.memberCode,
+    m|$m.givenName,
+    m|$m.weightGrams,
+    m|$m.habit,
+    m|$m.health,
+    m|$m.pouch,
+    m|$m.enclosureName
+  ],
+  [
+    'MemberCode',
+    'GivenName',
+    'WeightGrams',
+    'Habit',
+    'Health',
+    'Pouch',
+    'EnclosureName'
+  ]
+)->sort(
+  [
+    asc('MemberCode')
+  ]
+);
+      tests:
+      [
+        codedMembersResolved:
+        {
+          doc: 'Reads the member relation behind the store filter that drops the unnamed row, resolves each of the three register enumerations from its source code including a code no member of the enumeration claims, and reaches the enclosure name across the single equality hop onto the enclosure relation.';
+          data:
+          [
+            test::ivoryquokka2::store::SanctuaryDb:
+              Relational
+              #{
+                sanctuary.colony_member:
+                  'member_code,enclosure_code,given_name,forage_habit_code,health_code,pouch_code,weight_grams,weighed_at\n'+
+                  'QM-01,EN-01,Banksia,B,T,C,3400,2031-04-02 06:15:00\n'+
+                  'QM-02,EN-01,Marri,G,M,E,2950,2031-04-02 06:40:00\n'+
+                  'QM-03,EN-02,Karri,M,R,E,3120,2031-04-03 07:05:00\n'+
+                  'QM-04,EN-02,Tuart,Z,T,C,2780,2031-04-03 07:25:00\n'+
+                  'QM-05,EN-01,Unnamed,B,T,E,3010,2031-04-04 06:10:00\n';
+                sanctuary.enclosure_record:
+                  'enclosure_code,enclosure_name,terrain_code,canopy_pct\n'+
+                  'EN-01,Heath Run,H,35\n'+
+                  'EN-02,Peppermint Grove,W,72\n';
+              }#
+          ];
+          asserts:
+          [
+            fourNamedMembers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MemberCode":"QM-01","GivenName":"Banksia","WeightGrams":3400,"Habit":"BROWSER","Health":"THRIVING","Pouch":"CARRYING","EnclosureName":"Heath Run"},{"MemberCode":"QM-02","GivenName":"Marri","WeightGrams":2950,"Habit":"GRAZER","Health":"MONITORED","Pouch":"EMPTY","EnclosureName":"Heath Run"},{"MemberCode":"QM-03","GivenName":"Karri","WeightGrams":3120,"Habit":"MIXED","Health":"RECOVERING","Pouch":"EMPTY","EnclosureName":"Peppermint Grove"},{"MemberCode":"QM-04","GivenName":"Tuart","WeightGrams":2780,"Habit":null,"Health":"THRIVING","Pouch":"CARRYING","EnclosureName":"Peppermint Grove"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

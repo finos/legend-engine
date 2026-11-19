@@ -1,0 +1,112 @@
+name: jade-estuary
+title: "Jade Estuary Bird Ringing Register — an aggregation-aware lane tally, an eight-arm plumage conditional, three composed enumerations, a four-hop outer-joined warden path, joined-table permits and an inline lane mesh"
+description: |
+  An estuary bird-ringing register over one cross-schema relational store. A
+  ringing schema owns the business-milestoned ringing record relation together
+  with the unmilestoned net lane, ringing station, ring holder and holder permit
+  relations; a census schema owns the zone, rostered warden and warden base
+  relations that chain into a reference path; and a tally schema owns the per
+  round lane log relation, a day rollup relation and a grouped inline view over
+  the lane log. Eight joins chain the relations, two of them folding the record
+  side to upper case inside the join condition rather than comparing bare
+  columns, and one named filter trims and cases the lane open flag before
+  comparing it. A base mapping supplies the net lane root with that filter, an
+  inline lane mesh carried on the lane relation itself, the ring holder root and
+  a certified holder specialisation that extends the holder set implementation
+  and assembles its permit columns across a second relation; the register mapping
+  includes it rather than restating it. That mapping derives a plumage label from
+  an eight-arm conditional chain of nested relational dyna functions ending in a
+  null sentinel, decodes the plumage stage from a bare column, composes the
+  effort band, the moult stage and the lane grade from nested conditional and
+  string dyna functions rather than bare columns, pins the survey source to a
+  literal, divides the mass across the wing measurement, doubles a coalesced wing
+  index, chooses the tag key casing from a prefix test, binds the lane round tally
+  and catch total to the aggregating view, walks a one-hop station name and a
+  four-hop warden base path whose later hops are declared outer, carries the ring
+  holder through an association, and reaches the lane through a cross-table
+  filter. A lane tally class declares a day-rollup aggregate set implementation
+  alongside its per-round detail set. Six mapping test suites assert the register:
+  every plumage arm, the null fallback and every composed enumeration over the
+  versions open on a queried date; every outer-join miss along the warden path
+  together with the view and association misses; the arithmetic and string
+  transforms; the joined-table permit columns; the inline lane mesh on the open
+  lanes only; and the grouped lane catch totals.
+
+modelSources:
+  model:
+    root: jade-estuary
+    files:
+      - test/jadeestuary/domain/EstuaryDomain.pure
+      - test/jadeestuary/mapping/EstuaryBaseMapping.pure
+      - test/jadeestuary/mapping/EstuaryEnumMapping.pure
+      - test/jadeestuary/mapping/EstuaryRegisterMapping.pure
+      - test/jadeestuary/store/EstuaryRegisterDb.pure
+
+features:
+  - execution:mapping-test
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:aggregation-aware-mapping
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-inline-embedded
+  - mapping:relational-joined-table-inheritance
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-cross-table-filter
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+  - store:relational-outer-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - aggregation-aware
+  - association-mapping
+  - bird-ringing
+  - business-temporal
+  - conditional-cascade
+  - cross-schema
+  - cross-table-filter
+  - duckdb
+  - dyna-function
+  - enum-of-expression
+  - enumeration-mapping
+  - inline-embedded
+  - inline-view
+  - inner-join
+  - joined-table-inheritance
+  - mapping-include
+  - mapping-test
+  - multi-hop-join-path
+  - nested-join
+  - null-sentinel
+  - outer-join
+  - point-in-time-query
+  - relational
+  - store-filter
+  - view-backed-property

@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::scarletarboretum4::service::StewardedRecordRegister
+{
+  pattern: '/arboretum/v1/stewarded-records';
+  title: 'Scarlet Arboretum - Stewarded Record Register';
+  owners:
+  [
+    'arboretum-register-desk'
+  ];
+  documentation: 'Graph-fetches only the published records whose stewards narrow to the walked-survey subtype, so the request reaches a property the supertype does not declare, and additionally guards the ring count against a supplied floor and the measurement date against a day count back from the supplied date.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {minRingCount: Integer[1], asOfDate: StrictDate[1]|test::scarletarboretum4::domain::ArboretumRecord.all()->subType(@test::scarletarboretum4::domain::WalkedSurveyRecord)->filter(r | (($r.ringCount->isEmpty()) || ($r.ringCount->toOne() >= $minRingCount)) && (($r.measuredOn->isEmpty()) || ($r.measuredOn->toOne()->dateDiff($asOfDate, meta::pure::functions::date::DurationUnit.DAYS) <= 900)))->graphFetch(
+      #{
+        test::scarletarboretum4::domain::WalkedSurveyRecord
+        {
+          recordRef,
+          specimenLabel,
+          rosterCode,
+          ringCount,
+          measuredOn,
+          careTags,
+          stewards
+          {
+            stewardCode,
+            displayLabel,
+            tier
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::scarletarboretum4::domain::WalkedSurveyRecord
+        {
+          recordRef,
+          specimenLabel,
+          rosterCode,
+          ringCount,
+          measuredOn,
+          careTags,
+          stewards
+          {
+            stewardCode,
+            displayLabel,
+            tier
+          }
+        }
+      }#
+    )};
+    mapping: test::scarletarboretum4::mapping::ArboretumDigestM2M;
+    runtime: test::scarletarboretum4::runtime::ArboretumSubmissionRuntime;
+  }
+  testSuites:
+  [
+    stewardedRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          specimenSubmissionConnection: Reference
+            #{
+              test::scarletarboretum4::data::SpecimenSubmissionFixtures
+            }#
+        ]
+      ]
+      tests:
+      [
+        walkedSurveyStewardsOnly:
+        {
+          parameters:
+          [
+            minRingCount = 100,
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            recordsWithARosteredSteward:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"recordRef":"FLD-SV-31","specimenLabel":"SPECIMEN QC-31","rosterCode":"RS-SR-4","ringCount":210,"measuredOn":"2026-05-02","careTags":["CARE/MULCHED"],"stewards":[{"stewardCode":"SR-4","displayLabel":"FIELD/PT-2","tier":"ROBUST"}]}}';
+                  }#;
+              }#
+          ]
+        },
+        aRingFloorNoRecordClearsReturnsNothing:
+        {
+          parameters:
+          [
+            minRingCount = 5000,
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            emptyStewardedRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

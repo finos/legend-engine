@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblemeadow5::mapping::PlotDigestM2M
+(
+  *test::noblemeadow5::domain::PlotDigest[digest]: Pure
+  {
+    ~src test::noblemeadow5::domain::PollinatorPlot
+    digestKey: $src.plotId,
+    digestName: $src.plotName,
+    habitatText: $src.habitatLabel,
+    visitText: $src.visitTally->toString(),
+    wardenText: $src.wardenNote,
+    feedLabel: 'MEADOW-POLLINATOR-FEED'
+  }
+
+  testSuites:
+  [
+    plotDigestSuite:
+    {
+      function: |test::noblemeadow5::domain::PlotDigest.all()->graphFetch(
+        #{
+          test::noblemeadow5::domain::PlotDigest{
+            digestKey,
+            digestName,
+            habitatText,
+            visitText,
+            wardenText,
+            feedLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::noblemeadow5::domain::PlotDigest{
+            digestKey,
+            digestName,
+            habitatText,
+            visitText,
+            wardenText,
+            feedLabel
+          }
+        }#
+      );
+      tests:
+      [
+        digestFromResolvedPlot:
+        {
+          doc: 'Reshapes a plot instance produced by the relational layer into the published digest, renaming properties and stamping the constant feed label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::noblemeadow5::domain::PollinatorPlot:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plotId":1,"plotName":"UPPER CORRIE MEADOW","habitatLabel":"HAB-DRY-CALCAREOUS","visitTally":44,"wardenNote":"early flowering"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            digestShape:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestKey":1,"digestName":"UPPER CORRIE MEADOW","habitatText":"HAB-DRY-CALCAREOUS","visitText":"44","wardenText":"early flowering","feedLabel":"MEADOW-POLLINATOR-FEED"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

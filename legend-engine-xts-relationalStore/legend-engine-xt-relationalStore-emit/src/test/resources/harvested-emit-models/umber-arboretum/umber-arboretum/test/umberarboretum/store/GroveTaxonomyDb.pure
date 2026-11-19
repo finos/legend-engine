@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::umberarboretum::store::GroveTaxonomyDb
+(
+  include test::umberarboretum::store::GroveCoreDb
+
+  Schema tax
+  (
+    Table taxon
+    (
+      taxon_id INTEGER PRIMARY KEY,
+      taxon_name VARCHAR(60),
+      family_id INTEGER
+    )
+
+    Table taxon_family
+    (
+      family_id INTEGER PRIMARY KEY,
+      family_name VARCHAR(60),
+      clade_id INTEGER
+    )
+
+    Table taxon_clade
+    (
+      clade_id INTEGER PRIMARY KEY,
+      clade_name VARCHAR(60)
+    )
+  )
+
+  Join Specimen_Taxon(arb.specimen.taxon_id = tax.taxon.taxon_id)
+  Join Taxon_Family(tax.taxon.family_id = tax.taxon_family.family_id)
+  Join Family_Clade(tax.taxon_family.clade_id = tax.taxon_clade.clade_id)
+)

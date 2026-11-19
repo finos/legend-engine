@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonfossil4::domain::*;
+import test::crimsonfossil4::profile::*;
+
+Class <<temporal.businesstemporal, DigVocabulary.publishedSurface>> test::crimsonfossil4::domain::SpecimenAccession
+{
+  catalogCode: String[1];
+  registerName: String[1];
+  matrix: MatrixType[1];
+}
+
+Class <<temporal.businesstemporal, DigVocabulary.publishedSurface>> test::crimsonfossil4::domain::LoanPermit
+{
+  permitCode: String[1];
+  catalogCode: String[1];
+  grantedTo: String[1];
+}
+
+Class <<temporal.businesstemporal, DigVocabulary.internalSurface>> test::crimsonfossil4::domain::PreparatorPosting
+{
+  preparatorCode: String[1];
+  postingRole: String[1];
+}
+
+Class <<temporal.businesstemporal, DigVocabulary.internalSurface>> test::crimsonfossil4::domain::MatrixAssessment
+{
+  catalogCode: String[1];
+  matrix: MatrixType[1];
+  band: StratumBand[1];
+}
+
+Class <<temporal.businesstemporal, DigVocabulary.publishedSurface>> test::crimsonfossil4::domain::StorageAssignment
+{
+  assignmentCode: String[1];
+  catalogCode: String[1];
+  storageClass: StorageClass[1];
+}
+
+Association test::crimsonfossil4::domain::AccessionToPermits
+{
+  accession: SpecimenAccession[1];
+  permits: LoanPermit[*];
+}
+
+Association test::crimsonfossil4::domain::AccessionToAssessments
+{
+  assessedAccession: SpecimenAccession[1];
+  assessments: MatrixAssessment[*];
+}

@@ -1,0 +1,198 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cedarhatchery::service::RiverStockDigest
+{
+  pattern: '/cedarhatchery/riverStockDigest';
+  ownership: UserList { users: ['hatchery-river-desk'] };
+  documentation: 'Serves the mapped river measure grain, dropping the high-loss band before graph-fetching it, so the transformed view of the tank register is exposed as the reconciliation counterpart of the raw rollup.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::cedarhatchery::domain::RiverUnitMeasure.all()->filter(m|$m.lossBand != 'high-loss')->graphFetch(#{test::cedarhatchery::domain::RiverUnitMeasure{measureCode, periodMonth, unitCode, keeperName, stockCount, releaseCount, lossBand, gradeLabel}}#)->serialize(#{test::cedarhatchery::domain::RiverUnitMeasure{measureCode, periodMonth, unitCode, keeperName, stockCount, releaseCount, lossBand, gradeLabel}}#);
+    mapping: test::cedarhatchery::mapping::HatcheryMeasureMapping;
+    runtime: test::cedarhatchery::runtime::RiverUnitRuntime;
+  }
+  testSuites:
+  [
+    riverDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          riverTankFeed:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"tankCode":"tk-10","cycleMonth":"2026-03","unitRef":"river-a","species":"Brook Trout","leadKeeper":"Ada Vance","fryCount":100,"batchCounts":[25],"releasedCount":11,"lossCount":15,"loggedOn":"2026-03-31","transferFlag":"INTERNAL"}]';
+            }#,
+          riverRegisterFeed:
+            Relational
+            #{
+              register.register_row:
+                'register_code,period_month,unit_code,keeper_name,stock_count,release_count,loss_count\n'+
+                'RG-0A,2026-03,RIVER-A,Ada Vance,100,11,15\n'+
+                'RG-0B,2026-03,RIVER-A,Ada Vance,25,0,0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        mappedRiverRowSurvivesTheLossFilter:
+        {
+          asserts:
+          [
+            oneMappedRiverMeasure:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"measureCode":"TK-10","periodMonth":"2026-03","unitCode":"RIVER-A","keeperName":"Ada Vance","stockCount":125,"releaseCount":11,"lossBand":"low-loss","gradeLabel":"internal transfer"}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::cedarhatchery::service::RiverStockRollup
+{
+  pattern: '/cedarhatchery/riverStockRollup';
+  ownership: UserList { users: ['hatchery-river-desk'] };
+  documentation: 'Aggregates the legacy river register directly instead of the mapped grain - keeping the two river rearing units above a stock floor and grouping by period and unit while summing both measures - so its raw totals are the baseline the mapped digest must agree with, including a key carrying several rows and a key carrying exactly one.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::cedarhatchery::domain::RegisterRow.all()->filter(r|($r.unitCode->in(['RIVER-A', 'RIVER-B'])) && ($r.stockCount >= 10))->groupBy([r|$r.periodMonth, r|$r.unitCode], [agg(r|$r.stockCount, y|$y->sum()), agg(r|$r.releaseCount, y|$y->sum())], ['PeriodMonth', 'UnitCode', 'TotalStock', 'TotalReleased'])->sort([asc('PeriodMonth'), asc('UnitCode')]);
+    mapping: test::cedarhatchery::mapping::RegisterMapping;
+    runtime: test::cedarhatchery::runtime::RiverUnitRuntime;
+  }
+  testSuites:
+  [
+    riverRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          riverRegisterFeed:
+            Relational
+            #{
+              register.register_row:
+                'register_code,period_month,unit_code,keeper_name,stock_count,release_count,loss_count\n'+
+                'RG-1,2026-01,RIVER-A,Ada Vance,60,5,10\n'+
+                'RG-2,2026-01,RIVER-A,Ada Vance,20,2,30\n'+
+                'RG-3,2026-02,RIVER-B,Ivo Blum,15,4,\n'+
+                'RG-4,2026-02,CREEK-A,Jo Vane,90,9,5\n'+
+                'RG-5,2026-02,RIVER-B,Jo Vane,5,1,2\n';
+            }#,
+          riverTankFeed:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"tankCode":"tk-90","cycleMonth":"2026-01","unitRef":"river-a","species":"Sculpin","leadKeeper":"Hana Ito","fryCount":60,"releasedCount":5,"lossCount":10}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        severalRowsPerKeyAndOneRowPerKey:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoAggregatedKeys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PeriodMonth":"2026-01","UnitCode":"RIVER-A","TotalStock":80,"TotalReleased":7},{"PeriodMonth":"2026-02","UnitCode":"RIVER-B","TotalStock":15,"TotalReleased":4}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::cedarhatchery::service::RiverReconciliationRollup
+{
+  pattern: '/cedarhatchery/riverReconciliationRollup';
+  ownership: UserList { users: ['hatchery-river-desk'] };
+  documentation: 'Aggregates the legacy register over the very fixture the mapped digest transforms, grouping by period and rearing unit and summing the stock and release measures, so the raw totals can be compared column by column with the mapped grain the digest serves.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::cedarhatchery::domain::RegisterRow.all()->filter(r|$r.unitCode == 'RIVER-A')->groupBy([r|$r.periodMonth, r|$r.unitCode], [agg(r|$r.stockCount, y|$y->sum()), agg(r|$r.releaseCount, y|$y->sum())], ['PeriodMonth', 'UnitCode', 'TotalStock', 'TotalReleased'])->sort([asc('PeriodMonth')]);
+    mapping: test::cedarhatchery::mapping::RegisterMapping;
+    runtime: test::cedarhatchery::runtime::RiverUnitRuntime;
+  }
+  testSuites:
+  [
+    riverReconciliationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          riverRegisterFeed:
+            Relational
+            #{
+              register.register_row:
+                'register_code,period_month,unit_code,keeper_name,stock_count,release_count,loss_count\n'+
+                'RG-0A,2026-03,RIVER-A,Ada Vance,100,11,15\n'+
+                'RG-0B,2026-03,RIVER-A,Ada Vance,25,0,0\n';
+            }#,
+          riverTankFeed:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"tankCode":"tk-10","cycleMonth":"2026-03","unitRef":"river-a","species":"Brook Trout","leadKeeper":"Ada Vance","fryCount":100,"batchCounts":[25],"releasedCount":11,"lossCount":15,"loggedOn":"2026-03-31","transferFlag":"INTERNAL"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rawTotalsMatchTheMappedGrainOnTheSameFixture:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            aggregatedColumnsEqualTheMappedMeasures:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PeriodMonth":"2026-03","UnitCode":"RIVER-A","TotalStock":125,"TotalReleased":11}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

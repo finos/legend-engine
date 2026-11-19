@@ -1,0 +1,62 @@
+name: coral-warren-6
+title: "Coral Warren 6 - one keyed grouping endpoint over included stores and mappings, published through a data space"
+description: |
+  A municipal composting yard register built as two layers that only work together: a core
+  store and mapping holding the operating sites, and a yard store and mapping that include
+  them and add the business-temporal windrows and their depth-graded temperature probes.
+  A single environment-keyed execution carries the whole read: it resolves the windrows
+  standing at a business date, narrows them with a seven-armed predicate that pins the
+  published regime literally, requires the recorded ward to still agree with the ward of the
+  operating site, requires at least one core-depth probe on the pile through a to-many
+  existence test, and then groups the survivors by site into a summed, counted and largest
+  tonnage. The store is reached through a Mem SQL static datasource under delegated Kerberos
+  whose statements are schema- and table-rewritten by a SQL post-processor, and the endpoint
+  is published to consumers as the featured executable of a data space. A further mapping
+  includes the core site mapping with its store substituted by the yard store, so the same
+  site binding reads the yard store directly under a membership-filtered, deduplicated suite.
+modelSources:
+  model:
+    root: coral-warren-6
+    files:
+      - test/coralwarren6/connection/CompostConnection.pure
+      - test/coralwarren6/dataspace/CompostDataSpace.pure
+      - test/coralwarren6/domain/CompostDomain.pure
+      - test/coralwarren6/mapping/CompostSiteMapping.pure
+      - test/coralwarren6/mapping/CompostSiteYardMapping.pure
+      - test/coralwarren6/mapping/CompostYardMapping.pure
+      - test/coralwarren6/runtime/CompostRuntime.pure
+      - test/coralwarren6/service/WindrowTonnageTally.pure
+      - test/coralwarren6/store/CompostStores.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:multi-execution-service
+  - execution:service
+  - mapping:mapping-include
+  - mapping:mapping-include-store-substitution
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - compost-yard
+  - data-space
+  - duckdb
+  - exists
+  - group-by
+  - h2
+  - keyed-execution
+  - mapping-include
+  - memsql
+  - relation-grammar
+  - relational
+  - sql-postprocessor
+  - store-include

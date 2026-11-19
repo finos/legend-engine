@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonridge::mapping::NeighborhoodMapping
+(
+  *test::crimsonridge::domain::District[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonridge::store::CityDatabase]city.district.district_id
+    )
+    ~mainTable [test::crimsonridge::store::CityDatabase]city.district
+    code: [test::crimsonridge::store::CityDatabase]city.district.district_code,
+    name: [test::crimsonridge::store::CityDatabase]city.district.district_name,
+    plannerCount: [test::crimsonridge::store::CityDatabase]city.district.planner_count
+  }
+
+  *test::crimsonridge::domain::Neighborhood[neighborhood]: Relational
+  {
+    ~primaryKey
+    (
+      [test::crimsonridge::store::CityDatabase]city.neighborhood.neighborhood_id
+    )
+    ~mainTable [test::crimsonridge::store::CityDatabase]city.neighborhood
+    code: [test::crimsonridge::store::CityDatabase]city.neighborhood.neighborhood_code,
+    name: [test::crimsonridge::store::CityDatabase]city.neighborhood.neighborhood_name,
+    residentCount: [test::crimsonridge::store::CityDatabase]city.neighborhood.resident_count
+  }
+
+  test::crimsonridge::domain::DistrictNeighborhoods: Relational
+  {
+    AssociationMapping
+    (
+      district[neighborhood,district]: [test::crimsonridge::store::CityDatabase]@Neighborhood_District,
+      neighborhoods[district,neighborhood]: [test::crimsonridge::store::CityDatabase]@Neighborhood_District
+    )
+  }
+
+  testSuites:
+  [
+    testSuite_District:
+    {
+      function: |test::crimsonridge::domain::District.all()->project(
+        [
+          x|$x.code,
+          x|$x.name,
+          x|$x.plannerCount
+        ],
+        [
+          'Code',
+          'Name',
+          'Planners'
+        ]
+      );
+      tests:
+      [
+        allDistricts:
+        {
+          data:
+          [
+            test::crimsonridge::store::CityDatabase: Reference
+              #{
+                test::crimsonridge::data::CityFixture
+              }#
+          ];
+          asserts:
+          [
+            bothDistricts: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"D-N","Name":"Northgate","Planners":4},{"Code":"D-S","Name":"Southbank","Planners":3}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

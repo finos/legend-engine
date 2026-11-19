@@ -1,0 +1,159 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::umberaviary2::mapping::AviaryMapping
+(
+  *test::umberaviary2::domain::BirdHolding[birdHolding]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary2::store::AviaryDb]aviary.bird_holding.holding_id
+    )
+    ~mainTable [test::umberaviary2::store::AviaryDb]aviary.bird_holding
+    holdingCode: [test::umberaviary2::store::AviaryDb]aviary.bird_holding.holding_code,
+    ringId: [test::umberaviary2::store::AviaryDb]aviary.bird_holding.ring_id,
+    speciesCode: [test::umberaviary2::store::AviaryDb]aviary.bird_holding.species_code,
+    houseCode: [test::umberaviary2::store::AviaryDb]aviary.bird_holding.house_code,
+    clutchSize: [test::umberaviary2::store::AviaryDb]aviary.bird_holding.clutch_size
+  }
+
+  *test::umberaviary2::domain::BirdHouse[birdHouse]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary2::store::AviaryDb]aviary.bird_house.house_code
+    )
+    ~mainTable [test::umberaviary2::store::AviaryDb]aviary.bird_house
+    houseCode: [test::umberaviary2::store::AviaryDb]aviary.bird_house.house_code,
+    houseName: [test::umberaviary2::store::AviaryDb]aviary.bird_house.house_name,
+    keeperName: [test::umberaviary2::store::AviaryDb]aviary.bird_house.keeper_name
+  }
+
+  *test::umberaviary2::domain::SpeciesRef[speciesRef]: Relational
+  {
+    ~primaryKey
+    (
+      [test::umberaviary2::store::AviaryDb]aviary.species_ref.species_code
+    )
+    ~mainTable [test::umberaviary2::store::AviaryDb]aviary.species_ref
+    speciesCode: [test::umberaviary2::store::AviaryDb]aviary.species_ref.species_code,
+    speciesName: [test::umberaviary2::store::AviaryDb]aviary.species_ref.species_name,
+    taxonName: [test::umberaviary2::store::AviaryDb]aviary.species_ref.taxon_name
+  }
+
+  testSuites:
+  [
+    birdHoldingSuite:
+    {
+      function: test::umberaviary2::domain::BirdHolding.all(%2026-06-01)->project(~[holdingCode: x|$x.holdingCode, ringId: x|$x.ringId, speciesCode: x|$x.speciesCode, houseCode: x|$x.houseCode, clutchSize: x|$x.clutchSize]);
+      tests:
+      [
+        holdingsLiveOnTheProcessingDate:
+        {
+          doc: 'Resolves the aviary holdings live on the requested processing date; the superseded row and the row opened after that date both fall outside the processing-date window.';
+          data:
+          [
+            test::umberaviary2::store::AviaryDb:
+              Relational
+              #{
+                aviary.bird_holding:
+                  'holding_id,holding_code,ring_id,species_code,house_code,clutch_size,in_z,out_z\n'+
+                  'H01,AV-0001,RG-1001,SP-01,BH-1,2,2026-01-01,9999-12-31\n'+
+                  'H02,AV-0002,RG-1002,SP-02,BH-2,3,2026-01-01,9999-12-31\n'+
+                  'H03,AV-0003,RG-1003,SP-01,BH-1,1,2025-01-01,2025-12-31\n'+
+                  'H04,AV-0004,RG-1004,SP-03,BH-2,4,2026-09-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyRowsInsideTheProcessingWindow:
+              Relation
+              #{
+                holdingCode,ringId,speciesCode,houseCode,clutchSize
+                AV-0001,RG-1001,SP-01,BH-1,2
+                AV-0002,RG-1002,SP-02,BH-2,3;
+              }#
+          ];
+        }
+      ];
+    },
+    birdHouseSuite:
+    {
+      function: test::umberaviary2::domain::BirdHouse.all()->project(~[houseCode: x|$x.houseCode, houseName: x|$x.houseName, keeperName: x|$x.keeperName]);
+      tests:
+      [
+        everyHouseWithItsKeeper:
+        {
+          doc: 'Projects the unmilestoned bird-house relation contributed by the second table of the store.';
+          data:
+          [
+            test::umberaviary2::store::AviaryDb:
+              Relational
+              #{
+                aviary.bird_house:
+                  'house_code,house_name,keeper_name\n'+
+                  'BH-1,Canopy House,Rowan Ash\n'+
+                  'BH-2,Wader Pool House,Ilse Marsh\n';
+              }#
+          ];
+          asserts:
+          [
+            bothHouses:
+              Relation
+              #{
+                houseCode,houseName,keeperName
+                BH-1,Canopy House,Rowan Ash
+                BH-2,Wader Pool House,Ilse Marsh;
+              }#
+          ];
+        }
+      ];
+    },
+    speciesRefSuite:
+    {
+      function: test::umberaviary2::domain::SpeciesRef.all()->project(~[speciesCode: x|$x.speciesCode, speciesName: x|$x.speciesName, taxonName: x|$x.taxonName]);
+      tests:
+      [
+        everySpeciesWithItsTaxon:
+        {
+          doc: 'Projects the species reference relation contributed by the third table of the store, so all three relations of the multi-table store are exercised.';
+          data:
+          [
+            test::umberaviary2::store::AviaryDb:
+              Relational
+              #{
+                aviary.species_ref:
+                  'species_code,species_name,taxon_name\n'+
+                  'SP-01,Scarlet Sunbird,Nectariniidae\n'+
+                  'SP-02,Pied Avocet,Recurvirostridae\n'+
+                  'SP-03,Crested Wood Partridge,Phasianidae\n';
+              }#
+          ];
+          asserts:
+          [
+            allThreeSpecies:
+              Relation
+              #{
+                speciesCode,speciesName,taxonName
+                SP-01,Scarlet Sunbird,Nectariniidae
+                SP-02,Pied Avocet,Recurvirostridae
+                SP-03,Crested Wood Partridge,Phasianidae;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

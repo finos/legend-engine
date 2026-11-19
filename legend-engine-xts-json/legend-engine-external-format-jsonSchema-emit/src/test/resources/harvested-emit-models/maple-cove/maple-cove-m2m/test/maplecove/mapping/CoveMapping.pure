@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::maplecove::mapping::CoveMapping
+(
+  *test::maplecove::domain::TidePool[tidepool_feed]: Pure
+  {
+    ~src test::maplecove::domain::TidePoolFeed
+    habitatId: $src.id,
+    name: $src.nm,
+    salinity: $src.sal,
+    speciesCount: if($src.cnt < 0,
+                     | 0,
+                     | $src.cnt)
+  }
+
+  testSuites:
+  [
+    tidePoolTransformSuite:
+    {
+      function: |test::maplecove::domain::TidePool.all()->graphFetch(
+        #{
+          test::maplecove::domain::TidePool{
+            habitatId,
+            name,
+            salinity,
+            speciesCount
+          }
+        }#
+      )->serialize(
+        #{
+          test::maplecove::domain::TidePool{
+            habitatId,
+            name,
+            salinity,
+            speciesCount
+          }
+        }#
+      );
+      tests:
+      [
+        populatedPool:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::maplecove::domain::TidePoolFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":3,"nm":"North Ledge","sal":33.5,"cnt":7}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformed:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"habitatId":3,"name":"North Ledge","salinity":33.5,"speciesCount":7}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

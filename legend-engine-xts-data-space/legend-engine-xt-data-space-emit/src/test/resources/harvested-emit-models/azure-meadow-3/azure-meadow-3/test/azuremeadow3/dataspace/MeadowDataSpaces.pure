@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::azuremeadow3::dataspace::MeadowCutDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'cut';
+      description: 'Cut tier - the business-windowed hay cut register resolved against the meadow warehouse the desk signs off.';
+      mapping: test::azuremeadow3::mapping::MeadowCutMapping;
+      defaultRuntime: test::azuremeadow3::runtime::MeadowCutRuntime;
+    }
+  ];
+  defaultExecutionContext: 'cut';
+  title: 'Alpine Meadow Hay Cuts';
+  description: 'Governed entry point over the hay cut register, where a cut is read at a business date and reaches the parcel it was mown from, the terrace that parcel is cut into and the keeper who walks that terrace.';
+  diagrams:
+  [
+    {
+      title: 'Cut Structure';
+      diagram: test::azuremeadow3::diagram::MeadowCutDiagram;
+    }
+  ];
+  elements:
+  [
+    test::azuremeadow3::domain::HayCut,
+    test::azuremeadow3::domain::MeadowParcel
+  ];
+  supportInfo: Email
+  {
+    address: 'meadow-cut-desk@example.invalid';
+  };
+}
+
+
+###DataSpace
+DataSpace test::azuremeadow3::dataspace::MeadowTerraceDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'terrace';
+      description: 'Terrace tier - the parcel book, its alpine subtype and the terrace folds read without the cut register.';
+      mapping: test::azuremeadow3::mapping::MeadowRefMapping;
+      defaultRuntime: test::azuremeadow3::runtime::MeadowRefRuntime;
+    }
+  ];
+  defaultExecutionContext: 'terrace';
+  title: 'Alpine Meadow Terraces';
+  description: 'Discovery surface over the terrace estate of the meadow, packaging the parcel book, the alpine parcel subtype widened by its detail table and the two terrace folds - one folded by the mapping, one read off the store view.';
+  diagrams:
+  [
+    {
+      title: 'Terrace Folds';
+      diagram: test::azuremeadow3::diagram::MeadowTerraceDiagram;
+    }
+  ];
+  elements:
+  [
+    test::azuremeadow3::domain::AlpineParcel,
+    test::azuremeadow3::domain::TerraceLoad,
+    test::azuremeadow3::domain::TerraceSummary
+  ];
+  supportInfo: Email
+  {
+    address: 'meadow-terrace-desk@example.invalid';
+  };
+}

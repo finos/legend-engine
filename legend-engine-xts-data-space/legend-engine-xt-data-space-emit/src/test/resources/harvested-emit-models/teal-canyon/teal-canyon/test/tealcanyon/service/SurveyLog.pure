@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealcanyon::service::SurveyLog
+{
+  pattern: '/tealcanyon/v1/survey-log';
+  title: 'Canyon Field Survey Log';
+  owners:
+  [
+    'example-teal-canyon-field-office'
+  ];
+  documentation: 'Field survey readings with the gauge and the crew reached through the association implementations, and a scaled turbidity index.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::tealcanyon::domain::FieldSurvey.all()->project(
+      [
+        f|$f.surveyId,
+        f|$f.station.stationName,
+        f|$f.team.teamName,
+        f|$f.dischargeCms,
+        f|$f.turbidityNtu,
+        f|$f.turbidityNtu * 2,
+        f|$f.surveyId + ' #' + $f.turbidityNtu->toString()
+      ],
+      [
+        'Survey',
+        'Station',
+        'Team',
+        'Discharge Cms',
+        'Turbidity',
+        'Turbidity Index',
+        'Label'
+      ]
+    )->sort([asc('Survey')]);
+    mapping: test::tealcanyon::mapping::CanyonMapping;
+    runtime: test::tealcanyon::runtime::CanyonRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              canyon.field_survey:
+                'survey_id,surveyed_at,station_code,team_code,discharge_cms,turbidity_ntu\n'+
+                'FS-1,2026-03-01 08:00:00.000,GS-1,TM-1,4.50,12\n'+
+                'FS-2,2026-03-02 09:30:00.000,GS-1,TM-2,5.25,9\n'+
+                'FS-3,2026-03-03 10:15:00.000,GS-2,TM-1,2.10,21\n'+
+                'FS-4,2026-03-04 11:45:00.000,GS-9,TM-1,1.05,33\n';
+              canyon.gauge_station:
+                'station_code,installed_on,reach_code,station_name,elevation_m,telemetry_live\n'+
+                'GS-1,2021-04-01,RC-1,Cliffside Gauge,845,true\n'+
+                'GS-2,2022-06-15,RC-2,Willow Bend Gauge,612,false\n';
+              canyon.survey_team:
+                'team_code,team_name\n'+
+                'TM-1,Canyon Hydrology Crew\n'+
+                'TM-2,Ridge Survey Crew\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_survey_log:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            assertion_log: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"FS-1","Station":"Cliffside Gauge","Team":"Canyon Hydrology Crew","Discharge Cms":4.50,"Turbidity":12,"Turbidity Index":24,"Label":"FS-1 #12"},{"Survey":"FS-2","Station":"Cliffside Gauge","Team":"Ridge Survey Crew","Discharge Cms":5.25,"Turbidity":9,"Turbidity Index":18,"Label":"FS-2 #9"},{"Survey":"FS-3","Station":"Willow Bend Gauge","Team":"Canyon Hydrology Crew","Discharge Cms":2.10,"Turbidity":21,"Turbidity Index":42,"Label":"FS-3 #21"},{"Survey":"FS-4","Station":null,"Team":"Canyon Hydrology Crew","Discharge Cms":1.05,"Turbidity":33,"Turbidity Index":66,"Label":"FS-4 #33"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+name: russet-thicket-4
+title: "Narrow-Gauge Heritage Railway Register — A Three-Level Rolling-Stock Inheritance Chain, Bidirectional Depot Relations and Processing-Temporal Shed Records"
+description: |
+  A store-less heritage-railway domain whose rolling-stock supertype is
+  specialised into locomotives, carriages and goods wagons and then specialised
+  again at a third level into steam and diesel locomotives and an observation
+  carriage, so property resolution walks an inheritance chain rather than a flat
+  type list. Seven declared associations link depots, branch lines, volunteer
+  crews and stock as bidirectional, multiplicity-bearing edges — one of them
+  many-to-many on both ends and two of them optional on one end — rather than
+  scalar key properties, and three of the linked extents are versioned on a
+  processing timeline so their accessors resolve against a processing window.
+  Four enumerations give closed value domains for track gauge, livery scheme,
+  haulage duty and shed condition, and the enumerated gauge and duty are read
+  both from the plain extents and from the processing-temporal ones.
+
+modelSources:
+  model:
+    root: russet-thicket-4
+    files:
+      - test/russetthicket4/domain/RailAssociations.pure
+      - test/russetthicket4/domain/RailDomain.pure
+      - test/russetthicket4/domain/RailEnums.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - class-inheritance
+  - enumeration
+  - heritage-railway
+  - processing-temporal
+  - store-less

@@ -1,0 +1,69 @@
+name: boreal-cove-2
+title: "Boreal Cove 2 — Community Compost Network Whose Seven Bidirectional Associations Are Bound Onto Declared Joins, With A Cold Archive Store Behind A Rewriting Connection"
+description: |
+  A community composting network of seven classes wired to each other by seven
+  bidirectional associations, each bound in the mapping onto one declared join so traversal
+  from either end resolves to the same SQL join rather than an inferred one. The live store
+  carries a dyna-function view whose computed tag is read back through a join, two filters
+  that hide closed sites and scrapped bins, and deep computed columns: a nested status
+  vocabulary, a literal-defaulted note, arithmetic net weight and rounded tonnage, a
+  two-branch load band and a grade label built from nested string functions. A second cold
+  store holds retired rows under different table names in its own schema and is mapped by
+  a separate mapping whose alias carries a literal status, reached through a connection
+  whose post-processors rewrite the schema and table before execution so the executed
+  statement never names what the mapping names. Two parameterised services publish the
+  haul log of one site and the roster of one ward, each keeping only listed values, and
+  both mappings and both services carry assertions.
+modelSources:
+  model:
+    root: boreal-cove-2
+    files:
+      - test/borealcove2/connection/CompostConnections.pure
+      - test/borealcove2/domain/CompostDomain.pure
+      - test/borealcove2/mapping/CompostArchiveMapping.pure
+      - test/borealcove2/mapping/CompostMapping.pure
+      - test/borealcove2/runtime/CompostRuntimes.pure
+      - test/borealcove2/service/HaulLogFeed.pure
+      - test/borealcove2/service/SiteRosterFeed.pure
+      - test/borealcove2/store/CompostArchiveDB.pure
+      - test/borealcove2/store/CompostDB.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-view
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - compost-network
+  - connection-post-processor
+  - deep-transform
+  - dyna-function-view
+  - h2
+  - literal-mapping
+  - relational
+  - service-test
+  - store-filter
+  - two-store

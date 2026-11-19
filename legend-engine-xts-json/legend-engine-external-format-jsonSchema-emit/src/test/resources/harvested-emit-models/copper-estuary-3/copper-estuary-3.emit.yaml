@@ -1,0 +1,68 @@
+name: copper-estuary-3
+title: "Copper Estuary 3 - Kiln Firing Digests Over Twin Relational Stores"
+description: |
+  A community pottery yard's kiln firing log, modelled as one small domain
+  class over two independent relational stores that carry the same table shape
+  under different schemas: the live firing log and its archive. Two root
+  relational mappings bind the single class to those two tables, two Snowflake
+  OAuth connections bind the stores physically, and two engine runtimes pair
+  each mapping with its own connection, so the identical query body resolves to
+  a different schema, table and connection depending only on the
+  mapping-and-runtime pair chosen at execution. Column types deliberately mix
+  string, integer, float and timestamp so the projections coerce across the
+  store type system, and the optional glaze-note column keeps an empty-optional
+  row in play throughout. Six services drive the query surface: a windowed
+  digest whose composite predicate conjoins a kiln equality with a lower and an
+  upper date-part comparison over the start timestamp and which then projects,
+  de-duplicates, orders, extends with a derived banner column and slices the
+  leading rows; a prefix variant that adds a clay-body string test as a fourth
+  operand; the same digest run against the archive pair; a cone roster that
+  filters on set membership and restricts the projection after building it; a
+  peak-temperature roster on a numeric floor; and a glaze roster that proves the
+  optional note is present before applying a string function to it. A JSON
+  external-format binding, backed by a JSON-schema schema set, ties the class to
+  its serialised payload shape including optionality. Service tests cover the
+  windowed digest, both arms of the prefix predicate and the archive pair.
+modelSources:
+  model:
+    root: copper-estuary-3
+    files:
+      - test/copperestuary3/binding/FiringBinding.pure
+      - test/copperestuary3/connection/KilnConnections.pure
+      - test/copperestuary3/domain/FiringDomain.pure
+      - test/copperestuary3/mapping/KilnMappings.pure
+      - test/copperestuary3/runtime/KilnRuntimes.pure
+      - test/copperestuary3/service/FiringServices.pure
+      - test/copperestuary3/store/KilnStores.pure
+features:
+  - execution:external-format-binding
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - date-part-window
+  - external-format-binding
+  - h2
+  - json-schema
+  - kiln-firing
+  - service-test
+  - snowflake
+  - snowflake-oauth
+  - tabular-data-set
+  - twin-store

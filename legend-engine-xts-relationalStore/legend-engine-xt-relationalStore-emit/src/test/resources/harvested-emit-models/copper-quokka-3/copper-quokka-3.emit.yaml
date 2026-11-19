@@ -1,0 +1,58 @@
+name: copper-quokka-3
+title: "Copper Quokka 3 - Season-Keyed Apiary Inspection Services With Rank Windows And Rollups"
+description: |
+  A bee-keeping cooperative records hive inspections across yards and queen
+  lineages. Season-keyed multi-execution services and single-execution
+  services, owned by user lists or deployment identifiers, filter on parameterised
+  inclusive date windows, membership lists and name prefixes, project through one-
+  and two-hop to-one paths, scale an optional honey weight only when present, group
+  with sums, maxima and distinct counts, de-duplicate lineage pairs, and rank
+  inspection dates per yard with a dense rank before keeping the busiest yard.
+
+modelSources:
+  model:
+    root: copper-quokka-3
+    files:
+      - test/copperquokka3/connection/ApiaryConnections.pure
+      - test/copperquokka3/data/ApiaryRows.pure
+      - test/copperquokka3/domain/ApiaryDomain.pure
+      - test/copperquokka3/mapping/ApiaryMapping.pure
+      - test/copperquokka3/runtime/ApiaryRuntimes.pure
+      - test/copperquokka3/service/ApiaryServices.pure
+      - test/copperquokka3/store/ApiaryDb.pure
+
+features:
+  - execution:multi-execution-service
+  - execution:test-data
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-test
+  - execution:service-user-ownership
+  - grammar:association
+  - query:conditional-projection
+  - query:date-comparison
+  - query:deep-property-path
+  - query:distinct
+  - query:filter
+  - query:group-by
+  - query:membership-test
+  - execution:service-parameter
+  - query:project
+  - query:sort-limit
+  - query:string-function
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+complexity: intermediate
+tags:
+  - apiary
+  - dense-rank-window
+  - group-by-rollup
+  - h2
+  - multi-execution
+  - parameterised-date-window
+stores:
+  - relational

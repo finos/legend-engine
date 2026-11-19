@@ -1,0 +1,30 @@
+name: crimson-marsh
+title: "Crimson Marsh - multi-execution service with point-in-time milestoning"
+description: |
+  Reed heights in a tidal marsh, modelled on a business-temporal class backed by a
+  business-milestoned relational table. A multi-execution service keyed on the
+  deployment environment serves an as-of (point-in-time) query across two execution
+  bindings. Multi-execution services are not TestRunner-executable in the standalone
+  harness, so the service is validated by parse, compile and execution-plan generation.
+modelSources:
+  model:
+    root: crimson-marsh
+    files:
+      - test/crimsonmarsh/connection/MarshConnection.pure
+      - test/crimsonmarsh/domain/Domain.pure
+      - test/crimsonmarsh/mapping/MarshMapping.pure
+      - test/crimsonmarsh/runtime/MarshRuntime.pure
+      - test/crimsonmarsh/service/MarshService.pure
+      - test/crimsonmarsh/store/MarshDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+complexity: basic
+tags:
+  - h2
+  - milestoning
+  - multi-execution
+  - point-in-time
+  - service

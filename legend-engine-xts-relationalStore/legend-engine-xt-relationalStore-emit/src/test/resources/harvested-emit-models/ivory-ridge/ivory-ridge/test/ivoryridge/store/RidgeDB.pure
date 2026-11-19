@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::ivoryridge::store::RidgeDB
+(
+  Schema ridge
+  (
+    Table trail_task
+    (
+      task_ref VARCHAR(24) PRIMARY KEY,
+      record_code VARCHAR(24) NOT NULL,
+      crew_code VARCHAR(24) NOT NULL,
+      survey_date DATE NOT NULL,
+      processed_at TIMESTAMP NOT NULL,
+      segment_code VARCHAR(24),
+      habitat_code VARCHAR(24),
+      unit_code VARCHAR(8),
+      priority_code VARCHAR(8),
+      direction_code VARCHAR(4),
+      tool_code VARCHAR(16),
+      weather_code VARCHAR(16),
+      gate_code VARCHAR(16),
+      permit_code VARCHAR(16),
+      marker_code VARCHAR(16),
+      upstream_ref_one VARCHAR(24),
+      upstream_ref_two VARCHAR(24),
+      upstream_ref_three VARCHAR(24),
+      quantity INTEGER,
+      length_metres INTEGER,
+      version_no INTEGER,
+      planned_date DATE,
+      closed_date DATE,
+      access_note VARCHAR(240)
+    )
+    Table task_pairing
+    (
+      pairing_id VARCHAR(24) PRIMARY KEY,
+      task_ref VARCHAR(24) NOT NULL,
+      exception_kind_code VARCHAR(4) NOT NULL,
+      raised_by VARCHAR(120),
+      valid_to DATE NOT NULL
+    )
+    Table task_classification
+    (
+      task_ref VARCHAR(24) NOT NULL,
+      class_code VARCHAR(16) NOT NULL,
+      class_name VARCHAR(120),
+      valid_to DATE NOT NULL
+    )
+    Table task_trailer
+    (
+      task_ref VARCHAR(24) NOT NULL,
+      trailer_text VARCHAR(240),
+      trailer_seq INTEGER,
+      valid_to DATE NOT NULL
+    )
+    Table pairing_detail
+    (
+      pairing_id VARCHAR(24) PRIMARY KEY,
+      status_code VARCHAR(4) NOT NULL,
+      note_text VARCHAR(240)
+    )
+  )
+
+  Join Task_Pairing
+  (
+    ridge.trail_task.task_ref = ridge.task_pairing.task_ref
+  )
+
+  Join Classification_Pairing
+  (
+    ridge.task_classification.task_ref = ridge.task_pairing.task_ref
+  )
+
+  Join Trailer_Pairing
+  (
+    ridge.task_trailer.task_ref = ridge.task_pairing.task_ref
+  )
+
+  Join Pairing_Detail
+  (
+    ridge.task_pairing.pairing_id = ridge.pairing_detail.pairing_id
+  )
+)

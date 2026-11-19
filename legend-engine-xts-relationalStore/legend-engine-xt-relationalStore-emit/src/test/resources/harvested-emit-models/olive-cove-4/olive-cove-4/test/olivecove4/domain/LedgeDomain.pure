@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A single counted visit to a nesting ledge in the cove: how many birds of one kind were seen on the ledge, which season the count belongs to, and which team walked the coast path to make it.'} test::olivecove4::domain::LedgeCount
+{
+  {doc.doc = 'Short code the census prints on the count sheet.'} countCode: String[1];
+  {doc.doc = 'Code of the ledge that was counted.'} ledgeCode: String[1];
+  {doc.doc = 'Code of the bird kind that was counted.'} speciesCode: String[1];
+  {doc.doc = 'Adult birds seen on the ledge.'} adultCount: Integer[1];
+  {doc.doc = 'Chicks seen on the ledge, absent when the visit was too early in the season for chicks to be recorded.'} chickCount: Integer[0..1];
+  {doc.doc = 'Season the count belongs to, held as the four-figure key the census orders its seasons by.'} seasonKey: String[1];
+  {doc.doc = 'Day the count was made.'} countedOn: StrictDate[1];
+  {doc.doc = 'Readable name of the ledge, reached by following the count onto the ledge register.'} ledgeName: String[0..1];
+  {doc.doc = 'Name of the cove the ledge sits in, reached by following the count onto the ledge register.'} coveName: String[0..1];
+  {doc.doc = 'Name of the team that made the count, reached by following the count onto the team register.'} teamName: String[0..1];
+  {doc.doc = 'Label stamped on every published count row, composed from a fixed census marker and the season the row belongs to.'} registerLabel: String[1];
+}
+
+Class {doc.doc = 'A nesting ledge in the cove, described with the running tallies the census keeps against it rather than against each visit.'} test::olivecove4::domain::CliffLedge
+{
+  {doc.doc = 'Short code of the ledge.'} ledgeCode: String[1];
+  {doc.doc = 'Readable name of the ledge.'} ledgeName: String[1];
+  {doc.doc = 'Name of the cove the ledge sits in.'} coveName: String[1];
+  {doc.doc = 'Which way the ledge faces, absent for the ledges recorded before aspect was noted.'} aspect: String[0..1];
+  {doc.doc = 'Counted visits recorded against the ledge, read from the tally the store derives rather than from the visits themselves.'} visitCount: Integer[0..1];
+  {doc.doc = 'Adult birds recorded against the ledge across every counted visit, read from the tally the store derives.'} totalAdults: Integer[0..1];
+}

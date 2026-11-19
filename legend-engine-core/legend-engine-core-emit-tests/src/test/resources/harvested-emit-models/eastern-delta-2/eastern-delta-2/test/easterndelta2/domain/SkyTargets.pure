@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::easterndelta2::domain::*;
+
+Class test::easterndelta2::domain::SkyTarget
+{
+  designation: String[1];
+  commonName: String[0..1];
+  kind: TargetKind[1];
+  catalogue: CatalogueOrigin[1];
+  rightAscensionHours: Float[1];
+  declinationDegrees: Float[1];
+  displayLabel() {if($this.commonName->isEmpty(), |'UNNAMED FIELD', |$this.commonName->toOne())}: String[1];
+}
+
+Class test::easterndelta2::domain::DeepSkyTarget extends SkyTarget
+{
+  apparentMagnitude: Float[1];
+  angularSizeArcminutes: Float[0..1];
+}
+
+Class test::easterndelta2::domain::GalaxyTarget extends DeepSkyTarget
+{
+  morphologyCode: String[1];
+  inclinationDegrees: Float[0..1];
+}
+
+Class test::easterndelta2::domain::NebulaTarget extends DeepSkyTarget
+{
+  emissionLines: String[*];
+  ionised: Boolean[1];
+}
+
+Class test::easterndelta2::domain::MinorBodyTarget extends SkyTarget
+{
+  orbitalPeriodDays: Float[0..1];
+  provisionalLabel: String[0..1];
+}

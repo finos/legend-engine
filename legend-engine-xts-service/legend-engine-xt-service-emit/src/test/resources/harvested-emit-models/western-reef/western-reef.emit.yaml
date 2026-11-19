@@ -1,0 +1,53 @@
+name: western-reef
+title: "Western Reef — Banded Reef-Survey Graph Transforms with Embedded-Runtime Graph-Fetch Services"
+description: |
+  A coral-reef monitoring corpus built entirely from model-to-model transforms.
+  An inbound survey record is banded by a nine-arm conditional over its optional
+  bleached fraction, its optional reef zone is coerced from an enumeration to a
+  text label under an emptiness guard, and its site and observer graphs are
+  projected by chained references to other class mappings inside the same mapping
+  element. A second mapping flattens the site block into a digest. Two
+  single-execution services fetch and serialise those object graphs as nested
+  documents, each embedding its runtime and its document-parsing model-store
+  connection inline rather than referencing packageable elements.
+
+modelSources:
+  model:
+    root: western-reef
+    files:
+      - test/westernreef/domain/ReefSurvey.pure
+      - test/westernreef/domain/ReefZone.pure
+      - test/westernreef/domain/SiteDigest.pure
+      - test/westernreef/mapping/ReefSurveyMapping.pure
+      - test/westernreef/mapping/SiteDigestMapping.pure
+      - test/westernreef/service/SiteDigests.pure
+      - test/westernreef/service/SurveyHealthBands.pure
+      - test/westernreef/source/SurveyFeed.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:embedded-runtime
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:enumeration
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-enum-to-string-coercion
+  - mapping:m2m-nested-class-mapping-reference
+  - mapping:m2m-transform
+  - execution:checked-graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - branch-coverage
+  - conditional-transform
+  - embedded-runtime
+  - enum-coercion
+  - graph-fetch
+  - model-to-model
+  - nested-class-mapping
+  - reef-survey
+  - store-less

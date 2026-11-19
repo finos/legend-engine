@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::sunlitwharf::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A calibrated instrument the harbour keeps ashore. Not versioned: the register holds only the instrument as it stands today.'} demo::sunlitwharf::domain::SurveyInstrument
+{
+  {doc.doc = 'Workshop identifier stencilled on the case.'} instrumentCode: String[1];
+  {doc.doc = 'What the instrument measures.'} purpose: String[1];
+  {doc.doc = 'Day the instrument was last calibrated.'} calibratedOn: StrictDate[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A length of the wharf a boat can be made fast against, versioned along the business timeline the harbour register is published on.'} demo::sunlitwharf::domain::MooringBerth
+{
+  {doc.doc = 'Identifier painted on the quay edge.'} berthCode: String[1];
+  {doc.doc = 'Name the berth is known by along the waterfront.'} berthName: String[1];
+  {doc.doc = 'Depth alongside at chart datum, in metres.'} depthAtDatumM: Float[1];
+  {doc.doc = 'Whether the berth may be taken up at present.'} mooringState: MooringState[1];
+  {doc.doc = 'Day the berth was last dredged.'} lastDredgedOn: StrictDate[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A boat the harbour runs its shoreline work from, versioned on the same timeline as the berths it lies against.'} demo::sunlitwharf::domain::SurveyBoat
+{
+  {doc.doc = 'Registration carried on the bow.'} boatCode: String[1];
+  {doc.doc = 'Name carried on the transom.'} boatName: String[1];
+  {doc.doc = 'What the hull is built from.'} hull: HullMaterial[1];
+  {doc.doc = 'Length overall in metres.'} lengthOverallM: Float[1];
+  {doc.doc = 'Day the boat entered harbour service.'} enteredServiceOn: StrictDate[1];
+  {doc.doc = 'Instruments carried aboard for the survey work.'} carriedInstruments: SurveyInstrument[*];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'One walked pass along the shoreline, versioned so a re-walk of the same stretch supersedes the earlier pass without losing it.'} demo::sunlitwharf::domain::ShorelineSurvey
+{
+  {doc.doc = 'Identifier the pass is logged under.'} surveyCode: String[1];
+  {doc.doc = 'Moment the observers set out.'} startedAt: DateTime[1];
+  {doc.doc = 'Stage of the tide the pass was walked on.'} tide: TideStage[1];
+  {doc.doc = 'How many observers walked the pass.'} observerCount: Integer[1];
+  {doc.doc = 'Free note the observers left against the pass.'} fieldNote: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'One animal record made on a shoreline pass, versioned so a later identification supersedes the field call.'} demo::sunlitwharf::domain::SpeciesSighting
+{
+  {doc.doc = 'Identifier the record is logged under.'} sightingCode: String[1];
+  {doc.doc = 'Broad group the animal belongs to.'} speciesGroup: SpeciesGroup[1];
+  {doc.doc = 'How firmly the animal was identified.'} confidence: SightingConfidence[1];
+  {doc.doc = 'How many individuals were counted.'} individualsCounted: Integer[1];
+  {doc.doc = 'Moment the record was made.'} recordedAt: DateTime[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A tide post read against the harbour datum, versioned so a re-levelled post keeps its earlier readings comparable.'} demo::sunlitwharf::domain::TideGaugePost
+{
+  {doc.doc = 'Identifier cast into the post collar.'} gaugeCode: String[1];
+  {doc.doc = 'Name the post is known by.'} gaugeName: String[1];
+  {doc.doc = 'Offset of the post zero from chart datum, in metres.'} datumOffsetM: Float[1];
+}
+
+Association {doc.doc = 'The boats lying against a berth, milestoned on the business timeline both ends share so the pairing is only true as of a date.'} demo::sunlitwharf::domain::Berth_Boat
+{
+  {doc.doc = 'The berth the boat lies against.'} berth: MooringBerth[0..1];
+  {doc.doc = 'The boats made fast along the berth.'} boats: SurveyBoat[*];
+}
+
+Association {doc.doc = 'The animal records made on a shoreline pass, with an optional pass end so an unattached record is still held.'} demo::sunlitwharf::domain::Survey_Sighting
+{
+  {doc.doc = 'The pass the record was made on.'} survey: ShorelineSurvey[0..1];
+  {doc.doc = 'The records made on the pass.'} sightings: SpeciesSighting[*];
+}
+
+Association {doc.doc = 'The tide posts a berth is levelled against, traversable from either end across the shared business timeline.'} demo::sunlitwharf::domain::Berth_Gauge
+{
+  {doc.doc = 'The berths levelled against the post.'} levelledBerths: MooringBerth[*];
+  {doc.doc = 'The posts the berth is levelled against.'} gauges: TideGaugePost[*];
+}

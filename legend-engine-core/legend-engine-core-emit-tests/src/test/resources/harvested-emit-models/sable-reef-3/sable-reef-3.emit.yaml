@@ -1,0 +1,49 @@
+name: sable-reef-3
+title: "Sable Reef - reef-monitoring platform metamodel with marker-only subtype hierarchies and storage-width stereotypes"
+description: |
+  A coastal reef-monitoring platform described as a pure metamodel in three layers. An
+  operational-metadata layer records pipeline runs, dataset deployments, ad-hoc triggers, storage
+  locations, job identifiers, loads, provisions and dependency edges around a deployment hub that
+  eleven associations reach from several directions, while the same relationships are duplicated as
+  plain identifier properties so navigation and stored reference can disagree. A specification layer
+  and a runtime layer organise sources, sinks, milestoning schemes, stores, connections and
+  authentication strategies into parallel inheritance chains whose leaves are mostly property-free:
+  a variant is discriminated by type identity alone, several bases are themselves empty, and the
+  deepest chains put three empty levels between a leaf and the nearest property-bearing ancestor.
+  A project profile carries both a stereotype that pins the generated storage width of every
+  surrogate identifier and cross-record reference - leaving counts and versions unannotated, so two
+  properties of the same declared type generate differently - and documentation tags recording that
+  the empty marker types were copied from an external specification. Ten enumerations close the
+  status, exception, severity, technology and format vocabularies, so the model models the same kind
+  of choice twice: as closed sets in the metadata layer and as subtypes in the specification layer.
+modelSources:
+  model:
+    root: sable-reef-3
+    files:
+      - test/sablereef3/domain/ReefOperationalMetadata.pure
+      - test/sablereef3/domain/ReefRelationships.pure
+      - test/sablereef3/domain/ReefRuntimeSpecification.pure
+      - test/sablereef3/domain/ReefSpecification.pure
+      - test/sablereef3/domain/ReefVocabulary.pure
+      - test/sablereef3/profile/ReefPlatformProfile.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:marker-subtype-hierarchy
+  - grammar:profile
+  - grammar:storage-type-stereotype
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - abstract-class
+  - association
+  - deep-inheritance
+  - enumeration
+  - marker-subtype
+  - metamodel
+  - profile
+  - recursive-specification
+  - reef-monitoring
+  - stereotype

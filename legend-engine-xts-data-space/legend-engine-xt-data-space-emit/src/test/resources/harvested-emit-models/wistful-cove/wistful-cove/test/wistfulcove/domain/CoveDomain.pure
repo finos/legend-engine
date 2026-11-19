@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::wistfulcove::domain::*;
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::wistfulcove::domain::MooringRecord
+{
+  mooringCode: String[1];
+  coveCode: String[1];
+  gradeCode: String[1];
+  hullLengthM: Float[1];
+  beamWidthM: Float[1];
+  lineCount: Integer[1];
+  surveyedOn: StrictDate[1];
+  deckAreaM2: Float[1];
+  berthZone: String[0..1];
+  shoreZoneName: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::wistfulcove::domain::CoveSite
+{
+  coveCode: String[1];
+  coveName: String[1];
+  shoreCode: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::wistfulcove::domain::ShoreZone
+{
+  shoreCode: String[1];
+  zoneName: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::wistfulcove::domain::SurveyNote
+{
+  mooringCode: String[1];
+  coveCode: String[1];
+  noteText: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::wistfulcove::domain::TenderRun
+{
+  mooringCode: String[1];
+  coveCode: String[1];
+  tenderCode: String[1];
+  tripCount: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::wistfulcove::domain::GradeBand
+{
+  gradeCode: String[1];
+  bandName: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> test::wistfulcove::domain::PatrolLog
+{
+  shoreCode: String[1];
+  patrolCode: String[1];
+  sweepCount: Integer[1];
+}
+
+Association test::wistfulcove::domain::Mooring_Site
+{
+  mooringsAtSite: MooringRecord[*];
+  site: CoveSite[1];
+}
+
+Association test::wistfulcove::domain::Site_Shore
+{
+  sitesOnShore: CoveSite[*];
+  shore: ShoreZone[1];
+}
+
+Association test::wistfulcove::domain::Mooring_Note
+{
+  notedMooring: MooringRecord[1];
+  notes: SurveyNote[*];
+}
+
+Association test::wistfulcove::domain::Mooring_Tender
+{
+  tenderedMooring: MooringRecord[1];
+  tenderRuns: TenderRun[*];
+}
+
+Association test::wistfulcove::domain::Site_Tender
+{
+  tenderedSite: CoveSite[1];
+  siteTenderRuns: TenderRun[*];
+}
+
+Association test::wistfulcove::domain::Site_Note
+{
+  notedSite: CoveSite[1];
+  siteNotes: SurveyNote[*];
+}

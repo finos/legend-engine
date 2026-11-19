@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::corallantern3::service::ReefTankRegisterService
+{
+  pattern: '/coral-lantern-3/v1/reef-tank-register/{businessDate}';
+  title: 'Coral Lantern 3 - Reef Tank Register';
+  documentation: 'Resolves the display tank extent at a business instant and reports each standing tank with the hall that holds it, its filled volume and its graded classification, so a tank closed before the instant is not published.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['reef-hall-curators'] };
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|test::corallantern3::domain::ReefTank.all($businessDate)->project(
+      [
+        t|$t.tankCode,
+        t|$t.hallCode,
+        t|$t.hallName,
+        t|$t.waterLitres,
+        t|$t.tankGrade
+      ],
+      [
+        'Tank',
+        'Hall',
+        'HallName',
+        'Litres',
+        'Grade'
+      ]
+    )};
+    mapping: test::corallantern3::mapping::ReefLightingMapping;
+    runtime: test::corallantern3::runtime::ReefLightingRuntime;
+  }
+  testSuites:
+  [
+    reefTankRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reefLighting:
+            Relational
+            #{
+              reefhall.reef_tank:
+                'tank_id,tank_code,hall_code,hall_name,water_litres,tank_grade,inspected_on,from_z,thru_z\n'+
+                '1,RT-01,RH-A,Coral Atrium,4200,PRIME,2026-03-05,2026-01-01,2026-03-01\n'+
+                '2,RT-02,RH-A,Coral Atrium,5200,PRIME,2026-03-12,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAtBusinessInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-04-01
+          ]
+          asserts:
+          [
+            onlyTheTankOpenAtTheInstantIsReported:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tank":"RT-02","Hall":"RH-A","HallName":"Coral Atrium","Litres":5200,"Grade":"PRIME"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

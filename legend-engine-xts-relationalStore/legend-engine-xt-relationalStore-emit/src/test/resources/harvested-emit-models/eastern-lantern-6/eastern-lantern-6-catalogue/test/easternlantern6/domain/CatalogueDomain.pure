@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Profile test::easternlantern6::domain::CatalogueProfile
+{
+  stereotypes: [curated, audited];
+  tags: [owner, retention];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::easternlantern6::domain::CatalogueProfile.curated>> {test::easternlantern6::domain::CatalogueProfile.owner = 'catalogue-desk', test::easternlantern6::domain::CatalogueProfile.retention = 'seven-years', meta::pure::profiles::doc.doc = 'One physical copy on a branch shelf, as the catalogue recorded it through a processing window.'} test::easternlantern6::domain::ShelfCopy
+{
+  copyCode: String[1];
+  titleCode: String[1];
+  branchCode: String[1];
+  formatCode: String[1];
+  conditionCode: String[1];
+  acquiredOn: StrictDate[1];
+  unitCost: Float[1];
+  catalogueLabel: String[1];
+  registerLabel: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::easternlantern6::domain::CatalogueProfile.audited>> {test::easternlantern6::domain::CatalogueProfile.owner = 'catalogue-desk', meta::pure::profiles::doc.doc = 'A catalogued title as it was recorded through a processing window, independent of the copies held of it.'} test::easternlantern6::domain::TitleRecord
+{
+  titleCode: String[1];
+  titleName: String[1];
+  subjectCode: String[1];
+  languageCode: String[1];
+}
+
+Class <<test::easternlantern6::domain::CatalogueProfile.curated>> {meta::pure::profiles::doc.doc = 'A lending branch, held without a temporal window because the branch register is restated in place.'} test::easternlantern6::domain::Branch
+{
+  branchCode: String[1];
+  branchName: String[1];
+  regionCode: String[1];
+}

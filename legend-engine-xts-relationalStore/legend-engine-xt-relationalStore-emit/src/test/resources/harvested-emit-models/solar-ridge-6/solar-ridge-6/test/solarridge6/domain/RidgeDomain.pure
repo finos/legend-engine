@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One daily reading of one panel string of a ridge-top solar array: the survey coordinates and measured quantities straight off the reading relation, plus the tilt, siting and soiling labels and the two indices the mapping derives from those measurements.'} test::solarridge6::domain::ArrayReading
+{
+  readingDate: StrictDate[1];
+  arrayCode: String[1];
+  stringCode: String[1];
+  tiltClass: String[0..1];
+  inverterState: String[0..1];
+  sitingLabel: String[0..1];
+  tiltBand: String[0..1];
+  soilingLabel: String[0..1];
+  panelCount: Integer[0..1];
+  irradianceWm2: Float[0..1];
+  irradianceIndexPct: Float[0..1];
+  outputKwh: Float[0..1];
+  yieldPerPanelKwh: Float[0..1];
+  soilingPct: Float[0..1];
+  downtimeMinutes: Integer[0..1];
+  noteLength: Integer[0..1];
+}

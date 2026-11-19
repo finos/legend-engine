@@ -1,0 +1,75 @@
+name: scarlet-apiary-2
+title: "Scarlet Apiary 2 — A Mushroom Cultivation Lab Whose Banded Block Labels Are All Derived In The Mapping And Re-Read By Derived Properties"
+description: |
+  A mushroom cultivation lab in which one relational mapping carries almost all of
+  the model's logic and the class layer reads it back.
+
+  Two enumerations fix the closed vocabularies the block record depends on — the
+  strain it was inoculated with and where it stands in the grow cycle — and two
+  enumeration mappings translate the stored two-letter codes onto those literals,
+  so the generated plan carries a value-to-literal translation rather than a raw
+  column read.
+
+  Eight classes form the domain surface. The central substrate block is the target
+  of the one root class mapping; a fruiting room and a strain reference are reached
+  from it over a single join hop each and are themselves mapped; a picked flush is
+  mapped off its own table. Four further shapes carry no physical backing at all: a
+  technician and a recipe joined by an association with navigable ends in both
+  directions (one to-one owner, one to-many recipe end), a flat inbound clipboard
+  sheet of scalars, and a rolled-up count surface.
+
+  The block's mapping exercises six derivation kinds. The flush class is an
+  eight-armed nested conditional over the picked yield whose fallback resolves to
+  no value; the humidity band is a three-armed conditional whose first arm also
+  claims the null-humidity row through a coalesce; the contamination flag reduces a
+  nullable code to two outcomes; the grade label concatenates a prefix onto the
+  stored code and defaults to a sentinel when it is absent; the inoculation date
+  falls back to the received date; the yield per kilogram is a rounded division
+  over a summed mass; and the room and strain labels are read across named joins
+  that miss when the referenced row is absent.
+
+  Two derived properties then recompute on the built instance: a readiness label
+  that walks a nested conditional over the mapped flush, grade, humidity and
+  contamination labels including the empty-flush and unset-grade paths, and a
+  boolean that reduces the contamination label. A Snowflake packageable connection
+  with delegated token authentication, an engine runtime and a data space with a
+  single named execution context complete the group, and two mapping test suites
+  assert every conditional arm, the fallback, both join misses and every derived
+  branch.
+modelSources:
+  model:
+    root: scarlet-apiary-2
+    files:
+      - test/scarletapiary2/connection/CultivationConnection.pure
+      - test/scarletapiary2/dataspace/CultivationDataSpace.pure
+      - test/scarletapiary2/domain/CultivationDomain.pure
+      - test/scarletapiary2/domain/CultivationVocabulary.pure
+      - test/scarletapiary2/mapping/CultivationMapping.pure
+      - test/scarletapiary2/runtime/CultivationRuntime.pure
+      - test/scarletapiary2/store/CultivationDb.pure
+features:
+  - execution:data-space
+  - grammar:association
+  - grammar:derived-property
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - test::scarletapiary2::store::CultivationDb
+complexity: intermediate
+tags:
+  - association
+  - conditional-transform
+  - data-space
+  - derived-property
+  - duckdb
+  - enumeration-mapping
+  - join-reached-column
+  - mapping-test
+  - mushroom-cultivation
+  - null-sentinel

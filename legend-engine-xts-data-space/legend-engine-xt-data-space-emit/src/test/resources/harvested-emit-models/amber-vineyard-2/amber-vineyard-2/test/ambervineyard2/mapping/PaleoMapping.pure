@@ -1,0 +1,142 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ambervineyard2::mapping::PaleoMapping
+(
+  include mapping test::ambervineyard2::mapping::PaleoBaseMapping
+
+  test::ambervineyard2::domain::FieldNote[note_primary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambervineyard2::store::PaleoStore]fossil.note_primary.note_id
+    )
+    ~mainTable [test::ambervineyard2::store::PaleoStore]fossil.note_primary
+    noteId: [test::ambervineyard2::store::PaleoStore]fossil.note_primary.note_id,
+    kind: [test::ambervineyard2::store::PaleoStore]fossil.note_primary.kind,
+    body: [test::ambervineyard2::store::PaleoStore]fossil.note_primary.body
+  }
+
+  test::ambervineyard2::domain::FieldNote[note_secondary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambervineyard2::store::PaleoStore]fossil.note_secondary.note_id
+    )
+    ~mainTable [test::ambervineyard2::store::PaleoStore]fossil.note_secondary
+    noteId: [test::ambervineyard2::store::PaleoStore]fossil.note_secondary.note_id,
+    kind: [test::ambervineyard2::store::PaleoStore]fossil.note_secondary.kind,
+    body: [test::ambervineyard2::store::PaleoStore]fossil.note_secondary.body
+  }
+
+  *test::ambervineyard2::domain::FieldNote: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(note_primary, note_secondary)
+  }
+
+  test::ambervineyard2::domain::Fossil_DigSite: Relational
+  {
+    AssociationMapping
+    (
+      digSite[fossil_set, digsite_set]: [test::ambervineyard2::store::PaleoStore]@Fossil_Site,
+      fossils[digsite_set, fossil_set]: [test::ambervineyard2::store::PaleoStore]@Fossil_Site
+    )
+  }
+
+  test::ambervineyard2::domain::DigSite_Excavator: Relational
+  {
+    AssociationMapping
+    (
+      excavator[digsite_set, excavator_set]: [test::ambervineyard2::store::PaleoStore]@Site_Excavator,
+      sites[excavator_set, digsite_set]: [test::ambervineyard2::store::PaleoStore]@Site_Excavator
+    )
+  }
+
+  testSuites:
+  [
+    fossilProjectionSuite:
+    {
+      function: |test::ambervineyard2::domain::Fossil.all(%2026-06-01)->project(
+        [
+          col(f|$f.catalogueNumber, 'Cat'),
+          col(f|$f.eraLabel, 'Era'),
+          col(f|if($f.grade->isEmpty(), |'NONE', |$f.grade->toOne()->toString()), 'Grade'),
+          col(f|$f.excavatorName, 'Excavator'),
+          col(f|$f.parentCatalogue, 'Parent'),
+          col(f|$f.authority, 'Authority'),
+          col(f|$f.sourceRegister, 'Register')
+        ]
+      )->sort([asc('Cat')]);
+      tests:
+      [
+        projectedRows:
+        {
+          doc: 'Projects the eight-arm era conditional (each arm and the null fallback), the enum-of-expression grade, the two-hop excavator join, the self-join parent, the cross-table-filtered authority and the literal register for in-window fossils, excluding a business-milestoning-out-of-range row.';
+          data:
+          [
+            test::ambervineyard2::store::PaleoStore:
+              Relational
+              #{
+                site.excavator:
+                  'excavator_id,excavator_code,excavator_name\n'+
+                  '1,EXC-1,North Field Crew\n'+
+                  '2,EXC-2,South Ridge Crew\n';
+                site.dig_site:
+                  'site_id,site_code,site_name,excavator_id,site_status\n'+
+                  '1,S-1,Ridgeline Quarry,1,OPEN\n'+
+                  '2,S-2,Canyon Wash,2,OPEN\n';
+                catalog.taxon_ref:
+                  'ref_code,ref_type_code,authority_name\n'+
+                  'R-1,PRIMARY,Global Taxon Registry\n';
+                fossil.note_primary:
+                  'note_id,kind,body\n'+
+                  'N-1,FIELD,Recovered near the ridge face\n';
+                fossil.note_secondary:
+                  'note_id,kind,body\n'+
+                  'N-9,LAB,Catalogued after cleaning\n';
+                fossil.dig_fossil:
+                  'fossil_id,catalogue_number,taxon_name,era_code,grade_code,collector,method,length_cm,mass_g,ref_code,site_id,parent_fossil_id,valid_from,valid_thru\n'+
+                  '1,F-01,Taxon A,1,3,Crew A,surface,10.5,100.0,R-1,1,,2026-01-01,9999-12-31\n'+
+                  '2,F-02,Taxon B,2,2,Crew A,surface,9.0,80.0,,1,1,2026-01-01,9999-12-31\n'+
+                  '3,F-03,Taxon C,3,1,Crew B,core,,,,,,2026-01-01,9999-12-31\n'+
+                  '4,F-04,Taxon D,4,0,Crew B,core,5.0,20.0,,2,,2026-01-01,9999-12-31\n'+
+                  '5,F-05,Taxon E,5,1,Crew C,surface,6.0,30.0,,2,,2026-01-01,9999-12-31\n'+
+                  '6,F-06,Taxon F,6,2,Crew C,surface,7.0,40.0,,1,,2026-01-01,9999-12-31\n'+
+                  '7,F-07,Taxon G,7,3,Crew D,core,8.0,50.0,,1,,2026-01-01,9999-12-31\n'+
+                  '8,F-08,Taxon H,8,0,Crew D,core,9.5,60.0,,2,,2026-01-01,9999-12-31\n'+
+                  '9,F-09,Taxon I,99,99,Crew E,surface,4.0,10.0,,,,2026-01-01,9999-12-31\n'+
+                  '10,F-10,Taxon J,1,1,Crew E,surface,3.0,12.0,,2,,2026-01-01,9999-12-31\n'+
+                  '11,F-11,Taxon K,2,2,Crew F,core,2.0,8.0,,1,,2026-01-01,9999-12-31\n'+
+                  '12,F-12,Taxon L,1,1,Crew F,core,1.0,5.0,,1,,2020-01-01,2021-01-01\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Cat" : "F-01",\n  "Era" : "PRECAMBRIAN",\n  "Grade" : "CRITICAL",\n  "Excavator" : "North Field Crew",\n  "Parent" : null,\n  "Authority" : "Global Taxon Registry",\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-02",\n  "Era" : "CAMBRIAN",\n  "Grade" : "FRAGILE",\n  "Excavator" : "North Field Crew",\n  "Parent" : "F-01",\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-03",\n  "Era" : "ORDOVICIAN",\n  "Grade" : "STABLE",\n  "Excavator" : null,\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-04",\n  "Era" : "SILURIAN",\n  "Grade" : "PRISTINE",\n  "Excavator" : "South Ridge Crew",\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-05",\n  "Era" : "DEVONIAN",\n  "Grade" : "STABLE",\n  "Excavator" : "South Ridge Crew",\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-06",\n  "Era" : "CARBONIFEROUS",\n  "Grade" : "FRAGILE",\n  "Excavator" : "North Field Crew",\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-07",\n  "Era" : "PERMIAN",\n  "Grade" : "CRITICAL",\n  "Excavator" : "North Field Crew",\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-08",\n  "Era" : "TRIASSIC",\n  "Grade" : "PRISTINE",\n  "Excavator" : "South Ridge Crew",\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-09",\n  "Era" : null,\n  "Grade" : "NONE",\n  "Excavator" : null,\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-10",\n  "Era" : "PRECAMBRIAN",\n  "Grade" : "STABLE",\n  "Excavator" : "South Ridge Crew",\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n}, {\n  "Cat" : "F-11",\n  "Era" : "CAMBRIAN",\n  "Grade" : "FRAGILE",\n  "Excavator" : "North Field Crew",\n  "Parent" : null,\n  "Authority" : null,\n  "Register" : "PALEO-CENTRAL"\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

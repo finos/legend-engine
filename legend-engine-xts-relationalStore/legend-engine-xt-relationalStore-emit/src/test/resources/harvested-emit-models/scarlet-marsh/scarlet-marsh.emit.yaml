@@ -1,0 +1,90 @@
+name: scarlet-marsh
+title: "Scarlet Marsh — Community-Orchard Graft Register Spanning Two Relational Stores, With Keeper Sets Borrowed Through A Store-Substituting Mapping Include And A Target-Bound Plot Self Join"
+description: |
+  A community orchard whose graft records, plots and varieties live in one
+  relational store while its picking tickets are landed in a second, so the
+  published register spans both. The keeper reference mapping is authored once
+  against the keeper store and then borrowed twice: plainly into the cross
+  mapping, and with a store substitution into the orchard mapping, which rebinds
+  the borrowed keeper sets onto the locally declared table set without restating
+  a single property. The orchard store declares three schemas, named inner joins
+  onto the variety, plot and keeper tables, a join whose far side is bound to the
+  join target so a plot resolves its own parent through the same reusable
+  definition, and two named filters, one of which spans the graft and plot tables
+  and therefore forces an extra join into the generated subselect. Keeper records
+  are specialised into a rota subtype and a guild subtype selected by store
+  filters, and the services narrow to the rota subtype before reading its
+  subtype-only properties. Two single-execution services expose a parameterised
+  register and a de-duplicated plot roster, each ordered and capped, and both are
+  bound to the cross mapping and a runtime holding one connection per store.
+  Mapping suites assert the borrowed keeper sets, the target-bound parent join and
+  the cross-store pairing; service suites assert the optional collection guards
+  including their unguarded arms.
+
+modelSources:
+  model:
+    root: scarlet-marsh
+    files:
+      - test/scarletmarsh/connection/OrchardConnections.pure
+      - test/scarletmarsh/domain/Orchard.pure
+      - test/scarletmarsh/mapping/GraftedVarietyMapping.pure
+      - test/scarletmarsh/mapping/HarvestMapping.pure
+      - test/scarletmarsh/mapping/KeeperRefMapping.pure
+      - test/scarletmarsh/mapping/OrchardCrossMapping.pure
+      - test/scarletmarsh/mapping/OrchardMapping.pure
+      - test/scarletmarsh/runtime/OrchardRuntimes.pure
+      - test/scarletmarsh/service/GraftRegister.pure
+      - test/scarletmarsh/service/PlotYieldRoster.pure
+      - test/scarletmarsh/store/HarvestSideDB.pure
+      - test/scarletmarsh/store/KeeperRefDB.pure
+      - test/scarletmarsh/store/OrchardCoreDB.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-ownership
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:qualified-property
+  - mapping:cross-store
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - scaffolding:relational-mapping
+  - store:relational-filter
+  - mapping:relational-join-reached-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-subtype-mapping
+  - query:collection-op
+  - query:distinct
+  - query:filter
+  - query:membership-test
+  - query:project
+  - query:sort-limit
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-cross-table-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-self-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - community-orchard
+  - cross-store
+  - duckdb
+  - h2
+  - mapping-include
+  - self-join
+  - service
+  - store-substitution
+  - subtype

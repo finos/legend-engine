@@ -1,0 +1,246 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::zephyrwillow2::service::SiteTally
+{
+  pattern: '/zephyrwillow2/v1/site-tally';
+  title: 'Metro Waste - collected weight per depot';
+  ownership: DID { identifier: 'metro-waste-register' };
+  documentation: 'Folds the live rounds together by the depot reached through the container reference path and totals the collected weight of each.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::zephyrwillow2::domain::CollectionRound.all()->groupBy(
+      [
+        r|$r.depotSiteName
+      ],
+      [
+        agg(
+          r|$r.grossKg,
+          y|$y->sum()
+        )
+      ],
+      [
+        'Site',
+        'GrossKg'
+      ]
+    )->sort([asc('Site')])};
+    mapping: test::zephyrwillow2::mapping::NetworkMapping;
+    runtime: test::zephyrwillow2::runtime::NetworkArchiveRuntime;
+  }
+  testSuites:
+  [
+    siteTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          networkConnection:
+            Reference
+            #{
+              test::zephyrwillow2::data::NetworkTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        weightFoldedByDepot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeDepotTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"Eastfield Depot","GrossKg":150.75},{"Site":"Northgate Depot","GrossKg":2392.5},{"Site":"Southbank Depot","GrossKg":115.75}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::zephyrwillow2::service::HandlingBoard
+{
+  pattern: '/zephyrwillow2/v1/handling-board';
+  title: 'Metro Waste - rounds carrying a handling instruction';
+  ownership: DID { identifier: 'metro-waste-register' };
+  documentation: 'Lists the live rounds for which the handling cascade resolved an instruction, dropping the rounds whose cascade fell through to no instruction at all, alongside the ward and authority the depot reports to.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::zephyrwillow2::domain::CollectionRound.all()->filter(
+      r|$r.handlingNote->isNotEmpty()
+    )->project(
+      [
+        r|$r.roundId,
+        r|$r.handlingNote->toOne(),
+        r|$r.authorityName,
+        r|$r.container.site.ward.wardName
+      ],
+      [
+        'Round',
+        'Handling',
+        'Authority',
+        'Ward'
+      ]
+    )->sort([asc('Round')])};
+    mapping: test::zephyrwillow2::mapping::NetworkMapping;
+    runtime: test::zephyrwillow2::runtime::NetworkArchiveRuntime;
+  }
+  testSuites:
+  [
+    handlingBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          networkConnection:
+            Reference
+            #{
+              test::zephyrwillow2::data::NetworkTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        eightRoundsCarryAnInstruction:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            resolvedInstructions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Round":"R-01","Handling":"BULK TRANSFER","Authority":"Metro Waste Authority","Ward":"Riverside Ward"},{"Round":"R-02","Handling":"DOUBLE LIFT","Authority":"Metro Waste Authority","Ward":"Riverside Ward"},{"Round":"R-03","Handling":"SINGLE LIFT","Authority":"Metro Waste Authority","Ward":"Riverside Ward"},{"Round":"R-04","Handling":"DRY BEFORE BALING","Authority":"Metro Waste Authority","Ward":"Riverside Ward"},{"Round":"R-05","Handling":"STANDARD BALING","Authority":"Metro Waste Authority","Ward":"Riverside Ward"},{"Round":"R-06","Handling":"HAND SORT","Authority":"Metro Waste Authority","Ward":"Riverside Ward"},{"Round":"R-07","Handling":"MIXED LANE","Authority":"Metro Waste Authority","Ward":"Riverside Ward"},{"Round":"R-08","Handling":"ROUTINE COLLECTION","Authority":"Metro Waste Authority","Ward":"Riverside Ward"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::zephyrwillow2::service::MoistureWatch
+{
+  pattern: '/zephyrwillow2/v1/moisture-watch';
+  title: 'Metro Waste - moisture watch';
+  ownership: DID { identifier: 'metro-waste-register' };
+  documentation: 'Ranks the low-contamination rounds of the requested grades whose moisture reading reaches the watch threshold, reporting the baling bay decided by the embedded handling block.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minMoisture: Float[1], grades: String[*]|test::zephyrwillow2::domain::CollectionRound.all()->filter(
+      r|($r.moisturePct >= $minMoisture) && (($r.gradeCode->in($grades)) && ($r.contaminationCode == 'LO'))
+    )->project(
+      [
+        r|$r.roundId,
+        r|$r.moisturePct,
+        r|$r.handling.bay
+      ],
+      [
+        'Round',
+        'MoisturePct',
+        'Bay'
+      ]
+    )->sort(
+      [
+        desc('MoisturePct'),
+        asc('Round')
+      ]
+    )};
+    mapping: test::zephyrwillow2::mapping::NetworkMapping;
+    runtime: test::zephyrwillow2::runtime::NetworkArchiveRuntime;
+  }
+  testSuites:
+  [
+    moistureWatchSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          networkConnection:
+            Reference
+            #{
+              test::zephyrwillow2::data::NetworkTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        fourRoundsOverTheThreshold:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minMoisture = 20.0,
+            grades = ['PA', 'GL']
+          ]
+          asserts:
+          [
+            rankedByMoisture:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Round":"R-04","MoisturePct":44.5,"Bay":"BAY-CR-2"},{"Round":"R-05","MoisturePct":26.5,"Bay":"BAY-CR-2"},{"Round":"R-03","MoisturePct":22.5,"Bay":"BAY-CR-2"},{"Round":"R-02","MoisturePct":20.5,"Bay":"BAY-CR-1"}]';
+                  }#;
+              }#
+          ]
+        },
+        raisingTheThresholdKeepsTheWettestRound:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minMoisture = 40.0,
+            grades = ['PA']
+          ]
+          asserts:
+          [
+            onlyTheWettestRound:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Round":"R-04","MoisturePct":44.5,"Bay":"BAY-CR-2"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

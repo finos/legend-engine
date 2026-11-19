@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sunlitlagoon::store::ObservatoryDb
+(
+  Schema sky
+  (
+    Table observation
+    (
+      observation_id INTEGER PRIMARY KEY,
+      obs_ref VARCHAR(24),
+      target_name VARCHAR(64),
+      captured_on DATE,
+      seeing_arcsec DOUBLE,
+      exposure_seconds INTEGER,
+      program_code VARCHAR(24),
+      telescope_code VARCHAR(16)
+    )
+
+    Table telescope
+    (
+      telescope_code VARCHAR(16) PRIMARY KEY,
+      telescope_name VARCHAR(64),
+      aperture_mm INTEGER,
+      site_code VARCHAR(16)
+    )
+  )
+
+  Schema ops
+  (
+    Table site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(64),
+      altitude_m INTEGER,
+      status_code VARCHAR(16),
+      steward_id INTEGER
+    )
+
+    Table steward
+    (
+      steward_id INTEGER PRIMARY KEY,
+      steward_name VARCHAR(64),
+      contact_code VARCHAR(16)
+    )
+
+    Table service_visit
+    (
+      visit_id INTEGER PRIMARY KEY,
+      visit_ref VARCHAR(24),
+      visit_kind VARCHAR(24),
+      duration_minutes INTEGER,
+      site_code VARCHAR(16)
+    )
+  )
+
+  Filter ActiveSite(ops.site.status_code != 'CLOSED' and ops.site.altitude_m >= 0)
+
+  Join Observation_Telescope(sky.observation.telescope_code = sky.telescope.telescope_code)
+  Join Telescope_Site(sky.telescope.site_code = ops.site.site_code)
+  Join Site_Steward(ops.site.steward_id = ops.steward.steward_id)
+  Join Visit_Site(ops.service_visit.site_code = ops.site.site_code)
+)

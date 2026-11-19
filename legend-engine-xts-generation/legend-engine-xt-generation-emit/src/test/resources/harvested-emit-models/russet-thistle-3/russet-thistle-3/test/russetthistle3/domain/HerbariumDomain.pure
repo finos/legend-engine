@@ -1,0 +1,175 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import test::russetthistle3::domain::*;
+
+Class {doc.doc = 'Root aggregate for one herbarium accession: every review, mounting step, label batch, sheet bundle and note reachable from a single dossier.'} test::russetthistle3::domain::AccessionDossier
+{
+  accessionCode: String[1];
+  herbariumCode: String[0..1];
+  preparedBy: String[0..1];
+  synonymNames: String[*];
+  workflowRoster: WorkflowRoster[0..1];
+  intakeReviews: IntakeReview[*];
+  mountingSteps: MountingStep[*];
+  labelBatches: LabelBatch[*];
+  sheetBundle: SheetBundle[0..1];
+  determinations: DeterminationEntry[*];
+  curatorRemarks: CuratorRemark[*];
+  collectingTrip: CollectingTrip[0..1];
+  transferRequests: TransferRequest[*];
+}
+
+Class {doc.doc = 'Parallel status and assignee pairs, one pair per curation station a dossier passes through.'} test::russetthistle3::domain::WorkflowRoster
+{
+  rosterCode: String[1];
+  intakeStatus: String[0..1];
+  intakeAssignee: String[0..1];
+  triageStatus: String[0..1];
+  triageAssignee: String[0..1];
+  cleaningStatus: String[0..1];
+  cleaningAssignee: String[0..1];
+  pressingStatus: String[0..1];
+  pressingAssignee: String[0..1];
+  dryingStatus: String[0..1];
+  dryingAssignee: String[0..1];
+  freezingStatus: String[0..1];
+  freezingAssignee: String[0..1];
+  mountingStatus: String[0..1];
+  mountingAssignee: String[0..1];
+  labellingStatus: String[0..1];
+  labellingAssignee: String[0..1];
+  stampingStatus: String[0..1];
+  stampingAssignee: String[0..1];
+  imagingStatus: String[0..1];
+  imagingAssignee: String[0..1];
+  transcriptionStatus: String[0..1];
+  transcriptionAssignee: String[0..1];
+  georeferenceStatus: String[0..1];
+  georeferenceAssignee: String[0..1];
+  determinationStatus: String[0..1];
+  determinationAssignee: String[0..1];
+  verificationStatus: String[0..1];
+  verificationAssignee: String[0..1];
+  filingStatus: String[0..1];
+  filingAssignee: String[0..1];
+  auditStatus: String[0..1];
+  auditAssignee: String[0..1];
+  publicationStatus: String[0..1];
+  publicationAssignee: String[0..1];
+  escalationNotes: String[*];
+}
+
+Class {doc.doc = 'A single review recorded when a specimen enters the herbarium.'} test::russetthistle3::domain::IntakeReview
+{
+  reviewCode: String[1];
+  reviewer: String[0..1];
+  outcome: String[0..1];
+  conditionNotes: String[*];
+  attachments: SheetReference[*];
+}
+
+Class {doc.doc = 'One step of the mounting workflow, holding the materials used at that step.'} test::russetthistle3::domain::MountingStep
+{
+  stepCode: String[1];
+  operator: String[0..1];
+  adhesiveKind: String[0..1];
+  materialCodes: String[*];
+  consumables: MountingConsumable[*];
+}
+
+Class {doc.doc = 'A consumable drawn from the preparation room for one mounting step.'} test::russetthistle3::domain::MountingConsumable
+{
+  consumableCode: String[1];
+  supplierName: String[0..1];
+  batchLabel: String[0..1];
+}
+
+Class {doc.doc = 'A batch of printed labels produced for one dossier.'} test::russetthistle3::domain::LabelBatch
+{
+  batchCode: String[1];
+  requestedBy: String[0..1];
+  proofs: LabelProof[*];
+}
+
+Class {doc.doc = 'A proof sheet reviewed before a label batch is printed.'} test::russetthistle3::domain::LabelProof
+{
+  proofCode: String[1];
+  approvedBy: String[0..1];
+  correctionNotes: String[*];
+  proofFiles: SheetReference[*];
+}
+
+Class {doc.doc = 'Wrapper element whose only purpose is to carry the collection of sheet references for a dossier.'} test::russetthistle3::domain::SheetBundle
+{
+  bundleCode: String[1];
+  sheets: SheetReference[*];
+}
+
+Class {doc.doc = 'Leaf file reference to a scanned herbarium sheet held in the imaging repository.'} test::russetthistle3::domain::SheetReference
+{
+  fileName: String[1];
+  mediaKind: String[0..1];
+  storageFolder: String[0..1];
+  checksumLabel: String[0..1];
+}
+
+Class {doc.doc = 'A determination naming the taxon a specimen was assigned to.'} test::russetthistle3::domain::DeterminationEntry
+{
+  determinationCode: String[1];
+  taxonName: String[0..1];
+  determinedBy: String[0..1];
+  priorNames: String[*];
+  habitatNote: HabitatNote[0..1];
+}
+
+Class {doc.doc = 'Free-form habitat description attached to a determination.'} test::russetthistle3::domain::HabitatNote
+{
+  noteCode: String[1];
+  habitatSummary: String[0..1];
+  associatedTaxa: String[*];
+}
+
+Class {doc.doc = 'A curator remark left on a dossier during any curation station.'} test::russetthistle3::domain::CuratorRemark
+{
+  remarkCode: String[1];
+  author: String[0..1];
+  remarkText: String[0..1];
+}
+
+Class {doc.doc = 'The field trip a specimen was gathered on, holding the gathered station records.'} test::russetthistle3::domain::CollectingTrip
+{
+  tripCode: String[1];
+  leadCollector: String[0..1];
+  regionLabel: String[0..1];
+  participantNames: String[*];
+  stations: CollectingStation[*];
+}
+
+Class {doc.doc = 'One station visited on a collecting trip.'} test::russetthistle3::domain::CollectingStation
+{
+  stationCode: String[1];
+  localityLabel: String[0..1];
+  substrateNotes: String[*];
+}
+
+Class {doc.doc = 'A request to send a mounted sheet to another herbarium for study.'} test::russetthistle3::domain::TransferRequest
+{
+  requestCode: String[1];
+  requestedInstitution: String[0..1];
+  handledBy: String[0..1];
+  conditionCaveats: String[*];
+  paperwork: SheetReference[*];
+}

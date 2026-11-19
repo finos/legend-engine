@@ -1,0 +1,62 @@
+name: crimson-otter-3
+title: "Riverbank Otter Holt Tally — One Keyed Multi-Execution Body Folding A Visit Collection, Banding On Computed Dates And Grouping Per Catchment"
+description: |
+  A riverbank otter survey held in a single-schema relational store: monitored
+  river reaches, the bankside holts sitting on them and the field visits recorded
+  on those holts. The holt catchment is reached through a join rather than
+  stored, and an association carries the visit collection a survey predicate
+  folds over. One multi-execution service keyed by environment hosts the whole
+  body: it keeps the graded holts of a requested catchment whose visits are not
+  all logged as abandoned, bands each kept holt by the days between its last
+  visit and a requested survey instant through a called date function, then
+  groups the projected rows on the catchment and counts and maxes within the
+  group. Two keyed executions bind the same body to a field runtime and a
+  mirrored runtime, and two service test suites — one per key — supply fixture
+  rows and assert the grouped result, one of them proving the predicate empties
+  the tally.
+modelSources:
+  model:
+    root: crimson-otter-3
+    files:
+      - test/crimsonotter3/connection/OtterConnections.pure
+      - test/crimsonotter3/domain/OtterDomain.pure
+      - test/crimsonotter3/function/OtterSeason.pure
+      - test/crimsonotter3/mapping/OtterMapping.pure
+      - test/crimsonotter3/runtime/OtterRuntimes.pure
+      - test/crimsonotter3/service/HoltTallyByEnvironment.pure
+      - test/crimsonotter3/store/OtterDB.pure
+
+features:
+  - execution:multi-execution-service
+  - execution:service-test
+  - grammar:association
+  - grammar:function
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:join
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - catchment-monitoring
+  - date-arithmetic
+  - group-by
+  - h2
+  - multi-execution
+  - otter-survey
+  - service-test
+  - wildlife

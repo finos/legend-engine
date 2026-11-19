@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::teallantern::service::GlareBandRegister
+{
+  pattern: '/teallantern/v1/glare-bands/{lampKind}';
+  title: 'Harbour Light - Glare band register';
+  owners:
+  [
+    'harbour-light-works',
+    'reach-survey-desk'
+  ];
+  documentation: 'Publishes every inspection filed against a lamp of the requested kind, naming the station reached across two association hops and grading the recorded glare score through eight conditional arms whose fallback publishes an empty band, so a score outside every threshold is reported as unbanded rather than mis-banded.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {lampKind: String[1]|test::teallantern::domain::LampInspection.all()->filter(
+      i|($i.lamp.lampKind == $lampKind) && ($i.glareScore > 0)
+    )->project(
+      [
+        col(i|$i.inspectionId, 'Inspection'),
+        col(i|$i.lamp.station.stationCode, 'Station'),
+        col(i|$i.inspectedOn->dateDiff(%2026-01-01, DurationUnit.DAYS), 'DaysSinceInspected'),
+        col(
+          i| if($i.glareScore == 1,
+            |'settled',
+            | if($i.glareScore == 2,
+              |'faint-haze',
+              | if($i.glareScore == 3,
+                |'light-haze',
+                | if($i.glareScore == 4,
+                  |'noticeable',
+                  | if($i.glareScore == 5,
+                    |'marked',
+                    | if($i.glareScore == 6,
+                      |'strong',
+                      | if($i.glareScore == 7,
+                        |'severe',
+                        | if($i.glareScore == 8,
+                          |'blinding',
+                          |[]->cast(@String)
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          'GlareBand'
+        )
+      ]
+    )->sort([asc('Inspection')])};
+    mapping: test::teallantern::mapping::HarbourLightMapping;
+    runtime: test::teallantern::runtime::HarbourPrimaryRuntime;
+  }
+  testSuites:
+  [
+    glareBandSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harbourPrimaryConnection:
+            Relational
+            #{
+              harbour.lantern_station:
+                'station_id,station_code,station_name,reach_code,elevation_m,commissioned_on,last_checked_at\n'+
+                '1,ST-01,North Mole Light,RCH-N,12.5,1998-04-01,2026-01-02 06:00:00\n'+
+                '2,ST-02,South Pier Light,RCH-S,8.0,2004-09-15,2026-01-03 07:30:00\n';
+
+              harbour.lamp_unit:
+                'lamp_id,station_id,lamp_code,lamp_kind,lumen_output,installed_on\n'+
+                '1,1,LMP-01,BEACON,4200.0,2019-05-01\n'+
+                '2,2,LMP-02,SECTOR,3100.0,2020-06-01\n';
+
+              works.lamp_inspection:
+                'inspection_id,lamp_id,inspector_name,inspected_on,glare_score,fault_note\n'+
+                '1,1,A Reyes,2025-12-07,1,\n'+
+                '2,1,B Okafor,2025-12-17,2,lens film\n'+
+                '3,1,C Duarte,2025-12-27,3,\n'+
+                '4,1,D Halloran,2025-11-07,4,sector flicker\n'+
+                '5,1,E Novak,2025-11-17,5,\n'+
+                '6,1,F Ibarra,2025-11-27,6,shade cracked\n'+
+                '7,1,G Salla,2025-10-08,7,\n'+
+                '8,1,H Petrov,2025-10-18,8,glass pitted\n'+
+                '9,1,I Marchetti,2025-10-28,91,reading suspect\n'+
+                '10,2,J Aoki,2025-12-07,4,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        beaconBands:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lampKind = 'BEACON'
+          ]
+          asserts:
+          [
+            bandedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":1,"Station":"ST-01","DaysSinceInspected":25,"GlareBand":"settled"},{"Inspection":2,"Station":"ST-01","DaysSinceInspected":15,"GlareBand":"faint-haze"},{"Inspection":3,"Station":"ST-01","DaysSinceInspected":5,"GlareBand":"light-haze"},{"Inspection":4,"Station":"ST-01","DaysSinceInspected":55,"GlareBand":"noticeable"},{"Inspection":5,"Station":"ST-01","DaysSinceInspected":45,"GlareBand":"marked"},{"Inspection":6,"Station":"ST-01","DaysSinceInspected":35,"GlareBand":"strong"},{"Inspection":7,"Station":"ST-01","DaysSinceInspected":85,"GlareBand":"severe"},{"Inspection":8,"Station":"ST-01","DaysSinceInspected":75,"GlareBand":"blinding"},{"Inspection":9,"Station":"ST-01","DaysSinceInspected":65,"GlareBand":null}]';
+                  }#;
+              }#
+          ]
+        },
+        sectorBands:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lampKind = 'SECTOR'
+          ]
+          asserts:
+          [
+            bandedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":10,"Station":"ST-02","DaysSinceInspected":25,"GlareBand":"noticeable"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

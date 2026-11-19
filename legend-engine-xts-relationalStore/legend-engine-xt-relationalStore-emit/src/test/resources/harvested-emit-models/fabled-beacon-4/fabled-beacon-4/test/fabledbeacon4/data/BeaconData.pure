@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::fabledbeacon4::data::BeaconTestData
+{
+  Relational
+  #{
+    grove.tree_record:
+      'tree_code,zone_code,tree_name,measured_at,healthy_flag,from_z,thru_z\n'+
+      'TR-1,ZN-1,Juniper Rise,2026-04-01T08:00:00.000,TRUE,2026-01-01,9999-12-31\n'+
+      'TR-2,ZN-2,Willow Shelf,2026-04-02T08:00:00.000,FALSE,2026-01-01,9999-12-31\n'+
+      'TR-3,ZN-1,Retired Grove,2024-02-01T08:00:00.000,TRUE,2024-01-01,2025-01-31\n';
+    habitat.zone:
+      'zone_code,zone_name,zone_tier\n'+
+      'ZN-1,North Canopy,3\n'+
+      'ZN-2,Creek Canopy,5\n';
+    habitat.zone_note:
+      'note_code,zone_code,note_text\n'+
+      'NT-1,ZN-1,Windward grove\n';
+  }#
+}

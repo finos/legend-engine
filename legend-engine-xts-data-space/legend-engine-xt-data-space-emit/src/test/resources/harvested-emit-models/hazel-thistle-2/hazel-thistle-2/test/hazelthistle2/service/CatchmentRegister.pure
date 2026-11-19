@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::hazelthistle2::service::CatchmentRegister
+{
+  pattern: '/hazelthistle2/catchmentRegister/{catchmentCode}';
+  title: 'Peatland - Catchment Plot Register';
+  ownership: UserList { users: ['peatland-restoration-desk'] };
+  documentation: 'Lists the bog plots registered against one catchment, resolving the plot class purely through the included reference mapping and normalising the plot label before the register is narrowed to the surveyed plots.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {catchmentCode: String[1]|demo::hazelthistle2::domain::BogPlot.all()->filter(
+      p|($p.catchment.catchmentCode == $catchmentCode) && ($p.plotLabel->toUpper()->trim()->startsWith('PLOT'))
+    )->project(
+      ~[
+         Plot: p|$p.plotCode,
+         Label: p|$p.plotLabel,
+         Catchment: p|$p.catchment.catchmentName
+       ]
+    )->sort(~Plot->ascending())};
+    mapping: demo::hazelthistle2::mapping::MossMapping;
+    runtime: demo::hazelthistle2::runtime::BogRuntime;
+  }
+  testSuites:
+  [
+    catchmentRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              peatland.catchment:
+                'catchment_code,catchment_name\n'+
+                'CAT-1,Northern Moss\n'+
+                'CAT-2,Southern Moss\n';
+
+              peatland.bog_plot:
+                'plot_code,plot_label,catchment_code\n'+
+                'PLT-1,Plot Ridge Alpha,CAT-1\n'+
+                'PLT-2,Plot Hollow Beta,CAT-2\n'+
+                'PLT-3,Plot Ridge Gamma,CAT-1\n'+
+                'PLT-4,Spare Ridge Delta,CAT-1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northernCatchmentPlots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            catchmentCode = 'CAT-1'
+          ]
+          asserts:
+          [
+            onlyLabelledNorthernPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PLT-1","Label":"Plot Ridge Alpha","Catchment":"Northern Moss"},{"Plot":"PLT-3","Label":"Plot Ridge Gamma","Catchment":"Northern Moss"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

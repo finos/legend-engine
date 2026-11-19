@@ -1,0 +1,54 @@
+name: kindly-thicket
+title: "Kindly Thicket - per-hop temporal resolution beneath an unfiltered eight-column projection"
+description: |
+  A civic street-tree inventory whose processing-temporal extent is opened at a caller-supplied
+  processing date while the planting bed, the bed's district and three separately rostered crew
+  roles are each resolved at a caller-supplied business date. With no predicate above the
+  projection every path is always evaluated, so the join tree carries five parameterised
+  traversals and a hop with no version effective on the business date contributes an absent
+  value instead of dropping the tree.
+modelSources:
+  model:
+    root: kindly-thicket
+    files:
+      - test/kindlythicket/connection/ThicketConnection.pure
+      - test/kindlythicket/domain/ThicketDomain.pure
+      - test/kindlythicket/mapping/ThicketMapping.pure
+      - test/kindlythicket/runtime/ThicketRuntime.pure
+      - test/kindlythicket/service/StreetTreeRegister.pure
+      - test/kindlythicket/store/ThicketDB.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - civic-inventory
+  - h2
+  - milestoned-association
+  - multi-hop-join
+  - outer-join-miss
+  - point-in-time
+  - processing-temporal
+  - projection

@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskywillow::service::CoppiceDigestService
+{
+  pattern: '/duskywillow/v1/coppice-digest/{minHandling}';
+  title: 'Dusky Willow - Resolved Lending Slips';
+  ownership: UserList { users: ['example-tool-library-desk'] };
+  documentation: 'Graph-fetches the resolved lending slips over the shared model-store runtime, keeping only the slips whose handling index reaches a requested floor, with the counter vocabulary already resolved to enumerated members and the deposit wording already banded by the mapping.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minHandling: Integer[1]|test::duskywillow::domain::CoppiceDigest.all()->filter(
+      d|$d.handlingIndex >= $minHandling
+    )->graphFetch(
+      #{
+        test::duskywillow::domain::CoppiceDigest
+        {
+          recordRef,
+          borrowerLabel,
+          toolLabel,
+          overdueDays,
+          depositLabel,
+          handlingIndex,
+          state,
+          toolClass
+        }
+      }#
+    )->serialize(
+      #{
+        test::duskywillow::domain::CoppiceDigest
+        {
+          recordRef,
+          borrowerLabel,
+          toolLabel,
+          overdueDays,
+          depositLabel,
+          handlingIndex,
+          state,
+          toolClass
+        }
+      }#
+    );};
+    mapping: test::duskywillow::mapping::CoppiceDigestM2M;
+    runtime: test::duskywillow::runtime::WillowRuntime;
+  }
+  testSuites:
+  [
+    coppiceDigestServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          counterSlips:
+            Reference
+            #{
+              test::duskywillow::data::WillowCounterSlips
+            }#
+        ]
+      ]
+      tests:
+      [
+        slipsAboveAModestHandlingFloor:
+        {
+          parameters:
+          [
+            minHandling = 400
+          ]
+          asserts:
+          [
+            threeSlipsSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"recordRef":"LN-1001","borrowerLabel":"A REED","toolLabel":"HAND PLANE (LN-1001)","overdueDays":6,"depositLabel":"deposit held","handlingIndex":2288,"state":"Issued","toolClass":"HandTool"},{"recordRef":"LN-1002","borrowerLabel":"B NOLAN","toolLabel":"THICKET TRIMMER (LN-1002)","overdueDays":0,"depositLabel":"nominal deposit","handlingIndex":468,"state":"Returned","toolClass":"PowerTool"},{"recordRef":"LN-1003","borrowerLabel":"C OJO","toolLabel":"GARDEN FORK (LN-1003)","overdueDays":0,"depositLabel":"no deposit held","handlingIndex":1280,"state":"Overdue","toolClass":"GardenTool"}]}';
+                  }#;
+              }#
+          ]
+        },
+        slipsAboveARaisedHandlingFloor:
+        {
+          parameters:
+          [
+            minHandling = 1000
+          ]
+          asserts:
+          [
+            twoSlipsSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":[{"recordRef":"LN-1001","borrowerLabel":"A REED","toolLabel":"HAND PLANE (LN-1001)","overdueDays":6,"depositLabel":"deposit held","handlingIndex":2288,"state":"Issued","toolClass":"HandTool"},{"recordRef":"LN-1003","borrowerLabel":"C OJO","toolLabel":"GARDEN FORK (LN-1003)","overdueDays":0,"depositLabel":"no deposit held","handlingIndex":1280,"state":"Overdue","toolClass":"GardenTool"}]}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

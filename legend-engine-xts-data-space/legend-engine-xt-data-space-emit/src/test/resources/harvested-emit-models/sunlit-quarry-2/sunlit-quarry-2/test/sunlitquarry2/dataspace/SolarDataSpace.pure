@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::sunlitquarry2::dataspace::SolarEstateDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'estate';
+      description: 'Estate context - the rooftop string register resolved against the local estate warehouse through the layered estate mapping.';
+      mapping: test::sunlitquarry2::mapping::SolarEstateMapping;
+      defaultRuntime: test::sunlitquarry2::runtime::SolarRuntime;
+    }
+  ];
+  defaultExecutionContext: 'estate';
+  title: 'Rooftop Array Estate';
+  description: 'Discovery surface over the rooftop array estate: panel strings with their tilt bands and health states, the grouped yield tally behind them, and the roofs and wards they sit on.';
+  elements:
+  [
+    test::sunlitquarry2::domain::PanelString,
+    test::sunlitquarry2::domain::SolarSite,
+    test::sunlitquarry2::domain::District,
+    test::sunlitquarry2::domain::Inverter
+  ];
+  supportInfo: Email
+  {
+    address: 'array-estate-desk@arrayestate.invalid';
+  };
+}

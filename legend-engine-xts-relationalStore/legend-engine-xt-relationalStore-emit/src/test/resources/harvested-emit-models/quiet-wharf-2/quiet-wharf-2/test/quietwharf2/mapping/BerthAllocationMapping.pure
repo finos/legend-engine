@@ -1,0 +1,145 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietwharf2::mapping::BerthAllocationMapping
+(
+  include mapping test::quietwharf2::mapping::WharfReferenceMapping
+
+  *test::quietwharf2::domain::BerthAllocation[berthAllocation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietwharf2::store::MooringStore]mooring.berth_allocation.allocation_key
+    )
+    ~mainTable [test::quietwharf2::store::MooringStore]mooring.berth_allocation
+    allocationCode: [test::quietwharf2::store::MooringStore]mooring.berth_allocation.allocation_code,
+    vesselName: [test::quietwharf2::store::MooringStore]mooring.berth_allocation.vessel_name,
+    berthNumber: [test::quietwharf2::store::MooringStore]mooring.berth_allocation.berth_number,
+    lengthMetres: [test::quietwharf2::store::MooringStore]mooring.berth_allocation.length_metres
+  }
+
+  test::quietwharf2::domain::AllocationWharf: Relational
+  {
+    AssociationMapping
+    (
+      wharf[berthAllocation, wharf]: [test::quietwharf2::store::MooringStore]@Allocation_Wharf,
+      berthAllocations[wharf, berthAllocation]: [test::quietwharf2::store::MooringStore]@Allocation_Wharf
+    )
+  }
+
+  testSuites:
+  [
+    currentBerthRegisterSuite:
+    {
+      function: |test::quietwharf2::domain::BerthAllocation.all(%2026-06-01)->project(
+  [
+    a|$a.allocationCode,
+    a|$a.vesselName,
+    a|$a.berthNumber,
+    a|$a.lengthMetres,
+    a|$a.wharf.wharfName,
+    a|$a.wharf.wardenName
+  ],
+  [
+    'AllocationCode',
+    'VesselName',
+    'BerthNumber',
+    'LengthMetres',
+    'WharfName',
+    'WardenName'
+  ]
+)->sort(
+  [
+    asc('AllocationCode')
+  ]
+);
+      tests:
+      [
+        openAllocationsWithTheirQuay:
+        {
+          doc: 'The point-in-time extent projects the locally bound berth scalars beside the quay name and warden reached over the association implementation, so the inner equality join is traversed one hop out of the milestoned table; the allocation whose effective window closed before the requested date is out of range and never appears.';
+          data:
+          [
+            test::quietwharf2::store::MooringStore: Reference
+              #{
+                test::quietwharf2::data::WharfTestData
+              }#
+          ];
+          asserts:
+          [
+            openAllocationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AllocationCode":"BA-1001","VesselName":"Kestrel","BerthNumber":4,"LengthMetres":12.5,"WharfName":"Quiet Wharf North","WardenName":"Iris Calder"},{"AllocationCode":"BA-1002","VesselName":"Marigold","BerthNumber":5,"LengthMetres":18.0,"WharfName":"Slipway Basin","WardenName":"Owen Tarrant"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    supersededBerthWindowSuite:
+    {
+      function: |test::quietwharf2::domain::BerthAllocation.all(%2025-06-01)->project(
+  [
+    a|$a.allocationCode,
+    a|$a.vesselName,
+    a|$a.berthNumber,
+    a|$a.wharf.wharfName
+  ],
+  [
+    'AllocationCode',
+    'VesselName',
+    'BerthNumber',
+    'WharfName'
+  ]
+)->sort(
+  [
+    asc('AllocationCode')
+  ]
+);
+      tests:
+      [
+        onlyTheClosedWindowAllocation:
+        {
+          doc: 'Asked as of a date before the current allocations opened, only the allocation whose window covers that date is in range: the two open allocations are themselves the milestoning out of range rows here, which shows the business window and not the row identity decides visibility.';
+          data:
+          [
+            test::quietwharf2::store::MooringStore: Reference
+              #{
+                test::quietwharf2::data::WharfTestData
+              }#
+          ];
+          asserts:
+          [
+            closedWindowRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"AllocationCode":"BA-1003","VesselName":"Puffin","BerthNumber":6,"WharfName":"Quiet Wharf North"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

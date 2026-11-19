@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantharbor2::service::TideReadingFeed
+{
+  pattern: '/verdantharbor/v1/tideReadings';
+  title: 'Verdant Harbour - Tide Reading Feed';
+  owners:
+  [
+    'harbour-register-desk'
+  ];
+  documentation: 'Projects the tide-gauge readings of the register, the third independently keyed table of the single schema, so the execution plan for this service reaches only the reading table through the one warehouse connection the runtime binds.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::verdantharbor2::domain::TideReading.all()->project(
+      [
+        t|$t.readingId,
+        t|$t.gaugeCode,
+        t|$t.waterLevelM,
+        t|$t.observedOn,
+        t|$t.recordedAt,
+        t|$t.provisionalFlag
+      ],
+      [
+        'ReadingId',
+        'GaugeCode',
+        'WaterLevelM',
+        'ObservedOn',
+        'RecordedAt',
+        'ProvisionalFlag'
+      ]
+    );
+    mapping: test::verdantharbor2::mapping::HarborRegisterMapping;
+    runtime: test::verdantharbor2::runtime::HarborRegisterRuntime;
+  }
+  testSuites:
+  [
+    tideReadingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborRegisterConnection:
+            Relational
+            #{
+              harbor.tide_reading:
+                'reading_id,gauge_code,water_level_m,observed_on,recorded_at,provisional_flag\n'+
+                '301,TG-01,4.125,2026-02-01,2026-02-01 05:00:00,false\n'+
+                '302,TG-01,4.875,2026-02-01,2026-02-01 11:00:00,true\n'+
+                '303,TG-02,,2026-02-02,2026-02-02 05:30:00,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyReadingRow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeReadingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingId":301,"GaugeCode":"TG-01","WaterLevelM":4.125,"ObservedOn":"2026-02-01","RecordedAt":"2026-02-01T05:00:00.000000000+0000","ProvisionalFlag":false},{"ReadingId":302,"GaugeCode":"TG-01","WaterLevelM":4.875,"ObservedOn":"2026-02-01","RecordedAt":"2026-02-01T11:00:00.000000000+0000","ProvisionalFlag":true},{"ReadingId":303,"GaugeCode":"TG-02","WaterLevelM":null,"ObservedOn":"2026-02-02","RecordedAt":"2026-02-02T05:30:00.000000000+0000","ProvisionalFlag":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

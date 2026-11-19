@@ -1,0 +1,44 @@
+name: verdant-isle-3
+title: "Verdant Isle 3 - store-free model-to-model digests assembled from nested wrappers, narrowed payloads and conditional defaults"
+description: |
+  A non-financial EMIT model in a community-orchard grafting domain that maps model to model
+  only: there is no database, no relational store and no physical read anywhere. Seventeen flat
+  classes - two wide transcription rows, a note row, a bed row, an abstractly typed payload with
+  one detailed version, two refined digests and nine one- or two-property wrappers - are shaped
+  entirely inside two Pure mappings. The transformations narrow the abstract payload to its
+  detailed shape before use, fold a navigated note collection into a single digest, convert
+  transcribed text to numbers, and default every absent source to a literal, so a consumer
+  cannot distinguish a defaulted value from a transcribed one. Both mappings carry embedded
+  tests over JSON source instances, and two single-execution services publish whole transformed
+  instances over runtimes declared inline on the service itself.
+modelSources:
+  model:
+    root: verdant-isle-3
+    files:
+      - test/verdantisle3/domain/GraftDomain.pure
+      - test/verdantisle3/mapping/GraftDigestM2M.pure
+      - test/verdantisle3/mapping/NurseryDigestM2M.pure
+      - test/verdantisle3/service/GraftDigestFeed.pure
+      - test/verdantisle3/service/NurseryDigestFeed.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - grammar:class-inheritance
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-derived-source-property
+  - mapping:m2m-local-property
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:relational-mapping
+stores: []
+complexity: intermediate
+tags:
+  - conditional-default
+  - graft-register
+  - horticulture
+  - inline-runtime
+  - json-model-connection
+  - mapping-test
+  - model-to-model
+  - nested-wrapper
+  - subtype-narrowing

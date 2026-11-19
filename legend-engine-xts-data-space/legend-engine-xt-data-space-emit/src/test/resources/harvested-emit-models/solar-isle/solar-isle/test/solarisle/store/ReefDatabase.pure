@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::solarisle::store::ReefDatabase
+(
+  Schema reef
+  (
+    Table survey_station
+    (
+      station_code VARCHAR(16) PRIMARY KEY,
+      station_name VARCHAR(64) NOT NULL,
+      zone_code VARCHAR(16) NOT NULL,
+      depth_metres DOUBLE NOT NULL,
+      open_for_survey BIT NOT NULL
+    )
+    Table reef_zone
+    (
+      zone_code VARCHAR(16) PRIMARY KEY,
+      zone_name VARCHAR(64) NOT NULL,
+      protection_band VARCHAR(24) NOT NULL
+    )
+    Table transect_run
+    (
+      run_code VARCHAR(20) PRIMARY KEY,
+      station_code VARCHAR(16) NOT NULL,
+      run_on DATE NOT NULL,
+      duration_minutes INTEGER NOT NULL,
+      diver_code VARCHAR(16) NOT NULL
+    )
+    Table species_sighting
+    (
+      sighting_code VARCHAR(20) PRIMARY KEY,
+      run_code VARCHAR(20) NOT NULL,
+      species_name VARCHAR(48) NOT NULL,
+      sighted_on DATE NOT NULL,
+      specimen_count INTEGER NOT NULL,
+      diver_code VARCHAR(16) NOT NULL
+    )
+    Table diver_profile
+    (
+      diver_code VARCHAR(16) PRIMARY KEY,
+      diver_name VARCHAR(64) NOT NULL,
+      certification_band VARCHAR(24) NOT NULL
+    )
+  )
+  Join Station_Run
+  (
+    reef.survey_station.station_code = reef.transect_run.station_code
+  )
+  Join Station_Zone
+  (
+    reef.survey_station.zone_code = reef.reef_zone.zone_code
+  )
+  Join Run_Sighting
+  (
+    reef.transect_run.run_code = reef.species_sighting.run_code
+  )
+  Join Sighting_Diver
+  (
+    reef.species_sighting.diver_code = reef.diver_profile.diver_code
+  )
+  Join Run_Diver
+  (
+    reef.transect_run.diver_code = reef.diver_profile.diver_code
+  )
+)

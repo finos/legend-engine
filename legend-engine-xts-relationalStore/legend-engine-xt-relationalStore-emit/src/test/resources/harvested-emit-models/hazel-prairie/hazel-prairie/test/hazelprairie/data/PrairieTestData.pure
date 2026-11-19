@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::hazelprairie::data::PrairieTestData
+{
+  Relational
+  #{
+    prairie.meadow:
+      'meadow_id,meadow_code,meadow_name,region_code\n'+
+      '1,MW-1,Foxglove Rise,north\n'+
+      '2,MW-2,Sedge Hollow,south\n'+
+      '3,MW-3,Tallgrass Reach,west\n';
+
+    prairie.survey_plot:
+      'plot_id,plot_ref,meadow_id,aspect_code\n'+
+      '1,P-01,1,east\n'+
+      '2,P-02,1,west\n'+
+      '3,P-03,2,east\n'+
+      '4,P-04,3,south\n';
+
+    prairie.bloom_count:
+      'count_id,record_ref,plot_id,species_label,colour_code,observer_code,survey_day,stem_total\n'+
+      '1,R-01,1,Bluebell  ,blue,ilse,2026-05-04,40\n'+
+      '2,R-02,2,Bluebell,blue,ilse,2026-05-04,12\n'+
+      '3,R-03,3,Bugle,blue,ilse,2026-05-04,7\n'+
+      '4,R-04,4,Cornflower,blue,ilse,2026-05-04,9\n'+
+      '5,R-05,1,Buttercup,yellow,ilse,2026-05-04,30\n'+
+      '6,R-06,3,Bugloss,blue,ilse,2026-05-04,5\n'+
+      '7,R-07,1,Borage,blue,otto,2026-05-04,3\n'+
+      '8,R-08,1,Bluebell,blue,ilse,2026-05-11,22\n';
+  }#
+}

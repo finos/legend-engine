@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryestuary::mapping::EstuaryMapping
+(
+  *test::ivoryestuary::domain::TidalWetland[wetland]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryestuary::store::EstuaryDB]estuary.tidal_wetland.wetland_id
+    )
+    ~mainTable [test::ivoryestuary::store::EstuaryDB]estuary.tidal_wetland
+    wetlandName: [test::ivoryestuary::store::EstuaryDB]estuary.tidal_wetland.wetland_name,
+    designation: [test::ivoryestuary::store::EstuaryDB]estuary.tidal_wetland.designation
+  }
+
+  *test::ivoryestuary::domain::MonitoringStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ivoryestuary::store::EstuaryDB]estuary.monitoring_station.station_id
+    )
+    ~mainTable [test::ivoryestuary::store::EstuaryDB]estuary.monitoring_station
+    stationCode: [test::ivoryestuary::store::EstuaryDB]estuary.monitoring_station.station_code,
+    installedAt: [test::ivoryestuary::store::EstuaryDB]estuary.monitoring_station.installed_at,
+    salinityPpt: [test::ivoryestuary::store::EstuaryDB]estuary.monitoring_station.salinity_ppt,
+    tidalRangeM: [test::ivoryestuary::store::EstuaryDB]estuary.monitoring_station.tidal_range_m,
+    telemetryActive: [test::ivoryestuary::store::EstuaryDB]estuary.monitoring_station.telemetry_active,
+    wetland[wetland]: [test::ivoryestuary::store::EstuaryDB]@Station_Wetland
+  }
+
+  testSuites:
+  [
+    stationRosterSuite:
+    {
+      function: |test::ivoryestuary::domain::MonitoringStation.all()->project(
+        [
+          x|$x.stationCode,
+          x|$x.wetland.wetlandName,
+          x|$x.wetland.designation,
+          x|$x.telemetryActive
+        ],
+        [
+          'Station',
+          'Wetland',
+          'Designation',
+          'Telemetry'
+        ]
+      )->sort([asc('Station')]);
+      tests:
+      [
+        rosterAcrossWetlands:
+        {
+          doc: 'Projects each station with its wetland attributes through the declared join, covering an active and an inactive station in two different wetlands.';
+          data:
+          [
+            test::ivoryestuary::store::EstuaryDB:
+              Relational
+              #{
+                estuary.tidal_wetland:
+                  'wetland_id,wetland_name,designation\n'+
+                  '1,Nightheron Flats,ramsar\n'+
+                  '2,Cordgrass Reach,local\n';
+                estuary.monitoring_station:
+                  'station_id,station_code,installed_at,salinity_ppt,tidal_range_m,telemetry_active,wetland_id\n'+
+                  '1,ST-001,2024-05-01 06:15:00,18.250,2.4,true,1\n'+
+                  '2,ST-002,2023-11-12 09:00:00,7.125,0.8,false,2\n';
+              }#
+          ];
+          asserts:
+          [
+            bothStationsJoined:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"ST-001","Wetland":"Nightheron Flats","Designation":"ramsar","Telemetry":true},{"Station":"ST-002","Wetland":"Cordgrass Reach","Designation":"local","Telemetry":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

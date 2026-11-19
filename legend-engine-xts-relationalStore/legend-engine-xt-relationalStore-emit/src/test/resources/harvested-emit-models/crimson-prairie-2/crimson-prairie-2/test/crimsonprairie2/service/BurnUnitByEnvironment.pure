@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::crimsonprairie2::service::BurnUnitByEnvironment
+{
+  pattern: '/crimsonprairie2/burnUnitByEnvironment/{environment}/{processingDate}/{businessDate}';
+  title: 'Crimson Prairie - Burn Unit By Environment';
+  owners:
+  [
+    'prairie-range-office'
+  ];
+  documentation: 'Keyed counterpart of the as-of extract: four environment keys resolve onto two runtimes over the same mapping, so several keys deliberately share one runtime and the key-to-runtime table stays many-to-one.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|demo::crimsonprairie2::domain::BurnUnit.all($processingDate, $businessDate)->filter(
+      u|(($u.breakFlag == 'BREAK') && ($u.moistureNote == 'READ')) && ($u.unitName->length() > 3)
+    )->project(
+      [
+        u|$u.unitCode,
+        u|$u.unitName,
+        u|$u.coverBand,
+        u|$u.moistureIndex,
+        u|$u.moistureNote,
+        u|$u.breakFlag,
+        u|$u.gradeFlag,
+        u|$u.tierFlag,
+        u|$u.seedFlag,
+        u|$u.grazeFlag,
+        u|$u.markerLabel,
+        u|$u.regionName
+      ],
+      [
+        'Unit',
+        'Name',
+        'Cover',
+        'Moisture',
+        'MoistureNote',
+        'Break',
+        'Grade',
+        'Tier',
+        'Seed',
+        'Graze',
+        'Marker',
+        'Region'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Unit')
+      ]
+    )};
+    key: 'environment';
+    executions['field']:
+    {
+      mapping: demo::crimsonprairie2::mapping::PrairieMapping;
+      runtime: demo::crimsonprairie2::runtime::PrairieFieldRuntime;
+    }
+    executions['replica']:
+    {
+      mapping: demo::crimsonprairie2::mapping::PrairieMapping;
+      runtime: demo::crimsonprairie2::runtime::PrairieFieldRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: demo::crimsonprairie2::mapping::PrairieMapping;
+      runtime: demo::crimsonprairie2::runtime::PrairieArchiveRuntime;
+    }
+    executions['restore']:
+    {
+      mapping: demo::crimsonprairie2::mapping::PrairieMapping;
+      runtime: demo::crimsonprairie2::runtime::PrairieArchiveRuntime;
+    }
+  }
+}

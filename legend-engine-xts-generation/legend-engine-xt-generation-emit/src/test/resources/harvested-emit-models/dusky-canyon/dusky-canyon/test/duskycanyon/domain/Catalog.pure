@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::duskycanyon::domain::*;
+
+Class <<CanyonProfile.abstractRoot>> {CanyonProfile.origin = 'canyon-survey-schema'} test::duskycanyon::domain::SurveyRecord
+[
+  labelBounded: ($this.label->length() > 2) && ($this.label->length() < 60),
+  identifierPresent: $this.recordId->isNotEmpty(),
+  exactlyOneName: ($this.label->isNotEmpty() && $this.altLabel->isEmpty()) || ($this.label->isEmpty() && $this.altLabel->isNotEmpty()),
+  identifierBounded: ($this.recordId->length() > 4) && ($this.recordId->length() < 24)
+]
+{
+  recordId: String[1];
+  label: String[1];
+  altLabel: String[0..1];
+}
+
+Class <<CanyonProfile.schemaDerived>> {CanyonProfile.unit = 'metre'} test::duskycanyon::domain::StrataSample extends SurveyRecord
+[
+  thicknessBounded: ($this.thicknessM > 0.0) && ($this.thicknessM < 500.0),
+  markersBounded: $this.markers->forAll(m|$m->length() < 40),
+  bandDeclared: $this.band->isNotEmpty()
+]
+{
+  thicknessM: Float[1];
+  rockClass: RockClass[0..1];
+  band: SurveyBand[0..1];
+  markers: String[*];
+}

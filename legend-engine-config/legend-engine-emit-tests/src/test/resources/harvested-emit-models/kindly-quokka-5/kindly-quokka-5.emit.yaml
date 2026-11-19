@@ -1,0 +1,50 @@
+name: kindly-quokka-5
+title: "Kindly Quokka 5 — Bi-Temporal Sanctuary Domain With Generalization Hierarchies, Associations, Enumerations, Profiles, Diagrams And Text Elements"
+description: |
+  A pure-domain island wildlife sanctuary model. Typed classes with scalar, optional, collection
+  and enumeration-valued properties form the backbone: an estate register, a people register and
+  a permit register are each expressed as a generalization hierarchy whose subtypes inherit the
+  supertype's key, label and registration date, so any downstream binding has to resolve inherited
+  members rather than locally declared ones. Eleven bidirectional associations link the pairs with
+  named, multiplicity-bearing ends on both sides, eight closed enumerations replace free-form
+  strings on the typed properties, and five profiles supply the stereotypes and tagged values that
+  classify records, key roles, governance and capture origin. Five field-record classes are
+  milestoned bi-temporally along both a business and a processing interval, so a corrected round
+  outcome, weight, tally, destination or head count supersedes the earlier belief without losing
+  it and access requires a pair of temporal qualifiers. Six diagrams persist the layout of the
+  hierarchies and the association ends as first-class packageable elements, and two markdown text
+  elements carry the register's documentation. Nothing here is executed: the model is validated
+  through parse and compile, which is where inheritance resolution, enumeration resolution,
+  profile resolution, association ends and the bi-temporal stereotypes are all actually checked.
+modelSources:
+  model:
+    root: kindly-quokka-5
+    files:
+      - test/kindlyquokka5/diagram/SanctuaryDiagrams.pure
+      - test/kindlyquokka5/domain/SanctuaryAssociations.pure
+      - test/kindlyquokka5/domain/SanctuaryDomain.pure
+      - test/kindlyquokka5/domain/SanctuaryEnumerations.pure
+      - test/kindlyquokka5/profile/SanctuaryProfiles.pure
+      - test/kindlyquokka5/text/SanctuaryNotes.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:profile
+  - grammar:text-element
+  - milestoning:bi-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - bi-temporal
+  - diagram
+  - domain-only
+  - enumeration
+  - inheritance
+  - milestoning
+  - profile
+  - text-element
+  - wildlife-sanctuary

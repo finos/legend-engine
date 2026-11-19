@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigocanyon::service::RecentSightings
+{
+  pattern: '/indigocanyon/skywatch/recent';
+  title: 'Recent Sky-Watch Sightings';
+  owners:
+  [
+    'canyon-observatory'
+  ];
+  documentation: 'Publishes the sliding recent-activity window of curated sky-watch entries, narrowing the projected window to one constellation. The window bounds are computed from the current instant rather than supplied by the caller, so the endpoint takes no request parameters.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {currentDateTime: DateTime[1]|test::indigocanyon::domain::SkyWatchEntry.all()->filter(
+      e|($e.loggedAt >= $currentDateTime->adjust(-50, DurationUnit.YEARS)) && ($e.loggedAt < $currentDateTime->adjust(50, DurationUnit.YEARS))
+    )->project(
+      [
+        e|$e.entryCode,
+        e|$e.observatoryCode,
+        e|$e.constellation,
+        e|$e.meteorCount,
+        e|$e.programmeCode,
+        e|$e.qualityNote
+      ],
+      [
+        'EntryCode',
+        'Observatory',
+        'Constellation',
+        'MeteorCount',
+        'Programme',
+        'QualityNote'
+      ]
+    )->filter(
+      r|$r.getString('Constellation') == 'PERSEUS'
+    )->sort([asc('EntryCode')])};
+    mapping: test::indigocanyon::mapping::SkyWatchMapping;
+    runtime: test::indigocanyon::runtime::SkyWatchRuntime;
+  }
+  testSuites:
+  [
+    recentSightingsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyWatchH2Connection:
+            Relational
+            #{
+              skywatch.sighting_log:
+                'record_code,observatory_code,constellation,logged_at,meteor_count,sky_quality\n'+
+                'sw-01,OBS-RIM,perseus,2024-08-12 22:40:00,12,clear\n'+
+                'sw-02,OBS-RIM,lyra,2024-08-13 01:05:00,55,\n'+
+                'sw-03,OBS-FLOOR,perseus,1900-01-04 23:10:00,31,hazy\n'+
+                'sw-04,OBS-FLOOR,perseus,2999-01-04 23:10:00,44,clear\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowedConstellation:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            currentDateTime = %2026-08-01T00:00:00
+          ]
+          asserts:
+          [
+            perseusInsideWindow:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"EntryCode":"SW-01","Observatory":"OBS-RIM","Constellation":"PERSEUS","MeteorCount":12,"Programme":"CANYON-METEOR-WATCH","QualityNote":"CLEAR"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

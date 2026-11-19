@@ -1,0 +1,41 @@
+name: frosted-orchard-6
+title: "Frosted Orchard 6 — grafted orchard rows welded to their rootstock behind a relation mapping test"
+description: |
+  A frost-prone cider orchard model over one relational store with a single primary-keyed
+  table. One relational mapping binds the planted-row class onto its main-table alias, reads
+  every scalar property off a table-alias column and welds the grafted variety onto its
+  rootstock code through a relational string transform. The mapping carries a relation-grammar
+  test suite that projects the row code, the welded variety label, the query-side upper-cased
+  health class, the graft year and the tree count, and asserts all three fixture rows,
+  including the frost-bitten row whose two-word health class exercises the upper-casing.
+modelSources:
+  model:
+    root: frosted-orchard-6
+    files:
+      - test/frostedorchard6/connection/OrchardConnections.pure
+      - test/frostedorchard6/domain/OrchardDomain.pure
+      - test/frostedorchard6/mapping/OrchardMapping.pure
+      - test/frostedorchard6/runtime/OrchardRuntimes.pure
+      - test/frostedorchard6/store/OrchardDb.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - duckdb
+  - mapping-test
+  - orchard-rows
+  - relation
+  - string-transform
+  - table-alias-column

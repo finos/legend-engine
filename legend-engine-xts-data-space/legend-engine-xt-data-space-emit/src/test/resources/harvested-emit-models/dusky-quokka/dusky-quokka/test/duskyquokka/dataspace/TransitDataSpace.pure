@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::duskyquokka::dataspace::TransitDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'network';
+      description: 'Network tier - the depot, line, railcar and inspection register served from the transit warehouse.';
+      mapping: test::duskyquokka::mapping::TransitMapping;
+      defaultRuntime: test::duskyquokka::runtime::TransitRuntime;
+    }
+  ];
+  defaultExecutionContext: 'network';
+  title: 'Transit Network Register';
+  description: 'A curated entry point over the transit network model: depots, the lines they host, the railcars allocated to those lines and the inspection trail behind each railcar.';
+  diagrams:
+  [
+    {
+      title: 'Transit Network Overview';
+      description: 'The depot, line, railcar and inspection classes with the relationship views that connect them.';
+      diagram: test::duskyquokka::diagram::TransitDiagram;
+    }
+  ];
+  elements:
+  [
+    test::duskyquokka::domain::Depot,
+    test::duskyquokka::domain::TransitLine,
+    test::duskyquokka::domain::Railcar,
+    test::duskyquokka::domain::InspectionLog
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Depot register';
+      description: 'The depot roster projection published as an executable of this entry point.';
+      executable: test::duskyquokka::service::DepotRegisterService;
+      executionContextKey: 'network';
+    },
+    {
+      id: 2;
+      title: 'Line allocation';
+      description: 'The line-to-depot allocation projection published as an executable of this entry point.';
+      executable: test::duskyquokka::service::LineAllocationService;
+      executionContextKey: 'network';
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'transit-network-register@transitnetwork.invalid';
+  };
+}

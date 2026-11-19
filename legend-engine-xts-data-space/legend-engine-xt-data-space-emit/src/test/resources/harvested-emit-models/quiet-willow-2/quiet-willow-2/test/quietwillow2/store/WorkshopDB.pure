@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietwillow2::store::WorkshopDB
+(
+  Schema fleet
+  (
+    Table carriage
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      carriage_code VARCHAR(24) PRIMARY KEY,
+      carriage_name VARCHAR(120) NOT NULL,
+      class_code VARCHAR(16) NOT NULL,
+      seats INTEGER NOT NULL,
+      tare_tonnes FLOAT NOT NULL,
+      depot_code VARCHAR(24) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+  )
+
+  Schema depots
+  (
+    Table depot
+    (
+      depot_code VARCHAR(24) PRIMARY KEY,
+      depot_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(24) NOT NULL
+    )
+    Table region
+    (
+      region_code VARCHAR(24) PRIMARY KEY,
+      region_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Schema works
+  (
+    Table overhaul
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      overhaul_code VARCHAR(24) PRIMARY KEY,
+      carriage_code VARCHAR(24) NOT NULL,
+      works_code VARCHAR(24) NOT NULL,
+      grade_code VARCHAR(16) NOT NULL,
+      labour_hours INTEGER NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+    Table works_site
+    (
+      works_code VARCHAR(24) PRIMARY KEY,
+      works_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(24) NOT NULL
+    )
+  )
+
+  Schema staff
+  (
+    Table fitter
+    (
+      fitter_code VARCHAR(24) PRIMARY KEY,
+      fitter_name VARCHAR(120) NOT NULL,
+      works_code VARCHAR(24) NOT NULL
+    )
+  )
+
+  Schema records
+  (
+    Table inspection
+    (
+      inspection_code VARCHAR(24) PRIMARY KEY,
+      carriage_code VARCHAR(24) NOT NULL,
+      inspected_on DATE NOT NULL,
+      note_text VARCHAR(200) NOT NULL
+    )
+    Table overhaul_hours
+    (
+      overhaul_code VARCHAR(24) PRIMARY KEY,
+      carriage_code VARCHAR(24) NOT NULL,
+      labour_hours INTEGER NOT NULL,
+      billable_flag VARCHAR(1) NOT NULL
+    )
+    View carriage_hours_vw
+    (
+      ~groupBy
+      (
+        records.overhaul_hours.carriage_code
+      )
+      carriage_code: records.overhaul_hours.carriage_code PRIMARY KEY,
+      overhaul_count: count(records.overhaul_hours.overhaul_code),
+      labour_hours: sum(records.overhaul_hours.labour_hours)
+    )
+  )
+
+  Filter BillableHours(records.overhaul_hours.billable_flag = 'Y')
+
+  Join Carriage_Depot(fleet.carriage.depot_code = depots.depot.depot_code)
+  Join Depot_Region(depots.depot.region_code = depots.region.region_code)
+  Join Carriage_Overhaul(fleet.carriage.carriage_code = works.overhaul.carriage_code)
+  Join Overhaul_Works(works.overhaul.works_code = works.works_site.works_code)
+  Join Works_Region(works.works_site.region_code = depots.region.region_code)
+  Join Works_Fitter(works.works_site.works_code = staff.fitter.works_code)
+  Join Carriage_Inspection(fleet.carriage.carriage_code = records.inspection.carriage_code)
+  Join Carriage_Hours(fleet.carriage.carriage_code = records.carriage_hours_vw.carriage_code)
+)

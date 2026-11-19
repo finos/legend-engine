@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::indigoquokka3::dataspace::SkyAlmanacDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'warehouse';
+      description: 'Warehouse tier - every almanac view served through the key-pair authenticated warehouse connection.';
+      mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+      defaultRuntime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+    }
+  ];
+  defaultExecutionContext: 'warehouse';
+  title: 'Sky Almanac';
+  description: '# Sky Almanac\n\nA governed entry point over an amateur observing network almanac: magnitude estimates and seasonal statistics for **variable stars**, **comets**, **asteroids**, **meteor showers** and **novae**.';
+  diagrams:
+  [
+    {
+      title: 'Almanac Layout';
+      diagram: test::indigoquokka3::diagram::SkyAlmanacDiagram;
+    }
+  ];
+  elements:
+  [
+    test::indigoquokka3::domain
+  ];
+  executables:
+  [
+    {
+      title: 'Star magnitudes of one star on one night';
+      description: 'The magnitude estimates of one requested star on one requested observing night; other stars and other nights are excluded before projection.';
+      executable: test::indigoquokka3::service::StarMagnitudesOnNightForStar;
+    },
+    {
+      title: 'Comet magnitudes of one comet on one night';
+      description: 'The total magnitude and coma estimates of one requested comet on one requested observing night.';
+      executable: test::indigoquokka3::service::CometMagnitudesOnNightForComet;
+    },
+    {
+      title: 'Asteroid magnitudes on one night';
+      description: 'Every reduced asteroid magnitude measured on one requested observing night.';
+      executable: test::indigoquokka3::service::AsteroidMagnitudesOnNight;
+    },
+    {
+      title: 'Meteor rates on one night';
+      description: 'Every hourly meteor rate counted by any station on one requested observing night.';
+      executable: test::indigoquokka3::service::MeteorRatesOnNight;
+    }
+  ];
+  supportInfo: Email {
+    address: 'sky-almanac-desk@observing-network';
+  };
+}

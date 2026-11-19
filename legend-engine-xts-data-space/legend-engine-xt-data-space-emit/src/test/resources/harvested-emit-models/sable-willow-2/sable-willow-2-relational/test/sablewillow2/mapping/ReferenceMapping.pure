@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sablewillow2::mapping::ReferenceMapping
+(
+  *test::sablewillow2::domain::Species[species]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablewillow2::store::RehabDB]reference.species.species_id
+    )
+    ~mainTable [test::sablewillow2::store::RehabDB]reference.species
+    commonName: [test::sablewillow2::store::RehabDB]reference.species.common_name,
+    familyName: [test::sablewillow2::store::RehabDB]reference.species.family_name,
+    habitatSuitability: [test::sablewillow2::store::RehabDB]reference.species.habitat_suitability
+  }
+
+  *test::sablewillow2::domain::CareTeam[careTeam]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sablewillow2::store::RehabDB]facility.care_team.team_id
+    )
+    ~mainTable [test::sablewillow2::store::RehabDB]facility.care_team
+    teamName: [test::sablewillow2::store::RehabDB]facility.care_team.team_name,
+    rotaCode: [test::sablewillow2::store::RehabDB]facility.care_team.rota_code
+  }
+)

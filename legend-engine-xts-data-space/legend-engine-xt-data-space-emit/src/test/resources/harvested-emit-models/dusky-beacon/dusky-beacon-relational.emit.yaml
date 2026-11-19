@@ -1,0 +1,51 @@
+name: dusky-beacon-relational
+title: "Dusky Beacon Observatory Roster — Association, Inner Join & Windowed Service"
+description: |
+  An observatory survey domain wiring two classes through a mandatory bidirectional
+  association whose relational implementation rides a single inner join across two
+  tables. A single-execution service filters recently commissioned telescopes with a
+  date-arithmetic window and projects them back through the join, and a data space with
+  an email support block publishes the mapping-runtime pair, both fed by a reusable
+  relational data element.
+modelSources:
+  model:
+    root: dusky-beacon-relational
+    files:
+      - test/duskybeacon/connection/SkyConnection.pure
+      - test/duskybeacon/data/SkyTestData.pure
+      - test/duskybeacon/dataspace/SkyDataSpace.pure
+      - test/duskybeacon/domain/SkyDomain.pure
+      - test/duskybeacon/mapping/SkyMapping.pure
+      - test/duskybeacon/runtime/SkyRuntime.pure
+      - test/duskybeacon/service/SkyServices.pure
+      - test/duskybeacon/store/SkyDB.pure
+features:
+  - execution:data-element
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - astronomy
+  - data-space
+  - h2
+  - inner-join
+  - observatory
+  - snowflake
+  - telescope

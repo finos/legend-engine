@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sablebeacon2::store::BeaconInventoryStore
+(
+  include test::sablebeacon2::store::BeaconReferenceStore
+
+  Schema inventory
+  (
+    Table street_tree
+    (
+      tree_id INTEGER PRIMARY KEY,
+      tree_name VARCHAR(64) NOT NULL,
+      trunk_cm INTEGER NOT NULL,
+      crown_spread_m FLOAT NOT NULL,
+      band_code VARCHAR(8),
+      health_code VARCHAR(16),
+      surface_code VARCHAR(16),
+      species_code VARCHAR(16) NOT NULL,
+      site_code VARCHAR(16) NOT NULL,
+      plaque_text VARCHAR(128),
+      heritage_flag CHAR(1) NOT NULL
+    )
+
+    Table planting_site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(64) NOT NULL,
+      surface_type VARCHAR(32) NOT NULL,
+      ward_code VARCHAR(16) NOT NULL
+    )
+
+    View site_tally_view
+    (
+      ~groupBy
+      (
+        inventory.street_tree.site_code
+      )
+      site_code: inventory.street_tree.site_code PRIMARY KEY,
+      tree_count: count(inventory.street_tree.tree_id),
+      max_trunk_cm: max(inventory.street_tree.trunk_cm)
+    )
+  )
+
+  Join Tree_Species(inventory.street_tree.species_code = reference.tree_species.species_code)
+  Join Tree_Site(inventory.street_tree.site_code = inventory.planting_site.site_code)
+  Join Site_Tally(inventory.planting_site.site_code = inventory.site_tally_view.site_code)
+
+  Filter HeritageTreeFilter(inventory.street_tree.heritage_flag = 'Y')
+)

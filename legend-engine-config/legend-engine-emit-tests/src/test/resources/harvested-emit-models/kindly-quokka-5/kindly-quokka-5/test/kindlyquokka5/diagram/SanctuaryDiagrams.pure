@@ -1,0 +1,299 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::kindlyquokka5::diagram::EstateDiagram
+{
+  classView estateEntryView
+  {
+    class: test::kindlyquokka5::domain::EstateEntry;
+    position: (100.0,60.0);
+    rectangle: (220.0,110.0);
+  }
+  classView enclosureView
+  {
+    class: test::kindlyquokka5::domain::Enclosure;
+    position: (100.0,240.0);
+    rectangle: (220.0,130.0);
+  }
+  classView browsePlotView
+  {
+    class: test::kindlyquokka5::domain::BrowsePlot;
+    position: (380.0,240.0);
+    rectangle: (220.0,120.0);
+  }
+  classView waterPointView
+  {
+    class: test::kindlyquokka5::domain::WaterPoint;
+    position: (660.0,240.0);
+    rectangle: (220.0,110.0);
+  }
+  generalizationView
+  {
+    source: enclosureView;
+    target: estateEntryView;
+    points: [(210.0,305.0),(210.0,115.0)];
+  }
+  generalizationView
+  {
+    source: browsePlotView;
+    target: estateEntryView;
+    points: [(490.0,300.0),(210.0,115.0)];
+  }
+  generalizationView
+  {
+    source: waterPointView;
+    target: estateEntryView;
+    points: [(770.0,295.0),(210.0,115.0)];
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Enclosure_BrowsePlot.browsePlots;
+    source: enclosureView;
+    target: browsePlotView;
+    points: [(210.0,305.0),(490.0,300.0)];
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Enclosure_WaterPoint.waterPoints;
+    source: enclosureView;
+    target: waterPointView;
+    points: [(210.0,305.0),(770.0,295.0)];
+  }
+}
+
+Diagram test::kindlyquokka5::diagram::EstateHierarchyDiagram
+{
+  classView sanctuaryView
+  {
+    class: test::kindlyquokka5::domain::Sanctuary;
+    position: (100.0,60.0);
+    rectangle: (220.0,130.0);
+  }
+  classView zoneView
+  {
+    class: test::kindlyquokka5::domain::Zone;
+    position: (400.0,60.0);
+    rectangle: (200.0,120.0);
+  }
+  classView enclosureView
+  {
+    class: test::kindlyquokka5::domain::Enclosure;
+    position: (700.0,60.0);
+    rectangle: (220.0,130.0);
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Sanctuary_Zone.zones;
+    source: sanctuaryView;
+    target: zoneView;
+    points: [(210.0,125.0),(500.0,120.0)];
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Zone_Enclosure.enclosures;
+    source: zoneView;
+    target: enclosureView;
+    points: [(500.0,120.0),(810.0,125.0)];
+  }
+}
+
+Diagram test::kindlyquokka5::diagram::PeopleDiagram
+{
+  classView personView
+  {
+    class: test::kindlyquokka5::domain::SanctuaryPerson;
+    position: (300.0,40.0);
+    rectangle: (240.0,100.0);
+  }
+  classView keeperView
+  {
+    class: test::kindlyquokka5::domain::Keeper;
+    position: (100.0,240.0);
+    rectangle: (200.0,90.0);
+  }
+  classView volunteerView
+  {
+    class: test::kindlyquokka5::domain::Volunteer;
+    position: (340.0,240.0);
+    rectangle: (200.0,90.0);
+  }
+  classView vetView
+  {
+    class: test::kindlyquokka5::domain::Veterinarian;
+    position: (580.0,240.0);
+    rectangle: (220.0,90.0);
+  }
+  classView noteView
+  {
+    class: test::kindlyquokka5::domain::RoundNote;
+    position: (340.0,420.0);
+    rectangle: (200.0,100.0);
+  }
+  generalizationView
+  {
+    source: keeperView;
+    target: personView;
+    points: [(200.0,285.0),(420.0,90.0)];
+  }
+  generalizationView
+  {
+    source: volunteerView;
+    target: personView;
+    points: [(440.0,285.0),(420.0,90.0)];
+  }
+  generalizationView
+  {
+    source: vetView;
+    target: personView;
+    points: [(690.0,285.0),(420.0,90.0)];
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Volunteer_RoundNote.roundNotes;
+    source: volunteerView;
+    target: noteView;
+    points: [(440.0,285.0),(440.0,470.0)];
+  }
+}
+
+Diagram test::kindlyquokka5::diagram::PermitDiagram
+{
+  classView permitView
+  {
+    class: test::kindlyquokka5::domain::Permit;
+    position: (300.0,60.0);
+    rectangle: (220.0,110.0);
+  }
+  classView researchPermitView
+  {
+    class: test::kindlyquokka5::domain::ResearchPermit;
+    position: (100.0,260.0);
+    rectangle: (220.0,90.0);
+  }
+  classView transferPermitView
+  {
+    class: test::kindlyquokka5::domain::TransferPermit;
+    position: (400.0,260.0);
+    rectangle: (220.0,90.0);
+  }
+  classView consignmentView
+  {
+    class: test::kindlyquokka5::domain::TransferConsignment;
+    position: (400.0,440.0);
+    rectangle: (240.0,110.0);
+  }
+  generalizationView
+  {
+    source: researchPermitView;
+    target: permitView;
+    points: [(210.0,305.0),(410.0,115.0)];
+  }
+  generalizationView
+  {
+    source: transferPermitView;
+    target: permitView;
+    points: [(510.0,305.0),(410.0,115.0)];
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::TransferPermit_Consignment.consignments;
+    source: transferPermitView;
+    target: consignmentView;
+    points: [(510.0,305.0),(520.0,495.0)];
+  }
+}
+
+Diagram test::kindlyquokka5::diagram::AnimalDiagram
+{
+  classView animalView
+  {
+    class: test::kindlyquokka5::domain::Animal;
+    position: (120.0,80.0);
+    rectangle: (240.0,140.0);
+  }
+  classView speciesView
+  {
+    class: test::kindlyquokka5::domain::SpeciesProfile;
+    position: (460.0,80.0);
+    rectangle: (240.0,110.0);
+  }
+  classView enclosureView
+  {
+    class: test::kindlyquokka5::domain::Enclosure;
+    position: (120.0,320.0);
+    rectangle: (220.0,130.0);
+  }
+  classView vetView
+  {
+    class: test::kindlyquokka5::domain::Veterinarian;
+    position: (460.0,320.0);
+    rectangle: (220.0,90.0);
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Animal_SpeciesProfile.speciesProfile;
+    source: animalView;
+    target: speciesView;
+    points: [(240.0,150.0),(580.0,135.0)];
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Enclosure_Animal.residents;
+    source: enclosureView;
+    target: animalView;
+    points: [(230.0,385.0),(240.0,150.0)];
+  }
+  propertyView
+  {
+    property: test::kindlyquokka5::domain::Veterinarian_Animal.caseload;
+    source: vetView;
+    target: animalView;
+    points: [(570.0,365.0),(240.0,150.0)];
+  }
+}
+
+Diagram test::kindlyquokka5::diagram::FieldRecordDiagram
+{
+  classView roundView
+  {
+    class: test::kindlyquokka5::domain::KeeperRound;
+    position: (100.0,60.0);
+    rectangle: (220.0,130.0);
+  }
+  classView checkView
+  {
+    class: test::kindlyquokka5::domain::HealthCheck;
+    position: (380.0,60.0);
+    rectangle: (220.0,130.0);
+  }
+  classView tallyView
+  {
+    class: test::kindlyquokka5::domain::BrowseTally;
+    position: (660.0,60.0);
+    rectangle: (220.0,120.0);
+  }
+  classView moveView
+  {
+    class: test::kindlyquokka5::domain::AnimalMove;
+    position: (100.0,280.0);
+    rectangle: (220.0,130.0);
+  }
+  classView censusView
+  {
+    class: test::kindlyquokka5::domain::EnclosureCensus;
+    position: (380.0,280.0);
+    rectangle: (240.0,120.0);
+  }
+}

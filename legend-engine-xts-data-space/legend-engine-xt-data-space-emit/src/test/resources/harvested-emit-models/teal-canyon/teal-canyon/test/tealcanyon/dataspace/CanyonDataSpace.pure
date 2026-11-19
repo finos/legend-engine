@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::tealcanyon::dataspace::CanyonDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'canyon';
+      description: 'Canyon environment - the gauge and survey model served through the canyon hydrology warehouse.';
+      mapping: test::tealcanyon::mapping::CanyonMapping;
+      defaultRuntime: test::tealcanyon::runtime::CanyonRuntime;
+    }
+  ];
+  defaultExecutionContext: 'canyon';
+  title: 'Teal Canyon River Monitoring';
+  description: 'Discovery surface over the canyon river monitoring network: gauge stations along the reaches, and the crew-attributed field surveys taken at them.';
+  elements:
+  [
+    test::tealcanyon::domain::FieldSurvey,
+    test::tealcanyon::domain::GaugeStation,
+    test::tealcanyon::domain::RiverReach,
+    test::tealcanyon::domain::SurveyTeam
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Gauge Station Board';
+      description: 'The installed gauge stations with their reach reached through the store join.';
+      executable: test::tealcanyon::service::StationBoard;
+    },
+    {
+      id: 2;
+      title: 'Field Survey Log';
+      description: 'The crew-attributed survey readings taken at the gauges.';
+      executable: test::tealcanyon::service::SurveyLog;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'canyon-hydrology-desk@tealcanyon.invalid';
+  };
+}

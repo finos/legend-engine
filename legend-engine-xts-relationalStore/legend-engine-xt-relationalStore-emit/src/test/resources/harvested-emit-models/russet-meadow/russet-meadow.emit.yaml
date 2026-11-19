@@ -1,0 +1,52 @@
+name: russet-meadow
+title: "Meadow Plot Survey — business-temporal as-of service with range, membership and de-duplication"
+description: |
+  A grassland-survey model over meadow plots versioned on a business timeline.
+  A single-execution service reads the plots as of a supplied business date,
+  narrows them with a two-sided elevation range combined with a soil-type
+  membership test, and projects a formatted label, a derived habitat band and a
+  parameterised tag before de-duplicating and ordering the rows. The class
+  carries a standalone-function-backed derived property and a deeply nested
+  qualified property, and the executed service test seeds a fixture whose retired
+  plot lies outside the queried business window.
+modelSources:
+  model:
+    root: russet-meadow
+    files:
+      - test/russetmeadow/connection/MeadowConnection.pure
+      - test/russetmeadow/domain/MeadowPlot.pure
+      - test/russetmeadow/function/MeadowBand.pure
+      - test/russetmeadow/mapping/MeadowMapping.pure
+      - test/russetmeadow/runtime/MeadowRuntime.pure
+      - test/russetmeadow/service/PlotsAsOf.pure
+      - test/russetmeadow/store/MeadowDB.pure
+features:
+  - execution:service
+  - grammar:derived-property
+  - grammar:function
+  - grammar:qualified-property
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - grassland
+  - h2
+  - meadow
+  - point-in-time
+  - relational
+  - service-test
+  - survey
+  - wildflower

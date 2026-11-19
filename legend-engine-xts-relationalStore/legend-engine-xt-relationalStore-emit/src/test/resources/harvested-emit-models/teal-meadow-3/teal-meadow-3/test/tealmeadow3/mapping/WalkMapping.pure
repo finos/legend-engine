@@ -1,0 +1,291 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealmeadow3::mapping::WalkMapping
+(
+  include mapping test::tealmeadow3::mapping::SpeciesBaseMapping
+
+  *test::tealmeadow3::domain::ButterflyWalk[walk]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(dawnWalk, duskWalk)
+  }
+
+  test::tealmeadow3::domain::ButterflyWalk[dawnWalk]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealmeadow3::store::MeadowDb]meadow.dawn_walk.walk_id
+    )
+    ~mainTable [test::tealmeadow3::store::MeadowDb]meadow.dawn_walk
+    walkCode: [test::tealmeadow3::store::MeadowDb]meadow.dawn_walk.walk_code,
+    transectName: [test::tealmeadow3::store::MeadowDb]meadow.dawn_walk.transect_name,
+    speciesName: [test::tealmeadow3::store::MeadowDb]@Dawn_Species | meadow.meadow_species.species_name,
+    countedTotal: [test::tealmeadow3::store::MeadowDb]meadow.dawn_walk.counted_total,
+    walkedOn: [test::tealmeadow3::store::MeadowDb]meadow.dawn_walk.walked_on
+  }
+
+  test::tealmeadow3::domain::ButterflyWalk[duskWalk]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealmeadow3::store::MeadowDb]meadow.dusk_walk.walk_id
+    )
+    ~mainTable [test::tealmeadow3::store::MeadowDb]meadow.dusk_walk
+    walkCode: [test::tealmeadow3::store::MeadowDb]meadow.dusk_walk.walk_code,
+    transectName: [test::tealmeadow3::store::MeadowDb]meadow.dusk_walk.transect_name,
+    speciesName: [test::tealmeadow3::store::MeadowDb]@Dusk_Species | meadow.meadow_species.species_name,
+    countedTotal: [test::tealmeadow3::store::MeadowDb]meadow.dusk_walk.counted_total,
+    walkedOn: [test::tealmeadow3::store::MeadowDb]meadow.dusk_walk.walked_on
+  }
+
+  *test::tealmeadow3::domain::DawnSurveyWalk[dawnSurvey] extends [dawnWalk]: Relational
+  {
+    skyBand: [test::tealmeadow3::store::MeadowDb]case(isNull(replace(meadow.dawn_walk.sky_code, '-', '')), sqlNull(), case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'CLR'), 'Clear sky', case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'SUN'), 'Sunny spells', case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'HAZ'), 'Hazy', case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'CLD'), 'Broken cloud', case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'OVC'), 'Overcast', case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'DRZ'), 'Light drizzle', case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'WND'), 'Breezy', case(equal(toUpper(replace(meadow.dawn_walk.sky_code, '-', '')), 'MST'), 'Misty', sqlNull()))))))))),
+    familyName: [test::tealmeadow3::store::MeadowDb]@Dawn_Species > @Species_Genus > @Genus_Family | meadow.wing_family.family_name
+  }
+
+  *test::tealmeadow3::domain::DuskSurveyWalk[duskSurvey] extends [duskWalk]: Relational
+  {
+    skyBand: [test::tealmeadow3::store::MeadowDb]case(isNull(replace(meadow.dusk_walk.sky_code, '-', '')), 'Unrecorded', 'Recorded'),
+    familyName: [test::tealmeadow3::store::MeadowDb]@Dusk_Species > @Species_Genus > @Genus_Family | meadow.wing_family.family_name
+  }
+
+  testSuites:
+  [
+    unionedWalkSuite:
+    {
+      function: |test::tealmeadow3::domain::ButterflyWalk.all()->project(~[Walk: w|$w.walkCode, Transect: w|$w.transectName, Species: w|$w.speciesName->toOne(), Counted: w|$w.countedTotal, WalkedOn: w|$w.walkedOn])->sort([~Walk->ascending()]);
+      tests:
+      [
+        bothRecordingSlotsInOneRelation:
+        {
+          doc: 'The operation set implementation unions the dawn and the dusk relations, and each branch resolves the species name across its own named join, so one relation carries walks sourced from two tables.';
+          data:
+          [
+            test::tealmeadow3::store::MeadowDb:
+              Relational
+              #{
+                meadow.meadow_species:
+                  'species_id,species_code,species_name\n'+
+                  '1,SP-01,Meadow Brown\n'+
+                  '2,SP-02,Common Blue\n';
+
+                meadow.dawn_walk:
+                  'walk_id,walk_code,transect_name,species_id,counted_total,walked_on\n'+
+                  '1,DW-0001,North Verge,1,14,2026-06-01\n'+
+                  '2,DW-0002,North Verge,2,6,2026-06-08\n';
+
+                meadow.dusk_walk:
+                  'walk_id,walk_code,transect_name,species_id,counted_total,walked_on\n'+
+                  '1,EV-0001,South Verge,1,9,2026-06-01\n'+
+                  '2,EV-0002,South Verge,2,3,2026-06-09\n';
+              }#
+          ];
+          asserts:
+          [
+            fourWalksFromTwoRelations:
+              Relation
+              #{
+                Walk,Transect,Species,Counted,WalkedOn
+                DW-0001,North Verge,Meadow Brown,14,2026-06-01
+                DW-0002,North Verge,Common Blue,6,2026-06-08
+                EV-0001,South Verge,Meadow Brown,9,2026-06-01
+                EV-0002,South Verge,Common Blue,3,2026-06-09;
+              }#
+          ];
+        }
+      ];
+    },
+    speciesSuite:
+    {
+      function: |test::tealmeadow3::domain::MeadowSpecies.all()->project(~[Code: s|$s.speciesCode, Species: s|$s.speciesName])->sort([~Code->ascending()]);
+      tests:
+      [
+        speciesContributedByIncludedMapping:
+        {
+          doc: 'The species class reachable from the walk mapping is contributed entirely by the included base mapping.';
+          data:
+          [
+            test::tealmeadow3::store::MeadowDb:
+              Relational
+              #{
+                meadow.meadow_species:
+                  'species_id,species_code,species_name\n'+
+                  '1,SP-01,Meadow Brown\n'+
+                  '2,SP-02,Common Blue\n'+
+                  '3,SP-03,Small Copper\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSpecies:
+              Relation
+              #{
+                Code,Species
+                SP-01,Meadow Brown
+                SP-02,Common Blue
+                SP-03,Small Copper;
+              }#
+          ];
+        }
+      ];
+    },
+    dawnSurveySuite:
+    {
+      function: |test::tealmeadow3::domain::DawnSurveyWalk.all()->project(
+        [
+          w|$w.walkCode,
+          w|$w.transectName,
+          w|$w.skyBand,
+          w|$w.speciesName,
+          w|$w.familyName
+        ],
+        [
+          'Walk',
+          'Transect',
+          'Sky',
+          'Species',
+          'Family'
+        ]
+      )->sort(
+        [
+          asc('Walk')
+        ]
+      );
+      tests:
+      [
+        everySkyArmAndThreeHopFamily:
+        {
+          doc: 'The dawn survey set extends the dawn walk set, so the walk code, transect and species name come from the inherited main table, primary key and join, while the locally added sky band walks every arm of the eight-way sky code decode plus its null fallback and the family name is reached across species, genus and family.';
+          data:
+          [
+            test::tealmeadow3::store::MeadowDb:
+              Relational
+              #{
+                meadow.wing_family:
+                  'family_id,family_name\n'+
+                  '1,Nymphalidae\n'+
+                  '2,Lycaenidae\n';
+
+                meadow.species_genus:
+                  'genus_id,genus_name,family_id\n'+
+                  '10,Maniola,1\n'+
+                  '20,Polyommatus,2\n'+
+                  '30,Lycaena,\n';
+
+                meadow.meadow_species:
+                  'species_id,species_code,species_name,genus_id\n'+
+                  '1,SP-01,Meadow Brown,10\n'+
+                  '2,SP-02,Common Blue,20\n'+
+                  '3,SP-03,Small Copper,30\n'+
+                  '4,SP-04,Unplaced Skipper,\n';
+
+                meadow.dawn_walk:
+                  'walk_id,walk_code,transect_name,species_id,counted_total,walked_on,sky_code\n'+
+                  '1,DW-0001,North Verge,1,14,2026-06-01,clr\n'+
+                  '2,DW-0002,North Verge,2,6,2026-06-02,S-UN\n'+
+                  '3,DW-0003,North Verge,3,4,2026-06-03,HAZ\n'+
+                  '4,DW-0004,North Verge,1,9,2026-06-04,CLD\n'+
+                  '5,DW-0005,North Verge,2,2,2026-06-05,O-VC\n'+
+                  '6,DW-0006,North Verge,4,1,2026-06-06,DRZ\n'+
+                  '7,DW-0007,North Verge,1,11,2026-06-07,wnd\n'+
+                  '8,DW-0008,North Verge,2,5,2026-06-08,MST\n'+
+                  '9,DW-0009,North Verge,1,7,2026-06-09,FOG\n'+
+                  '10,DW-0010,North Verge,3,3,2026-06-10,\n';
+              }#
+          ];
+          asserts:
+          [
+            tenDawnSurveyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Walk":"DW-0001","Transect":"North Verge","Sky":"Clear sky","Species":"Meadow Brown","Family":"Nymphalidae"},{"Walk":"DW-0002","Transect":"North Verge","Sky":"Sunny spells","Species":"Common Blue","Family":"Lycaenidae"},{"Walk":"DW-0003","Transect":"North Verge","Sky":"Hazy","Species":"Small Copper","Family":null},{"Walk":"DW-0004","Transect":"North Verge","Sky":"Broken cloud","Species":"Meadow Brown","Family":"Nymphalidae"},{"Walk":"DW-0005","Transect":"North Verge","Sky":"Overcast","Species":"Common Blue","Family":"Lycaenidae"},{"Walk":"DW-0006","Transect":"North Verge","Sky":"Light drizzle","Species":"Unplaced Skipper","Family":null},{"Walk":"DW-0007","Transect":"North Verge","Sky":"Breezy","Species":"Meadow Brown","Family":"Nymphalidae"},{"Walk":"DW-0008","Transect":"North Verge","Sky":"Misty","Species":"Common Blue","Family":"Lycaenidae"},{"Walk":"DW-0009","Transect":"North Verge","Sky":null,"Species":"Meadow Brown","Family":"Nymphalidae"},{"Walk":"DW-0010","Transect":"North Verge","Sky":null,"Species":"Small Copper","Family":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    duskSurveySuite:
+    {
+      function: |test::tealmeadow3::domain::DuskSurveyWalk.all()->project(
+        [
+          w|$w.walkCode,
+          w|$w.skyBand,
+          w|$w.speciesName,
+          w|$w.familyName
+        ],
+        [
+          'Walk',
+          'Sky',
+          'Species',
+          'Family'
+        ]
+      )->sort(
+        [
+          asc('Walk')
+        ]
+      );
+      tests:
+      [
+        recordedFlagAndInheritedJoin:
+        {
+          doc: 'The dusk survey set extends the dusk walk set; a sky code present after removing separators is flagged as recorded, a missing one as unrecorded, and the family is reached through the inherited dusk species join followed by the genus and family hops.';
+          data:
+          [
+            test::tealmeadow3::store::MeadowDb:
+              Relational
+              #{
+                meadow.wing_family:
+                  'family_id,family_name\n'+
+                  '1,Nymphalidae\n';
+
+                meadow.species_genus:
+                  'genus_id,genus_name,family_id\n'+
+                  '10,Maniola,1\n';
+
+                meadow.meadow_species:
+                  'species_id,species_code,species_name,genus_id\n'+
+                  '1,SP-01,Meadow Brown,10\n'+
+                  '2,SP-02,Common Blue,\n';
+
+                meadow.dusk_walk:
+                  'walk_id,walk_code,transect_name,species_id,counted_total,walked_on,sky_code\n'+
+                  '1,EV-0001,South Verge,1,9,2026-06-01,C-LR\n'+
+                  '2,EV-0002,South Verge,2,3,2026-06-09,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoDuskSurveyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Walk":"EV-0001","Sky":"Recorded","Species":"Meadow Brown","Family":"Nymphalidae"},{"Walk":"EV-0002","Sky":"Unrecorded","Species":"Common Blue","Family":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

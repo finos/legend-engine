@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::umberwillow2::connection::WillowH2Connection
+{
+  store: test::umberwillow2::store::WillowDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists riparian;',
+      'create schema riparian;',
+      'create table riparian.scheme (scheme_id integer primary key, scheme_name varchar(60) not null, steward varchar(60) not null);',
+      'create table riparian.designation (designation_id integer primary key, designation_code varchar(20) not null, scheme_ref varchar(20) not null, in_z date not null, out_z date not null, from_z date not null, thru_z date not null);',
+      'create table riparian.stand (stand_id integer primary key, stand_code varchar(20) not null, clone_name varchar(40) not null, canopy_height_m double not null, reach_zone varchar(20) not null, from_z date not null, thru_z date not null);',
+      'create table riparian.section (section_id integer primary key, section_code varchar(20) not null, stem_count integer not null, from_z date not null, thru_z date not null);',
+      'create table riparian.reading (reading_id integer primary key, reading_ref varchar(20) not null, soil_moisture_pct double not null, in_z date not null, out_z date not null);',
+      'create table riparian.batch (batch_id integer primary key, batch_ref varchar(20) not null, cutting_count integer not null, in_z date not null, out_z date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

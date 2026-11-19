@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobaltorchard2::mapping::GraftMapping
+(
+  *test::cobaltorchard2::domain::GraftRecord[graft]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltorchard2::store::OrchardDB]orchard.graft_record.graft_id
+    )
+    ~mainTable [test::cobaltorchard2::store::OrchardDB]orchard.graft_record
+    graftId: [test::cobaltorchard2::store::OrchardDB]orchard.graft_record.graft_id,
+    rootstockCode: [test::cobaltorchard2::store::OrchardDB]orchard.graft_record.rootstock_code,
+    graftStatus: [test::cobaltorchard2::store::OrchardDB]orchard.graft_record.graft_status,
+    scionNote: [test::cobaltorchard2::store::OrchardDB]orchard.graft_record.scion_note,
+    recordedAt: [test::cobaltorchard2::store::OrchardDB]orchard.graft_record.recorded_at
+  }
+
+  testSuites:
+  [
+    graftExtentSuite:
+    {
+      function: |test::cobaltorchard2::domain::GraftRecord.all()->project(
+  [
+    g|$g.graftId,
+    g|$g.rootstockCode,
+    g|$g.graftStatus,
+    g|$g.scionNote
+  ],
+  [
+    'GraftId',
+    'Rootstock',
+    'Status',
+    'ScionNote'
+  ]
+)->sort(
+  [
+    asc('GraftId')
+  ]
+);
+      tests:
+      [
+        statusArmsAndOptionalNote:
+        {
+          doc: 'Reads the graft extent through the aliased main table at every status value, including a row whose optional scion note is absent and a row recorded outside every service window.';
+          data:
+          [
+            test::cobaltorchard2::store::OrchardDB:
+              Relational
+              #{
+                orchard.graft_record:
+                  'graft_id,rootstock_code,graft_status,scion_note,recorded_at\n'+
+                  'GR-01,RS-DWARF,TAKEN,whip and tongue,2999-04-02 08:00:00\n'+
+                  'GR-02,RS-DWARF,FAILED,,2999-04-02 11:20:00\n'+
+                  'GR-03,RS-VIGOROUS,TAKEN,cleft graft,2999-04-04 09:05:00\n'+
+                  'GR-04,RS-VIGOROUS,PENDING,bud union sealed,1999-06-21 05:30:00\n';
+              }#
+          ];
+          asserts:
+          [
+            fourGraftRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GraftId":"GR-01","Rootstock":"RS-DWARF","Status":"TAKEN","ScionNote":"whip and tongue"},{"GraftId":"GR-02","Rootstock":"RS-DWARF","Status":"FAILED","ScionNote":null},{"GraftId":"GR-03","Rootstock":"RS-VIGOROUS","Status":"TAKEN","ScionNote":"cleft graft"},{"GraftId":"GR-04","Rootstock":"RS-VIGOROUS","Status":"PENDING","ScionNote":"bud union sealed"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

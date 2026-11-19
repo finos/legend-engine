@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskylantern2::service::LampVisitRegisterService
+{
+  pattern: '/dusky-lantern-2/v1/lamp-visit-register/{fromDate}/{thruDate}';
+  title: 'Dusky Lantern 2 - Lamp Visit Register';
+  documentation: 'Publishes the night-walk visits recorded between two dates for lanterns that are still on the register, restricted to the three lit districts and to the LED module kind, with every lantern attribute reached across the schema boundary and the register de-duplicated and ordered by visit code.';
+  autoActivateUpdates: false;
+  ownership: UserList { users: ['parks-lighting-register', 'lantern-night-walk'] };
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], thruDate: StrictDate[1]|test::duskylantern2::domain::LampVisit.all()->filter(
+      v|(($v.visitNote->isEmpty()->not()) && ((($v.retiredFlag == 'RETIRED')->not()) && (($v.districtCode->in(['DIS-01', 'DIS-02', 'DIS-04'])) && (($v.lampKind == 'LED-MODULE') && (($v.visitedOn >= $fromDate) && ($v.visitedOn <= $thruDate))))))
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.lampLabel->toUpper(),
+        v|$v.districtCode + '/' + $v.lampKind->toLower(),
+        v|$v.walkerLabel->toUpper() + ' (' + $v.lumenReading->toString() + ')',
+        v|$v.visitNote->toOne(),
+        v|$v.lumenReading
+      ],
+      [
+        'VisitCode',
+        'LampLabel',
+        'KindPath',
+        'WalkerTag',
+        'VisitNote',
+        'LumenReading'
+      ]
+    )->distinct()->sort(
+      [
+        asc('VisitCode')
+      ]
+    )};
+    mapping: test::duskylantern2::mapping::LampMapping;
+    runtime: test::duskylantern2::runtime::LampH2Runtime;
+  }
+  testSuites:
+  [
+    lampVisitRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lampH2Connection:
+            Relational
+            #{
+              lighting.lamp_post:
+                'lamp_code,lamp_label,district_code,lamp_kind,retired_flag\n'+
+                'LP-01,Willow Walk,DIS-01,LED-MODULE,LIVE\n'+
+                'LP-02,Alder Path,DIS-02,LED-MODULE,RETIRED\n'+
+                'LP-03,Sedge Lane,DIS-03,LED-MODULE,LIVE\n'+
+                'LP-04,Hazel Row,DIS-04,SODIUM-LAMP,LIVE\n'+
+                'LP-05,Birch Close,DIS-04,LED-MODULE,LIVE\n';
+
+              survey.lamp_visit:
+                'visit_code,lamp_code,visited_on,walker_label,lumen_reading,visit_note\n'+
+                'LV-01,LP-01,2026-03-04,mara linden,820,lens clouded\n'+
+                'LV-02,LP-02,2026-03-05,dev orrel,640,bracket loose\n'+
+                'LV-03,LP-03,2026-03-06,fen ashby,700,cowl aligned\n'+
+                'LV-04,LP-04,2026-03-07,ilse rand,410,flicker on dusk\n'+
+                'LV-05,LP-05,2026-03-08,tam vessel,905,\n'+
+                'LV-06,LP-05,2026-03-09,tam vessel,915,diffuser scuffed\n'+
+                'LV-07,LP-01,2026-02-01,mara linden,800,walk before the window\n'+
+                'LV-08,LP-05,2026-04-20,tam vessel,890,walk after the window\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerBetweenTwoDates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-03-01,
+            thruDate = %2026-03-31
+          ]
+          asserts:
+          [
+            onlyLitDistrictLedVisitsInTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"LV-01","LampLabel":"WILLOW WALK","KindPath":"DIS-01/led-module","WalkerTag":"MARA LINDEN (820)","VisitNote":"lens clouded","LumenReading":820},{"VisitCode":"LV-06","LampLabel":"BIRCH CLOSE","KindPath":"DIS-04/led-module","WalkerTag":"TAM VESSEL (915)","VisitNote":"diffuser scuffed","LumenReading":915}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

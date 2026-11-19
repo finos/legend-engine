@@ -1,0 +1,185 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::kindlyquarry::mapping::TransitMapping
+(
+  include demo::kindlyquarry::mapping::TransitBaseMapping
+
+  *demo::kindlyquarry::domain::StopPoint[stop]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::kindlyquarry::store::TransitDB]network.stop_point.stop_id
+    )
+    ~mainTable [demo::kindlyquarry::store::TransitDB]network.stop_point
+    stopCode: [demo::kindlyquarry::store::TransitDB]network.stop_point.stop_code,
+    stopName: [demo::kindlyquarry::store::TransitDB]network.stop_point.stop_name,
+    stopLabel: concat(toUpper([demo::kindlyquarry::store::TransitDB]network.stop_point.stop_name), ' STOP'),
+    shelterCode: [demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code,
+    accessBand: case(
+      equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'A'),
+      'FULL SHELTER',
+      case(
+        equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'B'),
+        'PARTIAL SHELTER',
+        case(
+          equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'C'),
+          'POLE ONLY',
+          case(
+            equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'D'),
+            'KERB ONLY',
+            case(
+              equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'E'),
+              'RAISED KERB',
+              case(
+                equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'F'),
+                'INTERCHANGE BAY',
+                case(
+                  equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'G'),
+                  'LAYBY BAY',
+                  case(
+                    equal([demo::kindlyquarry::store::TransitDB]network.stop_point.shelter_code, 'H'),
+                    'TEMPORARY STOP',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    corridorName: [demo::kindlyquarry::store::TransitDB]@Stop_Corridor | network.corridor.corridor_name,
+    openedOn: [demo::kindlyquarry::store::TransitDB]network.stop_point.opened_on
+  }
+
+  *demo::kindlyquarry::domain::Corridor[corridor]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(operatingCorridor, proposedCorridor)
+  }
+
+  demo::kindlyquarry::domain::Corridor[operatingCorridor]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::kindlyquarry::store::TransitDB]network.corridor.corridor_id
+    )
+    ~mainTable [demo::kindlyquarry::store::TransitDB]network.corridor
+    corridorCode: [demo::kindlyquarry::store::TransitDB]network.corridor.corridor_code,
+    corridorName: [demo::kindlyquarry::store::TransitDB]network.corridor.corridor_name,
+    registerName: concat('OPERATING/', toUpper([demo::kindlyquarry::store::TransitDB]network.corridor.corridor_code))
+  }
+
+  demo::kindlyquarry::domain::Corridor[proposedCorridor]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::kindlyquarry::store::TransitDB]planning.proposed_corridor.corridor_id
+    )
+    ~mainTable [demo::kindlyquarry::store::TransitDB]planning.proposed_corridor
+    corridorCode: [demo::kindlyquarry::store::TransitDB]planning.proposed_corridor.corridor_code,
+    corridorName: [demo::kindlyquarry::store::TransitDB]planning.proposed_corridor.corridor_name,
+    registerName: concat('PROPOSED/', toUpper([demo::kindlyquarry::store::TransitDB]planning.proposed_corridor.corridor_code))
+  }
+
+  testSuites:
+  [
+    stopAccessSuite:
+    {
+      function: demo::kindlyquarry::domain::StopPoint.all()->project(~[stopCode: x|$x.stopCode, stopLabel: x|$x.stopLabel, shelterCode: x|$x.shelterCode, accessBand: x|$x.accessBand, corridorName: x|$x.corridorName]);
+      tests:
+      [
+        everyShelterFitmentBands:
+        {
+          doc: 'Seeds one stop for each of the eight recognised shelter fitments plus one unrecognised fitment, so all eight arms of the access-band conditional and its null fallback are hit while every row resolves its corridor through the stop-to-corridor join.';
+          data:
+          [
+            demo::kindlyquarry::store::TransitDB:
+              Relational
+              #{
+                network.corridor:
+                  'corridor_id,corridor_code,corridor_name\n'+
+                  '1,CR-01,Riverside Loop\n';
+
+                network.stop_point:
+                  'stop_id,stop_code,stop_name,shelter_code,corridor_id,opened_on\n'+
+                  '1,SP-01,Kiln Lane,A,1,2021-04-01\n'+
+                  '2,SP-02,Weaver Steps,B,1,2021-05-01\n'+
+                  '3,SP-03,Orchard Gate,C,1,2021-06-01\n'+
+                  '4,SP-04,Foundry Walk,D,1,2021-07-01\n'+
+                  '5,SP-05,Linden Row,E,1,2021-08-01\n'+
+                  '6,SP-06,Harbour Cross,F,1,2021-09-01\n'+
+                  '7,SP-07,Willow Halt,G,1,2021-10-01\n'+
+                  '8,SP-08,Quarry Sidings,H,1,2021-11-01\n'+
+                  '9,SP-09,Meadow Turn,Z,1,2021-12-01\n';
+              }#
+          ];
+          asserts:
+          [
+            bandedStops:
+              Relation
+              #{
+                stopCode,stopLabel,shelterCode,accessBand,corridorName
+                SP-01,KILN LANE STOP,A,FULL SHELTER,Riverside Loop
+                SP-02,WEAVER STEPS STOP,B,PARTIAL SHELTER,Riverside Loop
+                SP-03,ORCHARD GATE STOP,C,POLE ONLY,Riverside Loop
+                SP-04,FOUNDRY WALK STOP,D,KERB ONLY,Riverside Loop
+                SP-05,LINDEN ROW STOP,E,RAISED KERB,Riverside Loop
+                SP-06,HARBOUR CROSS STOP,F,INTERCHANGE BAY,Riverside Loop
+                SP-07,WILLOW HALT STOP,G,LAYBY BAY,Riverside Loop
+                SP-08,QUARRY SIDINGS STOP,H,TEMPORARY STOP,Riverside Loop
+                SP-09,MEADOW TURN STOP,Z,,Riverside Loop;
+              }#
+          ];
+        }
+      ];
+    },
+    corridorRegisterSuite:
+    {
+      function: demo::kindlyquarry::domain::Corridor.all()->project(~[corridorCode: x|$x.corridorCode, corridorName: x|$x.corridorName, registerName: x|$x.registerName]);
+      tests:
+      [
+        operatingAndProposedCorridorsUnion:
+        {
+          doc: 'The operation mapping unions the operating corridor register with the planning register, and each branch tags its rows through its own string-function transform.';
+          data:
+          [
+            demo::kindlyquarry::store::TransitDB:
+              Relational
+              #{
+                network.corridor:
+                  'corridor_id,corridor_code,corridor_name\n'+
+                  '1,CR-01,Riverside Loop\n';
+
+                planning.proposed_corridor:
+                  'corridor_id,corridor_code,corridor_name\n'+
+                  '2,CR-90,Northern Spur\n';
+              }#
+          ];
+          asserts:
+          [
+            unionedRegisters:
+              Relation
+              #{
+                corridorCode,corridorName,registerName
+                CR-01,Riverside Loop,OPERATING/CR-01
+                CR-90,Northern Spur,PROPOSED/CR-90;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

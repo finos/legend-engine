@@ -1,0 +1,89 @@
+name: lunar-ridge-5
+title: "Lunar Ridge 5 — Ridge Trail Survey Over Two Schemas With Enumeration-Mapped Surfaces, A Chained Join Path And An In-Engine Digest Transform"
+description: |
+  A ridge trail-survey model whose registry schema holds the heads and regions
+  and whose field schema holds the segments and their maintenance visits, so
+  every property that names a head or a region is reached across a schema
+  boundary. Segment standing is never stored: the surface is resolved by an
+  enumeration mapping over a short source code, the grade is arithmetic over the
+  recorded ascent and length, the condition band branches through eight arms of a
+  nested cascade before falling through to a null sentinel, and the crew label is
+  a conditional string concatenation that yields nothing for a retired survey. A
+  surveyed specialisation extends the segment class mapping under the store's
+  named active-survey filter, so a retired segment is present in the fixture yet
+  absent from the result. The visit class walks three chained hops from the visit
+  row through the segment and the head to the region, which is the deepest path
+  in the mapping and is asserted rather than assumed. Alongside the relational
+  side an in-engine mapping derives a digest entirely from expressions over a
+  note type — a key built by string manipulation, a band cascade, two
+  enumeration-valued properties resolved from computed codes and an arithmetic
+  effort index — and carries its own mapping test suite over model-store data.
+  Both governed endpoints are multi-execution: one query, two keyed mapping and
+  runtime pairs, so plan generation happens per key. The same store also carries
+  a warehouse and a standby connection with static datasource specifications and
+  delegated Kerberos authentication.
+modelSources:
+  model:
+    root: lunar-ridge-5
+    files:
+      - test/lunarridge5/connection/TrailConnections.pure
+      - test/lunarridge5/domain/TrailDomain.pure
+      - test/lunarridge5/function/TrailFunctions.pure
+      - test/lunarridge5/mapping/SegmentDigestM2M.pure
+      - test/lunarridge5/mapping/TrailEnumMappings.pure
+      - test/lunarridge5/mapping/TrailMapping.pure
+      - test/lunarridge5/runtime/TrailRuntimes.pure
+      - test/lunarridge5/service/SegmentConditionRegister.pure
+      - test/lunarridge5/service/SegmentVisitRegister.pure
+      - test/lunarridge5/store/TrailDb.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:function
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-derived-source-property
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+  - model
+complexity: advanced
+tags:
+  - conditional-cascade
+  - cross-schema
+  - delegated-kerberos
+  - enumeration-mapping
+  - h2
+  - m2m-transform
+  - mapping-include
+  - mapping-test
+  - multi-execution
+  - ridge-trail-survey
+  - three-hop-join

@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::coralprairie2::data::PrairieFixture
+{
+  Relational
+  #{
+    prairie.meadow_plot:
+      'plot_id,batch_id,plot_code,plot_name,region_code,hectares,sward_score,grazing_note\n'+
+      '1,5,P-01,Ridge Meadow,R-01,12.5,1,summer grazed\n'+
+      '2,5,P-02,Creek Meadow,R-01,8.25,2,ungrazed\n'+
+      '3,5,P-03,Bluff Meadow,R-01,15.0,3,summer grazed\n'+
+      '4,5,P-04,Draw Meadow,R-02,9.75,4,ungrazed\n'+
+      '5,5,P-05,Fenceline Meadow,R-02,11.0,5,winter grazed\n'+
+      '6,5,P-06,Hollow Meadow,R-01,7.5,6,ungrazed\n'+
+      '7,5,P-07,Knoll Meadow,R-02,13.25,7,summer grazed\n'+
+      '8,5,P-08,Slough Meadow,R-01,6.0,8,ungrazed\n'+
+      '9,5,P-09,Verge Meadow,R-02,10.5,,unrecorded\n';
+    prairie.region:
+      'region_code,region_name,biome\n'+
+      'R-01,North Prairie,tallgrass\n'+
+      'R-02,West Prairie,mixedgrass\n';
+    prairie.climate_norm:
+      'region_code,rainfall_mm,frost_days\n'+
+      'R-01,700,120\n'+
+      'R-02,450,140\n';
+    prairie.sward_sample:
+      'sample_id,batch_id,plot_id,species_count,biomass_kg,sampled_on\n'+
+      '1,5,1,24,3.5,2026-05-04\n'+
+      '2,5,2,18,2.75,2026-05-05\n'+
+      '3,5,4,31,4.25,2026-05-06\n';
+  }#
+}

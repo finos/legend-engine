@@ -1,0 +1,259 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solarprairie2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A prairie restoration site managed by the field station.'} test::solarprairie2::domain::PrairieSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  districtCode: String[1];
+  hectares: Float[1];
+  establishedYear: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A soil core taken on a restoration site.'} test::solarprairie2::domain::SoilSample
+{
+  soilCode: String[1];
+  soilLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  phReading: Float[1];
+  coreDepthCm: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A seed mix sown across a restoration site.'} test::solarprairie2::domain::SeedMix
+{
+  seedCode: String[1];
+  seedLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  sowRateKgHa: Float[1];
+  speciesCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A prescribed burn carried out on a restoration site.'} test::solarprairie2::domain::BurnEvent
+{
+  burnCode: String[1];
+  burnLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  burnedHectares: Float[1];
+  crewSize: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A conservation grazing round run over a restoration site.'} test::solarprairie2::domain::GrazingRound
+{
+  grazingCode: String[1];
+  grazingLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  stockingRate: Float[1];
+  headCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A timed pollinator count walked on a restoration site.'} test::solarprairie2::domain::PollinatorCount
+{
+  pollinatorCode: String[1];
+  pollinatorLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  visitsPerHour: Float[1];
+  speciesSeen: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rain gauge read on a restoration site.'} test::solarprairie2::domain::RainGauge
+{
+  rainCode: String[1];
+  rainLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  rainfallMm: Float[1];
+  gaugeHeightCm: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bird transect walked across a restoration site.'} test::solarprairie2::domain::BirdTransect
+{
+  birdCode: String[1];
+  birdLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  transectLengthM: Float[1];
+  birdsCounted: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A patch of invasive growth mapped on a restoration site.'} test::solarprairie2::domain::WeedPatch
+{
+  weedCode: String[1];
+  weedLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  coverPct: Float[1];
+  patchCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A volunteer crew booked onto a restoration site.'} test::solarprairie2::domain::VolunteerCrew
+{
+  crewCode: String[1];
+  crewLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  hoursWorked: Float[1];
+  memberCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stretch of stock fence maintained on a restoration site.'} test::solarprairie2::domain::FenceSegment
+{
+  fenceCode: String[1];
+  fenceLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  segmentLengthM: Float[1];
+  postCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A wind pump feeding a water point on a restoration site.'} test::solarprairie2::domain::WindPump
+{
+  pumpCode: String[1];
+  pumpLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  flowLitresMin: Float[1];
+  bladeCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An interpretation sign standing on a restoration site.'} test::solarprairie2::domain::SignPost
+{
+  signCode: String[1];
+  signLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  postHeightM: Float[1];
+  panelCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A section of visitor trail crossing a restoration site.'} test::solarprairie2::domain::TrailSection
+{
+  trailCode: String[1];
+  trailLabel: String[1];
+  recordedOn: StrictDate[0..1];
+  sectionLengthKm: Float[1];
+  markerCount: Integer[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A station bulletin kept for reference only; it is not mapped to the field warehouse.'} test::solarprairie2::domain::StationBulletin
+{
+  bulletinCode: String[1];
+  headline: String[1];
+  issuedOn: StrictDate[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the soilSamples recorded on it.'} test::solarprairie2::domain::SiteSoilSamples
+{
+  siteSoilSample: PrairieSite[0..1];
+  soilSamples: SoilSample[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the seedMixes recorded on it.'} test::solarprairie2::domain::SiteSeedMixes
+{
+  siteSeedMix: PrairieSite[0..1];
+  seedMixes: SeedMix[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the burnEvents recorded on it.'} test::solarprairie2::domain::SiteBurnEvents
+{
+  siteBurnEvent: PrairieSite[0..1];
+  burnEvents: BurnEvent[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the grazingRounds recorded on it.'} test::solarprairie2::domain::SiteGrazingRounds
+{
+  siteGrazingRound: PrairieSite[0..1];
+  grazingRounds: GrazingRound[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the pollinatorCounts recorded on it.'} test::solarprairie2::domain::SitePollinatorCounts
+{
+  sitePollinatorCount: PrairieSite[0..1];
+  pollinatorCounts: PollinatorCount[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the rainGauges recorded on it.'} test::solarprairie2::domain::SiteRainGauges
+{
+  siteRainGauge: PrairieSite[0..1];
+  rainGauges: RainGauge[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the birdTransects recorded on it.'} test::solarprairie2::domain::SiteBirdTransects
+{
+  siteBirdTransect: PrairieSite[0..1];
+  birdTransects: BirdTransect[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the weedPatches recorded on it.'} test::solarprairie2::domain::SiteWeedPatches
+{
+  siteWeedPatch: PrairieSite[0..1];
+  weedPatches: WeedPatch[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the volunteerCrews recorded on it.'} test::solarprairie2::domain::SiteVolunteerCrews
+{
+  siteVolunteerCrew: PrairieSite[0..1];
+  volunteerCrews: VolunteerCrew[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the fenceSegments recorded on it.'} test::solarprairie2::domain::SiteFenceSegments
+{
+  siteFenceSegment: PrairieSite[0..1];
+  fenceSegments: FenceSegment[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the windPumps recorded on it.'} test::solarprairie2::domain::SiteWindPumps
+{
+  siteWindPump: PrairieSite[0..1];
+  windPumps: WindPump[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the signPosts recorded on it.'} test::solarprairie2::domain::SiteSignPosts
+{
+  siteSignPost: PrairieSite[0..1];
+  signPosts: SignPost[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a restoration site to the trailSections recorded on it.'} test::solarprairie2::domain::SiteTrailSections
+{
+  siteTrailSection: PrairieSite[0..1];
+  trailSections: TrailSection[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links the rain gauges of a site to the invasive patches mapped on the same site, so rainfall and spread are read together.'} test::solarprairie2::domain::RainfallWeedWatch
+{
+  watchedGauges: RainGauge[*];
+  watchedPatches: WeedPatch[*];
+}

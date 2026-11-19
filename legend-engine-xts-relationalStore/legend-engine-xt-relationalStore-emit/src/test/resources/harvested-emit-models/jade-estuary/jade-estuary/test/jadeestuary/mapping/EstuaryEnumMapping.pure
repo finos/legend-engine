@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadeestuary::mapping::EstuaryEnumMapping
+(
+  test::jadeestuary::domain::PlumageKind: EnumerationMapping PlumageKindMapping
+  {
+    JUVENILE: ['JUVENILE'],
+    IMMATURE: ['IMMATURE'],
+    ADULT: ['ADULT'],
+    WORN: ['WORN']
+  }
+
+  test::jadeestuary::domain::EffortBand: EnumerationMapping EffortBandMapping
+  {
+    LIGHT: ['LIGHT/DAY', 'LIGHT/DUSK'],
+    STEADY: ['STEADY/DAY', 'STEADY/DUSK'],
+    HEAVY: ['HEAVY/DAY', 'HEAVY/DUSK']
+  }
+
+  test::jadeestuary::domain::MoultStage: EnumerationMapping MoultStageMapping
+  {
+    PRIMARY_MOULT: ['P/ACTIVE'],
+    SECONDARY_MOULT: ['S/ACTIVE'],
+    BODY_MOULT: ['B/ACTIVE'],
+    NO_MOULT: ['N/NONE']
+  }
+
+  test::jadeestuary::domain::LaneGrade: EnumerationMapping LaneGradeMapping
+  {
+    LANE_OPEN: ['Y/FULL'],
+    LANE_PARTIAL: ['Y/PART'],
+    LANE_CLOSED: ['N/FULL', 'N/PART']
+  }
+)

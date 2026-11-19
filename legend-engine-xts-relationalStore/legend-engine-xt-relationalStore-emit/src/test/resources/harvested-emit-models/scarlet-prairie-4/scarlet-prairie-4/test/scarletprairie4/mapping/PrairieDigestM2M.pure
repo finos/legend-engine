@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletprairie4::mapping::PrairieDigestM2M
+(
+  test::scarletprairie4::domain::SoilClass: EnumerationMapping SoilClassCodes
+  {
+    LOAM: ['LOAM'],
+    CLAY: ['CLAY'],
+    SAND: ['SAND'],
+    NONE: ['NONE']
+  }
+
+  test::scarletprairie4::domain::SizeClass: EnumerationMapping SizeClassCodes
+  {
+    LARGE: ['L'],
+    MEDIUM: ['M'],
+    SMALL: ['S']
+  }
+
+  test::scarletprairie4::domain::HabitatGroup: EnumerationMapping HabitatGroupCodes
+  {
+    HUMID_SIDE: ['W'],
+    DRY_SIDE: ['D'],
+    UNSORTED: ['U']
+  }
+
+  *test::scarletprairie4::domain::PlotDigest[plotDigest]: Pure
+  {
+    ~src test::scarletprairie4::domain::PrairiePlot
+    plotCode: $src.plotCode,
+    soilClass: EnumerationMapping SoilClassCodes: [if($src.soilBand->isEmpty(), |'NONE', |if($src.soilBand->toOne()->substring(0, 4)->in(['LOAM', 'CLAY', 'SAND']), |$src.soilBand->toOne()->substring(0, 4), |'NONE'))],
+    sizeClass: EnumerationMapping SizeClassCodes: [if($src.areaM2->isEmpty(), |'S', |if($src.areaM2->toOne() >= 10000.0, |'L', |if($src.areaM2->toOne() >= 1000.0, |'M', |'S')))],
+    habitatGroup: EnumerationMapping HabitatGroupCodes: [if($src.habitat->isEmpty(), |'U', |if(($src.habitat->toOne() == test::scarletprairie4::domain::Habitat.TALLGRASS) || ($src.habitat->toOne() == test::scarletprairie4::domain::Habitat.MIXEDGRASS), |'W', |if($src.habitat->toOne() == test::scarletprairie4::domain::Habitat.SHORTGRASS, |'D', |'U')))],
+    headline: $src.plotCode + ':' + if($src.grazingTier->isEmpty(), |'unknown', |$src.grazingTier->toOne()->toLower())
+  }
+
+  testSuites:
+  [
+    digestSuite:
+    {
+      function: |test::scarletprairie4::domain::PlotDigest.all()->graphFetch(#{test::scarletprairie4::domain::PlotDigest{plotCode,soilClass,sizeClass,habitatGroup,headline}}#)->serialize(#{test::scarletprairie4::domain::PlotDigest{plotCode,soilClass,sizeClass,habitatGroup,headline}}#);
+      tests:
+      [
+        everyDigestArm:
+        {
+          doc: 'Each soil prefix, the unlisted prefix and absent band, all three size thresholds with the absent area, both humid habitats, the dry habitat, the sentinel habitat and the absent habitat, plus the absent grazing tier.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::scarletprairie4::domain::PrairiePlot:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"plotCode":"D1","soilBand":"LOAM-DEEP","areaM2":12500.0,"habitat":"TALLGRASS","grazingTier":"GRAZED","sourceTag":"restoration-survey","speciesNames":[]},{"plotCode":"D2","soilBand":"CLAY-SILTY","areaM2":4000.0,"habitat":"SHORTGRASS","grazingTier":"MOWN","sourceTag":"restoration-survey","speciesNames":[]},{"plotCode":"D3","soilBand":"PEAT-WET","areaM2":250.0,"habitat":"UNRECORDED","sourceTag":"restoration-survey","speciesNames":[]},{"plotCode":"D4","grazingTier":"RESTED","sourceTag":"restoration-survey","speciesNames":[]},{"plotCode":"D5","soilBand":"SAND-DUNE","areaM2":1000.0,"habitat":"MIXEDGRASS","grazingTier":"GRAZED","sourceTag":"restoration-survey","speciesNames":[]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fiveDigests:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"plotCode":"D1","soilClass":"LOAM","sizeClass":"LARGE","habitatGroup":"HUMID_SIDE","headline":"D1:grazed"},{"plotCode":"D2","soilClass":"CLAY","sizeClass":"MEDIUM","habitatGroup":"DRY_SIDE","headline":"D2:mown"},{"plotCode":"D3","soilClass":"NONE","sizeClass":"SMALL","habitatGroup":"UNSORTED","headline":"D3:unknown"},{"plotCode":"D4","soilClass":"NONE","sizeClass":"SMALL","habitatGroup":"UNSORTED","headline":"D4:rested"},{"plotCode":"D5","soilClass":"SAND","sizeClass":"MEDIUM","habitatGroup":"HUMID_SIDE","headline":"D5:grazed"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

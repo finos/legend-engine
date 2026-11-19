@@ -1,0 +1,68 @@
+name: golden-reef-5
+title: "Golden Reef 5 - processing-temporal nesting sites joined across schemas behind a mapper-post-processed warehouse connection"
+description: |
+  A turtle-nesting coast survey. Nesting sites are versioned over processing time and reach their
+  beach through a one-hop join and the cross-schema field station through a two-hop join path, while
+  the clutches walked by the patrol teams carry a mapped literal survey programme and are linked to
+  their team through a relational association implementation on top of an included base mapping. A
+  parameterised service filters a thirty-day window off a date adjustment, screens the predation
+  marker against a collection parameter, then de-duplicates, orders and caps the projection; a second
+  multi-execution service counts the sites recorded at a pinned instant per coast region. One runtime
+  reads the local survey database, the other a Snowflake warehouse whose connection carries a mapper
+  post-processor that rewrites both the schema and the site table onto their published names.
+modelSources:
+  model:
+    root: golden-reef-5
+    files:
+      - test/goldenreef5/connection/NestingH2Connection.pure
+      - test/goldenreef5/connection/NestingWarehouseConnection.pure
+      - test/goldenreef5/dataspace/NestingDataSpace.pure
+      - test/goldenreef5/domain/NestingDomain.pure
+      - test/goldenreef5/mapping/NestingBaseMapping.pure
+      - test/goldenreef5/mapping/NestingMapping.pure
+      - test/goldenreef5/runtime/NestingRuntimes.pure
+      - test/goldenreef5/service/NestingServices.pure
+      - test/goldenreef5/store/NestingCoastDB.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - cross-schema
+  - date-arithmetic
+  - group-by
+  - h2
+  - mapper-postprocessor
+  - mapping-include
+  - milestoning
+  - multi-execution
+  - processing-temporal
+  - snowflake

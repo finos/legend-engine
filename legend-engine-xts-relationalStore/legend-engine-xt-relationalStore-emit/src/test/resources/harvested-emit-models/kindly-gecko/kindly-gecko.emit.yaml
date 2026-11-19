@@ -1,0 +1,55 @@
+name: kindly-gecko
+title: "Gecko Burrow Survey — Business-Temporal Sightings, Embedded Readings and an Included Enclosure Mapping"
+description: |
+  A reptile-survey burrow register whose business-temporal sighting class carries
+  an embedded body reading built from own columns, a literal log source and a
+  join-reached recorder, plus a mapped vigour enumeration and enclosure and
+  habitat-zone names reached through one and two join hops across two schemas of
+  the same store. The enclosure class mapping and the enumeration mapping are
+  inherited across two include boundaries, and the mapping test suites pin the
+  business date on either side of a revision so the superseded extent is
+  observable alongside the empty-embedded and join-miss rows.
+modelSources:
+  model:
+    root: kindly-gecko
+    files:
+      - test/kindlygecko/data/BurrowData.pure
+      - test/kindlygecko/domain/Burrow.pure
+      - test/kindlygecko/mapping/BurrowMapping.pure
+      - test/kindlygecko/mapping/EnclosureBaseMapping.pure
+      - test/kindlygecko/mapping/VigourEnumMapping.pure
+      - test/kindlygecko/store/BurrowDatabase.pure
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-embedded
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - burrow-survey
+  - business-temporal
+  - embedded-mapping
+  - enumeration-mapping
+  - literal-default
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - relational
+  - wildlife-tracking

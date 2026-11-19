@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::cedarhatchery2::profile::*;
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A rearing lot of juvenile fish held in one raceway, corrected over processing time so a superseded lot row stays visible only for the processing window it was believed in.', RearingNotes.steward = 'Rearing Crew', RearingNotes.reviewCycle = 'weekly', RearingNotes.'holding unit' = 'raceway'} test::cedarhatchery2::domain::StockLot
+{
+  lotCode: String[1];
+  {RearingNotes.reviewCycle = 'per sampling'} fishCount: Integer[0..1];
+  meanLengthMm: Float[0..1];
+  speciesName: String[0..1];
+  racewayName: String[0..1];
+}
+
+Class {doc.doc = 'A reared species reference row.', RearingNotes.steward = 'Stock Registry', RearingNotes.reviewCycle = 'yearly'} test::cedarhatchery2::domain::Species
+{
+  speciesCode: String[1];
+  speciesName: String[1];
+  familyName: String[0..1];
+}
+
+Class {doc.doc = 'A raceway channel of the hatchery site.', RearingNotes.steward = 'Site Works', RearingNotes.'holding unit' = 'channel'} test::cedarhatchery2::domain::Raceway
+{
+  racewayCode: String[1];
+  racewayName: String[1];
+  waterSource: String[0..1];
+}
+
+Class {doc.doc = 'A feeding plan applied to a rearing lot.', RearingNotes.steward = 'Nutrition Desk', RearingNotes.reviewCycle = 'monthly'} test::cedarhatchery2::domain::FeedPlan
+{
+  feedCode: String[1];
+  feedName: String[1];
+  pelletSizeMm: Float[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A health inspection of a rearing lot, corrected over processing time.', RearingNotes.steward = 'Fish Health Unit', RearingNotes.reviewCycle = 'daily'} test::cedarhatchery2::domain::HealthCheck
+{
+  checkId: String[1];
+  lotCode: String[1];
+  waterTempC: Float[0..1];
+  sampledCount: Integer[0..1];
+  vetAlias: String[0..1];
+}
+
+Class <<RearingNotes.fieldRecord>> {doc.doc = 'A hatchery veterinary roster entry.'} test::cedarhatchery2::domain::VetRoster
+{
+  vetCode: String[1];
+  vetAlias: String[1];
+  clinicName: String[0..1];
+}
+
+Class {doc.doc = 'A health grade of the inspection scale.'} test::cedarhatchery2::domain::GradeScale
+{
+  gradeCode: String[1];
+  gradeLabel: String[1];
+  severityRank: Integer[0..1];
+}
+
+Association test::cedarhatchery2::domain::StockLot_Species
+{
+  species: test::cedarhatchery2::domain::Species[0..1];
+  speciesLots: test::cedarhatchery2::domain::StockLot[*];
+}
+
+Association test::cedarhatchery2::domain::StockLot_Raceway
+{
+  raceway: test::cedarhatchery2::domain::Raceway[0..1];
+  racewayLots: test::cedarhatchery2::domain::StockLot[*];
+}
+
+Association test::cedarhatchery2::domain::StockLot_FeedPlan
+{
+  feedPlan: test::cedarhatchery2::domain::FeedPlan[0..1];
+  feedPlanLots: test::cedarhatchery2::domain::StockLot[*];
+}
+
+Association test::cedarhatchery2::domain::HealthCheck_Vet
+{
+  vet: test::cedarhatchery2::domain::VetRoster[0..1];
+  vetChecks: test::cedarhatchery2::domain::HealthCheck[*];
+}
+
+Association test::cedarhatchery2::domain::HealthCheck_Grade
+{
+  grade: test::cedarhatchery2::domain::GradeScale[0..1];
+  gradeChecks: test::cedarhatchery2::domain::HealthCheck[*];
+}

@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ambervineyard2::mapping::PaleoBaseMapping
+(
+  test::ambervineyard2::domain::PreservationGrade: EnumerationMapping GradeMapping
+  {
+    PRISTINE: ['PRISTINE'],
+    STABLE: ['STABLE'],
+    FRAGILE: ['FRAGILE'],
+    CRITICAL: ['CRITICAL']
+  }
+
+  *test::ambervineyard2::domain::Fossil[fossil_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.fossil_id
+    )
+    ~mainTable [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil
+    catalogueNumber: [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.catalogue_number,
+    taxonName: [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.taxon_name,
+    sourceRegister: 'PALEO-CENTRAL',
+    eraLabel: case(
+      equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 1),
+      'PRECAMBRIAN',
+      case(
+        equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 2),
+        'CAMBRIAN',
+        case(
+          equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 3),
+          'ORDOVICIAN',
+          case(
+            equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 4),
+            'SILURIAN',
+            case(
+              equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 5),
+              'DEVONIAN',
+              case(
+                equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 6),
+                'CARBONIFEROUS',
+                case(
+                  equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 7),
+                  'PERMIAN',
+                  case(
+                    equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.era_code, 8),
+                    'TRIASSIC',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    grade: EnumerationMapping GradeMapping: case(
+      equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.grade_code, 3),
+      'CRITICAL',
+      case(
+        equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.grade_code, 2),
+        'FRAGILE',
+        case(
+          equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.grade_code, 1),
+          'STABLE',
+          case(
+            equal([test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.grade_code, 0),
+            'PRISTINE',
+            sqlNull()
+          )
+        )
+      )
+    ),
+    excavatorName: [test::ambervineyard2::store::PaleoStore]@Fossil_Site > @Site_Excavator | [test::ambervineyard2::store::PaleoStore]site.excavator.excavator_name,
+    parentCatalogue: [test::ambervineyard2::store::PaleoStore]@Fossil_Parent | [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.catalogue_number,
+    authority: [test::ambervineyard2::store::PaleoStore]@Fossil_TaxonRef | [test::ambervineyard2::store::PaleoStore]catalog.taxon_ref.authority_name,
+    provenance
+    (
+      collector: [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.collector,
+      method: [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.method
+    ),
+    metrics() Inline[metrics_set]
+  }
+
+  *test::ambervineyard2::domain::FieldMetrics[metrics_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.fossil_id
+    )
+    ~mainTable [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil
+    lengthCm: [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.length_cm,
+    massG: [test::ambervineyard2::store::PaleoStore]fossil.dig_fossil.mass_g
+  }
+
+  *test::ambervineyard2::domain::DigSite[digsite_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambervineyard2::store::PaleoStore]site.dig_site.site_id
+    )
+    ~mainTable [test::ambervineyard2::store::PaleoStore]site.dig_site
+    siteCode: [test::ambervineyard2::store::PaleoStore]site.dig_site.site_code,
+    siteName: [test::ambervineyard2::store::PaleoStore]site.dig_site.site_name
+  }
+
+  *test::ambervineyard2::domain::Excavator[excavator_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambervineyard2::store::PaleoStore]site.excavator.excavator_id
+    )
+    ~mainTable [test::ambervineyard2::store::PaleoStore]site.excavator
+    excavatorCode: [test::ambervineyard2::store::PaleoStore]site.excavator.excavator_code,
+    excavatorName: [test::ambervineyard2::store::PaleoStore]site.excavator.excavator_name
+  }
+)

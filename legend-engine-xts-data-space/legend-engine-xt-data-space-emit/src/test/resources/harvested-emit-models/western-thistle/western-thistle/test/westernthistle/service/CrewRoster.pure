@@ -1,0 +1,111 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::westernthistle::service::CrewRoster
+{
+  pattern: '/westernthistle/crew/{depotName}';
+  title: 'Depot Crew Roster';
+  owners:
+  [
+    'cycle-network-maintenance'
+  ];
+  documentation: 'Rosters the maintenance crews based at one depot, reporting headcount, on-call status and the grade review interval band they work to.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {depotName: String[1]|test::westernthistle::domain::MaintenanceCrew.all()->filter(
+      m|$m.depotName == $depotName
+    )->project(
+      [
+        m|$m.crewCode,
+        m|$m.crewName->toUpper(),
+        m|$m.headcount,
+        m|if($m.onCall, |'ON CALL', |if($m.headcount >= 5, |'DAY SHIFT', |'RESERVE'))
+      ],
+      [
+        'CrewCode',
+        'CrewName',
+        'Headcount',
+        'Rota'
+      ]
+    )->sort([asc('CrewCode')])};
+    mapping: test::westernthistle::mapping::RegistryMapping;
+    runtime: test::westernthistle::runtime::RegistryRuntime;
+  }
+  testSuites:
+  [
+    crewRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          registryH2Connection:
+            Relational
+            #{
+                registry.maintenance_crew:
+                  'crew_code,crew_name,depot_name,headcount,on_call_flag,commissioned_on\n'+
+                  'CR-01,Greenway Sweepers,North Depot,6,true,2018-04-02\n'+
+                  'CR-02,Towpath Menders,West Depot,3,false,2021-11-15\n'+
+                  'CR-03,Sett Repointers,North Depot,7,false,2020-05-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northDepot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            depotName = 'North Depot'
+          ]
+          asserts:
+          [
+            onCallAndDayShift:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CrewCode":"CR-01","CrewName":"GREENWAY SWEEPERS","Headcount":6,"Rota":"ON CALL"},{"CrewCode":"CR-03","CrewName":"SETT REPOINTERS","Headcount":7,"Rota":"DAY SHIFT"}]';
+                  }#;
+              }#
+          ]
+        },
+        westDepot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            depotName = 'West Depot'
+          ]
+          asserts:
+          [
+            reserveCrew:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CrewCode":"CR-02","CrewName":"TOWPATH MENDERS","Headcount":3,"Rota":"RESERVE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

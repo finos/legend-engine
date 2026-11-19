@@ -1,0 +1,190 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernlighthouse3::mapping::HarbourLightMapping
+(
+  *test::westernlighthouse3::domain::NavigationLight[light]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light.light_code
+    )
+    ~mainTable [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light
+    lightCode: [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light.light_code,
+    characterCode: [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light.character_code,
+    focalHeightM: [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light.focal_height_m,
+    rangeNm: [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light.range_nm,
+    statusCode: [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light.status_code,
+    lastInspected: [test::westernlighthouse3::store::HarbourLightDB]harbour.navigation_light.last_inspected
+  }
+
+  *test::westernlighthouse3::domain::LampUnit[lamp]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernlighthouse3::store::HarbourLightDB]harbour.lamp_unit.lamp_code
+    )
+    ~mainTable [test::westernlighthouse3::store::HarbourLightDB]harbour.lamp_unit
+    lampCode: [test::westernlighthouse3::store::HarbourLightDB]harbour.lamp_unit.lamp_code,
+    lampType: [test::westernlighthouse3::store::HarbourLightDB]harbour.lamp_unit.lamp_type,
+    wattage: [test::westernlighthouse3::store::HarbourLightDB]harbour.lamp_unit.wattage,
+    installedOn: [test::westernlighthouse3::store::HarbourLightDB]harbour.lamp_unit.installed_on
+  }
+
+  *test::westernlighthouse3::domain::HarbourStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernlighthouse3::store::HarbourLightDB]harbour.harbour_station.station_code
+    )
+    ~mainTable [test::westernlighthouse3::store::HarbourLightDB]harbour.harbour_station
+    stationCode: [test::westernlighthouse3::store::HarbourLightDB]harbour.harbour_station.station_code,
+    stationName: [test::westernlighthouse3::store::HarbourLightDB]harbour.harbour_station.station_name,
+    coastSector: [test::westernlighthouse3::store::HarbourLightDB]harbour.harbour_station.coast_sector
+  }
+
+  test::westernlighthouse3::domain::LightLamp: Relational
+  {
+    AssociationMapping
+    (
+      fittedLamp[light, lamp]: [test::westernlighthouse3::store::HarbourLightDB]@Light_Lamp,
+      litLights[lamp, light]: [test::westernlighthouse3::store::HarbourLightDB]@Light_Lamp
+    )
+  }
+
+  test::westernlighthouse3::domain::StationLight: Relational
+  {
+    AssociationMapping
+    (
+      homeStation[light, station]: [test::westernlighthouse3::store::HarbourLightDB]@Light_Station,
+      tendedLights[station, light]: [test::westernlighthouse3::store::HarbourLightDB]@Light_Station
+    )
+  }
+
+  testSuites:
+  [
+    testSuite_NavigationLight:
+    {
+      function: |test::westernlighthouse3::domain::NavigationLight.all(%2026-06-01)->project(
+        [
+          x|$x.lightCode,
+          x|$x.characterCode,
+          x|$x.focalHeightM,
+          x|$x.rangeNm,
+          x|$x.statusCode,
+          x|$x.homeStation.stationName,
+          x|$x.homeStation.coastSector,
+          x|$x.fittedLamp.lampType,
+          x|$x.fittedLamp.wattage
+        ],
+        [
+          'LightCode',
+          'Character',
+          'FocalHeightM',
+          'RangeNm',
+          'Status',
+          'StationName',
+          'CoastSector',
+          'LampType',
+          'Wattage'
+        ]
+      )->sort([asc('LightCode')]);
+      tests:
+      [
+        test_processing_slice_and_joined_ends:
+        {
+          data:
+          [
+            test::westernlighthouse3::store::HarbourLightDB:
+              Relational
+              #{
+                harbour.navigation_light:
+                  'light_code,station_code,lamp_code,character_code,focal_height_m,range_nm,status_code,last_inspected,in_z,out_z\n'+
+                  'NL-01,HS-01,LU-01,Fl W 5s,18.5,12.0,ACTIVE,2025-11-02,2026-01-01,9999-12-31\n'+
+                  'NL-02,HS-01,LU-02,Oc R 3s,9.0,7.5,MAINTENANCE,2026-02-14,2026-01-01,9999-12-31\n'+
+                  'NL-03,HS-02,LU-01,Fl G 4s,12.25,9.0,ACTIVE,2024-08-19,2026-01-01,9999-12-31\n'+
+                  'NL-04,HS-02,LU-03,Iso W 6s,22.0,14.0,RETIRED,2023-05-05,2024-01-01,2025-06-30\n';
+                harbour.lamp_unit:
+                  'lamp_code,lamp_type,wattage,installed_on\n'+
+                  'LU-01,LED array,45,2024-03-01\n'+
+                  'LU-02,Halogen bulb,120,2022-07-15\n'+
+                  'LU-03,Metal halide,150,2019-04-09\n';
+                harbour.harbour_station:
+                  'station_code,station_name,coast_sector\n'+
+                  'HS-01,North Mole Station,Outer Approach\n'+
+                  'HS-02,South Quay Station,Inner Basin\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LightCode":"NL-01","Character":"Fl W 5s","FocalHeightM":18.5,"RangeNm":12.0,"Status":"ACTIVE","StationName":"North Mole Station","CoastSector":"Outer Approach","LampType":"LED array","Wattage":45},{"LightCode":"NL-02","Character":"Oc R 3s","FocalHeightM":9.0,"RangeNm":7.5,"Status":"MAINTENANCE","StationName":"North Mole Station","CoastSector":"Outer Approach","LampType":"Halogen bulb","Wattage":120},{"LightCode":"NL-03","Character":"Fl G 4s","FocalHeightM":12.25,"RangeNm":9.0,"Status":"ACTIVE","StationName":"South Quay Station","CoastSector":"Inner Basin","LampType":"LED array","Wattage":45}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    testSuite_LampUnit:
+    {
+      function: |test::westernlighthouse3::domain::LampUnit.all()->project(
+        [
+          x|$x.lampCode,
+          x|$x.lampType,
+          x|$x.wattage,
+          x|$x.installedOn
+        ],
+        [
+          'LampCode',
+          'LampType',
+          'Wattage',
+          'InstalledOn'
+        ]
+      )->sort([asc('LampCode')]);
+      tests:
+      [
+        test_lamp_rows:
+        {
+          data:
+          [
+            test::westernlighthouse3::store::HarbourLightDB:
+              Relational
+              #{
+                harbour.lamp_unit:
+                  'lamp_code,lamp_type,wattage,installed_on\n'+
+                  'LU-01,LED array,45,2024-03-01\n'+
+                  'LU-02,Halogen bulb,120,2022-07-15\n';
+              }#
+          ];
+          asserts:
+          [
+            assertion_rows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"LampCode":"LU-01","LampType":"LED array","Wattage":45,"InstalledOn":"2024-03-01"},{"LampCode":"LU-02","LampType":"Halogen bulb","Wattage":120,"InstalledOn":"2022-07-15"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

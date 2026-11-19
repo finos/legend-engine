@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A business-temporally milestoned node of a nature-reserve trail hierarchy, carrying the descriptive name and the node identifier of every level it hangs under.'} test::kindlythicket2::domain::TrailNode
+{
+  nodeCode: String[1];
+  nodeLabel: String[1];
+  reserveName: String[1];
+  reserveCode: String[1];
+  districtName: String[1];
+  districtCode: String[1];
+  corridorName: String[1];
+  corridorCode: String[1];
+  sectorName: String[1];
+  sectorCode: String[1];
+  segmentName: String[1];
+  segmentCode: String[1];
+  spurName: String[0..1];
+  spurCode: String[0..1];
+  stationName: String[0..1];
+  stationCode: String[0..1];
+  waypointName: String[0..1];
+  waypointCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stewardship record naming the volunteer steward responsible for one trail node; declared resolvable in memory but supplied no source instances.'} test::kindlythicket2::domain::StewardRecord
+{
+  recordCode: String[1];
+  stewardName: String[1];
+  nodeCode: String[1];
+}

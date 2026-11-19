@@ -1,0 +1,305 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlydelta5::mapping::PropagationMapping
+(
+  include mapping test::kindlydelta5::mapping::PropagationBaseMapping
+
+  *test::kindlydelta5::domain::BatchYield[yield]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlydelta5::store::PropagationDB]nursery.batch_yield_view.batch_code
+    )
+    ~mainTable [test::kindlydelta5::store::PropagationDB]nursery.batch_yield_view
+    batchCode: [test::kindlydelta5::store::PropagationDB]nursery.batch_yield_view.batch_code,
+    trayCount: [test::kindlydelta5::store::PropagationDB]nursery.batch_yield_view.tray_count,
+    totalSown: [test::kindlydelta5::store::PropagationDB]nursery.batch_yield_view.total_sown
+  }
+
+  *test::kindlydelta5::domain::BenchTray[tray]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_code
+    )
+    ~mainTable [test::kindlydelta5::store::PropagationDB]nursery.bench_tray
+    trayCode: [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_code,
+    batchCode: [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.batch_code,
+    trayLabel: [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_label,
+    trayFormatCode: [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_format,
+    speciesCode: [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.species_code,
+    sownCount: [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.sown_count
+  }
+
+  *test::kindlydelta5::domain::PropagationBatch[batch]: Relational
+  {
+    ~filter [test::kindlydelta5::store::PropagationDB]ActivePropagationFilter
+    ~primaryKey
+    (
+      [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_code
+    )
+    ~mainTable [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch
+    batchCode: [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_code,
+    stageNo: [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no,
+    batchLabel: [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label,
+    zoneCode: [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.zone_code,
+    plannedDate: [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.planned_date,
+    recordedAt: [test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.recorded_at,
+    stagedLabel: if(
+      equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 1),
+      concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT'),
+      if(
+        equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 2),
+        concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT', '-LEAF'),
+        if(
+          equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 3),
+          concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT', '-LEAF', '-ROOT'),
+          if(
+            equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 4),
+            concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT', '-LEAF', '-ROOT', '-STEM'),
+            if(
+              equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 5),
+              concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT', '-LEAF', '-ROOT', '-STEM', '-BUD'),
+              if(
+                equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 6),
+                concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT', '-LEAF', '-ROOT', '-STEM', '-BUD', '-BLOOM'),
+                if(
+                  equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 7),
+                  concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT', '-LEAF', '-ROOT', '-STEM', '-BUD', '-BLOOM', '-SEED'),
+                  if(
+                    equal([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 8),
+                    concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-SPROUT', '-LEAF', '-ROOT', '-STEM', '-BUD', '-BLOOM', '-SEED', '-POD'),
+                    concat([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label, '-MIXED')
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    speciesSummary: if(
+      isNull([test::kindlydelta5::store::PropagationDB]@BatchToTray > @TrayToSpecies | [test::kindlydelta5::store::PropagationDB]catalog.species_ref.species_label),
+      'NO SPECIES',
+      if(
+        lessThan(length(trim([test::kindlydelta5::store::PropagationDB]@BatchToTray > @TrayToSpecies | [test::kindlydelta5::store::PropagationDB]catalog.species_ref.species_label)), 5),
+        'SHORT SPECIES',
+        if(
+          greaterThanEqual(length(trim([test::kindlydelta5::store::PropagationDB]@BatchToTray > @TrayToSpecies | [test::kindlydelta5::store::PropagationDB]catalog.species_ref.species_label)), 5),
+          substring([test::kindlydelta5::store::PropagationDB]@BatchToTray > @TrayToSpecies | [test::kindlydelta5::store::PropagationDB]catalog.species_ref.species_label, 1, 5),
+          'UNKNOWN SPECIES'
+        )
+      )
+    ),
+    trayFormatLabel: if(
+      equal(trim([test::kindlydelta5::store::PropagationDB]@BatchToTray | [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_format), 'CELL'),
+      'CELLULAR',
+      if(
+        isNull(trim([test::kindlydelta5::store::PropagationDB]@BatchToTray | [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_format)),
+        'UNMARKED',
+        toUpper(trim([test::kindlydelta5::store::PropagationDB]@BatchToTray | [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_format))
+      )
+    ),
+    shortCode: concat(
+      toUpper(trim([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label)),
+      '-',
+      substring([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_code, 1, 4)
+    ),
+    labelLength: length(trim([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.batch_label)),
+    regionLabel: [test::kindlydelta5::store::PropagationDB]@BatchToTray > (INNER) @TrayToSpecies > (INNER) @SpeciesToRegion | [test::kindlydelta5::store::PropagationDB]catalog.region_ref.region_label,
+    trayCount: [test::kindlydelta5::store::PropagationDB]@BatchToYield | [test::kindlydelta5::store::PropagationDB]nursery.batch_yield_view.tray_count,
+    vigour: EnumerationMapping VigourBandMapping: case(
+      greaterThanEqual([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 7),
+      'LUSH',
+      case(
+        greaterThanEqual([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.stage_no, 4),
+        'READY',
+        'SPROUT'
+      )
+    ),
+    trayFormat: EnumerationMapping TrayFormatMapping: case(
+      equal(trim([test::kindlydelta5::store::PropagationDB]@BatchToTray | [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_format), 'CELL'),
+      'CELL',
+      case(
+        equal(trim([test::kindlydelta5::store::PropagationDB]@BatchToTray | [test::kindlydelta5::store::PropagationDB]nursery.bench_tray.tray_format), 'FLAT'),
+        'FLAT',
+        'OPEN'
+      )
+    ),
+    storageZone: EnumerationMapping StorageZoneMapping: case(
+      equal(toUpper(trim([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.zone_code)), 'COOL'),
+      'COOL',
+      case(
+        equal(toUpper(trim([test::kindlydelta5::store::PropagationDB]nursery.propagation_batch.zone_code)), 'MILD'),
+        'MILD',
+        'WARM'
+      )
+    )
+  }
+
+  test::kindlydelta5::domain::Propagation_BenchTrays: Relational
+  {
+    AssociationMapping
+    (
+      trays[batch, tray]: [test::kindlydelta5::store::PropagationDB]@BatchToTray,
+      batch[tray, batch]: [test::kindlydelta5::store::PropagationDB]@BatchToTray
+    )
+  }
+
+  testSuites:
+  [
+    propagationDerivationSuite:
+    {
+      function: test::kindlydelta5::domain::PropagationBatch.all()->project(~[batchCode: b|$b.batchCode, stagedLabel: b|$b.stagedLabel, speciesSummary: b|$b.speciesSummary, trayFormatLabel: b|$b.trayFormatLabel, regionLabel: b|$b.regionLabel, trayCount: b|$b.trayCount, vigour: b|$b.vigour, trayFormat: b|$b.trayFormat, storageZone: b|$b.storageZone])->sort(~batchCode->ascending());
+      tests:
+      [
+        allPropagationArms:
+        {
+          doc: 'Covers the eight staged-label arms, joined species string branches, the blank tray-format branch, three computed enumeration mappings, the three-hop region path and the grouped tray view.';
+          data:
+          [
+            test::kindlydelta5::store::PropagationDB:
+              Relational
+              #{
+                nursery.propagation_batch:
+                  'batch_code,stage_no,batch_label,zone_code,planned_date,recorded_at,active_flag\n'+
+                  'PB-01,1,Alba,COOL,2026-01-01,2026-01-01 08:00:00,Y\n'+
+                  'PB-02,2,Birch,MILD,2026-01-02,2026-01-02 08:00:00,Y\n'+
+                  'PB-03,3,Cedar,WARM,2026-01-03,2026-01-03 08:00:00,Y\n'+
+                  'PB-04,4,Dahlia,COOL,2026-01-04,2026-01-04 08:00:00,Y\n'+
+                  'PB-05,5,Elm,MILD,2026-01-05,2026-01-05 08:00:00,Y\n'+
+                  'PB-06,6,Fern,WARM,2026-01-06,2026-01-06 08:00:00,Y\n'+
+                  'PB-07,7,Glade,COOL,2026-01-07,2026-01-07 08:00:00,Y\n'+
+                  'PB-08,8,Hazel,MILD,2026-01-08,2026-01-08 08:00:00,Y\n'+
+                  'PB-09,9,Iris,WARM,2026-01-09,2026-01-09 08:00:00,Y\n'+
+                  'PB-10,10,Juniper,COOL,2026-01-10,2026-01-10 08:00:00,Y\n'+
+                  'PB-11,11,Kalmia,MILD,2026-01-11,2026-01-11 08:00:00,Y\n'+
+                  'PB-12,12,Lupine,WARM,2026-01-12,2026-01-12 08:00:00,Y\n'+
+                  'PB-13,13,Maple,COOL,2026-01-13,2026-01-13 08:00:00,Y\n'+
+                  'PB-14,14,Nettle,MILD,2026-01-14,2026-01-14 08:00:00,Y';
+                nursery.bench_tray:
+                  'tray_code,batch_code,tray_label,tray_format,species_code,sown_count\n'+
+                  'TR-01,PB-01,Alba Tray,CELL,SP-01,10\n'+
+                  'TR-02,PB-02,Birch Tray,FLAT,SP-02,11\n'+
+                  'TR-03,PB-03,Cedar Tray,,SP-03,12\n'+
+                  'TR-04,PB-04,Dahlia Tray,CELL,SP-04,13\n'+
+                  'TR-05,PB-05,Elm Tray,FLAT,SP-05,14\n'+
+                  'TR-06,PB-06,Fern Tray,CELL,SP-06,15\n'+
+                  'TR-07,PB-07,Glade Tray,FLAT,SP-07,16\n'+
+                  'TR-08,PB-08,Hazel Tray,CELL,SP-08,17\n'+
+                  'TR-09,PB-09,Iris Tray,FLAT,SP-09,18\n'+
+                  'TR-10,PB-10,Juniper Tray,CELL,SP-10,19\n'+
+                  'TR-11,PB-11,Kalmia Tray,FLAT,SP-11,20\n'+
+                  'TR-12,PB-12,Lupine Tray,CELL,SP-12,21\n'+
+                  'TR-13,PB-13,Maple Tray,FLAT,SP-13,22\n'+
+                  'TR-14,PB-14,Nettle Tray,CELL,SP-14,23';
+                catalog.species_ref:
+                  'species_code,species_label,family_code\n'+
+                  'SP-01,Aster minor,RG-01\n'+
+                  'SP-02,Elm,RG-02\n'+
+                  'SP-03,,RG-03\n'+
+                  'SP-04,Bramble,RG-01\n'+
+                  'SP-05,Calathea,RG-02\n'+
+                  'SP-06,Dogwood,RG-03\n'+
+                  'SP-07,Elder,RG-01\n'+
+                  'SP-08,Fescue,RG-02\n'+
+                  'SP-09,Gardenia,RG-03\n'+
+                  'SP-10,Hawthorn,RG-01\n'+
+                  'SP-11,Ivy,RG-02\n'+
+                  'SP-12,Juniper,RG-03\n'+
+                  'SP-13,Lupine,RG-01\n'+
+                  'SP-14,Narcissus,RG-02';
+                catalog.region_ref:
+                  'region_code,region_label\n'+
+                  'RG-01,Northern Conservatory\n'+
+                  'RG-02,Glasshouse Terrace\n'+
+                  'RG-03,Seedling Court';
+              }#
+          ];
+          asserts:
+          [
+            fourteenPropagationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"batchCode":"PB-01","stagedLabel":"Alba-SPROUT","speciesSummary":"Aster","trayFormatLabel":"CELLULAR","regionLabel":"Northern Conservatory","trayCount":1,"vigour":"SPROUT","trayFormat":"CELL","storageZone":"COOL"},{"batchCode":"PB-02","stagedLabel":"Birch-SPROUT-LEAF","speciesSummary":"SHORT SPECIES","trayFormatLabel":"FLAT","regionLabel":"Glasshouse Terrace","trayCount":1,"vigour":"SPROUT","trayFormat":"FLAT","storageZone":"MILD"},{"batchCode":"PB-03","stagedLabel":"Cedar-SPROUT-LEAF-ROOT","speciesSummary":"NO SPECIES","trayFormatLabel":"UNMARKED","regionLabel":"Seedling Court","trayCount":1,"vigour":"SPROUT","trayFormat":"OPEN","storageZone":"WARM"},{"batchCode":"PB-04","stagedLabel":"Dahlia-SPROUT-LEAF-ROOT-STEM","speciesSummary":"Bramb","trayFormatLabel":"CELLULAR","regionLabel":"Northern Conservatory","trayCount":1,"vigour":"READY","trayFormat":"CELL","storageZone":"COOL"},{"batchCode":"PB-05","stagedLabel":"Elm-SPROUT-LEAF-ROOT-STEM-BUD","speciesSummary":"Calat","trayFormatLabel":"FLAT","regionLabel":"Glasshouse Terrace","trayCount":1,"vigour":"READY","trayFormat":"FLAT","storageZone":"MILD"},{"batchCode":"PB-06","stagedLabel":"Fern-SPROUT-LEAF-ROOT-STEM-BUD-BLOOM","speciesSummary":"Dogwo","trayFormatLabel":"CELLULAR","regionLabel":"Seedling Court","trayCount":1,"vigour":"READY","trayFormat":"CELL","storageZone":"WARM"},{"batchCode":"PB-07","stagedLabel":"Glade-SPROUT-LEAF-ROOT-STEM-BUD-BLOOM-SEED","speciesSummary":"Elder","trayFormatLabel":"FLAT","regionLabel":"Northern Conservatory","trayCount":1,"vigour":"LUSH","trayFormat":"FLAT","storageZone":"COOL"},{"batchCode":"PB-08","stagedLabel":"Hazel-SPROUT-LEAF-ROOT-STEM-BUD-BLOOM-SEED-POD","speciesSummary":"Fescu","trayFormatLabel":"CELLULAR","regionLabel":"Glasshouse Terrace","trayCount":1,"vigour":"LUSH","trayFormat":"CELL","storageZone":"MILD"},{"batchCode":"PB-09","stagedLabel":"Iris-MIXED","speciesSummary":"Garde","trayFormatLabel":"FLAT","regionLabel":"Seedling Court","trayCount":1,"vigour":"LUSH","trayFormat":"FLAT","storageZone":"WARM"},{"batchCode":"PB-10","stagedLabel":"Juniper-MIXED","speciesSummary":"Hawth","trayFormatLabel":"CELLULAR","regionLabel":"Northern Conservatory","trayCount":1,"vigour":"LUSH","trayFormat":"CELL","storageZone":"COOL"},{"batchCode":"PB-11","stagedLabel":"Kalmia-MIXED","speciesSummary":"SHORT SPECIES","trayFormatLabel":"FLAT","regionLabel":"Glasshouse Terrace","trayCount":1,"vigour":"LUSH","trayFormat":"FLAT","storageZone":"MILD"},{"batchCode":"PB-12","stagedLabel":"Lupine-MIXED","speciesSummary":"Junip","trayFormatLabel":"CELLULAR","regionLabel":"Seedling Court","trayCount":1,"vigour":"LUSH","trayFormat":"CELL","storageZone":"WARM"},{"batchCode":"PB-13","stagedLabel":"Maple-MIXED","speciesSummary":"Lupin","trayFormatLabel":"FLAT","regionLabel":"Northern Conservatory","trayCount":1,"vigour":"LUSH","trayFormat":"FLAT","storageZone":"COOL"},{"batchCode":"PB-14","stagedLabel":"Nettle-MIXED","speciesSummary":"Narci","trayFormatLabel":"CELLULAR","regionLabel":"Glasshouse Terrace","trayCount":1,"vigour":"LUSH","trayFormat":"CELL","storageZone":"MILD"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    trayReferenceSuite:
+    {
+      function: test::kindlydelta5::domain::PropagationBatch.all()->project(~[batchCode: b|$b.batchCode, labelLength: b|$b.labelLength, shortCode: b|$b.shortCode, trayCount: b|$b.trayCount]);
+      tests:
+      [
+        groupedTrayCounts:
+        {
+          doc: 'Projects direct string functions and the grouped inline view over a second fixture set.';
+          data:
+          [
+            test::kindlydelta5::store::PropagationDB:
+              Relational
+              #{
+                nursery.propagation_batch:
+                  'batch_code,stage_no,batch_label,zone_code,planned_date,recorded_at,active_flag\n'+
+                  'PX-01,2,Oak,COOL,2026-02-01,2026-02-01 09:00:00,Y\n'+
+                  'PX-02,5,Willow,MILD,2026-02-02,2026-02-02 09:00:00,Y\n'+
+                  'PX-03,8,Pine,WARM,2026-02-03,2026-02-03 09:00:00,Y\n'+
+                  'PX-04,9,Reed,COOL,2026-02-04,2026-02-04 09:00:00,Y';
+                nursery.bench_tray:
+                  'tray_code,batch_code,tray_label,tray_format,species_code,sown_count\n'+
+                  'TX-01,PX-01,Oak Tray,CELL,SX-01,7\n'+
+                  'TX-02,PX-01,Oak Spare,FLAT,SX-02,8\n'+
+                  'TX-03,PX-02,Willow Tray,CELL,SX-03,9\n'+
+                  'TX-04,PX-03,Pine Tray,FLAT,SX-04,10\n'+
+                  'TX-05,PX-04,Reed Tray,CELL,SX-05,11';
+                catalog.species_ref:
+                  'species_code,species_label,family_code\n'+
+                  'SX-01,Oakleaf,RG-01\n'+
+                  'SX-02,Oakmoss,RG-01\n'+
+                  'SX-03,Willowherb,RG-02\n'+
+                  'SX-04,Pinecone,RG-03\n'+
+                  'SX-05,Reedgrass,RG-01';
+                catalog.region_ref:
+                  'region_code,region_label\n'+
+                  'RG-01,North Conservatory\n'+
+                  'RG-02,East Conservatory\n'+
+                  'RG-03,South Conservatory';
+              }#
+          ];
+          asserts:
+          [
+            fourGroupedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"batchCode":"PX-01","labelLength":3,"shortCode":"OAK-PX-0","trayCount":2},{"batchCode":"PX-02","labelLength":6,"shortCode":"WILLOW-PX-0","trayCount":1},{"batchCode":"PX-03","labelLength":4,"shortCode":"PINE-PX-0","trayCount":1},{"batchCode":"PX-04","labelLength":4,"shortCode":"REED-PX-0","trayCount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

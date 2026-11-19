@@ -1,0 +1,35 @@
+name: olive-canyon-model
+title: "Olive Canyon — Civic Open-Space Lattice over a Parks Store"
+description: |
+  A municipal open-space domain in which a stereotyped profile decorates an
+  inheritance lattice of public spaces and six binary associations wire those
+  spaces to districts, stewards, trail segments, benches and maintenance logs.
+  A parks relational database carries the matching tables and joins so the
+  grammar constructs sit over a real store rather than in isolation.
+
+modelSources:
+  model:
+    root: olive-canyon-model
+    files:
+      - test/olivecanyon/domain/Associations.pure
+      - test/olivecanyon/domain/CivicProfile.pure
+      - test/olivecanyon/domain/District.pure
+      - test/olivecanyon/domain/PublicSpace.pure
+      - test/olivecanyon/store/CanyonParksDB.pure
+
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:profile
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - association
+  - inheritance
+  - open-space
+  - profile
+  - relational-store
+  - urban-planning

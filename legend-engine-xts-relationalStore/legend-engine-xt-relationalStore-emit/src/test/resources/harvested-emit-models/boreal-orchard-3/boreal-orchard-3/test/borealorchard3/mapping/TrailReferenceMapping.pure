@@ -1,0 +1,104 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::borealorchard3::mapping::TrailReferenceMapping
+(
+  test::borealorchard3::domain::SurfaceGrade: EnumerationMapping SurfaceGradeMapping
+  {
+    SEALED: ['SEALED'],
+    GRAVEL: ['GRAVEL'],
+    PEAT: ['PEAT'],
+    SCREE: ['SCREE']
+  }
+
+  test::borealorchard3::domain::HutClass: EnumerationMapping HutClassMapping
+  {
+    BOTHY: ['BOTHY'],
+    STAGED: ['STAGED'],
+    SERVICED: ['SERVICED']
+  }
+
+  *test::borealorchard3::domain::Region[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailReferenceDb]reference.region_block.region_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailReferenceDb]reference.region_block
+    regionCode: [test::borealorchard3::store::TrailReferenceDb]reference.region_block.region_code,
+    regionName: [test::borealorchard3::store::TrailReferenceDb]reference.region_block.region_name,
+    upland: [test::borealorchard3::store::TrailReferenceDb]reference.region_block.upland_flag
+  }
+
+  *test::borealorchard3::domain::SurfaceReference[surfaceReference]: Relational
+  {
+    ~primaryKey
+    (
+      [test::borealorchard3::store::TrailReferenceDb]reference.surface_reference.surface_grade_code
+    )
+    ~mainTable [test::borealorchard3::store::TrailReferenceDb]reference.surface_reference
+    gradeCode: EnumerationMapping SurfaceGradeMapping: [test::borealorchard3::store::TrailReferenceDb]reference.surface_reference.surface_grade_code,
+    gradeLabel: [test::borealorchard3::store::TrailReferenceDb]reference.surface_reference.grade_label,
+    walkingSpeedKph: [test::borealorchard3::store::TrailReferenceDb]reference.surface_reference.walking_speed_kph
+  }
+
+  testSuites:
+  [
+    surfaceReferenceSuite:
+    {
+      function: |test::borealorchard3::domain::SurfaceReference.all()->project(
+  [
+    s|$s.gradeCode->toString(),
+    s|$s.gradeLabel,
+    s|$s.walkingSpeedKph
+  ],
+  [
+    'Grade',
+    'Label',
+    'SpeedKph'
+  ])->sort([asc('Grade')]);
+      tests:
+      [
+        enumeratedSurfaceGrades:
+        {
+          data:
+          [
+            test::borealorchard3::store::TrailReferenceDb:
+              Relational
+              #{
+                reference.surface_reference:
+                  'surface_grade_code,grade_label,walking_speed_kph\n'+
+                  'GRAVEL,Compacted gravel,4.5\n'+
+                  'PEAT,Wet peat,2.5\n';
+              }#
+          ];
+          asserts:
+          [
+            gradeCodesResolveToEnumeratedValues:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Grade":"GRAVEL","Label":"Compacted gravel","SpeedKph":4.5},{"Grade":"PEAT","Label":"Wet peat","SpeedKph":2.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

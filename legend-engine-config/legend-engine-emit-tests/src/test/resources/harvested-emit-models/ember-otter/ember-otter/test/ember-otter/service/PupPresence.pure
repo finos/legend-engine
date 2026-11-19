@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberotter::service::PupPresence
+{
+  pattern: '/otter/v1/pup-presence';
+  title: 'Pup Presence';
+  documentation: 'Decides membership of each sighting against a caller-supplied flag collection rather than a scalar comparison, so an empty collection widens the register to every row while a non-matching collection empties it.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'otter-survey',
+    'river-stewards'
+  ];
+  execution: Single
+  {
+    query: {pupFlags: String[*]|test::emberotter::domain::OtterSighting.all()->filter(
+      s|($pupFlags->isEmpty()) || ($s.pupPresenceFlag->in($pupFlags))
+    )->project(
+      [
+        s|$s.recordCode,
+        s|$s.pupPresenceFlag,
+        s|$s.holtCode
+      ],
+      [
+        'RecordCode',
+        'PupPresenceFlag',
+        'HoltCode'
+      ]
+    )->sort(
+      [
+        asc('RecordCode')
+      ]
+    )};
+    mapping: test::emberotter::mapping::OtterMapping;
+    runtime: test::emberotter::runtime::OtterRuntime;
+  }
+  testSuites:
+  [
+    pupPresenceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          otterConnection:
+            Relational
+            #{
+              otter.otter_sighting:
+                  'sighting_code,reach_code,observer_name,otter_count,water_temp_c,sighted_on,logged_at,pup_flag,holt_code\n'+
+                  'OS-001,RE-01,Wren Halloway,3,8.5,2026-02-03,2026-02-03 07:15:00,Y,HO-01\n'+
+                  'OS-002,RE-02,Ilse Barrow,1,11.25,2026-02-04,2026-02-04 06:40:00,N,HO-02\n'+
+                  'OS-004,RE-03,Marek Loach,6,9.0,2026-02-06,2026-02-06 08:05:00,Y,HO-03\n';
+              otter.holt_survey:
+                  'survey_code,reach_code,observer_name,holt_code,chamber_count,shore_height_m,surveyed_on,substrate_label\n'+
+                  'HS-001,RE-01,Wren Halloway,HO-01,3,1.75,2026-01-20,ROOT MAT\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        emptyFlagCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            pupFlags = []
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"OS-001","PupPresenceFlag":"Y","HoltCode":"HO-01"},{"RecordCode":"OS-002","PupPresenceFlag":"N","HoltCode":"HO-02"},{"RecordCode":"OS-004","PupPresenceFlag":"Y","HoltCode":"HO-03"}]';
+                  }#;
+              }#
+          ]
+        },
+        satisfiedFlagCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            pupFlags = ['Y']
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"OS-001","PupPresenceFlag":"Y","HoltCode":"HO-01"},{"RecordCode":"OS-004","PupPresenceFlag":"Y","HoltCode":"HO-03"}]';
+                  }#;
+              }#
+          ]
+        },
+        unsatisfiedFlagCollection:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            pupFlags = ['Z']
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

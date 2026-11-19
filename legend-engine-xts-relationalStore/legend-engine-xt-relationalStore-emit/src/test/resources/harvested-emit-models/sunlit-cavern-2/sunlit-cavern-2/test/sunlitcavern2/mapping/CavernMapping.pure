@@ -1,0 +1,282 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitcavern2::mapping::CavernMapping
+(
+  include mapping test::sunlitcavern2::mapping::ChamberMapping
+  include mapping test::sunlitcavern2::mapping::RouteMapping
+  include mapping test::sunlitcavern2::mapping::BiotaMapping
+  include mapping test::sunlitcavern2::mapping::ClimateMapping
+
+  testSuites:
+  [
+    chamberDepthSuite:
+    {
+      function: |test::sunlitcavern2::domain::CaveChamber.all()->filter(
+        c|($c.floorDepthM >= 12.0) && ($c.passageGrade->toUpper()->trim() != 'CLOSED')
+      )->project(
+        [
+          c|$c.chamberId,
+          c|$c.chamberName->toUpper(),
+          c|$c.passageGrade,
+          c|$c.floorDepthM,
+          c|$c.surveyedOn
+        ],
+        [
+          'ChamberId',
+          'ChamberLabel',
+          'Grade',
+          'DepthM',
+          'SurveyedOn'
+        ]
+      )->sort(
+        [
+          asc('ChamberId')
+        ]
+      );
+      tests:
+      [
+        deepChambersOnly:
+        {
+          doc: 'Reads the aliased main table of the included chamber store through the aggregate mapping, drops the shallow chamber and the closed passage grade, and upper-cases the chamber label.';
+          data:
+          [
+            test::sunlitcavern2::store::ChamberDb:
+              Relational
+              #{
+                chamber.cave_chamber:
+                  'chamber_id,chamber_name,passage_grade,floor_depth_m,surveyed_on,gated_flag\n'+
+                  '1,Aurora Gallery,EASY,12.50,2026-01-05,N\n'+
+                  '2,Dripstone Hall,MODERATE,24.75,2026-01-12,Y\n'+
+                  '3,Crystal Alcove,EASY,8.25,2026-01-19,N\n'+
+                  '4,Windward Shaft,SEVERE,36.40,2026-01-26,Y\n'+
+                  '5,Sealed Sump,CLOSED,41.10,2026-02-02,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            threeDeepOpenChambers:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ChamberId":1,"ChamberLabel":"AURORA GALLERY","Grade":"EASY","DepthM":12.5,"SurveyedOn":"2026-01-05"},{"ChamberId":2,"ChamberLabel":"DRIPSTONE HALL","Grade":"MODERATE","DepthM":24.75,"SurveyedOn":"2026-01-12"},{"ChamberId":4,"ChamberLabel":"WINDWARD SHAFT","Grade":"SEVERE","DepthM":36.4,"SurveyedOn":"2026-01-26"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    chamberLatestSuite:
+    {
+      function: |test::sunlitcavern2::domain::ChamberLatest.all()->filter(
+        l|$l.readingCount >= 1
+      )->project(
+        [
+          l|$l.chamberId,
+          l|$l.latestReadingOn,
+          l|$l.readingCount
+        ],
+        [
+          'ChamberId',
+          'LatestReadingOn',
+          'ReadingCount'
+        ]
+      )->sort(
+        [
+          asc('ChamberId')
+        ]
+      );
+      tests:
+      [
+        latestPerChamber:
+        {
+          doc: 'Exercises the grouped inline view backing the chamber-latest class, keeping the newest reading date and the reading count per chamber.';
+          data:
+          [
+            test::sunlitcavern2::store::ChamberDb:
+              Relational
+              #{
+                chamber.chamber_reading:
+                  'reading_id,chamber_id,humidity_pct,recorded_on,probe_label\n'+
+                  '1,1,58.20,2026-02-01,P-1\n'+
+                  '2,1,61.40,2026-02-08,P-2\n'+
+                  '3,1,63.30,2026-02-15,P-3\n'+
+                  '4,2,49.60,2026-02-02,P-4\n'+
+                  '5,3,55.10,2026-02-03,P-5\n';
+              }#
+          ];
+          asserts:
+          [
+            groupedLatestReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ChamberId":1,"LatestReadingOn":"2026-02-15","ReadingCount":3},{"ChamberId":2,"LatestReadingOn":"2026-02-02","ReadingCount":1},{"ChamberId":3,"LatestReadingOn":"2026-02-03","ReadingCount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    routeSectionSuite:
+    {
+      function: |test::sunlitcavern2::domain::AccessRoute.all()->project(
+        [
+          r|$r.routeLabel,
+          r|$r.ropeMetres
+        ],
+        [
+          'Label',
+          'Metric'
+        ]
+      )->sort(
+        [
+          asc('Label')
+        ]
+      );
+      tests:
+      [
+        routeSectionAddressed:
+        {
+          doc: 'Proves the aggregate mapping reaches the route section store through its include chain.';
+          data:
+          [
+            test::sunlitcavern2::store::RouteDb:
+              Relational
+              #{
+                route.access_route:
+                  'route_id,route_label,rope_metres,opened_on,rigged_flag\n'+
+                  '1,Ladder Pitch,18.50,2026-01-08,Y\n'+
+                  '2,Meander Crawl,7.25,2026-01-15,N\n';
+              }#
+          ];
+          asserts:
+          [
+            routeRowsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Label":"Ladder Pitch","Metric":18.5},{"Label":"Meander Crawl","Metric":7.25}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    biotaSectionSuite:
+    {
+      function: |test::sunlitcavern2::domain::BatRoost.all()->project(
+        [
+          b|$b.colonyName,
+          b|$b.individuals
+        ],
+        [
+          'Label',
+          'Metric'
+        ]
+      )->sort(
+        [
+          asc('Label')
+        ]
+      );
+      tests:
+      [
+        biotaSectionAddressed:
+        {
+          doc: 'Proves the aggregate mapping reaches the biota section store through its include chain.';
+          data:
+          [
+            test::sunlitcavern2::store::BiotaDb:
+              Relational
+              #{
+                biota.bat_roost:
+                  'roost_id,colony_name,individuals,counted_on,maternity_flag\n'+
+                  '1,Echo Colony,240.00,2026-02-04,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            biotaRowsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Label":"Echo Colony","Metric":240.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    climateSectionSuite:
+    {
+      function: |test::sunlitcavern2::domain::ClimateLog.all()->project(
+        [
+          c|$c.stationLabel,
+          c|$c.airTempC
+        ],
+        [
+          'Label',
+          'Metric'
+        ]
+      )->sort(
+        [
+          asc('Label')
+        ]
+      );
+      tests:
+      [
+        climateSectionAddressed:
+        {
+          doc: 'Proves the aggregate mapping reaches the climate section store through its include chain.';
+          data:
+          [
+            test::sunlitcavern2::store::ClimateDb:
+              Relational
+              #{
+                climate.climate_log:
+                  'log_id,station_label,air_temp_c,logged_on,calibrated_flag\n'+
+                  '1,Entrance Station,11.40,2026-02-05,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            climateRowsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Label":"Entrance Station","Metric":11.4}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

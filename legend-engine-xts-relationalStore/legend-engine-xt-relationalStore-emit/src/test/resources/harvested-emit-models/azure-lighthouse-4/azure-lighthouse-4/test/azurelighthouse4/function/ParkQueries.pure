@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::tds::*;
+import test::azurelighthouse4::domain::*;
+import test::azurelighthouse4::function::*;
+import test::azurelighthouse4::profile::*;
+
+function <<ParkInspection.walkedRoute>> {ParkGovernance.owner = 'skatepark-upkeep'} test::azurelighthouse4::function::upkeepBand(grade: String[1], ramps: Integer[1], points: Integer[1]): String[1]
+{
+  if($grade->trim()->isEmpty(), |'UNBANDED',
+    |if($grade->toUpper()->in(['VOID']), |'WITHDRAWN',
+      |if($points >= 40, |'REBUILD',
+        |if($points >= 25, |'HEAVY-REPAIR',
+          |if($points >= 12, |if($ramps >= 6, |'SPREAD-REPAIR', |'FOCUSED-REPAIR'),
+            |if($points >= 4, |'LIGHT-REPAIR',
+              |if($ramps >= 8, |'SWEEP-ONLY', |'NO-ACTION')))))))
+}
+
+function <<ParkPublication.wardFacing>> test::azurelighthouse4::function::wardRegister(excludedWard: String[1]): TabularDataSet[1]
+{
+  InspectionVisit.all()->filter(
+    v|((!($v.wardName == $excludedWard)) && (!($v.visitGrade == 'VOID'))) && ($v.findings->exists(f|!($f.findingGrade == 'CLEARED')))
+  )->project(
+    [
+      v|$v.visitCode,
+      v|$v.parkCode,
+      v|$v.wardName,
+      v|$v.routeKind,
+      v|upkeepBand($v.visitGrade, $v.rampCount, $v.repairPoints),
+      v|$v.repairPoints,
+      v|$v.walkedOn
+    ],
+    ['Visit', 'Park', 'Ward', 'Route', 'Band', 'RepairPoints', 'WalkedOn']
+  )->sort([asc('Visit')])
+}
+
+function <<ParkPublication.crewFacing>> test::azurelighthouse4::function::repairRank(excludedWard: String[1]): TabularDataSet[1]
+{
+  wardRegister($excludedWard)->olapGroupBy(
+    ['Ward'],
+    desc('RepairPoints'),
+    r|$r->rank(),
+    'WardRank'
+  )->sort([asc('Ward'), asc('WardRank'), asc('Visit')])
+}
+
+function <<ParkPublication.wardFacing>> test::azurelighthouse4::function::routeRegister(excludedWard: String[1]): TabularDataSet[1]
+{
+  wardRegister($excludedWard)->restrict(['Ward', 'Route', 'Band'])->distinct()->sort([asc('Ward'), asc('Route'), asc('Band')])
+}
+
+function <<ParkInspection.walkedRoute>> test::azurelighthouse4::function::findingRegister(metresFloor: Float[1]): TabularDataSet[1]
+{
+  VisitFinding.all()->filter(
+    f|($f.crackMetres >= $metresFloor) && (!($f.findingGrade == 'CLEARED'))
+  )->project(
+    [
+      f|$f.findingCode,
+      f|$f.visitCode,
+      f|$f.findingGrade,
+      f|$f.crackMetres
+    ],
+    ['Finding', 'Visit', 'Grade', 'CrackMetres']
+  )->sort([asc('Finding')])
+}
+
+function <<ParkPublication.crewFacing>> test::azurelighthouse4::function::backlogBoard(minimumPoints: Integer[1]): TabularDataSet[1]
+{
+  InspectionVisit.all()->filter(
+    v|$v.repairPoints >= $minimumPoints
+  )->project(
+    [
+      v|$v.visitCode,
+      v|$v.wardName,
+      v|$v.repairPoints,
+      v|$v.rampCount
+    ],
+    ['Visit', 'Ward', 'RepairPoints', 'Ramps']
+  )->sort([desc('RepairPoints'), asc('Visit')])->limit(5)
+}

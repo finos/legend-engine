@@ -1,0 +1,67 @@
+name: western-quarry
+title: "Western Quarry — A Municipal Bale Sorting Model Published Through A Data Space"
+description: |
+  A municipal recycling depot presses kerbside recyclate into bales, and a small
+  relational model of it is published through a data space.
+
+  Two classes are mapped: the baled lot, whose class mapping carries all of the
+  derivation, and the sorting depot that pressed it. An association joins them with
+  navigable ends in both directions and is given a relational implementation on both
+  ends, so navigating from a depot to its bales becomes the store join rather than a
+  restated predicate; a mapping test navigates that to-many end and carries the
+  bale's derived grade with it.
+
+  The lot mapping exercises four derivation kinds against a two-table store with one
+  equality join. The purity grade is an eight-armed nested conditional over the
+  measured purity whose fallback resolves to no value; the feed stream is a literal
+  supplied by the mapping itself rather than read from any column; the depot name is
+  reached across the named join and misses when the lot references a depot that is
+  not there; and the kilos per bale is a rounded division over a defaulted bale
+  count. Both class mappings declare an explicit primary key and a main table.
+
+  A single-execution service projects the register into eight labelled columns and
+  asserts the top arm, a middle arm and the ungraded join-miss row as JSON. A
+  Snowflake packageable connection with key-pair authentication and an engine
+  runtime resolve it. The data space groups the mapping, its default runtime and the
+  service as a featured executable under one named execution context.
+modelSources:
+  model:
+    root: western-quarry
+    files:
+      - test/westernquarry/connection/DepotConnection.pure
+      - test/westernquarry/dataspace/DepotDataSpace.pure
+      - test/westernquarry/domain/DepotDomain.pure
+      - test/westernquarry/mapping/DepotBaleMapping.pure
+      - test/westernquarry/runtime/DepotRuntime.pure
+      - test/westernquarry/service/BaleLotRegister.pure
+      - test/westernquarry/store/DepotDb.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - test::westernquarry::store::DepotDb
+complexity: advanced
+tags:
+  - association-mapping
+  - conditional-transform
+  - data-space
+  - duckdb
+  - h2
+  - join-reached-column
+  - mapping-literal
+  - recycling-depot
+  - service-test
+  - snowflake

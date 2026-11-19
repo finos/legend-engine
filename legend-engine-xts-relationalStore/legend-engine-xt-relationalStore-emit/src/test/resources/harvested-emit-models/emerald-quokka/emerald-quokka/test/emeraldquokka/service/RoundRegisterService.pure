@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldquokka::service::RoundRegisterService
+{
+  pattern: '/emeraldquokka/v1/round-register';
+  title: 'Emerald Quokka - Feeding Round Register';
+  ownership: UserList { users: ['park-browse-desk'] };
+  documentation: 'Publishes the full width of the browse feeding rounds with no predicate of its own, so the register plan is a single projection over the round table and the keeper column arrives through a derived property rather than a stored column.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::emeraldquokka::domain::FeedingRound.all()->project(
+      [
+        r|$r.roundCode,
+        r|$r.stationCode,
+        r|$r.keeperLabel,
+        r|$r.portionsKg
+      ],
+      [
+        'Round',
+        'Station',
+        'Keeper',
+        'Portions'
+      ]
+    )->sort([asc('Round')]);
+    mapping: test::emeraldquokka::mapping::ParkMapping;
+    runtime: test::emeraldquokka::runtime::ParkPrimaryRuntime;
+  }
+  testSuites:
+  [
+    roundRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          parkConnection:
+            Reference
+            #{
+              test::emeraldquokka::data::ParkTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        fullRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Round":"FR-001","Station":"ST-BROWSE-1","Keeper":"ADA WREN","Portions":14},{"Round":"FR-002","Station":"ST-BROWSE-1","Keeper":"ADA WREN","Portions":11},{"Round":"FR-003","Station":"ST-BROWSE-2","Keeper":"NOOR PIKE","Portions":18},{"Round":"FR-004","Station":"ST-BROWSE-3","Keeper":"CAI FINCH","Portions":7},{"Round":"FR-005","Station":"ST-BROWSE-4","Keeper":"MIRA TEAL","Portions":22}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

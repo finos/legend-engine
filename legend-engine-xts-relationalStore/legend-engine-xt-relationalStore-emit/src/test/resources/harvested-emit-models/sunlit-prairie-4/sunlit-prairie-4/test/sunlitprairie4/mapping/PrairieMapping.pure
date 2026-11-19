@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitprairie4::mapping::PrairieMapping
+(
+  include test::sunlitprairie4::mapping::PrairieBaseMapping
+
+  *test::sunlitprairie4::domain::BurnPatch[burn_patch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.survey_code
+    )
+    ~mainTable [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch
+    surveyCode: [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.survey_code,
+    patchCode: [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.patch_code,
+    surveyedOn: [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.surveyed_on,
+    stemTally: [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.stem_tally,
+    grassName: [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.grass_name,
+    seedCode: [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.seed_code,
+    patchAreaSqm: [test::sunlitprairie4::store::PrairieDb]prairie.burn_patch.patch_area_sqm,
+    wardenName: [test::sunlitprairie4::store::PrairieDb]@PatchToTract > @TractToWarden | prairie.warden_desk.warden_name,
+    wardenDistrict: [test::sunlitprairie4::store::PrairieDb]@PatchToTract > @TractToWarden | prairie.warden_desk.district_code
+  }
+
+  *test::sunlitprairie4::domain::GrassSighting[grass_sighting]: Relational
+  {
+    ~distinct
+    ~primaryKey
+    (
+      [test::sunlitprairie4::store::PrairieDb]prairie.sighting_log.tract_code,
+      [test::sunlitprairie4::store::PrairieDb]prairie.sighting_log.grass_name
+    )
+    ~mainTable [test::sunlitprairie4::store::PrairieDb]prairie.sighting_log
+    tractCode: [test::sunlitprairie4::store::PrairieDb]prairie.sighting_log.tract_code,
+    grassName: [test::sunlitprairie4::store::PrairieDb]prairie.sighting_log.grass_name
+  }
+
+  test::sunlitprairie4::domain::TractPatching: Relational
+  {
+    AssociationMapping
+    (
+      tract[burn_patch, prairie_tract]: [test::sunlitprairie4::store::PrairieDb]@PatchToTract,
+      patches[prairie_tract, burn_patch]: [test::sunlitprairie4::store::PrairieDb]@PatchToTract
+    )
+  }
+
+  testSuites:
+  [
+    burnPatchSuite:
+    {
+      function: |test::sunlitprairie4::domain::BurnPatch.all()->project(~[surveyCode: p|$p.surveyCode, patchCode: p|$p.patchCode, surveyedOn: p|$p.surveyedOn, stemTally: p|$p.stemTally, grassName: p|$p.grassName, seedCode: p|$p.seedCode, patchAreaSqm: p|$p.patchAreaSqm, wardenName: p|$p.wardenName, wardenDistrict: p|$p.wardenDistrict, tractName: p|$p.tract.tractName])->sort([~surveyCode->ascending()]);
+      tests:
+      [
+        multiHopJoinHit:
+        {
+          doc: 'Every patch reaches its warden desk across the two-hop join path through the tract table and its tract name across the association implementation, so both rows carry warden and tract columns.';
+          data:
+          [
+            test::sunlitprairie4::store::PrairieDb:
+              Relational
+              #{
+                prairie.burn_patch:
+                  'survey_code,patch_code,surveyed_on,stem_tally,grass_name,seed_code,patch_area_sqm,tract_code\n'+
+                  'BP-NORTH,PT-01,2026-05-04,320,big bluestem,SD-BB,1450.5,TR-ALPHA\n'+
+                  'BP-SOUTH,PT-02,2026-05-11,180,switchgrass,SD-SG,980.25,TR-BETA\n';
+
+                prairie.prairie_tract:
+                  'tract_code,tract_name,warden_code\n'+
+                  'TR-ALPHA,Alpha Grassland,WD-KITE\n'+
+                  'TR-BETA,Beta Grassland,WD-PLOVER\n';
+
+                prairie.warden_desk:
+                  'warden_code,warden_name,district_code\n'+
+                  'WD-KITE,Kite Warden,DS-UPPER\n'+
+                  'WD-PLOVER,Plover Warden,DS-LOWER\n';
+              }#
+          ];
+          asserts:
+          [
+            bothPatchesReachTheirWarden:
+              Relation
+              #{
+                surveyCode,patchCode,surveyedOn,stemTally,grassName,seedCode,patchAreaSqm,wardenName,wardenDistrict,tractName
+                BP-NORTH,PT-01,2026-05-04,320,big bluestem,SD-BB,1450.5,Kite Warden,DS-UPPER,Alpha Grassland
+                BP-SOUTH,PT-02,2026-05-11,180,switchgrass,SD-SG,980.25,Plover Warden,DS-LOWER,Beta Grassland;
+              }#
+          ];
+        },
+        multiHopJoinMissLeavesWardenEmpty:
+        {
+          doc: 'Adds an edge patch whose tract has no warden desk row, so the second hop of the join path misses and the warden columns come back empty while the tract name still resolves across the association.';
+          data:
+          [
+            test::sunlitprairie4::store::PrairieDb:
+              Relational
+              #{
+                prairie.burn_patch:
+                  'survey_code,patch_code,surveyed_on,stem_tally,grass_name,seed_code,patch_area_sqm,tract_code\n'+
+                  'BP-NORTH,PT-01,2026-05-04,320,big bluestem,SD-BB,1450.5,TR-ALPHA\n'+
+                  'BP-SOUTH,PT-02,2026-05-11,180,switchgrass,SD-SG,980.25,TR-BETA\n'+
+                  'BP-EAST,PT-03,2026-05-19,95,indiangrass,SD-IG,505.75,TR-GAMMA\n';
+
+                prairie.prairie_tract:
+                  'tract_code,tract_name,warden_code\n'+
+                  'TR-ALPHA,Alpha Grassland,WD-KITE\n'+
+                  'TR-BETA,Beta Grassland,WD-PLOVER\n'+
+                  'TR-GAMMA,Gamma Grassland,WD-VACANT\n';
+
+                prairie.warden_desk:
+                  'warden_code,warden_name,district_code\n'+
+                  'WD-KITE,Kite Warden,DS-UPPER\n'+
+                  'WD-PLOVER,Plover Warden,DS-LOWER\n';
+              }#
+          ];
+          asserts:
+          [
+            theVacantWardenPatchCarriesNoWarden:
+              Relation
+              #{
+                surveyCode,patchCode,surveyedOn,stemTally,grassName,seedCode,patchAreaSqm,wardenName,wardenDistrict,tractName
+                BP-EAST,PT-03,2026-05-19,95,indiangrass,SD-IG,505.75,,,Gamma Grassland
+                BP-NORTH,PT-01,2026-05-04,320,big bluestem,SD-BB,1450.5,Kite Warden,DS-UPPER,Alpha Grassland
+                BP-SOUTH,PT-02,2026-05-11,180,switchgrass,SD-SG,980.25,Plover Warden,DS-LOWER,Beta Grassland;
+              }#
+          ];
+        }
+      ];
+    },
+    grassSightingSuite:
+    {
+      function: |test::sunlitprairie4::domain::GrassSighting.all()->project(~[tractCode: s|$s.tractCode, grassName: s|$s.grassName])->sort([~tractCode->ascending(), ~grassName->ascending()]);
+      tests:
+      [
+        repeatedSightingsCollapse:
+        {
+          doc: 'Reads the sighting log through the distinct set implementation, so the tract and grass pair logged on several days is returned once.';
+          data:
+          [
+            test::sunlitprairie4::store::PrairieDb:
+              Relational
+              #{
+                prairie.sighting_log:
+                  'tract_code,grass_name,logged_on\n'+
+                  'TR-ALPHA,big bluestem,2026-05-04\n'+
+                  'TR-ALPHA,big bluestem,2026-05-18\n'+
+                  'TR-ALPHA,prairie dropseed,2026-05-18\n'+
+                  'TR-BETA,switchgrass,2026-05-11\n';
+              }#
+          ];
+          asserts:
+          [
+            distinctSightings:
+              Relation
+              #{
+                tractCode,grassName
+                TR-ALPHA,big bluestem
+                TR-ALPHA,prairie dropseed
+                TR-BETA,switchgrass;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::goldenglacier::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Closed set of conservation grades a catalogued specimen can carry.'} test::goldenglacier::domain::SpecimenGrade
+{
+  HERBARIUM,
+  LIVING,
+  PRESERVED,
+  UNGRADED
+}
+
+Class {meta::pure::profiles::doc.doc = 'Catalogued specimen card: ten scalar attributes, a collection of cutting references and a to-many cutting child.'} test::goldenglacier::domain::SpecimenCard
+{
+  accessionRef: String[1];
+  curatorLabel: String[1];
+  grade: SpecimenGrade[1];
+  moistureBand: String[1];
+  cabinetHint: String[1];
+  wingLabel: String[0..1];
+  tagLabel: String[1];
+  tagSeason: String[1];
+  cuttingCount: Integer[1];
+  collectedOn: StrictDate[0..1];
+  cuttingRefs: String[*];
+  cuttings: CuttingCard[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Narrow child card describing one propagation cutting of a catalogued specimen.'} test::goldenglacier::domain::CuttingCard
+{
+  cuttingRef: String[1];
+  heightCm: Float[1];
+  heightLabel: String[1];
+  sizeClassLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Four-attribute identifier structure copied attribute for attribute off a cabinet tag.'} test::goldenglacier::domain::TagStamp
+{
+  tagSeries: String[1];
+  tagNumber: Integer[1];
+  issuer: String[1];
+  season: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Free-standing shelf note that no mapping or service references.'} test::goldenglacier::domain::ShelfNote
+{
+  noteRef: String[1];
+  noteText: String[1];
+}

@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::sunlittundra4::mapping::ObservatoryBaseMapping
+(
+  include mapping demo::sunlittundra4::mapping::ObservatoryEnumMappings
+
+  *demo::sunlittundra4::domain::PlateScan[plateDetail]: Relational
+  {
+    ~filter [demo::sunlittundra4::store::ObservatoryDB]ArchivedPlateFilter
+    ~primaryKey
+    (
+      [demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.scan_code
+    )
+    ~mainTable [demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan
+    recordCode: [demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.scan_code,
+    domeCode: [demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.dome_code,
+    domeName: [demo::sunlittundra4::store::ObservatoryDB]@Scan_Dome | [demo::sunlittundra4::store::ObservatoryDB]sky.dome.dome_name,
+    ridgeName: [demo::sunlittundra4::store::ObservatoryDB]@Scan_Dome | [demo::sunlittundra4::store::ObservatoryDB]sky.dome.ridge_name,
+    exposureSecs: [demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs,
+    skyMag: [demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.sky_mag,
+    archiveSurface: 'PLATE-ARCHIVE',
+    band: EnumerationMapping BandMapping: toUpper(trim([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.band_code)),
+    seeing: EnumerationMapping SeeingMapping: case(
+              equal([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.seeing_code, 'U'),
+              'S',
+              toUpper(trim([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.seeing_code))
+            ),
+    exposureBand: case(
+                    lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 30),
+                    'snap',
+                    case(
+                      lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 60),
+                      'short',
+                      case(
+                        lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 120),
+                        'standard',
+                        case(
+                          lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 300),
+                          'long',
+                          case(
+                            lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 600),
+                            'deep',
+                            case(
+                              lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 1200),
+                              'very-deep',
+                              case(
+                                lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 2400),
+                                'marathon',
+                                case(
+                                  lessThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 4800),
+                                  'epic',
+                                  sqlNull()
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    plateNote: case(
+                 greaterThan([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.exposure_secs, 4800),
+                 concat(
+                   'DEEP-',
+                   toUpper([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.band_code)
+                 ),
+                 case(
+                   isNull([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.plate_note),
+                   sqlNull(),
+                   trim([demo::sunlittundra4::store::ObservatoryDB]sky.plate_scan.plate_note)
+                 )
+               )
+  }
+
+  testSuites:
+  [
+    plateDerivationSuite:
+    {
+      function: |demo::sunlittundra4::domain::PlateScan.all()->project(
+  ~[
+     RecordCode: p|$p.recordCode,
+     DomeName: p|$p.domeName,
+     RidgeName: p|$p.ridgeName,
+     ExposureSecs: p|$p.exposureSecs,
+     SkyMag: p|$p.skyMag,
+     Band: p|$p.band,
+     Seeing: p|$p.seeing,
+     ExposureBand: p|$p.exposureBand,
+     PlateNote: p|$p.plateNote,
+     ArchiveSurface: p|$p.archiveSurface
+   ]
+)->sort(~RecordCode->ascending());
+      tests:
+      [
+        everyExposureArmAndAnUnmappedBandCode:
+        {
+          doc: 'One archived plate per exposure-band arm plus a plate exposed past every threshold that falls to the null sentinel and takes the deep-note arm, a band code no enumeration member claims, a dome with no ridge recorded, plates with and without a plate note, and an unarchived plate the store filter drops.';
+          data:
+          [
+            demo::sunlittundra4::store::ObservatoryDB:
+              Relational
+              #{
+                sky.plate_scan:
+                  'scan_code,dome_code,band_code,seeing_code,exposure_secs,sky_mag,plate_note,archive_status,observed_on\n'+
+                  'PS-01,D-1,B,S,10,15.5,clean plate,ARCHIVED,2026-03-01\n'+
+                  'PS-02,D-1,V,F,45,14.25,,ARCHIVED,2026-03-01\n'+
+                  'PS-03,D-2,R,P,90,13.75,guide slip,ARCHIVED,2026-03-02\n'+
+                  'PS-04,D-2,I,S,200,12.5,,ARCHIVED,2026-03-02\n'+
+                  'PS-05,D-3,B,F,450,11.25,cloud edge,ARCHIVED,2026-03-03\n'+
+                  'PS-06,D-3,V,P,900,10.75,,ARCHIVED,2026-03-03\n'+
+                  'PS-07,D-1,R,U,1800,9.5,clear night,ARCHIVED,2026-03-04\n'+
+                  'PS-08,D-2,I,F,3600,8.25,,ARCHIVED,2026-03-04\n'+
+                  'PS-09,D-3,B,P,6000,7.75,long haul,ARCHIVED,2026-03-05\n'+
+                  'PS-10,D-1,X,S,75,6.5,unmapped band,ARCHIVED,2026-03-05\n'+
+                  'PS-11,D-1,B,S,20,5.25,draft plate,DRAFT,2026-03-06\n';
+                sky.dome:
+                  'dome_code,dome_name,ridge_name\n'+
+                  'D-1,Summit Dome,Summit Ridge\n'+
+                  'D-2,Saddle Dome,Saddle Ridge\n'+
+                  'D-3,Lower Dome,\n';
+              }#
+          ];
+          asserts:
+          [
+            tenArchivedPlates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"PS-01","DomeName":"Summit Dome","RidgeName":"Summit Ridge","ExposureSecs":10,"SkyMag":15.5,"Band":"BLUE","Seeing":"SHARP","ExposureBand":"snap","PlateNote":"clean plate","ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-02","DomeName":"Summit Dome","RidgeName":"Summit Ridge","ExposureSecs":45,"SkyMag":14.25,"Band":"VISUAL","Seeing":"SOFT","ExposureBand":"short","PlateNote":null,"ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-03","DomeName":"Saddle Dome","RidgeName":"Saddle Ridge","ExposureSecs":90,"SkyMag":13.75,"Band":"RED","Seeing":"POOR","ExposureBand":"standard","PlateNote":"guide slip","ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-04","DomeName":"Saddle Dome","RidgeName":"Saddle Ridge","ExposureSecs":200,"SkyMag":12.5,"Band":"INFRARED","Seeing":"SHARP","ExposureBand":"long","PlateNote":null,"ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-05","DomeName":"Lower Dome","RidgeName":null,"ExposureSecs":450,"SkyMag":11.25,"Band":"BLUE","Seeing":"SOFT","ExposureBand":"deep","PlateNote":"cloud edge","ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-06","DomeName":"Lower Dome","RidgeName":null,"ExposureSecs":900,"SkyMag":10.75,"Band":"VISUAL","Seeing":"POOR","ExposureBand":"very-deep","PlateNote":null,"ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-07","DomeName":"Summit Dome","RidgeName":"Summit Ridge","ExposureSecs":1800,"SkyMag":9.5,"Band":"RED","Seeing":"SHARP","ExposureBand":"marathon","PlateNote":"clear night","ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-08","DomeName":"Saddle Dome","RidgeName":"Saddle Ridge","ExposureSecs":3600,"SkyMag":8.25,"Band":"INFRARED","Seeing":"SOFT","ExposureBand":"epic","PlateNote":null,"ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-09","DomeName":"Lower Dome","RidgeName":null,"ExposureSecs":6000,"SkyMag":7.75,"Band":"BLUE","Seeing":"POOR","ExposureBand":null,"PlateNote":"DEEP-B","ArchiveSurface":"PLATE-ARCHIVE"},{"RecordCode":"PS-10","DomeName":"Summit Dome","RidgeName":"Summit Ridge","ExposureSecs":75,"SkyMag":6.5,"Band":null,"Seeing":"SHARP","ExposureBand":"standard","PlateNote":"unmapped band","ArchiveSurface":"PLATE-ARCHIVE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

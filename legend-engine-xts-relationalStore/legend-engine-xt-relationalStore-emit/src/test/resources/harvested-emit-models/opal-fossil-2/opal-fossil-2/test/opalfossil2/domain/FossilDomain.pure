@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::opalfossil2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A palaeontological taxon that a specimen can be determined to.'} test::opalfossil2::domain::FossilTaxon
+{
+  taxonName: String[1];
+  familyName: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A determination assigning a specimen to a taxon: corrected over processing time as the catalogue is revised, and effective over business time for the interval the determination applies to.'} test::opalfossil2::domain::SpecimenDetermination
+{
+  determinationCode: String[1];
+  confidenceScore: Integer[1];
+  reviewed: Boolean[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A catalogued fossil specimen, whose recorded matrix and mass are effective over business time.'} test::opalfossil2::domain::FossilSpecimen
+{
+  specimenCode: String[1];
+  matrixType: String[1];
+  massG: Float[1];
+}
+
+Association test::opalfossil2::domain::Specimen_Determination
+{
+  specimen: FossilSpecimen[*];
+  determination: SpecimenDetermination[0..1];
+}
+
+Association test::opalfossil2::domain::Determination_Taxon
+{
+  determination: SpecimenDetermination[*];
+  taxon: FossilTaxon[1];
+}
+
+function test::opalfossil2::function::processingAsOf(requested: StrictDate[1]): StrictDate[1]
+{
+  $requested
+}
+
+function test::opalfossil2::function::catalogLabel(code: String[1]): String[1]
+{
+  'CAT-' + $code
+}

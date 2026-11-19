@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::kindlycanyon::data::PatrolFixture
+{
+  Relational
+  #{
+    trail.trail_segment:
+      'segment_code,segment_name,length_m\n'+
+      'SEG-A,Rim Traverse,2400\n'+
+      'SEG-B,Cottonwood Bench,1800\n'+
+      'SEG-C,Boulder Narrows,3100\n';
+    roster.warden_view:
+      'warden_code,warden_name,rota_band\n'+
+      'W-01,Marla Ovett,EARLY\n'+
+      'W-02,Dessa Trill,LATE\n'+
+      'W-03,Corin Blay,EARLY\n';
+    trail.patrol_post:
+      'post_id,post_name,post_kind,segment_code,warden_code,ridge_height_m,floor_depth_m,vehicle_plate\n'+
+      'PP-01,Rim Overlook,RIDGE,SEG-A,W-01,410,,\n'+
+      'PP-02,Rim Cairn,RIDGE,SEG-A,W-02,455,,\n'+
+      'PP-03,Bench Shelter,FLOOR,SEG-B,W-03,,120,\n'+
+      'PP-04,Narrows Wading Point,FLOOR,SEG-C,W-01,,260,\n'+
+      'PP-05,Rove Truck,MOBILE,SEG-B,W-02,,,CNY-771\n'+
+      'PP-06,Relief Truck,MOBILE,,,,,CNY-802\n';
+    trail.patrol_log:
+      'log_id,post_id,logged_on,closed_on,walk_minutes,condition_code,hazard_note\n'+
+      'PL-01,PP-01,2026-04-01,2026-04-02,95,DRY,\n'+
+      'PL-02,PP-01,2026-04-03,,50,WET,Seep across the ledge\n'+
+      'PL-03,PP-02,2026-04-04,2026-04-04,95,WET,\n'+
+      'PL-04,PP-02,2026-04-05,,30,DRY,\n'+
+      'PL-05,PP-03,2026-04-06,2026-04-11,60,WET,Loose scree on the step\n'+
+      'PL-06,PP-04,2026-04-07,,20,DRY,\n'+
+      'PL-07,PP-05,2026-04-08,2026-04-09,120,WET,\n'+
+      'PL-08,PP-06,2026-04-09,,40,DRY,Gate padlock seized\n'+
+      'PL-09,PZ-99,2026-04-10,,75,DRY,\n';
+  }#
+}

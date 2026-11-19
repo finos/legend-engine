@@ -1,0 +1,33 @@
+name: russet-thistle-3
+title: "Russet Thistle — Herbarium Accession Dossier With Nested Collections And Document-Schema Generation"
+description: |
+  A herbarium curation corpus built almost entirely from optional single-valued
+  string properties: a root accession dossier reaches reviews, mounting steps,
+  label batches, determinations and transfer paperwork through unbounded
+  model-typed collections rather than associations, and those classes in turn
+  hold further collections down to a leaf scanned-sheet file reference, giving
+  three levels of nesting below the generation scope element. One wrapper class
+  exists solely to carry a collection of sheet references, and one roster class
+  carries the parallel status-and-assignee string pairs for every curation
+  station. A single document-schema file generation scoped at the root aggregate
+  is collected into a generation specification, so the generated artefact has to
+  traverse the whole nesting. Store-less: no mapping, runtime or test execution.
+modelSources:
+  model:
+    root: russet-thistle-3
+    files:
+      - test/russetthistle3/domain/HerbariumDomain.pure
+      - test/russetthistle3/generation/AccessionGeneration.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:nested-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - file-generation
+  - generation-specification
+  - herbarium
+  - json-schema
+  - nested-collections

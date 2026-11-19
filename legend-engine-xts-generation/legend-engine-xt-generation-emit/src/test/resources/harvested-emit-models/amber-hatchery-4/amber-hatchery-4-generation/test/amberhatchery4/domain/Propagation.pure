@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::amberhatchery4::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'Identifier of a propagation house, held as its own type.'} test::amberhatchery4::domain::HouseTag
+{
+  tag: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A propagation house, identified solely by its tag.'} test::amberhatchery4::domain::PropagationHouse
+{
+  houseTag: HouseTag[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single cutting logged inside a propagation house.'} test::amberhatchery4::domain::CuttingRecord
+{
+  cuttingRef: String[1];
+  cultivar: String[1];
+  rootstock: String[1];
+  bench: String[1];
+  tray: String[1];
+  mediumBlend: String[1];
+  mistCycle: String[1];
+  grader: String[1];
+  vigourNote: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Composite digest restating the house tag by value together with every cutting of the house; the only declared generation scope.'} test::amberhatchery4::domain::PropagationDigest
+{
+  houseTag: HouseTag[1];
+  cuttings: CuttingRecord[1..*];
+}
+
+Association test::amberhatchery4::domain::HouseCuttings
+{
+  house: PropagationHouse[1];
+  loggedCuttings: CuttingRecord[1..*];
+}

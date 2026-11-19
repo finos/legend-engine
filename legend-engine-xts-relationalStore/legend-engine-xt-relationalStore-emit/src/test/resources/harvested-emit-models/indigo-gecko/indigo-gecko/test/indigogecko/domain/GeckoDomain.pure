@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::indigogecko::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Feed offered at the last recorded feeding.'} test::indigogecko::domain::FeedKind
+{
+  CRICKET,
+  ROACH,
+  WORM
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where an animal sits in its shedding cycle.'} test::indigogecko::domain::MoultStage
+{
+  PRE_SHED,
+  SHEDDING,
+  POST_SHED
+}
+
+Class {meta::pure::profiles::doc.doc = 'One animal in the vivarium register. Its handling band, care note and feed and moult vocabulary are all derived store-side, so the value the class reports is decided by the mapping rather than by a column.'} test::indigogecko::domain::GeckoRecord
+{
+  geckoCode: String[1];
+  clutchCode: String[1];
+  handlingBand: String[1];
+  careNote: String[0..1];
+  registryTag: String[1];
+  feedKind: test::indigogecko::domain::FeedKind[0..1];
+  moultStage: test::indigogecko::domain::MoultStage[0..1];
+  measurement: test::indigogecko::domain::GeckoMeasurement[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Measurements assembled from columns of the register row itself rather than through their own root mapping, so they travel inside the parent instance and cannot be queried independently.'} test::indigogecko::domain::GeckoMeasurement
+{
+  lengthMm: Integer[1];
+  girthMm: Integer[1];
+  sizeLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A vivarium enclosure. Retired enclosures are withheld by a store filter, so they are absent from the extent even though their rows remain.'} test::indigogecko::domain::Habitat
+{
+  habitatCode: String[1];
+  habitatName: String[1];
+  zoneCode: String[1];
+  tally: test::indigogecko::domain::HabitatTally[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Per-enclosure occupancy totals resolved through a grouped inline view rather than a base table.'} test::indigogecko::domain::HabitatTally
+{
+  habitatCode: String[1];
+  geckoCount: Integer[1];
+  totalWeightG: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper merited with the animals they tend. Only day-shift keepers are reachable, because the join carrying the merit narrows on the shift as well as on the code.'} test::indigogecko::domain::KeeperRecord
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+  dutyNote: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds animals to the enclosure that houses them; both ends resolve through the same named join, so the direction navigated decides the driving table.'} test::indigogecko::domain::Habitat_Gecko
+{
+  habitat: Habitat[1];
+  geckos: GeckoRecord[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds animals to the keeper merited with them, through a join whose predicate also narrows the keeper shift.'} test::indigogecko::domain::Keeper_Gecko
+{
+  keeper: KeeperRecord[0..1];
+  tended: GeckoRecord[*];
+}

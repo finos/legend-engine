@@ -1,0 +1,50 @@
+name: azure-canyon
+title: "Canyon Strata Survey — Bitemporal Mapping with Relational Association and Mapping Include"
+description: |
+  A canyon-geology corpus over a bitemporal H2 store. RockLayer thickness is
+  tracked on both processing and business timelines, and a relational
+  association links each layer to its formation, which is mapped by an included
+  base mapping. A mapping testSuite asserts a bitemporal point-in-time
+  projection across the association, and a single-execution service asserts a
+  parameterised as-of query, driving EMIT test execution and plan generation.
+modelSources:
+  model:
+    root: azure-canyon
+    files:
+      - test/azurecanyon/connection/CanyonH2Connection.pure
+      - test/azurecanyon/domain/CanyonDomain.pure
+      - test/azurecanyon/mapping/CanyonMapping.pure
+      - test/azurecanyon/mapping/FormationMapping.pure
+      - test/azurecanyon/runtime/CanyonRuntime.pure
+      - test/azurecanyon/service/LayersAsOf.pure
+      - test/azurecanyon/store/CanyonDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-association-implementation
+  - mapping:mapping-include
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - grammar:association
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - bitemporal
+  - canyon
+  - h2
+  - mapping-include
+  - mapping-test
+  - milestoning
+  - plan-generation
+  - point-in-time
+  - relational
+  - service-test

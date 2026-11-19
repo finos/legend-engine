@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::opalfossil2::connection::FossilLiveConnection
+{
+  store: test::opalfossil2::store::FossilCatalogDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists fossil;',
+      'create schema fossil;',
+      'create table fossil.taxon (taxon_id integer primary key, taxon_name varchar(120) not null, family_name varchar(120) not null);',
+      'create table fossil.determination (determination_id integer primary key, determination_code varchar(24) not null, confidence_score integer not null, reviewed boolean not null, taxon_id integer not null, in_z date not null, out_z date not null, from_z date not null, thru_z date not null);',
+      'create table fossil.specimen (specimen_id integer primary key, specimen_code varchar(24) not null, matrix_type varchar(24) not null, mass_g double not null, determination_id integer not null, from_z date not null, thru_z date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection test::opalfossil2::connection::FossilArchiveConnection
+{
+  store: test::opalfossil2::store::FossilCatalogDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists fossil;',
+      'create schema fossil;',
+      'create table fossil.taxon (taxon_id integer primary key, taxon_name varchar(120) not null, family_name varchar(120) not null);',
+      'create table fossil.determination (determination_id integer primary key, determination_code varchar(24) not null, confidence_score integer not null, reviewed boolean not null, taxon_id integer not null, in_z date not null, out_z date not null, from_z date not null, thru_z date not null);',
+      'create table fossil.specimen (specimen_id integer primary key, specimen_code varchar(24) not null, matrix_type varchar(24) not null, mass_g double not null, determination_id integer not null, from_z date not null, thru_z date not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

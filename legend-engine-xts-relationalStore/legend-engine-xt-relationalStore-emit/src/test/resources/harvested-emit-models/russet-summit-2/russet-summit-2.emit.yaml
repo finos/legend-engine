@@ -1,0 +1,66 @@
+name: russet-summit-2
+title: "Russet Summit 2 — Footpath Repair Register Derived Through Enumerated Arms And A Three-Hop Warden Walk"
+description: >-
+  An upland footpath-repair register in which almost every published attribute of a repair task is
+  computed rather than stored. One relational store holds the path sections, the repair tasks, the
+  work gangs, the supply depots and the wardens; a cross-table store filter keeps a task only while
+  its section is still on the surveyed estate, and a second filter guards the section extent
+  itself. The task attributes are assembled out of nested conditional arms - an urgency band banded
+  off the priority score, a haulage instruction that composes a trimmed and upper-cased stage code
+  when the spoil load is heavy, falls back to a barrow instruction on stone count and otherwise
+  resolves to nothing at all - plus arithmetic over the stone and priority columns and a crew grade
+  read out of the joined gang kind. Enumerations are attached both to plain columns and to those
+  expressions, so an unmapped stage code on the estate surfaces as an empty stage rather than a
+  failure. Attribute resolution walks three joins from the task through the gang and depot to the
+  responsible warden, and the section-to-task leg is published as an association implementation so
+  the section extent can count its own work. One shared delimited fixture feeds both mapping
+  suites, covering every conditional arm, the null fallback, the three-hop walk and the unmapped
+  enumeration source value.
+modelSources:
+  model:
+    root: russet-summit-2
+    files:
+      - test/russetsummit2/data/SummitFixtureData.pure
+      - test/russetsummit2/domain/SummitDomain.pure
+      - test/russetsummit2/mapping/SummitEnumMappings.pure
+      - test/russetsummit2/mapping/SummitMapping.pure
+      - test/russetsummit2/store/SummitDB.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-table-filter
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - conditional-transform
+  - cross-table-filter
+  - enum-of-expression
+  - footpath-repair-register
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - shared-test-data
+  - string-function-transform

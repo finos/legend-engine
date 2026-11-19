@@ -1,0 +1,38 @@
+name: jade-wharf-4
+title: "Canal Lock Flight Board — Parameterised Relational Service With In-Query Runtime Binding And A Relation Column Select"
+description: |
+  A canal lock register served as a lock-flight board. One parameterised service,
+  owned by a deployment identifier, filters the lock chambers of the requested
+  canal, projects an upper-cased board name, a canal-qualified tag and the rise in
+  metres, keeps only the board columns with a relation select and binds the query
+  to its mapping and runtime with an explicit from() inside the lambda. The service
+  suite proves both a populated canal and a canal with no locks.
+modelSources:
+  model:
+    root: jade-wharf-4
+    files:
+      - test/jadewharf4/connection/LockH2Connection.pure
+      - test/jadewharf4/domain/LockDomain.pure
+      - test/jadewharf4/mapping/LockMapping.pure
+      - test/jadewharf4/runtime/LockRuntime.pure
+      - test/jadewharf4/service/LockFlightService.pure
+      - test/jadewharf4/store/LockDB.pure
+features:
+  - execution:service
+  - execution:service-ownership
+  - query:filter
+  - query:in-query-runtime-binding
+  - execution:service-parameter
+  - query:project
+  - query:relation-select
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - canal-lock-register
+  - did-ownership
+  - duckdb
+  - in-query-runtime
+  - parameterised-service
+  - relation-select

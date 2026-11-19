@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::meadowbeacon::store::AllotmentComposedDb
+(
+  include test::meadowbeacon::store::PlotRegisterDb
+  include test::meadowbeacon::store::HolderRecordDb
+  include test::meadowbeacon::store::CropCodeDb
+  include test::meadowbeacon::store::ZoneCodeDb
+
+  Schema meadow
+  (
+    Table plot_allocation_vw
+    (
+      allocation_code VARCHAR(20) PRIMARY KEY,
+      plot_code VARCHAR(20) NOT NULL,
+      site_code VARCHAR(20) NOT NULL,
+      season_on DATE NOT NULL,
+      group_code VARCHAR(20),
+      unit_code VARCHAR(10),
+      holder_code VARCHAR(20) NOT NULL,
+      record_number INTEGER NOT NULL,
+      body_code VARCHAR(20) NOT NULL,
+      milestone_marker VARCHAR(10) NOT NULL,
+      bed_quantity DECIMAL(9, 2) NOT NULL,
+      valid_from DATE NOT NULL,
+      valid_thru DATE NOT NULL,
+      crop_code VARCHAR(20) NOT NULL,
+      status_label VARCHAR(20) NOT NULL
+    )
+  )
+
+  Join Allocation_PlotEntry(meadow.plot_allocation_vw.plot_code = plotreg.plot_entry.plot_code and meadow.plot_allocation_vw.site_code = plotreg.plot_entry.site_code and meadow.plot_allocation_vw.season_on = plotreg.plot_entry.season_on)
+  Join PlotEntry_HolderMaster(plotreg.plot_entry.record_number = holderrec.holder_master.record_number and plotreg.plot_entry.body_code = holderrec.holder_master.body_code)
+  Join HolderMaster_CropSynonym(holderrec.holder_master.crop_code = cropref.crop_synonym.crop_code and cropref.crop_synonym.synonym_type = 'PRIMARY' and isNull(cropref.crop_synonym.ended_on))
+)

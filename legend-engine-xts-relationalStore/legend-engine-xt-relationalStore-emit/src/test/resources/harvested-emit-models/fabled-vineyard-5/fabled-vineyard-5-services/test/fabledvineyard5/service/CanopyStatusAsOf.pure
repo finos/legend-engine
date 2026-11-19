@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::fabledvineyard5::service::CanopyStatusAsOf
+{
+  pattern: '/vineyard/v1/canopy-status/{estate}/{asOfDate}';
+  title: 'Fabled Vineyard - Tended Canopy Status As Of';
+  owners:
+  [
+    'vineyard-trellis-crew'
+  ];
+  documentation: 'Opens the business-temporal vine block extent at a supplied instant and keeps the blocks whose canopy has been tended, testing the two tended statuses as a disjunction, then projects the block register under two keyed estates.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {asOfDate: StrictDate[1]|test::fabledvineyard5::domain::VineBlock.all($asOfDate)->filter(
+      b|($b.blockStatus == 'PRUNED') || ($b.blockStatus == 'TRAINED')
+    )->project(
+      [
+        b|$b.blockCode,
+        b|$b.varietyCode,
+        b|$b.blockStatus,
+        b|$b.rowCount
+      ],
+      [
+        'Block',
+        'Variety',
+        'Status',
+        'Rows'
+      ]
+    )->sort(
+      [
+        asc('Block')
+      ]
+    )};
+    key: 'estate';
+    executions['northSlope']:
+    {
+      mapping: test::fabledvineyard5::mapping::VineyardMapping;
+      runtime: test::fabledvineyard5::runtime::NorthSlopeRuntime;
+    }
+    executions['riverTerrace']:
+    {
+      mapping: test::fabledvineyard5::mapping::VineyardMapping;
+      runtime: test::fabledvineyard5::runtime::RiverTerraceRuntime;
+    }
+  }
+  testSuites:
+  [
+    canopyStatusSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          northSlope:
+            Relational
+            #{
+              trellis.vine_block:
+                'block_id,block_code,variety_code,block_status,prune_crew_code,train_crew_code,check_crew_code,row_count_total,from_z,thru_z\n'+
+                '1,VB-101,PINOT,PRUNED,CR-01,CR-02,CR-01,120,2026-01-01,9999-12-31\n'+
+                '2,VB-102,RIESLING,TRAINED,CR-03,CR-04,CR-04,90,2026-01-01,9999-12-31\n'+
+                '3,VB-103,SYRAH,RESTING,CR-05,CR-06,CR-07,60,2026-01-01,9999-12-31\n'+
+                '4,VB-105,GAMAY,PRUNED,CR-11,CR-11,CR-11,30,2026-01-01,9999-12-31\n'+
+                '5,VB-106,PINOT,PRUNED,CR-12,CR-13,CR-12,25,2025-01-01,2025-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northSlopeTendedBlocks:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['northSlope'];
+          parameters:
+          [
+            asOfDate = %2026-06-01
+          ]
+          asserts:
+          [
+            prunedAndTrainedInRangeBlocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"VB-101","Variety":"PINOT","Status":"PRUNED","Rows":120},{"Block":"VB-102","Variety":"RIESLING","Status":"TRAINED","Rows":90},{"Block":"VB-105","Variety":"GAMAY","Status":"PRUNED","Rows":30}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

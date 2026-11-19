@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::ivoryfossil3::dataspace::FossilVaultDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'curated';
+      description: 'Curated fossil register on the curated warehouse.';
+      mapping: test::ivoryfossil3::mapping::FossilMapping;
+      defaultRuntime: test::ivoryfossil3::runtime::VaultCuratedRuntime;
+    },
+    {
+      name: 'staging';
+      description: 'Staging copy of the fossil register.';
+      mapping: test::ivoryfossil3::mapping::FossilMapping;
+      defaultRuntime: test::ivoryfossil3::runtime::VaultStagingRuntime;
+    },
+    {
+      name: 'reader';
+      description: 'Read-only fossil register.';
+      mapping: test::ivoryfossil3::mapping::FossilMapping;
+      defaultRuntime: test::ivoryfossil3::runtime::VaultReaderRuntime;
+    }
+  ];
+  defaultExecutionContext: 'curated';
+  title: 'Fossil Vault Register';
+  description: 'Catalogued and archived fossil specimens with their dig-site layers.';
+  diagrams:
+  [
+    {
+      title: 'Specimens';
+      diagram: test::ivoryfossil3::diagram::SpecimenDiagram;
+    }
+  ];
+  elements:
+  [
+    test::ivoryfossil3::domain::Specimen,
+    test::ivoryfossil3::domain::Stratum
+  ];
+}
+
+DataSpace test::ivoryfossil3::dataspace::FossilFieldDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'primary';
+      description: 'Field layers on the primary field server.';
+      mapping: test::ivoryfossil3::mapping::FossilMapping;
+      defaultRuntime: test::ivoryfossil3::runtime::FieldPrimaryRuntime;
+    },
+    {
+      name: 'replica';
+      description: 'Field layers on the replica field server.';
+      mapping: test::ivoryfossil3::mapping::FossilMapping;
+      defaultRuntime: test::ivoryfossil3::runtime::FieldReplicaRuntime;
+    }
+  ];
+  defaultExecutionContext: 'primary';
+  title: 'Fossil Field Layers';
+  description: 'Dig sites and the numbered layers specimens are recovered from.';
+  diagrams:
+  [
+    {
+      title: 'Field';
+      diagram: test::ivoryfossil3::diagram::FieldDiagram;
+    }
+  ];
+  elements:
+  [
+    test::ivoryfossil3::domain::Stratum,
+    test::ivoryfossil3::domain::DigSite
+  ];
+}

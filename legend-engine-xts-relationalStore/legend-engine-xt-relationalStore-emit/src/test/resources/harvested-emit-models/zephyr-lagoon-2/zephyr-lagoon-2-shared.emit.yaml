@@ -1,0 +1,40 @@
+name: zephyr-lagoon-2-shared
+title: "Zephyr Lagoon — Tidal Sampling Domain, Processing-Temporal Site and Zone Registers, and the Mapping Bound Over Them"
+description: |
+  The scaffolding layer the executable module runs against, and which that
+  module declares nothing of its own to replace: a non-temporal water sample
+  class, a monitoring site class corrected over processing time, and a lagoon
+  zone class also corrected over processing time whose ancestry is flattened
+  into named tier levels so a caller selects a depth by naming the level instead
+  of walking parents. Two associations chain sample to site and site to zone, so
+  a traversal from a sample to a tier code costs two point-in-time resolutions.
+  The store carries one plain relation and two relations with an explicit
+  processing validity window, and the mapping pins each class to its relation
+  with its own primary key and implements both association ends over the two
+  equality joins.
+modelSources:
+  model:
+    root: zephyr-lagoon-2-shared
+    files:
+      - test/zephyrlagoon2/domain/LagoonDomain.pure
+      - test/zephyrlagoon2/mapping/LagoonRegisterMapping.pure
+      - test/zephyrlagoon2/store/LagoonDB.pure
+features:
+  - grammar:association
+  - grammar:milestoned-qualified-property-traversal
+  - mapping:relational-association-implementation
+  - mapping:relational-primary-key
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-mapping
+  - flattened-hierarchy
+  - milestoned-store
+  - processing-temporal
+  - shared-domain
+  - tidal-sampling

@@ -1,0 +1,326 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberwharf2::service::SlotRoster
+{
+  pattern: '/emberwharf/v1/slot-roster/{quaySide}/{asOf}';
+  title: 'Harbour Authority - Slot Roster';
+  documentation: 'Retrieves the berthing slots of one quay side as they stood at a caller-supplied processing instant and projects the slot attributes flat, so a slot whose processing window closed before that instant is absent from the result.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {quaySide: String[1], asOf: StrictDate[1]|test::emberwharf2::domain::BerthSlot.all($asOf)->filter(
+      s|$s.quaySide->toUpper()->trim() == $quaySide
+    )->project(
+      [
+        s|$s.slotCode,
+        s|$s.slotName,
+        s|$s.draughtMetres
+      ],
+      [
+        'Slot Code',
+        'Slot Name',
+        'Draught'
+      ]
+    )->sort(
+      [
+        asc('Slot Code')
+      ]
+    )};
+    mapping: test::emberwharf2::mapping::WharfMapping;
+    runtime: test::emberwharf2::runtime::WharfWarehouseRuntime;
+  }
+  testSuites:
+  [
+    slotRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfWarehouse:
+            Relational
+            #{
+              wharf.berth_slot:
+                'slot_code,slot_name,quay_side,draught_metres,in_z,out_z\n'+
+                'B-01,North Quay Slot Draft,north,11.50,2026-01-01,2026-02-01\n'+
+                'B-01,North Quay Slot,north,12.25,2026-02-01,9999-12-31\n'+
+                'B-04,North Lay-by Slot,north,,2026-02-01,9999-12-31\n'+
+                'B-03,Retired Lay-by Slot,north,8.00,2026-01-01,2026-01-15\n'+
+                'B-02,East Quay Slot,east,10.75,2026-02-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northQuaySlotsAtInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            quaySide = 'NORTH',
+            asOf = %2026-03-01
+          ]
+          asserts:
+          [
+            twoLiveNorthSlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Slot Code":"B-01","Slot Name":"North Quay Slot","Draught":12.25},{"Slot Code":"B-04","Slot Name":"North Lay-by Slot","Draught":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::emberwharf2::service::CraneAvailability
+{
+  pattern: '/emberwharf/v1/crane-availability/{minCapacityTonnes}';
+  title: 'Harbour Authority - Crane Availability';
+  documentation: 'Retrieves the gantry cranes whose current version carries at least a threshold lift capacity and projects code, label and capacity ordered from the heaviest lift down, with the optional service date left null when a crane has never been serviced.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {minCapacityTonnes: Float[1]|test::emberwharf2::domain::CraneUnit.all(%2026-03-01)->filter(
+      c|$c.liftCapacityTonnes >= $minCapacityTonnes
+    )->project(
+      [
+        c|$c.craneCode,
+        c|$c.craneLabel,
+        c|$c.liftCapacityTonnes,
+        c|$c.lastServicedOn
+      ],
+      [
+        'Crane Code',
+        'Crane Label',
+        'Capacity',
+        'Last Serviced'
+      ]
+    )->distinct()->sort(
+      [
+        desc('Capacity')
+      ]
+    )};
+    mapping: test::emberwharf2::mapping::WharfMapping;
+    runtime: test::emberwharf2::runtime::WharfWarehouseRuntime;
+  }
+  testSuites:
+  [
+    craneAvailabilitySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfWarehouse:
+            Relational
+            #{
+              wharf.crane_unit:
+                'crane_code,crane_label,lift_capacity_tonnes,last_serviced_on,in_z,out_z\n'+
+                'C-01,Gantry Crane Alpha Draft,40.0,2026-01-05,2026-01-01,2026-02-01\n'+
+                'C-01,Gantry Crane Alpha,45.5,2026-01-20,2026-02-01,9999-12-31\n'+
+                'C-02,Gantry Crane Beta,62.0,,2026-02-01,9999-12-31\n'+
+                'C-03,Apron Mobile Crane,18.5,2026-02-11,2026-02-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        heavyLiftCranes:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minCapacityTonnes = 40.0
+          ]
+          asserts:
+          [
+            twoHeavyCranes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Crane Code":"C-02","Crane Label":"Gantry Crane Beta","Capacity":62.0,"Last Serviced":null},{"Crane Code":"C-01","Crane Label":"Gantry Crane Alpha","Capacity":45.5,"Last Serviced":"2026-01-20"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::emberwharf2::service::VesselCallRegister
+{
+  pattern: '/emberwharf/v1/vessel-call-register/{slotCode}';
+  title: 'Harbour Authority - Vessel Call Register';
+  documentation: 'Retrieves the vessel visits recorded against one berthing slot in the current processing window and projects the call code and vessel name, ordered by call code.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {slotCode: String[1]|test::emberwharf2::domain::VesselCall.all(%2026-03-01)->filter(
+      v|($v.slotCode == $slotCode) && ($v.vesselName->trim() != '')
+    )->project(
+      [
+        v|$v.callCode,
+        v|$v.vesselName->toUpper()
+      ],
+      [
+        'Call Code',
+        'Vessel'
+      ]
+    )->sort(
+      [
+        asc('Call Code')
+      ]
+    )};
+    mapping: test::emberwharf2::mapping::WharfMapping;
+    runtime: test::emberwharf2::runtime::WharfWarehouseRuntime;
+  }
+  testSuites:
+  [
+    vesselCallRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfWarehouse:
+            Relational
+            #{
+              wharf.vessel_call:
+                'call_code,vessel_name,slot_code,berthed_at,in_z,out_z\n'+
+                'V-01,Coral Runner Draft,B-01,2026-01-03T06:15:00,2026-01-01,2026-02-01\n'+
+                'V-01,Coral Runner,B-01,2026-02-03T06:15:00,2026-02-01,9999-12-31\n'+
+                'V-02,Harbour Wren,B-01,,2026-02-01,9999-12-31\n'+
+                'V-03,Estuary Swift,B-02,2026-02-09T11:40:00,2026-02-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        callsAgainstNorthSlot:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            slotCode = 'B-01'
+          ]
+          asserts:
+          [
+            twoLiveCalls:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Call Code":"V-01","Vessel":"CORAL RUNNER"},{"Call Code":"V-02","Vessel":"HARBOUR WREN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::emberwharf2::service::PalletLotRegister
+{
+  pattern: '/emberwharf/v1/pallet-lot-register/{commodityClass}';
+  title: 'Harbour Authority - Pallet Lot Register';
+  documentation: 'Retrieves the pallet lots of one commodity class staged on the apron in the current processing window and projects the lot code and packing date, so a lot that has not been packed yet reports a null date.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {commodityClass: String[1]|test::emberwharf2::domain::PalletLot.all(%2026-03-01)->filter(
+      l|$l.commodityClass->toUpper()->trim() == $commodityClass
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.packedOn
+      ],
+      [
+        'Lot Code',
+        'Packed On'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Lot Code')
+      ]
+    )};
+    mapping: test::emberwharf2::mapping::WharfMapping;
+    runtime: test::emberwharf2::runtime::WharfWarehouseRuntime;
+  }
+  testSuites:
+  [
+    palletLotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfWarehouse:
+            Relational
+            #{
+              wharf.pallet_lot:
+                'lot_code,commodity_class,gross_weight_kg,packed_on,in_z,out_z\n'+
+                'P-01,TIMBER,1100.000,2026-01-02,2026-01-01,2026-02-01\n'+
+                'P-01,TIMBER,1250.500,2026-02-02,2026-02-01,9999-12-31\n'+
+                'P-04,TIMBER,,,2026-02-01,9999-12-31\n'+
+                'P-02,CERAMIC,880.250,2026-02-05,2026-02-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        timberLots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            commodityClass = 'TIMBER'
+          ]
+          asserts:
+          [
+            twoTimberLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot Code":"P-01","Packed On":"2026-02-02"},{"Lot Code":"P-04","Packed On":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

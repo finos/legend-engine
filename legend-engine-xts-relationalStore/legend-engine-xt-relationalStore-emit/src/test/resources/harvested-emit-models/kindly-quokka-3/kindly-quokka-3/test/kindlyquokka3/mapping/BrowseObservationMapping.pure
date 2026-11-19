@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlyquokka3::mapping::BrowseObservationMapping
+(
+  *test::kindlyquokka3::domain::BrowseObservation[browse_observation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.obs_ref
+    )
+    ~mainTable [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation
+    observationRef: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.obs_ref,
+    colonyLabel: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.col_lbl,
+    sanctuaryName: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.sanct_nm,
+    habitatBand: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.hab_bnd,
+    shelterCode: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.shltr_cd,
+    browseSpeciesCode: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.brws_spc_cd,
+    forageStage: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.frg_stg,
+    observerInitials: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.obsvr_init,
+    weatherSummary: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.wthr_summ,
+    moonPhaseLabel: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.moon_phs_lbl,
+    trackSurfaceKind: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.trk_surf_knd,
+    observedOn: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.obs_dt,
+    sightedAt: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.sght_ts,
+    quokkaCount: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.qkka_cnt,
+    pouchYoungCount: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.pch_yng_cnt,
+    browseCoverPct: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.brws_cov_pct,
+    transectLengthM: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.trnsct_len_m,
+    notesText: [test::kindlyquokka3::store::SanctuaryFieldStore]fieldlog.browse_observation.notes_txt
+  }
+
+  testSuites:
+  [
+    aliasedColumnResolutionSuite:
+    {
+      function: |test::kindlyquokka3::domain::BrowseObservation.all()->project(
+        [
+          o|$o.observationRef,
+          o|$o.colonyLabel,
+          o|$o.habitatBand,
+          o|$o.observedOn,
+          o|$o.sightedAt,
+          o|$o.quokkaCount,
+          o|$o.browseCoverPct,
+          o|$o.notesText
+        ],
+        [
+          'observationRef',
+          'colonyLabel',
+          'habitatBand',
+          'observedOn',
+          'sightedAt',
+          'quokkaCount',
+          'browseCoverPct',
+          'notesText'
+        ]
+      )->sort([asc('observationRef')]);
+      tests:
+      [
+        everyAliasedColumnResolves:
+        {
+          doc: 'Resolves each mapped property through the aliased main table, including a row whose optional string, date, timestamp, integer and float columns are all null.';
+          data:
+          [
+            test::kindlyquokka3::store::SanctuaryFieldStore:
+              Relational
+              #{
+                fieldlog.browse_observation:
+                  'obs_ref,col_lbl,sanct_nm,hab_bnd,shltr_cd,brws_spc_cd,frg_stg,obsvr_init,wthr_summ,moon_phs_lbl,trk_surf_knd,obs_dt,sght_ts,qkka_cnt,pch_yng_cnt,brws_cov_pct,trnsct_len_m,notes_txt\n'+
+                  'QK-01,North Ridge Colony,Wattle Hollow Reserve,RIDGE,SH-01,SP-ACAC,EARLY,RJ,clear,WAXING,SAND,2026-03-02,2026-03-02 06:45:00,12,3,24.75,120.5,browse heavily cropped\n'+
+                  'QK-02,,,,,,,,,,,,,,,,,\n'+
+                  'QK-03,South Gully Colony,Wattle Hollow Reserve,GULLY,SH-03,SP-MELA,LATE,TM,overcast,WANING,LOAM,2026-03-05,2026-03-05 05:30:00,7,1,18.5,95.0,fresh scats near shelter\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"observationRef":"QK-01","colonyLabel":"North Ridge Colony","habitatBand":"RIDGE","observedOn":"2026-03-02","sightedAt":"2026-03-02T06:45:00.000000000+0000","quokkaCount":12,"browseCoverPct":24.75,"notesText":"browse heavily cropped"},{"observationRef":"QK-02","colonyLabel":null,"habitatBand":null,"observedOn":null,"sightedAt":null,"quokkaCount":null,"browseCoverPct":null,"notesText":null},{"observationRef":"QK-03","colonyLabel":"South Gully Colony","habitatBand":"GULLY","observedOn":"2026-03-05","sightedAt":"2026-03-05T05:30:00.000000000+0000","quokkaCount":7,"browseCoverPct":18.5,"notesText":"fresh scats near shelter"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

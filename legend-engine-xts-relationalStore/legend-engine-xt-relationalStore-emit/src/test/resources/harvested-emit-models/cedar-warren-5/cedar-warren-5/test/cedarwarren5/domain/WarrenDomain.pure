@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::cedarwarren5::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One surveyed burrow in a cedar woodland warren, whose condition grade and access note are derived from the observation flags the surveyor ticked rather than read from a column.'} test::cedarwarren5::domain::BurrowSurvey
+{
+  burrowCode: String[1];
+  warrenName: String[1];
+  entranceCount: Integer[1];
+  conditionGrade: String[0..1];
+  accessNote: String[0..1];
+  surveyRegister: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The reserve-wide digest of a surveyed burrow, assembled from the surveyed burrow rather than from the store so the graded condition travels into the published shape.'} test::cedarwarren5::domain::BurrowDigest
+{
+  digestCode: String[1];
+  digestWarren: String[1];
+  digestGrade: String[0..1];
+  entranceCount: Integer[1];
+}

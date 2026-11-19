@@ -1,0 +1,50 @@
+name: fabled-gecko
+title: "Fabled Gecko — Nocturnal Call Survey (post-aggregation filter over a distinct-count aggregate)"
+description: |
+  A relational model over a nocturnal gecko call survey whose single-execution
+  service groups call observations by transect, counts the distinct call types per
+  transect with a two-stage collection aggregate, and then applies a predicate to
+  the aggregated rows rather than to the source extent. The relational mapping
+  carries its own test suite that projects both mapped properties directly, so the
+  identity-only primary key and the store-qualified main-table alias are proven
+  independently of the aggregate query layered above them.
+
+modelSources:
+  model:
+    root: fabled-gecko
+    files:
+      - test/fabledgecko/connection/GeckoSurveyH2Connection.pure
+      - test/fabledgecko/domain/CallObservation.pure
+      - test/fabledgecko/mapping/GeckoSurveyMapping.pure
+      - test/fabledgecko/runtime/GeckoSurveyRuntime.pure
+      - test/fabledgecko/service/DistinctCallTypesByTransect.pure
+      - test/fabledgecko/store/GeckoSurveyDb.pure
+
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - distinct-count-aggregate
+  - group-by
+  - h2
+  - mapping-test
+  - post-aggregation-filter
+  - relational
+  - service-test
+  - tabular-data-set
+  - wildlife-survey

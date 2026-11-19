@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::ivoryfjord3::connection::CoastalH2Connection
+{
+  store: test::ivoryfjord3::store::CoastalDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists coastal;',
+      'create schema coastal;',
+      'create table coastal.water_sample (sample_id integer primary key, sample_code varchar(20) not null, collector_name varchar(120) not null, collected_on date not null, temperature_c double not null, salinity double not null, depth_m double not null, probe_id integer);',
+      'create table coastal.probe_unit (probe_id integer primary key, probe_code varchar(20) not null, firmware_tag varchar(20) not null, station_id integer);',
+      'create table coastal.shore_station (station_id integer not null, station_code varchar(20) not null, station_name varchar(120) not null, custodian varchar(120) not null, shore_zone varchar(120) not null, from_z date, thru_z date);'
+      ];
+  };
+  auth: DefaultH2;
+}

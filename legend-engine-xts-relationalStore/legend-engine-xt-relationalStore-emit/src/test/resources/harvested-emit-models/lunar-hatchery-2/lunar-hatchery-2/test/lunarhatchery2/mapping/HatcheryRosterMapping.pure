@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarhatchery2::mapping::HatcheryRosterMapping
+(
+  *test::lunarhatchery2::domain::TankRecord[tankRecordSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarhatchery2::store::HatcheryDb]hatchery.tank.tank_key
+    )
+    ~mainTable [test::lunarhatchery2::store::HatcheryDb]hatchery.tank
+    tankLabel: [test::lunarhatchery2::store::HatcheryDb]hatchery.tank.tank_label,
+    aerated: [test::lunarhatchery2::store::HatcheryDb]hatchery.tank.aerated
+  }
+
+  testSuites:
+  [
+    rosterReadSuite:
+    {
+      function: |test::lunarhatchery2::domain::TankRecord.all()->project(
+  [
+    t|$t.tankLabel,
+    t|$t.aerated
+  ],
+  [
+    'TankLabel',
+    'Aerated'
+  ]
+)->sort(
+  [
+    asc('TankLabel')
+  ]
+);
+      tests:
+      [
+        rosteredTanks:
+        {
+          doc: 'Reads one row per distinct primary key from the driver alias, covering an aerated tank, a tank whose optional aeration flag is null and a tank whose key sits at the big-integer coercion edge.';
+          data:
+          [
+            test::lunarhatchery2::store::HatcheryDb:
+              Relational
+              #{
+                hatchery.tank:
+                  'tank_key,tank_label,aerated\n'+
+                  '1,TANK-A,true\n'+
+                  '2,TANK-B,\n'+
+                  '9007199254740993,TANK-C,false\n';
+              }#
+          ];
+          asserts:
+          [
+            threeRosteredTanks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TankLabel":"TANK-A","Aerated":true},{"TankLabel":"TANK-B","Aerated":null},{"TankLabel":"TANK-C","Aerated":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

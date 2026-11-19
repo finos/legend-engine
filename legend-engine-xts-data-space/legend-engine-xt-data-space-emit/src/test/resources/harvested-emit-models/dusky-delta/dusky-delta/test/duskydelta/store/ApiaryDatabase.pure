@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskydelta::store::ApiaryDatabase
+(
+  Schema apiary
+  (
+    Table hive_record
+    (
+      hive_id INTEGER PRIMARY KEY,
+      hive_code VARCHAR(24) NOT NULL,
+      site_code VARCHAR(24) NOT NULL,
+      keeper_code VARCHAR(24) NOT NULL,
+      queen_code VARCHAR(24) NOT NULL,
+      frame_count INTEGER NOT NULL,
+      brood_score INTEGER NOT NULL,
+      varroa_count INTEGER NOT NULL
+    )
+
+    Table apiary_site
+    (
+      site_code VARCHAR(24) PRIMARY KEY,
+      site_name VARCHAR(120) NOT NULL,
+      terrain_class VARCHAR(24) NOT NULL,
+      forage_code VARCHAR(24) NOT NULL
+    )
+  )
+
+  Schema forage
+  (
+    Table forage_zone
+    (
+      forage_code VARCHAR(24) PRIMARY KEY,
+      forage_name VARCHAR(120) NOT NULL,
+      bloom_class VARCHAR(24) NOT NULL,
+      nectar_index INTEGER NOT NULL
+    )
+
+    Table keeper
+    (
+      keeper_code VARCHAR(24) PRIMARY KEY,
+      keeper_name VARCHAR(120) NOT NULL,
+      round_label VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join Hive_Keeper(apiary.hive_record.keeper_code = forage.keeper.keeper_code)
+  Join Hive_Site(apiary.hive_record.site_code = apiary.apiary_site.site_code)
+  Join Site_Forage(apiary.apiary_site.forage_code = forage.forage_zone.forage_code)
+)

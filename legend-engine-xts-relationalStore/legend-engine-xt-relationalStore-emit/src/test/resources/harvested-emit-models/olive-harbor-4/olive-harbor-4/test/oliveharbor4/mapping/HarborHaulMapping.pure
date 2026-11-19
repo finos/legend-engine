@@ -1,0 +1,237 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::oliveharbor4::mapping::HarborHaulMapping
+(
+  *test::oliveharbor4::domain::HaulOut[haulOut]: Relational
+  {
+    ~primaryKey
+    (
+      [test::oliveharbor4::store::HarborYardDb]yard.haul_out.haul_ref
+    )
+    ~mainTable [test::oliveharbor4::store::HarborYardDb]yard.haul_out
+    haulRef: [test::oliveharbor4::store::HarborYardDb]yard.haul_out.haul_ref,
+    craftName: [test::oliveharbor4::store::HarborYardDb]yard.haul_out.craft_name,
+    craftKind: [test::oliveharbor4::store::HarborYardDb]yard.haul_out.craft_kind,
+    haulState: [test::oliveharbor4::store::HarborYardDb]yard.haul_out.haul_state,
+    keelMetres: [test::oliveharbor4::store::HarborYardDb]yard.haul_out.keel_metres,
+    tonnage: [test::oliveharbor4::store::HarborYardDb]yard.haul_out.tonnage,
+    dockDays: [test::oliveharbor4::store::HarborYardDb]yard.haul_out.dock_days,
+    haulLabel: concat(
+      concat(
+        concat(
+          [test::oliveharbor4::store::HarborYardDb]yard.haul_out.craft_kind,
+          ' / '
+        ),
+        [test::oliveharbor4::store::HarborYardDb]yard.haul_out.craft_name
+      ),
+      concat(
+        ' #',
+        [test::oliveharbor4::store::HarborYardDb]yard.haul_out.haul_ref
+      )
+    ),
+    haulScore: divide(
+      plus(
+        times(
+          coalesce([test::oliveharbor4::store::HarborYardDb]yard.haul_out.tonnage, 0),
+          10
+        ),
+        times(
+          [test::oliveharbor4::store::HarborYardDb]yard.haul_out.dock_days,
+          2
+        )
+      ),
+      plus(
+        [test::oliveharbor4::store::HarborYardDb]yard.haul_out.keel_metres,
+        1
+      )
+    )
+  }
+
+  *test::oliveharbor4::domain::LiftCradle[liftCradle]: Relational
+  {
+    ~primaryKey
+    (
+      [test::oliveharbor4::store::HarborYardDb]yard.lift_cradle.cradle_code
+    )
+    ~mainTable [test::oliveharbor4::store::HarborYardDb]yard.lift_cradle
+    cradleCode: [test::oliveharbor4::store::HarborYardDb]yard.lift_cradle.cradle_code,
+    cradleName: [test::oliveharbor4::store::HarborYardDb]yard.lift_cradle.cradle_name,
+    cradleTonnesT: [test::oliveharbor4::store::HarborYardDb]yard.lift_cradle.cradle_tonnes_t
+  }
+
+  *test::oliveharbor4::domain::Slipway[slipway]: Relational
+  {
+    ~primaryKey
+    (
+      [test::oliveharbor4::store::HarborYardDb]yard.slipway.slip_code
+    )
+    ~mainTable [test::oliveharbor4::store::HarborYardDb]yard.slipway
+    slipCode: [test::oliveharbor4::store::HarborYardDb]yard.slipway.slip_code,
+    slipName: [test::oliveharbor4::store::HarborYardDb]yard.slipway.slip_name,
+    winchRatingT: [test::oliveharbor4::store::HarborYardDb]yard.slipway.winch_rating_t
+  }
+
+  test::oliveharbor4::domain::HaulCradle: Relational
+  {
+    AssociationMapping
+    (
+      cradle[haulOut, liftCradle]: [test::oliveharbor4::store::HarborYardDb]@haulToCradle,
+      hauls[liftCradle, haulOut]: [test::oliveharbor4::store::HarborYardDb]@haulToCradle
+    )
+  }
+
+  test::oliveharbor4::domain::CradleSlip: Relational
+  {
+    AssociationMapping
+    (
+      slip[liftCradle, slipway]: [test::oliveharbor4::store::HarborYardDb]@cradleToSlip,
+      cradles[slipway, liftCradle]: [test::oliveharbor4::store::HarborYardDb]@cradleToSlip
+    )
+  }
+
+  testSuites:
+  [
+    haulRegisterSuite:
+    {
+      function: |test::oliveharbor4::domain::HaulOut.all()->project(
+  [
+    x|$x.haulRef,
+    x|$x.haulLabel,
+    x|$x.haulScore,
+    x|$x.cradle.cradleName,
+    x|$x.cradle.slip.slipName
+  ],
+  [
+    'HaulRef',
+    'HaulLabel',
+    'HaulScore',
+    'CradleName',
+    'SlipName'
+  ]
+)->sort(
+  [
+    asc('HaulRef')
+  ]
+);
+      tests:
+      [
+        everyHaulCarriesItsLabelScoreCradleAndSlipway:
+        {
+          doc: 'Every hauled boat carries the three-part label the yard folds out of its kind, its name and its reference, and the lift score the yard derives by weighting tonnage and dock days against the keel length, with an unweighed boat defaulting its tonnage to nothing rather than dropping out; the cradle is resolved one association hop out and the slipway two hops out.';
+          data:
+          [
+            test::oliveharbor4::store::HarborYardDb:
+              Relational
+              #{
+                yard.haul_out:
+                  'haul_ref,cradle_code,craft_name,craft_kind,haul_state,keel_metres,tonnage,dock_days\n'+
+                  'HL-01,CR-1,Osprey,SLOOP,HAULED,9.0,12.0,5\n'+
+                  'HL-02,CR-1,Redwing,KETCH,HAULED,4.0,,10\n'+
+                  'HL-03,CR-2,Gannet,TRAWLER,HAULED,14.0,30.0,15\n'+
+                  'HL-04,CR-2,Tern,DINGHY,AFLOAT,3.0,1.0,2\n';
+                yard.lift_cradle:
+                  'cradle_code,cradle_name,slip_code,cradle_tonnes_t\n'+
+                  'CR-1,North Cradle,SL-1,20.0\n'+
+                  'CR-2,South Cradle,SL-2,40.0\n';
+                yard.slipway:
+                  'slip_code,slip_name,winch_rating_t\n'+
+                  'SL-1,North Slipway,25.0\n'+
+                  'SL-2,South Slipway,60.0\n';
+              }#
+          ];
+          asserts:
+          [
+            fourHaulsWithDerivedLabelsAndScores:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HaulRef":"HL-01","HaulLabel":"SLOOP / Osprey #HL-01","HaulScore":13.0,"CradleName":"North Cradle","SlipName":"North Slipway"},{"HaulRef":"HL-02","HaulLabel":"KETCH / Redwing #HL-02","HaulScore":4.0,"CradleName":"North Cradle","SlipName":"North Slipway"},{"HaulRef":"HL-03","HaulLabel":"TRAWLER / Gannet #HL-03","HaulScore":22.0,"CradleName":"South Cradle","SlipName":"South Slipway"},{"HaulRef":"HL-04","HaulLabel":"DINGHY / Tern #HL-04","HaulScore":3.5,"CradleName":"South Cradle","SlipName":"South Slipway"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    cradleLoadSuite:
+    {
+      function: |test::oliveharbor4::domain::LiftCradle.all()->filter(
+  c|$c.hauls->exists(
+    h|$h.haulState == 'HAULED'
+  )
+)->project(
+  [
+    x|$x.cradleCode,
+    x|$x.cradleTonnesT,
+    x|$x.slip.slipName,
+    x|$x.slip.winchRatingT
+  ],
+  [
+    'CradleCode',
+    'CradleTonnesT',
+    'SlipName',
+    'WinchRatingT'
+  ]
+)->sort(
+  [
+    asc('CradleCode')
+  ]
+);
+      tests:
+      [
+        onlyCradlesCarryingAHauledBoat:
+        {
+          doc: 'The association-mapped hauls are traversed as a collection from the cradle end, so only the cradles carrying at least one boat currently ashore survive, and each survivor reports the slipway it stands on one further hop out.';
+          data:
+          [
+            test::oliveharbor4::store::HarborYardDb:
+              Relational
+              #{
+                yard.haul_out:
+                  'haul_ref,cradle_code,craft_name,craft_kind,haul_state,keel_metres,tonnage,dock_days\n'+
+                  'HL-01,CR-1,Osprey,SLOOP,HAULED,9.0,12.0,5\n'+
+                  'HL-04,CR-2,Tern,DINGHY,AFLOAT,3.0,1.0,2\n';
+                yard.lift_cradle:
+                  'cradle_code,cradle_name,slip_code,cradle_tonnes_t\n'+
+                  'CR-1,North Cradle,SL-1,20.0\n'+
+                  'CR-2,South Cradle,SL-2,40.0\n'+
+                  'CR-3,Empty Cradle,SL-1,10.0\n';
+                yard.slipway:
+                  'slip_code,slip_name,winch_rating_t\n'+
+                  'SL-1,North Slipway,25.0\n'+
+                  'SL-2,South Slipway,60.0\n';
+              }#
+          ];
+          asserts:
+          [
+            onlyTheCradleUnderTheHauledBoat:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CradleCode":"CR-1","CradleTonnesT":20.0,"SlipName":"North Slipway","WinchRatingT":25.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

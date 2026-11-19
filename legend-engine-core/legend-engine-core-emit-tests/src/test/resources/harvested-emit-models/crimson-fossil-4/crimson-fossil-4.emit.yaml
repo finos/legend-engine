@@ -1,0 +1,60 @@
+name: crimson-fossil-4
+title: "Crimson Fossil — annotated quarry specimen register with inherited specimen kinds, named control checks and a digest mapping"
+description: |
+  A store-free quarry specimen register published as a model surface. Specimen records carry
+  matrix and preservation values drawn from closed value domains, two specimen kinds specialize
+  the declared base and add their own dimensional readings, and four associations make the
+  register graph navigable from either end so a specimen reaches its dig visits, a visit reaches
+  its tallied taxa, and an observer end may have no partner at all. Qualified properties derive
+  their values at access time from a stored value, from a function of one, from a literal
+  substituted when a value is absent, and by folding a collection operation over a navigated
+  to-many collection so the result depends on cardinality as well as row values. Nine named
+  constraints act as control checks over string shape, date ordering, review attribution,
+  presence agreement and tally coverage, each carrying its own message and enforcement level so
+  a failure is attributable to one named control. Five register records carry a business-time
+  dimension by stereotype rather than by declared validity properties, and two associations
+  between those records keep the accession graph navigable under that dimension. A
+  model-to-model mapping publishes a specimen digest whose density band walks eight ordered arms
+  with an absent-count fallback, whose enumeration-mapped values substitute a sentinel ahead of
+  the lookup when their code is absent, and whose window state is decided by a validity window;
+  its mapping test exercises every arm, both sentinels, every value of the closed preservation
+  domain and both window edges plus a record on either side.
+modelSources:
+  model:
+    root: crimson-fossil-4
+    files:
+      - test/crimsonfossil4/domain/DigAssociations.pure
+      - test/crimsonfossil4/domain/DigDomain.pure
+      - test/crimsonfossil4/domain/DigEnums.pure
+      - test/crimsonfossil4/domain/DigTemporal.pure
+      - test/crimsonfossil4/mapping/DigDigestM2M.pure
+      - test/crimsonfossil4/payload/DigPayload.pure
+      - test/crimsonfossil4/profile/DigProfiles.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:derived-property
+  - grammar:derived-property-collection-op
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+complexity: intermediate
+tags:
+  - business-temporal
+  - class-inheritance
+  - conditional-transform
+  - constraint-controls
+  - derived-property
+  - enumeration-mapping
+  - model-to-model-mapping
+  - profile-tagged-values
+  - quarry-register
+stores: []

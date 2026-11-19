@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverdelta::mapping::DeltaMapping
+(
+  *test::silverdelta::domain::RingedBird[bird]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverdelta::store::DeltaDB]ringing.ringed_bird.bird_id
+    )
+    ~mainTable [test::silverdelta::store::DeltaDB]ringing.ringed_bird
+    ringCode: [test::silverdelta::store::DeltaDB]ringing.ringed_bird.ring_code,
+    ageClass: [test::silverdelta::store::DeltaDB]ringing.ringed_bird.age_class,
+    wingLengthMm: [test::silverdelta::store::DeltaDB]ringing.ringed_bird.wing_length_mm,
+    massGrams: [test::silverdelta::store::DeltaDB]ringing.ringed_bird.mass_grams
+  }
+
+  *test::silverdelta::domain::RingingStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverdelta::store::DeltaDB]ringing.ringing_station.station_id
+    )
+    ~mainTable [test::silverdelta::store::DeltaDB]ringing.ringing_station
+    stationCode: [test::silverdelta::store::DeltaDB]ringing.ringing_station.station_code,
+    stationName: [test::silverdelta::store::DeltaDB]ringing.ringing_station.station_name,
+    deltaArm: [test::silverdelta::store::DeltaDB]ringing.ringing_station.delta_arm,
+    staffedAllSeason: [test::silverdelta::store::DeltaDB]ringing.ringing_station.staffed_all_season
+  }
+
+  *test::silverdelta::domain::SpeciesTaxon[species]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverdelta::store::DeltaDB]ringing.species_taxon.species_id
+    )
+    ~mainTable [test::silverdelta::store::DeltaDB]ringing.species_taxon
+    speciesCode: [test::silverdelta::store::DeltaDB]ringing.species_taxon.species_code,
+    commonName: [test::silverdelta::store::DeltaDB]ringing.species_taxon.common_name,
+    migrationStrategy: [test::silverdelta::store::DeltaDB]ringing.species_taxon.migration_strategy
+  }
+
+  *test::silverdelta::domain::CaptureEvent[capture]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverdelta::store::DeltaDB]ringing.capture_event.event_id
+    )
+    ~mainTable [test::silverdelta::store::DeltaDB]ringing.capture_event
+    eventCode: [test::silverdelta::store::DeltaDB]ringing.capture_event.event_code,
+    capturedOn: [test::silverdelta::store::DeltaDB]ringing.capture_event.captured_on,
+    netHours: [test::silverdelta::store::DeltaDB]ringing.capture_event.net_hours,
+    observerName: [test::silverdelta::store::DeltaDB]ringing.capture_event.observer_name,
+    conditionCode: [test::silverdelta::store::DeltaDB]ringing.capture_event.condition_code
+  }
+
+  test::silverdelta::domain::Bird_Station: Relational
+  {
+    AssociationMapping
+    (
+      station[bird, station]: [test::silverdelta::store::DeltaDB]@Bird_Station,
+      bird[station, bird]: [test::silverdelta::store::DeltaDB]@Bird_Station
+    )
+  }
+
+  test::silverdelta::domain::Bird_Species: Relational
+  {
+    AssociationMapping
+    (
+      species[bird, species]: [test::silverdelta::store::DeltaDB]@Bird_Species,
+      birdOfSpecies[species, bird]: [test::silverdelta::store::DeltaDB]@Bird_Species
+    )
+  }
+
+  test::silverdelta::domain::Bird_Capture: Relational
+  {
+    AssociationMapping
+    (
+      captures[bird, capture]: [test::silverdelta::store::DeltaDB]@Bird_Capture,
+      capturedBird[capture, bird]: [test::silverdelta::store::DeltaDB]@Bird_Capture
+    )
+  }
+)

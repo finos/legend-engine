@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::indigowillow5::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A willow habitat tracked along a willow willow-grove; its canopy extent, inspection date and the observer who walks it are restated over time.'} test::indigowillow5::domain::WillowHabitat
+{
+  habitatCode: String[1];
+  reedArea: Integer[1];
+  lastCheckOn: StrictDate[1];
+  programCode: String[1];
+  observer: TrailObserver[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field observer who walks a set of willow habitats and may hold a diving permit tag.'} test::indigowillow5::domain::TrailObserver
+{
+  observerCode: String[1];
+  permitTag: String[0..1];
+}

@@ -1,0 +1,70 @@
+name: frosted-quarry-2
+title: "Frosted Quarry Ice Extraction — An Association Graph Published Through A Data Space, Two Diagrams And Four Featured Endpoints"
+description: |
+  A glacial ice extraction estate whose whole shape is carried by associations rather than by
+  query-side joins. Nine classes — quarries, extraction panels, harvest cycles, ice blocks, clarity
+  grades, melt audits, haul sleds, transfer runs and cold stores — are mapped to nine tables of one
+  multi-table relational store, every class mapping declaring its primary key and its main table
+  alias. Seven associations connect them pairwise and each is implemented as an association mapping
+  routing both ends through one named store join, so traversing an association becomes a relational
+  join in the generated plan and a four-hop lineage from block to owning quarry is a model-side
+  property path. A data space wraps the estate into one consumer-facing execution context, resolving
+  to the single mapping and runtime pair, and publishes the two diagrams that lay the class graph out
+  geometrically plus the four featured endpoints as packageable-element executables under an email
+  support contact. The endpoints cover the three query shapes the model supports: a bare projection,
+  a projection preceded by a filter that pushes a region literal into the panel-to-quarry join, and
+  two projections screened afterwards on the projected rows — one on two caller-supplied values
+  joined by a conjunction, one on an exact floating-point threshold — each de-duplicating the
+  survivors.
+modelSources:
+  model:
+    root: frosted-quarry-2
+    files:
+      - test/frostedquarry2/connection/FrostQuarryConnections.pure
+      - test/frostedquarry2/dataspace/FrostQuarryDataSpace.pure
+      - test/frostedquarry2/diagram/FrostQuarryDiagram.pure
+      - test/frostedquarry2/domain/FrostQuarryDomain.pure
+      - test/frostedquarry2/mapping/FrostQuarryMapping.pure
+      - test/frostedquarry2/runtime/FrostQuarryRuntimes.pure
+      - test/frostedquarry2/service/BlockRegister.pure
+      - test/frostedquarry2/service/GradeMatchLookup.pure
+      - test/frostedquarry2/service/MeltThresholdScan.pure
+      - test/frostedquarry2/service/PanelPickList.pure
+      - test/frostedquarry2/store/FrostQuarryDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+tds_variant: tabular-data-set
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - data-space
+  - diagram
+  - featured-executables
+  - glacial-ice-extraction
+  - h2
+  - main-table-alias
+  - memsql
+  - relational
+  - service
+  - tds-filter

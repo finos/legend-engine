@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::tealorchard3::domain::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract, meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'Shared shape of every orchard record corrected over processing time.'} test::tealorchard3::domain::OrchardRecord
+{
+  recordCode: String[1];
+  recordLabel: String[1];
+  displayLabel() {$this.recordCode->toUpper() + ' / ' + $this.recordLabel->trim()}: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::tealorchard3::profile::OrchardProfile.curatedRecord>> {meta::pure::profiles::doc.doc = 'A grafted fruit tree standing in an orchard block.', test::tealorchard3::profile::OrchardProfile.reviewCycle = 'annual'} test::tealorchard3::domain::TreeSpecimen extends OrchardRecord
+{
+  cultivarName: String[1];
+  rootstockVigour: RootstockVigour[1];
+  plantedYear: Integer[1];
+  standsOnVigorousStock() {$this.rootstockVigour == RootstockVigour.Vigorous}: Boolean[1];
+  establishedGraftCount() {$this.grafts->filter(g|$g.graftStatus == GraftStatus.Established)->size()}: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal, test::tealorchard3::profile::OrchardProfile.retiredGraft>> {meta::pure::profiles::doc.doc = 'A graft worked onto a specimen, corrected over processing time as its take is confirmed.'} test::tealorchard3::domain::GraftRecord extends OrchardRecord
+{
+  scionSource: String[1];
+  graftStatus: GraftStatus[1];
+  workedOnYear: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'An assessment of a specimen, effective over the picking timeline and corrected over processing time.'} test::tealorchard3::domain::SpecimenAssessment
+{
+  assessmentCode: String[1];
+  harvestGrade: HarvestGrade[1];
+  pickedKg: Float[1];
+  soundPick() {$this.harvestGrade != HarvestGrade.Unsound}: Boolean[1];
+  narratedNoteCount() {$this.notes->filter(n|$n.noteSource == NoteSource.OrchardWalk)->size()}: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A narrative note belonging to an assessment, kept beside the correction it explains.'} test::tealorchard3::domain::AssessmentNote
+{
+  noteSequence: Integer[1];
+  noteSource: NoteSource[1];
+  narrative: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named planting block grouping the specimens standing in it.', test::tealorchard3::profile::OrchardProfile.steward = 'orchard-stewardship-desk'} test::tealorchard3::domain::OrchardBlock
+{
+  blockCode: String[1];
+  blockName: String[1];
+  hectares: Float[1];
+  graftedSpecimenCount(processingDate: Date[1])
+  {
+    $this.specimens($processingDate)->filter(s|$s.grafts->exists(g|$g.graftStatus == GraftStatus.Established))->size()
+  }: Integer[1];
+  vigorousCultivarNames(processingDate: Date[1])
+  {
+    $this.specimens($processingDate)->filter(s|$s.standsOnVigorousStock)->map(s|$s.cultivarName->toUpper())
+  }: String[*];
+}

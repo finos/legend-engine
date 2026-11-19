@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealotter3::store::SeedVaultDb
+(
+  Schema seedarchive
+  (
+    Table accession
+    (
+      accession_code VARCHAR(20) PRIMARY KEY,
+      collected_on DATE PRIMARY KEY,
+      taxon_code VARCHAR(20),
+      vault_code VARCHAR(20),
+      seed_count INTEGER,
+      viable_pct FLOAT,
+      dried BIT
+    )
+
+    Table taxon
+    (
+      taxon_code VARCHAR(20) PRIMARY KEY,
+      taxon_name VARCHAR(120) NOT NULL,
+      family_code VARCHAR(20)
+    )
+
+    Table vault
+    (
+      vault_code VARCHAR(20) PRIMARY KEY,
+      vault_name VARCHAR(80) NOT NULL,
+      chill_degrees INTEGER
+    )
+
+    Table germination
+    (
+      trial_id INTEGER PRIMARY KEY,
+      accession_code VARCHAR(20) PRIMARY KEY,
+      vault_code VARCHAR(20),
+      germinated_pct INTEGER,
+      tested_on DATE
+    )
+  )
+
+  Join Accession_Taxon_J(seedarchive.accession.taxon_code = seedarchive.taxon.taxon_code)
+
+  Join Accession_Vault_J(seedarchive.accession.vault_code = seedarchive.vault.vault_code)
+
+  Join Accession_Trial_J
+  (
+    seedarchive.accession.accession_code = seedarchive.germination.accession_code
+      and seedarchive.accession.vault_code = seedarchive.germination.vault_code
+  )
+)

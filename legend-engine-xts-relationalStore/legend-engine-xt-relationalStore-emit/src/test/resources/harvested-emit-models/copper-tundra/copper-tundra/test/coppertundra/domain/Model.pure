@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::coppertundra::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A collared caribou tracked across the tundra range, with a telemetry tag and battery reading.'} test::coppertundra::domain::CollaredAnimal
+{
+  animalTag: String[1];
+  species: String[1];
+  tagCode: String[1];
+  batteryPct: Integer[0..1];
+  collarActive: Boolean[1];
+  statusLabel()
+  {
+    if($this.batteryPct->isEmpty(),
+       | 'UNKNOWN',
+       | if($this.batteryPct->toOne() >= 80,
+            | 'FULL',
+            | if(($this.batteryPct->toOne() >= 40) && $this.tagCode->startsWith('K'),
+                 | 'MODERATE',
+                 | if($this.tagCode->endsWith('X') || $this.tagCode->contains('7'),
+                      | 'FLAGGED',
+                      | if($this.tagCode->length() > 5,
+                           | 'LONG-' + $this.tagCode->toUpper(),
+                           | if($this.tagCode->toUpper() == 'NONE',
+                                | 'EMPTY',
+                                | 'LOW-' + $this.batteryPct->toOne()->toString()))))))
+  }: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single herd sighting logged in the field, referencing the collared animal seen.'} test::coppertundra::domain::HerdSighting
+{
+  sightingId: Integer[1];
+  animalTag: String[1];
+  herdCode: String[1];
+  terrainCode: String[1];
+  countSeen: Integer[1];
+  sightedSpecies: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Inbound raw telemetry ping record (non-relational feed shape) for a tracked animal.'} test::coppertundra::domain::TelemetryPing
+{
+  tag: String[1];
+  lat: Float[1];
+  lon: Float[1];
+  battery: Integer[0..1];
+  fixQuality: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A normalised track point derived from a raw telemetry ping.'} test::coppertundra::domain::AnimalTrack
+{
+  tag: String[1];
+  latitude: Float[1];
+  longitude: Float[1];
+  batteryLevel: String[1];
+  quality: String[1];
+}

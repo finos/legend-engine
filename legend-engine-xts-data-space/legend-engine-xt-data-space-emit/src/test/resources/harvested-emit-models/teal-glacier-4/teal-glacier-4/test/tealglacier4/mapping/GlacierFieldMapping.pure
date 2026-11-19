@@ -1,0 +1,200 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealglacier4::mapping::GlacierFieldMapping
+(
+  *test::tealglacier4::domain::field::Glacier[glacier]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Glacier Code",
+      [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Range Code"
+    )
+    ~mainTable [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register
+    glacierCode: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Glacier Code",
+    rangeCode: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Range Code",
+    glacierName: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Glacier Name",
+    basinName: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Basin Name",
+    areaSqKm: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Area Sq Km",
+    monitored: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Monitored",
+    registeredOn: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Registered On",
+    updatedAt: [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Updated At"
+  }
+  *test::tealglacier4::domain::field::StakeReading[stake]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Stake Code"
+    )
+    ~mainTable [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading
+    stakeCode: [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Stake Code",
+    glacierCode: [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Glacier Code",
+    rangeCode: [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Range Code",
+    readOn: [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Read On",
+    ablationCm: [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm",
+    snowDepth: case(
+                 equal([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Snow Depth Raw", '-999'),
+                 sqlNull(),
+                 [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Snow Depth Raw"
+               ),
+    observerCode: [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Observer Code",
+    calibrated: [test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Calibrated",
+    meltClass: case(
+                 isNull([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm"),
+                 sqlNull(),
+                 case(
+                   greaterThan([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm", 400.0),
+                   'MELT-8',
+                   case(
+                     greaterThan([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm", 300.0),
+                     'MELT-7',
+                     case(
+                       greaterThan([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm", 220.0),
+                       'MELT-6',
+                       case(
+                         greaterThan([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm", 150.0),
+                         'MELT-5',
+                         case(
+                           greaterThan([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm", 90.0),
+                           'MELT-4',
+                           case(
+                             greaterThan([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm", 40.0),
+                             'MELT-3',
+                             case(
+                               greaterThan([test::tealglacier4::store::GlacierFieldDB]icefield.stake_reading."Ablation Cm", 10.0),
+                               'MELT-2',
+                               'MELT-1'
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    glacierName: [test::tealglacier4::store::GlacierFieldDB]@Glacier_Stake | [test::tealglacier4::store::GlacierFieldDB]icefield.glacier_register."Glacier Name"
+  }
+  *test::tealglacier4::domain::field::CrevasseSurvey[crevasse]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealglacier4::store::GlacierFieldDB]icefield.crevasse_survey."Crevasse Code"
+    )
+    ~mainTable [test::tealglacier4::store::GlacierFieldDB]icefield.crevasse_survey
+    crevasseCode: [test::tealglacier4::store::GlacierFieldDB]icefield.crevasse_survey."Crevasse Code",
+    glacierCode: [test::tealglacier4::store::GlacierFieldDB]icefield.crevasse_survey."Glacier Code",
+    rangeCode: [test::tealglacier4::store::GlacierFieldDB]icefield.crevasse_survey."Range Code",
+    widthM: [test::tealglacier4::store::GlacierFieldDB]icefield.crevasse_survey."Width M",
+    surveyNote: [test::tealglacier4::store::GlacierFieldDB]icefield.crevasse_survey."Survey Note"
+  }
+
+  test::tealglacier4::domain::field::Glacier_StakeReading: Relational
+  {
+    AssociationMapping
+    (
+      stakeReadings[glacier, stake]: [test::tealglacier4::store::GlacierFieldDB]@Glacier_Stake,
+      glacier[stake, glacier]: [test::tealglacier4::store::GlacierFieldDB]@Glacier_Stake
+    )
+  }
+
+  testSuites:
+  [
+    meltClassSuite:
+    {
+      function: |test::tealglacier4::domain::field::StakeReading.all()->project(~[stake: s|$s.stakeCode, melt: s|$s.meltClass, snow: s|$s.snowDepth, glacier: s|$s.glacierName, basin: s|$s.glacier.basinName])->sort(~stake->ascending());
+      tests:
+      [
+        everyMeltArm:
+        {
+          doc: 'One reading in each of the eight ablation bands, a reading with no ablation that falls back to an empty class, and a reading whose glacier matches on code but not on range so the composite join finds no glacier.';
+          data:
+          [
+            test::tealglacier4::store::GlacierFieldDB:
+              Relational
+              #{
+                icefield.glacier_register:
+                  'Glacier Code,Range Code,Glacier Name,Basin Name,Area Sq Km,Monitored,Registered On,Updated At\n'+
+                  'GL-NORD,RG-A,Nordbreen,Upper Dal,12.50,true,2019-06-01,2026-03-01 08:00:00\n'+
+                  'GL-SUD,RG-A,Sudbreen,Lower Dal,8.25,false,2020-07-15,2026-03-02 08:00:00\n'+
+                  'GL-NORD,RG-B,Nordbreen Upper,Kvit Basin,4.75,true,2021-05-20,2026-03-03 08:00:00\n';
+                icefield.stake_reading:
+                  'Stake Code,Glacier Code,Range Code,Read On,Ablation Cm,Snow Depth Raw,Observer Code,Calibrated\n'+
+                  'SK-01,GL-NORD,RG-A,2026-05-02,450.0,85,OB-1,true\n'+
+                  'SK-02,GL-NORD,RG-A,2026-05-20,350.5,90,OB-2,true\n'+
+                  'SK-03,GL-SUD,RG-A,2026-06-11,250.0,40,OB-1,false\n'+
+                  'SK-04,GL-SUD,RG-A,2026-06-18,160.0,35,OB-3,true\n'+
+                  'SK-05,GL-NORD,RG-B,2026-04-15,95.5,70,OB-1,true\n'+
+                  'SK-06,GL-NORD,RG-B,2026-04-22,60.0,65,OB-2,false\n'+
+                  'SK-07,GL-NORD,RG-A,2026-03-30,25.0,110,OB-3,true\n'+
+                  'SK-08,GL-SUD,RG-A,2026-03-12,4.5,140,OB-1,true\n'+
+                  'SK-09,GL-NORD,RG-B,2026-02-27,,150,OB-2,false\n'+
+                  'SK-10,GL-SUD,RG-B,2026-07-01,120.0,-999,OB-1,true\n';
+              }#
+          ];
+          asserts:
+          [
+            tenReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stake":"SK-01","melt":"MELT-8","snow":"85","glacier":"Nordbreen","basin":"Upper Dal"},{"stake":"SK-02","melt":"MELT-7","snow":"90","glacier":"Nordbreen","basin":"Upper Dal"},{"stake":"SK-03","melt":"MELT-6","snow":"40","glacier":"Sudbreen","basin":"Lower Dal"},{"stake":"SK-04","melt":"MELT-5","snow":"35","glacier":"Sudbreen","basin":"Lower Dal"},{"stake":"SK-05","melt":"MELT-4","snow":"70","glacier":"Nordbreen Upper","basin":"Kvit Basin"},{"stake":"SK-06","melt":"MELT-3","snow":"65","glacier":"Nordbreen Upper","basin":"Kvit Basin"},{"stake":"SK-07","melt":"MELT-2","snow":"110","glacier":"Nordbreen","basin":"Upper Dal"},{"stake":"SK-08","melt":"MELT-1","snow":"140","glacier":"Sudbreen","basin":"Lower Dal"},{"stake":"SK-09","melt":null,"snow":"150","glacier":"Nordbreen Upper","basin":"Kvit Basin"},{"stake":"SK-10","melt":"MELT-4","snow":null,"glacier":null,"basin":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    crevasseWindowSuite:
+    {
+      function: |test::tealglacier4::domain::field::CrevasseSurvey.all(%2026-06-01)->project(~[crevasse: c|$c.crevasseCode, glacier: c|$c.glacierCode, note: c|$c.surveyNote])->sort(~crevasse->ascending());
+      tests:
+      [
+        closedAndFutureRowsDrop:
+        {
+          doc: 'Reads the surveys as processed on one date: a row closed before that date and a row entered after it both fall outside the processing window.';
+          data:
+          [
+            test::tealglacier4::store::GlacierFieldDB:
+              Relational
+              #{
+                icefield.crevasse_survey:
+                  'Crevasse Code,Glacier Code,Range Code,Width M,Survey Note,in_z,out_z\n'+
+                  'CV-1,GL-NORD,RG-A,2.5,open bergschrund,2025-01-01,9999-12-31\n'+
+                  'CV-2,GL-SUD,RG-A,1.0,bridged span,2024-01-01,2025-03-01\n'+
+                  'CV-3,GL-NORD,RG-B,3.25,new rift,2026-07-01,9999-12-31\n'+
+                  'CV-4,GL-SUD,RG-A,0.75,narrow lip,2026-02-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLiveSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"crevasse":"CV-1","glacier":"GL-NORD","note":"open bergschrund"},{"crevasse":"CV-4","glacier":"GL-SUD","note":"narrow lip"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,167 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::copperwillow6::connection::CoreSnowflakeProdConnection
+{
+  store: test::copperwillow6::store::StewardshipCoreDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'COPPER_WILLOW_CORE_PROD';
+    account: 'example_copper_willow_account';
+    warehouse: 'COPPER_WILLOW_PROD_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'COPPER_WILLOW_STEWARD_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'copper_willow_steward_oauth_key';
+    scopeName: 'SESSION:ROLE:COPPER_WILLOW_STEWARD_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'directive'; to: 'directive_prod';},
+        schema {from: 'participant'; to: 'participant_prod';},
+        table {from: 'work_directive'; to: 'work_directive_current'; schemaFrom: 'directive'; schemaTo: 'directive_prod';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::copperwillow6::connection::EventSnowflakeProdConnection
+{
+  store: test::copperwillow6::store::StewardshipEventDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'COPPER_WILLOW_EVENT_PROD';
+    account: 'example_copper_willow_account';
+    warehouse: 'COPPER_WILLOW_PROD_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'COPPER_WILLOW_STEWARD_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'copper_willow_steward_oauth_key';
+    scopeName: 'SESSION:ROLE:COPPER_WILLOW_STEWARD_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'event'; to: 'event_prod';},
+        schema {from: 'measure'; to: 'measure_prod';},
+        table {from: 'trail_day'; to: 'trail_day_current'; schemaFrom: 'event'; schemaTo: 'event_prod';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::copperwillow6::connection::EventSnowflakeUatConnection
+{
+  store: test::copperwillow6::store::StewardshipEventDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'COPPER_WILLOW_EVENT_UAT';
+    account: 'example_copper_willow_account';
+    warehouse: 'COPPER_WILLOW_UAT_WH';
+    region: 'us-west-2';
+    cloudType: 'aws';
+    role: 'COPPER_WILLOW_STEWARD_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'copper_willow_steward_oauth_key';
+    scopeName: 'SESSION:ROLE:COPPER_WILLOW_STEWARD_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'event'; to: 'event_uat';},
+        schema {from: 'measure'; to: 'measure_uat';},
+        table {from: 'trail_measure'; to: 'trail_measure_sample'; schemaFrom: 'measure'; schemaTo: 'measure_uat';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::copperwillow6::connection::ArchiveSnowflakeProdConnection
+{
+  store: test::copperwillow6::store::StewardshipArchiveDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'COPPER_WILLOW_ARCHIVE_PROD';
+    account: 'example_copper_willow_account';
+    warehouse: 'COPPER_WILLOW_ARCHIVE_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'COPPER_WILLOW_STEWARD_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'copper_willow_steward_oauth_key';
+    scopeName: 'SESSION:ROLE:COPPER_WILLOW_STEWARD_READER';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'archive'; to: 'archive_cold';},
+        table {from: 'directive_history'; to: 'directive_history_closed'; schemaFrom: 'archive'; schemaTo: 'archive_cold';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection test::copperwillow6::connection::CoreMemSqlPrimaryConnection
+{
+  store: test::copperwillow6::store::StewardshipCoreDB;
+  type: MemSQL;
+  specification: Static
+  {
+    name: 'COPPER_WILLOW_DIRECTIVES';
+    host: 'copper-willow-directive-primary-host';
+    port: 3306;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection test::copperwillow6::connection::CoreMemSqlReplicaConnection
+{
+  store: test::copperwillow6::store::StewardshipCoreDB;
+  type: MemSQL;
+  specification: Static
+  {
+    name: 'COPPER_WILLOW_DIRECTIVES';
+    host: 'copper-willow-directive-replica-host';
+    port: 3306;
+  };
+  auth: DelegatedKerberos;
+}

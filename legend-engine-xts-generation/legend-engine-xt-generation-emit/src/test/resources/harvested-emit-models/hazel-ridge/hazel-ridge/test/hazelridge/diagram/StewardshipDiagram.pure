@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::hazelridge::diagram::StewardshipDiagram
+{
+  classView charterView
+  {
+    class: test::hazelridge::domain::StewardshipCharter;
+    position: (100.0,60.0);
+    rectangle: (240.0,130.0);
+  }
+  classView networkView
+  {
+    class: test::hazelridge::domain::TrailNetwork;
+    position: (440.0,60.0);
+    rectangle: (240.0,130.0);
+  }
+  classView accessRuleView
+  {
+    class: test::hazelridge::domain::AccessRule;
+    position: (100.0,280.0);
+    rectangle: (240.0,140.0);
+  }
+  classView closureView
+  {
+    class: test::hazelridge::domain::SeasonalClosure;
+    position: (100.0,500.0);
+    rectangle: (220.0,110.0);
+  }
+  classView segmentView
+  {
+    class: test::hazelridge::domain::TrailSegment;
+    position: (440.0,280.0);
+    rectangle: (240.0,170.0);
+  }
+  classView trailheadView
+  {
+    class: test::hazelridge::domain::Trailhead;
+    position: (780.0,60.0);
+    rectangle: (220.0,120.0);
+  }
+  classView waypointView
+  {
+    class: test::hazelridge::domain::Waypoint;
+    position: (780.0,280.0);
+    rectangle: (220.0,110.0);
+  }
+  classView surfaceView
+  {
+    class: test::hazelridge::domain::SurfaceCondition;
+    position: (440.0,540.0);
+    rectangle: (240.0,120.0);
+  }
+  classView signageView
+  {
+    class: test::hazelridge::domain::SignagePlacement;
+    position: (780.0,460.0);
+    rectangle: (240.0,130.0);
+  }
+  classView inspectionView
+  {
+    class: test::hazelridge::domain::InspectionReport;
+    position: (1080.0,60.0);
+    rectangle: (240.0,140.0);
+  }
+  classView hazardView
+  {
+    class: test::hazelridge::domain::HazardNote;
+    position: (1080.0,280.0);
+    rectangle: (220.0,120.0);
+  }
+  classView maintenanceView
+  {
+    class: test::hazelridge::domain::MaintenanceTask;
+    position: (1080.0,460.0);
+    rectangle: (240.0,160.0);
+  }
+  classView workPartyView
+  {
+    class: test::hazelridge::domain::WorkParty;
+    position: (1400.0,460.0);
+    rectangle: (220.0,130.0);
+  }
+  classView volunteerView
+  {
+    class: test::hazelridge::domain::Volunteer;
+    position: (1400.0,660.0);
+    rectangle: (220.0,130.0);
+  }
+  classView equipmentView
+  {
+    class: test::hazelridge::domain::EquipmentItem;
+    position: (1080.0,700.0);
+    rectangle: (240.0,130.0);
+  }
+}

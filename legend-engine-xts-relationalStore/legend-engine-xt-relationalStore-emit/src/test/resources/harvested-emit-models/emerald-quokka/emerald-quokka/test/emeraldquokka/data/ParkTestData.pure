@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::emeraldquokka::data::ParkTestData
+{
+  Relational
+  #{
+    park.feeding_round:
+      'round_code,station_code,keeper_name,portions_kg,served_on\n'+
+      'FR-001,ST-BROWSE-1,ada wren,14,2026-04-02\n'+
+      'FR-002,ST-BROWSE-1,ada wren,11,2026-04-09\n'+
+      'FR-003,ST-BROWSE-2,noor pike,18,2026-04-03\n'+
+      'FR-004,ST-BROWSE-3,cai finch,7,2026-04-05\n'+
+      'FR-005,ST-BROWSE-4,mira teal,22,2026-04-11\n';
+
+    park.browse_station:
+      'station_code,station_name,enclosure_zone\n'+
+      'ST-BROWSE-1,Tussock Clearing,east range\n'+
+      'ST-BROWSE-2,Fern Hollow,east range\n'+
+      'ST-BROWSE-3,Banksia Rise,west range\n'+
+      'ST-BROWSE-4,Swamp Paperbark,west range\n';
+  }#
+}

@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::hazelbeacon3::store::BeaconRegistryDB
+(
+  Schema registry
+  (
+    Table beacon_record
+    (
+      beacon_code VARCHAR(24) PRIMARY KEY,
+      beacon_name VARCHAR(120) NOT NULL,
+      station_code VARCHAR(24) NOT NULL,
+      lamp_code VARCHAR(24),
+      grade_code VARCHAR(8),
+      commissioned_on DATE NOT NULL,
+      focal_height_m INTEGER
+    )
+    Table station_record
+    (
+      station_code VARCHAR(24) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      coast_sector VARCHAR(48) NOT NULL
+    )
+    Table lamp_record
+    (
+      lamp_code VARCHAR(24) PRIMARY KEY,
+      lamp_type VARCHAR(48) NOT NULL,
+      rated_hours INTEGER
+    )
+  )
+
+  Schema survey
+  (
+    Table inspection_record
+    (
+      inspection_ref VARCHAR(24) PRIMARY KEY,
+      beacon_code VARCHAR(24) NOT NULL,
+      inspected_on DATE NOT NULL,
+      inspector_code VARCHAR(24) NOT NULL,
+      lens_score INTEGER,
+      battery_pct INTEGER
+    )
+    Table defect_record
+    (
+      defect_ref VARCHAR(24) PRIMARY KEY,
+      inspection_ref VARCHAR(24) NOT NULL,
+      defect_code VARCHAR(24) NOT NULL,
+      severity_code VARCHAR(8),
+      raised_on DATE NOT NULL
+    )
+  )
+
+  Join Beacon_Station(registry.beacon_record.station_code = registry.station_record.station_code)
+  Join Beacon_Lamp(registry.beacon_record.lamp_code = registry.lamp_record.lamp_code)
+  Join Inspection_Beacon(survey.inspection_record.beacon_code = registry.beacon_record.beacon_code)
+  Join Defect_Inspection(survey.defect_record.inspection_ref = survey.inspection_record.inspection_ref)
+)

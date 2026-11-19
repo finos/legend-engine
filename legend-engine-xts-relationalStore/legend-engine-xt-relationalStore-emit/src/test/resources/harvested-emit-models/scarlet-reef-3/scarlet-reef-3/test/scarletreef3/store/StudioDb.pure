@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::scarletreef3::store::StudioDb
+(
+  Schema studio
+  (
+    Table kiln_unit
+    (
+      kiln_code VARCHAR(16) PRIMARY KEY,
+      kiln_label VARCHAR(64) NOT NULL,
+      chamber_litres INTEGER NOT NULL,
+      installed_on DATE NOT NULL
+    )
+
+    Table studio_member
+    (
+      member_code VARCHAR(16) PRIMARY KEY,
+      member_label VARCHAR(64) NOT NULL,
+      joined_on DATE NOT NULL
+    )
+
+    Table firing_run
+    (
+      run_code VARCHAR(16) PRIMARY KEY,
+      kiln_code VARCHAR(16) NOT NULL,
+      member_code VARCHAR(16) NOT NULL,
+      clay_code VARCHAR(16) NOT NULL,
+      glaze_code VARCHAR(16) NOT NULL,
+      started_at TIMESTAMP NOT NULL,
+      peak_celsius INTEGER NOT NULL,
+      run_note VARCHAR(128)
+    )
+  )
+
+  Schema reference
+  (
+    Table clay_body
+    (
+      clay_code VARCHAR(16) PRIMARY KEY,
+      clay_label VARCHAR(64) NOT NULL,
+      shrink_percent INTEGER NOT NULL
+    )
+
+    Table glaze_recipe
+    (
+      glaze_code VARCHAR(16) PRIMARY KEY,
+      glaze_label VARCHAR(64) NOT NULL,
+      cone_number INTEGER NOT NULL
+    )
+  )
+
+  Join Run_Kiln(studio.firing_run.kiln_code = studio.kiln_unit.kiln_code)
+
+  Join Run_Clay(studio.firing_run.clay_code = reference.clay_body.clay_code)
+
+  Join Run_Glaze(studio.firing_run.glaze_code = reference.glaze_recipe.glaze_code)
+)

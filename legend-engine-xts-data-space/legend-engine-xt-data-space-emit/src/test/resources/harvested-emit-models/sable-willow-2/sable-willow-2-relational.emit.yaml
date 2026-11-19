@@ -1,0 +1,69 @@
+name: sable-willow-2-relational
+title: "Sable Willow 2 — Milestoned Hub Navigation Across Included Stores"
+description: |
+  A wildlife rehabilitation register whose admissions and enclosures are
+  corrected over processing time and whose reference species and care rotas live
+  in schemas contributed by two upstream stores brought in by inclusion. Six
+  associations fan out from the admission hub, one of them implemented through a
+  three-hop chain that climbs the enclosure hierarchy over a self-referencing
+  join and then crosses schemas on a join predicate that upper-cases a column,
+  and three services read the register at a pinned instant through two runtimes
+  whose connections remap every schema name at execution time.
+modelSources:
+  model:
+    root: sable-willow-2-relational
+    files:
+      - test/sablewillow2/connection/RehabReportingConnection.pure
+      - test/sablewillow2/connection/RehabWarehouseConnection.pure
+      - test/sablewillow2/data/RehabTestData.pure
+      - test/sablewillow2/dataspace/RehabDataSpace.pure
+      - test/sablewillow2/domain/RehabDomain.pure
+      - test/sablewillow2/mapping/ReferenceMapping.pure
+      - test/sablewillow2/mapping/RehabMapping.pure
+      - test/sablewillow2/profile/RehabProfile.pure
+      - test/sablewillow2/runtime/RehabRuntimes.pure
+      - test/sablewillow2/service/CasesForTeam.pure
+      - test/sablewillow2/service/EnclosureLineage.pure
+      - test/sablewillow2/service/SpeciesRoster.pure
+      - test/sablewillow2/store/RehabStores.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:profile
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:milestoned-association
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-hub
+  - cross-schema-join
+  - data-space
+  - h2
+  - multi-hop-join-path
+  - processing-temporal
+  - schema-remapping
+  - snowflake
+  - store-inclusion
+  - wildlife-rehabilitation

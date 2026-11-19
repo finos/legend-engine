@@ -1,0 +1,188 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverwarren::mapping::FieldSegmentMapping
+(
+  *test::silverwarren::domain::TrailSegmentReference[trail_segment_field]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.segment_code,
+      [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.expiry_key
+    )
+    ~mainTable [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT
+    segmentCode: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.segment_code,
+    expiryKey: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.expiry_key,
+    segmentName: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.segment_name,
+    corridorCode: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.corridor_code,
+    corridorName: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.corridor_name,
+    surfaceKind: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.surface_kind,
+    surfaceGrade: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.surface_grade,
+    districtCode: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.district_code,
+    districtName: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.district_name,
+    lengthMetres: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.length_metres,
+    ascentMetres: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.ascent_metres,
+    widthCentimetres: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.width_centimetres,
+    accessNote: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.access_note,
+    stewardTeam: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.steward_team,
+    inspectionCycle: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.inspection_cycle,
+    createdOn: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.created_on,
+    updatedOn: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAIL_SEGMENT.updated_on
+  }
+
+  testSuites:
+  [
+    currentSegmentSuite:
+    {
+      function: |test::silverwarren::domain::TrailSegmentReference.all()->filter(
+        s|$s.expiryKey == 99991231
+      )->project(
+        [
+          s|$s.segmentCode,
+          s|$s.segmentName,
+          s|$s.surfaceKind,
+          s|$s.districtName,
+          s|$s.lengthMetres
+        ],
+        [
+          'Segment',
+          'Name',
+          'Surface',
+          'District',
+          'Length'
+        ]
+      )->sort(
+        [
+          asc('Segment')
+        ]
+      );
+      tests:
+      [
+        sentinelKeepsCurrentRows:
+        {
+          doc: 'Reads the field segment table through the alias pinned by the main table: the sentinel equality keeps the two live rows and drops the superseded version of the same segment key, and one live row carries no recorded length so the projected measure is absent rather than zero.';
+          data:
+          [
+            test::silverwarren::store::TrailRegistryFieldDB:
+              Relational
+              #{
+                FIELDREF.TRAIL_SEGMENT:
+      'segment_code,expiry_key,segment_name,corridor_code,corridor_name,surface_kind,surface_grade,district_code,district_name,length_metres,ascent_metres,width_centimetres,access_note,steward_team,inspection_cycle,created_on,updated_on\n'+
+      'SEG-1,99991231,Willow Bend Path,COR-1,Willow Corridor,GRAVEL,FIRM,DIS-1,Northern Meadows,1840,22,240,Boardwalk closed after heavy rain,Meadow Stewards,QUARTERLY,2026-01-04 06:10:00,2026-02-09 07:45:00\n'+
+      'SEG-2,20250101,Willow Bend Path,COR-1,Willow Corridor,GRAVEL,WORN,DIS-1,Northern Meadows,1780,22,240,Superseded alignment,Meadow Stewards,ANNUAL,2024-01-04 06:10:00,2025-01-01 07:45:00\n'+
+      'SEG-3,99991231,Cedar Draw Link,COR-2,Cedar Corridor,BOARDWALK,SLICK,DIS-2,Eastern Fens,,14,180,Seasonal closure,Fen Stewards,ANNUAL,2026-02-01 06:10:00,2026-02-02 06:10:00\n';
+              }#
+          ];
+          asserts:
+          [
+            currentRowsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"SEG-1","Name":"Willow Bend Path","Surface":"GRAVEL","District":"Northern Meadows","Length":1840},{"Segment":"SEG-3","Name":"Cedar Draw Link","Surface":"BOARDWALK","District":"Eastern Fens","Length":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+
+###Mapping
+Mapping test::silverwarren::mapping::FieldTrailheadMapping
+(
+  *test::silverwarren::domain::TrailheadReference[trailhead_field]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.trailhead_code,
+      [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.expiry_key
+    )
+    ~mainTable [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD
+    trailheadCode: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.trailhead_code,
+    expiryKey: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.expiry_key,
+    trailheadName: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.trailhead_name,
+    corridorCode: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.corridor_code,
+    parkingKind: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.parking_kind,
+    bayCount: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.bay_count,
+    openedOn: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.opened_on,
+    createdOn: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.created_on,
+    updatedOn: [test::silverwarren::store::TrailRegistryFieldDB]FIELDREF.TRAILHEAD.updated_on
+  }
+
+  testSuites:
+  [
+    currentTrailheadSuite:
+    {
+      function: |test::silverwarren::domain::TrailheadReference.all()->filter(
+        t|$t.expiryKey == 99991231
+      )->project(
+        [
+          t|$t.trailheadCode,
+          t|$t.trailheadName,
+          t|$t.bayCount,
+          t|$t.openedOn->year()->toString() + '-' + if($t.openedOn->monthNumber() < 10, |'0' + $t.openedOn->monthNumber()->toString(), |$t.openedOn->monthNumber()->toString()) + '-' + if($t.openedOn->dayOfMonth() < 10, |'0' + $t.openedOn->dayOfMonth()->toString(), |$t.openedOn->dayOfMonth()->toString())
+        ],
+        [
+          'Trailhead',
+          'Name',
+          'Bays',
+          'OpenedKey'
+        ]
+      )->sort(
+        [
+          asc('Trailhead')
+        ]
+      );
+      tests:
+      [
+        paddedOpeningKeys:
+        {
+          doc: 'Assembles the opening key from the year, month and day parts of the field trailhead timestamp: the zero-padding arms are hit in both directions across the retained rows while the expired trailhead is excluded by the sentinel equality.';
+          data:
+          [
+            test::silverwarren::store::TrailRegistryFieldDB:
+              Relational
+              #{
+                FIELDREF.TRAILHEAD:
+      'trailhead_code,expiry_key,trailhead_name,corridor_code,parking_kind,bay_count,opened_on,created_on,updated_on\n'+
+      'TH-1,99991231,Willow Bend Trailhead,COR-1,SEALED,24,2026-03-07 05:30:00,2026-01-04 06:10:00,2026-02-09 07:45:00\n'+
+      'TH-2,99991231,Cedar Draw Trailhead,COR-2,GRAVEL,12,2026-11-12 05:30:00,2026-01-04 06:10:00,2026-02-09 07:45:00\n'+
+      'TH-3,20250101,Alder Gate Trailhead,COR-3,VERGE,,2019-04-18 05:30:00,2019-01-04 06:10:00,2019-02-09 07:45:00\n';
+              }#
+          ];
+          asserts:
+          [
+            paddedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trailhead":"TH-1","Name":"Willow Bend Trailhead","Bays":24,"OpenedKey":"2026-03-07"},{"Trailhead":"TH-2","Name":"Cedar Draw Trailhead","Bays":12,"OpenedKey":"2026-11-12"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

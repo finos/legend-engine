@@ -1,0 +1,51 @@
+name: sunlit-warren-2
+title: "Sunlit Warren — A Layered Mapping Graph Where Seven Associations And A Case-Folding Join Reach A Reserve Three Hops Out"
+description: |
+  A heathland warren survey counting burrow entrances and the keepers rostered onto them. Almost
+  none of the group is flat: four base mappings each bind their own classes against the survey
+  store or the separate roster store, and one top mapping composes all four by include so every
+  set implementation declared elsewhere is resolvable here by identifier. Seven associations are
+  bound onto store join paths rather than onto columns, so navigation resolves in both directions:
+  five ride a single named join, and two are chained — a burrow reaches its reserve through warren
+  and heath before the reserve column is reachable at all, and a warren reaches its patrol zones
+  through burrow and keeper. One of the five joins is not a bare column comparison: it case-folds
+  the keeper code before comparing it and then also requires the zone codes to agree, so the
+  predicate is computed before it is compared and the plan nests the alias graph. A mapping test
+  seeds every table of the survey store and proves the multi-hop hit: each burrow publishes its
+  warren over one hop, its heath over two, its reserve over three, its keeper only where both
+  halves of the computed condition hold, and the keeper's zone over a further chained hop.
+modelSources:
+  model:
+    root: sunlit-warren-2
+    files:
+      - test/sunlitwarren2/domain/WarrenDomain.pure
+      - test/sunlitwarren2/mapping/BurrowBaseMapping.pure
+      - test/sunlitwarren2/mapping/HeathBaseMapping.pure
+      - test/sunlitwarren2/mapping/KeeperBaseMapping.pure
+      - test/sunlitwarren2/mapping/RosterBaseMapping.pure
+      - test/sunlitwarren2/mapping/WarrenMapping.pure
+      - test/sunlitwarren2/store/WarrenDb.pure
+      - test/sunlitwarren2/store/WarrenRosterDb.pure
+features:
+  - execution:mapping-test
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-nested-join
+complexity: intermediate
+tags:
+  - association-mapping
+  - h2
+  - heathland-survey
+  - mapping-include
+  - multi-hop-join
+  - nested-join
+  - relational
+stores:
+  - relational

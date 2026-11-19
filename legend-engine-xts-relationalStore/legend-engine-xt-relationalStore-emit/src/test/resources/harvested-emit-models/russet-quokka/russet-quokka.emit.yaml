@@ -1,0 +1,56 @@
+name: russet-quokka
+title: "Coastal Reserve Colony Counts — Bitemporal Point-in-Time Projection Across Association Chains"
+description: |
+  A coastal-reserve wildlife corpus whose burrow headcounts are versioned on both
+  a recording and an observation timeline. A single-execution service takes the two
+  instants positionally into the bitemporal extent so they scope which version of
+  each headcount survives, then projects five flat columns whose sources range from
+  a local scalar to a three-hop chain of to-one associations. A mapping testSuite
+  and a service testSuite assert in-window, superseded and out-of-window versions
+  alongside a chain that stops short of the stewardship zone.
+modelSources:
+  model:
+    root: russet-quokka
+    files:
+      - test/russetquokka/connection/ReserveH2Connection.pure
+      - test/russetquokka/domain/ReserveDomain.pure
+      - test/russetquokka/mapping/ReserveMapping.pure
+      - test/russetquokka/runtime/ReserveRuntime.pure
+      - test/russetquokka/service/ColonyCountsAsOf.pure
+      - test/russetquokka/store/ReserveDB.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - grammar:derived-property
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-chain
+  - bitemporal
+  - derived-property
+  - h2
+  - mapping-test
+  - milestoning
+  - plan-generation
+  - point-in-time
+  - projection
+  - relational
+  - service-test
+  - wildlife-survey

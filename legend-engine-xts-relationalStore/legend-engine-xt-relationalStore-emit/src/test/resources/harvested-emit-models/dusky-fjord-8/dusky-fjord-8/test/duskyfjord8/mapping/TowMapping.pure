@@ -1,0 +1,288 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyfjord8::mapping::TowMapping
+(
+  include mapping test::duskyfjord8::mapping::VesselBaseMapping
+
+  *test::duskyfjord8::domain::PlanktonTow[tow]: Relational
+  {
+    ~filter [test::duskyfjord8::store::SurveyDb]LoggedTowFilter
+    ~primaryKey
+    (
+      [test::duskyfjord8::store::SurveyDb]survey.plankton_tow.tow_id
+    )
+    ~mainTable [test::duskyfjord8::store::SurveyDb]survey.plankton_tow
+    towCode: [test::duskyfjord8::store::SurveyDb]survey.plankton_tow.tow_code,
+    vesselName: [test::duskyfjord8::store::SurveyDb]@Tow_Vessel | survey.survey_vessel.vessel_name,
+    vesselGrade: [test::duskyfjord8::store::SurveyDb]@Tow_Vessel | survey.survey_vessel.vessel_grade,
+    stationName: [test::duskyfjord8::store::SurveyDb]@Tow_Station | survey.mooring_station.station_name,
+    netCount: [test::duskyfjord8::store::SurveyDb]survey.plankton_tow.net_count,
+    depthMetres: [test::duskyfjord8::store::SurveyDb]survey.plankton_tow.depth_metres,
+    towDate: [test::duskyfjord8::store::SurveyDb]survey.plankton_tow.tow_date
+  }
+
+  *test::duskyfjord8::domain::TowCatchTotal[catchTotal]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.tow_id
+    )
+    ~mainTable [test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals
+    towCode: toUpper(trim([test::duskyfjord8::store::SurveyDb]@CatchTotal_Tow | survey.plankton_tow.tow_code)),
+    taxonCount: [test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.taxon_count,
+    totalIndividuals: [test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.total_individuals,
+    peakIndividuals: [test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.peak_individuals,
+    lowIndividuals: [test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.low_individuals,
+    abundanceBand: case(equal([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.total_individuals, 0), 'EMPTY',
+                     case(greaterThan([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.total_individuals, 500), 'BLOOM',
+                       case(greaterThan([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.peak_individuals, 200), 'SWARM',
+                         case(greaterThan([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.taxon_count, 5), 'DIVERSE',
+                           case(greaterThan([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.total_individuals, 200), 'DENSE',
+                             case(greaterThan([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.total_individuals, 50), 'MODERATE',
+                               case(equal([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.taxon_count, 1), 'MONOCULTURE',
+                                 case(greaterThan([test::duskyfjord8::store::SurveyDb]survey.tow_catch_totals.total_individuals, 10), 'SPARSE', sqlNull())))))))),
+    programmeName: [test::duskyfjord8::store::SurveyDb]@CatchTotal_Tow > @Tow_Station > @Station_Region > @Region_Programme | survey.survey_programme.programme_name
+  }
+
+  testSuites:
+  [
+    towRegisterSuite:
+    {
+      function: |test::duskyfjord8::domain::PlanktonTow.all()->project(
+  [
+    x|$x.towCode,
+    x|$x.vesselName,
+    x|$x.vesselGrade,
+    x|$x.stationName,
+    x|$x.netCount,
+    x|$x.depthMetres,
+    x|$x.towDate
+  ],
+  [
+    'TowCode',
+    'Vessel',
+    'VesselGrade',
+    'Station',
+    'NetCount',
+    'DepthMetres',
+    'TowDate'
+  ]
+)->sort(
+  [
+    asc('TowCode')
+  ]
+);
+      tests:
+      [
+        filteredRowsAndJoinReachedColumns:
+        {
+          doc: 'Both named joins resolve their reached columns, one logged tow carries neither a net count nor a depth, and two tows are removed by the store filter - one voided and one that satisfies neither review arm.';
+          data:
+          [
+            test::duskyfjord8::store::SurveyDb:
+              Relational
+              #{
+                survey.mooring_station:
+                  'station_id,station_code,station_name,region_name\n'+
+                  '1,MS-01,Outer Sill,North Reach\n'+
+                  '2,MS-02,Inner Basin,South Reach\n';
+
+                survey.survey_vessel:
+                  'vessel_id,vessel_code,vessel_name,vessel_grade,rated_hours\n'+
+                  '1,SV-01,Tern Skiff,COASTAL,4.0\n'+
+                  '2,SV-02,Petrel Launch,ESTUARY,5.0\n';
+
+                survey.plankton_tow:
+                  'tow_id,tow_code,vessel_id,station_id,net_count,depth_metres,tow_date,void_flag_int,review_flag_int,stage_int\n'+
+                  '1,TW-0001,1,1,44,8.00,2026-02-01,0,0,2\n'+
+                  '2,TW-0002,2,2,26,6.50,2026-02-05,0,1,2\n'+
+                  '3,TW-0003,1,2,5,4.25,2026-02-07,0,1,3\n'+
+                  '4,TW-0004,2,1,,,2026-02-09,0,0,2\n'+
+                  '5,TW-0005,1,1,21,7.75,2026-02-13,1,1,2\n'+
+                  '6,TW-0006,2,2,30,9.00,2026-02-14,0,0,3\n';
+              }#
+          ];
+          asserts:
+          [
+            fourLoggedTows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TowCode":"TW-0001","Vessel":"Tern Skiff","VesselGrade":"COASTAL","Station":"Outer Sill","NetCount":44,"DepthMetres":8.00,"TowDate":"2026-02-01"},{"TowCode":"TW-0002","Vessel":"Petrel Launch","VesselGrade":"ESTUARY","Station":"Inner Basin","NetCount":26,"DepthMetres":6.50,"TowDate":"2026-02-05"},{"TowCode":"TW-0003","Vessel":"Tern Skiff","VesselGrade":"COASTAL","Station":"Inner Basin","NetCount":5,"DepthMetres":4.25,"TowDate":"2026-02-07"},{"TowCode":"TW-0004","Vessel":"Petrel Launch","VesselGrade":"ESTUARY","Station":"Outer Sill","TowDate":"2026-02-09"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    vesselFleetSuite:
+    {
+      function: |test::duskyfjord8::domain::SurveyVessel.all()->project(
+  [
+    x|$x.vesselCode,
+    x|$x.vesselName,
+    x|$x.vesselGrade,
+    x|$x.ratedHours
+  ],
+  [
+    'VesselCode',
+    'Vessel',
+    'VesselGrade',
+    'RatedHours'
+  ]
+)->sort(
+  [
+    asc('VesselCode')
+  ]
+);
+      tests:
+      [
+        fleetContributedByIncludedMapping:
+        {
+          doc: 'The vessel class reachable from the tow mapping is contributed entirely by the included base mapping, which resolves both graded vessels and leaves an ungraded one without a grade.';
+          data:
+          [
+            test::duskyfjord8::store::SurveyDb:
+              Relational
+              #{
+                survey.survey_vessel:
+                  'vessel_id,vessel_code,vessel_name,vessel_grade,rated_hours\n'+
+                  '1,SV-01,Tern Skiff,COASTAL,4.0\n'+
+                  '2,SV-02,Petrel Launch,ESTUARY,5.0\n'+
+                  '3,SV-03,Guillemot Tender,,2.5\n';
+              }#
+          ];
+          asserts:
+          [
+            threeVesselsOneUngraded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VesselCode":"SV-01","Vessel":"Tern Skiff","VesselGrade":"COASTAL","RatedHours":4.0},{"VesselCode":"SV-02","Vessel":"Petrel Launch","VesselGrade":"ESTUARY","RatedHours":5.0},{"VesselCode":"SV-03","Vessel":"Guillemot Tender","RatedHours":2.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    catchTotalSuite:
+    {
+      function: |test::duskyfjord8::domain::TowCatchTotal.all()->project(
+  [
+    x|$x.towCode,
+    x|$x.taxonCount,
+    x|$x.totalIndividuals,
+    x|$x.peakIndividuals,
+    x|$x.lowIndividuals,
+    x|$x.abundanceBand,
+    x|$x.programmeName
+  ],
+  [
+    'TowCode',
+    'Taxa',
+    'Total',
+    'Peak',
+    'Low',
+    'Band',
+    'Programme'
+  ]
+)->sort(
+  [
+    asc('TowCode')
+  ]
+);
+      tests:
+      [
+        groupedCatchBandsAndProgrammeReach:
+        {
+          doc: 'The grouped catch view totals each tow over its taxa; every abundance band arm is reached once, a thin mixed catch falls through to no band, and the programme resolves four joins out only for stations whose region is covered.';
+          data:
+          [
+            test::duskyfjord8::store::SurveyDb:
+              Relational
+              #{
+                survey.survey_programme:
+                  'programme_code,programme_name\n'+
+                  'FP-1,Fjord Plankton Watch\n';
+
+                survey.fjord_region:
+                  'region_name,programme_code\n'+
+                  'North Reach,FP-1\n';
+
+                survey.mooring_station:
+                  'station_id,station_code,station_name,region_name\n'+
+                  '1,MS-01,Outer Sill,North Reach\n'+
+                  '2,MS-02,Inner Basin,South Reach\n';
+
+                survey.plankton_tow:
+                  'tow_id,tow_code,vessel_id,station_id,net_count,depth_metres,tow_date,void_flag_int,review_flag_int,stage_int\n'+
+                  '11,tw-0011 ,1,1,10,5.00,2026-03-01,0,1,2\n'+
+                  '12,tw-0012 ,1,1,10,5.00,2026-03-02,0,1,2\n'+
+                  '13,tw-0013 ,1,1,10,5.00,2026-03-03,0,1,2\n'+
+                  '14,tw-0014 ,1,1,10,5.00,2026-03-04,0,1,2\n'+
+                  '15,tw-0015 ,1,1,10,5.00,2026-03-05,0,1,2\n'+
+                  '16,tw-0016 ,1,2,10,5.00,2026-03-06,0,1,2\n'+
+                  '17,tw-0017 ,1,2,10,5.00,2026-03-07,0,1,2\n'+
+                  '18,tw-0018 ,1,2,10,5.00,2026-03-08,0,1,2\n'+
+                  '19,tw-0019 ,1,2,10,5.00,2026-03-09,0,1,2\n';
+
+                survey.tow_catch:
+                  'catch_id,tow_id,taxon_code,individuals\n'+
+                  '1,11,TX-A11,0\n'+
+                  '2,12,TX-A12,300\n'+
+                  '3,12,TX-B12,250\n'+
+                  '4,13,TX-A13,210\n'+
+                  '5,14,TX-A14,10\n'+
+                  '6,14,TX-B14,10\n'+
+                  '7,14,TX-C14,10\n'+
+                  '8,14,TX-D14,10\n'+
+                  '9,14,TX-E14,10\n'+
+                  '10,14,TX-F14,10\n'+
+                  '11,15,TX-A15,150\n'+
+                  '12,15,TX-B15,100\n'+
+                  '13,16,TX-A16,40\n'+
+                  '14,16,TX-B16,30\n'+
+                  '15,17,TX-A17,30\n'+
+                  '16,18,TX-A18,8\n'+
+                  '17,18,TX-B18,7\n'+
+                  '18,19,TX-A19,3\n'+
+                  '19,19,TX-B19,4\n';
+              }#
+          ];
+          asserts:
+          [
+            everyBandArmAndTheFallback:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TowCode":"TW-0011","Taxa":1,"Total":0,"Peak":0,"Low":0,"Band":"EMPTY","Programme":"Fjord Plankton Watch"},{"TowCode":"TW-0012","Taxa":2,"Total":550,"Peak":300,"Low":250,"Band":"BLOOM","Programme":"Fjord Plankton Watch"},{"TowCode":"TW-0013","Taxa":1,"Total":210,"Peak":210,"Low":210,"Band":"SWARM","Programme":"Fjord Plankton Watch"},{"TowCode":"TW-0014","Taxa":6,"Total":60,"Peak":10,"Low":10,"Band":"DIVERSE","Programme":"Fjord Plankton Watch"},{"TowCode":"TW-0015","Taxa":2,"Total":250,"Peak":150,"Low":100,"Band":"DENSE","Programme":"Fjord Plankton Watch"},{"TowCode":"TW-0016","Taxa":2,"Total":70,"Peak":40,"Low":30,"Band":"MODERATE","Programme":null},{"TowCode":"TW-0017","Taxa":1,"Total":30,"Peak":30,"Low":30,"Band":"MONOCULTURE","Programme":null},{"TowCode":"TW-0018","Taxa":2,"Total":15,"Peak":8,"Low":7,"Band":"SPARSE","Programme":null},{"TowCode":"TW-0019","Taxa":2,"Total":7,"Peak":4,"Low":3,"Band":null,"Programme":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

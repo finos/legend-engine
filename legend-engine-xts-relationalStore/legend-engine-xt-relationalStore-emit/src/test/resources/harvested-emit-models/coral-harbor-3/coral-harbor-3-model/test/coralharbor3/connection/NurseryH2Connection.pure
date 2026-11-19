@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::coralharbor3::connection::NurseryH2Connection
+{
+  store: test::coralharbor3::store::NurseryDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists nursery;',
+      'create schema nursery;',
+      'create table nursery.plant_batch (batch_id integer not null, batch_code varchar(20) not null, cultivar varchar(80) not null, sown_on date not null, stage_code varchar(8) not null, irrigation_code varchar(8) not null, bench_code varchar(20) not null, propagator varchar(80) not null, potted_on date not null, tray_count integer not null, height_cm double not null, medium_code varchar(20) not null, house_code varchar(20) not null, seed_lot varchar(20) not null, germination_rate double not null, hardened_on date not null, label_note varchar(120) not null, bus_from_z date, bus_thru_z date);'
+      ];
+  };
+  auth: DefaultH2;
+}

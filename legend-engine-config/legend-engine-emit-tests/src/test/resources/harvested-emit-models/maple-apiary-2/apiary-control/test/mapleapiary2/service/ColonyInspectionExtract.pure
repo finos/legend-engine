@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::mapleapiary2::service::ColonyInspectionExtract
+{
+  pattern: '/apiary/v1/colony-inspections/{fromDate}/{toDate}';
+  title: 'Apiary Control - Colony Inspection Extract';
+  owners:
+  [
+    'apiary-control-platform',
+    'hive-observation-eng'
+  ];
+  documentation: 'Mandatory date-range extract over colony inspection events, projecting the care-band conditional, the four-hop keeper region path, an extraction-join forage label and two document paths deserialised from semi-structured columns.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1]|demo::mapleapiary2::domain::ColonyInspectionReport.all()->filter(
+      r|($r.recordedOn >= $fromDate) && ($r.recordedOn <= $toDate) && $r.workItemRef->isNotEmpty()
+    )->project(
+      [
+        r|$r.eventRef,
+        r|$r.colonyRef,
+        r|$r.workItemRef,
+        r|$r.apiarySite,
+        r|$r.inspectionStatus,
+        r|$r.completionState,
+        r|$r.severityScore,
+        r|$r.careBand,
+        r|$r.broodTag,
+        r|$r.recordedOn,
+        r|$r.frameCount,
+        r|$r.regionLabel,
+        r|$r.forageLabel,
+        r|$r.keeperData.keeperHandle,
+        r|$r.inspectionPayload.frameNote,
+        r|$r.recordedLabel,
+        r|$r.reportLink,
+        r|$r.latestVersion,
+        r|$r.commentText
+      ],
+      [
+        'Event Reference',
+        'Colony Reference',
+        'Work Item Reference',
+        'Apiary Site',
+        'Inspection Status',
+        'Completion State',
+        'Severity Score',
+        'Care Band',
+        'Brood Tag',
+        'Recorded On',
+        'Frame Count',
+        'Region Label',
+        'Forage Label',
+        'Keeper Handle',
+        'Frame Note',
+        'Recorded Label',
+        'Report Link',
+        'Latest Version',
+        'Comment Text'
+      ]
+    )->sort(
+      [
+        asc('Event Reference')
+      ]
+    )};
+    mapping: demo::mapleapiary2::mapping::ApiaryMapping;
+    runtime: demo::mapleapiary2::runtime::ApiaryProductionRuntime;
+  }
+  testSuites:
+  [
+    inspectionExtractSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          productionConnection:
+            Relational
+            #{
+              HIVE_EVENT.COLONY_EVENT_ALL_VERSIONS:
+                'EVENT_REF,EVENT_VERSION,COLONY_REF,WORK_ITEM_REF,APIARY_SITE,INSPECTION_STATUS,COMPLETION_STATE,SEVERITY_SCORE,BROOD_PATTERN,FRAME_COUNT,RECORDED_ON,RECORDED_AT,KEEPER_DATA,SYSTEM_DATA,RAW_CONTENT,INSPECTION_PAYLOAD,BATCH_IN_ID,BATCH_OUT_ID,SOURCE_PARTITION,IS_WITHDRAWN\n'+
+                'CE-101,1,COL-11,WI-101,Meadow Ridge,OPEN,NEW,9,SOLID,12,2024-03-01,2024-03-01T08:15:00,{"keeperHandle":"keeper.ada"},{"sourceApp":"hive-tablet"},,,41,,p01,N\n'+
+                'CE-102,1,COL-12,WI-102,Meadow Ridge,OPEN,NEW,6,Patchy,10,2024-03-02,2024-03-02T08:15:00,,,,{"frameNote":"solid brood"},41,,p01,N\n'+
+                'CE-103,1,COL-13,WI-103,Willow Bend,OPEN,NEW,2,,9,2024-03-03,2024-03-03T08:15:00,,,,{"forageRef":"FOR-9"},41,,p01,N\n'+
+                'CE-104,1,COL-14,WI-104,Willow Bend,PENDING,AWAITING_KEEPER,4,,8,2024-03-04,2024-03-04T08:15:00,,,,,41,,p01,N\n'+
+                'CE-105,1,COL-15,WI-105,Clover Flat,PENDING,NEW,3,,7,2024-03-05,2024-03-05T08:15:00,,,,,41,,p01,N\n'+
+                'CE-106,1,COL-16,WI-106,Clover Flat,CLOSED,RESOLVED,1,,6,2024-03-06,2024-03-06T08:15:00,,,,,41,,p01,N\n'+
+                'CE-107,1,COL-17,WI-107,Clover Flat,CLOSED,WITHDRAWN,1,,5,2024-03-07,2024-03-07T08:15:00,,,,,41,,p01,N\n'+
+                'CE-108,1,COL-18,WI-108,Heather Row,SUPERSEDED,NEW,2,,4,2024-03-08,2024-03-08T08:15:00,,,,,41,,p01,N\n'+
+                'CE-109,1,COL-19,WI-109,Heather Row,ARCHIVED,NEW,,,3,2024-03-09,2024-03-09T08:15:00,,,,,41,,p01,N\n'+
+                'CE-110,1,COL-20,WI-110,Northern Rise,OPEN,NEW,7,SOLID,13,2024-02-20,2024-02-20T08:15:00,{"keeperHandle":"keeper.rowan"},,,{"forageRef":"FOR-1"},41,,p01,N\n'+
+                'CE-110,2,COL-20,WI-110,Northern Rise,OPEN,NEW,9,SOLID,14,2024-03-10,2024-03-10T08:15:00,{"keeperHandle":"keeper.rowan"},,,{"forageRef":"FOR-1"},42,,p01,N\n'+
+                'CE-111,1,COL-21,WI-111,Northern Rise,OPEN,NEW,9,SOLID,15,2024-02-25,2024-02-25T08:15:00,,,,,41,,p01,N\n'+
+                'CE-112,1,COL-22,,Northern Rise,OPEN,NEW,9,SOLID,16,2024-03-05,2024-03-05T08:15:00,,,,,41,,p01,N\n';
+
+              HIVE_EVENT.FORAGE_EXTENSION:
+                'FORAGE_REF,FORAGE_LABEL\n'+
+                'FOR-1,Clover Meadow\n';
+
+              WORK_ITEM.TASK_COMMENT:
+                'COMMENT_REF,WORK_ITEM_REF,COMMENT_TEXT\n'+
+                'CM-1,WI-110,requeen scheduled\n';
+
+              WORK_ITEM.TASK_VERSION:
+                'WORK_ITEM_REF,TASK_VERSION_NO,ASSIGNEE_HANDLE,TASK_STATE,IS_WITHDRAWN\n'+
+                'WI-101,1,keeper.ada,ACTIVE,Y\n'+
+                'WI-102,1,keeper.unlisted,ACTIVE,N\n'+
+                'WI-110,1,keeper.rowan,ACTIVE,N\n';
+
+              PRESENTATION.KEEPER_DIRECTORY:
+                'KEEPER_HANDLE,KEEPER_NAME,TEAM_CODE\n'+
+                'keeper.ada,Ada Fielder,TEAM-N\n'+
+                'keeper.rowan,Rowan Combe,TEAM-N\n';
+
+              PRESENTATION.KEEPER_TEAM:
+                'TEAM_CODE,TEAM_LABEL,REGION_CODE\n'+
+                'TEAM-N,Northern Keepers,REG-N\n';
+
+              PRESENTATION.APIARY_REGION:
+                'REGION_CODE,REGION_LABEL\n'+
+                'REG-N,Northern Meadows\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        marchWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2024-03-01,
+            toDate = %2024-03-10
+          ]
+          asserts:
+          [
+            tenScenarioRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {"Event Reference":"CE-101","Colony Reference":"COL-11","Work Item Reference":"WI-101","Apiary Site":"Meadow Ridge","Inspection Status":"OPEN","Completion State":"NEW","Severity Score":9,"Care Band":"CRITICAL-OPEN","Brood Tag":"dense-brood","Recorded On":"2024-03-01","Frame Count":12,"Region Label":null,"Forage Label":null,"Keeper Handle":"keeper.ada","Frame Note":null,"Recorded Label":"2024-03-01","Report Link":"apiary/colony/COL-11","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-102","Colony Reference":"COL-12","Work Item Reference":"WI-102","Apiary Site":"Meadow Ridge","Inspection Status":"OPEN","Completion State":"NEW","Severity Score":6,"Care Band":"MAJOR-OPEN","Brood Tag":"patchy","Recorded On":"2024-03-02","Frame Count":10,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":"solid brood","Recorded Label":"2024-03-02","Report Link":"apiary/colony/COL-12","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-103","Colony Reference":"COL-13","Work Item Reference":"WI-103","Apiary Site":"Willow Bend","Inspection Status":"OPEN","Completion State":"NEW","Severity Score":2,"Care Band":"ROUTINE-OPEN","Brood Tag":"unrecorded","Recorded On":"2024-03-03","Frame Count":9,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":null,"Recorded Label":"2024-03-03","Report Link":"apiary/colony/COL-13","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-104","Colony Reference":"COL-14","Work Item Reference":"WI-104","Apiary Site":"Willow Bend","Inspection Status":"PENDING","Completion State":"AWAITING_KEEPER","Severity Score":4,"Care Band":"BLOCKED-KEEPER","Brood Tag":"unrecorded","Recorded On":"2024-03-04","Frame Count":8,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":null,"Recorded Label":"2024-03-04","Report Link":"apiary/colony/COL-14","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-105","Colony Reference":"COL-15","Work Item Reference":"WI-105","Apiary Site":"Clover Flat","Inspection Status":"PENDING","Completion State":"NEW","Severity Score":3,"Care Band":"PENDING-REVIEW","Brood Tag":"unrecorded","Recorded On":"2024-03-05","Frame Count":7,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":null,"Recorded Label":"2024-03-05","Report Link":"apiary/colony/COL-15","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-106","Colony Reference":"COL-16","Work Item Reference":"WI-106","Apiary Site":"Clover Flat","Inspection Status":"CLOSED","Completion State":"RESOLVED","Severity Score":1,"Care Band":"RESOLVED-CLOSED","Brood Tag":"unrecorded","Recorded On":"2024-03-06","Frame Count":6,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":null,"Recorded Label":"2024-03-06","Report Link":"apiary/colony/COL-16","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-107","Colony Reference":"COL-17","Work Item Reference":"WI-107","Apiary Site":"Clover Flat","Inspection Status":"CLOSED","Completion State":"WITHDRAWN","Severity Score":1,"Care Band":"WITHDRAWN-CLOSED","Brood Tag":"unrecorded","Recorded On":"2024-03-07","Frame Count":5,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":null,"Recorded Label":"2024-03-07","Report Link":"apiary/colony/COL-17","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-108","Colony Reference":"COL-18","Work Item Reference":"WI-108","Apiary Site":"Heather Row","Inspection Status":"SUPERSEDED","Completion State":"NEW","Severity Score":2,"Care Band":"SUPERSEDED-EVENT","Brood Tag":"unrecorded","Recorded On":"2024-03-08","Frame Count":4,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":null,"Recorded Label":"2024-03-08","Report Link":"apiary/colony/COL-18","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-109","Colony Reference":"COL-19","Work Item Reference":"WI-109","Apiary Site":"Heather Row","Inspection Status":"ARCHIVED","Completion State":"NEW","Severity Score":null,"Care Band":null,"Brood Tag":"unrecorded","Recorded On":"2024-03-09","Frame Count":3,"Region Label":null,"Forage Label":null,"Keeper Handle":null,"Frame Note":null,"Recorded Label":"2024-03-09","Report Link":"apiary/colony/COL-19","Latest Version":1,"Comment Text":null}, {"Event Reference":"CE-110","Colony Reference":"COL-20","Work Item Reference":"WI-110","Apiary Site":"Northern Rise","Inspection Status":"OPEN","Completion State":"NEW","Severity Score":9,"Care Band":"CRITICAL-OPEN","Brood Tag":"dense-brood","Recorded On":"2024-03-10","Frame Count":14,"Region Label":"Northern Meadows","Forage Label":"Clover Meadow","Keeper Handle":"keeper.rowan","Frame Note":null,"Recorded Label":"2024-03-10","Report Link":"apiary/colony/COL-20","Latest Version":2,"Comment Text":"requeen scheduled"} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

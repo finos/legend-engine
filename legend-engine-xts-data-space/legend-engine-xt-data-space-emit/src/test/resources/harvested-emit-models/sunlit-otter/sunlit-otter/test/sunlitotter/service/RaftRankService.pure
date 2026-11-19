@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sunlitotter::service::RaftRankService
+{
+  pattern: '/sunlitotter/v1/rafts/{minPups}';
+  title: 'Otter Raft Rank by Catchment';
+  owners:
+  [
+    'otter-survey-network'
+  ];
+  documentation: 'Ranks tagged otter rafts by observed group size within each catchment, projecting eight columns including the derived group size and appending the partitioned ranking, so the plan evaluates an ordered window over the alias-qualified join result.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minPups: Integer[1]|test::sunlitotter::domain::OtterRaft.all()->filter(
+      r|($r.pupTally >= $minPups) && $r.telemetryTagged
+    )->project(
+      [
+        col(
+          x|$x.reach.catchment,
+          'Catchment'
+        ),
+        col(
+          x|$x.reach.surveyYear,
+          'SurveyYear'
+        ),
+        col(
+          x|$x.raftCode,
+          'Raft'
+        ),
+        col(
+          x|$x.reach.reachName,
+          'Reach'
+        ),
+        col(
+          x|$x.pupTally,
+          'Pups'
+        ),
+        col(
+          x|$x.adultTally,
+          'Adults'
+        ),
+        col(
+          x|$x.groupSize(),
+          'GroupSize'
+        ),
+        col(
+          x|$x.waterClarityM,
+          'ClarityM'
+        )
+      ]
+    )->olapGroupBy(
+      ['Catchment'],
+      desc('GroupSize'),
+      y|$y->rank(),
+      'GroupRank'
+    )->sort(
+      [
+        asc('Catchment'),
+        asc('GroupRank'),
+        asc('Raft')
+      ]
+    )};
+    mapping: test::sunlitotter::mapping::OtterMapping;
+    runtime: test::sunlitotter::runtime::OtterRuntime;
+  }
+  testSuites:
+  [
+    raftRankSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          otterConnection:
+            Relational
+            #{
+              otter.river_reach:
+                'reach_code,survey_year,reach_name,catchment,protected_site\n'+
+                'RR-01,2025,Alder Bend,Northfold,true\n'+
+                'RR-02,2025,Willow Spit,Northfold,false\n'+
+                'RR-03,2025,Heron Chute,Southfold,true\n'+
+                'RR-04,2025,Otter Steps,Eastfold,true\n';
+              otter.otter_raft:
+                'raft_code,sighted_on,reach_code,survey_year,pup_tally,adult_tally,water_clarity_m,fish_density,observer_grade,telemetry_tagged\n'+
+                'OR-01,2025-04-02,RR-01,2025,3,4,1.8,10.250,LEAD,true\n'+
+                'OR-02,2025-04-03,RR-02,2025,2,5,2.1,9.500,LEAD,true\n'+
+                'OR-03,2025-04-04,RR-01,2025,1,2,0.9,8.750,RELIEF,true\n'+
+                'OR-04,2025-05-01,RR-03,2025,4,6,2.4,12.000,LEAD,true\n'+
+                'OR-05,2025-05-02,RR-04,2025,5,1,1.2,7.500,RELIEF,true\n'+
+                'OR-06,2025-05-03,RR-03,2025,0,3,1.1,6.250,RELIEF,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        tiedAndSingletonPartitions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minPups = 1
+          ]
+          asserts:
+          [
+            ranksAcrossPartitions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Catchment":"Eastfold","SurveyYear":2025,"Raft":"OR-05","Reach":"Otter Steps","Pups":5,"Adults":1,"GroupSize":6,"ClarityM":1.2,"GroupRank":1},{"Catchment":"Northfold","SurveyYear":2025,"Raft":"OR-01","Reach":"Alder Bend","Pups":3,"Adults":4,"GroupSize":7,"ClarityM":1.8,"GroupRank":1},{"Catchment":"Northfold","SurveyYear":2025,"Raft":"OR-02","Reach":"Willow Spit","Pups":2,"Adults":5,"GroupSize":7,"ClarityM":2.1,"GroupRank":1},{"Catchment":"Northfold","SurveyYear":2025,"Raft":"OR-03","Reach":"Alder Bend","Pups":1,"Adults":2,"GroupSize":3,"ClarityM":0.9,"GroupRank":3},{"Catchment":"Southfold","SurveyYear":2025,"Raft":"OR-04","Reach":"Heron Chute","Pups":4,"Adults":6,"GroupSize":10,"ClarityM":2.4,"GroupRank":1}]';
+                  }#;
+              }#
+          ]
+        },
+        thresholdSelectsNoRafts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minPups = 99
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

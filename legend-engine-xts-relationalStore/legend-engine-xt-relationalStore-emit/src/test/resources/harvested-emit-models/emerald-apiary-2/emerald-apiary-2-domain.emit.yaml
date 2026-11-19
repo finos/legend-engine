@@ -1,0 +1,18 @@
+name: emerald-apiary-2-domain
+title: "Emerald Apiary 2 - shared inspection domain"
+description: |
+  Shared apiary, colony and hive-inspection classes for the relational
+  inspection register.
+modelSources:
+  model:
+    root: emerald-apiary-2-domain
+    files:
+      - test/emeraldapiary2/domain/ApiaryDomain.pure
+features:
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - apiary
+  - domain
+  - shared

@@ -1,0 +1,184 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldcove::mapping::CoveMapping
+(
+  *test::emeraldcove::domain::RockpoolWalk[walk]: Relational
+  {
+    ~filter [test::emeraldcove::store::CoveDB]@Walk_Pool | [test::emeraldcove::store::CoveDB]OpenPools
+    ~primaryKey
+    (
+      [test::emeraldcove::store::CoveDB]cove.rockpool_walk.walk_id
+    )
+    ~mainTable [test::emeraldcove::store::CoveDB]cove.rockpool_walk
+    walkId: [test::emeraldcove::store::CoveDB]cove.rockpool_walk.walk_id,
+    walkName: [test::emeraldcove::store::CoveDB]cove.rockpool_walk.walk_name,
+    poolName: [test::emeraldcove::store::CoveDB]@Walk_Pool | [test::emeraldcove::store::CoveDB]cove.tide_pool.pool_name,
+    shoreLabel: [test::emeraldcove::store::CoveDB]@Walk_Pool > @Pool_Shore | [test::emeraldcove::store::CoveDB]cove.shore_section.shore_label,
+    marker
+    (
+      markerCode: [test::emeraldcove::store::CoveDB]cove.rockpool_walk.marker_code,
+      markerLabel: toUpper(concat([test::emeraldcove::store::CoveDB]cove.rockpool_walk.marker_label, ''))
+    ),
+    guide
+    (
+      guideId: [test::emeraldcove::store::CoveDB]@Walk_Guide | [test::emeraldcove::store::CoveDB]cove.walk_guide.guide_id,
+      guideName: [test::emeraldcove::store::CoveDB]@Walk_Guide | [test::emeraldcove::store::CoveDB]cove.walk_guide.guide_name
+    ) Otherwise ( [guideSet]: [test::emeraldcove::store::CoveDB]@Walk_Guide )
+  }
+
+  test::emeraldcove::domain::WalkGuide[guideSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldcove::store::CoveDB]cove.walk_guide.guide_id
+    )
+    ~mainTable [test::emeraldcove::store::CoveDB]cove.walk_guide
+    guideId: [test::emeraldcove::store::CoveDB]cove.walk_guide.guide_id,
+    guideName: [test::emeraldcove::store::CoveDB]cove.walk_guide.guide_name
+  }
+
+  *test::emeraldcove::domain::TidePool[pool]: Relational
+  {
+    ~filter [test::emeraldcove::store::CoveDB]OpenPools
+    ~primaryKey
+    (
+      [test::emeraldcove::store::CoveDB]cove.tide_pool.pool_id
+    )
+    ~mainTable [test::emeraldcove::store::CoveDB]cove.tide_pool
+    poolId: [test::emeraldcove::store::CoveDB]cove.tide_pool.pool_id,
+    poolName: [test::emeraldcove::store::CoveDB]cove.tide_pool.pool_name,
+    shoreLabel: [test::emeraldcove::store::CoveDB]@Pool_Shore | [test::emeraldcove::store::CoveDB]cove.shore_section.shore_label
+  }
+
+  testSuites:
+  [
+    walkSuite:
+    {
+      function: |test::emeraldcove::domain::RockpoolWalk.all()->project(
+        [
+          w|$w.walkId,
+          w|$w.poolName,
+          w|$w.shoreLabel,
+          w|$w.marker.markerLabel,
+          w|$w.guide.guideName
+        ],
+        [
+          'WalkId',
+          'PoolName',
+          'ShoreLabel',
+          'MarkerLabel',
+          'GuideName'
+        ]
+      )->sort([asc('WalkId')]);
+      tests:
+      [
+        multiHopShoreAndAbsentGuide:
+        {
+          doc: 'A walk whose two-hop pool-then-shore path is fully populated, a walk carrying no guide key at all so the otherwise branch leaves the embedded guide empty, and a walk routed through a closed pool so the join-reached access filter drops it.';
+          data:
+          [
+            test::emeraldcove::store::CoveDB:
+              Relational
+              #{
+                cove.rockpool_walk:
+                  'walk_id,walk_name,pool_id,guide_id,marker_code,marker_label,walk_state\n'+
+                  'WK-01,Sea Fern Ledge Walk,TP-1,GD-1,MK-A,sea fern ledge,OPEN\n'+
+                  'WK-02,Barnacle Ridge Walk,TP-2,,MK-B,barnacle ridge,OPEN\n'+
+                  'WK-03,Storm Pool Walk,TP-3,GD-2,MK-C,storm pool cut,OPEN\n';
+
+                cove.tide_pool:
+                  'pool_id,pool_name,shore_id,access_code\n'+
+                  'TP-1,Sea Fern Pool,SH-1,OPEN\n'+
+                  'TP-2,Barnacle Pool,SH-2,OPEN\n'+
+                  'TP-3,Storm Pool,SH-1,CLOSED\n';
+
+                cove.shore_section:
+                  'shore_id,shore_label,exposure_code\n'+
+                  'SH-1,Emerald Ledge,SHELTERED\n'+
+                  'SH-2,Gull Steps,EXPOSED\n';
+
+                cove.walk_guide:
+                  'guide_id,guide_name,guide_grade\n'+
+                  'GD-1,Fern Ledge Guide,LEAD\n'+
+                  'GD-2,Storm Cut Guide,ASSIST\n';
+              }#
+          ];
+          asserts:
+          [
+            walkRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"WalkId":"WK-01","PoolName":"Sea Fern Pool","ShoreLabel":"Emerald Ledge","MarkerLabel":"SEA FERN LEDGE","GuideName":"Fern Ledge Guide"},{"WalkId":"WK-02","PoolName":"Barnacle Pool","ShoreLabel":"Gull Steps","MarkerLabel":"BARNACLE RIDGE","GuideName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    poolSuite:
+    {
+      function: |test::emeraldcove::domain::TidePool.all()->project(
+        [
+          p|$p.poolId,
+          p|$p.shoreLabel
+        ],
+        [
+          'PoolId',
+          'ShoreLabel'
+        ]
+      )->sort([asc('PoolId')]);
+      tests:
+      [
+        openPoolsOnly:
+        {
+          doc: 'The single-table access filter keeps only the open pools, and each surviving pool reads its shore label through the one-hop shore join.';
+          data:
+          [
+            test::emeraldcove::store::CoveDB:
+              Relational
+              #{
+                cove.tide_pool:
+                  'pool_id,pool_name,shore_id,access_code\n'+
+                  'TP-1,Sea Fern Pool,SH-1,OPEN\n'+
+                  'TP-3,Storm Pool,SH-1,CLOSED\n';
+
+                cove.shore_section:
+                  'shore_id,shore_label,exposure_code\n'+
+                  'SH-1,Emerald Ledge,SHELTERED\n';
+              }#
+          ];
+          asserts:
+          [
+            poolRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PoolId":"TP-1","ShoreLabel":"Emerald Ledge"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

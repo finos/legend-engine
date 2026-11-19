@@ -1,0 +1,250 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfulorchard2::service::GraftRosterService
+{
+  pattern: '/grove/v1/graft-runs';
+  title: 'Grove - Graft run roster';
+  owners:
+  [
+    'grove-register',
+    'graft-workshop'
+  ];
+  documentation: 'De-duplicates and truncates the graft run roster at a supplied processing point in time after restricting it to runs above a supplied canopy span.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minSpan: Float[1]|test::wistfulorchard2::domain::GraftRun.all($asOf)->filter(
+      g|$g.canopySpanCm > $minSpan
+    )->project(
+      [
+        x|$x.recordCode,
+        x|$x.runName,
+        x|$x.wellTended(),
+        x|$x.compactRun()
+      ],
+      [
+        'RecordCode',
+        'RunName',
+        'WellTended',
+        'CompactRun'
+      ]
+    )->distinct()->sort(
+      [
+        asc('RecordCode')
+      ]
+    )->limit(5)};
+    mapping: test::wistfulorchard2::mapping::GraftMapping;
+    runtime: test::wistfulorchard2::runtime::GroveRegisterRuntime;
+  }
+  testSuites:
+  [
+    graftRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          groveConnection: Reference
+            #{
+              test::wistfulorchard2::data::GraftTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        widestRunsOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2031-06-01,
+            minSpan = 30.0
+          ]
+          asserts:
+          [
+            rosterRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RecordCode":"RUN-1","RunName":"QUINCE CORDON","WellTended":true,"CompactRun":false},{"RecordCode":"RUN-10","RunName":"SOUTH ROW","WellTended":true,"CompactRun":false},{"RecordCode":"RUN-12","RunName":"SHALLOW BAR","WellTended":false,"CompactRun":false},{"RecordCode":"RUN-2","RunName":"APPLE ESPALIER","WellTended":true,"CompactRun":true},{"RecordCode":"RUN-3","RunName":"PEAR FAN","WellTended":false,"CompactRun":false}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::wistfulorchard2::service::PlotSpanService
+{
+  pattern: '/grove/v1/plots/span';
+  title: 'Grove - Plot canopy span ranking';
+  owners:
+  [
+    'grove-register',
+    'graft-workshop'
+  ];
+  documentation: 'Totals the canopy span of the banded graft runs of each grove plot and ranks the plots by that total over an unpartitioned window.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::wistfulorchard2::domain::GraftRun.all(%2031-06-01)->filter(
+      g|$g.bandKnown == 'known'
+    )->groupBy(
+      [
+        g|$g.plotName
+      ],
+      [
+        agg(
+          g|$g.canopySpanCm,
+          v|$v->sum()
+        )
+      ],
+      [
+        'PlotName',
+        'TotalSpan'
+      ]
+    )->olapGroupBy(
+      [],
+      desc('TotalSpan'),
+      y|$y->denseRank(),
+      'SpanRank'
+    )->sort(
+      [
+        asc('PlotName')
+      ]
+    )};
+    mapping: test::wistfulorchard2::mapping::GraftMapping;
+    runtime: test::wistfulorchard2::runtime::GroveRegisterRuntime;
+  }
+}
+
+Service test::wistfulorchard2::service::WidestRunPerPlotService
+{
+  pattern: '/grove/v1/plots/widest-run';
+  title: 'Grove - Widest graft run of each plot';
+  owners:
+  [
+    'grove-register',
+    'graft-workshop'
+  ];
+  documentation: 'Ranks the graft runs of each grove plot by canopy span over a partitioned window and keeps only the widest run of every plot.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::wistfulorchard2::domain::GraftRun.all(%2031-06-01)->project(
+      [
+        x|$x.recordCode,
+        x|$x.plotName,
+        x|$x.canopySpanCm
+      ],
+      [
+        'RecordCode',
+        'PlotName',
+        'SpanCm'
+      ]
+    )->olapGroupBy(
+      [
+        'PlotName'
+      ],
+      desc('SpanCm'),
+      y|$y->denseRank(),
+      'SpanRank'
+    )->filter(
+      r|$r.getInteger('SpanRank') == 1
+    )->sort(
+      [
+        asc('PlotName')
+      ]
+    )};
+    mapping: test::wistfulorchard2::mapping::GraftMapping;
+    runtime: test::wistfulorchard2::runtime::GroveRegisterRuntime;
+  }
+}
+
+Service test::wistfulorchard2::service::JournalWindowService
+{
+  pattern: '/grove/v1/journals/window';
+  title: 'Grove - Graft journal day window';
+  owners:
+  [
+    'grove-register',
+    'graft-workshop'
+  ];
+  documentation: 'Keeps the grafting journals recorded within the sixty days before a supplied reporting day and reports their tended hours.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfulorchard2::domain::GroveJournal.all()->filter(
+      j|($j.journalDate >= $asOf->adjust(-60, meta::pure::functions::date::DurationUnit.DAYS)) && ($j.journalDate <= $asOf)
+    )->project(
+      [
+        x|$x.recordCode,
+        x|$x.journalHours,
+        x|$x.trayMass
+      ],
+      [
+        'RecordCode',
+        'JournalHours',
+        'TrayMass'
+      ]
+    )->sort(
+      [
+        asc('RecordCode')
+      ]
+    )};
+    mapping: test::wistfulorchard2::mapping::GraftMapping;
+    runtime: test::wistfulorchard2::runtime::GroveRegisterRuntime;
+  }
+}
+
+Service test::wistfulorchard2::service::TendedRunAuditService
+{
+  pattern: '/grove/v1/graft-runs/tended';
+  title: 'Grove - Tended graft run audit';
+  owners:
+  [
+    'grove-register',
+    'graft-workshop'
+  ];
+  documentation: 'Narrows the graft run register through a deeply nested chain of label, band, name, span and season conditions so only fully tended in-season runs survive.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::wistfulorchard2::domain::GraftRun.all(%2031-06-01)->filter(
+      g|$g.journalTag->isNotEmpty() && (($g.bandKnown == 'known') && (!($g.loadLabel->in(['unweighed', 'untagged'])) && (!($g.runName->startsWith('MYSTERY')) && (($g.scionCount <= 8) && (($g.weightLabel == 'heavy') && (!($g.noteLabel->startsWith('un')) && (!($g.gradeLabel->contains('UNGRADED')) && ($g.seasonFlag->toOne() == 'IN_SEASON'))))))))
+    )->project(
+      [
+        x|$x.recordCode,
+        x|$x.noteLabel
+      ],
+      [
+        'RecordCode',
+        'NoteLabel'
+      ]
+    )->distinct()->sort(
+      [
+        asc('RecordCode')
+      ]
+    )};
+    mapping: test::wistfulorchard2::mapping::GraftMapping;
+    runtime: test::wistfulorchard2::runtime::GroveRegisterRuntime;
+  }
+}

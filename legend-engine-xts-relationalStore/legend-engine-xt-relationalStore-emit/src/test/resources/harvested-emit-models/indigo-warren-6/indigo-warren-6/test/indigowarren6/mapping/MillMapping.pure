@@ -1,0 +1,192 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigowarren6::mapping::MillMapping
+(
+  *test::indigowarren6::domain::Millstone[millstone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowarren6::store::MillDb]milling.millstone.stone_id
+    )
+    ~mainTable [test::indigowarren6::store::MillDb]milling.millstone
+    stoneCode: [test::indigowarren6::store::MillDb]milling.millstone.stone_code,
+    stoneName: [test::indigowarren6::store::MillDb]milling.millstone.stone_name,
+    furrowCount: [test::indigowarren6::store::MillDb]milling.millstone.furrow_count,
+    dressedOn: [test::indigowarren6::store::MillDb]milling.millstone.dressed_on,
+    gritLabel: case(
+                 equal([test::indigowarren6::store::MillDb]milling.millstone.grit_code, 'F'),
+                 'FINE',
+                 case(
+                   equal([test::indigowarren6::store::MillDb]milling.millstone.grit_code, 'M'),
+                   'MEDIUM',
+                   'COARSE'
+                 )
+               ),
+    dressingNote: case(
+                    greaterThanEqual([test::indigowarren6::store::MillDb]milling.millstone.furrow_count, 16),
+                    concat('FULL DRESS-', toUpper([test::indigowarren6::store::MillDb]milling.millstone.stone_name)),
+                    case(
+                      greaterThanEqual([test::indigowarren6::store::MillDb]milling.millstone.furrow_count, 10),
+                      'HALF DRESS',
+                      case(
+                        equal([test::indigowarren6::store::MillDb]milling.millstone.grit_code, 'C'),
+                        'GRIT CHECK',
+                        'LEAVE STANDING'
+                      )
+                    )
+                  ),
+    siteName: [test::indigowarren6::store::MillDb]@Stone_Site | [test::indigowarren6::store::MillDb]milling.mill_site.site_name,
+    countyName: [test::indigowarren6::store::MillDb]@Stone_Site > @Site_Parish | [test::indigowarren6::store::MillDb]milling.mill_parish.county_name,
+    sackTotal: [test::indigowarren6::store::MillDb]@Stone_RunView | [test::indigowarren6::store::MillDb]milling.stone_run_vw.sackTotal,
+    runTally: [test::indigowarren6::store::MillDb]@Stone_RunView | [test::indigowarren6::store::MillDb]milling.stone_run_vw.runTally
+  }
+
+  *test::indigowarren6::domain::MillSite[millSite]: Relational
+  {
+    ~filter [test::indigowarren6::store::MillDb]WorkingSailFilter
+    ~primaryKey
+    (
+      [test::indigowarren6::store::MillDb]milling.mill_site.site_code
+    )
+    ~mainTable [test::indigowarren6::store::MillDb]milling.mill_site
+    siteCode: [test::indigowarren6::store::MillDb]milling.mill_site.site_code,
+    siteName: [test::indigowarren6::store::MillDb]milling.mill_site.site_name,
+    sailKind: [test::indigowarren6::store::MillDb]milling.mill_site.sail_kind,
+    parishName: [test::indigowarren6::store::MillDb]milling.mill_site.parish_name,
+    countyName: [test::indigowarren6::store::MillDb]@Site_Parish | [test::indigowarren6::store::MillDb]milling.mill_parish.county_name
+  }
+
+  *test::indigowarren6::domain::MillParish[millParish]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowarren6::store::MillDb]milling.mill_parish.parish_name
+    )
+    ~mainTable [test::indigowarren6::store::MillDb]milling.mill_parish
+    parishName: [test::indigowarren6::store::MillDb]milling.mill_parish.parish_name,
+    countyName: [test::indigowarren6::store::MillDb]milling.mill_parish.county_name
+  }
+
+  testSuites:
+  [
+    stoneDressingSuite:
+    {
+      function: |test::indigowarren6::domain::Millstone.all(%2026-06-01)->filter(
+  s|$s.gritLabel->in(['FINE', 'MEDIUM', 'COARSE'])
+)->project(
+  [
+    s|$s.stoneCode,
+    s|$s.stoneName,
+    s|$s.gritLabel,
+    s|$s.dressingNote,
+    s|$s.siteName,
+    s|$s.countyName,
+    s|$s.sackTotal,
+    s|$s.runTally
+  ],
+  [
+    'StoneCode',
+    'StoneName',
+    'GritLabel',
+    'DressingNote',
+    'SiteName',
+    'CountyName',
+    'SackTotal',
+    'RunTally'
+  ]
+)->sort(
+  [
+    asc('StoneCode')
+  ]
+);
+      tests:
+      [
+        everyGritArmAndTheRetiredStone:
+        {
+          doc: 'Every arm of the grit and dressing conditionals is claimed by a stone, the site hop and the two-hop county path are both walked, the grouped run view totals only the dry runs so the stone whose single run reads damp carries no totals at all, the stone standing in a parish the register does not publish carries no county, and the stone retired at the end of the previous year sits outside the business window and surfaces no row.';
+          data:
+          [
+            test::indigowarren6::store::MillDb: Reference
+              #{
+                test::indigowarren6::data::MillTestData
+              }#
+          ];
+          asserts:
+          [
+            stoneRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StoneCode":"MS-01","StoneName":"Upper Runner","GritLabel":"FINE","DressingNote":"FULL DRESS-UPPER RUNNER","SiteName":"Ridge Mill","CountyName":"Hollow County","SackTotal":30,"RunTally":2},{"StoneCode":"MS-02","StoneName":"Lower Bed","GritLabel":"MEDIUM","DressingNote":"HALF DRESS","SiteName":"Fen Mill","CountyName":"Marsh County","SackTotal":8,"RunTally":1},{"StoneCode":"MS-03","StoneName":"Spare Runner","GritLabel":"COARSE","DressingNote":"GRIT CHECK","SiteName":"Down Mill","CountyName":null,"SackTotal":null,"RunTally":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    workingSiteSuite:
+    {
+      function: |test::indigowarren6::domain::MillSite.all()->project(
+  [
+    s|$s.siteCode,
+    s|$s.siteName,
+    s|$s.sailKind,
+    s|$s.countyName
+  ],
+  [
+    'SiteCode',
+    'SiteName',
+    'SailKind',
+    'CountyName'
+  ]
+)->sort(
+  [
+    asc('SiteCode')
+  ]
+);
+      tests:
+      [
+        onlyTheWorkingSailKindsAreRead:
+        {
+          doc: 'The site relation is restricted by a filter whose sail kinds are a literal list, so the derelict mill is never read, and the site standing in an unpublished parish carries no county.';
+          data:
+          [
+            test::indigowarren6::store::MillDb: Reference
+              #{
+                test::indigowarren6::data::MillTestData
+              }#
+          ];
+          asserts:
+          [
+            siteRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SiteCode":"S-01","SiteName":"Ridge Mill","SailKind":"COMMON","CountyName":"Hollow County"},{"SiteCode":"S-02","SiteName":"Fen Mill","SailKind":"SPRING","CountyName":"Marsh County"},{"SiteCode":"S-03","SiteName":"Down Mill","SailKind":"PATENT","CountyName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

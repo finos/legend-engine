@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::verdantquarry3::service::FaceSurveyWindow
+{
+  pattern: '/quarry/v1/face-survey-window/{fromDate}/{toDate}/{regionCode}';
+  title: 'Verdant Quarry - Face Survey Window';
+  owners:
+  [
+    'quarry-survey-desk',
+    'quarry-geology'
+  ];
+  documentation: 'Selects quarry faces surveyed inside a closed date window whose owning site sits in the requested region, then bands the bench height through a three-level nested conditional so the projected band is computed rather than read. The predicate carries three operands over two comparison kinds and one joined equality.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1], regionCode: String[1]|test::verdantquarry3::domain::QuarryFace.all()->filter(
+      f|($f.surveyedOn >= $fromDate) && (($f.surveyedOn <= $toDate) && ($f.site.regionCode == $regionCode))
+    )->project(
+      [
+        f|$f.faceCode,
+        f|$f.faceName,
+        f|if($f.benchHeight >= 12, |'HIGH', |if($f.benchHeight >= 8, |'MEDIUM', |if($f.benchHeight >= 4, |'LOW', |'FLOOR')))
+      ],
+      [
+        'Face Code',
+        'Face Name',
+        'Bench Band'
+      ]
+    )->distinct()->sort([asc('Face Code')])};
+    mapping: test::verdantquarry3::mapping::QuarryMapping;
+    runtime: test::verdantquarry3::runtime::QuarryH2Runtime;
+  }
+  testSuites:
+  [
+    faceSurveyWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          quarryConnection:
+            Relational
+            #{
+              geology.quarry_site:
+                'quarry_code,quarry_name,region_code\n'+
+                'QS-01,Verdant Ridge Quarry,RG-NORTH\n'+
+                'QS-02,Slate Hollow Quarry,RG-SOUTH\n';
+
+              geology.quarry_face:
+                'face_code,face_name,quarry_code,bench_height,surveyed_on\n'+
+                'QF-01,North Bench,QS-01,14,2026-03-04\n'+
+                'QF-02,East Bench,QS-01,9,2026-05-20\n'+
+                'QF-03,South Bench,QS-02,6,2026-03-11\n'+
+                'QF-04,Lower Floor,QS-01,3,2026-08-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        northRegionInsideWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-03-01,
+            toDate = %2026-06-30,
+            regionCode = 'RG-NORTH'
+          ]
+          asserts:
+          [
+            bothBandsInsideTheWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Face Code":"QF-01","Face Name":"North Bench","Bench Band":"HIGH"},{"Face Code":"QF-02","Face Name":"East Bench","Bench Band":"MEDIUM"}]';
+                  }#;
+              }#
+          ]
+        },
+        southRegionTakesLowerBand:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-03-01,
+            toDate = %2026-06-30,
+            regionCode = 'RG-SOUTH'
+          ]
+          asserts:
+          [
+            onlyTheSouthFaceBandedLow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Face Code":"QF-03","Face Name":"South Bench","Bench Band":"LOW"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

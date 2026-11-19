@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::kindlycanyon::connection::CanyonTrailConnection
+{
+  store: test::kindlycanyon::store::CanyonTrailDB;
+  type: Snowflake;
+  timezone: 'UTC';
+  specification: Snowflake
+  {
+    name: 'CANYON_TRAIL_DB';
+    account: 'canyon_trail_account';
+    warehouse: 'CANYON_TRAIL_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'kindly_canyon_org';
+    role: 'CANYON_TRAIL_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'canyonTrailOauthKey';
+    scopeName: 'session:role:CANYON_TRAIL_READER';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::kindlycanyon::connection::CanyonVisitConnection
+{
+  store: test::kindlycanyon::store::CanyonVisitDB;
+  type: Snowflake;
+  timezone: 'UTC';
+  specification: Snowflake
+  {
+    name: 'CANYON_VISIT_DB';
+    account: 'canyon_visit_account';
+    warehouse: 'CANYON_VISIT_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    accountType: MultiTenant;
+    organization: 'kindly_canyon_org';
+    role: 'CANYON_VISIT_READER';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'canyonVisitOauthKey';
+    scopeName: 'session:role:CANYON_VISIT_READER';
+  };
+}

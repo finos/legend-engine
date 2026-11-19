@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedprairie2::mapping::PrairieCatalogMapping
+(
+  include mapping test::gildedprairie2::mapping::PrairieReferenceMapping
+  include mapping test::gildedprairie2::mapping::PrairieSurveyMapping
+
+  test::gildedprairie2::domain::Region_Plots: Relational
+  {
+    AssociationMapping
+    (
+      plots[region_set, plot_set]: [test::gildedprairie2::store::PrairieAllDB]@Plot_Region,
+      region[plot_set, region_set]: [test::gildedprairie2::store::PrairieAllDB]@Plot_Region
+    )
+  }
+
+  testSuites:
+  [
+    plotRegisterSuite:
+    {
+      function: |test::gildedprairie2::domain::Plot.all(%2024-06-01T00:00:00)->project(
+        [
+          p|$p.plotCode,
+          p|$p.plotName,
+          p|$p.regionName,
+          p|$p.plotAreaM2
+        ],
+        [
+          'PlotCode',
+          'PlotName',
+          'RegionName',
+          'AreaM2'
+        ]
+      )->sort([asc('PlotCode')]);
+      tests:
+      [
+        joinedRegionAndTemporalWindow:
+        {
+          doc: 'Covers a plot whose region row is effective at the requested instant, a plot whose region key has no match on the far side of the join and so resolves the joined name as null, a plot version closed before the instant and a plot version opened after it.';
+          data:
+          [
+            test::gildedprairie2::store::PrairieAllDB:
+              Relational
+              #{
+                prairie_plot.plot:
+                  'plot_code,plot_name,region_code,established_on,plot_area_m2,in_z,out_z\n'+
+                  'PL-01,North Ridge Sward,RG-01,2019-04-01,2400.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  'PL-02,Creek Bend Sward,RG-99,2020-05-01,1800.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  'PL-03,Stone Flat Sward,RG-01,2018-03-01,900.0,2018-01-01 00:00:00,2019-01-01 00:00:00\n'+
+                  'PL-04,Far Terrace Sward,RG-01,2025-01-01,1200.0,2025-01-01 00:00:00,9999-12-31 00:00:00\n';
+                prairie_ref.region_ref:
+                  'region_code,region_name,steward_code,hectares,in_z,out_z\n'+
+                  'RG-01,Tallgrass North,ST-01,412.50,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            plotRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-01","PlotName":"North Ridge Sward","RegionName":"Tallgrass North","AreaM2":2400.0},{"PlotCode":"PL-02","PlotName":"Creek Bend Sward","RegionName":null,"AreaM2":1800.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    speciesCountSuite:
+    {
+      function: |test::gildedprairie2::domain::SpeciesCount.all(%2024-06-01T00:00:00)->project(
+        [
+          c|$c.countCode,
+          c|$c.speciesName,
+          c|$c.stemCount,
+          c|$c.plotName
+        ],
+        [
+          'CountCode',
+          'SpeciesName',
+          'StemCount',
+          'PlotName'
+        ]
+      )->sort([asc('CountCode')]);
+      tests:
+      [
+        multiHopPlotNameResolution:
+        {
+          doc: 'Resolves the plot name two joins away from the count row and resolves the joined name as null for a count whose survey has no effective version at the requested instant.';
+          data:
+          [
+            test::gildedprairie2::store::PrairieAllDB:
+              Relational
+              #{
+                prairie_survey.species_count:
+                  'count_code,survey_code,species_name,stem_count,in_z,out_z\n'+
+                  'CT-01,SV-01,Andropogon gerardii,140,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  'CT-02,SV-02,Schizachyrium scoparium,,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+                prairie_survey.survey:
+                  'survey_code,plot_code,surveyed_on,observer_name,in_z,out_z\n'+
+                  'SV-01,PL-01,2024-05-20,A. Fieldhand,2020-01-01 00:00:00,9999-12-31 00:00:00\n'+
+                  'SV-02,PL-01,2019-05-20,B. Fieldhand,2019-01-01 00:00:00,2019-12-31 00:00:00\n';
+                prairie_plot.plot:
+                  'plot_code,plot_name,region_code,established_on,plot_area_m2,in_z,out_z\n'+
+                  'PL-01,North Ridge Sward,RG-01,2019-04-01,2400.0,2020-01-01 00:00:00,9999-12-31 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            countRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CountCode":"CT-01","SpeciesName":"Andropogon gerardii","StemCount":140,"PlotName":"North Ridge Sward"},{"CountCode":"CT-02","SpeciesName":"Schizachyrium scoparium","StemCount":null,"PlotName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

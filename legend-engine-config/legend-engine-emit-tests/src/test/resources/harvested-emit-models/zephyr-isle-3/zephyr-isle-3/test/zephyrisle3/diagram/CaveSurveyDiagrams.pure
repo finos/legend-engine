@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::zephyrisle3::diagram::SystemLayoutDiagram
+{
+  classView caveSystem
+  {
+    class: test::zephyrisle3::domain::CaveSystem;
+    position: (60.0, 60.0);
+    rectangle: (280.0, 240.0);
+  }
+  classView surveyStation
+  {
+    class: test::zephyrisle3::domain::SurveyStation;
+    position: (460.0, 60.0);
+    rectangle: (260.0, 220.0);
+  }
+  classView passageSegment
+  {
+    class: test::zephyrisle3::domain::PassageSegment;
+    position: (460.0, 360.0);
+    rectangle: (260.0, 200.0);
+  }
+  propertyView
+  {
+    property: test::zephyrisle3::domain::CaveSystem.stations;
+    source: caveSystem;
+    target: surveyStation;
+    points: [(200.0, 180.0), (590.0, 170.0)];
+  }
+  propertyView
+  {
+    property: test::zephyrisle3::domain::CaveSystem.segments;
+    source: caveSystem;
+    target: passageSegment;
+    points: [(200.0, 180.0), (590.0, 460.0)];
+  }
+  propertyView
+  {
+    property: test::zephyrisle3::domain::PassageSegment.fromStation;
+    source: passageSegment;
+    target: surveyStation;
+    points: [(590.0, 460.0), (590.0, 170.0)];
+  }
+}
+
+Diagram test::zephyrisle3::diagram::StationReachDiagram
+{
+  classView passageSegment
+  {
+    class: test::zephyrisle3::domain::PassageSegment;
+    position: (80.0, 80.0);
+    rectangle: (260.0, 200.0);
+  }
+  classView surveyStation
+  {
+    class: test::zephyrisle3::domain::SurveyStation;
+    position: (480.0, 80.0);
+    rectangle: (260.0, 220.0);
+  }
+  classView caveSystem
+  {
+    class: test::zephyrisle3::domain::CaveSystem;
+    position: (280.0, 400.0);
+    rectangle: (280.0, 240.0);
+  }
+  propertyView
+  {
+    property: test::zephyrisle3::domain::PassageSegment.fromStation;
+    source: passageSegment;
+    target: surveyStation;
+    points: [(210.0, 180.0), (610.0, 190.0)];
+  }
+  propertyView
+  {
+    property: test::zephyrisle3::domain::PassageSegment.toStation;
+    source: passageSegment;
+    target: surveyStation;
+    points: [(210.0, 180.0), (610.0, 190.0)];
+  }
+  propertyView
+  {
+    property: test::zephyrisle3::domain::PassageSegment.system;
+    source: passageSegment;
+    target: caveSystem;
+    points: [(210.0, 180.0), (420.0, 520.0)];
+  }
+  propertyView
+  {
+    property: test::zephyrisle3::domain::SurveyStation.system;
+    source: surveyStation;
+    target: caveSystem;
+    points: [(610.0, 190.0), (420.0, 520.0)];
+  }
+}

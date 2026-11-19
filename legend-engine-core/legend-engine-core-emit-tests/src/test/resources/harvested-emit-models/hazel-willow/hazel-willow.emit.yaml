@@ -1,0 +1,31 @@
+name: hazel-willow
+title: "Hazel Willow — Reef Survey Domain Contract (Associations & Diamond Traversal)"
+description: |
+  A published-domain-only model for a coastal reef monitoring programme. Five
+  plain domain classes carry typed scalar properties plus a repeated audit
+  vocabulary, and six associations wire them into a hub-and-spoke graph whose
+  two extra edges turn the graph into a diamond: coral patches and fish counts
+  are reachable both directly from a survey station and indirectly through the
+  reef sector the station belongs to. Two inward ends are optional-single, so
+  navigation back to an owner can legitimately yield nothing. No store, mapping
+  or runtime is present — the classes are published purely as a contract, so the
+  EMIT run exercises parse and compile of a single `###Pure` section.
+
+modelSources:
+  model:
+    root: hazel-willow
+    files:
+      - test/hazel-willow/domain/ReefSurveyDomain.pure
+
+features:
+  - grammar:association
+  - grammar:nested-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - coastal
+  - domain-contract
+  - marine
+  - reef
+  - survey

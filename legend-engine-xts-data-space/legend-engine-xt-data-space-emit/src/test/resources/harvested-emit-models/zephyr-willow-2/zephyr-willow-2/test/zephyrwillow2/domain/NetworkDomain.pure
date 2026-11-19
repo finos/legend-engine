@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::zephyrwillow2::domain::CollectionRound
+{
+  roundId: String[1];
+  collectedOn: StrictDate[1];
+  grossKg: Float[1];
+  moisturePct: Float[1];
+  contaminationCode: String[1];
+  gradeCode: String[1];
+  crewCode: String[1];
+  handlingNote: String[0..1];
+  roundLabel: String[1];
+  loadIndex: Float[1];
+  sourceRegister: String[1];
+  depotSiteName: String[1];
+  authorityName: String[1];
+  siteContainerCount: Integer[1];
+  siteCapacityL: Integer[1];
+  handling: test::zephyrwillow2::domain::RoundHandling[1];
+}
+
+Class test::zephyrwillow2::domain::RoundHandling
+{
+  lane: String[1];
+  bay: String[1];
+}
+
+Class test::zephyrwillow2::domain::Container
+{
+  containerCode: String[1];
+  containerKind: String[1];
+  capacityL: Integer[1];
+}
+
+Class test::zephyrwillow2::domain::DepotSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  tierCode: String[1];
+}
+
+Class test::zephyrwillow2::domain::Ward
+{
+  wardCode: String[1];
+  wardName: String[1];
+}
+
+Class test::zephyrwillow2::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+}
+
+Class test::zephyrwillow2::domain::CollectionAuthority
+{
+  authorityCode: String[1];
+  authorityName: String[1];
+}
+
+Class test::zephyrwillow2::domain::MaterialGrade
+{
+  gradeCode: String[1];
+  gradeName: String[1];
+  recyclableFlag: Integer[1];
+}
+
+Class test::zephyrwillow2::domain::ServiceTier
+{
+  tierCode: String[1];
+  tierName: String[1];
+  visitsPerMonth: Integer[1];
+}
+
+Class test::zephyrwillow2::domain::DraftRound
+{
+  draftId: String[1];
+  collectedOn: StrictDate[1];
+  grossKg: Float[1];
+  gradeCode: String[1];
+  reviewState: String[1];
+}
+
+Association test::zephyrwillow2::domain::Round_Container
+{
+  rounds: test::zephyrwillow2::domain::CollectionRound[*];
+  container: test::zephyrwillow2::domain::Container[1];
+}
+
+Association test::zephyrwillow2::domain::Container_Site
+{
+  containers: test::zephyrwillow2::domain::Container[*];
+  site: test::zephyrwillow2::domain::DepotSite[1];
+}
+
+Association test::zephyrwillow2::domain::Site_Ward
+{
+  sites: test::zephyrwillow2::domain::DepotSite[*];
+  ward: test::zephyrwillow2::domain::Ward[1];
+}

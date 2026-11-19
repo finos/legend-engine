@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum {meta::pure::profiles::doc.doc = 'Field technique used to collect an observation in the wetland.'} test::wistfulmarsh2::domain::SurveyMethod
+{
+  QUADRAT,
+  TRANSECT,
+  POINT_COUNT,
+  DRONE_IMAGERY,
+  ACOUSTIC_LOGGER
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How often a stretch of the wetland is flooded by the tide.'} test::wistfulmarsh2::domain::TidalRegime
+{
+  DAILY,
+  SPRING_TIDE_ONLY,
+  STORM_SURGE_ONLY,
+  DIKED_NON_TIDAL
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Coarse band of dissolved salt measured in the pore water.'} test::wistfulmarsh2::domain::SalinityBand
+{
+  FRESH,
+  OLIGOHALINE,
+  MESOHALINE,
+  POLYHALINE,
+  EUHALINE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Vertical layer of vegetation a plant observation belongs to.'} test::wistfulmarsh2::domain::VegetationStratum
+{
+  GROUND_LAYER,
+  HERB_LAYER,
+  SHRUB_LAYER,
+  CANOPY_LAYER
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Surveyor confidence in an identification.'} test::wistfulmarsh2::domain::ObservationConfidence
+{
+  CERTAIN,
+  PROBABLE,
+  TENTATIVE,
+  UNRESOLVED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Dominant sediment class of a wetland surface.'} test::wistfulmarsh2::domain::SubstrateType
+{
+  SILT,
+  SAND,
+  PEAT,
+  GRAVEL,
+  SHELL_HASH
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Planned revisit cadence of a monitoring programme.'} test::wistfulmarsh2::domain::MonitoringFrequency
+{
+  WEEKLY,
+  MONTHLY,
+  SEASONAL,
+  ANNUAL
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Protection tier assigned to a monitored wetland.'} test::wistfulmarsh2::domain::ConservationTier
+{
+  RESERVE_CORE,
+  RESERVE_BUFFER,
+  MANAGED_RETREAT,
+  UNPROTECTED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Weather noted at the time of a field visit.'} test::wistfulmarsh2::domain::WeatherCondition
+{
+  CLEAR,
+  OVERCAST,
+  DRIZZLE,
+  SQUALL,
+  FOG
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Direction a fringe slope faces.'} test::wistfulmarsh2::domain::SlopeAspect
+{
+  SEAWARD,
+  LANDWARD,
+  ALONGSHORE
+}

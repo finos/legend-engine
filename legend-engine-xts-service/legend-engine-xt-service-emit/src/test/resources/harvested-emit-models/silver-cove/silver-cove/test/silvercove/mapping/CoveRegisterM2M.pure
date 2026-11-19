@@ -1,0 +1,207 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::silvercove::mapping::CoveRegisterM2M
+(
+  *demo::silvercove::domain::MooringEnvelope[mooringEnvelope]: Pure
+  {
+    ~src demo::silvercove::source::MooringSubmission
+    detail[mooringDetail]: $src
+  }
+
+  demo::silvercove::domain::MooringDetail[mooringDetail]: Pure
+  {
+    ~src demo::silvercove::source::MooringSubmission
+    ~filter $src.registerCode->isNotEmpty() && ($src.registerCode == 'COVE-REGISTER')
+    mooringRef: $src.mooringRef->toOne(),
+    berthCode: $src.berthCode->toOne(),
+    registerCode: $src.registerCode->toOne(),
+    harbourCode: $src.harbourCode->toOne(),
+    vesselName: $src.vesselName->toOne(),
+    lengthMetres: $src.lengthMetres->toOne(),
+    arrivedOn: $src.arrivedOn->toOne(),
+    mooringKind: $src.mooringKind,
+    bollardCount: $src.bollardCount,
+    departedOn: $src.departedOn,
+    recordedAt: $src.recordedAt
+  }
+
+  testSuites:
+  [
+    coveRegisterSuite:
+    {
+      function: |demo::silvercove::domain::MooringEnvelope.all()->graphFetch(
+        #{
+          demo::silvercove::domain::MooringEnvelope{
+            detail{
+              mooringRef,
+              berthCode,
+              registerCode,
+              harbourCode,
+              vesselName,
+              lengthMetres,
+              arrivedOn,
+              mooringKind,
+              bollardCount,
+              departedOn,
+              recordedAt
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::silvercove::domain::MooringEnvelope{
+            detail{
+              mooringRef,
+              berthCode,
+              registerCode,
+              harbourCode,
+              vesselName,
+              lengthMetres,
+              arrivedOn,
+              mooringKind,
+              bollardCount,
+              departedOn,
+              recordedAt
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        fullySubmittedMooring:
+        {
+          doc: 'A submission the register admits with every optional field populated, so all seven narrowed properties and all four pass-through properties carry a value.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::source::MooringSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"mooringRef":"MR-0001","berthCode":"BC-01","registerCode":"COVE-REGISTER","harbourCode":"HB-COVE","vesselName":"Cove Wanderer","mooringKind":"ALONGSIDE","lengthMetres":18,"bollardCount":4,"arrivedOn":"2026-04-02","departedOn":"2026-04-09","recordedAt":"2026-04-02T07:30:00.000+0000"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedMooring:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"detail":{"mooringRef":"MR-0001","berthCode":"BC-01","registerCode":"COVE-REGISTER","harbourCode":"HB-COVE","vesselName":"Cove Wanderer","lengthMetres":18,"arrivedOn":"2026-04-02","mooringKind":"ALONGSIDE","bollardCount":4,"departedOn":"2026-04-09","recordedAt":"2026-04-02T07:30:00.000"}}';
+                  }#;
+              }#
+          ];
+        },
+        submittedMooringWithoutOptionalFields:
+        {
+          doc: 'A submission the register admits carrying only the seven fields the published entry insists on, so the four pass-through properties serialise as explicit nulls.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::source::MooringSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"mooringRef":"MR-0002","berthCode":"BC-02","registerCode":"COVE-REGISTER","harbourCode":"HB-COVE","vesselName":"Cove Drifter","lengthMetres":11,"arrivedOn":"2026-04-03"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedMooring:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"detail":{"mooringRef":"MR-0002","berthCode":"BC-02","registerCode":"COVE-REGISTER","harbourCode":"HB-COVE","vesselName":"Cove Drifter","lengthMetres":11,"arrivedOn":"2026-04-03","mooringKind":null,"bollardCount":null,"departedOn":null,"recordedAt":null}}';
+                  }#;
+              }#
+          ];
+        },
+        submissionCarryingAnotherRegisterCode:
+        {
+          doc: 'A submission whose register code is populated but is not the code the source filter admits, so the equality operand rejects it and the envelope arrives with no entry inside.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::source::MooringSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"mooringRef":"MR-0003","berthCode":"BC-03","registerCode":"COVE-ARCHIVE","harbourCode":"HB-COVE","vesselName":"Cove Lantern","mooringKind":"SWINGING","lengthMetres":14,"bollardCount":2,"arrivedOn":"2026-04-04","departedOn":"2026-04-05","recordedAt":"2026-04-04T09:00:00.000+0000"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedMooring:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"detail":null}';
+                  }#;
+              }#
+          ];
+        },
+        submissionWithNoRegisterCodeAtAll:
+        {
+          doc: 'A submission with no register code at all, so the emptiness operand rejects it before the equality operand is reached and the envelope again arrives with no entry inside.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::silvercove::source::MooringSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"mooringRef":"MR-0004","berthCode":"BC-04","harbourCode":"HB-COVE","vesselName":"Cove Petrel","mooringKind":"ALONGSIDE","lengthMetres":9,"bollardCount":1,"arrivedOn":"2026-04-06","departedOn":"2026-04-07","recordedAt":"2026-04-06T06:15:00.000+0000"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            transformedMooring:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"detail":null}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

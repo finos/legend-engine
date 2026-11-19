@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A planting zone of the arboretum, curated as one collection area.'} test::goldenarboretum2::domain::GroveZone
+{
+  groveCode: String[1];
+  groveName: String[1];
+  curatorName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A planting bed inside a grove zone.'} test::goldenarboretum2::domain::GroveBed
+{
+  bedCode: String[1];
+  bedName: String[1];
+  soilType: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named cultivar a specimen was raised from.'} test::goldenarboretum2::domain::Cultivar
+{
+  cultivarCode: String[1];
+  cultivarName: String[1];
+  leafHabit: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A living tree specimen in the arboretum, reading its bed, grove and cultivar attributes through the store join paths.'} test::goldenarboretum2::domain::TreeSpecimen
+{
+  specimenCode: String[1];
+  heightCm: Integer[1];
+  girthMm: Integer[1];
+  conditionCode: String[1];
+  bedName: String[1];
+  soilType: String[1];
+  groveName: String[1];
+  cultivarName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One canopy measurement recorded against a specimen in a survey year.'} test::goldenarboretum2::domain::CanopySurvey
+{
+  surveyCode: String[1];
+  canopyM2: Float[1];
+  surveyYear: Integer[1];
+}
+
+Association test::goldenarboretum2::domain::Specimen_Survey
+{
+  specimen: test::goldenarboretum2::domain::TreeSpecimen[0..1];
+  surveys: test::goldenarboretum2::domain::CanopySurvey[*];
+}

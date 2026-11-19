@@ -1,0 +1,56 @@
+name: golden-meadow
+title: "Golden Meadow - point-in-time patch stewardship across a milestoned association behind single and multi execution services"
+description: |
+  A meadow pollinator survey whose patches and steward crews are both business-temporal, so a
+  query must name the instant it resolves them at. A single-execution service pins that instant
+  from a service parameter, gates rows on membership of a patch-code list, on a recorded bloom
+  and on a recognised flora code, then projects a seven-armed bloom-band cascade beside the crew
+  name and depot reached across the milestoned stewardship association at the same instant. Its
+  test suite covers the versions whose window contains the instant, a version that closed before
+  it and a version that opens after it. An environment-keyed multi-execution twin serves the same
+  shape over either the survey or the archive stack, and profile stereotypes and tagged values
+  carry the stewardship metadata on both classes.
+modelSources:
+  model:
+    root: golden-meadow
+    files:
+      - test/goldenmeadow/connection/MeadowConnections.pure
+      - test/goldenmeadow/domain/MeadowDomain.pure
+      - test/goldenmeadow/mapping/MeadowMapping.pure
+      - test/goldenmeadow/profile/MeadowProfiles.pure
+      - test/goldenmeadow/runtime/MeadowRuntimes.pure
+      - test/goldenmeadow/service/MeadowPatchServices.pure
+      - test/goldenmeadow/store/MeadowSurveyDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:derived-property
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:milestoned-association
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - collection-op
+  - h2
+  - milestoned-association
+  - multi-execution
+  - point-in-time
+  - pollinator-survey
+  - profile
+  - service-test

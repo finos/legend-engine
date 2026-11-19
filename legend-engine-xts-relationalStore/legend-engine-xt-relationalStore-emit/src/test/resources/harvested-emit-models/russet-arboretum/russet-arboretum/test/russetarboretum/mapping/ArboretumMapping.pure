@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetarboretum::mapping::ArboretumMapping
+(
+  test::russetarboretum::domain::LifecycleStage: EnumerationMapping LifecycleStageMapping
+  {
+    Planted: ['planted'],
+    Established: ['established'],
+    Retired: ['retired']
+  }
+
+  test::russetarboretum::domain::HabitatClass: EnumerationMapping HabitatClassMapping
+  {
+    Woodland: ['woodland'],
+    Meadow: ['meadow'],
+    Wetland: ['wetland']
+  }
+
+  *test::russetarboretum::domain::CollectionSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetarboretum::store::ArboretumDatabase]arb.collection_site.site_id
+    )
+    ~mainTable [test::russetarboretum::store::ArboretumDatabase]arb.collection_site
+    siteName: [test::russetarboretum::store::ArboretumDatabase]arb.collection_site.site_name,
+    regionCode: [test::russetarboretum::store::ArboretumDatabase]arb.collection_site.region_code
+  }
+
+  *test::russetarboretum::domain::PlantingBed[bed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetarboretum::store::ArboretumDatabase]arb.planting_bed.bed_id
+    )
+    ~mainTable [test::russetarboretum::store::ArboretumDatabase]arb.planting_bed
+    bedCode: [test::russetarboretum::store::ArboretumDatabase]arb.planting_bed.bed_code,
+    habitat: EnumerationMapping HabitatClassMapping: [test::russetarboretum::store::ArboretumDatabase]arb.planting_bed.habitat,
+    site[site]: [test::russetarboretum::store::ArboretumDatabase]@Bed_Site
+  }
+
+  *test::russetarboretum::domain::Specimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::russetarboretum::store::ArboretumDatabase]arb.specimen.specimen_id
+    )
+    ~mainTable [test::russetarboretum::store::ArboretumDatabase]arb.specimen
+    accessionCode: [test::russetarboretum::store::ArboretumDatabase]arb.specimen.accession_code,
+    speciesName: [test::russetarboretum::store::ArboretumDatabase]arb.specimen.species_name,
+    stage: EnumerationMapping LifecycleStageMapping: [test::russetarboretum::store::ArboretumDatabase]arb.specimen.lifecycle_stage,
+    plantingYear: [test::russetarboretum::store::ArboretumDatabase]arb.specimen.planting_year,
+    bed[bed]: [test::russetarboretum::store::ArboretumDatabase]@Specimen_Bed,
+    propagatedFrom[specimen]: [test::russetarboretum::store::ArboretumDatabase]@Specimen_Parent
+  }
+
+  *test::russetarboretum::domain::CareEvent[event]: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_(pruning,survey)
+  }
+
+  test::russetarboretum::domain::PruningEvent[pruning]: Relational
+  {
+    ~filter [test::russetarboretum::store::ArboretumDatabase]PruningEventFilter
+    ~primaryKey
+    (
+      [test::russetarboretum::store::ArboretumDatabase]arb.care_event.event_id
+    )
+    ~mainTable [test::russetarboretum::store::ArboretumDatabase]arb.care_event
+    eventCode: [test::russetarboretum::store::ArboretumDatabase]arb.care_event.event_code,
+    performedOn: [test::russetarboretum::store::ArboretumDatabase]arb.care_event.performed_on,
+    specimen[specimen]: [test::russetarboretum::store::ArboretumDatabase]@Specimen_CareEvent,
+    crownReductionPct: [test::russetarboretum::store::ArboretumDatabase]arb.care_event.crown_reduction_pct
+  }
+
+  test::russetarboretum::domain::SurveyEvent[survey]: Relational
+  {
+    ~filter [test::russetarboretum::store::ArboretumDatabase]SurveyEventFilter
+    ~primaryKey
+    (
+      [test::russetarboretum::store::ArboretumDatabase]arb.care_event.event_id
+    )
+    ~mainTable [test::russetarboretum::store::ArboretumDatabase]arb.care_event
+    eventCode: [test::russetarboretum::store::ArboretumDatabase]arb.care_event.event_code,
+    performedOn: [test::russetarboretum::store::ArboretumDatabase]arb.care_event.performed_on,
+    specimen[specimen]: [test::russetarboretum::store::ArboretumDatabase]@Specimen_CareEvent,
+    heightCm: [test::russetarboretum::store::ArboretumDatabase]arb.care_event.height_cm
+  }
+
+  testSuites:
+  [
+    lineagePlacementSuite:
+    {
+      function: |test::russetarboretum::domain::Specimen.all(%2024-06-01)->filter(
+  s|$s.stage != test::russetarboretum::domain::LifecycleStage.Retired
+)->project(
+  [
+    s|$s.accessionCode,
+    s|$s.bed(%2024-06-01).bedCode,
+    s|$s.bed(%2024-06-01).site(%2024-06-01).siteName,
+    s|$s.propagatedFrom(%2024-06-01).accessionCode
+  ],
+  [
+    'Accession',
+    'Bed',
+    'Site',
+    'Parent'
+  ]
+)->distinct()->sort(
+  [
+    asc('Accession')
+  ]
+);
+      tests:
+      [
+        placementAsOfAnchor:
+        {
+          doc: 'Point-in-time placement of every non-retired specimen at the anchor date, exercising the bed and site hops, the self-referencing propagation hop and a bed that is out of range at the anchor.';
+          data:
+          [
+            test::russetarboretum::store::ArboretumDatabase:
+              Relational
+              #{
+                arb.collection_site:
+                  'site_id,site_name,region_code,from_z,thru_z\n'+
+                  '1,Ridge Arboretum,NORTH,2023-01-01,9999-12-31\n'+
+                  '2,Fen Arboretum,SOUTH,2023-01-01,9999-12-31\n';
+                arb.planting_bed:
+                  'bed_id,bed_code,habitat,site_id,from_z,thru_z\n'+
+                  '10,BED-A,woodland,1,2023-01-01,9999-12-31\n'+
+                  '11,BED-B,meadow,2,2023-01-01,9999-12-31\n'+
+                  '12,BED-C,woodland,1,2023-01-01,2024-01-01\n';
+                arb.specimen:
+                  'specimen_id,accession_code,species_name,lifecycle_stage,planting_year,bed_id,parent_specimen_id,from_z,thru_z\n'+
+                  '100,ARB-1001,Quercus rubra,established,2015,10,,2023-01-01,9999-12-31\n'+
+                  '101,ARB-1002,Acer saccharum,established,2018,10,100,2023-01-01,9999-12-31\n'+
+                  '104,ARB-1005,Fagus grandifolia,established,2019,12,100,2023-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            placementRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"ARB-1001","Bed":"BED-A","Site":"Ridge Arboretum","Parent":null},{"Accession":"ARB-1002","Bed":"BED-A","Site":"Ridge Arboretum","Parent":"ARB-1001"},{"Accession":"ARB-1005","Bed":null,"Site":null,"Parent":"ARB-1001"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

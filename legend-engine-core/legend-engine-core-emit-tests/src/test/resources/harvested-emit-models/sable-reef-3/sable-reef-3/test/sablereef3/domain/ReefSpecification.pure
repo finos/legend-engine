@@ -1,0 +1,135 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sablereef3::domain::*;
+import test::sablereef3::profile::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Root of the reef pipeline specification layer: the intent of a monitoring pipeline, independent of how it is deployed.'} test::sablereef3::domain::PipelineSpecification
+{
+  specificationName: String[1];
+  specificationVersion: Integer[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Where reef observations are read from. Property-free: the variant is carried entirely by the subtype identity.', ReefPlatform.copiedFrom = 'reef-source-specification'} test::sablereef3::domain::SourceSpecification extends test::sablereef3::domain::PipelineSpecification
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Streamed reef sources. An empty intermediate level: nothing but type identity flows through it.', ReefPlatform.copiedFrom = 'reef-stream-source-specification'} test::sablereef3::domain::StreamSourceSpecification extends test::sablereef3::domain::SourceSpecification
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A reef sensor array publishing observations onto a named stream.'} test::sablereef3::domain::SensorStreamSource extends test::sablereef3::domain::StreamSourceSpecification
+{
+  streamName: String[1];
+  partitionCount: Integer[1];
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only variant: observations arrive from a moored buoy telemetry link with no additional configuration.', ReefPlatform.copiedFrom = 'reef-buoy-stream-source'} test::sablereef3::domain::BuoyStreamSource extends test::sablereef3::domain::StreamSourceSpecification
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Reef observations delivered as dropped files. Empty intermediate level.', ReefPlatform.copiedFrom = 'reef-file-source-specification'} test::sablereef3::domain::FileSourceSpecification extends test::sablereef3::domain::SourceSpecification
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Character-delimited reef drop files. The third empty level between a leaf and the property-bearing ancestor.', ReefPlatform.copiedFrom = 'reef-delimited-file-source'} test::sablereef3::domain::DelimitedFileSource extends test::sablereef3::domain::FileSourceSpecification
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only variant: comma-delimited reef drop files.', ReefPlatform.copiedFrom = 'reef-csv-drop-source'} test::sablereef3::domain::CsvDropSource extends test::sablereef3::domain::DelimitedFileSource
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only variant: tab-delimited reef drop files, indistinguishable from its sibling except by type.', ReefPlatform.copiedFrom = 'reef-tsv-drop-source'} test::sablereef3::domain::TsvDropSource extends test::sablereef3::domain::DelimitedFileSource
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'Columnar reef drop files rooted at a prefix, the one file source that carries data of its own.'} test::sablereef3::domain::ParquetDropSource extends test::sablereef3::domain::FileSourceSpecification
+{
+  rootPath: String[1];
+  compressionCodec: String[0..1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Reef observations produced by a query fragment rather than delivered. Empty intermediate level.', ReefPlatform.copiedFrom = 'reef-query-fragment-source'} test::sablereef3::domain::QueryFragmentSource extends test::sablereef3::domain::SourceSpecification
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A relation-shaped fragment selecting reef observations from an already published relation.'} test::sablereef3::domain::RelationFragmentSource extends test::sablereef3::domain::QueryFragmentSource
+{
+  fragmentText: String[1];
+  columnNames: String[*];
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only variant: the fragment is a platform-managed view whose text is resolved at deployment.', ReefPlatform.copiedFrom = 'reef-view-fragment-source'} test::sablereef3::domain::ViewFragmentSource extends test::sablereef3::domain::QueryFragmentSource
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Where reef observations are published to. Property-free base.', ReefPlatform.copiedFrom = 'reef-sink-specification'} test::sablereef3::domain::SinkSpecification extends test::sablereef3::domain::PipelineSpecification
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lake relation the reef observations are published into.'} test::sablereef3::domain::LakeSinkSpecification extends test::sablereef3::domain::SinkSpecification
+{
+  relationName: String[1];
+  format: SerializationFormat[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Warehouse-resident reef sinks. Empty intermediate level.', ReefPlatform.copiedFrom = 'reef-warehouse-sink-specification'} test::sablereef3::domain::WarehouseSinkSpecification extends test::sablereef3::domain::SinkSpecification
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only variant: reef observations land in a columnar warehouse relation.', ReefPlatform.copiedFrom = 'reef-columnar-warehouse-sink'} test::sablereef3::domain::ColumnarWarehouseSink extends test::sablereef3::domain::WarehouseSinkSpecification
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only variant: reef observations land in a row-oriented warehouse relation.', ReefPlatform.copiedFrom = 'reef-row-warehouse-sink'} test::sablereef3::domain::RowWarehouseSink extends test::sablereef3::domain::WarehouseSinkSpecification
+{
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'How successive reef observation batches are retained against each other.'} test::sablereef3::domain::MilestoningScheme
+{
+  schemeName: String[1];
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only scheme: every batch fully replaces the previous one, no parameters at all.', ReefPlatform.copiedFrom = 'reef-snapshot-scheme'} test::sablereef3::domain::SnapshotScheme extends test::sablereef3::domain::MilestoningScheme
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'Incremental scheme keyed on a batch column, the one scheme carrying parameters.'} test::sablereef3::domain::IncrementalScheme extends test::sablereef3::domain::MilestoningScheme
+{
+  batchColumn: String[1];
+  lookbackBatches: Integer[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract, ReefPlatform.copiedSpecification>> {meta::pure::profiles::doc.doc = 'Single-timeline reef milestoning. Empty intermediate level over two marker leaves.', ReefPlatform.copiedFrom = 'reef-uni-temporal-scheme'} test::sablereef3::domain::UniTemporalScheme extends test::sablereef3::domain::MilestoningScheme
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only scheme: the retained timeline is processing time.', ReefPlatform.copiedFrom = 'reef-processing-time-scheme'} test::sablereef3::domain::ProcessingTimeScheme extends test::sablereef3::domain::UniTemporalScheme
+{
+}
+
+Class <<ReefPlatform.markerVariant>> {meta::pure::profiles::doc.doc = 'Marker-only scheme: the retained timeline is the observation business date.', ReefPlatform.copiedFrom = 'reef-business-time-scheme'} test::sablereef3::domain::BusinessTimeScheme extends test::sablereef3::domain::UniTemporalScheme
+{
+}
+
+Class {meta::pure::profiles::doc.doc = 'A complete reef monitoring pipeline intent: sources, one sink, the milestoning scheme retained and the fragments applied on the way through.'} test::sablereef3::domain::ReefPipelineIntent extends test::sablereef3::domain::PipelineSpecification
+{
+  sources: test::sablereef3::domain::SourceSpecification[*];
+  sink: test::sablereef3::domain::SinkSpecification[1];
+  scheme: test::sablereef3::domain::MilestoningScheme[1];
+  fragments: test::sablereef3::domain::QueryFragmentSource[*];
+  declaredTechnology: StorageTechnology[1];
+}

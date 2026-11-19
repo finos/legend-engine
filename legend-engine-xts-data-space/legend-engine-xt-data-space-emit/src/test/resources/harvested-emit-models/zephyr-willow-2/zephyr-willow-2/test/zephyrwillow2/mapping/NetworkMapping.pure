@@ -1,0 +1,204 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrwillow2::mapping::NetworkMapping
+(
+  include mapping test::zephyrwillow2::mapping::NetworkBaseMapping
+
+  test::zephyrwillow2::domain::Round_Container: Relational
+  {
+    AssociationMapping
+    (
+      rounds[container, collectionRound]: [test::zephyrwillow2::store::DepotNetworkDB]@Round_Container,
+      container[collectionRound, container]: [test::zephyrwillow2::store::DepotNetworkDB]@Round_Container
+    )
+  }
+
+  test::zephyrwillow2::domain::Container_Site: Relational
+  {
+    AssociationMapping
+    (
+      containers[depotSite, container]: [test::zephyrwillow2::store::DepotNetworkDB]@Container_Site,
+      site[container, depotSite]: [test::zephyrwillow2::store::DepotNetworkDB]@Container_Site
+    )
+  }
+
+  test::zephyrwillow2::domain::Site_Ward: Relational
+  {
+    AssociationMapping
+    (
+      sites[ward, depotSite]: [test::zephyrwillow2::store::DepotNetworkDB]@Site_Ward,
+      ward[depotSite, ward]: [test::zephyrwillow2::store::DepotNetworkDB]@Site_Ward
+    )
+  }
+
+  testSuites:
+  [
+    roundDerivationSuite:
+    {
+      function: |test::zephyrwillow2::domain::CollectionRound.all()->project(
+        [
+          r|$r.roundId,
+          r|$r.handlingNote,
+          r|$r.roundLabel,
+          r|$r.loadIndex,
+          r|$r.sourceRegister,
+          r|$r.depotSiteName,
+          r|$r.authorityName,
+          r|$r.siteContainerCount,
+          r|$r.siteCapacityL,
+          r|$r.handling.lane,
+          r|$r.handling.bay,
+          r|$r.container.containerKind,
+          r|$r.container.site.ward.wardName
+        ],
+        [
+          'Round',
+          'Handling',
+          'Label',
+          'LoadIndex',
+          'Register',
+          'Site',
+          'Authority',
+          'Containers',
+          'CapacityL',
+          'Lane',
+          'Bay',
+          'ContainerKind',
+          'Ward'
+        ]
+      )->sort([asc('Round')]);
+      tests:
+      [
+        everyHandlingArmAndBothReferencePaths:
+        {
+          doc: 'Covers all eight arms of the handling cascade and its unresolved fallback, the composed label, the arithmetic load index, the pinned register literal, the two-hop site name, the five-hop authority name, the two derived columns reached through the grouped container view, both embedded handling decisions and the association path that walks round to container to site to ward. The suppressed round proves the store filter at the same time.';
+          data:
+          [
+            test::zephyrwillow2::store::DepotNetworkDB:
+              Relational
+              #{
+                network.authority:
+                  'authority_code,authority_name\n'+
+                  'A-1,Metro Waste Authority\n';
+                network.collection_round:
+                  'round_id,container_code,collected_on,gross_kg,moisture_pct,contamination_code,grade_code,crew_code,active_flag\n'+
+                  'R-01,C-1,2026-03-02,940.5,18.5,LO,PA,CR-1,Y\n'+
+                  'R-02,C-1,2026-03-09,640.25,20.5,LO,GL,CR-1,Y\n'+
+                  'R-03,C-1,2026-03-16,420.5,22.5,LO,PA,CR-2,Y\n'+
+                  'R-04,C-1,2026-03-23,180.5,44.5,LO,PA,CR-2,Y\n'+
+                  'R-05,C-2,2026-04-06,120.25,26.5,LO,GL,CR-2,Y\n'+
+                  'R-06,C-2,2026-04-13,90.5,12.5,HI,PA,CR-1,Y\n'+
+                  'R-07,C-3,2026-04-20,80.5,10.5,LO,MX,CR-1,Y\n'+
+                  'R-08,C-3,2026-05-04,70.25,9.5,LO,GL,CR-3,Y\n'+
+                  'R-09,C-4,2026-05-11,60.5,8.5,LO,GL,CR-2,Y\n'+
+                  'R-10,C-4,2026-06-01,55.25,7.5,LO,PA,CR-2,Y\n'+
+                  'R-11,C-1,2026-03-05,990.5,30.5,LO,PA,CR-1,N\n';
+                network.container:
+                  'container_code,site_code,container_kind,capacity_l\n'+
+                  'C-1,S-1,WHEELED,1100\n'+
+                  'C-2,S-1,SKIP,3200\n'+
+                  'C-3,S-2,WHEELED,1100\n'+
+                  'C-4,S-3,BALER,5000\n';
+                network.depot_site:
+                  'site_code,site_name,ward_code,tier_code\n'+
+                  'S-1,Northgate Depot,W-1,T-1\n'+
+                  'S-2,Eastfield Depot,W-1,T-2\n'+
+                  'S-3,Southbank Depot,W-2,T-2\n';
+                network.district:
+                  'district_code,district_name,authority_code\n'+
+                  'D-1,Central District,A-1\n';
+                network.ward:
+                  'ward_code,ward_name,district_code\n'+
+                  'W-1,Riverside Ward,D-1\n'+
+                  'W-2,Hillcrest Ward,D-1\n';
+              }#
+          ];
+          asserts:
+          [
+            derivedColumnsAndPathsAgree:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Round":"R-01","Handling":"BULK TRANSFER","Label":"PA-R-01","LoadIndex":9423.5,"Register":"DEPOT_ROUND_REGISTER","Site":"Northgate Depot","Authority":"Metro Waste Authority","Containers":2,"CapacityL":4300,"Lane":"LANE-A","Bay":"BAY-CR-1","ContainerKind":"WHEELED","Ward":"Riverside Ward"},{"Round":"R-02","Handling":"DOUBLE LIFT","Label":"GL-R-02","LoadIndex":6423.0,"Register":"DEPOT_ROUND_REGISTER","Site":"Northgate Depot","Authority":"Metro Waste Authority","Containers":2,"CapacityL":4300,"Lane":"LANE-B","Bay":"BAY-CR-1","ContainerKind":"WHEELED","Ward":"Riverside Ward"},{"Round":"R-03","Handling":"SINGLE LIFT","Label":"PA-R-03","LoadIndex":4227.5,"Register":"DEPOT_ROUND_REGISTER","Site":"Northgate Depot","Authority":"Metro Waste Authority","Containers":2,"CapacityL":4300,"Lane":"LANE-A","Bay":"BAY-CR-2","ContainerKind":"WHEELED","Ward":"Riverside Ward"},{"Round":"R-04","Handling":"DRY BEFORE BALING","Label":"PA-R-04","LoadIndex":1849.5,"Register":"DEPOT_ROUND_REGISTER","Site":"Northgate Depot","Authority":"Metro Waste Authority","Containers":2,"CapacityL":4300,"Lane":"LANE-A","Bay":"BAY-CR-2","ContainerKind":"WHEELED","Ward":"Riverside Ward"},{"Round":"R-05","Handling":"STANDARD BALING","Label":"GL-R-05","LoadIndex":1229.0,"Register":"DEPOT_ROUND_REGISTER","Site":"Northgate Depot","Authority":"Metro Waste Authority","Containers":2,"CapacityL":4300,"Lane":"LANE-B","Bay":"BAY-CR-2","ContainerKind":"SKIP","Ward":"Riverside Ward"},{"Round":"R-06","Handling":"HAND SORT","Label":"PA-R-06","LoadIndex":917.5,"Register":"DEPOT_ROUND_REGISTER","Site":"Northgate Depot","Authority":"Metro Waste Authority","Containers":2,"CapacityL":4300,"Lane":"LANE-A","Bay":"BAY-CR-1","ContainerKind":"SKIP","Ward":"Riverside Ward"},{"Round":"R-07","Handling":"MIXED LANE","Label":"MX-R-07","LoadIndex":815.5,"Register":"DEPOT_ROUND_REGISTER","Site":"Eastfield Depot","Authority":"Metro Waste Authority","Containers":1,"CapacityL":1100,"Lane":"LANE-C","Bay":"BAY-CR-1","ContainerKind":"WHEELED","Ward":"Riverside Ward"},{"Round":"R-08","Handling":"ROUTINE COLLECTION","Label":"GL-R-08","LoadIndex":712.0,"Register":"DEPOT_ROUND_REGISTER","Site":"Eastfield Depot","Authority":"Metro Waste Authority","Containers":1,"CapacityL":1100,"Lane":"LANE-B","Bay":"BAY-CR-3","ContainerKind":"WHEELED","Ward":"Riverside Ward"},{"Round":"R-09","Handling":null,"Label":"GL-R-09","LoadIndex":613.5,"Register":"DEPOT_ROUND_REGISTER","Site":"Southbank Depot","Authority":"Metro Waste Authority","Containers":1,"CapacityL":5000,"Lane":"LANE-B","Bay":"BAY-CR-2","ContainerKind":"BALER","Ward":"Hillcrest Ward"},{"Round":"R-10","Handling":null,"Label":"PA-R-10","LoadIndex":560.0,"Register":"DEPOT_ROUND_REGISTER","Site":"Southbank Depot","Authority":"Metro Waste Authority","Containers":1,"CapacityL":5000,"Lane":"LANE-A","Bay":"BAY-CR-2","ContainerKind":"BALER","Ward":"Hillcrest Ward"}]';
+                  }#;
+              }#
+          ];
+        },
+        everyRoundSuppressedLeavesNothingDerived:
+        {
+          doc: 'Repeats the same derivation against a register in which every round is suppressed, so the branch of the store filter that admits no row at all is exercised rather than assumed.';
+          data:
+          [
+            test::zephyrwillow2::store::DepotNetworkDB:
+              Relational
+              #{
+                network.authority:
+                  'authority_code,authority_name\n'+
+                  'A-1,Metro Waste Authority\n';
+                network.collection_round:
+                  'round_id,container_code,collected_on,gross_kg,moisture_pct,contamination_code,grade_code,crew_code,active_flag\n'+
+                  'R-01,C-1,2026-03-02,940.5,18.5,LO,PA,CR-1,N\n'+
+                  'R-02,C-1,2026-03-09,640.25,20.5,LO,GL,CR-1,N\n'+
+                  'R-03,C-1,2026-03-16,420.5,22.5,LO,PA,CR-2,N\n'+
+                  'R-04,C-1,2026-03-23,180.5,44.5,LO,PA,CR-2,N\n'+
+                  'R-05,C-2,2026-04-06,120.25,26.5,LO,GL,CR-2,N\n'+
+                  'R-06,C-2,2026-04-13,90.5,12.5,HI,PA,CR-1,N\n'+
+                  'R-07,C-3,2026-04-20,80.5,10.5,LO,MX,CR-1,N\n'+
+                  'R-08,C-3,2026-05-04,70.25,9.5,LO,GL,CR-3,N\n'+
+                  'R-09,C-4,2026-05-11,60.5,8.5,LO,GL,CR-2,N\n'+
+                  'R-10,C-4,2026-06-01,55.25,7.5,LO,PA,CR-2,N\n'+
+                  'R-11,C-1,2026-03-05,990.5,30.5,LO,PA,CR-1,N\n';
+                network.container:
+                  'container_code,site_code,container_kind,capacity_l\n'+
+                  'C-1,S-1,WHEELED,1100\n'+
+                  'C-2,S-1,SKIP,3200\n'+
+                  'C-3,S-2,WHEELED,1100\n'+
+                  'C-4,S-3,BALER,5000\n';
+                network.depot_site:
+                  'site_code,site_name,ward_code,tier_code\n'+
+                  'S-1,Northgate Depot,W-1,T-1\n'+
+                  'S-2,Eastfield Depot,W-1,T-2\n'+
+                  'S-3,Southbank Depot,W-2,T-2\n';
+                network.district:
+                  'district_code,district_name,authority_code\n'+
+                  'D-1,Central District,A-1\n';
+                network.ward:
+                  'ward_code,ward_name,district_code\n'+
+                  'W-1,Riverside Ward,D-1\n'+
+                  'W-2,Hillcrest Ward,D-1\n';
+              }#
+          ];
+          asserts:
+          [
+            nothingSurvivesTheFilter:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

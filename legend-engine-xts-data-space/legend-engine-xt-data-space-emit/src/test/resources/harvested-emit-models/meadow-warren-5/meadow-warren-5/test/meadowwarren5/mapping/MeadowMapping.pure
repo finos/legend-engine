@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowwarren5::mapping::MeadowMapping
+(
+  test::meadowwarren5::domain::ForageSample[forageSample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.sample_code
+    )
+    ~mainTable [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample
+    sampleCode: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.sample_code,
+    plotCode: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.plot_code,
+    speciesCode: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.species_code,
+    cutHeightCm: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.cut_height_cm,
+    dryMassKg: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.dry_mass_kg,
+    moisturePct: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.moisture_pct,
+    collectedOn: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.collected_on,
+    loggedAt: [test::meadowwarren5::store::MeadowDatabase]meadow.forage_sample.logged_at
+  }
+
+  test::meadowwarren5::domain::MeadowPlot[meadowPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.plot_code
+    )
+    ~mainTable [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot
+    plotCode: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.plot_code,
+    plotName: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.plot_name,
+    aspectCode: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.aspect_code,
+    elevationM: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.elevation_m,
+    areaHa: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.area_ha,
+    slopePct: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.slope_pct,
+    surveyedOn: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.surveyed_on,
+    revisedAt: [test::meadowwarren5::store::MeadowDatabase]meadow.meadow_plot.revised_at
+  }
+
+  test::meadowwarren5::domain::WeatherSummary[weatherSummary]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.summary_code
+    )
+    ~mainTable [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary
+    summaryCode: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.summary_code,
+    plotCode: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.plot_code,
+    stationCode: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.station_code,
+    frostNights: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.frost_nights,
+    rainfallMm: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.rainfall_mm,
+    meanTempC: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.mean_temp_c,
+    summaryOn: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.summary_on,
+    publishedAt: [test::meadowwarren5::store::MeadowDatabase]meadow.weather_summary.published_at
+  }
+
+  testSuites:
+  [
+    plotRegisterSuite:
+    {
+      function: |test::meadowwarren5::domain::MeadowPlot.all(%2026-06-01)->project(
+        [
+          p|$p.plotCode,
+          p|$p.plotName,
+          p|$p.aspectCode,
+          p|$p.elevationM
+        ],
+        [
+          'Plot',
+          'Name',
+          'Aspect',
+          'ElevationM'
+        ]
+      )->sort(
+        [
+          asc('Plot')
+        ]
+      );
+      tests:
+      [
+        onlyVersionsOpenAtTheInstant:
+        {
+          doc: 'Reads the plot register at one processing instant: the plot whose only version was closed before that instant drops out, and the plot whose corrected version opens after it is read at its earlier version.';
+          data:
+          [
+            test::meadowwarren5::store::MeadowDatabase:
+              Relational
+              #{
+                meadow.meadow_plot:
+                  'plot_code,plot_name,aspect_code,elevation_m,area_ha,slope_pct,surveyed_on,revised_at,in_z,out_z\n'+
+                  'PL-01,Upper Warren Sward,NORTH_EAST,1420,3.25,11.5,2025-08-14,2025-08-15 06:00:00,2025-09-01,9999-12-31\n'+
+                  'PL-02,Spring Line Flush,EAST,1365,1.80,7.25,2025-08-18,2025-08-19 06:00:00,2025-09-01,2026-03-01\n'+
+                  'PL-03,Boulder Terrace,SOUTH_WEST,1510,2.40,18.75,2025-08-21,2025-08-22 06:00:00,2025-09-01,2026-07-01\n'+
+                  'PL-03,Boulder Terrace West,SOUTH_WEST,1515,2.55,19.25,2026-06-30,2026-07-01 06:00:00,2026-07-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            registerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"PL-01","Name":"Upper Warren Sward","Aspect":"NORTH_EAST","ElevationM":1420},{"Plot":"PL-03","Name":"Boulder Terrace","Aspect":"SOUTH_WEST","ElevationM":1510}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

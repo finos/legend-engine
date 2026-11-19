@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'Quality band a graft is placed in after inspection.'} test::scarletmarsh::domain::GraftGrade
+{
+  PRIME,
+  STANDARD,
+  WATCH
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper looking after an orchard plot, specialised by how the keeper is engaged.'} test::scarletmarsh::domain::KeeperRecord
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper on the paid rota, carrying a rota code and a badge expiry.'} test::scarletmarsh::domain::RotaKeeper extends test::scarletmarsh::domain::KeeperRecord
+{
+  rotaCode: String[0..1];
+  badgeExpiry: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper supplied by a growers guild rather than the paid rota.'} test::scarletmarsh::domain::GuildKeeper extends test::scarletmarsh::domain::KeeperRecord
+{
+  guildName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A planting plot inside the orchard, optionally subdivided out of a parent plot.'} test::scarletmarsh::domain::OrchardPlot
+{
+  plotCode: String[1];
+  plotLabel: String[1];
+  district: String[1];
+  plotState: String[1];
+  parentPlotLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single graft recorded against a plot, with the variety it carries and the keeper who set it.'} test::scarletmarsh::domain::GraftLog
+{
+  graftCode: String[1];
+  plotCode: String[1];
+  varietyCode: String[1];
+  rootstock: String[1];
+  graftedOn: StrictDate[1];
+  survivalScore: Integer[1];
+  graftStatus: String[1];
+  grade: test::scarletmarsh::domain::GraftGrade[0..1];
+  varietyName: String[0..1];
+  plotLabel: String[0..1];
+  keeper: test::scarletmarsh::domain::KeeperRecord[0..1];
+  vigour()
+  {
+    $this.survivalScore * 2
+  }: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A picking ticket raised against a plot, landed in the picking store rather than the orchard store.'} test::scarletmarsh::domain::HarvestTicket
+{
+  ticketCode: String[1];
+  plotRef: String[1];
+  crates: Integer[1];
+  pickedOn: StrictDate[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Plot-to-ticket link realised in two different stores and paired on the plot code.'} test::scarletmarsh::domain::Plot_Harvest
+{
+  plot: test::scarletmarsh::domain::OrchardPlot[0..1];
+  tickets: test::scarletmarsh::domain::HarvestTicket[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A graft read alongside the variety it carries, so the ripening season travels with the graft row.'} test::scarletmarsh::domain::GraftedVariety
+{
+  graftCode: String[1];
+  rootstock: String[1];
+  varietyName: String[0..1];
+  ripening: String[0..1];
+}

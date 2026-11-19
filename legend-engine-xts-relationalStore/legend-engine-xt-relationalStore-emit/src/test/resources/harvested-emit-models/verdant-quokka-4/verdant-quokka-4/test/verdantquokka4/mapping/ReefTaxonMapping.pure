@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantquokka4::mapping::ReefTaxonMapping
+(
+  *test::verdantquokka4::domain::TaxonStatus[taxonStatus]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantquokka4::store::ReefTaxonDb]taxa.taxon_status.taxon_code,
+      [test::verdantquokka4::store::ReefTaxonDb]taxa.taxon_status.region_code
+    )
+    ~mainTable [test::verdantquokka4::store::ReefTaxonDb]taxa.taxon_status
+    taxonCode: [test::verdantquokka4::store::ReefTaxonDb]taxa.taxon_status.taxon_code,
+    regionCode: [test::verdantquokka4::store::ReefTaxonDb]taxa.taxon_status.region_code,
+    statusCode: toUpper([test::verdantquokka4::store::ReefTaxonDb]taxa.taxon_status.status_code),
+    colonyForm: [test::verdantquokka4::store::ReefTaxonDb]taxa.taxon_status.colony_form
+  }
+
+  testSuites:
+  [
+    taxonStatusSuite:
+    {
+      function: |test::verdantquokka4::domain::TaxonStatus.all(%2026-06-01)->project(~[
+        Taxon: t|$t.taxonCode,
+        Region: t|$t.regionCode,
+        Status: t|$t.statusCode,
+        Form: t|$t.colonyForm
+      ])->sort([~Taxon->ascending(), ~Region->ascending()]);
+      tests:
+      [
+        currentStatusPerRegion:
+        {
+          doc: 'Keeps only the taxon statuses whose business window spans the June survey date, upper-casing the status code; the superseded status of the brain coral in the north region is excluded as out of range.';
+          data:
+          [
+            test::verdantquokka4::store::ReefTaxonDb:
+              Relational
+              #{
+                taxa.taxon_status:
+                  'taxon_code,region_code,status_code,colony_form,valid_from,valid_thru\n'+
+                  'TX-BRAIN,NR,watch,massive,2026-04-01,9999-12-31\n'+
+                  'TX-BRAIN,SR,stable,massive,2025-01-01,9999-12-31\n'+
+                  'TX-STAG,NR,stable,branching,2024-01-01,2026-02-28\n'+
+                  'TX-TABLE,NR,recovering,plate,2026-01-15,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            currentStatuses:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Taxon":"TX-BRAIN","Region":"NR","Status":"WATCH","Form":"massive"},{"Taxon":"TX-BRAIN","Region":"SR","Status":"STABLE","Form":"massive"},{"Taxon":"TX-TABLE","Region":"NR","Status":"RECOVERING","Form":"plate"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

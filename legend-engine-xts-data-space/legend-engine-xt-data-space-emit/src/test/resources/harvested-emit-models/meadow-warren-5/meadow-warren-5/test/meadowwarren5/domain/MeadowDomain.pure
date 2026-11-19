@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One clipped forage sample taken from one meadow plot. Corrections to a weighed sample are kept as new versions rather than overwrites, so a read has to name the processing instant it wants the sample as it was known at.'} test::meadowwarren5::domain::ForageSample
+{
+  {meta::pure::profiles::doc.doc = 'Canonical reference of the sample.'} sampleCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Plot the sample was clipped from.'} plotCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Species the clipping was sorted into.'} speciesCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Height above ground the clipping was cut at, in centimetres.'} cutHeightCm: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Oven-dry mass of the clipping in kilograms.'} dryMassKg: Decimal[1];
+  {meta::pure::profiles::doc.doc = 'Moisture percentage measured before drying.'} moisturePct: Float[1];
+  {meta::pure::profiles::doc.doc = 'Day the clipping was taken.'} collectedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Instant the weighed sample was logged.'} loggedAt: DateTime[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One delineated meadow plot, versioned on the same processing axis as the samples clipped from it so that a plot re-measurement does not silently rewrite history.'} test::meadowwarren5::domain::MeadowPlot
+{
+  {meta::pure::profiles::doc.doc = 'Canonical reference of the plot.'} plotCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Plot name used in the field notebook.'} plotName: String[1];
+  {meta::pure::profiles::doc.doc = 'Slope aspect the plot faces.'} aspectCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Mean elevation of the plot in metres.'} elevationM: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Delineated area of the plot in hectares.'} areaHa: Decimal[1];
+  {meta::pure::profiles::doc.doc = 'Mean slope of the plot as a percentage.'} slopePct: Float[1];
+  {meta::pure::profiles::doc.doc = 'Day the plot outline was last surveyed.'} surveyedOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Instant the plot record was last revised.'} revisedAt: DateTime[1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One daily weather summary published for a plot by its nearest station, versioned so that a late-arriving station correction is a new version of the same summary.'} test::meadowwarren5::domain::WeatherSummary
+{
+  {meta::pure::profiles::doc.doc = 'Canonical reference of the summary.'} summaryCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Plot the summary was published for.'} plotCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Station that produced the summary.'} stationCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Nights below freezing counted in the summary period.'} frostNights: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Rainfall total for the summary period in millimetres.'} rainfallMm: Decimal[1];
+  {meta::pure::profiles::doc.doc = 'Mean air temperature for the summary period in degrees Celsius.'} meanTempC: Float[1];
+  {meta::pure::profiles::doc.doc = 'Day the summary covers.'} summaryOn: StrictDate[1];
+  {meta::pure::profiles::doc.doc = 'Instant the station published the summary.'} publishedAt: DateTime[1];
+}

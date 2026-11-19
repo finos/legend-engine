@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarorchard3::mapping::CuratorMapping
+(
+  test::cedarorchard3::domain::Gallery: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarorchard3::store::CuratorDatabase]MUSEUM.GALLERY.GALLERY_ID
+    )
+    ~mainTable [test::cedarorchard3::store::CuratorDatabase]MUSEUM.GALLERY
+    galleryId: [test::cedarorchard3::store::CuratorDatabase]MUSEUM.GALLERY.GALLERY_ID,
+    name: [test::cedarorchard3::store::CuratorDatabase]MUSEUM.GALLERY.NAME,
+    wing: [test::cedarorchard3::store::CuratorDatabase]MUSEUM.GALLERY.WING
+  }
+
+  test::cedarorchard3::domain::Exhibit: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarorchard3::store::CuratorDatabase]MUSEUM.EXHIBIT.EXHIBIT_ID
+    )
+    ~mainTable [test::cedarorchard3::store::CuratorDatabase]MUSEUM.EXHIBIT
+    exhibitId: [test::cedarorchard3::store::CuratorDatabase]MUSEUM.EXHIBIT.EXHIBIT_ID,
+    title: [test::cedarorchard3::store::CuratorDatabase]MUSEUM.EXHIBIT.TITLE,
+    material: [test::cedarorchard3::store::CuratorDatabase]MUSEUM.EXHIBIT.MATERIAL,
+    acquisitionYear: [test::cedarorchard3::store::CuratorDatabase]MUSEUM.EXHIBIT.ACQUISITION_YEAR,
+    gallery: [test::cedarorchard3::store::CuratorDatabase]@Exhibit_Gallery
+  }
+
+  testSuites:
+  [
+    exhibitProjectionSuite:
+    {
+      function: |test::cedarorchard3::domain::Exhibit.all()->project(
+        [
+          x|$x.title,
+          x|$x.material,
+          x|$x.acquisitionYear
+        ],
+        [
+          'Title',
+          'Material',
+          'Acquired'
+        ]
+      );
+      tests:
+      [
+        exhibitProjection:
+        {
+          data:
+          [
+            test::cedarorchard3::store::CuratorDatabase: Reference
+              #{
+                test::cedarorchard3::data::CuratorTestData
+              }#
+          ];
+          asserts:
+          [
+            projectedRows: EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "Title" : "Woven Reed Basket",\n  "Material" : "TEXTILE",\n  "Acquired" : 1998\n}, {\n  "Title" : "Glazed Water Jug",\n  "Material" : "CERAMIC",\n  "Acquired" : 2004\n}, {\n  "Title" : "Carved Cedar Panel",\n  "Material" : "WOOD",\n  "Acquired" : 2011\n}, {\n  "Title" : "Hammered Copper Bowl",\n  "Material" : "METAL",\n  "Acquired" : 2007\n} ]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

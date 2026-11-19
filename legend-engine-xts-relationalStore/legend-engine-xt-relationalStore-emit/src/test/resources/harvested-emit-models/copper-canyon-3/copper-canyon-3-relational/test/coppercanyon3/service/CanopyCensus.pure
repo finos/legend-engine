@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coppercanyon3::service::CanopyCensus
+{
+  pattern: '/coppercanyon/canopyCensus/{minTrunkCm}';
+  owners:
+  [
+    'canopy-inventory'
+  ];
+  documentation: 'Projects each tree specimen with the district reached through the planting-site join and the girth band derived in the relational mapping, restricted to specimens at or above a caller-supplied trunk girth.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minTrunkCm: Integer[1]|test::coppercanyon3::domain::TreeSpecimen.all()->filter(
+      t|($t.trunkCm >= $minTrunkCm) && ($t.speciesName->startsWith('A'))
+    )->project(
+      [
+        t|$t.tagCode,
+        t|$t.districtName,
+        t|$t.girthBand
+      ],
+      [
+        'Tag',
+        'District',
+        'Band'
+      ]
+    )->sort([asc('Tag')])};
+    mapping: test::coppercanyon3::mapping::CanopyMapping;
+    runtime: test::coppercanyon3::runtime::CanopyRuntime;
+  }
+  testSuites:
+  [
+    canopyCensusSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          canopyConnection:
+            Relational
+            #{
+              canopy.planting_site:
+                'site_code,district_name,surface_type\n'+
+                'PS-01,Riverside Terrace,PERMEABLE\n'+
+                'PS-02,Old Quarry Row,SEALED\n';
+
+              canopy.tree_specimen:
+                'tag_code,species_name,trunk_cm,planted_year,site_code\n'+
+                'TS-01,Alder Broadleaf,74,1998,PS-01\n'+
+                'TS-02,Aspen Slender,32,2011,PS-02\n'+
+                'TS-03,Ash,80,1975,PS-01\n'+
+                'TS-04,Birch Narrow,66,2004,PS-02\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        broadAndSlenderBands:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minTrunkCm = 30
+          ]
+          asserts:
+          [
+            threeSpecimens:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tag":"TS-01","District":"Riverside Terrace","Band":"BROAD"},{"Tag":"TS-02","District":"Old Quarry Row","Band":"SLENDER"},{"Tag":"TS-03","District":"Riverside Terrace","Band":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

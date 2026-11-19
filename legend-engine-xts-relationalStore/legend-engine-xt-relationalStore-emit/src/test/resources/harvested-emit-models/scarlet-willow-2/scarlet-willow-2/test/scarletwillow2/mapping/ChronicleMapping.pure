@@ -1,0 +1,261 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletwillow2::mapping::ChronicleMapping
+(
+  include mapping test::scarletwillow2::mapping::ItemRefMapping[test::scarletwillow2::store::ItemRefDB->test::scarletwillow2::store::ChronicleDB]
+  include mapping test::scarletwillow2::mapping::RecordRefMapping[test::scarletwillow2::store::RecordRefDB->test::scarletwillow2::store::ChronicleDB]
+
+  test::scarletwillow2::domain::RecordStatus: EnumerationMapping LineStatusMapping
+  {
+    PRELIMINARY: ['PRELIM'],
+    FINAL: ['FINAL']
+  }
+
+  test::scarletwillow2::domain::ShelvableKind: EnumerationMapping LineShelvableMapping
+  {
+    OPEN_SHELF: ['OPEN'],
+    CLOSED_SHELF: ['CLOSED']
+  }
+
+  test::scarletwillow2::domain::IdentifierKind: EnumerationMapping LineIdentifierMapping
+  {
+    DOSSIER_CODE: ['DOSSIER'],
+    RECORD_NUMBER: ['RECORD']
+  }
+
+  *test::scarletwillow2::domain::HoldingLine[holdingLine]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(quantityLine, extentLine)
+  }
+
+  test::scarletwillow2::domain::HoldingLine[quantityLine]: Relational
+  {
+    ~filter [test::scarletwillow2::store::ChronicleDB]FinalLines
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.line_code,
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity
+    lineCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.line_code,
+    recordNoText: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.record_no_text,
+    unitCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.unit_code,
+    entityCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.entity_code,
+    programCode: 'CONSERVATION-COUNTED',
+    shelvable: EnumerationMapping LineShelvableMapping: 'OPEN',
+    identifierKind: EnumerationMapping LineIdentifierMapping: 'RECORD',
+    measureValue: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.counted_sheets,
+    unit[unitRateRef]: [test::scarletwillow2::store::ChronicleDB]@Quantity_Unit,
+    record[recordRef]: [test::scarletwillow2::store::ChronicleDB]@Quantity_Record
+  }
+
+  test::scarletwillow2::domain::HoldingLine[extentLine]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.line_code,
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent
+    lineCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.line_code,
+    recordNoText: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.record_no_text,
+    unitCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.unit_code,
+    entityCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.entity_code,
+    programCode: 'CONSERVATION-MEASURED',
+    shelvable: EnumerationMapping LineShelvableMapping: 'CLOSED',
+    identifierKind: EnumerationMapping LineIdentifierMapping: 'RECORD',
+    measureValue: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.measured_extent,
+    unit[unitRateRef]: [test::scarletwillow2::store::ChronicleDB]@Extent_Unit,
+    record[recordRef]: [test::scarletwillow2::store::ChronicleDB]@Extent_Record
+  }
+
+  *test::scarletwillow2::domain::ConservationEntry[conservationEntry]: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_(wetEntry, dryEntry, auditLine)
+  }
+
+  *test::scarletwillow2::domain::TreatmentEntry[treatmentEntry]: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_(wetEntry, dryEntry)
+  }
+
+  *test::scarletwillow2::domain::WetTreatmentEntry[wetEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.line_code,
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity
+    entryCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.line_code,
+    status: EnumerationMapping LineStatusMapping: rtrim([test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.status_code),
+    recordedOn: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.recorded_on,
+    treatmentCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.treatment_code,
+    bathMinutes: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.bath_minutes
+  }
+
+  *test::scarletwillow2::domain::DryTreatmentEntry[dryEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.line_code,
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent
+    entryCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.line_code,
+    status: EnumerationMapping LineStatusMapping: rtrim([test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.status_code),
+    recordedOn: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.recorded_on,
+    treatmentCode: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.treatment_code,
+    pressGrams: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_extent.press_grams
+  }
+
+  *test::scarletwillow2::domain::AuditEntry[auditLine]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.line_code,
+      [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity
+    entryCode: concat('AUD-', [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.line_code),
+    status: EnumerationMapping LineStatusMapping: rtrim([test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.status_code),
+    recordedOn: [test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.recorded_on,
+    auditorLabel: toUpper([test::scarletwillow2::store::ChronicleDB]chronicle.holding_quantity.auditor_label)
+  }
+
+  testSuites:
+  [
+    holdingLineSuite:
+    {
+      function: |test::scarletwillow2::domain::HoldingLine.all(%2026-04-01)->project(
+        [
+          l|$l.lineCode,
+          l|$l.record.recordLabel,
+          l|$l.unit.unitName,
+          l|$l.measureValue,
+          l|if($l.shelvable == test::scarletwillow2::domain::ShelvableKind.OPEN_SHELF, |'OPEN SHELF', |'CLOSED SHELF'),
+          l|if($l.identifierKind == test::scarletwillow2::domain::IdentifierKind.RECORD_NUMBER, |'RECORD NUMBER', |'DOSSIER CODE')
+        ],
+        [
+          'Line',
+          'Record',
+          'Unit',
+          'Measure',
+          'Shelving',
+          'Identifier'
+        ]
+      )->sort([asc('Line')]);
+      tests:
+      [
+        unionOfBothRelations:
+        {
+          doc: 'Assembles the holding-line extent algebraically from the counted and measured relations, so the constant classification each relation assigns distinguishes its own rows, and both reference hops resolve through the parsed record key and the unit code. The preliminary counted line is excluded by the relation filter.';
+          data:
+          [
+            test::scarletwillow2::store::ChronicleDB:
+              Relational
+              #{
+                chronicle.holding_quantity:
+                  'line_code,record_no_text,unit_code,entity_code,treatment_code,status_code,counted_sheets,bath_minutes,auditor_label,recorded_on,bus_from,bus_thru\n'+
+                  'QL-01,5101,UNI-01,ENT-01,TR-01,FINAL,18,45,ida marbler,2026-01-15,2026-01-01,2026-12-31\n'+
+                  'QL-02,5102,UNI-02,ENT-01,TR-02,PRELIM,26,60,jo presser,2026-02-15,2026-01-01,2026-12-31\n';
+                chronicle.holding_extent:
+                  'line_code,record_no_text,unit_code,entity_code,treatment_code,status_code,measured_extent,press_grams,recorded_on,bus_from,bus_thru\n'+
+                  'EL-01,5101,UNI-02,ENT-02,TR-03,FINAL,140,900,2026-01-20,2026-01-01,2026-12-31\n';
+                reference.item_ref:
+                  'item_code,item_name,shelvable_code,bus_from,bus_thru\n'+
+                  'ITM-01,Bound Chronicle Volume,OPEN,2026-01-01,2026-12-31\n';
+                reference.unit_rate_ref:
+                  'unit_code,unit_name,basis_code,bus_from,bus_thru\n'+
+                  'UNI-01,Sheet Washing,SHEET,2026-01-01,2026-12-31\n'+
+                  'UNI-02,Folio Pressing,FOLIO,2026-01-01,2026-12-31\n';
+                registry.record_ref:
+                  'record_no,raised_by,bus_from,bus_thru\n'+
+                  '5101,North Workshop,2026-01-01,2026-12-31\n'+
+                  '5102,South Workshop,2026-01-01,2026-12-31\n';
+                registry.entity_ref:
+                  'entity_code,entity_name,bus_from,bus_thru\n'+
+                  'ENT-01,Paper Conservation,2026-01-01,2026-12-31\n'+
+                  'ENT-02,Photographic Conservation,2026-01-01,2026-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            unionedLines:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Line":"EL-01","Record":"5101","Unit":"Folio Pressing","Measure":140,"Shelving":"CLOSED SHELF","Identifier":"RECORD NUMBER"},{"Line":"QL-01","Record":"5101","Unit":"Sheet Washing","Measure":18,"Shelving":"OPEN SHELF","Identifier":"RECORD NUMBER"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    conservationEntrySuite:
+    {
+      function: |test::scarletwillow2::domain::ConservationEntry.all(%2026-04-01)->project(
+        [
+          e|$e.entryCode,
+          e|if($e.status == test::scarletwillow2::domain::RecordStatus.FINAL, |'FINAL STATE', |'OTHER STATE'),
+          e|$e.recordedOn
+        ],
+        [
+          'Entry',
+          'State',
+          'Recorded'
+        ]
+      )->sort([asc('Entry')]);
+      tests:
+      [
+        entriesResolvedThroughSubtypes:
+        {
+          doc: 'Reads the supertype extent, which is never mapped directly, so the query resolves to the wet, dry and review implementations beneath it; the padded state codes only translate once trimmed, and the preliminary rows take the other-state arm.';
+          data:
+          [
+            test::scarletwillow2::store::ChronicleDB:
+              Relational
+              #{
+                chronicle.holding_quantity:
+                  'line_code,record_no_text,unit_code,entity_code,treatment_code,status_code,counted_sheets,bath_minutes,auditor_label,recorded_on,bus_from,bus_thru\n'+
+                  'QL-01,5101,UNI-01,ENT-01,TR-01,FINAL,18,45,ida marbler,2026-01-15,2026-01-01,2026-12-31\n'+
+                  'QL-02,5102,UNI-02,ENT-01,TR-02,PRELIM,26,60,jo presser,2026-02-15,2026-01-01,2026-12-31\n';
+                chronicle.holding_extent:
+                  'line_code,record_no_text,unit_code,entity_code,treatment_code,status_code,measured_extent,press_grams,recorded_on,bus_from,bus_thru\n'+
+                  'EL-01,5101,UNI-02,ENT-02,TR-03,FINAL,140,900,2026-01-20,2026-01-01,2026-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            resolvedEntries:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Entry":"AUD-QL-01","State":"FINAL STATE","Recorded":"2026-01-15"},{"Entry":"AUD-QL-02","State":"OTHER STATE","Recorded":"2026-02-15"},{"Entry":"EL-01","State":"FINAL STATE","Recorded":"2026-01-20"},{"Entry":"QL-01","State":"FINAL STATE","Recorded":"2026-01-15"},{"Entry":"QL-02","State":"OTHER STATE","Recorded":"2026-02-15"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

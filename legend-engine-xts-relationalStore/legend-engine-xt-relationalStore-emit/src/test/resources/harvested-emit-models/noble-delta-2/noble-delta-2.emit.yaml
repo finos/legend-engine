@@ -1,0 +1,60 @@
+name: noble-delta-2
+title: "Noble Delta 2 — Cycleway Counting Windows Classified by an Eight-Arm Conditional over a Three-Hop Join Chain"
+description: |
+  A cycleway counting corpus whose survey codes are classified in the mapping
+  rather than the query: an eight-arm nested conditional turns the raw weather
+  code into a band and falls through to a null sentinel for an unrecognised
+  code, while two further conditionals derive a crowd tier from a numeric
+  comparison and a surface state from a literal set membership test. String
+  functions normalise the free-text note, a literal stamps the survey
+  programme, and each window resolves its unit one hop away, its segment two
+  hops away and its planning district three hops away, with the recording unit
+  also reached through an association implementation. Two store filters on
+  different tables and a shared data element back the mapping test suites.
+modelSources:
+  model:
+    root: noble-delta-2
+    files:
+      - test/nobledelta2/connection/CyclewayConnection.pure
+      - test/nobledelta2/data/CyclewayTestData.pure
+      - test/nobledelta2/domain/CyclewayDomain.pure
+      - test/nobledelta2/mapping/CyclewayMapping.pure
+      - test/nobledelta2/runtime/CyclewayRuntime.pure
+      - test/nobledelta2/store/CyclewayDB.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:qualified-property
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-literal-list
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-table-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-mapping
+  - conditional-transform
+  - cycleway-counting
+  - data-element
+  - mapping-test
+  - multi-hop-join
+  - null-sentinel
+  - qualified-property
+  - relational
+  - store-filter
+  - string-function

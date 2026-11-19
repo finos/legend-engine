@@ -1,0 +1,205 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::scarletglacier2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A gardener applying to the site committee. The applicant code carries a validation rule so a malformed envelope is refused at construction.'} demo::scarletglacier2::domain::GardenApplicant
+[
+  applicantCodeWellFormed: $this.applicantCode->matches('AP-[0-9]{6}')
+]
+{
+  applicantCode: String[1];
+  givenName: String[1];
+  familyName: String[1];
+  preferredContact: ContactMethod[1];
+  registeredOn: StrictDate[1];
+  telephone: String[0..1];
+  noticeboardHandle: String[0..1];
+  addresses: ContactAddress[*];
+  identifications: IdentificationDescriptor[*];
+  relatedPersons: RelatedPersonDescriptor[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A postal or site address held for a gardener. The postcode rule is vacuous when the optional postcode is absent.'} demo::scarletglacier2::domain::ContactAddress
+[
+  postcodeWellFormed: $this.postcode->isEmpty() || $this.postcode->toOne()->matches('[A-Z]{2}[0-9]{2}')
+]
+{
+  addressKind: AddressKind[1];
+  firstLine: String[1];
+  town: String[1];
+  postcode: String[0..1];
+  effectiveFrom: StrictDate[1];
+  effectiveTo: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A residency evidence descriptor offered with an application.'} demo::scarletglacier2::domain::IdentificationDescriptor
+[
+  evidenceReferenceWellFormed: $this.evidenceReference->matches('EV-[0-9]{4}-[A-Z]{2}')
+]
+{
+  identificationKind: IdentificationKind[1];
+  evidenceReference: String[1];
+  issuedOn: StrictDate[1];
+  expiresOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A person standing behind a gardener on a co-tenancy or guardianship footing.'} demo::scarletglacier2::domain::RelatedPersonDescriptor
+[
+  relatedCodeWellFormed: $this.relatedCode->matches('RP-[0-9]{5}')
+]
+{
+  relatedCode: String[1];
+  relation: RelationKind[1];
+  displayName: String[1];
+  sharesHousehold: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The common envelope shape of every application lodged with the site committee.'} demo::scarletglacier2::domain::PermitApplication
+[
+  applicationReferenceWellFormed: $this.applicationReference->matches('APP-[0-9]{7}')
+]
+{
+  applicationReference: String[1];
+  status: ApplicationStatus[1];
+  lodgedOn: StrictDate[1];
+  applicant: GardenApplicant[1];
+  decidedOn: StrictDate[0..1];
+  committeeNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An application to take a household allotment for the first time.'} demo::scarletglacier2::domain::HouseholdPermitApplication extends PermitApplication
+[
+  householdSizeAtLeastOne: $this.householdSize >= 1
+]
+{
+  householdSize: Integer[1];
+  requestedFraction: PlotFraction[1];
+  tenure: TenureKind[1];
+  wateringPreference: WateringWindow[0..1];
+  cultivationPlan: CultivationPlan[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An application correcting or restating the standing record of a plot already let.'} demo::scarletglacier2::domain::PlotRecordApplication extends PermitApplication
+[
+  plotReferenceWellFormed: $this.plotReference->matches('PLOT-[0-9]{3}')
+]
+{
+  plotReference: String[1];
+  allocation: PlotAllocation[1];
+  soilGradeStated: SoilGrade[0..1];
+  correctionSummary: String[0..1];
+  inspections: InspectionVisit[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An application adding a second gardener to an existing tenancy.'} demo::scarletglacier2::domain::CoTenantPermitApplication extends PermitApplication
+[
+  coTenantCodeWellFormed: $this.coTenantCode->matches('CT-[0-9]{5}')
+]
+{
+  coTenantCode: String[1];
+  coTenant: RelatedPersonDescriptor[1];
+  sharedFraction: PlotFraction[1];
+  consentRecordedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An application whose whole substance is a set of uploaded documents. Appears on one diagram only.'} demo::scarletglacier2::domain::DocumentUploadApplication extends PermitApplication
+[
+  batchReferenceWellFormed: $this.batchReference->matches('BATCH-[0-9]{6}')
+]
+{
+  batchReference: String[1];
+  channel: UploadChannel[1];
+  documents: AttachedDocument[1..*];
+  acknowledgedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A document carried with an application.'} demo::scarletglacier2::domain::AttachedDocument
+[
+  fileNameWellFormed: $this.fileName->matches('[a-z0-9-]+\\.[a-z]{3}')
+]
+{
+  category: DocumentCategory[1];
+  fileName: String[1];
+  receivedOn: StrictDate[1];
+  pageCount: Integer[0..1];
+  caption: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The standing allotment of ground behind a plot record. The area rule is the one numeric validation in the model.'} demo::scarletglacier2::domain::PlotAllocation
+[
+  areaAtLeastOneSquareMetre: $this.areaSquareMetres >= 1
+]
+{
+  plotReference: String[1];
+  fraction: PlotFraction[1];
+  areaSquareMetres: Float[1];
+  soilGrade: SoilGrade[1];
+  wateringWindow: WateringWindow[0..1];
+  bedCount: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'What a gardener proposes to grow over a season.'} demo::scarletglacier2::domain::CultivationPlan
+[
+  seasonLabelWellFormed: $this.seasonLabel->matches('[0-9]{4}-(SPRING|SUMMER|AUTUMN)')
+]
+{
+  seasonLabel: String[1];
+  cropNames: String[1..*];
+  irrigationSlots: IrrigationSlot[*];
+  compostShared: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rostered watering slot on a plot.'} demo::scarletglacier2::domain::IrrigationSlot
+[
+  slotCodeWellFormed: $this.slotCode->matches('SLOT-[A-Z]{2}[0-9]{2}')
+]
+{
+  slotCode: String[1];
+  window: WateringWindow[1];
+  weekday: String[1];
+  durationMinutes: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A walk-round inspection recorded against a plot.'} demo::scarletglacier2::domain::InspectionVisit
+[
+  visitCodeWellFormed: $this.visitCode->matches('IV-[0-9]{6}')
+]
+{
+  visitCode: String[1];
+  visitedOn: StrictDate[1];
+  outcome: InspectionOutcome[1];
+  inspectorName: String[1];
+  advisoryText: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A shared tool signed out of the site shed. Carried by the model but shown on no diagram.'} demo::scarletglacier2::domain::ToolShareEntry
+[
+  toolCodeWellFormed: $this.toolCode->matches('TOOL-[0-9]{4}')
+]
+{
+  toolCode: String[1];
+  toolName: String[1];
+  signedOutOn: StrictDate[1];
+  returnedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A notice pinned on the site board. Shown on no diagram.'} demo::scarletglacier2::domain::SiteNoticePost
+{
+  noticeCode: String[1];
+  headline: String[1];
+  postedOn: StrictDate[1];
+  takenDownOn: StrictDate[0..1];
+}

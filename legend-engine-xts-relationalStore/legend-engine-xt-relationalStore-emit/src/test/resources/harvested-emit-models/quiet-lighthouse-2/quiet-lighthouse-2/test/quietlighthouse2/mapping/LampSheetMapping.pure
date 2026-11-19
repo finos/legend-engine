@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietlighthouse2::mapping::LampSheetMapping
+(
+  test::quietlighthouse2::domain::LampKind: EnumerationMapping SheetLampKindMapping
+  {
+    OIL: ['OI'],
+    ACETYLENE: ['AC'],
+    ELECTRIC: ['EL'],
+    UNRECORDED: ['ZZ']
+  }
+
+  test::quietlighthouse2::domain::Glazing: EnumerationMapping GlazingMapping
+  {
+    CLEAR: ['CL'],
+    RUBY: ['RB'],
+    EMERALD: ['EM'],
+    UNGLAZED: ['NG']
+  }
+
+  test::quietlighthouse2::domain::ShoreAspect: EnumerationMapping AspectMapping
+  {
+    SEAWARD: ['SW'],
+    HARBOURWARD: ['HW'],
+    ESTUARY: ['ES'],
+    UNKNOWN: ['UK']
+  }
+
+  *test::quietlighthouse2::published::LampSheet: Pure
+  {
+    ~src test::quietlighthouse2::domain::LampRecord
+    lampCode: $src.lampCode->trim()->toUpper(),
+    beamClass: if($src.wattage->isEmpty(), |[], |if($src.wattage->toOne() >= 2000, |'GREAT COAST', |if($src.wattage->toOne() >= 1000, |'MAJOR', |if($src.wattage->toOne() >= 500, |'COASTAL', |if($src.wattage->toOne() >= 250, |'HARBOUR', |if($src.wattage->toOne() >= 100, |'PIER', |if($src.wattage->toOne() >= 50, |'BUOY', |if($src.wattage->toOne() >= 10, |'MARKER', |if($src.wattage->toOne() > 0, |'GLIMMER', |[]))))))))),
+    markingFlag: if(and(isNotEmpty($src.markings), isNotEmpty($src.markings->filter(m|in(toUpper(trim($m)), ['RED', 'GREEN'])))), |'SECTORED', |'PLAIN'),
+    leadMarking: if(and(isNotEmpty($src.markings), isNotEmpty($src.markings->filter(m|in(toUpper(trim($m)), ['RED', 'GREEN', 'WHITE'])))), |$src.markings->first(), |$src.lampText),
+    allMarkings: $src.markings->map(m|$m->trim()->toUpper()),
+    lampKind: EnumerationMapping SheetLampKindMapping: [if($src.lampText->isEmpty(), |'ZZ', |if($src.lampText->toOne()->toUpper()->startsWith('OIL'), |'OI', |if($src.lampText->toOne()->toUpper()->startsWith('ACET'), |'AC', |if($src.lampText->toOne()->toUpper()->startsWith('ELEC'), |'EL', |'ZZ'))))],
+    glazing: EnumerationMapping GlazingMapping: [if($src.glassText->isEmpty(), |'NG', |if($src.glassText->toOne()->toUpper()->contains('RUBY'), |'RB', |if($src.glassText->toOne()->toUpper()->contains('EMERALD'), |'EM', |if($src.glassText->toOne()->toUpper()->contains('CLEAR'), |'CL', |'NG'))))],
+    aspect: EnumerationMapping AspectMapping: [if($src.aspectCode->isEmpty(), |'UK', |if($src.aspectCode->toOne()->trim()->toUpper() == 'S', |'SW', |if($src.aspectCode->toOne()->trim()->toUpper() == 'H', |'HW', |if($src.aspectCode->toOne()->trim()->toUpper() == 'E', |'ES', |'UK'))))]
+  }
+
+  testSuites:
+  [
+    lampSheetSuite:
+    {
+      function: |test::quietlighthouse2::published::LampSheet.all()->graphFetch(
+  #{
+    test::quietlighthouse2::published::LampSheet
+  {
+    lampCode,
+    beamClass,
+    markingFlag,
+    leadMarking,
+    allMarkings,
+    lampKind,
+    glazing,
+    aspect,
+    sheetLabel('LAMP')
+  }
+  }#
+)->serialize(
+  #{
+    test::quietlighthouse2::published::LampSheet
+  {
+    lampCode,
+    beamClass,
+    markingFlag,
+    leadMarking,
+    allMarkings,
+    lampKind,
+    glazing,
+    aspect,
+    sheetLabel('LAMP')
+  }
+  }#
+);
+      tests:
+      [
+        everyBeamArmAndFallback:
+        {
+          doc: 'Hits all eight wattage arms of the beam class chain plus the empty-wattage and zero-wattage null fallbacks, both marking-selection branches, the unrecognised lamp text that the lamp-kind expression routes onto the unrecorded code, every glazing and aspect arm, and the parameterised sheet label.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::quietlighthouse2::domain::LampRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lampCode":"  l-01 ","fittedFlag":"Y","markings":["red","White"],"lampText":"Electric arc","wattage":2500,"glassText":"Ruby pane","aspectCode":"S"},{"lampCode":"l-02","fittedFlag":"Y","markings":["white"],"lampText":"Oil wick","wattage":1200,"glassText":"clear glass","aspectCode":"H"},{"lampCode":"l-03","fittedFlag":"Y","markings":[],"lampText":"Acetylene burner","wattage":600,"glassText":"Emerald pane","aspectCode":"E"},{"lampCode":"l-04","fittedFlag":"Y","markings":[" green "],"lampText":"Paraffin mantle","wattage":300,"aspectCode":"s"},{"lampCode":"l-05","fittedFlag":"Y","markings":["amber"],"wattage":150,"glassText":"frosted","aspectCode":"Q"},{"lampCode":"l-06","fittedFlag":"Y","markings":["GREEN","red"],"lampText":"Electric lamp","wattage":60,"glassText":"ruby","aspectCode":"E"},{"lampCode":"l-07","fittedFlag":"Y","markings":[],"lampText":"oil lamp","wattage":20,"glassText":"clear","aspectCode":"H"},{"lampCode":"l-08","fittedFlag":"Y","markings":["white"],"lampText":"Electric","wattage":5,"glassText":"emerald","aspectCode":"S"},{"lampCode":"l-09","fittedFlag":"Y","markings":[],"lampText":"Acetylene"},{"lampCode":"l-10","fittedFlag":"Y","markings":["blue"],"lampText":"Electric","wattage":0,"glassText":"clear","aspectCode":" h "},{"lampCode":"l-11","fittedFlag":"Y","markings":["Red"],"lampText":"Electric arc","wattage":1000,"glassText":"RUBY","aspectCode":"e"}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            everyArmDerived:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"lampCode":"L-01","beamClass":"GREAT COAST","markingFlag":"SECTORED","leadMarking":"red","allMarkings":["RED","WHITE"],"lampKind":"ELECTRIC","glazing":"RUBY","aspect":"SEAWARD","sheetLabel(\'LAMP\')":"LAMP/L-01"},{"lampCode":"L-02","beamClass":"MAJOR","markingFlag":"PLAIN","leadMarking":"white","allMarkings":["WHITE"],"lampKind":"OIL","glazing":"CLEAR","aspect":"HARBOURWARD","sheetLabel(\'LAMP\')":"LAMP/L-02"},{"lampCode":"L-03","beamClass":"COASTAL","markingFlag":"PLAIN","leadMarking":"Acetylene burner","allMarkings":[],"lampKind":"ACETYLENE","glazing":"EMERALD","aspect":"ESTUARY","sheetLabel(\'LAMP\')":"LAMP/L-03"},{"lampCode":"L-04","beamClass":"HARBOUR","markingFlag":"SECTORED","leadMarking":" green ","allMarkings":["GREEN"],"lampKind":"UNRECORDED","glazing":"UNGLAZED","aspect":"SEAWARD","sheetLabel(\'LAMP\')":"LAMP/L-04"},{"lampCode":"L-05","beamClass":"PIER","markingFlag":"PLAIN","leadMarking":null,"allMarkings":["AMBER"],"lampKind":"UNRECORDED","glazing":"UNGLAZED","aspect":"UNKNOWN","sheetLabel(\'LAMP\')":"LAMP/L-05"},{"lampCode":"L-06","beamClass":"BUOY","markingFlag":"SECTORED","leadMarking":"GREEN","allMarkings":["GREEN","RED"],"lampKind":"ELECTRIC","glazing":"RUBY","aspect":"ESTUARY","sheetLabel(\'LAMP\')":"LAMP/L-06"},{"lampCode":"L-07","beamClass":"MARKER","markingFlag":"PLAIN","leadMarking":"oil lamp","allMarkings":[],"lampKind":"OIL","glazing":"CLEAR","aspect":"HARBOURWARD","sheetLabel(\'LAMP\')":"LAMP/L-07"},{"lampCode":"L-08","beamClass":"GLIMMER","markingFlag":"PLAIN","leadMarking":"white","allMarkings":["WHITE"],"lampKind":"ELECTRIC","glazing":"EMERALD","aspect":"SEAWARD","sheetLabel(\'LAMP\')":"LAMP/L-08"},{"lampCode":"L-09","beamClass":null,"markingFlag":"PLAIN","leadMarking":"Acetylene","allMarkings":[],"lampKind":"ACETYLENE","glazing":"UNGLAZED","aspect":"UNKNOWN","sheetLabel(\'LAMP\')":"LAMP/L-09"},{"lampCode":"L-10","beamClass":null,"markingFlag":"PLAIN","leadMarking":"Electric","allMarkings":["BLUE"],"lampKind":"ELECTRIC","glazing":"CLEAR","aspect":"HARBOURWARD","sheetLabel(\'LAMP\')":"LAMP/L-10"},{"lampCode":"L-11","beamClass":"MAJOR","markingFlag":"SECTORED","leadMarking":"Red","allMarkings":["RED"],"lampKind":"ELECTRIC","glazing":"RUBY","aspect":"ESTUARY","sheetLabel(\'LAMP\')":"LAMP/L-11"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

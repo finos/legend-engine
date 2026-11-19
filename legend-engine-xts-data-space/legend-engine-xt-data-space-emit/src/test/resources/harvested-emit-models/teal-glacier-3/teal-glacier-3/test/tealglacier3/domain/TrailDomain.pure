@@ -1,0 +1,39 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A footbridge on the alpine trail network, carrying the reference the inspection register keys on, the district it is walked out of, the span the load rating was assessed over, the date it was last inspected and whether that assessment left it rated to carry a load.'} demo::tealglacier3::domain::TrailBridge
+{
+  bridgeId: Integer[1];
+  bridgeCode: String[1];
+  districtCode: String[1];
+  districtName: String[0..1];
+  spanM: Integer[1];
+  inspectedOn: StrictDate[1];
+  loadRated: Boolean[1];
+  spanLabel() {$this.bridgeCode->trim()->toUpper() + '/' + $this.spanM->toString()->lpad(3, '0') + 'M'}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A district the trail network is walked out of, holding the reference the bridges quote and the name the register publishes in their place.'} demo::tealglacier3::domain::TrailDistrict
+{
+  districtCode: String[1];
+  districtName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A volunteer inspection party the district rosters against a walk-out; it is published in the catalogued entry point and drawn in the register layout so a consumer reads how a bridge inspection is staffed, and it carries no store binding of its own because the roster is kept off the register.'} demo::tealglacier3::domain::InspectionParty
+{
+  partyCode: String[1];
+  districtCode: String[1];
+  walkOutSize: Integer[1];
+}

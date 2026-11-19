@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ExternalFormat
+Binding test::noblewarren2::external::SurveyorRosterBinding
+{
+  schemaSet: test::noblewarren2::external::SurveyorRosterSchemas;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [
+    test::noblewarren2::source::WarrenSurveyor
+  ];
+}
+
+Binding test::noblewarren2::external::BurrowSiteBinding
+{
+  schemaSet: test::noblewarren2::external::BurrowSiteSchemas;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [
+    test::noblewarren2::source::BurrowSite
+  ];
+}
+
+SchemaSet test::noblewarren2::external::SurveyorRosterSchemas
+{
+  format: FlatData;
+  schemas: [
+    {
+      id: surveyorRoster;
+      location: 'surveyor-roster.csv';
+      content: 'section roster: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n  Record\n  {\n    givenName  : STRING;\n    familyName : STRING;\n  }\n}';
+    }
+  ];
+}
+
+SchemaSet test::noblewarren2::external::BurrowSiteSchemas
+{
+  format: FlatData;
+  schemas: [
+    {
+      id: burrowSites;
+      location: 'burrow-sites.csv';
+      content: 'section sites: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n  Record\n  {\n    siteCode : STRING;\n    siteName : STRING;\n  }\n}';
+    }
+  ];
+}

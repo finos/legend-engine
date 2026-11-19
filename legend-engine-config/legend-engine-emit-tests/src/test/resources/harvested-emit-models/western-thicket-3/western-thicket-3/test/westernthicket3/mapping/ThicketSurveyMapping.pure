@@ -1,0 +1,291 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernthicket3::mapping::ThicketSurveyMapping
+(
+  include mapping test::westernthicket3::mapping::ThicketRefMapping
+
+  test::westernthicket3::domain::RegrowthGrade: EnumerationMapping RegrowthGrades
+  {
+    VIGOROUS: ['V'],
+    STEADY: ['S'],
+    SLOW: ['L'],
+    STALLED: ['T']
+  }
+
+  *test::westernthicket3::domain::WardenRecord[wardenRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.warden_code
+    )
+    ~mainTable [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster
+    wardenCode: [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.warden_code,
+    wardenName: [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.warden_name
+  }
+
+  test::westernthicket3::domain::GroveWarden[groveWarden] extends [wardenRecord]: Relational
+  {
+    ~filter [test::westernthicket3::store::ThicketSurveyDb]GroveWardenFilter
+    ~primaryKey
+    (
+      [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.warden_code
+    )
+    ~mainTable [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster
+    rotaCode: [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.rota_code,
+    certifiedUntil: [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.certified_until
+  }
+
+  test::westernthicket3::domain::ContractWarden[contractWarden] extends [wardenRecord]: Relational
+  {
+    ~filter [test::westernthicket3::store::ThicketSurveyDb]ContractWardenFilter
+    ~primaryKey
+    (
+      [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.warden_code
+    )
+    ~mainTable [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster
+    supplierOrg: [test::westernthicket3::store::ThicketSurveyDb]thref.warden_roster.supplier_org
+  }
+
+  *test::westernthicket3::domain::CutSurveyRecord[cutSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.survey_id
+    )
+    ~mainTable [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey
+    surveyCode: [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.survey_code,
+    cutKind: toUpper(rtrim([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.cut_kind)),
+    regrowthGrade: EnumerationMapping RegrowthGrades: case(
+                                                        equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'A'),
+                                                        'V',
+                                                        case(
+                                                          or(
+                                                            equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'B'),
+                                                            equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'C')
+                                                          ),
+                                                          'S',
+                                                          case(
+                                                            or(
+                                                              equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'D'),
+                                                              equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'E')
+                                                            ),
+                                                            'L',
+                                                            'T'
+                                                          )
+                                                        )
+                                                      ),
+    stemCount: [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.stem_count,
+    stoolHeightCm: [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.stool_height_cm,
+    canopyGapPct: [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.canopy_gap_pct,
+    surveyedOn: [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.surveyed_on,
+    cycleStartedOn: [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.cycle_started_on,
+    tierLabel: 'COPPICE CORE',
+    standName: [test::westernthicket3::store::ThicketSurveyDb]@Survey_Stand | [test::westernthicket3::store::ThicketSurveyDb]thref.coppice_stand.stand_name,
+    groveName: [test::westernthicket3::store::ThicketSurveyDb]@Survey_Stand > @Stand_Grove | [test::westernthicket3::store::ThicketSurveyDb]thref.grove_block.grove_name,
+    standTally: [test::westernthicket3::store::ThicketSurveyDb]@Survey_Stand > @Stand_Grove > @Grove_StandTally | [test::westernthicket3::store::ThicketSurveyDb]thref.grove_stand_tally.stand_tally,
+    checkDigest: case(
+                   isNotEmpty([test::westernthicket3::store::ThicketSurveyDb]@Survey_Check | [test::westernthicket3::store::ThicketSurveyDb]thaudit.survey_check.check_note),
+                   substring(toUpper(rtrim([test::westernthicket3::store::ThicketSurveyDb]@Survey_Check | [test::westernthicket3::store::ThicketSurveyDb]thaudit.survey_check.check_note)), 1, 12),
+                   'NO CHECK NOTE'
+                 ),
+    vigourClass: case(
+                   equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'A'),
+                   'ARM ONE COPPICED',
+                   case(
+                     and(
+                       equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'B'),
+                       greaterThanEqual([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.stem_count, 12)
+                     ),
+                     'ARM TWO STEADY',
+                     case(
+                       or(
+                         equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'C'),
+                         equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'CC')
+                       ),
+                       'ARM THREE SLOW',
+                       case(
+                         equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'D'),
+                         'ARM FOUR STALLED',
+                         case(
+                           and(
+                             equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'E'),
+                             lessThan([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.stool_height_cm, 40.0)
+                           ),
+                           'ARM FIVE CROPPED',
+                           case(
+                             equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'F'),
+                             'ARM SIX BROWSED',
+                             case(
+                               equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'G'),
+                               'ARM SEVEN LAYERED',
+                               case(
+                                 equal([test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.regrowth_code, 'H'),
+                                 'ARM EIGHT SINGLED',
+                                 [test::westernthicket3::store::ThicketSurveyDb]thcore.cut_survey.spare_label
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 ),
+    warden[groveWarden]: [test::westernthicket3::store::ThicketSurveyDb]@Survey_Warden,
+    contractWarden[contractWarden]: [test::westernthicket3::store::ThicketSurveyDb]@Survey_Warden
+  }
+
+  testSuites:
+  [
+    cutSurveyRegisterSuite:
+    {
+      function: |test::westernthicket3::domain::CutSurveyRecord.all(%2026-06-01)->project(
+        [
+          x|$x.surveyCode,
+          x|$x.cutKind,
+          x|$x.regrowthGrade,
+          x|$x.stemCount,
+          x|$x.stoolHeightCm,
+          x|$x.surveyedOn,
+          x|$x.cycleDays(),
+          x|$x.tierLabel,
+          x|$x.standName,
+          x|$x.groveName,
+          x|$x.standTally,
+          x|$x.checkDigest,
+          x|$x.vigourClass,
+          x|$x.vigourBand(),
+          x|$x.warden.wardenName,
+          x|$x.contractWarden.wardenName
+        ],
+        [
+          'Survey',
+          'Cut',
+          'Regrowth',
+          'Stems',
+          'Stool',
+          'Surveyed',
+          'CycleDays',
+          'Tier',
+          'Stand',
+          'Grove',
+          'Tally',
+          'CheckDigest',
+          'Vigour',
+          'Band',
+          'Warden',
+          'Contract'
+        ]
+      )->sort([asc('Survey')]);
+      tests:
+      [
+        everyConditionalArmAtOneBusinessDate:
+        {
+          doc: 'Reads the cutting register at one business date over a fixture whose rows walk all eight arms of the regrowth conditional in order, leave a ninth row on a code no arm carries so the conditional falls through to the blank spare label and empties the class, resolve the stand one hop out, the grove two hops out and the grove tally three hops out over the grouped view, digest the checker note reached across the audit schema, and drop both the row whose window closed two years earlier and the row whose window opens the year after.';
+          data:
+          [
+            test::westernthicket3::store::ThicketSurveyDb:
+              Reference
+              #{
+                test::westernthicket3::data::ThicketTestData
+              }#
+          ];
+          asserts:
+          [
+            tenOpenWindowRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"CS-01","Cut":"COPPICE","Regrowth":"VIGOROUS","Stems":100,"Stool":35.0,"Surveyed":"2026-03-04","CycleDays":59,"Tier":"COPPICE CORE","Stand":"Hazel Ridge Stand","Grove":"North Coppice Grove","Tally":2,"CheckDigest":"CHECKED AFTE","Vigour":"ARM ONE COPPICED","Band":"BAND ONE CLEARED","Warden":"a.holloway","Contract":null},{"Survey":"CS-02","Cut":"COPPICE","Regrowth":"STEADY","Stems":80,"Stool":32.0,"Surveyed":"2026-03-05","CycleDays":59,"Tier":"COPPICE CORE","Stand":"Hazel Ridge Stand","Grove":"North Coppice Grove","Tally":2,"CheckDigest":"NO CHECK NOTE","Vigour":"ARM TWO STEADY","Band":"BAND TWO CLEARED","Warden":"a.holloway","Contract":null},{"Survey":"CS-03","Cut":"SINGLING","Regrowth":"STEADY","Stems":60,"Stool":31.0,"Surveyed":"2026-03-06","CycleDays":28,"Tier":"COPPICE CORE","Stand":null,"Grove":"North Coppice Grove","Tally":2,"CheckDigest":"STOOLS COUNT","Vigour":"ARM THREE SLOW","Band":"BAND THREE CLEARED","Warden":null,"Contract":"m.fenwick"},{"Survey":"CS-04","Cut":"SINGLING","Regrowth":"SLOW","Stems":40,"Stool":29.0,"Surveyed":"2026-03-07","CycleDays":28,"Tier":"COPPICE CORE","Stand":null,"Grove":"North Coppice Grove","Tally":2,"CheckDigest":"NO CHECK NOTE","Vigour":"ARM FOUR STALLED","Band":"BAND FOUR CLEARED","Warden":null,"Contract":"m.fenwick"},{"Survey":"CS-05","Cut":"LAYERING","Regrowth":"SLOW","Stems":30,"Stool":22.5,"Surveyed":"2026-03-08","CycleDays":59,"Tier":"COPPICE CORE","Stand":"Ash Corner Stand","Grove":null,"Tally":1,"CheckDigest":"NO CHECK NOTE","Vigour":"ARM FIVE CROPPED","Band":"BAND FIVE CLEARED","Warden":"s.oakden","Contract":null},{"Survey":"CS-06","Cut":"LAYERING","Regrowth":"STALLED","Stems":20,"Stool":18.0,"Surveyed":"2026-03-09","CycleDays":59,"Tier":"COPPICE CORE","Stand":"Ash Corner Stand","Grove":null,"Tally":1,"CheckDigest":"NO CHECK NOTE","Vigour":"ARM SIX BROWSED","Band":"BAND SIX CLEARED","Warden":"s.oakden","Contract":null},{"Survey":"CS-07","Cut":"POLLARDING","Regrowth":"STALLED","Stems":14,"Stool":16.0,"Surveyed":"2026-03-10","CycleDays":59,"Tier":"COPPICE CORE","Stand":"Hazel Ridge Stand","Grove":"North Coppice Grove","Tally":2,"CheckDigest":"NO CHECK NOTE","Vigour":"ARM SEVEN LAYERED","Band":"BAND SEVEN CLEARED","Warden":"a.holloway","Contract":null},{"Survey":"CS-08","Cut":"POLLARDING","Regrowth":"STALLED","Stems":8,"Stool":12.0,"Surveyed":"2026-03-11","CycleDays":59,"Tier":"COPPICE CORE","Stand":"Hazel Ridge Stand","Grove":"North Coppice Grove","Tally":2,"CheckDigest":"NO CHECK NOTE","Vigour":"ARM EIGHT SINGLED","Band":"BAND EIGHT CLEARED","Warden":"a.holloway","Contract":null},{"Survey":"CS-09","Cut":"COPPICE","Regrowth":"STALLED","Stems":4,"Stool":10.0,"Surveyed":"2026-03-12","CycleDays":11,"Tier":"COPPICE CORE","Stand":null,"Grove":"North Coppice Grove","Tally":2,"CheckDigest":"NO CHECK NOTE","Vigour":null,"Band":"BAND FLOOR","Warden":null,"Contract":"m.fenwick"},{"Survey":"CS-10","Cut":"COPPICE","Regrowth":"VIGOROUS","Stems":90,"Stool":34.0,"Surveyed":"2026-03-13","CycleDays":59,"Tier":"COPPICE CORE","Stand":"Ash Corner Stand","Grove":null,"Tally":1,"CheckDigest":"TALLY CHECKE","Vigour":"ARM ONE COPPICED","Band":"BAND TWO CLEARED","Warden":"s.oakden","Contract":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    cutSurveyClosedWindowSuite:
+    {
+      function: |test::westernthicket3::domain::CutSurveyRecord.all(%2024-06-01)->project(
+        [
+          x|$x.surveyCode,
+          x|$x.cutKind,
+          x|$x.regrowthGrade,
+          x|$x.stemCount,
+          x|$x.stoolHeightCm,
+          x|$x.surveyedOn,
+          x|$x.cycleDays(),
+          x|$x.tierLabel,
+          x|$x.standName,
+          x|$x.groveName,
+          x|$x.standTally,
+          x|$x.checkDigest,
+          x|$x.vigourClass,
+          x|$x.vigourBand(),
+          x|$x.warden.wardenName,
+          x|$x.contractWarden.wardenName
+        ],
+        [
+          'Survey',
+          'Cut',
+          'Regrowth',
+          'Stems',
+          'Stool',
+          'Surveyed',
+          'CycleDays',
+          'Tier',
+          'Stand',
+          'Grove',
+          'Tally',
+          'CheckDigest',
+          'Vigour',
+          'Band',
+          'Warden',
+          'Contract'
+        ]
+      )->sort([asc('Survey')]);
+      tests:
+      [
+        outOfRangeWindowAtAnEarlierBusinessDate:
+        {
+          doc: 'Reads the same register at a business date inside the window that closed two years earlier, so the explicit date rather than the extent decides which row is returned and the row dropped by the later read is the only row returned here.';
+          data:
+          [
+            test::westernthicket3::store::ThicketSurveyDb:
+              Reference
+              #{
+                test::westernthicket3::data::ThicketTestData
+              }#
+          ];
+          asserts:
+          [
+            onlyTheClosedWindowRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"CS-11","Cut":"COPPICE","Regrowth":"STEADY","Stems":50,"Stool":30.0,"Surveyed":"2024-05-01","CycleDays":121,"Tier":"COPPICE CORE","Stand":"Hazel Ridge Stand","Grove":"North Coppice Grove","Tally":2,"CheckDigest":"NO CHECK NOTE","Vigour":"ARM TWO STEADY","Band":"BAND THREE CLEARED","Warden":"a.holloway","Contract":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

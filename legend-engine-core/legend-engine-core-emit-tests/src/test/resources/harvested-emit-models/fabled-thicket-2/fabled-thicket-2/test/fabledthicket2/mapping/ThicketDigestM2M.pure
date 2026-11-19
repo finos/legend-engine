@@ -1,0 +1,225 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledthicket2::mapping::ThicketDigestM2M
+(
+  *test::fabledthicket2::domain::TaleStop[taleStopSet]: Pure
+  {
+    ~src test::fabledthicket2::source::TaleSubmission
+    ~filter $src.submissionRef->isNotEmpty() && $src.tellerName->isNotEmpty() && $src.band->isNotEmpty() && $src.lantern.code->isNotEmpty() && $src.submissionRef->toOne()->toLower()->startsWith('tale-') && $src.band->toOne()->toUpper()->in(['DAWN', 'DUSK', 'NIGHT']) && ($src.notes->isEmpty() || $src.notes->exists(n|($n->length() > 3)))
+    stopKey: 'TS-' + $src.submissionRef->toOne()->toUpper(),
+    stopLabel: $src.tellerName->toOne()->trim()->toUpper(),
+    tellerLabel: 'TELLER/' + $src.tellerName->toOne()->trim()->toLower(),
+    audienceBand: if($src.audience->isEmpty(),
+                     | [],
+                     | if($src.audience->toOne() >= 800,
+                          | 'RING-8',
+                          | if($src.audience->toOne() >= 600,
+                               | 'RING-7',
+                               | if($src.audience->toOne() >= 450,
+                                    | 'RING-6',
+                                    | if($src.audience->toOne() >= 300,
+                                         | 'RING-5',
+                                         | if($src.audience->toOne() >= 180,
+                                              | 'RING-4',
+                                              | if($src.audience->toOne() >= 100,
+                                                   | 'RING-3',
+                                                   | if($src.audience->toOne() >= 40,
+                                                        | 'RING-2',
+                                                        | 'RING-1')))))))),
+    keeperNote: if($src.notes->isEmpty(),
+                   | 'UNKEPT',
+                   | $src.notes->filter(n|$n->toLower()->startsWith('keeper'))->joinStrings('; ')),
+    hopSpread: $src.hops->map(h|$h.hopRef->toOne()->toUpper())->joinStrings('/'),
+    hopTally: $src.hops->size(),
+    retold: if($src.notes->isEmpty(), | false, | true),
+    lantern[lanternStopSet]: $src.lantern,
+    hops[trailHopSet]: $src.hops
+  }
+
+  test::fabledthicket2::domain::LanternStop[lanternStopSet]: Pure
+  {
+    ~src test::fabledthicket2::source::LanternBlock
+    ~filter $src.code->isNotEmpty() && $src.districtName->isNotEmpty() && $src.code->toOne()->toLower()->startsWith('lan-')
+    stopKey: 'LS-' + $src.code->toOne()->toUpper(),
+    stopLabel: $src.districtName->toOne()->trim(),
+    districtLabel: $src.districtName->toOne()->trim()->toUpper()
+  }
+
+  test::fabledthicket2::domain::TrailHop[trailHopSet]: Pure
+  {
+    ~src test::fabledthicket2::source::HopBlock
+    hopRef: $src.hopRef->toOne()->toUpper(),
+    paces: $src.paces->toOne()
+  }
+
+  testSuites:
+  [
+    audienceRingSuite:
+    {
+      function: |test::fabledthicket2::domain::TaleStop.all()->graphFetch(
+        #{
+          test::fabledthicket2::domain::TaleStop
+          {
+            stopKey,
+            stopLabel,
+            tellerLabel,
+            audienceBand,
+            keeperNote,
+            hopSpread,
+            hopTally,
+            retold,
+            lantern
+            {
+              stopKey,
+              districtLabel
+            },
+            hops
+            {
+              hopRef,
+              paces
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::fabledthicket2::domain::TaleStop
+          {
+            stopKey,
+            stopLabel,
+            tellerLabel,
+            audienceBand,
+            keeperNote,
+            hopSpread,
+            hopTally,
+            retold,
+            lantern
+            {
+              stopKey,
+              districtLabel
+            },
+            hops
+            {
+              hopRef,
+              paces
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyRingArmAndTheGuardsThatWithhold:
+        {
+          doc: 'Drives all eight audience rings in order plus the absent-audience fallback that leaves the ring band empty, and pushes one submission through each conjunct of the source guard in turn: an unreferenced submission, an untold submission, a band outside the accepted set, a submission whose lantern block carries no code, a submission whose reference lacks the trail prefix and a submission whose only note is too short. The published stops also cover an empty hop collection, a multi-hop collection and a lantern block whose code the nested guard rejects, so the absent nested node is visible in the serialised shape.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::fabledthicket2::source::TaleSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"submissionRef":"tale-01","tellerName":"  bramble reed  ","band":"dawn","audience":900,"lantern":{"code":"lan-1","districtName":"  Hazel Ride  "},"hops":[{"hopRef":"hop-1","paces":240},{"hopRef":"hop-2","paces":180}],"notes":["keeper counted the ring","lanterns lit"]},{"submissionRef":"tale-02","tellerName":"willow warden","band":"DUSK","audience":700,"lantern":{"code":"lan-2","districtName":"Alder Walk"},"hops":[],"notes":[]},{"submissionRef":"tale-03","tellerName":"holly keeper","band":"night","audience":500,"lantern":{"code":"LAN-3","districtName":"Birch Loop"},"hops":[{"hopRef":"hop-3","paces":60}],"notes":["keeper relit the lamp"]},{"submissionRef":"tale-04","tellerName":"rowan teller","band":"DAWN","audience":350,"lantern":{"code":"lan-4","districtName":"Elder Bend"},"hops":[{"hopRef":"hop-4","paces":120}],"notes":[]},{"submissionRef":"tale-05","tellerName":"sorrel teller","band":"dusk","audience":200,"lantern":{"code":"lan-5","districtName":"Fern Hollow"},"hops":[{"hopRef":"hop-5","paces":95}],"notes":["quiet crowd"]},{"submissionRef":"tale-06","tellerName":"thorn teller","band":"NIGHT","audience":120,"lantern":{"code":"lan-6","districtName":"Gorse Gate"},"hops":[{"hopRef":"hop-6","paces":75}],"notes":[]},{"submissionRef":"tale-07","tellerName":"nettle teller","band":"dawn","audience":60,"lantern":{"code":"lan-7","districtName":"Heath Rise"},"hops":[{"hopRef":"hop-7","paces":40}],"notes":[]},{"submissionRef":"tale-08","tellerName":"sedge teller","band":"DUSK","audience":20,"lantern":{"code":"lan-8","districtName":"Ivy Step"},"hops":[{"hopRef":"hop-8","paces":25}],"notes":[]},{"submissionRef":"tale-09","tellerName":"moss teller","band":"night","lantern":{"code":"yard-9","districtName":"Juniper Way"},"hops":[{"hopRef":"hop-9","paces":30}],"notes":["keeper waited"]},{"tellerName":"unreferenced teller","band":"dawn","audience":140,"lantern":{"code":"lan-10","districtName":"Kiln Path"},"hops":[],"notes":[]},{"submissionRef":"tale-11","band":"dawn","audience":140,"lantern":{"code":"lan-11","districtName":"Larch Turn"},"hops":[],"notes":[]},{"submissionRef":"tale-12","tellerName":"midday teller","band":"MIDDAY","audience":140,"lantern":{"code":"lan-12","districtName":"Maple Cut"},"hops":[],"notes":[]},{"submissionRef":"tale-13","tellerName":"unlit teller","band":"dawn","audience":140,"lantern":{"districtName":"Nettle Cross"},"hops":[],"notes":[]},{"submissionRef":"note-14","tellerName":"misfiled teller","band":"dawn","audience":140,"lantern":{"code":"lan-14","districtName":"Oak Stand"},"hops":[],"notes":[]},{"submissionRef":"tale-15","tellerName":"terse teller","band":"dawn","audience":140,"lantern":{"code":"lan-15","districtName":"Pine Reach"},"hops":[],"notes":["ok"]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            ringedStops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopKey":"TS-TALE-01","stopLabel":"BRAMBLE REED","tellerLabel":"TELLER/bramble reed","audienceBand":"RING-8","keeperNote":"keeper counted the ring","hopSpread":"HOP-1/HOP-2","hopTally":2,"retold":true,"lantern":{"stopKey":"LS-LAN-1","districtLabel":"HAZEL RIDE"},"hops":[{"hopRef":"HOP-1","paces":240},{"hopRef":"HOP-2","paces":180}]},{"stopKey":"TS-TALE-02","stopLabel":"WILLOW WARDEN","tellerLabel":"TELLER/willow warden","audienceBand":"RING-7","keeperNote":"UNKEPT","hopSpread":"","hopTally":0,"retold":false,"lantern":{"stopKey":"LS-LAN-2","districtLabel":"ALDER WALK"},"hops":[]},{"stopKey":"TS-TALE-03","stopLabel":"HOLLY KEEPER","tellerLabel":"TELLER/holly keeper","audienceBand":"RING-6","keeperNote":"keeper relit the lamp","hopSpread":"HOP-3","hopTally":1,"retold":true,"lantern":{"stopKey":"LS-LAN-3","districtLabel":"BIRCH LOOP"},"hops":[{"hopRef":"HOP-3","paces":60}]},{"stopKey":"TS-TALE-04","stopLabel":"ROWAN TELLER","tellerLabel":"TELLER/rowan teller","audienceBand":"RING-5","keeperNote":"UNKEPT","hopSpread":"HOP-4","hopTally":1,"retold":false,"lantern":{"stopKey":"LS-LAN-4","districtLabel":"ELDER BEND"},"hops":[{"hopRef":"HOP-4","paces":120}]},{"stopKey":"TS-TALE-05","stopLabel":"SORREL TELLER","tellerLabel":"TELLER/sorrel teller","audienceBand":"RING-4","keeperNote":"","hopSpread":"HOP-5","hopTally":1,"retold":true,"lantern":{"stopKey":"LS-LAN-5","districtLabel":"FERN HOLLOW"},"hops":[{"hopRef":"HOP-5","paces":95}]},{"stopKey":"TS-TALE-06","stopLabel":"THORN TELLER","tellerLabel":"TELLER/thorn teller","audienceBand":"RING-3","keeperNote":"UNKEPT","hopSpread":"HOP-6","hopTally":1,"retold":false,"lantern":{"stopKey":"LS-LAN-6","districtLabel":"GORSE GATE"},"hops":[{"hopRef":"HOP-6","paces":75}]},{"stopKey":"TS-TALE-07","stopLabel":"NETTLE TELLER","tellerLabel":"TELLER/nettle teller","audienceBand":"RING-2","keeperNote":"UNKEPT","hopSpread":"HOP-7","hopTally":1,"retold":false,"lantern":{"stopKey":"LS-LAN-7","districtLabel":"HEATH RISE"},"hops":[{"hopRef":"HOP-7","paces":40}]},{"stopKey":"TS-TALE-08","stopLabel":"SEDGE TELLER","tellerLabel":"TELLER/sedge teller","audienceBand":"RING-1","keeperNote":"UNKEPT","hopSpread":"HOP-8","hopTally":1,"retold":false,"lantern":{"stopKey":"LS-LAN-8","districtLabel":"IVY STEP"},"hops":[{"hopRef":"HOP-8","paces":25}]},{"stopKey":"TS-TALE-09","stopLabel":"MOSS TELLER","tellerLabel":"TELLER/moss teller","audienceBand":null,"keeperNote":"keeper waited","hopSpread":"HOP-9","hopTally":1,"retold":true,"lantern":null,"hops":[{"hopRef":"HOP-9","paces":30}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    longHopSuite:
+    {
+      function: |test::fabledthicket2::domain::TaleStop.all()->filter(
+        t|$t.hops->exists(
+          h|$h.paces > 100
+        )
+      )->graphFetch(
+        #{
+          test::fabledthicket2::domain::TaleStop
+          {
+            stopKey,
+            hopSpread,
+            hopTally,
+            hops
+            {
+              hopRef,
+              paces
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::fabledthicket2::domain::TaleStop
+          {
+            stopKey,
+            hopSpread,
+            hopTally,
+            hops
+            {
+              hopRef,
+              paces
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        stopsHoldingALongHop:
+        {
+          doc: 'Reduces the hop collection of every published stop with an existence test, so the multi-hop stop and the single long-hop stop are kept while the short-hop stop and the stop with no hops at all are dropped.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::fabledthicket2::source::TaleSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"submissionRef":"tale-21","tellerName":"bramble reed","band":"dawn","audience":900,"lantern":{"code":"lan-21","districtName":"Hazel Ride"},"hops":[{"hopRef":"hop-21","paces":240},{"hopRef":"hop-22","paces":40}],"notes":[]},{"submissionRef":"tale-22","tellerName":"willow warden","band":"dusk","audience":500,"lantern":{"code":"lan-22","districtName":"Alder Walk"},"hops":[{"hopRef":"hop-23","paces":110}],"notes":[]},{"submissionRef":"tale-23","tellerName":"holly keeper","band":"night","audience":200,"lantern":{"code":"lan-23","districtName":"Birch Loop"},"hops":[{"hopRef":"hop-24","paces":30}],"notes":[]},{"submissionRef":"tale-24","tellerName":"rowan teller","band":"dawn","audience":60,"lantern":{"code":"lan-24","districtName":"Elder Bend"},"hops":[],"notes":[]}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            longHopStops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"stopKey":"TS-TALE-21","hopSpread":"HOP-21/HOP-22","hopTally":2,"hops":[{"hopRef":"HOP-21","paces":240},{"hopRef":"HOP-22","paces":40}]},{"stopKey":"TS-TALE-22","hopSpread":"HOP-23","hopTally":1,"hops":[{"hopRef":"HOP-23","paces":110}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

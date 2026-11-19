@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silvermarsh::service::PlantsByGarden
+{
+  pattern: '/garden/v1/plants/{gardenName}';
+  title: 'Plants by Garden';
+  owners:
+  [
+    'garden-survey',
+    'botany-ops'
+  ];
+  documentation: 'Returns plants whose bed lies in the given garden, resolving the Plant_Bed and Bed_Garden joins. A multi-execution service keyed by service tier, each tier pointing at the in-process H2 GardenRuntime.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {gardenName: String[1]|test::silvermarsh::domain::Plant.all()->filter(
+      p|$p.bed.garden.name == $gardenName
+    )->project(
+      [
+        p|$p.species,
+        p|$p.heightCm
+      ],
+      [
+        'Species',
+        'HeightCm'
+      ]
+    )->sort(
+      [
+        asc('Species')
+      ]
+    )};
+    key: 'tier';
+    executions['standard']:
+    {
+      mapping: test::silvermarsh::mapping::GardenMapping;
+      runtime: test::silvermarsh::runtime::GardenRuntime;
+    }
+    executions['premium']:
+    {
+      mapping: test::silvermarsh::mapping::GardenMapping;
+      runtime: test::silvermarsh::runtime::GardenRuntime;
+    }
+  }
+}
+
+Service test::silvermarsh::service::PlantSpeciesByGarden
+{
+  pattern: '/garden/v1/species/{gardenName}';
+  title: 'Plant Species by Garden';
+  owners:
+  [
+    'garden-survey',
+    'botany-ops'
+  ];
+  documentation: 'Single-execution counterpart returning plant species and heights for the given garden, resolving the Plant_Bed and Bed_Garden joins over the in-process H2 GardenRuntime. Carries the tested service testSuite.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {gardenName: String[1]|test::silvermarsh::domain::Plant.all()->filter(
+      p|$p.bed.garden.name == $gardenName
+    )->project(
+      [
+        p|$p.species,
+        p|$p.heightCm
+      ],
+      [
+        'Species',
+        'HeightCm'
+      ]
+    )->sort(
+      [
+        asc('Species')
+      ]
+    )};
+    mapping: test::silvermarsh::mapping::GardenMapping;
+    runtime: test::silvermarsh::runtime::GardenRuntime;
+  }
+  testSuites:
+  [
+    plantSpeciesByGardenSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              garden.garden:
+                'garden_id,garden_name\n'+
+                '1,Highland Botanic\n'+
+                '2,Coastal Arboretum\n';
+              garden.bed:
+                'bed_id,bed_code,garden_id\n'+
+                '1,B-01,1\n'+
+                '2,B-02,2\n';
+              garden.plant:
+                'plant_id,species,height_cm,bed_id\n'+
+                '1,Blue Gentian,18,1\n'+
+                '2,Alpine Aster,25,1\n'+
+                '3,Sea Holly,40,2\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        highlandGarden:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gardenName = 'Highland Botanic'
+          ]
+          asserts:
+          [
+            twoPlants:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Species":"Alpine Aster","HeightCm":25},{"Species":"Blue Gentian","HeightCm":18}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

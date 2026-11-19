@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::quietwharf2::store::WharfReferenceStore
+(
+  Schema reference
+  (
+    Table wharf
+    (
+      wharf_code VARCHAR(20) PRIMARY KEY,
+      wharf_name VARCHAR(60) NOT NULL,
+      warden_name VARCHAR(60) NOT NULL,
+      harbour_code VARCHAR(20) NOT NULL
+    )
+  )
+)
+
+Database test::quietwharf2::store::MooringStore
+(
+  include test::quietwharf2::store::WharfReferenceStore
+
+  Schema mooring
+  (
+    Table berth_allocation
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      allocation_key VARCHAR(24) PRIMARY KEY,
+      allocation_code VARCHAR(20) NOT NULL,
+      vessel_name VARCHAR(60) NOT NULL,
+      berth_number INTEGER NOT NULL,
+      length_metres DOUBLE NOT NULL,
+      wharf_code VARCHAR(20) NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+
+  Join Allocation_Wharf(mooring.berth_allocation.wharf_code = reference.wharf.wharf_code)
+)

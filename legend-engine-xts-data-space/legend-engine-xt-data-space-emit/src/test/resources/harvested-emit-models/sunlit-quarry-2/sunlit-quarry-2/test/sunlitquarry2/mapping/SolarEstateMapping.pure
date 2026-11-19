@@ -1,0 +1,375 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitquarry2::mapping::SolarEstateMapping
+(
+  include mapping test::sunlitquarry2::mapping::SolarBaseMapping
+
+  *test::sunlitquarry2::domain::PanelString[string]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.string_code
+    )
+    ~mainTable [test::sunlitquarry2::store::SolarEstateDb]solar.panel_string
+    stringCode: [test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.string_code,
+    orientation: EnumerationMapping OrientationMapping: toUpper(trim([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.orientation_code)),
+    health: EnumerationMapping HealthMapping: case(
+              isEmpty([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.health_code),
+              'AMB',
+              toUpper(trim([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.health_code))
+            ),
+    panelCount: [test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.panel_count,
+    tiltDeg: [test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg,
+    tiltBand: case(
+                isNotEmpty([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg),
+                case(
+                  lessThan([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg, 5),
+                  'FLAT',
+                  case(
+                    lessThan([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg, 10),
+                    'NEAR FLAT',
+                    case(
+                      lessThan([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg, 15),
+                      'SHALLOW',
+                      case(
+                        lessThan([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg, 20),
+                        'MODERATE',
+                        case(
+                          lessThan([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg, 25),
+                          'STANDARD',
+                          case(
+                            lessThan([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg, 30),
+                            'STEEP',
+                            case(
+                              lessThan([test::sunlitquarry2::store::SolarEstateDb]solar.panel_string.tilt_deg, 40),
+                              'VERY STEEP',
+                              'EXTREME'
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+                sqlNull()
+              ),
+    yieldTotalKwh: [test::sunlitquarry2::store::SolarEstateDb]@String_Yield | [test::sunlitquarry2::store::SolarEstateDb]solar.string_yield_view.total_yield_kwh,
+    readingCount: [test::sunlitquarry2::store::SolarEstateDb]@String_Yield | [test::sunlitquarry2::store::SolarEstateDb]solar.string_yield_view.reading_count,
+    inverterModel: [test::sunlitquarry2::store::SolarEstateDb]@String_Inverter | toUpper(rtrim([test::sunlitquarry2::store::SolarEstateDb]solar.inverter.model_code)),
+    wardenName:
+      [test::sunlitquarry2::store::SolarEstateDb]@String_Site
+      > (INNER) @Site_District
+      | [test::sunlitquarry2::store::SolarEstateDb]estate.district.warden_name
+  }
+
+  test::sunlitquarry2::domain::Site_String: Relational
+  {
+    AssociationMapping
+    (
+      strings[site, string]: [test::sunlitquarry2::store::SolarEstateDb]@String_Site,
+      site[string, site]: [test::sunlitquarry2::store::SolarEstateDb]@String_Site
+    )
+  }
+
+  test::sunlitquarry2::domain::District_Site: Relational
+  {
+    AssociationMapping
+    (
+      sites[district, site]: [test::sunlitquarry2::store::SolarEstateDb]@Site_District,
+      district[site, district]: [test::sunlitquarry2::store::SolarEstateDb]@Site_District
+    )
+  }
+
+  testSuites:
+  [
+    tiltBandSuite:
+    {
+      function: |test::sunlitquarry2::domain::PanelString.all()->project(
+  [
+    s|$s.stringCode,
+    s|$s.orientation,
+    s|$s.health,
+    s|$s.panelCount,
+    s|$s.tiltDeg,
+    s|$s.tiltBand,
+    s|$s.yieldTotalKwh,
+    s|$s.readingCount,
+    s|$s.inverterModel,
+    s|$s.wardenName
+  ],
+  [
+    'String',
+    'Orientation',
+    'Health',
+    'Panels',
+    'TiltDeg',
+    'TiltBand',
+    'TotalYield',
+    'Readings',
+    'InverterModel',
+    'Warden'
+  ]
+)->sort(
+  [
+    asc('String')
+  ]
+);
+      tests:
+      [
+        everyTiltArmAndTheUnrecordedFallback:
+        {
+          doc: 'Covers all eight tilt arms of the nested conditional and the unrecorded-tilt fallback that yields null, the two enumeration mappings that fold several source codes onto one member, the empty health code that defaults onto the watch member, the grouped view that supplies the summed yield and the reading tally including the string carrying two readings, the single-hop join onto the inverter register, and the two-hop join from the string through its site onto the district warden.';
+          data:
+          [
+            test::sunlitquarry2::store::SolarEstateDb:
+              Relational
+              #{
+                solar.panel_string:
+                  'string_code,site_code,orientation_code,health_code,panel_count,tilt_deg\n'+
+                  'ST-01,SITE-A,S,OK,24,3\n'+
+                  'ST-02,SITE-A,SO,GRN,18,7\n'+
+                  'ST-03,SITE-A,E,AMB,30,12\n'+
+                  'ST-04,SITE-B,EA,WCH,12,18\n'+
+                  'ST-05,SITE-B,W,RED,20,22\n'+
+                  'ST-06,SITE-B,WE,FLT,16,28\n'+
+                  'ST-07,SITE-A,N,,28,35\n'+
+                  'ST-08,SITE-B,NO,OK,22,60\n'+
+                  'ST-09,SITE-A,SOUTH,GRN,26,\n';
+                solar.inverter:
+                  'inverter_code,string_code,model_code,kind_code,rating_kw\n'+
+                  'IN-01,ST-01,sx-4001,ST,6\n'+
+                  'IN-02,ST-02,sx-4002,MI,5\n'+
+                  'IN-03,ST-03,sx-4003,HY,8\n'+
+                  'IN-04,ST-04,sx-4004,ST,4\n'+
+                  'IN-05,ST-05,sx-4005,MI,5\n'+
+                  'IN-06,ST-06,sx-4006,HY,6\n'+
+                  'IN-07,ST-07,sx-4007,ST,7\n'+
+                  'IN-08,ST-08,sx-4008,MI,6\n'+
+                  'IN-09,ST-09,sx-4009,HY,9\n';
+                solar.reading_version:
+                  'version_id,string_code,yield_kwh,active_flag,valid_from,valid_thru\n'+
+                  '101,ST-01,120,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '102,ST-01,80,Y,2026-02-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '103,ST-02,150,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '104,ST-03,90,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '105,ST-04,60,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '106,ST-05,45,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '107,ST-06,70,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '108,ST-07,110,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '109,ST-08,95,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '110,ST-09,55,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n';
+                estate.site:
+                  'site_code,site_name,district_code,status_code,commissioned_at\n'+
+                  'SITE-A,north wing roof,D-1,A,2024-01-01 00:00:00.000\n'+
+                  'SITE-B,,D-2,A,2024-06-01 00:00:00.000\n';
+                estate.district:
+                  'district_code,district_name,warden_name\n'+
+                  'D-1,Harbour Ward,mira vale\n'+
+                  'D-2,Ridge Ward,noor tayl\n';
+              }#
+          ];
+          asserts:
+          [
+            nineDerivedStrings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"String":"ST-01","Orientation":"SOUTH","Health":"OK","Panels":24,"TiltDeg":3,"TiltBand":"FLAT","TotalYield":200,"Readings":2,"InverterModel":"SX-4001","Warden":"mira vale"},{"String":"ST-02","Orientation":"SOUTH","Health":"OK","Panels":18,"TiltDeg":7,"TiltBand":"NEAR FLAT","TotalYield":150,"Readings":1,"InverterModel":"SX-4002","Warden":"mira vale"},{"String":"ST-03","Orientation":"EAST","Health":"WATCH","Panels":30,"TiltDeg":12,"TiltBand":"SHALLOW","TotalYield":90,"Readings":1,"InverterModel":"SX-4003","Warden":"mira vale"},{"String":"ST-04","Orientation":"EAST","Health":"WATCH","Panels":12,"TiltDeg":18,"TiltBand":"MODERATE","TotalYield":60,"Readings":1,"InverterModel":"SX-4004","Warden":"noor tayl"},{"String":"ST-05","Orientation":"WEST","Health":"FAULT","Panels":20,"TiltDeg":22,"TiltBand":"STANDARD","TotalYield":45,"Readings":1,"InverterModel":"SX-4005","Warden":"noor tayl"},{"String":"ST-06","Orientation":"WEST","Health":"FAULT","Panels":16,"TiltDeg":28,"TiltBand":"STEEP","TotalYield":70,"Readings":1,"InverterModel":"SX-4006","Warden":"noor tayl"},{"String":"ST-07","Orientation":"NORTH","Health":"WATCH","Panels":28,"TiltDeg":35,"TiltBand":"VERY STEEP","TotalYield":110,"Readings":1,"InverterModel":"SX-4007","Warden":"mira vale"},{"String":"ST-08","Orientation":"NORTH","Health":"OK","Panels":22,"TiltDeg":60,"TiltBand":"EXTREME","TotalYield":95,"Readings":1,"InverterModel":"SX-4008","Warden":"noor tayl"},{"String":"ST-09","Orientation":"SOUTH","Health":"OK","Panels":26,"TiltDeg":null,"TiltBand":null,"TotalYield":55,"Readings":1,"InverterModel":"SX-4009","Warden":"mira vale"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    siteAssociationSuite:
+    {
+      function: |test::sunlitquarry2::domain::SolarSite.all()->project(
+  [
+    s|$s.siteCode,
+    s|$s.siteName,
+    s|$s.district.districtName,
+    s|$s.district.wardenName,
+    s|$s.strings.stringCode,
+    s|$s.strings.tiltBand
+  ],
+  [
+    'Site',
+    'SiteName',
+    'District',
+    'Warden',
+    'String',
+    'TiltBand'
+  ]
+)->sort(
+  [
+    asc('Site'),
+    asc('String')
+  ]
+);
+      tests:
+      [
+        commissionedSitesAcrossBothAssociations:
+        {
+          doc: 'Covers the store filter that drops the decommissioned roof and the roof whose commissioning instant is still ahead of the current instant, the unnamed-roof fallback label, the to-many association end that fans one roof out onto its strings, and the to-one end that reaches the district warden.';
+          data:
+          [
+            test::sunlitquarry2::store::SolarEstateDb:
+              Relational
+              #{
+                estate.site:
+                  'site_code,site_name,district_code,status_code,commissioned_at\n'+
+                  'SITE-A,north wing roof,D-1,A,2024-01-01 00:00:00.000\n'+
+                  'SITE-B,,D-2,A,2024-06-01 00:00:00.000\n'+
+                  'SITE-C,south annex roof,D-2,X,2024-06-01 00:00:00.000\n'+
+                  'SITE-D,future block roof,D-1,A,2099-01-01 00:00:00.000\n';
+                estate.district:
+                  'district_code,district_name,warden_name\n'+
+                  'D-1,Harbour Ward,mira vale\n'+
+                  'D-2,Ridge Ward,noor tayl\n';
+                solar.panel_string:
+                  'string_code,site_code,orientation_code,health_code,panel_count,tilt_deg\n'+
+                  'ST-01,SITE-A,S,OK,24,3\n'+
+                  'ST-02,SITE-A,E,GRN,18,18\n'+
+                  'ST-03,SITE-B,W,RED,20,60\n'+
+                  'ST-04,SITE-C,N,OK,10,12\n'+
+                  'ST-05,SITE-D,S,OK,10,12\n';
+              }#
+          ];
+          asserts:
+          [
+            threeCommissionedRoofRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"SITE-A","SiteName":"NORTH WING ROOF","District":"Harbour Ward","Warden":"MIRA VALE","String":"ST-01","TiltBand":"FLAT"},{"Site":"SITE-A","SiteName":"NORTH WING ROOF","District":"Harbour Ward","Warden":"MIRA VALE","String":"ST-02","TiltBand":"MODERATE"},{"Site":"SITE-B","SiteName":"UNNAMED ROOF SITE-B","District":"Ridge Ward","Warden":"NOOR TAYL","String":"ST-03","TiltBand":"EXTREME"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inverterRegisterSuite:
+    {
+      function: |test::sunlitquarry2::domain::Inverter.all()->project(
+  [
+    i|$i.inverterCode,
+    i|$i.kind,
+    i|$i.ratingKw
+  ],
+  [
+    'Inverter',
+    'Kind',
+    'RatingKw'
+  ]
+)->sort(
+  [
+    asc('Inverter')
+  ]
+);
+      tests:
+      [
+        inverterKindsIncludingUnlistedCode:
+        {
+          doc: 'Covers the third enumeration mapping, including the long and short source codes that fold onto the same member and the source code that no member lists, which resolves to null.';
+          data:
+          [
+            test::sunlitquarry2::store::SolarEstateDb:
+              Relational
+              #{
+                solar.inverter:
+                  'inverter_code,string_code,model_code,kind_code,rating_kw\n'+
+                  'IN-01,ST-01,sx-4001,ST,6\n'+
+                  'IN-02,ST-02,sx-4002,MIC,5\n'+
+                  'IN-03,ST-03,sx-4003,HY,8\n'+
+                  'IN-04,ST-04,sx-4004,ZZ,4\n';
+              }#
+          ];
+          asserts:
+          [
+            fourInvertersWithOneUnmappedKind:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inverter":"IN-01","Kind":"STRING_TIED","RatingKw":6},{"Inverter":"IN-02","Kind":"MICRO","RatingKw":5},{"Inverter":"IN-03","Kind":"HYBRID","RatingKw":8},{"Inverter":"IN-04","Kind":null,"RatingKw":4}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    currentReadingSuite:
+    {
+      function: |test::sunlitquarry2::domain::ReadingVersion.all()->project(
+  [
+    r|$r.versionId,
+    r|$r.stringCode,
+    r|$r.yieldKwh
+  ],
+  [
+    'Version',
+    'String',
+    'Yield'
+  ]
+)->sort(
+  [
+    asc('Version')
+  ]
+);
+      tests:
+      [
+        onlyEffectiveAndActiveVersions:
+        {
+          doc: 'Covers the effective-version filter, whose predicate conjoins a comparison of the end-validity instant against the current instant with an equality on the active marker, so the superseded version and the retired-but-open version are both dropped.';
+          data:
+          [
+            test::sunlitquarry2::store::SolarEstateDb:
+              Relational
+              #{
+                solar.reading_version:
+                  'version_id,string_code,yield_kwh,active_flag,valid_from,valid_thru\n'+
+                  '201,ST-01,120,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '202,ST-01,90,Y,2020-01-01 00:00:00.000,2020-06-01 00:00:00.000\n'+
+                  '203,ST-02,150,N,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                  '204,ST-03,75,Y,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n';
+              }#
+          ];
+          asserts:
+          [
+            twoEffectiveVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Version":201,"String":"ST-01","Yield":120},{"Version":204,"String":"ST-03","Yield":75}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

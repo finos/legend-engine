@@ -1,0 +1,176 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarfjord::service::HarvestBoards
+{
+  pattern: '/fjord/v1/harvest/{minMassKg}';
+  title: 'Kelp Harvest Boards By Fjord Arm';
+  owners:
+  [
+    'kelp-farm-operations',
+    'fjord-survey-desk'
+  ];
+  documentation: 'Multi-execution service keyed by fjord arm that filters the unioned line-harvest and shore-gather lots above a requested wet mass and projects the lot, its site, its grade label, its channel and a nested dried-mass estimate.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {minMassKg: Integer[1]|test::solarfjord::domain::HarvestLot.all()->filter(
+      l|$l.wetMassKg > $minMassKg
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.siteName,
+        l|$l.gradeLabel,
+        l|$l.channel,
+        l|($l.wetMassKg * 2) + (($l.wetMassKg + 10) * 3)
+      ],
+      [
+        'Lot',
+        'Site',
+        'Grade',
+        'Channel',
+        'DriedEstimateKg'
+      ]
+    )->sort(
+      [
+        asc('Lot')
+      ]
+    )};
+    key: 'arm';
+    executions['innerArm']:
+    {
+      mapping: test::solarfjord::mapping::FjordMapping;
+      runtime: test::solarfjord::runtime::FjordH2Runtime;
+    }
+    executions['outerArm']:
+    {
+      mapping: test::solarfjord::mapping::FjordMapping;
+      runtime: test::solarfjord::runtime::FjordH2Runtime;
+    }
+  }
+}
+###Service
+Service test::solarfjord::service::ArmHarvestBoard
+{
+  pattern: '/fjord/v1/arm/{armName}';
+  title: 'Harvest Board For One Fjord Arm';
+  owners:
+  [
+    'kelp-farm-operations',
+    'fjord-survey-desk'
+  ];
+  documentation: 'Single-execution service that narrows the unioned harvest lots to one fjord arm reached over the site joins and projects the lot, its grade label, its channel and a nested dried-mass estimate.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {armName: String[1]|test::solarfjord::domain::HarvestLot.all()->filter(
+      l|$l.fjordArm == $armName
+    )->project(
+      [
+        l|$l.lotCode,
+        l|$l.gradeLabel,
+        l|$l.channel,
+        l|($l.wetMassKg * 2) + (($l.wetMassKg + 10) * 3)
+      ],
+      [
+        'Lot',
+        'Grade',
+        'Channel',
+        'DriedEstimateKg'
+      ]
+    )->sort(
+      [
+        asc('Lot')
+      ]
+    )};
+    mapping: test::solarfjord::mapping::FjordMapping;
+    runtime: test::solarfjord::runtime::FjordH2Runtime;
+  }
+  testSuites:
+  [
+    harvestBoardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              kelp.farm_site:
+                'site_code,site_name,fjord_arm\n'+
+                'FS-1,Inner Arm Kelp Beds,Inner Arm\n'+
+                'FS-2,Outer Arm Kelp Beds,Outer Arm\n';
+              kelp.line_harvest:
+                'harvest_id,lot_code,site_code,wet_mass_kg,blade_grade,qc_flag\n'+
+                '1,LH-101,FS-1,420,premium, ACCEPTED\n'+
+                '2,LH-102,FS-2,150,standard,HELD\n'+
+                '3,LH-103,FS-2,600,standard,ACCEPTED\n';
+              kelp.shore_gather:
+                'gather_id,lot_code,site_code,wet_mass_kg,drift_grade\n'+
+                '1,SG-201,FS-1,90,cast\n'+
+                '2,SG-202,FS-2,500,drift\n'+
+                '3,SG-203,FS-1,300,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        innerArmBoard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            armName = 'Inner Arm'
+          ]
+          asserts:
+          [
+            threeInnerArmLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LH-101","Grade":"PREMIUM / LINE","Channel":"LINE","DriedEstimateKg":2130},{"Lot":"SG-201","Grade":"CAST / SHORE","Channel":"SHORE","DriedEstimateKg":480},{"Lot":"SG-203","Grade":"UNGRADED / SHORE","Channel":"SHORE","DriedEstimateKg":1530}]';
+                  }#;
+              }#
+          ]
+        },
+        outerArmBoard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            armName = 'Outer Arm'
+          ]
+          asserts:
+          [
+            twoOuterArmLots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lot":"LH-103","Grade":"STANDARD / LINE","Channel":"LINE","DriedEstimateKg":3030},{"Lot":"SG-202","Grade":"DRIFT / SHORE","Channel":"SHORE","DriedEstimateKg":2530}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

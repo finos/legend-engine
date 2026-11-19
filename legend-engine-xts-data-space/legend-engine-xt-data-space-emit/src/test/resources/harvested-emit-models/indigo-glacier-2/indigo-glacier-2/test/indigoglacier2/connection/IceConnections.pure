@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::indigoglacier2::connection::IceRegistryConnection
+{
+  store: test::indigoglacier2::store::IceRegistryDb;
+  type: Sybase;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'ICE_REGISTRY';
+    host: 'ice-registry-host.example.invalid';
+    port: 5000;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'sybase/ice-registry-host.example.invalid';
+  };
+}
+
+RelationalDatabaseConnection test::indigoglacier2::connection::IceSurveyConnection
+{
+  store: test::indigoglacier2::store::IceSurveyDb;
+  type: Sybase;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'ICE_SURVEY';
+    host: 'ice-survey-host.example.invalid';
+    port: 5010;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'sybase/ice-survey-host.example.invalid';
+  };
+}
+
+RelationalDatabaseConnection test::indigoglacier2::connection::IceArchiveConnection
+{
+  store: test::indigoglacier2::store::IceArchiveDb;
+  type: Sybase;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'ICE_ARCHIVE';
+    host: 'ice-archive-host.example.invalid';
+    port: 5020;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'sybase/ice-archive-host.example.invalid';
+  };
+}

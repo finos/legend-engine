@@ -1,0 +1,58 @@
+name: dusky-thicket-2
+title: "Footbridge Inspection Register — Point-In-Time Grading Behind Single and Multi Execution Services"
+description: |
+  A trail-structures corpus whose footbridge inspections are business-temporal,
+  so every version carries a validity window and each query has to name the
+  instant it is resolved at. A single-execution service registers the versions
+  visible at a caller-supplied instant, narrows them on an optional district
+  collection and on a rolling window measured backwards from that instant, and
+  projects an eight-armed condition grade with an empty fallback, the day count
+  to a fixed review cut-off and the weekly footfall arithmetic. Its test suite
+  covers all eight grade arms, the version that trips none of them, a version
+  whose window closed before the later instant, and a second read at an earlier
+  instant where exactly that version is the only row that survives. An
+  estate-keyed multi-execution twin groups the same point-in-time set by
+  district and inspection kind, counting inspections and totalling daily
+  footfall, so one query function is planned against two keyed execution stacks.
+
+modelSources:
+  model:
+    root: dusky-thicket-2
+    files:
+      - test/duskythicket2/connection/BridgeConnection.pure
+      - test/duskythicket2/domain/BridgeDomain.pure
+      - test/duskythicket2/mapping/BridgeMapping.pure
+      - test/duskythicket2/runtime/BridgeRuntime.pure
+      - test/duskythicket2/service/BridgeServices.pure
+      - test/duskythicket2/store/BridgeDb.pure
+
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - conditional-arms
+  - footbridge-inspection
+  - group-by
+  - h2
+  - multi-execution
+  - point-in-time
+  - service-test

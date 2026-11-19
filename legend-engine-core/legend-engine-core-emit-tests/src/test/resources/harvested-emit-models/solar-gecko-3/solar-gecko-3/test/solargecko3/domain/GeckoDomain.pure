@@ -1,0 +1,203 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solargecko3::domain::*;
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'The ground a monitored transect is laid over.'} test::solargecko3::domain::SubstrateKind
+{
+  {doc.doc = 'Wind-blown sand with no fixed crust.'} DUNE_SAND,
+  {doc.doc = 'Stone pavement with a desert crust.'} GRAVEL_PAVEMENT,
+  {doc.doc = 'Broken rock at the base of an outcrop.'} ROCK_SCREE,
+  {doc.doc = 'Cracked clay of a dried-out pan.'} CLAY_PAN
+}
+
+Enum {doc.doc = 'Whether a transect may be walked by a monitoring party at present.'} test::solargecko3::domain::PatrolState
+{
+  {doc.doc = 'Walked on the ordinary monitoring rota.'} ROTA,
+  {doc.doc = 'Walked only with a reserve escort.'} ESCORTED,
+  {doc.doc = 'Rested while the ground recovers.'} RESTED
+}
+
+Enum {doc.doc = 'The compass face a burrow entrance is cut into.'} test::solargecko3::domain::SlopeAspect
+{
+  {doc.doc = 'Entrance faces the morning sun.'} EAST_FACE,
+  {doc.doc = 'Entrance faces the afternoon sun.'} WEST_FACE,
+  {doc.doc = 'Entrance faces away from the midday sun.'} SHADED_FACE,
+  {doc.doc = 'Entrance opens upward under an overhang.'} OVERHUNG
+}
+
+Enum {doc.doc = 'The state a burrow was found in on the last walk.'} test::solargecko3::domain::BurrowCondition
+{
+  {doc.doc = 'Held by a gecko at the time of the walk.'} OCCUPIED,
+  {doc.doc = 'Open but unoccupied.'} VACANT,
+  {doc.doc = 'Fallen in and no longer usable.'} COLLAPSED
+}
+
+Enum {doc.doc = 'The verdict a handling record leaves against a caught gecko.'} test::solargecko3::domain::HealthVerdict
+{
+  {doc.doc = 'Released in good condition.'} SOUND,
+  {doc.doc = 'Released with a noted blemish.'} MARKED,
+  {doc.doc = 'Held back for care before release.'} HELD_BACK
+}
+
+Enum {doc.doc = 'The standing a field observer holds on the reserve rota.'} test::solargecko3::domain::ObserverRole
+{
+  {doc.doc = 'Leads the monitoring party.'} LEAD,
+  {doc.doc = 'Walks with the party and records.'} RECORDER,
+  {doc.doc = 'Stands in when the lead is off rota.'} RELIEF
+}
+
+Class <<typemodifiers.abstract, temporal.businesstemporal>> {doc.doc = 'Anything the reserve holds on its monitoring register over a stretch of calendar time. Abstract and business-temporal, so every feature kind inherits the one timeline the register is published against.'} test::solargecko3::domain::ReserveFeature
+{
+  {doc.doc = 'Register identifier of the feature.'} featureCode: String[1];
+  {doc.doc = 'Name the feature is signed with on the ground.'} featureName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A walked stretch of the reserve monitored as one unit, versioned on the register timeline so a re-laid stretch supersedes its earlier shape.'} test::solargecko3::domain::GeckoTransect extends ReserveFeature
+[
+  transectNamed
+  (
+    ~function: $this.transectName->isNotEmpty()
+    ~enforcementLevel: Warn
+    ~message: 'Transect ' + $this.featureCode + ' must carry a walked-name on the register'
+  ),
+  substrateCodeShaped
+  (
+    ~function: ($this.transectName->isNotEmpty()) && ($this.substrate->toString()->toUpper()->length() >= 8)
+    ~enforcementLevel: Warn
+    ~message: 'Transect ' + $this.featureCode + ' must name a substrate the reserve publishes in full'
+  ),
+  restedTransectHasFloorTemperature
+  (
+    ~function: ($this.surfaceTempC >= -5) || ($this.patrolState == PatrolState.RESTED)
+    ~enforcementLevel: Warn
+    ~message: 'Transect ' + $this.featureCode + ' reports a surface reading below the register floor while still on rota'
+  )
+]
+{
+  {doc.doc = 'Name the stretch is walked under.'} transectName: String[1];
+  {doc.doc = 'Ground the stretch is laid over.'} substrate: SubstrateKind[1];
+  {doc.doc = 'Whether the stretch may be walked at present.'} patrolState: PatrolState[1];
+  {doc.doc = 'Midday surface reading in whole degrees.'} surfaceTempC: Integer[1];
+  {doc.doc = 'Walked length in metres.'} lengthM: Integer[1];
+  {doc.doc = 'Number of burrows on the stretch found held on the requested register date. Reads through the milestoned association, so a date the register does not yet cover yields no burrows at all.'} occupiedBurrowCount(asOf: Date[1])
+  {
+    $this.burrows($asOf)->filter(b | $b.condition == BurrowCondition.OCCUPIED)->size()
+  }: Integer[1];
+  {doc.doc = 'Whether the stretch held any burrow at all on the requested register date, so an out-of-range date is reported as an unheld stretch rather than as an error.'} heldOnDate(asOf: Date[1])
+  {
+    $this.burrows($asOf)->isNotEmpty()
+  }: Boolean[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A burrow cut into a monitored stretch, versioned on the same register timeline as the stretch it stands on.'} test::solargecko3::domain::BurrowSite extends ReserveFeature
+[
+  burrowDepthDeclared
+  (
+    ~function: $this.burrowDepthMm > 0
+    ~enforcementLevel: Warn
+    ~message: 'Burrow ' + $this.featureCode + ' must declare a measured depth'
+  ),
+  collapsedBurrowKeepsItsAspect
+  (
+    ~function: ($this.burrowDepthMm > 0) && ($this.featureName->isNotEmpty())
+    ~enforcementLevel: Warn
+    ~message: 'Burrow ' + $this.featureCode + ' must keep both a measured depth and a signed name'
+  )
+]
+{
+  {doc.doc = 'Measured depth of the burrow in millimetres.'} burrowDepthMm: Integer[1];
+  {doc.doc = 'Compass face the entrance is cut into.'} aspect: SlopeAspect[1];
+  {doc.doc = 'State the burrow was found in on the last walk.'} condition: BurrowCondition[1];
+  {doc.doc = 'Entrance width in millimetres, absent while the burrow is being re-measured.'} entranceWidthMm: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'One handling record of a caught gecko, versioned on the register timeline so a corrected measurement supersedes the reading first published.'} test::solargecko3::domain::GeckoCapture
+[
+  tagCodeShaped
+  (
+    ~function: ($this.tagCode->isNotEmpty()) && ($this.tagCode->toUpper()->length() == 9)
+    ~enforcementLevel: Warn
+    ~message: 'Capture ' + $this.tagCode + ' must carry a nine-character reserve tag'
+  ),
+  snoutVentMeasured
+  (
+    ~function: ($this.snoutVentMm > 0) && ($this.observerName->isNotEmpty())
+    ~enforcementLevel: Warn
+    ~message: 'Capture ' + $this.tagCode + ' must record both a measured snout-vent length and the recording observer'
+  ),
+  clutchCountIfCounted
+  (
+    ~function: ($this.clutchCount->isEmpty()) || ($this.clutchCount->toOne() >= 1)
+    ~enforcementLevel: Warn
+    ~message: 'Capture ' + $this.tagCode + ' cannot record a counted clutch of nothing'
+  ),
+  releaseMassFloor
+  (
+    ~function: $this.releaseMassMg >= 250
+    ~enforcementLevel: Warn
+    ~message: 'Capture ' + $this.tagCode + ' reports a release mass under the reserve floor'
+  )
+]
+{
+  {doc.doc = 'Tag the caught gecko was released under.'} tagCode: String[1];
+  {doc.doc = 'Snout-vent length in millimetres.'} snoutVentMm: Integer[1];
+  {doc.doc = 'Mass at release in milligrams.'} releaseMassMg: Integer[1];
+  {doc.doc = 'Counted clutch, absent when the gecko was not gravid.'} clutchCount: Integer[0..1];
+  {doc.doc = 'Observer who recorded the handling.'} observerName: String[1];
+  {doc.doc = 'Verdict the handling record leaves.'} verdict: HealthVerdict[1];
+  {doc.doc = 'Day the gecko was handled.'} handledOn: StrictDate[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'A field observer standing on the reserve rota, versioned on the register timeline so a change of standing supersedes the earlier entry.'} test::solargecko3::domain::FieldObserver
+[
+  observerNamed
+  (
+    ~function: $this.observerName->isNotEmpty()
+    ~enforcementLevel: Warn
+    ~message: 'Observer ' + $this.observerCode + ' must carry a rota name'
+  )
+]
+{
+  {doc.doc = 'Rota identifier of the observer.'} observerCode: String[1];
+  {doc.doc = 'Name the observer walks under.'} observerName: String[1];
+  {doc.doc = 'Standing the observer holds on the rota.'} role: ObserverRole[1];
+  {doc.doc = 'Seasons walked, absent for an observer in a first season.'} seasonsWalked: Integer[0..1];
+}
+
+Association {doc.doc = 'Ties a monitored stretch to the burrows cut into it, traversable from either end on the shared register timeline.'} test::solargecko3::domain::Transect_Burrows
+{
+  transect: GeckoTransect[0..1];
+  burrows: BurrowSite[*];
+}
+
+Association {doc.doc = 'Ties a burrow to the handling records taken at it.'} test::solargecko3::domain::Burrow_Captures
+{
+  burrow: BurrowSite[0..1];
+  captures: GeckoCapture[*];
+}
+
+Association {doc.doc = 'Ties an observer to the handling records they filed.'} test::solargecko3::domain::Observer_Captures
+{
+  recordingObserver: FieldObserver[0..1];
+  recordedCaptures: GeckoCapture[*];
+}
+
+Association {doc.doc = 'Ties a monitored stretch to the observers rostered onto it.'} test::solargecko3::domain::Transect_Observers
+{
+  walkedTransects: GeckoTransect[*];
+  rosteredObservers: FieldObserver[*];
+}

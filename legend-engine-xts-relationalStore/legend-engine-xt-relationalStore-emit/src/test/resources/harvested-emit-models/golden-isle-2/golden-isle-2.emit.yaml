@@ -1,0 +1,57 @@
+name: golden-isle-2
+title: "Isle footpath register — inline-view-backed grades over a four-hop reach chain"
+description: |
+  An island footpath maintenance register over a two-schema relational store. Walked
+  segment inspections are mapped off their own table and carry an eight-arm surface
+  cascade closing on a null sentinel, a banded erosion cut and a note assembled from
+  the recorded note and that cut. Two of the mapped properties are not columns at all:
+  they are read through a join onto an inline view whose own columns are conditional
+  expressions over the segment table, so the view has to be expanded into the generated
+  SQL before the property can be selected. The reach of a segment is resolved by
+  walking segment to route to district to isle, and one hop further to the ferry
+  landing, and a second mapped class is backed entirely by a grouping view that counts
+  the segments each route carries. Three mapping test suites replay a ten-row shared
+  relational fixture: one over every cascade arm and the fallback, one over the
+  multi-hop reach chain and the view-derived width class, and one over the grouped view.
+modelSources:
+  model:
+    root: golden-isle-2
+    files:
+      - test/goldenisle2/connection/TrailH2Connection.pure
+      - test/goldenisle2/data/TrailFixture.pure
+      - test/goldenisle2/domain/TrailDomain.pure
+      - test/goldenisle2/mapping/TrailMapping.pure
+      - test/goldenisle2/runtime/TrailRuntime.pure
+      - test/goldenisle2/store/TrailDB.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - mapping:relational-conditional-transform
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-inline-view
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - cross-schema
+  - footpath-survey
+  - group-by-view
+  - h2
+  - inline-view
+  - mapping-test
+  - multi-hop-join
+  - relational
+  - shared-fixture

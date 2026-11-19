@@ -1,0 +1,55 @@
+name: kindly-quarry-4
+title: "Kindly Quarry 4 - a bounded enumerated booking board over one aliased table, published through a data space"
+description: |
+  A community observatory telescope-booking register whose interest is entirely in typed values
+  and boundedness. One class of nine properties carries two enumerated attributes - the tier
+  the booking was taken under and the optical family of the instrument - and both are bound to
+  plain character columns through their own enumeration mappings, so the endpoint publishes
+  the enumerated value rather than the stored code. The single class mapping pins its primary
+  key and reads through an aliased main table. One single-execution service selects the bookings
+  of a requested branch, orders them by the date they were booked and stops at three rows, so
+  the board is bounded whatever the branch holds; its tests cover both an over-full branch
+  and a branch that cannot fill the bound. The store is reached over a Sybase static
+  datasource under delegated Kerberos, and the whole binding is offered to consumers as a
+  data space with a single execution context.
+modelSources:
+  model:
+    root: kindly-quarry-4
+    files:
+      - test/kindlyquarry4/connection/BookingConnection.pure
+      - test/kindlyquarry4/dataspace/BookingDataSpace.pure
+      - test/kindlyquarry4/domain/BookingDomain.pure
+      - test/kindlyquarry4/mapping/BookingMapping.pure
+      - test/kindlyquarry4/runtime/BookingRuntime.pure
+      - test/kindlyquarry4/service/BookingCollectionBoard.pure
+      - test/kindlyquarry4/store/BookingDb.pure
+features:
+  - execution:data-space
+  - execution:service
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - delegated-kerberos
+  - enumeration
+  - enumeration-mapping
+  - h2
+  - main-table-alias
+  - observatory-bookings
+  - primary-key
+  - relational
+  - sort-limit
+  - sybase

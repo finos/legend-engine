@@ -1,0 +1,235 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenglacier::service::SpecimenCardsByEnvironment
+{
+  pattern: '/glacier/v1/specimen-cards/{env}';
+  title: 'Golden Glacier - Specimen Cards By Environment';
+  owners:
+  [
+    'conservatory-curation-desk',
+    'conservatory-reference-desk'
+  ];
+  documentation: 'Graph-fetches and serialises the catalogued specimen card tree - ten scalar attributes plus the to-many cutting child - through whichever of the two structurally identical execution alternatives the environment key selects, each alternative binding the three published source classes to its own inline document connections.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |test::goldenglacier::domain::SpecimenCard.all()->graphFetch(
+      #{
+        test::goldenglacier::domain::SpecimenCard
+        {
+          accessionRef,
+          curatorLabel,
+          grade,
+          moistureBand,
+          cabinetHint,
+          wingLabel,
+          tagLabel,
+          tagSeason,
+          cuttingCount,
+          collectedOn,
+          cuttings
+          {
+            cuttingRef,
+            heightCm,
+            heightLabel,
+            sizeClassLabel
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::goldenglacier::domain::SpecimenCard
+        {
+          accessionRef,
+          curatorLabel,
+          grade,
+          moistureBand,
+          cabinetHint,
+          wingLabel,
+          tagLabel,
+          tagSeason,
+          cuttingCount,
+          collectedOn,
+          cuttings
+          {
+            cuttingRef,
+            heightCm,
+            heightLabel,
+            sizeClassLabel
+          }
+        }
+      }#
+    );
+    key: 'env';
+    executions['CURATION']:
+    {
+      mapping: test::goldenglacier::mapping::SpecimenCardM2M;
+      runtime:
+      #{
+        mappings:
+        [
+          test::goldenglacier::mapping::SpecimenCardM2M
+        ];
+        connections:
+        [
+          ModelStore:
+          [
+            specimenFeedConnection:
+            #{
+              JsonModelConnection
+              {
+                class: test::goldenglacier::feed::SpecimenFeed;
+                url: 'executor:default';
+              }
+            }#,
+            cuttingFeedConnection:
+            #{
+              JsonModelConnection
+              {
+                class: test::goldenglacier::feed::CuttingNode;
+                url: 'executor:default';
+              }
+            }#,
+            tagFeedConnection:
+            #{
+              JsonModelConnection
+              {
+                class: test::goldenglacier::feed::TagNode;
+                url: 'executor:default';
+              }
+            }#
+          ]
+        ];
+      }#;
+    }
+    executions['REFERENCE']:
+    {
+      mapping: test::goldenglacier::mapping::SpecimenCardM2M;
+      runtime:
+      #{
+        mappings:
+        [
+          test::goldenglacier::mapping::SpecimenCardM2M
+        ];
+        connections:
+        [
+          ModelStore:
+          [
+            specimenFeedConnection:
+            #{
+              JsonModelConnection
+              {
+                class: test::goldenglacier::feed::SpecimenFeed;
+                url: 'executor:default';
+              }
+            }#,
+            cuttingFeedConnection:
+            #{
+              JsonModelConnection
+              {
+                class: test::goldenglacier::feed::CuttingNode;
+                url: 'executor:default';
+              }
+            }#,
+            tagFeedConnection:
+            #{
+              JsonModelConnection
+              {
+                class: test::goldenglacier::feed::TagNode;
+                url: 'executor:default';
+              }
+            }#
+          ]
+        ];
+      }#;
+    }
+  }
+  testSuites:
+  [
+    specimenCardEnvironmentSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          specimenFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"accessionRef":"AC-001","revision":4,"record":{"curatorCode":" cur-a ","gradeCode":"herb","moisturePct":82,"collectedOn":"2026-03-04","cabinet":{"cabinetCode":"cb-1","wing":"north-wing","tag":{"tagSeries":"ts","tagNumber":17,"issuer":"conservatory-office","season":"spring"}},"cuttings":[{"cuttingRef":"CT-001-A","heightCm":12,"sizeClass":"tall"},{"cuttingRef":"CT-001-B","heightCm":7}]}},{"accessionRef":"AC-002","revision":5,"record":{"curatorCode":"cur-b","gradeCode":"live","cuttings":[]}},{"accessionRef":"AC-003","revision":6,"record":{"curatorCode":"cur-c","gradeCode":"pres","moisturePct":30,"collectedOn":"2026-05-06","cabinet":{"cabinetCode":"cb-3","tag":{"tagSeries":"tz","tagNumber":3,"issuer":"conservatory-office","season":"autumn"}},"cuttings":[{"cuttingRef":"CT-003-A","heightCm":21,"sizeClass":" mid "}]}}]';
+            }#,
+          cuttingFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"cuttingRef":"CT-900-A","heightCm":5,"sizeClass":"short"}]';
+            }#,
+          tagFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"tagSeries":"ts","tagNumber":91,"issuer":"conservatory-office","season":"winter"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        curationEnvironment:
+        {
+          serializationFormat: PURE;
+          keys:
+          [
+            'CURATION'
+          ];
+          asserts:
+          [
+            threeCuratedCards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"accessionRef":"AC-001","curatorLabel":"C4-CUR-A","grade":"HERBARIUM","moistureBand":"BAND-4","cabinetHint":"CAB/CB-1","wingLabel":"north-wing","tagLabel":"TS-17","tagSeason":"SPRING","cuttingCount":2,"collectedOn":"2026-03-04","cuttings":[{"cuttingRef":"CT-001-A","heightCm":12.0,"heightLabel":"H12CM","sizeClassLabel":"TALL"},{"cuttingRef":"CT-001-B","heightCm":7.0,"heightLabel":"H7CM","sizeClassLabel":"UNSIZED"}]},{"accessionRef":"AC-002","curatorLabel":"C5-CUR-B","grade":"LIVING","moistureBand":"BAND-NONE","cabinetHint":"UNSHELVED","wingLabel":null,"tagLabel":"NOTAG","tagSeason":"UNKNOWN-SEASON","cuttingCount":0,"collectedOn":null,"cuttings":[]},{"accessionRef":"AC-003","curatorLabel":"C6-CUR-C","grade":"PRESERVED","moistureBand":"BAND-2","cabinetHint":"CAB/CB-3","wingLabel":null,"tagLabel":"TZ-3","tagSeason":"AUTUMN","cuttingCount":1,"collectedOn":"2026-05-06","cuttings":[{"cuttingRef":"CT-003-A","heightCm":21.0,"heightLabel":"H21CM","sizeClassLabel":"MID"}]}]';
+                  }#;
+              }#
+          ]
+        },
+        referenceEnvironment:
+        {
+          serializationFormat: PURE;
+          keys:
+          [
+            'REFERENCE'
+          ];
+          asserts:
+          [
+            threeReferenceCards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"accessionRef":"AC-001","curatorLabel":"C4-CUR-A","grade":"HERBARIUM","moistureBand":"BAND-4","cabinetHint":"CAB/CB-1","wingLabel":"north-wing","tagLabel":"TS-17","tagSeason":"SPRING","cuttingCount":2,"collectedOn":"2026-03-04","cuttings":[{"cuttingRef":"CT-001-A","heightCm":12.0,"heightLabel":"H12CM","sizeClassLabel":"TALL"},{"cuttingRef":"CT-001-B","heightCm":7.0,"heightLabel":"H7CM","sizeClassLabel":"UNSIZED"}]},{"accessionRef":"AC-002","curatorLabel":"C5-CUR-B","grade":"LIVING","moistureBand":"BAND-NONE","cabinetHint":"UNSHELVED","wingLabel":null,"tagLabel":"NOTAG","tagSeason":"UNKNOWN-SEASON","cuttingCount":0,"collectedOn":null,"cuttings":[]},{"accessionRef":"AC-003","curatorLabel":"C6-CUR-C","grade":"PRESERVED","moistureBand":"BAND-2","cabinetHint":"CAB/CB-3","wingLabel":null,"tagLabel":"TZ-3","tagSeason":"AUTUMN","cuttingCount":1,"collectedOn":"2026-05-06","cuttings":[{"cuttingRef":"CT-003-A","heightCm":21.0,"heightLabel":"H21CM","sizeClassLabel":"MID"}]}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

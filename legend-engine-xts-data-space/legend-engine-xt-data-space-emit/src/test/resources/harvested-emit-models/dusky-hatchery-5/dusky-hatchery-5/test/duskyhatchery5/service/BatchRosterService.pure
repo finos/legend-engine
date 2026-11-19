@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyhatchery5::service::BatchRosterService
+{
+  pattern: '/duskyhatchery/v1/batches/{processingDate}/{species}';
+  title: 'Fry Batch Roster By Species';
+  owners:
+  [
+    'hatchery-operations'
+  ];
+  documentation: 'Projects the fry batches of one species as of a processing instant, resolving the pond attributes through the declared join so two milestoned main tables are aligned on the same processing predicate.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], species: String[1]|test::duskyhatchery5::domain::FryBatch.all($processingDate)->filter(
+      b|$b.speciesName == $species
+    )->project(
+      [
+        x|$x.batchCode,
+        x|$x.speciesName,
+        x|$x.fryTally,
+        x|$x.hatchedOn,
+        x|$x.pond.siteName
+      ],
+      [
+        'Batch',
+        'Species',
+        'Fry',
+        'Hatched',
+        'Site'
+      ]
+    )->sort([asc('Batch')])};
+    mapping: test::duskyhatchery5::mapping::HatcheryMapping;
+    runtime: test::duskyhatchery5::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    batchRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.rearing_pond:
+                'pond_code,site_name,water_temp_c,volume_litres,in_z,out_z\n'+
+                'PD-01,Alder Run,9.5,45000.000,2025-01-01,9999-12-31\n'+
+                'PD-02,Willow Flat,8.25,52000.500,2025-01-01,9999-12-31\n';
+              hatchery.fry_batch:
+                'batch_code,pond_code,species_name,fry_tally,hatched_on,in_z,out_z\n'+
+                'FB-01,PD-01,Brook Trout,1200,2025-03-04,2025-01-01,9999-12-31\n'+
+                'FB-02,PD-02,Rainbow Trout,900,2025-03-11,2025-01-01,9999-12-31\n'+
+                'FB-03,PD-02,Rainbow Trout,400,2025-02-02,2024-06-01,2025-06-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        speciesInWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-01,
+            species = 'Rainbow Trout'
+          ]
+          asserts:
+          [
+            supersededVersionExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"FB-02","Species":"Rainbow Trout","Fry":900,"Hatched":"2025-03-11","Site":"Willow Flat"}]';
+                  }#;
+              }#
+          ]
+        },
+        speciesWithNoBatches:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-01,
+            species = 'Arctic Char'
+          ]
+          asserts:
+          [
+            emptyRoster:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

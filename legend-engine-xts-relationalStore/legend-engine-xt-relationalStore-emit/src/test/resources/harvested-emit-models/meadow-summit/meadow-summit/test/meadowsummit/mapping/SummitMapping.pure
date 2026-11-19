@@ -1,0 +1,226 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::meadowsummit::mapping::SummitMapping
+(
+  *test::meadowsummit::domain::TrailSegment[trailSegment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowsummit::store::SummitStore]trail.trail_segment.segment_id
+    )
+    ~mainTable [test::meadowsummit::store::SummitStore]trail.trail_segment
+    segmentCode: toUpper(trim([test::meadowsummit::store::SummitStore]trail.trail_segment.segment_code)),
+    segmentName: [test::meadowsummit::store::SummitStore]trail.trail_segment.segment_name,
+    surfaceLabel: case(
+                    equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'G'),
+                    'gravel',
+                    case(
+                      equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'S'),
+                      'stone pitch',
+                      case(
+                        equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'B'),
+                        'boardwalk',
+                        case(
+                          equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'T'),
+                          'turf',
+                          case(
+                            equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'C'),
+                            'compacted earth',
+                            case(
+                              equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'R'),
+                              'rock scree',
+                              case(
+                                equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'D'),
+                                'duckboard',
+                                case(
+                                  equal([test::meadowsummit::store::SummitStore]trail.trail_segment.surface_code, 'M'),
+                                  'mesh matting',
+                                  sqlNull()
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    terrainKind: [test::meadowsummit::store::SummitStore]@Segment_Grade | [test::meadowsummit::store::SummitStore]terrain.slope_grade.terrain_kind,
+    gradeLabel: [test::meadowsummit::store::SummitStore]@Segment_Grade | [test::meadowsummit::store::SummitStore]terrain.slope_grade.grade_label,
+    lengthM: [test::meadowsummit::store::SummitStore]trail.trail_segment.length_m,
+    waypointLabel: coalesce([test::meadowsummit::store::SummitStore]trail.trail_segment.waypoint_note, 'no waypoint note')
+  }
+
+  *test::meadowsummit::domain::MaintenanceVisit[maintenanceVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_id
+    )
+    ~mainTable [test::meadowsummit::store::SummitStore]trail.maintenance_visit
+    visitCode: concat('MV-', toString([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_id)),
+    visitKindLabel: case(
+                      equal([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_kind_code, 'MOW'),
+                      'meadow mowing',
+                      case(
+                        equal([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_kind_code, 'DRN'),
+                        'drain clearing',
+                        case(
+                          equal([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_kind_code, 'STP'),
+                          'step repair',
+                          case(
+                            equal([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_kind_code, 'BRD'),
+                            'boardwalk repair',
+                            case(
+                              equal([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_kind_code, 'SCR'),
+                              'scree clearing',
+                              case(
+                                equal([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_kind_code, 'MSH'),
+                                'mesh pinning',
+                                case(
+                                  equal([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_kind_code, 'SUR'),
+                                  'condition survey',
+                                  'unclassified visit'
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+    workHours: [test::meadowsummit::store::SummitStore]trail.maintenance_visit.work_hours,
+    crewName: [test::meadowsummit::store::SummitStore]@Visit_Crew | [test::meadowsummit::store::SummitStore]trail.crew_roster.crew_name,
+    depotName: [test::meadowsummit::store::SummitStore]@Visit_Crew > @Crew_Depot | [test::meadowsummit::store::SummitStore]trail.depot_register.depot_name,
+    noteLabel: coalesce([test::meadowsummit::store::SummitStore]trail.maintenance_visit.visit_note, 'no visit note')
+  }
+
+  *test::meadowsummit::domain::SegmentVisitTally[segmentVisitTally]: Relational
+  {
+    ~primaryKey
+    (
+      [test::meadowsummit::store::SummitStore]trail.segment_visit_summary.segment_id
+    )
+    ~mainTable [test::meadowsummit::store::SummitStore]trail.segment_visit_summary
+    segmentKey: concat('SEG-', toString([test::meadowsummit::store::SummitStore]trail.segment_visit_summary.segment_id)),
+    visitCount: [test::meadowsummit::store::SummitStore]trail.segment_visit_summary.visit_count,
+    totalHours: [test::meadowsummit::store::SummitStore]trail.segment_visit_summary.total_hours,
+    segmentName: [test::meadowsummit::store::SummitStore]@Summary_Segment | [test::meadowsummit::store::SummitStore]trail.trail_segment.segment_name
+  }
+
+  test::meadowsummit::domain::SegmentVisits: Relational
+  {
+    AssociationMapping
+    (
+      visits[trailSegment, maintenanceVisit]: [test::meadowsummit::store::SummitStore]@Segment_Visit,
+      segment[maintenanceVisit, trailSegment]: [test::meadowsummit::store::SummitStore]@Segment_Visit
+    )
+  }
+
+  testSuites:
+  [
+    segmentSurfaceSuite:
+    {
+      function: |test::meadowsummit::domain::TrailSegment.all()->project(
+        [
+          s|$s.segmentCode,
+          s|$s.segmentName,
+          s|$s.surfaceLabel,
+          s|$s.terrainKind,
+          s|$s.gradeLabel,
+          s|$s.lengthM,
+          s|$s.waypointLabel
+        ],
+        [
+          'Segment',
+          'Name',
+          'Surface',
+          'Terrain',
+          'Grade',
+          'LengthM',
+          'Waypoint'
+        ]
+      )->sort([asc('Segment')]);
+      tests:
+      [
+        everySurfaceArm:
+        {
+          data:
+          [
+            test::meadowsummit::store::SummitStore: Reference
+              #{
+                test::meadowsummit::data::SummitFixture
+              }#
+          ];
+          asserts:
+          [
+            nineArmRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Segment":"TS-01","Name":"Larch Bench","Surface":"gravel","Terrain":"MEADOW","Grade":"Gentle Rise","LengthM":1200,"Waypoint":"upper meadow spur"},{"Segment":"TS-02","Name":"Cirque Steps","Surface":"stone pitch","Terrain":"CIRQUE","Grade":"Steep Pitch","LengthM":800,"Waypoint":"no waypoint note"},{"Segment":"TS-03","Name":"Bog Crossing","Surface":"boardwalk","Terrain":"MEADOW","Grade":"Gentle Rise","LengthM":450,"Waypoint":"boardwalk renewed"},{"Segment":"TS-04","Name":"Turf Ramp","Surface":"turf","Terrain":"SCREE","Grade":"Broken Ground","LengthM":600,"Waypoint":"no waypoint note"},{"Segment":"TS-05","Name":"Cinder Path","Surface":"compacted earth","Terrain":"CIRQUE","Grade":"Steep Pitch","LengthM":950,"Waypoint":"compacted after rain"},{"Segment":"TS-06","Name":"Scree Traverse","Surface":"rock scree","Terrain":"SCREE","Grade":"Broken Ground","LengthM":1100,"Waypoint":"no waypoint note"},{"Segment":"TS-07","Name":"Duckboard Reach","Surface":"duckboard","Terrain":"MEADOW","Grade":"Gentle Rise","LengthM":300,"Waypoint":"duckboard section"},{"Segment":"TS-08","Name":"Mesh Landing","Surface":"mesh matting","Terrain":"CIRQUE","Grade":"Steep Pitch","LengthM":250,"Waypoint":"no waypoint note"},{"Segment":"TS-09","Name":"Unmarked Spur","Surface":null,"Terrain":"SCREE","Grade":"Broken Ground","LengthM":700,"Waypoint":"survey pending"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    segmentTallySuite:
+    {
+      function: |test::meadowsummit::domain::SegmentVisitTally.all()->project(
+        [
+          t|$t.segmentKey,
+          t|$t.visitCount,
+          t|$t.totalHours,
+          t|$t.segmentName
+        ],
+        [
+          'SegmentKey',
+          'Visits',
+          'Hours',
+          'Name'
+        ]
+      )->sort([asc('SegmentKey')]);
+      tests:
+      [
+        groupedTally:
+        {
+          data:
+          [
+            test::meadowsummit::store::SummitStore: Reference
+              #{
+                test::meadowsummit::data::SummitFixture
+              }#
+          ];
+          asserts:
+          [
+            tallyRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SegmentKey":"SEG-1","Visits":3,"Hours":11.0,"Name":"Larch Bench"},{"SegmentKey":"SEG-2","Visits":2,"Hours":8.0,"Name":"Cirque Steps"},{"SegmentKey":"SEG-3","Visits":1,"Hours":5.5,"Name":"Bog Crossing"},{"SegmentKey":"SEG-4","Visits":1,"Hours":2.5,"Name":"Turf Ramp"},{"SegmentKey":"SEG-5","Visits":1,"Hours":1.5,"Name":"Cinder Path"},{"SegmentKey":"SEG-6","Visits":1,"Hours":7.0,"Name":"Scree Traverse"},{"SegmentKey":"SEG-7","Visits":1,"Hours":4.0,"Name":"Duckboard Reach"},{"SegmentKey":"SEG-8","Visits":1,"Hours":2.0,"Name":"Mesh Landing"},{"SegmentKey":"SEG-9","Visits":1,"Hours":1.0,"Name":"Unmarked Spur"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

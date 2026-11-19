@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::zephyrwillow2::diagram::NetworkDiagram
+{
+  classView round
+  {
+    class: test::zephyrwillow2::domain::CollectionRound;
+    position: (40.0, 40.0);
+    rectangle: (260.0, 220.0);
+  }
+  classView container
+  {
+    class: test::zephyrwillow2::domain::Container;
+    position: (380.0, 40.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView site
+  {
+    class: test::zephyrwillow2::domain::DepotSite;
+    position: (380.0, 240.0);
+    rectangle: (240.0, 120.0);
+  }
+  classView ward
+  {
+    class: test::zephyrwillow2::domain::Ward;
+    position: (700.0, 240.0);
+    rectangle: (220.0, 100.0);
+  }
+  classView handling
+  {
+    class: test::zephyrwillow2::domain::RoundHandling;
+    position: (40.0, 320.0);
+    rectangle: (260.0, 100.0);
+  }
+  propertyView
+  {
+    property: test::zephyrwillow2::domain::Round_Container.container;
+    source: round;
+    target: container;
+    points: [(170.0, 150.0), (500.0, 100.0)];
+  }
+  propertyView
+  {
+    property: test::zephyrwillow2::domain::Container_Site.site;
+    source: container;
+    target: site;
+    points: [(500.0, 100.0), (500.0, 300.0)];
+  }
+  propertyView
+  {
+    property: test::zephyrwillow2::domain::Site_Ward.ward;
+    source: site;
+    target: ward;
+    points: [(500.0, 300.0), (810.0, 290.0)];
+  }
+}

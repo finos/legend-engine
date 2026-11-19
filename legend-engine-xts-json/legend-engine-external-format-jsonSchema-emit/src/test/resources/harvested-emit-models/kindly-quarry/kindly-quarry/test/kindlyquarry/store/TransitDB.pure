@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::kindlyquarry::store::TransitDB
+(
+  Schema network
+  (
+    Table stop_point
+    (
+      stop_id INTEGER PRIMARY KEY,
+      stop_code VARCHAR(32) NOT NULL,
+      stop_name VARCHAR(120) NOT NULL,
+      shelter_code CHAR(1) NOT NULL,
+      corridor_id INTEGER NOT NULL,
+      opened_on DATE NOT NULL
+    )
+    Table corridor
+    (
+      corridor_id INTEGER PRIMARY KEY,
+      corridor_code VARCHAR(32) NOT NULL,
+      corridor_name VARCHAR(120) NOT NULL
+    )
+  )
+
+  Schema planning
+  (
+    Table proposed_corridor
+    (
+      corridor_id INTEGER PRIMARY KEY,
+      corridor_code VARCHAR(32) NOT NULL,
+      corridor_name VARCHAR(120) NOT NULL
+    )
+    Table patronage_count
+    (
+      count_id INTEGER PRIMARY KEY,
+      stop_id INTEGER NOT NULL,
+      counted_on DATE NOT NULL,
+      boardings INTEGER NOT NULL
+    )
+  )
+
+  Join Stop_Corridor(network.stop_point.corridor_id = network.corridor.corridor_id)
+  Join Patronage_Stop(planning.patronage_count.stop_id = network.stop_point.stop_id)
+)

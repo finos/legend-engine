@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::azurecanyon2::store::SkyDB
+(
+  Schema sky
+  (
+    Table survey
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      survey_id INTEGER PRIMARY KEY,
+      survey_name VARCHAR(200) NOT NULL,
+      target_band VARCHAR(20) NOT NULL,
+      plate_count INTEGER NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    Table reading
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      reading_id INTEGER PRIMARY KEY,
+      station_id INTEGER NOT NULL,
+      band VARCHAR(20) NOT NULL,
+      magnitude DOUBLE NOT NULL,
+      captured_on DATE NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table station
+    (
+      station_id INTEGER PRIMARY KEY,
+      station_name VARCHAR(200) NOT NULL,
+      station_kind VARCHAR(20) NOT NULL,
+      elevation_m DOUBLE NOT NULL,
+      ridge_name VARCHAR(200)
+    )
+  )
+
+  Filter RidgeOnly(sky.station.station_kind = 'RIDGE')
+)

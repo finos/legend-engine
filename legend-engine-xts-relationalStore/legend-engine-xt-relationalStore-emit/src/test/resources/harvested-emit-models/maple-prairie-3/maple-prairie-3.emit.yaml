@@ -1,0 +1,55 @@
+name: maple-prairie-3
+title: "Maple Prairie 3 — alpine trail-hut patrol network"
+description: |
+  An alpine trail-hut network with mountain huts and trail segments in one
+  schema, ranger stations and patrol visits in another, and a derived hut
+  label view. The model exercises cross-schema joins, a two-hop patrol path,
+  relational string transforms, date-window filtering, and TDS v1 services.
+modelSources:
+  model:
+    root: maple-prairie-3
+    files:
+      - test/mapleprairie3/connection/TrailConnections.pure
+      - test/mapleprairie3/domain/TrailDomain.pure
+      - test/mapleprairie3/mapping/TrailMapping.pure
+      - test/mapleprairie3/runtime/TrailRuntimes.pure
+      - test/mapleprairie3/service/PatrolWindow.pure
+      - test/mapleprairie3/service/SegmentDigest.pure
+      - test/mapleprairie3/store/TrailDb.pure
+features:
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - alpine
+  - cross-schema
+  - dyna-function
+  - h2
+  - inner-join
+  - multi-table
+  - relational
+  - service-test
+  - tds-v1
+  - trail-hut-network

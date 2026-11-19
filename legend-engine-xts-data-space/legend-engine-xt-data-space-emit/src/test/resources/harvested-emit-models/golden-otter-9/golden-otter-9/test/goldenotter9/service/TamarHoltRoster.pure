@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter9::service::TamarHoltRoster
+{
+  pattern: '/goldenotter9/v1/holts/tamar';
+  title: 'Otter Sanctuary - Tamar Holt Roster';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the holts on reaches of one named catchment with the reach, the reach habitat and the keeper reached through association hops.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::goldenotter9::domain::Holt.all()->filter(
+      h|$h.reach.catchmentName == 'Tamar'
+    )->project(
+      [
+        h|$h.holtCode,
+        h|$h.holtName,
+        h|$h.reach.reachName,
+        h|$h.reach.habitat.habitatLabel,
+        h|$h.keeper.observerName,
+        h|$h.sizeBand
+      ],
+      [
+        'HoltCode',
+        'HoltName',
+        'Reach',
+        'Habitat',
+        'Keeper',
+        'Size'
+      ]
+    )->sort([asc('HoltCode')]);
+    mapping: test::goldenotter9::mapping::SanctuaryMapping;
+    runtime: test::goldenotter9::runtime::SanctuaryRuntime;
+  }
+  testSuites:
+  [
+    tamarHoltRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryWarehouse:
+            Reference
+            #{
+              test::goldenotter9::data::SanctuaryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        catchmentHolts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            threeTamarHolts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HoltCode":"HT-1","HoltName":"Alder Holt","Reach":"Tamar Upper","Habitat":"Reedbed","Keeper":"Ana Rees","Size":"LARGE"},{"HoltCode":"HT-2","HoltName":"Willow Holt","Reach":"Tamar Upper","Habitat":"Reedbed","Keeper":"Tom Vale","Size":"SINGLE"},{"HoltCode":"HT-4","HoltName":"Stone Holt","Reach":"Tamar Lower","Habitat":"Gravel bar","Keeper":"Ana Rees","Size":"SINGLE"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

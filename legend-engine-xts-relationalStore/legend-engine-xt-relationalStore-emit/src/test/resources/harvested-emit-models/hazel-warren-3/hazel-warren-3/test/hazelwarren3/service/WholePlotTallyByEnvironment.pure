@@ -1,0 +1,187 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelwarren3::service::WholePlotTallyByEnvironment
+{
+  pattern: '/allotment/v1/whole-plot-tally/{districtName}';
+  title: 'Allotment Warren - Whole Plot Tally By Environment';
+  owners:
+  [
+    'allotment-warren-office',
+    'allotment-tending-rota'
+  ];
+  documentation: 'Counts every plot of one district, retired plots included, keeping the rows whose home field is one of the eight recognised fields and whose sowing date is still ahead of the current date unless the field itself admits them. The same grouped and de-duplicated shape as the active tally but without the pre-projection predicate, so the pair shows what the retirement filter removes. Multi-execution keyed by environment.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {districtName: String[1], currentDate: StrictDate[1]|test::hazelwarren3::domain::AllotmentPlot.all()->project(
+      [
+        col(p|$p.site.districtName, 'District'),
+        col(p|$p.site.siteName, 'Site'),
+        col(p|$p.plotCode, 'Plot'),
+        col(p|$p.sownOn, 'Sown On')
+      ]
+    )->filter(
+      r|($r.getString('District') == $districtName) && (((((((($r.getString('Site') == 'North Field') || ($r.getString('Site') == 'South Field')) || ($r.getString('Site') == 'East Field')) || ($r.getString('Site') == 'West Field')) || ($r.getString('Site') == 'Upper Field')) || ($r.getString('Site') == 'Lower Field')) || ($r.getString('Site') == 'Mill Field')) && ((($r.getString('Site') == 'North Field') || ($r.getStrictDate('Sown On') > $currentDate)) && (($r.getString('Site') == 'South Field') || ($r.getStrictDate('Sown On') > $currentDate))))
+    )->groupBy(['District'], [agg('Plots', x|$x.getString('Plot'), y|$y->count())])->distinct()->sort([asc('District')])};
+    key: 'environment';
+    executions['primary']:
+    {
+      mapping: test::hazelwarren3::mapping::PlotLinkMapping;
+      runtime: test::hazelwarren3::runtime::PlotPrimaryRuntime;
+    }
+    executions['standby']:
+    {
+      mapping: test::hazelwarren3::mapping::PlotLinkMapping;
+      runtime: test::hazelwarren3::runtime::PlotStandbyRuntime;
+    }
+  }
+  testSuites:
+  [
+    primaryWholeTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          plotPrimary:
+            Relational
+            #{
+              allotment.plot:
+                'plot_code,site_code,crop_code,grade_code,sown_on,active\n'+
+                'P-01,S-01,C-01,G1,2000-01-04,true\n'+
+                'P-02,S-02,C-02,G2,2000-02-04,true\n'+
+                'P-04,S-02,C-03,G4,9999-12-31,true\n'+
+                'P-06,S-02,C-01,G6,9999-01-01,false\n'+
+                'P-05,S-03,C-02,G5,2000-05-04,true\n';
+              allotment.tending:
+                'plot_code,tended_on,keeper_code,hours\n'+
+                'P-01,2000-01-10,K-01,6\n';
+              allotmentref.site:
+                'site_code,site_name,district_name\n'+
+                'S-01,North Field,Northern District\n'+
+                'S-02,South Field,Southern District\n'+
+                'S-03,Mill Field,Southern District\n';
+              allotmentref.crop:
+                'crop_code,crop_name,season_code\n'+
+                'C-01,Broad Bean,S1\n'+
+                'C-02,Leaf Chard,S2\n'+
+                'C-03,Root Beet,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theRetiredFutureSownPlotIsCountedToo:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['primary'];
+          parameters:
+          [
+            districtName = 'Southern District',
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            twoCountedPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"Southern District","Plots":2}]';
+                  }#;
+              }#
+          ]
+        },
+        anUnknownDistrictTalliesNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['primary'];
+          parameters:
+          [
+            districtName = 'Western District',
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            emptyTally:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    standbyWholeTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          plotStandby:
+            Relational
+            #{
+              allotment.plot:
+                'plot_code,site_code,crop_code,grade_code,sown_on,active\n'+
+                'P-11,S-02,C-01,G1,9999-01-01,true\n'+
+                'P-13,S-02,C-01,G3,9999-03-01,false\n';
+              allotment.tending:
+                'plot_code,tended_on,keeper_code,hours\n';
+              allotmentref.site:
+                'site_code,site_name,district_name\n'+
+                'S-02,South Field,Southern District\n';
+              allotmentref.crop:
+                'crop_code,crop_name,season_code\n'+
+                'C-01,Broad Bean,S1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theStandbyEnvironmentCountsRetiredPlotsAsWell:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['standby'];
+          parameters:
+          [
+            districtName = 'Southern District',
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            bothStandbyPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"District":"Southern District","Plots":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

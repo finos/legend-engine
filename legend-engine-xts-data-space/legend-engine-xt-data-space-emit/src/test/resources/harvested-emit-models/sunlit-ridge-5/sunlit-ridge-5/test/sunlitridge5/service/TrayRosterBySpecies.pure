@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sunlitridge5::service::TrayRosterBySpecies
+{
+  pattern: '/sunlitridge5/trays/{procDate}';
+  title: 'Sunlit Nursery - Tray Roster By Species';
+  ownership: DID { identifier: 'sunlit-nursery-register' };
+  documentation: 'Lists the seedling trays of six propagated species as recorded on the processing date.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {procDate: StrictDate[1]|test::sunlitridge5::domain::SeedlingTray.all($procDate)->filter(
+      t|$t.speciesCode->in(['ASTR', 'CAMP', 'DIGI', 'ECHI', 'GERA', 'SALV'])
+    )->project(
+      [
+        t|$t.trayCode,
+        t|$t.speciesCode,
+        t|$t.benchCode,
+        t|$t.cellCount,
+        t|$t.germinationPct,
+        t|$t.sownOn
+      ],
+      [
+        'Tray',
+        'Species',
+        'Bench',
+        'Cells',
+        'Germination',
+        'Sown'
+      ]
+    )};
+    mapping: test::sunlitridge5::mapping::NurseryMapping;
+    runtime: test::sunlitridge5::runtime::NurseryGreenhouseRuntime;
+  }
+  testSuites:
+  [
+    trayRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          greenhouseDb:
+            Relational
+            #{
+              greenhouse.seedling_tray:
+                'tray_code,in_z,out_z,species_code,bench_code,cell_count,germination_pct,sown_on\n'+
+                'TR-101,2026-03-01 00:00:00,9999-12-31 00:00:00,SALV,B-1,72,91.5,2026-02-20\n'+
+                'TR-102,2026-03-01 00:00:00,9999-12-31 00:00:00,MINT,B-1,72,88.0,2026-02-21\n'+
+                'TR-103,2026-01-10 00:00:00,2026-03-15 00:00:00,ASTR,B-2,48,75.0,2026-01-05\n'+
+                'TR-103,2026-03-15 00:00:00,9999-12-31 00:00:00,ASTR,B-3,48,80.0,2026-01-05\n'+
+                'TR-104,2026-04-20 00:00:00,9999-12-31 00:00:00,DIGI,B-2,96,60.0,2026-04-18\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        listedSpeciesOnProcessingDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            procDate = %2026-04-01
+          ]
+          asserts:
+          [
+            closedAndLaterVersionsDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Tray":"TR-101","Species":"SALV","Bench":"B-1","Cells":72,"Germination":91.5,"Sown":"2026-02-20"},{"Tray":"TR-103","Species":"ASTR","Bench":"B-3","Cells":48,"Germination":80.0,"Sown":"2026-01-05"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

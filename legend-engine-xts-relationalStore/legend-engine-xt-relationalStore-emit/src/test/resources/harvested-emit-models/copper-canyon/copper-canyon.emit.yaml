@@ -1,0 +1,36 @@
+name: copper-canyon
+title: "Copper Canyon - sky-survey exposure digest built by a model-to-model mapping over a cross-schema plate store"
+description: |
+  An observatory sky-survey corpus in which a raw plate-exposure feed class is folded into a graded
+  exposure digest by a model-to-model mapping whose transforms compose a survey key, resolve a padded
+  or absent filter code, band the exposure duration and note the recorded seeing. A cross-schema
+  relational store carries the plate, exposure and instrument sets the feed is drawn from, and an
+  engine runtime binds the mapping to a model-store connection.
+modelSources:
+  model:
+    root: copper-canyon
+    files:
+      - test/coppercanyon/connection/ExposureFeedConnection.pure
+      - test/coppercanyon/domain/SurveyDomain.pure
+      - test/coppercanyon/mapping/ExposureDigestM2M.pure
+      - test/coppercanyon/runtime/ExposureDigestRuntime.pure
+      - test/coppercanyon/store/ObservatoryDB.pure
+features:
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - astronomy
+  - cross-schema
+  - graph-fetch
+  - mapping-test
+  - model-to-model
+  - multi-table
+  - relational
+  - sky-survey

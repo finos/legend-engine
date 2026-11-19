@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldendelta::service::VolunteerRosterService
+{
+  pattern: '/goldendelta/volunteerRoster';
+  owners:
+  [
+    'golden-delta-trail-wardens'
+  ];
+  documentation: 'Returns the trail-warden roster with the enrolment name already split into its two segments. The rows are read from the roster table by one mapping and reshaped by a second one, and the two are joined only by the chaining connection named in the runtime declared inline here, so a single request spans a table read and a graph transformation. Because both cuts are pushed down to the physical dialect on this path, the leading segment retains the separator, unlike the same expression evaluated over a payload.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::goldendelta::domain::Volunteer.all()->project(
+      [
+        v|$v.givenName,
+        v|$v.familyName
+      ],
+      [
+        'Given',
+        'Family'
+      ]
+    )->sort([asc('Given'), asc('Family')]);
+    mapping: test::goldendelta::mapping::VolunteerRefineMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::goldendelta::mapping::VolunteerRefineMapping
+      ];
+      connections:
+      [
+        test::goldendelta::store::RosterDatabase:
+        [
+          inlineRosterH2Connection:
+          #{
+            RelationalDatabaseConnection
+            {
+              store: test::goldendelta::store::RosterDatabase;
+              type: H2;
+              specification: LocalH2
+              {
+              };
+              auth: DefaultH2;
+            }
+          }#
+        ],
+        ModelStore:
+        [
+          inlineRosterChainConnection:
+          #{
+            ModelChainConnection
+            {
+              mappings:
+              [
+                test::goldendelta::mapping::RosterRelationalMapping
+              ];
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    chainedRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inlineRosterH2Connection:
+            Relational
+            #{
+              roster.volunteer_record:
+                'record_ref,combined_name,depot_code,trailhead_name,access_note,enrolled_on\n'+
+                'GD-201,Ferny Wraysbury,DP-N,Alder Steps,Gate is left unlatched in summer,2026-03-02\n'+
+                'GD-202,Marsh Kite Alderway,DP-N,Bramble Gate,Second gate on the lower path,2026-03-05\n'+
+                'GD-203, Bracken Hollow,DP-S,Cinder Rise,Park on the verge below the rise,2026-03-09\n'+
+                'GD-204,Cobweb ,DP-S,Dyke Crossing,Ford is impassable after rain,2026-03-11\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        chainedSplitRoster:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Given":" ","Family":"Bracken Hollow"},{"Given":"Cobweb ","Family":""},{"Given":"Ferny ","Family":"Wraysbury"},{"Given":"Marsh ","Family":"Kite Alderway"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

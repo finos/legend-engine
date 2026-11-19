@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealwillow3::service::YardStewardRoster
+{
+  pattern: '/borealwillow3/stewards/{yardCode}';
+  title: 'Steward Roster For One Yard';
+  documentation: 'Restricts the steward register to one stand and projects the stored roster rows in code order.';
+  autoActivateUpdates: false;
+  owners:
+  [
+    'apiary-register-desk'
+  ];
+  execution: Single
+  {
+    query: {yardCode: String[1]|test::borealwillow3::domain::Steward.all()->filter(
+      s|$s.yardCode == $yardCode
+    )->project(
+      [
+        s|$s.stewardCode,
+        s|$s.yardCode,
+        s|$s.stewardName
+      ],
+      [
+        'Steward',
+        'Yard',
+        'Name'
+      ]
+    )->sort([asc('Steward')])};
+    mapping: test::borealwillow3::mapping::ApiaryMapping;
+    runtime: test::borealwillow3::runtime::ApiaryH2Runtime;
+  }
+  testSuites:
+  [
+    stewardRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          apiaryH2Connection:
+            Relational
+            #{
+              registry.steward:
+                'steward_code,yard_code,steward_name\n'+
+                'S-1,Y-01,rowan tilbury\n'+
+                'S-2,Y-01,mira colt\n'+
+                'S-3,Y-02,dane orrel\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rosterForOneYard:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            yardCode = 'Y-01'
+          ]
+          asserts:
+          [
+            keyedRoster:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Steward":"S-1","Yard":"Y-01","Name":"rowan tilbury"},{"Steward":"S-2","Yard":"Y-01","Name":"mira colt"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::wistfulhatchery::store::BroodDb
+(
+  Schema brood
+  (
+    Table facility
+    (
+      facility_id INTEGER PRIMARY KEY,
+      facility_name VARCHAR(60) NOT NULL,
+      region_name VARCHAR(60) NOT NULL
+    )
+    Table brood_room
+    (
+      room_id INTEGER PRIMARY KEY,
+      room_code VARCHAR(20) NOT NULL,
+      facility_id INTEGER NOT NULL,
+      temperature_c DOUBLE NOT NULL
+    )
+    Table larval_cohort
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      cohort_id INTEGER PRIMARY KEY,
+      cohort_code VARCHAR(20) NOT NULL,
+      room_id INTEGER NOT NULL,
+      species_name VARCHAR(80) NOT NULL,
+      larva_count INTEGER NOT NULL,
+      vigour_score INTEGER,
+      started_on DATE NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+    Table host_plant
+    (
+      plant_id INTEGER PRIMARY KEY,
+      plant_code VARCHAR(20) NOT NULL,
+      room_id INTEGER NOT NULL,
+      plant_species VARCHAR(80) NOT NULL,
+      planted_on DATE NOT NULL
+    )
+  )
+
+  Join Cohort_Room(brood.larval_cohort.room_id = brood.brood_room.room_id)
+  Join Room_Facility(brood.brood_room.facility_id = brood.facility.facility_id)
+  Join Plant_Room(brood.host_plant.room_id = brood.brood_room.room_id)
+)

@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::ivorytundra5::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'An instrument put out on a tundra observation station for a stretch of the field season, effective over business time.'} test::ivorytundra5::domain::SensorDeployment
+{
+  deployCode: String[1];
+  instrumentName: String[1];
+  sampleInterval: Integer[1];
+  serviceState: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A staffed observation station whose terrain classification is effective over business time.'} test::ivorytundra5::domain::ObservationStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  terrainLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The custodian answerable for a set of observation stations.'} test::ivorytundra5::domain::StationCustodian
+{
+  custodianCode: String[1];
+  custodianName: String[1];
+  radioNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A calibration check booked against an observation station; the to-many end the collection test reaches through.'} test::ivorytundra5::domain::CalibrationCheck
+{
+  checkCode: String[1];
+  checkResult: String[1];
+  driftPercent: Float[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a deployment to the station it sits on; both ends are effective over business time, so the navigation carries a date.'} test::ivorytundra5::domain::Deployment_Station
+{
+  deployments: SensorDeployment[*];
+  station: ObservationStation[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a station to its custodian, the second hop of the register navigation.'} test::ivorytundra5::domain::Station_Custodian
+{
+  custodianStations: ObservationStation[*];
+  custodian: StationCustodian[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Ties a station to the calibration checks recorded on it.'} test::ivorytundra5::domain::Station_Checks
+{
+  checkStation: ObservationStation[0..1];
+  checks: CalibrationCheck[*];
+}

@@ -1,0 +1,146 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealvineyard::mapping::CycleNetworkMapping
+(
+  *test::tealvineyard::domain::DockStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.station_id
+    )
+    ~mainTable [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station
+    stationId: [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.station_id,
+    stationCode: [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.station_code,
+    stationName: [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.station_name,
+    districtCode: [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.district_code,
+    surfaceKind: toUpper([test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.surface_kind),
+    standCount: [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.stand_count,
+    overrideBand: [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.override_band,
+    installedOn: [test::tealvineyard::store::CycleNetworkDb]cyclenet.dock_station.installed_on
+  }
+
+  *test::tealvineyard::domain::JourneyRecord[journey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.journey_id
+    )
+    ~mainTable [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record
+    journeyId: [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.journey_id,
+    journeyCode: [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.journey_code,
+    stationCode: [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.station_code,
+    riderClass: [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.rider_class,
+    tripKind: [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.trip_kind,
+    durationMinutes: [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.duration_minutes,
+    startedOn: [test::tealvineyard::store::CycleNetworkDb]cyclenet.journey_record.started_on
+  }
+
+  testSuites:
+  [
+    stationBandSuite:
+    {
+      function: |test::tealvineyard::domain::DockStation.all()->project(
+        ~[
+          STATION: s|$s.stationCode,
+          SURFACE: s|$s.surfaceKind,
+          STANDS: s|$s.standCount,
+          BAND: s|$s.serviceBand()
+        ]
+      )->sort(~STATION->ascending());
+      tests:
+      [
+        everyBandArmIsReachedAndTheLastOneFallsThrough:
+        {
+          doc: 'Drives one docking point through every arm of the size-banding ladder, largest first, and ends with a point too small for any arm so the banded value falls through to the unset override column and is read back as nothing at all.';
+          data:
+          [
+            test::tealvineyard::store::CycleNetworkDb:
+              Relational
+              #{
+                cyclenet.dock_station:
+                  'station_id,station_code,station_name,district_code,surface_kind,stand_count,override_band,installed_on\n'+
+                  '1,DS-01,Harbour Steps,DT-QUAY,cobble,240,,2021-03-04\n'+
+                  '2,DS-02,Terminus Concourse,DT-QUAY,asphalt,168,,2021-04-05\n'+
+                  '3,DS-03,Promenade Arch,DT-SHORE,asphalt,132,,2021-05-06\n'+
+                  '4,DS-04,Market Yard,DT-SHORE,brick,104,,2021-06-07\n'+
+                  '5,DS-05,Campus Walk,DT-RIDGE,gravel,72,,2021-07-08\n'+
+                  '6,DS-06,Parkside Gate,DT-RIDGE,gravel,48,,2021-08-09\n'+
+                  '7,DS-07,Laneway Corner,DT-MEADOW,cobble,31,,2021-09-10\n'+
+                  '8,DS-08,Footbridge Landing,DT-MEADOW,timber,14,,2021-10-11\n'+
+                  '9,DS-09,Allotment Shed,DT-MEADOW,timber,6,,2021-11-12\n';
+              }#
+          ];
+          asserts:
+          [
+            eightBandedPointsAndOneUnbanded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"STATION":"DS-01","SURFACE":"COBBLE","STANDS":240,"BAND":"TIER-HARBOUR"},{"STATION":"DS-02","SURFACE":"ASPHALT","STANDS":168,"BAND":"TIER-TERMINUS"},{"STATION":"DS-03","SURFACE":"ASPHALT","STANDS":132,"BAND":"TIER-PROMENADE"},{"STATION":"DS-04","SURFACE":"BRICK","STANDS":104,"BAND":"TIER-MARKET"},{"STATION":"DS-05","SURFACE":"GRAVEL","STANDS":72,"BAND":"TIER-CAMPUS"},{"STATION":"DS-06","SURFACE":"GRAVEL","STANDS":48,"BAND":"TIER-PARKSIDE"},{"STATION":"DS-07","SURFACE":"COBBLE","STANDS":31,"BAND":"TIER-LANEWAY"},{"STATION":"DS-08","SURFACE":"TIMBER","STANDS":14,"BAND":"TIER-FOOTBRIDGE"},{"STATION":"DS-09","SURFACE":"TIMBER","STANDS":6,"BAND":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    journeyRegisterSuite:
+    {
+      function: |test::tealvineyard::domain::JourneyRecord.all()->project(
+        ~[
+          JOURNEY: j|$j.journeyCode,
+          RIDER: j|$j.riderClass,
+          KIND: j|$j.tripKind,
+          MINUTES: j|$j.durationMinutes
+        ]
+      )->sort(~JOURNEY->ascending());
+      tests:
+      [
+        hiresReadThroughTheSecondMainTableAlias:
+        {
+          doc: 'Reads the hire records through the second main-relation alias of the same mapping, showing the two class mappings resolve independently against different relations of one store.';
+          data:
+          [
+            test::tealvineyard::store::CycleNetworkDb:
+              Relational
+              #{
+                cyclenet.journey_record:
+                  'journey_id,journey_code,station_code,rider_class,trip_kind,duration_minutes,started_on\n'+
+                  '1,JR-01,DS-01,RESIDENT,COMMUTE,18,2024-04-02\n'+
+                  '2,JR-02,DS-02,VISITOR,LEISURE,44,2024-04-03\n'+
+                  '3,JR-03,DS-03,RESIDENT,ERRAND,9,2024-04-04\n';
+              }#
+          ];
+          asserts:
+          [
+            threeHiresInCodeOrder:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"JOURNEY":"JR-01","RIDER":"RESIDENT","KIND":"COMMUTE","MINUTES":18},{"JOURNEY":"JR-02","RIDER":"VISITOR","KIND":"LEISURE","MINUTES":44},{"JOURNEY":"JR-03","RIDER":"RESIDENT","KIND":"ERRAND","MINUTES":9}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

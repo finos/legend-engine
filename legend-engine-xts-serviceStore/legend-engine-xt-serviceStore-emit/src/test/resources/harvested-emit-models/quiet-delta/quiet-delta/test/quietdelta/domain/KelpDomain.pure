@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::quietdelta::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A stretch of rocky seabed surveyed as one kelp-forest monitoring unit.'} demo::quietdelta::domain::SurveyReef
+{
+  reefRef: String[1];
+  reefLabel: String[1];
+  coastalZone: String[1];
+  meanDepthMetres: Float[1];
+  wardenTeam: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One diver swim along a fixed line across a reef, counting kelp stipes.'} demo::quietdelta::domain::CanopyTransect
+{
+  transectRef: String[1];
+  reefRef: String[1];
+  swumOn: StrictDate[1];
+  stipeCount: Integer[1];
+  canopyCoverPct: Float[1];
+  visibilityMetres: Float[0..1];
+  reefLabel: String[0..1];
+  reefZone: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A holdfast quadrat photographed during a transect swim.'} demo::quietdelta::domain::HoldfastQuadrat
+{
+  quadratRef: String[1];
+  transectRef: String[1];
+  urchinCount: Integer[1];
+  sedimentGrade: String[1];
+  reefZone: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tide bulletin published by the remote coastal observatory feed.'} demo::quietdelta::domain::TideBulletin
+{
+  publishedAt: DateTime[1];
+  readings: TideReading[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One high-water reading inside a tide bulletin.'} demo::quietdelta::domain::TideReading
+{
+  gaugeCode: String[1];
+  highWaterOn: StrictDate[1];
+  heightMetres: Float[0..1];
+  swellNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A coastal tide gauge referenced by the observatory feed.'} demo::quietdelta::domain::TideGauge
+{
+  gaugeCode: String[1];
+  gaugeLabel: String[1];
+  chartDatumMetres: Float[0..1];
+}

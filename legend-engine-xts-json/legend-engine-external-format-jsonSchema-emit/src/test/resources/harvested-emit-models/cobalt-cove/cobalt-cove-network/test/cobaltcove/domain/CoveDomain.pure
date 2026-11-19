@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import demo::cobaltcove::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Serviceability grade recorded for a dock during a network inspection.'} demo::cobaltcove::domain::DockCondition
+{
+  SERVICEABLE,
+  WORN,
+  BLOCKED
+}
+
+Class {meta::pure::profiles::doc.doc = 'A municipal planning district that a cycle dock belongs to.'} demo::cobaltcove::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A public cycle-dock station whose capacity and operating status are effective over business time.'} demo::cobaltcove::domain::DockStation
+{
+  stationCode: String[1];
+  capacity: Integer[1];
+  statusCode: String[1];
+  districtCode: String[1];
+  capacityBand() {if($this.capacity >= 30, | 'LARGE', | if($this.capacity >= 12, | 'MEDIUM', | 'SMALL'))}: String[1];
+}
+
+Class <<temporal.bitemporal>> {meta::pure::profiles::doc.doc = 'A dock inspection outcome, corrected over processing time and effective over business time.'} demo::cobaltcove::domain::DockInspection
+{
+  inspectionRef: String[1];
+  condition: DockCondition[1];
+  faultCount: Integer[1];
+}
+
+Association demo::cobaltcove::domain::Station_District
+{
+  station: DockStation[*];
+  district: District[1];
+}
+
+Association demo::cobaltcove::domain::Station_Inspection
+{
+  station: DockStation[0..1];
+  inspections: DockInspection[*];
+}

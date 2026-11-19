@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::meadowquokka3::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'The accepted name and placement of a plant, referenced by every seed lot of that plant.'} test::meadowquokka3::domain::TaxonRecord
+{
+  taxonCode: String[1];
+  scientificName: String[1];
+  familyName: String[1];
+  nativeRange: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A member of nursery staff who collects seed, sows it or reads a trial.'} test::meadowquokka3::domain::Propagator
+{
+  staffCode: String[1];
+  displayName: String[1];
+  basedAt: PropagationSite[1];
+  qualifiedSince: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A run of a stated germination treatment on one seed lot, read on a schedule.'} test::meadowquokka3::domain::GerminationTrial
+{
+  trialCode: String[1];
+  startedOn: StrictDate[1];
+  sownSeeds: Integer[1];
+  pretreatment: String[1];
+  incubationTemperature: Float[1];
+  supervisedBy: Propagator[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One dated reading taken during a germination trial.'} test::meadowquokka3::domain::TrialObservation
+{
+  observationCode: String[1];
+  trial: GerminationTrial[1];
+  readOn: StrictDate[1];
+  germinatedSeeds: Integer[1];
+  mouldedSeeds: Integer[0..1];
+  readBy: Propagator[0..1];
+}

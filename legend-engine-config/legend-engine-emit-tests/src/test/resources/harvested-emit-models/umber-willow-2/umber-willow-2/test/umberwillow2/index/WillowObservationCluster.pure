@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Elasticsearch
+Elasticsearch7Cluster test::umberwillow2::index::WillowObservationCluster
+{
+  indices: [
+    willow_observation: {
+      properties: [
+        observation_ref: Keyword,
+        stand_code: Keyword,
+        recorded_on: Date,
+        soil_moisture_pct: Double,
+        stem_count: Integer,
+        observer_note: Text
+      ];
+    },
+    willow_designation_audit: {
+      properties: [
+        designation_code: Keyword {
+          fields: [
+            asText: Text
+          ];
+        },
+        corrected_on: Date,
+        steward: Keyword
+      ];
+    }
+  ];
+}

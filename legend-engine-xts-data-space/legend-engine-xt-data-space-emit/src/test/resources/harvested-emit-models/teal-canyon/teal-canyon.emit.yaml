@@ -1,0 +1,63 @@
+name: teal-canyon
+title: "Teal Canyon River Monitoring — Association-Implemented Multi-Table Gauge And Survey Servicing Behind A Data Space"
+description: |
+  A canyon river-monitoring record whose four classes are stitched together by
+  three associations that are implemented in the mapping purely as store joins:
+  gauges hang off the reaches they are installed on, and each field survey
+  reaches both its gauge and the crew that took it. The relational store holds
+  four tables in one schema, two of them keyed on a compound key that pairs a
+  code with a date or a timestamp, and the gauge class also reaches its reach
+  name directly through a joined property rather than through the association.
+  Three structurally different tabular services publish the model: a wide
+  station board mixing stored columns with a concatenated label and an
+  arithmetic score, a thin reach roster over the parent table alone, and a
+  survey log that walks both association implementations in one projection and
+  scales a reading. A data space with support metadata features two of the three
+  endpoints, and the warehouse is addressed through an ambient-credential
+  connection.
+modelSources:
+  model:
+    root: teal-canyon
+    files:
+      - test/tealcanyon/connection/CanyonConnection.pure
+      - test/tealcanyon/dataspace/CanyonDataSpace.pure
+      - test/tealcanyon/domain/CanyonDomain.pure
+      - test/tealcanyon/mapping/CanyonMapping.pure
+      - test/tealcanyon/runtime/CanyonRuntime.pure
+      - test/tealcanyon/service/ReachRoster.pure
+      - test/tealcanyon/service/StationBoard.pure
+      - test/tealcanyon/service/SurveyLog.pure
+      - test/tealcanyon/store/CanyonDb.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - compound-primary-key
+  - data-space
+  - h2
+  - inner-join
+  - multi-table
+  - river-monitoring
+  - service-test
+  - snowflake
+  - tabular-data-set

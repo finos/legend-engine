@@ -1,0 +1,172 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyquokka::mapping::TransitMapping
+(
+  *test::duskyquokka::domain::Depot[depot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka::store::TransitDB]transit.depot.depot_id
+    )
+    ~mainTable [test::duskyquokka::store::TransitDB]transit.depot
+    depotId: [test::duskyquokka::store::TransitDB]transit.depot.depot_id,
+    depotCode: [test::duskyquokka::store::TransitDB]transit.depot.depot_code,
+    depotName: [test::duskyquokka::store::TransitDB]transit.depot.depot_name,
+    districtName: [test::duskyquokka::store::TransitDB]transit.depot.district_name,
+    openedOn: [test::duskyquokka::store::TransitDB]transit.depot.opened_on,
+    staffedOvernight: [test::duskyquokka::store::TransitDB]transit.depot.staffed_overnight
+  }
+
+  *test::duskyquokka::domain::TransitLine[line]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka::store::TransitDB]transit.line.line_id
+    )
+    ~mainTable [test::duskyquokka::store::TransitDB]transit.line
+    lineId: [test::duskyquokka::store::TransitDB]transit.line.line_id,
+    lineCode: [test::duskyquokka::store::TransitDB]transit.line.line_code,
+    lineName: [test::duskyquokka::store::TransitDB]transit.line.line_name,
+    serviceTier: [test::duskyquokka::store::TransitDB]transit.line.service_tier,
+    routeKm: [test::duskyquokka::store::TransitDB]transit.line.route_km,
+    homeDepotName: [test::duskyquokka::store::TransitDB]@Line_Depot | [test::duskyquokka::store::TransitDB]transit.depot.depot_name
+  }
+
+  *test::duskyquokka::domain::Railcar[railcar]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka::store::TransitDB]transit.railcar.railcar_id
+    )
+    ~mainTable [test::duskyquokka::store::TransitDB]transit.railcar
+    railcarId: [test::duskyquokka::store::TransitDB]transit.railcar.railcar_id,
+    fleetNumber: [test::duskyquokka::store::TransitDB]transit.railcar.fleet_number,
+    propulsion: [test::duskyquokka::store::TransitDB]transit.railcar.propulsion,
+    seatedCapacity: [test::duskyquokka::store::TransitDB]transit.railcar.seated_capacity,
+    tareMassTonnes: [test::duskyquokka::store::TransitDB]transit.railcar.tare_mass_tonnes,
+    assignedLineCode: [test::duskyquokka::store::TransitDB]@Railcar_Line | [test::duskyquokka::store::TransitDB]transit.line.line_code
+  }
+
+  *test::duskyquokka::domain::InspectionLog[inspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::duskyquokka::store::TransitDB]transit.inspection_log.log_id
+    )
+    ~mainTable [test::duskyquokka::store::TransitDB]transit.inspection_log
+    logId: [test::duskyquokka::store::TransitDB]transit.inspection_log.log_id,
+    inspectedOn: [test::duskyquokka::store::TransitDB]transit.inspection_log.inspected_on,
+    inspectorName: [test::duskyquokka::store::TransitDB]transit.inspection_log.inspector_name,
+    outcome: [test::duskyquokka::store::TransitDB]transit.inspection_log.outcome,
+    odometerKm: [test::duskyquokka::store::TransitDB]transit.inspection_log.odometer_km,
+    inspectedFleetNumber: [test::duskyquokka::store::TransitDB]@Inspection_Railcar | [test::duskyquokka::store::TransitDB]transit.railcar.fleet_number
+  }
+
+  test::duskyquokka::domain::Depot_TransitLine: Relational
+  {
+    AssociationMapping
+    (
+      homeDepot[line, depot]: [test::duskyquokka::store::TransitDB]@Line_Depot,
+      servedLines[depot, line]: [test::duskyquokka::store::TransitDB]@Line_Depot
+    )
+  }
+
+  test::duskyquokka::domain::TransitLine_Railcar: Relational
+  {
+    AssociationMapping
+    (
+      assignedLine[railcar, line]: [test::duskyquokka::store::TransitDB]@Railcar_Line,
+      allocatedRailcars[line, railcar]: [test::duskyquokka::store::TransitDB]@Railcar_Line
+    )
+  }
+
+  test::duskyquokka::domain::Railcar_InspectionLog: Relational
+  {
+    AssociationMapping
+    (
+      inspectedRailcar[inspection, railcar]: [test::duskyquokka::store::TransitDB]@Inspection_Railcar,
+      inspectionLogs[railcar, inspection]: [test::duskyquokka::store::TransitDB]@Inspection_Railcar
+    )
+  }
+
+  testSuites:
+  [
+    fleetBindingSuite:
+    {
+      function: |test::duskyquokka::domain::Railcar.all()->project(
+  [
+    col(
+      r|$r.fleetNumber,
+      'Fleet'
+    ),
+    col(
+      r|$r.assignedLineCode,
+      'Line'
+    ),
+    col(
+      r|$r.assignedLine.homeDepotName,
+      'Depot'
+    )
+  ]
+)->sort(
+  [
+    asc('Fleet')
+  ]
+);
+      tests:
+      [
+        railcarThroughLineToDepot:
+        {
+          doc: 'Materializes a railcar row whose line code arrives through one declared join and whose depot name arrives through a second hop of the association graph.';
+          data:
+          [
+            test::duskyquokka::store::TransitDB:
+              Relational
+              #{
+                transit.depot:
+                  'depot_id,depot_code,depot_name,district_name,opened_on,staffed_overnight\n'+
+                  '1,DEP-N,Northgate Depot,Northgate,1998-04-12,true\n'+
+                  '2,DEP-S,Southbrook Depot,Southbrook,2006-09-30,false\n';
+
+                transit.line:
+                  'line_id,line_code,line_name,service_tier,route_km,depot_id\n'+
+                  '1,L-11,Ridgeway Loop,EXPRESS,18.4,1\n'+
+                  '2,L-12,Marshside Link,LOCAL,9.6,2\n';
+
+                transit.railcar:
+                  'railcar_id,fleet_number,propulsion,seated_capacity,tare_mass_tonnes,line_id\n'+
+                  '1,RC-101,ELECTRIC,84,31.500,1\n'+
+                  '2,RC-102,HYBRID,72,28.250,2\n';
+              }#
+          ];
+          asserts:
+          [
+            twoJoinedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Fleet":"RC-101","Line":"L-11","Depot":"Northgate Depot"},{"Fleet":"RC-102","Line":"L-12","Depot":"Southbrook Depot"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

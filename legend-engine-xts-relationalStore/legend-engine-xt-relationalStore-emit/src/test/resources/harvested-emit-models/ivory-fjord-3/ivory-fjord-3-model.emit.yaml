@@ -1,0 +1,38 @@
+name: ivory-fjord-3-model
+title: "Coastal Sample Log - Point-in-Time Station Resolution, Post-Projection Predicate and Deduplication"
+description: |
+  A shoreline water-monitoring model whose service projects twelve columns over
+  the sample extent, resolving a business-temporal shore station as of a date
+  parameter carried in the URL path. The predicate and the deduplication both
+  run on the projected result rather than the class extent, so identical rows
+  collapse only after the columns that distinguished them are dropped.
+
+modelSources:
+  model:
+    root: ivory-fjord-3-model
+    files:
+      - test/ivoryfjord3/connection/CoastalH2Connection.pure
+      - test/ivoryfjord3/domain/ProbeUnit.pure
+      - test/ivoryfjord3/domain/ShoreStation.pure
+      - test/ivoryfjord3/domain/WaterSample.pure
+      - test/ivoryfjord3/mapping/CoastalMapping.pure
+      - test/ivoryfjord3/runtime/CoastalRuntime.pure
+      - test/ivoryfjord3/service/SampleLog.pure
+      - test/ivoryfjord3/store/CoastalDB.pure
+
+features:
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:distinct
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - coastal-monitoring
+  - deduplication
+  - h2
+  - point-in-time
+  - service-test

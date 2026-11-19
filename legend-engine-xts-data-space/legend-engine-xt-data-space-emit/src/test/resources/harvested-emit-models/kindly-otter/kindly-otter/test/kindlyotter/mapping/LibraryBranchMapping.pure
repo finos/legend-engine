@@ -1,0 +1,277 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::kindlyotter::mapping::LibraryBranchMapping
+(
+  *test::kindlyotter::domain::BranchMonthSeries[branchMonthSeries]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.branch_code,
+      [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.period_code
+    )
+    ~mainTable [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month
+    branchCode: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.branch_code,
+    periodCode: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.period_code,
+    checkoutsM01: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m01,
+    checkoutsM02: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m02,
+    checkoutsM03: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m03,
+    checkoutsM04: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m04,
+    checkoutsM05: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m05,
+    checkoutsM06: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m06,
+    checkoutsM07: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m07,
+    checkoutsM08: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m08,
+    checkoutsM09: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m09,
+    checkoutsM10: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m10,
+    checkoutsM11: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m11,
+    checkoutsM12: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.checkouts_m12,
+    annualTotal: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.annual_total,
+    noteText: case(
+                isNotEmpty([test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.note_text),
+                rtrim([test::kindlyotter::store::LibraryBranchDb]libmain.branch_month.note_text),
+                'NO SERIES NOTE'
+              )
+  }
+
+  *test::kindlyotter::domain::BranchProfile[branchProfile]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.branch_code
+    )
+    ~mainTable [test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile
+    branchCode: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.branch_code,
+    branchName: toUpper([test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.branch_name),
+    districtCode: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.district_code,
+    openedYear: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.opened_year,
+    seatCount: [test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.seat_count,
+    serviceGrade: case(
+                    equal([test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.service_grade, 'A'),
+                    'ALL WEEK',
+                    case(
+                      equal([test::kindlyotter::store::LibraryBranchDb]libmain.branch_profile.service_grade, 'B'),
+                      'WEEKDAYS ONLY',
+                      'LIMITED HOURS'
+                    )
+                  )
+  }
+
+  *test::kindlyotter::domain::TitleStock[titleStock]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyotter::store::LibraryBranchDb]libmain.title_stock.stock_code
+    )
+    ~mainTable [test::kindlyotter::store::LibraryBranchDb]libmain.title_stock
+    stockCode: [test::kindlyotter::store::LibraryBranchDb]libmain.title_stock.stock_code,
+    branchCode: [test::kindlyotter::store::LibraryBranchDb]libmain.title_stock.branch_code,
+    mediaType: toUpper([test::kindlyotter::store::LibraryBranchDb]libmain.title_stock.media_type),
+    copyCount: [test::kindlyotter::store::LibraryBranchDb]libmain.title_stock.copy_count,
+    holdCount: [test::kindlyotter::store::LibraryBranchDb]libmain.title_stock.hold_count,
+    retiredFlag: [test::kindlyotter::store::LibraryBranchDb]libmain.title_stock.retired_flag
+  }
+
+  *test::kindlyotter::domain::VolunteerHours[volunteerHours]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.volunteer_code,
+      [test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.period_code
+    )
+    ~mainTable [test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours
+    volunteerCode: [test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.volunteer_code,
+    periodCode: [test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.period_code,
+    branchCode: [test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.branch_code,
+    loggedHours: [test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.logged_hours,
+    badgeGrade: case(
+                  isNotEmpty([test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.badge_grade),
+                  toUpper([test::kindlyotter::store::LibraryBranchDb]libmain.volunteer_hours.badge_grade),
+                  'UNBADGED'
+                )
+  }
+
+  *test::kindlyotter::domain::OutreachEvent[outreachEvent]: Relational
+  {
+    ~primaryKey
+    (
+      [test::kindlyotter::store::LibraryBranchDb]libmain.outreach_event.event_code
+    )
+    ~mainTable [test::kindlyotter::store::LibraryBranchDb]libmain.outreach_event
+    eventCode: [test::kindlyotter::store::LibraryBranchDb]libmain.outreach_event.event_code,
+    branchCode: [test::kindlyotter::store::LibraryBranchDb]libmain.outreach_event.branch_code,
+    eventDate: [test::kindlyotter::store::LibraryBranchDb]libmain.outreach_event.event_date,
+    attendance: [test::kindlyotter::store::LibraryBranchDb]libmain.outreach_event.attendance,
+    themeCode: substring([test::kindlyotter::store::LibraryBranchDb]libmain.outreach_event.theme_code, 1, 3)
+  }
+
+  testSuites:
+  [
+    monthSeriesSuite:
+    {
+      function: |test::kindlyotter::domain::BranchMonthSeries.all()->project(
+  [
+    x|$x.branchCode,
+    x|$x.periodCode,
+    x|$x.checkoutsM01,
+    x|$x.checkoutsM06,
+    x|$x.checkoutsM12,
+    x|$x.annualTotal,
+    x|$x.noteText
+  ],
+  [
+    'Branch',
+    'Period',
+    'Jan',
+    'Jun',
+    'Dec',
+    'Annual',
+    'Note'
+  ]
+)->sort([asc('Branch'), asc('Period')]);
+      tests:
+      [
+        wideSeriesProjected:
+        {
+          doc: 'Projects the wide monthly series with its declared annual total and both arms of the note fallback.';
+          data:
+          [
+            test::kindlyotter::store::LibraryBranchDb:
+              Relational
+              #{
+                libmain.branch_month:
+                  'branch_code,period_code,checkouts_m01,checkouts_m02,checkouts_m03,checkouts_m04,checkouts_m05,checkouts_m06,checkouts_m07,checkouts_m08,checkouts_m09,checkouts_m10,checkouts_m11,checkouts_m12,annual_total,note_text\n'+
+                  'BR-01,2026,410,388,402,377,395,430,466,451,398,404,389,412,4922,Refurbished in March\n'+
+                  'BR-02,2026,120,118,131,127,140,155,168,161,142,138,129,133,1662,\n';
+              }#
+          ];
+          asserts:
+          [
+            seriesRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Branch":"BR-01","Period":"2026","Jan":410,"Jun":430,"Dec":412,"Annual":4922,"Note":"Refurbished in March"},{"Branch":"BR-02","Period":"2026","Jan":120,"Jun":155,"Dec":133,"Annual":1662,"Note":"NO SERIES NOTE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    stockAndOutreachSuite:
+    {
+      function: |test::kindlyotter::domain::TitleStock.all()->project(
+  [
+    x|$x.stockCode,
+    x|$x.mediaType,
+    x|$x.copyCount,
+    x|$x.holdCount,
+    x|$x.retiredFlag
+  ],
+  [
+    'Stock',
+    'Media',
+    'Copies',
+    'Holds',
+    'Retired'
+  ]
+)->sort([asc('Stock')]);
+      tests:
+      [
+        stockRowsProjected:
+        {
+          doc: 'Projects the stock lines with the uppercased media type and a reservation queue that never exceeds the copy count the class constrains.';
+          data:
+          [
+            test::kindlyotter::store::LibraryBranchDb:
+              Relational
+              #{
+                libmain.title_stock:
+                  'stock_code,branch_code,media_type,copy_count,hold_count,retired_flag\n'+
+                  'ST-01,BR-01,large print,6,2,N\n'+
+                  'ST-02,BR-01,audio,3,3,N\n'+
+                  'ST-03,BR-02,reference,1,0,Y\n';
+              }#
+          ];
+          asserts:
+          [
+            stockRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stock":"ST-01","Media":"LARGE PRINT","Copies":6,"Holds":2,"Retired":"N"},{"Stock":"ST-02","Media":"AUDIO","Copies":3,"Holds":3,"Retired":"N"},{"Stock":"ST-03","Media":"REFERENCE","Copies":1,"Holds":0,"Retired":"Y"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    outreachSuite:
+    {
+      function: |test::kindlyotter::domain::OutreachEvent.all()->project(
+  [
+    x|$x.eventCode,
+    x|$x.branchCode,
+    x|$x.eventDate,
+    x|$x.attendance,
+    x|$x.themeCode
+  ],
+  [
+    'Event',
+    'Branch',
+    'Held',
+    'Attendance',
+    'Theme'
+  ]
+)->sort([asc('Event')]);
+      tests:
+      [
+        outreachRowsProjected:
+        {
+          doc: 'Projects the outreach register with the theme code truncated to its three-character prefix.';
+          data:
+          [
+            test::kindlyotter::store::LibraryBranchDb:
+              Relational
+              #{
+                libmain.outreach_event:
+                  'event_code,branch_code,event_date,attendance,theme_code\n'+
+                  'EV-01,BR-01,2026-02-14,84,STORYTIME\n'+
+                  'EV-02,BR-02,2026-03-02,37,DIGITAL\n';
+              }#
+          ];
+          asserts:
+          [
+            outreachRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Event":"EV-01","Branch":"BR-01","Held":"2026-02-14","Attendance":84,"Theme":"STO"},{"Event":"EV-02","Branch":"BR-02","Held":"2026-03-02","Attendance":37,"Theme":"DIG"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

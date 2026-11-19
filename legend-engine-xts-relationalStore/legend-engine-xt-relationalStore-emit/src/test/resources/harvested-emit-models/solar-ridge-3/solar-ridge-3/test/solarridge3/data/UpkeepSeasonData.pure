@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::solarridge3::data::UpkeepSeasonData
+{
+  Relational
+  #{
+    upkeep.trail_segment:
+      'segment_id,segment_code,district_name,surface_type,metres_cleared,crew_size,clearance_note\n'+
+      '1,SEG-NORTH-A,NORTH RIDGE,GRAVEL,120.5,4,Edge trimmed back to the marker posts\n'+
+      '2,SEG-NORTH-B,NORTH RIDGE,GRAVEL,80.25,3,Culvert mouth dug clear\n'+
+      '3,SEG-NORTH-C,NORTH RIDGE,GRAVEL,999.0,9,\n'+
+      '4,SEG-SOUTH-A,SOUTH HOLLOW,BOARDWALK,45.75,2,Two planks replaced\n'+
+      '5,SEG-EAST-A,EAST FLAT,BOARDWALK,45.75,2,Two planks replaced\n'+
+      '6,SEG-WEST-A,WEST SHOULDER,STONE,10.0,1,Drain lip reset\n';
+  }#
+}

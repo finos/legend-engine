@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::opalotter2::domain::TrialScenario
+{
+  trialCode: String[1];
+  trialName: String[1];
+  habitatCode: String[1];
+  surveyorCode: String[1];
+  reachLabel: String[1];
+  activeFlag: String[1];
+  sampleCount: Integer[1];
+  collectionCode: String[0..1];
+  collectionName: String[0..1];
+  baseScenarioRef: Integer[0..1];
+  baseScenarioName: String[0..1];
+  waterTempC: Float[0..1];
+  flowRate: Float[0..1];
+  turbidityNtu: Float[0..1];
+  bankCoverPct: Float[0..1];
+  spraintCount: Integer[0..1];
+  noteText: String[0..1];
+  seasonCode: String[0..1];
+  weatherCode: String[0..1];
+  verifiedCode: String[0..1];
+}
+
+Class test::opalotter2::domain::ScenarioCollection
+{
+  collectionCode: String[1];
+  collectionName: String[1];
+  scenarios: test::opalotter2::domain::TrialScenario[*];
+}
+
+Class test::opalotter2::domain::BaseScenario
+{
+  baseRef: Integer[1];
+  baseName: String[1];
+}
+
+Association test::opalotter2::domain::Collection_Scenarios
+{
+  collection: test::opalotter2::domain::ScenarioCollection[1];
+  scenarios: test::opalotter2::domain::TrialScenario[*];
+}
+
+Association test::opalotter2::domain::Scenario_BaseScenario
+{
+  baseScenario: test::opalotter2::domain::BaseScenario[1];
+  scenario: test::opalotter2::domain::TrialScenario[1];
+}

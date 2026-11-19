@@ -1,0 +1,47 @@
+name: scarlet-reef-3
+title: Scarlet Reef 3 community pottery studio firing register - five relations across two schemas reached by three outer join paths
+description: >
+  A community pottery studio whose kilns, member groups and firing runs live in one
+  schema while the clay bodies and glaze recipes they quote sit in a reference schema
+  beside them. Each firing run carries only the keys of the kiln it was loaded into
+  and of the two reference rows it quotes, so every descriptive label on the run is
+  reached through a declared join rather than read from its own relation - one of
+  them inside its own schema and two of them across the schema boundary. The joins
+  keep their default outer form, so a run quoting a recipe key that no reference row
+  answers stays in the register and loses only the reached column, and the same
+  register read against a sparse recipe relation empties that column for every run
+  whose key is absent. Two mappings bind the same relations at different reaches -
+  one resolving all five, the other only the run and its kiln - and each is paired
+  with its own local connection and runtime.
+modelSources:
+  model:
+    root: scarlet-reef-3
+    files:
+      - test/scarletreef3/connection/StudioConnections.pure
+      - test/scarletreef3/domain/StudioDomain.pure
+      - test/scarletreef3/mapping/FiringAuditMapping.pure
+      - test/scarletreef3/mapping/StudioMapping.pure
+      - test/scarletreef3/runtime/StudioRuntimes.pure
+      - test/scarletreef3/store/StudioDb.pure
+features:
+  - execution:mapping-test
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-left-outer-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cross-schema
+  - h2
+  - left-outer-join
+  - mapping-test
+  - multi-table
+  - pottery-studio
+  - project

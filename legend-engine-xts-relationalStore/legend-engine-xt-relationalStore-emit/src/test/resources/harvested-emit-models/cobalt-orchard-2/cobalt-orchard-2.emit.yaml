@@ -1,0 +1,64 @@
+name: cobalt-orchard-2
+title: "Community Orchard Register — Clock-Derived Count Services Across Two Keyed Estates"
+description: |
+  A community-orchard register whose two parallel record families - tree
+  inspections keyed by identifier and sequence, graft records keyed by
+  identifier alone - sit side by side in one schema at the same grain. Each
+  family is bound by its own single-class relational mapping that declares a
+  main-table alias and an explicit primary key and reads every property
+  straight off a column. Four keyed services pair the same query with the
+  production and rehearsal estates: two count the extent above a cutoff
+  derived from the evaluation date by date adjustment inside a standalone
+  function, two bound the extent between the start of the evaluation date and
+  the evaluation instant, and all four aggregate to a named count under two
+  grouping keys. A production-pinned counterpart carries the service tests, and
+  both mappings carry their own extent suites so the composite key, the absent
+  optional payload and the rows outside every window are asserted without
+  depending on the clock.
+
+modelSources:
+  model:
+    root: cobalt-orchard-2
+    files:
+      - test/cobaltorchard2/connection/OrchardConnections.pure
+      - test/cobaltorchard2/domain/OrchardDomain.pure
+      - test/cobaltorchard2/function/SeasonFunctions.pure
+      - test/cobaltorchard2/mapping/GraftMapping.pure
+      - test/cobaltorchard2/mapping/InspectionMapping.pure
+      - test/cobaltorchard2/runtime/OrchardRuntimes.pure
+      - test/cobaltorchard2/service/GraftServices.pure
+      - test/cobaltorchard2/service/InspectionServices.pure
+      - test/cobaltorchard2/store/OrchardDB.pure
+features:
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - date-arithmetic
+  - db2
+  - delegated-kerberos
+  - group-by
+  - h2
+  - horticulture
+  - mapping-test
+  - multi-execution
+  - orchard
+  - relational
+  - service-test

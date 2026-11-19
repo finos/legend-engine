@@ -1,0 +1,53 @@
+name: amber-prairie
+title: "Amber Prairie — relational one-to-many EMIT model (join-bound collection implementation, graph-fetch mapping test & runtime-embedded seeded connection)"
+description: |
+  A non-financial prairie-restoration model in which one relational store holds a plot table
+  and a seed-lot table keyed on floating-point identifiers and joined on the plot identifier,
+  and one mapping binds both classes with explicit primary keys and main table aliases while
+  resolving the many-valued collection property through the join qualified with the member
+  implementation. Assertion-backed coverage: a graph-fetch mapping test fetches and serialises
+  the same plot tree from an executable relational fixture, and a single-execution service
+  filters seed lots by a floating-point path parameter and projects three spaced display
+  aliases from delimited fixture rows.
+modelSources:
+  model:
+    root: amber-prairie
+    files:
+      - test/amberprairie/domain/PrairieDomain.pure
+      - test/amberprairie/mapping/PrairieMapping.pure
+      - test/amberprairie/runtime/PrairieRuntime.pure
+      - test/amberprairie/service/SeedLotsByPlotService.pure
+      - test/amberprairie/store/PrairieDatabase.pure
+features:
+  - execution:graph-fetch
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - collection-property
+  - embedded-connection
+  - graph-fetch
+  - h2
+  - inner-join
+  - mapping-test
+  - prairie
+  - relational
+  - restoration
+  - service-test

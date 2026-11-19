@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::tealhatchery2::store::PondRegisterDb
+(
+  Schema pond
+  (
+    Table rearing_pond
+    (
+      pond_id INTEGER PRIMARY KEY,
+      pond_code VARCHAR(24) NOT NULL,
+      pond_name VARCHAR(120) NOT NULL,
+      volume_litres INTEGER NOT NULL,
+      site_name VARCHAR(120) NOT NULL
+    )
+    Table larva_batch
+    (
+      batch_id INTEGER PRIMARY KEY,
+      batch_code VARCHAR(24) NOT NULL,
+      pond_code VARCHAR(24) NOT NULL,
+      species_name VARCHAR(120) NOT NULL,
+      count_stocked INTEGER NOT NULL,
+      mortality_count INTEGER NOT NULL,
+      stocked_on DATE NOT NULL
+    )
+    Table larva_batch_archive
+    (
+      batch_id INTEGER PRIMARY KEY,
+      batch_code VARCHAR(24) NOT NULL,
+      pond_code VARCHAR(24) NOT NULL,
+      species_name VARCHAR(120) NOT NULL,
+      count_stocked INTEGER NOT NULL,
+      mortality_count INTEGER NOT NULL,
+      stocked_on DATE NOT NULL
+    )
+    Table feed_log
+    (
+      log_id INTEGER PRIMARY KEY,
+      log_code VARCHAR(24) NOT NULL,
+      batch_code VARCHAR(24) NOT NULL,
+      feed_kilos DOUBLE NOT NULL,
+      wastage_pct DOUBLE NOT NULL,
+      fed_on DATE NOT NULL
+    )
+    Table water_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      reading_code VARCHAR(24) NOT NULL,
+      pond_code VARCHAR(24) NOT NULL,
+      temperature_c DOUBLE NOT NULL,
+      oxygen_mg_l DOUBLE NOT NULL,
+      read_on DATE NOT NULL
+    )
+    Table pond_yield
+    (
+      pond_code VARCHAR(24) PRIMARY KEY,
+      released_count INTEGER NOT NULL,
+      mean_temperature_c DOUBLE NOT NULL
+    )
+  )
+
+  Join Pond_Reading(pond.rearing_pond.pond_code = pond.water_reading.pond_code)
+)

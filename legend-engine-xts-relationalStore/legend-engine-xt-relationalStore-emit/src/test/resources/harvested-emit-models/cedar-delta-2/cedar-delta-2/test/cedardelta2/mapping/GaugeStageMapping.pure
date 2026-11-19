@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::cedardelta2::mapping::GaugeStageMapping
+(
+  include mapping demo::cedardelta2::mapping::GaugeEnumMappings
+
+  *demo::cedardelta2::domain::StageReading[stageReading]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::cedardelta2::store::GaugeDb]hydro.stage_reading.reading_id
+    )
+    ~mainTable [demo::cedardelta2::store::GaugeDb]hydro.stage_reading
+    readingCode: [demo::cedardelta2::store::GaugeDb]hydro.stage_reading.reading_code,
+    stationCode: toUpper(trim([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.station_code)),
+    registerKind: 'STAGE READING',
+    gaugeClass: EnumerationMapping GaugeClassMapping: [demo::cedardelta2::store::GaugeDb]hydro.stage_reading.gauge_class_code,
+    stageCm: parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_cm_text),
+    rainfallMm: [demo::cedardelta2::store::GaugeDb]hydro.stage_reading.rainfall_mm,
+    observerLabel: case(
+      isEmpty([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.observer_note),
+      sqlNull(),
+      concat('NOTE ', toUpper(trim([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.observer_note)))
+    ),
+    stageBand: case(
+      equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 1),
+      'BAND-DRY-BED',
+      case(
+        equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 2),
+        'BAND-LOW-FLOW',
+        case(
+          equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 3),
+          'BAND-NORMAL',
+          case(
+            equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 4),
+            'BAND-FRESH',
+            case(
+              equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 5),
+              'BAND-BERMFULL',
+              case(
+                equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 6),
+                'BAND-OVERBERM',
+                case(
+                  equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 7),
+                  'BAND-FLOOD-WATCH',
+                  case(
+                    equal(parseInteger([demo::cedardelta2::store::GaugeDb]hydro.stage_reading.stage_grade_code), 8),
+                    'BAND-FLOOD-WARNING',
+                    sqlNull()
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  }
+
+  testSuites:
+  [
+    stageBandSuite:
+    {
+      function: |demo::cedardelta2::domain::StageReading.all()->project(
+  [
+    r|$r.readingCode,
+    r|$r.stationCode,
+    r|$r.registerKind,
+    r|$r.gaugeClass,
+    r|$r.stageBand,
+    r|$r.stageCm,
+    r|$r.rainfallMm,
+    r|$r.observerLabel
+  ],
+  [
+    'ReadingCode', 'StationCode', 'RegisterKind', 'GaugeClass', 'StageBand',
+    'StageCm', 'RainfallMm', 'ObserverLabel'
+  ]
+)->sort([asc('ReadingCode')]);
+      tests:
+      [
+        everyStageBandArm:
+        {
+          doc: 'Drives nine readings so each of the eight graded stage-band arms is hit once and the ninth ungraded reading falls through to the null band.';
+          data:
+          [
+            demo::cedardelta2::store::GaugeDb:
+              Relational
+              #{
+                hydro.stage_reading:
+                  'reading_id,reading_code,station_code,gauge_class_code,stage_grade_code,stage_cm_text,rainfall_mm,observer_note,read_on\n'+
+                  '1,RG-001,ws-upper,ST,1,12,0,dry bed noted,2026-03-01\n'+
+                  '2,RG-002,ws-upper,FW,2,34,2,,2026-03-02\n'+
+                  '3,RG-003,ws-lower,PR,3,58,5,weed growth,2026-03-03\n'+
+                  '4,RG-004,ws-lower,RD,4,76,9,,2026-03-04\n'+
+                  '5,RG-005,ws-mid,ST,5,104,14,berm slip,2026-03-05\n'+
+                  '6,RG-006,ws-mid,FW,6,132,21,,2026-03-06\n'+
+                  '7,RG-007,ws-tidal,PR,7,168,30,debris raft,2026-03-07\n'+
+                  '8,RG-008,ws-tidal,RD,8,214,44,,2026-03-08\n'+
+                  '9,RG-009,ws-spring,UN,9,0,0,gauge out of service,2026-03-09\n';
+              }#
+          ];
+          asserts:
+          [
+            nineGradedReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingCode":"RG-001","StationCode":"WS-UPPER","RegisterKind":"STAGE READING","GaugeClass":"Staff","StageBand":"BAND-DRY-BED","StageCm":12,"RainfallMm":0,"ObserverLabel":"NOTE DRY BED NOTED"},{"ReadingCode":"RG-002","StationCode":"WS-UPPER","RegisterKind":"STAGE READING","GaugeClass":"FloatWell","StageBand":"BAND-LOW-FLOW","StageCm":34,"RainfallMm":2,"ObserverLabel":null},{"ReadingCode":"RG-003","StationCode":"WS-LOWER","RegisterKind":"STAGE READING","GaugeClass":"Pressure","StageBand":"BAND-NORMAL","StageCm":58,"RainfallMm":5,"ObserverLabel":"NOTE WEED GROWTH"},{"ReadingCode":"RG-004","StationCode":"WS-LOWER","RegisterKind":"STAGE READING","GaugeClass":"Radar","StageBand":"BAND-FRESH","StageCm":76,"RainfallMm":9,"ObserverLabel":null},{"ReadingCode":"RG-005","StationCode":"WS-MID","RegisterKind":"STAGE READING","GaugeClass":"Staff","StageBand":"BAND-BERMFULL","StageCm":104,"RainfallMm":14,"ObserverLabel":"NOTE BERM SLIP"},{"ReadingCode":"RG-006","StationCode":"WS-MID","RegisterKind":"STAGE READING","GaugeClass":"FloatWell","StageBand":"BAND-OVERBERM","StageCm":132,"RainfallMm":21,"ObserverLabel":null},{"ReadingCode":"RG-007","StationCode":"WS-TIDAL","RegisterKind":"STAGE READING","GaugeClass":"Pressure","StageBand":"BAND-FLOOD-WATCH","StageCm":168,"RainfallMm":30,"ObserverLabel":"NOTE DEBRIS RAFT"},{"ReadingCode":"RG-008","StationCode":"WS-TIDAL","RegisterKind":"STAGE READING","GaugeClass":"Radar","StageBand":"BAND-FLOOD-WARNING","StageCm":214,"RainfallMm":44,"ObserverLabel":null},{"ReadingCode":"RG-009","StationCode":"WS-SPRING","RegisterKind":"STAGE READING","GaugeClass":"Unrecorded","StageBand":null,"StageCm":0,"RainfallMm":0,"ObserverLabel":"NOTE GAUGE OUT OF SERVICE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

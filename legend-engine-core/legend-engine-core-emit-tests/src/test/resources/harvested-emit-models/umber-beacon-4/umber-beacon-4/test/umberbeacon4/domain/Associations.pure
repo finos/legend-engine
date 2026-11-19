@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::umberbeacon4::domain::*;
+
+Association {meta::pure::profiles::doc.doc = 'Both ends are business-temporal, so the association itself is milestoned and one business date must be agreed across both ends.'} test::umberbeacon4::domain::SensorDeployment_ObservationRecord
+{
+  sourceDeployment: SensorDeployment[1];
+  observations: ObservationRecord[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A milestoned association whose one end is typed to the abstract organism supertype, so navigation resolves subtypes polymorphically.'} test::umberbeacon4::domain::TrackedOrganism_ObservationRecord
+{
+  organism: TrackedOrganism[1];
+  sightings: ObservationRecord[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A mixed association: the station end is unversioned while the deployment end is business-temporal, so only one end resolves temporally.'} test::umberbeacon4::domain::MonitoringStation_SensorDeployment
+{
+  station: MonitoringStation[1];
+  deployments: SensorDeployment[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A second mixed association, letting a chain cross from a versioned grain into an unversioned one and back.'} test::umberbeacon4::domain::SurveyCruise_ObservationRecord
+{
+  cruise: SurveyCruise[1];
+  cruiseObservations: ObservationRecord[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Neither end is versioned; the to-many end is legitimately empty for a newly formed team.'} test::umberbeacon4::domain::MonitoringStation_CustodianTeam
+{
+  stewardedStations: MonitoringStation[*];
+  custodian: CustodianTeam[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A milestoned association attached to a subtype rather than to the abstract supertype, so end resolution interacts with the inheritance chain.'} test::umberbeacon4::domain::TaggedFish_SensorDeployment
+{
+  taggedFish: TaggedFish[*];
+  taggingDeployment: SensorDeployment[1];
+}

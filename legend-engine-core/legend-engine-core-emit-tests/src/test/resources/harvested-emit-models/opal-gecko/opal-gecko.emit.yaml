@@ -1,0 +1,39 @@
+name: opal-gecko
+title: "Opal Gecko - Store-less processing-temporal seed vault record graph"
+description: |
+  A model-only seed vault vocabulary with no store behind it. A single record
+  root declares the processing timeline once and every record kind inherits it,
+  including a curated sample two levels down the hierarchy that neither redeclares
+  nor changes the timeline it is versioned on. Four enumerations type the
+  conservation tier, the storage medium, the propagule form and the germination
+  verdict carried across the hierarchy. Four milestoned associations wire the
+  graph up: trials sown from a sample, samples held in a vessel, an optional
+  voucher sheet reached only from the curated subtype, and a regeneration lineage
+  between samples whose two end names rather than their types disambiguate a
+  traversal. Its own EMIT run exercises parse and compile over the temporal
+  record graph.
+modelSources:
+  model:
+    root: opal-gecko
+    files:
+      - test/opalgecko/domain/Associations.pure
+      - test/opalgecko/domain/VaultRecords.pure
+      - test/opalgecko/domain/Vocabularies.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - milestoning:milestoning
+  - milestoning:processing-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - enumeration
+  - inheritance
+  - milestoned-association
+  - model-only
+  - processing-temporal
+  - seed-vault
+  - self-association

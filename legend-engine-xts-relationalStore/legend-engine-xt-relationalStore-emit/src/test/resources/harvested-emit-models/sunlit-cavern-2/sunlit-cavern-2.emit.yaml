@@ -1,0 +1,57 @@
+name: sunlit-cavern-2
+title: "Sunlit Cavern 2 — Store-Include Aggregate Addressing, Grouped Inline View & Mapping-Include Rollup"
+description: |
+  A non-financial cave-survey model whose sections live in four independent
+  relational stores: chambers with their humidity readings and a grouped inline
+  view of the latest reading per chamber, access routes, bat roosts and surface
+  climate logs. A fifth database declares no schemas of its own and only
+  includes the four section stores, so a single store element addresses every
+  relation in the model and a single relational connection and runtime wire the
+  whole cavern. Four section mappings supply explicit primary keys and
+  main-table aliases, one of them binding a class entirely to the grouped inline
+  view, and an aggregate mapping reuses all four through mapping-includes. Its
+  test suites read the aliased chamber main table, the view-backed latest
+  reading class, and a concatenated rollup that addresses all four included
+  section stores in one result.
+
+modelSources:
+  model:
+    root: sunlit-cavern-2
+    files:
+      - test/sunlitcavern2/connection/CavernConnection.pure
+      - test/sunlitcavern2/domain/CavernDomain.pure
+      - test/sunlitcavern2/domain/SurveyExtension.pure
+      - test/sunlitcavern2/mapping/CavernMapping.pure
+      - test/sunlitcavern2/mapping/CavernSectionMappings.pure
+      - test/sunlitcavern2/runtime/CavernRuntime.pure
+      - test/sunlitcavern2/store/CavernStores.pure
+
+features:
+  - mapping:mapping-include
+  - mapping:mapping-include-store-substitution
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inline-view
+  - store:relational-multi-column-primary-key
+  - store:relational-multi-table
+  - store:relational-store-include
+stores:
+  - relational
+complexity: basic
+tags:
+  - aggregate-mapping
+  - h2
+  - inline-view
+  - kerberos
+  - main-table-alias
+  - mapping-include
+  - memsql
+  - primary-key
+  - store-include
+  - view-backed-property

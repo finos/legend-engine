@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::wistfulorchard2::store::GroveReferenceStore
+(
+  Schema grove
+  (
+    Table scion_grade
+    (
+      grade_code VARCHAR(16) PRIMARY KEY,
+      grade_label VARCHAR(64) NOT NULL,
+      plot_code VARCHAR(16) NOT NULL
+    )
+
+    Table grove_plot
+    (
+      plot_code VARCHAR(16) PRIMARY KEY,
+      plot_name VARCHAR(64) NOT NULL,
+      orchard_code VARCHAR(16) NOT NULL,
+      canopy_flag VARCHAR(16) NOT NULL
+    )
+
+    Table orchard_house
+    (
+      orchard_code VARCHAR(16) PRIMARY KEY,
+      orchard_name VARCHAR(64) NOT NULL
+    )
+
+    Table house_warden
+    (
+      orchard_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(64) NOT NULL
+    )
+
+    Table warden_post
+    (
+      warden_name VARCHAR(64) PRIMARY KEY,
+      post_name VARCHAR(64) NOT NULL
+    )
+  )
+
+  Join Grade_Plot(grove.scion_grade.plot_code = grove.grove_plot.plot_code)
+  Join Plot_Orchard(grove.grove_plot.orchard_code = grove.orchard_house.orchard_code)
+  Join Orchard_Warden(grove.orchard_house.orchard_code = grove.house_warden.orchard_code)
+  Join Warden_Post(grove.house_warden.warden_name = grove.warden_post.warden_name)
+)

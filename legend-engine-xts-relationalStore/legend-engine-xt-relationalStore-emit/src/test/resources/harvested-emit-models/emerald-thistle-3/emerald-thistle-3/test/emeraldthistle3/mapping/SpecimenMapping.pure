@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldthistle3::mapping::SpecimenMapping
+(
+  *test::emeraldthistle3::domain::Specimen[specimen]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.specimen_code
+    )
+    ~mainTable [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen
+    specimenCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.specimen_code,
+    tagCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.tag_code,
+    speciesLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.species_label,
+    habitLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.habit_label,
+    collectCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.collect_code,
+    formLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.form_label,
+    statusLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.status_label,
+    noteLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.specimen.note_label,
+    accession[accessionRecord]: [test::emeraldthistle3::store::HerbariumDB]@Specimen_Accession,
+    bed[growingBed]: [test::emeraldthistle3::store::HerbariumDB]@Specimen_Bed
+  }
+
+  *test::emeraldthistle3::domain::AccessionRecord[accessionRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldthistle3::store::HerbariumDB]herbarium.accession_record.accession_code
+    )
+    ~mainTable [test::emeraldthistle3::store::HerbariumDB]herbarium.accession_record
+    accessionCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.accession_record.accession_code,
+    sourceLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.accession_record.source_label,
+    gatherRegion: [test::emeraldthistle3::store::HerbariumDB]herbarium.accession_record.gather_region
+  }
+
+  *test::emeraldthistle3::domain::GrowingBed[growingBed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldthistle3::store::HerbariumDB]herbarium.growing_bed.bed_code
+    )
+    ~mainTable [test::emeraldthistle3::store::HerbariumDB]herbarium.growing_bed
+    bedCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.growing_bed.bed_code,
+    bedLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.growing_bed.bed_label,
+    plot[gardenPlot]: [test::emeraldthistle3::store::HerbariumDB]@Bed_Plot
+  }
+
+  *test::emeraldthistle3::domain::GardenPlot[gardenPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_plot.plot_code
+    )
+    ~mainTable [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_plot
+    plotCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_plot.plot_code,
+    plotLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_plot.plot_label,
+    section[gardenSection]: [test::emeraldthistle3::store::HerbariumDB]@Plot_Section
+  }
+
+  *test::emeraldthistle3::domain::GardenSection[gardenSection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_section.section_code
+    )
+    ~mainTable [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_section
+    sectionCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_section.section_code,
+    sectionLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.garden_section.section_label,
+    reserve[natureReserve]: [test::emeraldthistle3::store::HerbariumDB]@Section_Reserve
+  }
+
+  *test::emeraldthistle3::domain::NatureReserve[natureReserve]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldthistle3::store::HerbariumDB]herbarium.nature_reserve.reserve_code
+    )
+    ~mainTable [test::emeraldthistle3::store::HerbariumDB]herbarium.nature_reserve
+    reserveCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.nature_reserve.reserve_code,
+    reserveLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.nature_reserve.reserve_label,
+    stewards[reserveSteward]: [test::emeraldthistle3::store::HerbariumDB]@Reserve_Steward
+  }
+
+  *test::emeraldthistle3::domain::ReserveSteward[reserveSteward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldthistle3::store::HerbariumDB]herbarium.reserve_steward.steward_code
+    )
+    ~mainTable [test::emeraldthistle3::store::HerbariumDB]herbarium.reserve_steward
+    stewardCode: [test::emeraldthistle3::store::HerbariumDB]herbarium.reserve_steward.steward_code,
+    stewardName: [test::emeraldthistle3::store::HerbariumDB]herbarium.reserve_steward.steward_name,
+    rotaLabel: [test::emeraldthistle3::store::HerbariumDB]herbarium.reserve_steward.rota_label
+  }
+)

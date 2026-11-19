@@ -1,0 +1,171 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::zephyrgecko4::service::FeedingTallyFromDate
+{
+  pattern: '/zephyrgecko4/feedingTallyFromDate/{fromDate}';
+  ownership: UserList { users: ['terrarium-husbandry-desk'] };
+  documentation: 'Tallies feeding effort from a caller-supplied lower bound onwards, excluding three feeding modes by separate negated equalities, pinning the refusal count to one and rejecting the current date, then groups on nine keys reached through to-one hops into four enclosure, species, keeper and diet dimensions.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], currentDate: StrictDate[1]|test::zephyrgecko4::domain::FeedingEvent.all()->filter(
+      e|($e.fedOn >= $fromDate) && (($e.mode != test::zephyrgecko4::domain::FeedingMode.MISTING) && (($e.mode != test::zephyrgecko4::domain::FeedingMode.GAVAGE) && (($e.mode != test::zephyrgecko4::domain::FeedingMode.DISH) && (($e.refusedCount == 1) && ($e.fedOn != $currentDate)))))
+    )->groupBy(
+      [
+        e|$e.enclosure.enclosureName,
+        e|$e.enclosure.habitatType,
+        e|$e.enclosure.humidityBand,
+        e|$e.species.commonName,
+        e|$e.species.careLevel,
+        e|$e.keeper.keeperName,
+        e|$e.keeper.shiftBlock,
+        e|$e.dietItem.dietName,
+        e|$e.dietItem.feedForm
+      ],
+      [
+        agg(e|$e.portionCount, y|$y->sum()),
+        agg(e|$e.livePreyCount, y|$y->sum()),
+        agg(e|$e.dustedPreyCount, y|$y->sum()),
+        agg(e|$e.refusedCount, y|$y->sum()),
+        agg(e|$e.waterMl, y|$y->sum()),
+        agg(e|$e.supplementMg, y|$y->sum())
+      ],
+      [
+        'Enclosure/Name',
+        'Enclosure/Habitat',
+        'Enclosure/Humidity',
+        'Species/Common',
+        'Species/Care',
+        'Keeper/Name',
+        'Keeper/Shift',
+        'Diet/Name',
+        'Diet/Form',
+        'Sum/Portions',
+        'Sum/LivePrey',
+        'Sum/DustedPrey',
+        'Sum/Refusals',
+        'Sum/WaterMl',
+        'Sum/SupplementMg'
+      ]
+    )->sort(
+      [
+        asc('Enclosure/Name')
+      ]
+    )->limit(5)};
+    mapping: test::zephyrgecko4::mapping::TerrariumMapping;
+    runtime: test::zephyrgecko4::runtime::TerrariumRuntime;
+  }
+  testSuites:
+  [
+    fromDateSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              terrarium.room:
+                'room_code,room_name,building_wing\n'+
+                'R-1,Herpetology Hall,East Wing\n'+
+                'R-2,Nursery Hall,West Wing\n';
+
+              terrarium.enclosure:
+                'enclosure_code,enclosure_name,habitat_type,humidity_band,room_code\n'+
+                'E-1,Sandstone Ledge,ARID,LOW,R-1\n'+
+                'E-2,Fern Grotto,HUMID,HIGH,R-1\n'+
+                'E-3,Nursery Bay,TEMPERATE,MEDIUM,R-2\n';
+
+              terrarium.species:
+                'species_code,common_name,care_level\n'+
+                'S-1,Crested Gecko,ROUTINE\n'+
+                'S-2,Leaf Tailed Gecko,SPECIALIST\n';
+
+              terrarium.keeper:
+                'keeper_code,keeper_name,shift_block\n'+
+                'K-1,Avery Lindquist,MORNING\n'+
+                'K-2,Ronen Blaise,EVENING\n';
+
+              terrarium.diet_item:
+                'diet_code,diet_name,feed_form\n'+
+                'D-1,Dusted Crickets,LIVE\n'+
+                'D-2,Fruit Puree,PASTE\n';
+
+              terrarium.feeding_event:
+                'event_id,fed_on,event_kind,portion_count,live_prey_count,dusted_prey_count,refused_count,water_ml,supplement_mg,enclosure_code,species_code,keeper_code,diet_code\n'+
+                'G-1,2026-04-02,SCATTER,3,12,10,1,40,5,E-1,S-1,K-1,D-1\n'+
+                'G-2,2026-04-02,SCATTER,2,8,6,1,20,3,E-1,S-1,K-1,D-1\n'+
+                'G-3,2026-04-03,TONGS,5,4,4,1,55,7,E-2,S-2,K-2,D-2\n'+
+                'G-4,2026-04-04,MISTING,1,0,0,1,10,1,E-2,S-2,K-2,D-2\n'+
+                'G-5,2026-04-05,GAVAGE,1,0,0,1,5,2,E-3,S-1,K-2,D-2\n'+
+                'G-6,2026-04-06,DISH,4,2,2,1,30,4,E-3,S-1,K-1,D-1\n'+
+                'G-7,2026-04-07,TONGS,6,3,3,0,60,8,E-3,S-1,K-1,D-1\n'+
+                'G-8,2026-03-20,TONGS,7,5,5,1,70,9,E-1,S-1,K-1,D-1\n'+
+                'G-9,2026-04-08,SCATTER,2,1,1,1,15,2,E-3,S-2,K-2,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        admittedModesOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-04-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            threeSurvivingGroups:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Enclosure/Name":"Fern Grotto","Enclosure/Habitat":"HUMID","Enclosure/Humidity":"HIGH","Species/Common":"Leaf Tailed Gecko","Species/Care":"SPECIALIST","Keeper/Name":"Ronen Blaise","Keeper/Shift":"EVENING","Diet/Name":"Fruit Puree","Diet/Form":"PASTE","Sum/Portions":5,"Sum/LivePrey":4,"Sum/DustedPrey":4,"Sum/Refusals":1,"Sum/WaterMl":55,"Sum/SupplementMg":7},{"Enclosure/Name":"Nursery Bay","Enclosure/Habitat":"TEMPERATE","Enclosure/Humidity":"MEDIUM","Species/Common":"Leaf Tailed Gecko","Species/Care":"SPECIALIST","Keeper/Name":"Ronen Blaise","Keeper/Shift":"EVENING","Diet/Name":null,"Diet/Form":null,"Sum/Portions":2,"Sum/LivePrey":1,"Sum/DustedPrey":1,"Sum/Refusals":1,"Sum/WaterMl":15,"Sum/SupplementMg":2},{"Enclosure/Name":"Sandstone Ledge","Enclosure/Habitat":"ARID","Enclosure/Humidity":"LOW","Species/Common":"Crested Gecko","Species/Care":"ROUTINE","Keeper/Name":"Avery Lindquist","Keeper/Shift":"MORNING","Diet/Name":"Dusted Crickets","Diet/Form":"LIVE","Sum/Portions":5,"Sum/LivePrey":20,"Sum/DustedPrey":16,"Sum/Refusals":2,"Sum/WaterMl":60,"Sum/SupplementMg":8}]';
+                  }#;
+              }#
+          ]
+        },
+        futureLowerBoundIsEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2030-01-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            noRowsAdmitted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+name: noble-warren-2-m2m
+title: "Noble Warren 2 — Checked and Plain Graph Fetch Over One Store-less Card Transform"
+description: |
+  A store-less warren survey model in which a single model-to-model transform
+  derives a printed card name by concatenation and pins a second card property
+  to a constant. Two single-execution services share that transform, contrasting
+  a plain graph fetch served through a referenced runtime with a defect-checking
+  graph fetch served through a runtime embedded in the execution, and delimited
+  text bindings describe the physical shape of the two source classes.
+modelSources:
+  model:
+    root: noble-warren-2-m2m
+    files:
+      - test/noblewarren2/connection/WarrenConnections.pure
+      - test/noblewarren2/doc/WarrenNotes.pure
+      - test/noblewarren2/domain/SurveyorCard.pure
+      - test/noblewarren2/external/WarrenBindings.pure
+      - test/noblewarren2/mapping/SurveyorCardM2M.pure
+      - test/noblewarren2/runtime/WarrenRuntimes.pure
+      - test/noblewarren2/service/WarrenCardCheck.pure
+      - test/noblewarren2/service/WarrenCardFeed.pure
+      - test/noblewarren2/source/BurrowSite.pure
+      - test/noblewarren2/source/WarrenSurveyor.pure
+features:
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:service
+  - execution:embedded-runtime
+  - execution:service-test
+  - execution:test-data
+  - grammar:text-element
+  - mapping:m2m-transform
+  - execution:checked-graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - checked-graph-fetch
+  - flat-data-schema-set
+  - inline-runtime
+  - m2m-transform
+  - store-less
+  - text-element
+  - wildlife-tracking

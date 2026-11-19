@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'One dockside mooring inspection written up by the watch crew when a vessel is tied alongside a berth.'} test::azurewharf2::domain::MooringLog
+{
+  logCode: String[1];
+  berthName: String[1];
+  quayName: String[1];
+  vesselName: String[1];
+  crewName: String[1];
+  hullLabel: String[0..1];
+  deckLabel: String[1];
+  lampLabel: String[1];
+  crateCount: Integer[1];
+  checkedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A numbered mooring position along a quay where one vessel may be tied at a time.'} test::azurewharf2::domain::Berth
+{
+  berthCode: String[1];
+  berthName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stretch of dockside wall carrying several mooring berths.'} test::azurewharf2::domain::Quay
+{
+  quayCode: String[1];
+  quayName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A boat that ties up at the wharf and is inspected while alongside.'} test::azurewharf2::domain::Vessel
+{
+  vesselCode: String[1];
+  vesselName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The rostered dockside watch that walks the berths and writes the mooring inspections up.'} test::azurewharf2::domain::WatchCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+}

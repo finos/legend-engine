@@ -1,0 +1,151 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::coppercanyon::mapping::ExposureDigestM2M
+(
+  *demo::coppercanyon::domain::ExposureDigest[digest]: Pure
+  {
+    ~src demo::coppercanyon::domain::ExposureFeed
+    digestKey: $src.plateCode + '/' + $src.exposureRef->toUpper(),
+    fieldName: $src.fieldName,
+    instrumentName: $src.instrumentName,
+    filterBand: if($src.filterCode->isEmpty(), | 'CLEAR', | $src.filterCode->toOne()->trim()->toUpper()),
+    durationBand: if($src.exposureSeconds >= 1800, | 'LONG-' + $src.exposureSeconds->toString(), | if($src.exposureSeconds >= 300, | 'MEDIUM-' + $src.exposureSeconds->toString(), | 'SHORT-' + $src.exposureSeconds->toString())),
+    seeingNote: if($src.seeingArcsec->isEmpty(), | 'UNRECORDED', | if($src.seeingArcsec->toOne() <= 1.0, | 'EXCELLENT-' + $src.exposureRef->toUpper()->trim(), | 'ROUTINE-' + $src.exposureRef->toUpper()->trim()))
+  }
+
+  testSuites:
+  [
+    exposureDigestSuite:
+    {
+      function: |demo::coppercanyon::domain::ExposureDigest.all()->graphFetch(
+        #{
+          demo::coppercanyon::domain::ExposureDigest{
+            digestKey,
+            fieldName,
+            instrumentName,
+            filterBand,
+            durationBand,
+            seeingNote
+          }
+        }#
+      )->serialize(
+        #{
+          demo::coppercanyon::domain::ExposureDigest{
+            digestKey,
+            fieldName,
+            instrumentName,
+            filterBand,
+            durationBand,
+            seeingNote
+          }
+        }#
+      );
+      tests:
+      [
+        longExposureExcellentSeeing:
+        {
+          doc: 'A long plate exposure with a padded filter code and a sub-arcsecond seeing measurement takes the long duration arm, the trimmed filter arm and the excellent seeing arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::coppercanyon::domain::ExposureFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plateCode":"FP-114","exposureRef":"ex-9","fieldName":"Draco Arm","instrumentName":"Meridian Astrograph","exposureSeconds":2400,"filterCode":" v ","seeingArcsec":0.8}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            longDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestKey":"FP-114/EX-9","fieldName":"Draco Arm","instrumentName":"Meridian Astrograph","filterBand":"V","durationBand":"LONG-2400","seeingNote":"EXCELLENT-EX-9"}';
+                  }#;
+              }#
+          ];
+        },
+        mediumExposureUnfiltered:
+        {
+          doc: 'An exposure logged without a filter code falls back to the clear band, and its mid-length duration and above-arcsecond seeing take the medium and routine arms.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::coppercanyon::domain::ExposureFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plateCode":"FP-207","exposureRef":"ex-31","fieldName":"Cepheus Rift","instrumentName":"Ridge Reflector","exposureSeconds":600,"seeingArcsec":1.9}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mediumDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestKey":"FP-207/EX-31","fieldName":"Cepheus Rift","instrumentName":"Ridge Reflector","filterBand":"CLEAR","durationBand":"MEDIUM-600","seeingNote":"ROUTINE-EX-31"}';
+                  }#;
+              }#
+          ];
+        },
+        shortExposureUnrecordedSeeing:
+        {
+          doc: 'A short exposure whose seeing was never recorded takes the short duration arm and the unrecorded seeing fallback while still resolving its filter band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                demo::coppercanyon::domain::ExposureFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"plateCode":"FP-88","exposureRef":"ex-4","fieldName":"Lynx Sweep","instrumentName":"Ridge Reflector","exposureSeconds":90,"filterCode":"r"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            shortDigest:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"digestKey":"FP-88/EX-4","fieldName":"Lynx Sweep","instrumentName":"Ridge Reflector","filterBand":"R","durationBand":"SHORT-90","seeingNote":"UNRECORDED"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

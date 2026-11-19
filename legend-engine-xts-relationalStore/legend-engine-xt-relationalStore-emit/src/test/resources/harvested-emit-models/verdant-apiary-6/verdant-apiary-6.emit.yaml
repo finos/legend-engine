@@ -1,0 +1,49 @@
+name: verdant-apiary-6
+title: "Verdant Apiary 6 — One Point-In-Time Projection Planned Under Two Keyed Environments"
+description: |
+  An apiary hive-colony register kept as a business-temporal record, so every colony code carries a
+  succession of effective versions rather than a single row. One business-temporal class is bound to
+  one milestoned anchoring table, and the whole model is carried by a single service: a
+  multi-execution endpoint whose one query body is planned under two keyed environments that differ
+  only in the runtime and connection they route through. The body takes the effective date as a
+  parameter, resolves the colonies as of that point in time, keeps the colonies of one named apiary
+  and projects the colony code, the upper-cased apiary name, the frame count and the queen line into
+  a tabular result through the explicit column-and-header projection form. Each keyed execution
+  carries its own suite and fixture, and both fixtures hold versions whose effective range does not
+  cover the requested date, so the out-of-range rows are proven to be dropped rather than silently
+  projected.
+modelSources:
+  model:
+    root: verdant-apiary-6
+    files:
+      - test/verdantapiary6/connection/ApiaryArchiveConnection.pure
+      - test/verdantapiary6/connection/ApiaryLiveConnection.pure
+      - test/verdantapiary6/domain/ApiaryDomain.pure
+      - test/verdantapiary6/mapping/ApiaryMapping.pure
+      - test/verdantapiary6/runtime/ApiaryArchiveRuntime.pure
+      - test/verdantapiary6/runtime/ApiaryLiveRuntime.pure
+      - test/verdantapiary6/service/ColonyRegisterByEnvironment.pure
+      - test/verdantapiary6/store/ApiaryDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+complexity: intermediate
+tags:
+  - beekeeping
+  - business-temporal
+  - h2
+  - keyed-execution
+  - multi-execution
+  - plan-generation
+  - point-in-time
+  - projection
+  - service-test
+  - tabular-data-set
+stores:
+  - relational

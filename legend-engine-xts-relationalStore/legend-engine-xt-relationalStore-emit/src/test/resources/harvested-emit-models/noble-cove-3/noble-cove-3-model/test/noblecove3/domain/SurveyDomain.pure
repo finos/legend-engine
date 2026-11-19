@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::noblecove3::domain::*;
+
+Class <<IntertidalProfile.surveyArtefact>> {IntertidalProfile.monitoringNotes = 'A fixed rocky-shore monitoring station revisited each survey season.'} test::noblecove3::domain::SurveyStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  shoreAspect: String[1];
+  establishedOn: StrictDate[1];
+  tidalRangeMetres: Float[1];
+  quadrats: Quadrat[*];
+}
+
+Class <<IntertidalProfile.surveyArtefact>> test::noblecove3::domain::Quadrat
+{
+  quadratCode: String[1];
+  sideLengthCentimetres: Integer[1];
+  heightAboveChartDatumMetres: Float[1];
+  permanentlyMarked: Boolean[1];
+  observations: Observation[*];
+}
+
+Class test::noblecove3::domain::Observation
+{
+  observationCode: String[1];
+  observedOn: StrictDate[1];
+  individualsCounted: Integer[1];
+  percentCover: Float[0..1];
+  recorderNote: String[0..1];
+}
+
+Class test::noblecove3::domain::Surveyor
+{
+  surveyorCode: String[1];
+  fullName: String[1];
+  volunteer: Boolean[1];
+  accreditedOn: StrictDate[0..1];
+}
+
+Class <<IntertidalProfile.tidalIndicator>> test::noblecove3::domain::TidalWindow
+{
+  windowCode: String[1];
+  lowWaterAt: DateTime[1];
+  predictedHeightMetres: Float[1];
+  springTide: Boolean[1];
+}
+
+Class test::noblecove3::domain::Substrate
+{
+  substrateCode: String[1];
+  description: String[1];
+  rugosityIndex: Float[1];
+}

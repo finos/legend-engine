@@ -1,0 +1,109 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::goldenridge2::mapping::RidgeCrossMapping
+(
+  include mapping demo::goldenridge2::mapping::RidgeFindingMapping
+
+  *demo::goldenridge2::domain::FieldLog[fieldLog]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::goldenridge2::store::FieldStationDB]station.field_log.log_code
+    )
+    ~mainTable [demo::goldenridge2::store::FieldStationDB]station.field_log
+    logCode: [demo::goldenridge2::store::FieldStationDB]station.field_log.log_code,
+    voucherCode: [demo::goldenridge2::store::FieldStationDB]station.field_log.voucher_code,
+    observerName: [demo::goldenridge2::store::FieldStationDB]station.field_log.observer_name,
+    stationName: [demo::goldenridge2::store::FieldStationDB]@Log_Station | [demo::goldenridge2::store::FieldStationDB]station.station_ref.station_name,
+    tally: [demo::goldenridge2::store::FieldStationDB]station.field_log.tally
+  }
+
+  *demo::goldenridge2::domain::FieldStation[fieldStation]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::goldenridge2::store::FieldStationDB]station.station_ref.station_code
+    )
+    ~mainTable [demo::goldenridge2::store::FieldStationDB]station.station_ref
+    stationCode: [demo::goldenridge2::store::FieldStationDB]station.station_ref.station_code,
+    stationName: [demo::goldenridge2::store::FieldStationDB]station.station_ref.station_name
+  }
+
+  demo::goldenridge2::domain::Duplicate_FieldLog: XStore
+  {
+    duplicateFinding[fieldLog, duplicate]: $this.voucherCode == $that.voucherCode,
+    duplicateLogs[duplicate, fieldLog]: $this.voucherCode == $that.voucherCode
+  }
+
+  demo::goldenridge2::domain::Mismatch_FieldLog: XStore
+  {
+    intakeMismatch[fieldLog, mismatch]: $this.voucherCode == $that.voucherCode,
+    mismatchLogs[mismatch, fieldLog]: $this.voucherCode == $that.voucherCode
+  }
+
+  testSuites:
+  [
+    crossStoreFindingSuite:
+    {
+      function: |demo::goldenridge2::domain::FieldLog.all()->graphFetch(#{demo::goldenridge2::domain::FieldLog{logCode, observerName, stationName, tally, duplicateFinding{voucherCode, sheetCount, duplicateVerdict}}}#)->serialize(#{demo::goldenridge2::domain::FieldLog{logCode, observerName, stationName, tally, duplicateFinding{voucherCode, sheetCount, duplicateVerdict}}}#);
+      tests:
+      [
+        logsResolveFindings:
+        {
+          doc: 'Field logs held in the station store resolve their duplicate finding across the cross-store association onto the herbarium duplicate-detection view, so a duplicated voucher and a singleton voucher return different verdicts.';
+          data:
+          [
+            demo::goldenridge2::store::HerbariumDB:
+              Relational
+              #{
+                herbarium.sheet_record:
+                  'sheet_id,voucher_code,taxon_code,collector_code,mount_count,vigour_score,handling_code,valid_from,valid_thru\n'+
+                  'S01,V01,T1,C1,1,5,,2026-01-01,9999-12-31\n'+
+                  'S11,V01,T1,C1,3,8,,2026-01-01,9999-12-31\n'+
+                  'S02,V02,T1,C1,1,15,,2026-01-01,9999-12-31\n';
+              }#,
+            demo::goldenridge2::store::FieldStationDB:
+              Relational
+              #{
+                station.station_ref:
+                  'station_code,station_name\n'+
+                  'ST1,Upper Ridge Hut\n'+
+                  'ST2,Lower Ridge Hut\n';
+
+                station.field_log:
+                  'log_code,voucher_code,station_code,observer_name,tally\n'+
+                  'L01,V01,ST1,Rowan Ash,2\n'+
+                  'L02,V02,ST2,Iona Reed,1\n';
+              }#
+          ];
+          asserts:
+          [
+            findingsPerLog:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"logCode":"L01","observerName":"Rowan Ash","stationName":"Upper Ridge Hut","tally":2,"duplicateFinding":{"voucherCode":"V01","sheetCount":2,"duplicateVerdict":"DUPLICATE"}},{"logCode":"L02","observerName":"Iona Reed","stationName":"Lower Ridge Hut","tally":1,"duplicateFinding":{"voucherCode":"V02","sheetCount":1,"duplicateVerdict":"SINGLETON"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

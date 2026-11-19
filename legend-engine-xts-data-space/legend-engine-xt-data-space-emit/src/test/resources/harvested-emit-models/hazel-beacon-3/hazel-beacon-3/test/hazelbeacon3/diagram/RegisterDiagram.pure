@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::hazelbeacon3::diagram::RegisterDiagram
+{
+  classView beaconView
+  {
+    class: test::hazelbeacon3::domain::NavigationBeacon;
+    position: (100.0,80.0);
+    rectangle: (260.0,190.0);
+  }
+  classView stationView
+  {
+    class: test::hazelbeacon3::domain::BeaconStation;
+    position: (460.0,80.0);
+    rectangle: (220.0,100.0);
+  }
+  classView lampView
+  {
+    class: test::hazelbeacon3::domain::LampUnit;
+    position: (460.0,240.0);
+    rectangle: (220.0,100.0);
+  }
+  propertyView
+  {
+    property: test::hazelbeacon3::domain::Station_Beacons.beacons;
+    source: stationView;
+    target: beaconView;
+    points: [(570.0,130.0),(230.0,175.0)];
+  }
+  propertyView
+  {
+    property: test::hazelbeacon3::domain::Lamp_Beacons.litBeacons;
+    source: lampView;
+    target: beaconView;
+    points: [(570.0,290.0),(230.0,175.0)];
+  }
+}

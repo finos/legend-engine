@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarmeadow4::mapping::SurveyMapping
+(
+  test::solarmeadow4::domain::NamingScheme: EnumerationMapping SchemeCodes
+  {
+    VERNACULAR: ['VER'],
+    SCIENTIFIC: ['SCI']
+  }
+
+  test::solarmeadow4::domain::Transect: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarmeadow4::store::SurveyStore]meadow.transect.transect_code
+    )
+    ~mainTable [test::solarmeadow4::store::SurveyStore]meadow.transect
+    transectCode: [test::solarmeadow4::store::SurveyStore]meadow.transect.transect_code,
+    transectName: trim([test::solarmeadow4::store::SurveyStore]meadow.transect.transect_name),
+    openForSurvey: equal([test::solarmeadow4::store::SurveyStore]meadow.transect.open_flag, 1),
+    walkedOn: [test::solarmeadow4::store::SurveyStore]meadow.transect.walked_on,
+    recordedThru: [test::solarmeadow4::store::SurveyStore]meadow.transect.recorded_thru,
+    quadratCount: [test::solarmeadow4::store::SurveyStore]meadow.transect.quadrat_count,
+    bloomCover: [test::solarmeadow4::store::SurveyStore]meadow.transect.bloom_cover,
+    soilTexture: toLower([test::solarmeadow4::store::SurveyStore]meadow.transect.soil_texture),
+    slopeAspect: toUpper([test::solarmeadow4::store::SurveyStore]meadow.transect.slope_aspect),
+    altitudeM: [test::solarmeadow4::store::SurveyStore]meadow.transect.altitude_m,
+    grazingNote: [test::solarmeadow4::store::SurveyStore]meadow.transect.grazing_note,
+    surveyRegister: 'SOLAR MEADOW TRANSECT REGISTER',
+    site: [test::solarmeadow4::store::SurveyStore]@Transect_Site,
+    shifts: [test::solarmeadow4::store::SurveyStore]@Transect_Shift,
+    passes: [test::solarmeadow4::store::SurveyStore]@Transect_Pass,
+    indicatorNames: [test::solarmeadow4::store::SurveyStore]@Transect_Indicator
+  }
+
+  test::solarmeadow4::domain::MeadowSite: Relational
+  {
+    ~mainTable [test::solarmeadow4::store::SurveyStore]meadow.meadow_site
+    siteCode: [test::solarmeadow4::store::SurveyStore]meadow.meadow_site.site_code,
+    siteName: [test::solarmeadow4::store::SurveyStore]meadow.meadow_site.site_name,
+    parishName: [test::solarmeadow4::store::SurveyStore]meadow.meadow_site.parish_name,
+    hectares: [test::solarmeadow4::store::SurveyStore]meadow.meadow_site.hectares
+  }
+
+  test::solarmeadow4::domain::RecorderShift: Relational
+  {
+    ~mainTable [test::solarmeadow4::store::SurveyStore]meadow.recorder_shift
+    shiftCode: [test::solarmeadow4::store::SurveyStore]meadow.recorder_shift.shift_code,
+    recorderName: [test::solarmeadow4::store::SurveyStore]meadow.recorder_shift.recorder_name,
+    startedOn: [test::solarmeadow4::store::SurveyStore]meadow.recorder_shift.started_on,
+    endedOn: [test::solarmeadow4::store::SurveyStore]meadow.recorder_shift.ended_on
+  }
+
+  test::solarmeadow4::domain::CuttingPass: Relational
+  {
+    ~mainTable [test::solarmeadow4::store::SurveyStore]meadow.cutting_pass
+    passCode: [test::solarmeadow4::store::SurveyStore]meadow.cutting_pass.pass_code,
+    passLabel: [test::solarmeadow4::store::SurveyStore]meadow.cutting_pass.pass_label,
+    cutFrom: [test::solarmeadow4::store::SurveyStore]meadow.cutting_pass.cut_from,
+    cutUntil: [test::solarmeadow4::store::SurveyStore]meadow.cutting_pass.cut_until
+  }
+
+  test::solarmeadow4::domain::IndicatorName: Relational
+  {
+    ~mainTable [test::solarmeadow4::store::SurveyStore]meadow.indicator_name
+    scheme: EnumerationMapping SchemeCodes: [test::solarmeadow4::store::SurveyStore]meadow.indicator_name.scheme_code,
+    nameText: [test::solarmeadow4::store::SurveyStore]meadow.indicator_name.name_text
+  }
+)

@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::easternlantern6::service::BranchRegionRegister
+{
+  pattern: '/eastern-lantern-6/v1/branches/{regionCode}';
+  title: 'Eastern Lantern 6 - Branch Region Register';
+  documentation: 'Publishes the lending branches of one region from the untimed branch relation, so the same mapping is read without a temporal qualifier alongside the two milestoned registers.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {regionCode: String[1]|test::easternlantern6::domain::Branch.all()->filter(
+      b|($b.regionCode == $regionCode) && !($b.branchName == 'Closed Branch')
+    )->project(
+      [
+        b|$b.branchCode,
+        b|$b.branchName,
+        b|$b.regionCode
+      ],
+      [
+        'BranchCode',
+        'BranchName',
+        'RegionCode'
+      ]
+    )->sort(
+      [
+        asc('BranchCode')
+      ]
+    )};
+    mapping: test::easternlantern6::mapping::CatalogueMapping;
+    runtime: test::easternlantern6::runtime::CatalogueRuntime;
+  }
+  testSuites:
+  [
+    branchRegionRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          catalogueConnection:
+            Relational
+            #{
+              library.branch:
+                'branch_code,branch_name,region_code\n'+
+                'BR-1,Harbour Road Branch,RG-NORTH\n'+
+                'BR-2,Quarry Lane Branch,RG-NORTH\n'+
+                'BR-3,Closed Branch,RG-NORTH\n'+
+                'BR-4,Sand Row Branch,RG-SOUTH\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        branchesOfTheRequestedRegion:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            regionCode = 'RG-NORTH'
+          ]
+          asserts:
+          [
+            theClosedBranchAndTheOtherRegionAreExcluded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BranchCode":"BR-1","BranchName":"Harbour Road Branch","RegionCode":"RG-NORTH"},{"BranchCode":"BR-2","BranchName":"Quarry Lane Branch","RegionCode":"RG-NORTH"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

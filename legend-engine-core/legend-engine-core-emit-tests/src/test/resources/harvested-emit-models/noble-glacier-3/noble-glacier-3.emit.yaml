@@ -1,0 +1,40 @@
+name: noble-glacier-3
+title: "Noble Glacier 3 — Business-Temporal Ice-Core Segments over Graded Enumerations and a Logging Profile"
+description: |
+  A glaciology cold-store vocabulary in which the graded artefact is milestoned
+  and the campaign that produced it is not. The ice-core segment is declared
+  business-temporal, so a regraded segment supersedes its earlier record while
+  the period it was graded for stays put, and property resolution against it has
+  to walk the milestoning stereotype rather than a plain class. The drilling
+  campaign beside it is an ordinary class that carries the same graded
+  vocabulary as defaults, so the two enumerations — a four-value condition grade
+  documented value by value and an undocumented four-value melt band — are used
+  as property types at both single and to-many multiplicity on a milestoned and
+  a non-milestoned class alike. A single locally declared profile supplies a
+  logging stereotype, a recalibration stereotype and two tagged values that
+  annotate both classes alongside the platform documentation profile, so the
+  annotation layer, the closed enumerations and the milestoning stereotype all
+  have to compile together.
+modelSources:
+  model:
+    root: noble-glacier-3
+    files:
+      - test/nobleglacier3/domain/GlacierDomain.pure
+      - test/nobleglacier3/domain/GlacierEnumerations.pure
+      - test/nobleglacier3/profile/GlacierProfile.pure
+features:
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - business-temporal
+  - enumeration
+  - glaciology
+  - ice-core
+  - milestoning
+  - model-only
+  - profile
+  - store-less

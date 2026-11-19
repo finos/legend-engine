@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cobalttundra2::store::CatalogueDB
+(
+  Schema catalogue
+  (
+    Table district
+    (
+      district_id INTEGER PRIMARY KEY,
+      district_code VARCHAR(16),
+      district_name VARCHAR(64),
+      steward VARCHAR(64)
+    )
+
+    Table branch
+    (
+      branch_id INTEGER PRIMARY KEY,
+      branch_code VARCHAR(16),
+      branch_name VARCHAR(64),
+      district_id INTEGER,
+      opened_year INTEGER
+    )
+
+    Table shelf_section
+    (
+      section_id INTEGER PRIMARY KEY,
+      section_code VARCHAR(16),
+      section_label VARCHAR(64),
+      branch_id INTEGER,
+      capacity_count INTEGER,
+      reserved_count INTEGER
+    )
+
+    Table catalogue_item
+    (
+      item_id INTEGER PRIMARY KEY,
+      item_code VARCHAR(16),
+      item_title VARCHAR(128),
+      section_id INTEGER,
+      page_count INTEGER,
+      edition_year INTEGER,
+      language_code VARCHAR(8),
+      condition_code VARCHAR(8)
+    )
+
+    Table reading_session
+    (
+      session_id INTEGER PRIMARY KEY,
+      session_code VARCHAR(16),
+      item_id INTEGER,
+      branch_id INTEGER,
+      minutes_spent INTEGER,
+      reader_group VARCHAR(32)
+    )
+  )
+
+  Join Branch_District
+  (
+    catalogue.branch.district_id = catalogue.district.district_id
+  )
+
+  Join Section_Branch
+  (
+    catalogue.shelf_section.branch_id = catalogue.branch.branch_id
+  )
+
+  Join Item_Section
+  (
+    catalogue.catalogue_item.section_id = catalogue.shelf_section.section_id
+  )
+
+  Join Session_Item
+  (
+    catalogue.reading_session.item_id = catalogue.catalogue_item.item_id
+  )
+
+  Join Session_Branch
+  (
+    catalogue.reading_session.branch_id = catalogue.branch.branch_id
+  )
+)

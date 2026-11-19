@@ -1,0 +1,138 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::crimsonfossil4::mapping::DigDigestM2M
+(
+  test::crimsonfossil4::domain::PreservationMode: EnumerationMapping PreservationCodeMapping
+  {
+    ARTICULATED: ['ART'],
+    FRAGMENTARY: ['FRAG'],
+    IMPRESSION: ['IMPR'],
+    RECRYSTALLISED: ['RECR']
+  }
+
+  test::crimsonfossil4::domain::MatrixType: EnumerationMapping MatrixCodeMapping
+  {
+    SANDSTONE: ['SANDSTONE'],
+    SHALE: ['SHALE'],
+    LIMESTONE: ['LIMESTONE'],
+    VOLCANIC_ASH: ['ASH']
+  }
+
+  test::crimsonfossil4::domain::SpecimenGrade: EnumerationMapping GradeCodeMapping
+  {
+    REFERENCE: ['REF'],
+    TEACHING: ['TEACH'],
+    PROVISIONAL: ['PROV'],
+    DISCARDED: ['DISC']
+  }
+
+  *test::crimsonfossil4::payload::SpecimenDigest[specimenDigestSet]: Pure
+  {
+    ~src test::crimsonfossil4::payload::SpecimenPayload
+    catalogCode: $src.catalogCode,
+    preparatorLabel: 'PRP/' + $src.record.preparatorCode->toUpper()->trim(),
+    densityBand: if($src.record.fragmentCount->isEmpty(),
+                    | 'BAND-NONE',
+                    | if($src.record.fragmentCount->toOne() >= 500,
+                         | 'BAND-8',
+                         | if($src.record.fragmentCount->toOne() >= 200,
+                              | 'BAND-7',
+                              | if($src.record.fragmentCount->toOne() >= 100,
+                                   | 'BAND-6',
+                                   | if($src.record.fragmentCount->toOne() >= 50,
+                                        | 'BAND-5',
+                                        | if($src.record.fragmentCount->toOne() >= 20,
+                                             | 'BAND-4',
+                                             | if($src.record.fragmentCount->toOne() >= 10,
+                                                  | 'BAND-3',
+                                                  | if($src.record.fragmentCount->toOne() >= 5,
+                                                       | 'BAND-2',
+                                                       | 'BAND-1')))))))),
+    windowState: if(($src.recordedOn < %2026-04-01) || ($src.recordedOn > %2026-09-30),
+                    | 'OUT_OF_VALIDITY_WINDOW',
+                    | 'IN_VALIDITY_WINDOW'),
+    preservation: EnumerationMapping PreservationCodeMapping: [$src.record.preservationCode->toUpper()->trim()]->toOne(),
+    matrix: EnumerationMapping MatrixCodeMapping: [if($src.record.matrixCode->isEmpty(), | 'SHALE', | $src.record.matrixCode->toOne()->toUpper()->trim())]->toOne(),
+    grade: EnumerationMapping GradeCodeMapping: [if($src.record.gradeCode->isEmpty(), | 'PROV', | $src.record.gradeCode->toOne()->toUpper()->trim())]->toOne()
+  }
+
+  testSuites:
+  [
+    densityBandSuite:
+    {
+      function: |test::crimsonfossil4::payload::SpecimenDigest.all()->graphFetch(
+        #{
+          test::crimsonfossil4::payload::SpecimenDigest
+          {
+            catalogCode,
+            densityBand,
+            preparatorLabel,
+            windowState,
+            preservation,
+            matrix,
+            grade
+          }
+        }#
+      )->serialize(
+        #{
+          test::crimsonfossil4::payload::SpecimenDigest
+          {
+            catalogCode,
+            densityBand,
+            preparatorLabel,
+            windowState,
+            preservation,
+            matrix,
+            grade
+          }
+        }#
+      );
+      tests:
+      [
+        everyDensityArmAndWindowEdge:
+        {
+          doc: 'Walks all eight density arms in order plus the absent-count fallback, the two absent codes that resolve through the sentinels substituted ahead of their enumeration lookups, every value of the closed preservation domain, and both edges of the accession validity window together with a record on either side of it.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::crimsonfossil4::payload::SpecimenPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"catalogCode":"FSL-0001","recordedOn":"2026-05-04","record":{"preservationCode":"art","matrixCode":"sandstone","gradeCode":"ref","fragmentCount":620,"plateCount":4,"preparatorCode":"pr-1"}},{"catalogCode":"FSL-0002","recordedOn":"2026-05-05","record":{"preservationCode":"frag","matrixCode":"shale","gradeCode":"teach","fragmentCount":260,"plateCount":3,"preparatorCode":"pr-2"}},{"catalogCode":"FSL-0003","recordedOn":"2026-05-06","record":{"preservationCode":"impr","matrixCode":"limestone","gradeCode":"prov","fragmentCount":140,"plateCount":3,"preparatorCode":"pr-3"}},{"catalogCode":"FSL-0004","recordedOn":"2026-06-01","record":{"preservationCode":"recr","matrixCode":"ash","gradeCode":"ref","fragmentCount":70,"plateCount":2,"preparatorCode":"pr-4"}},{"catalogCode":"FSL-0005","recordedOn":"2026-06-02","record":{"preservationCode":"art","matrixCode":"sandstone","gradeCode":"teach","fragmentCount":24,"plateCount":2,"preparatorCode":"pr-5"}},{"catalogCode":"FSL-0006","recordedOn":"2026-06-03","record":{"preservationCode":"frag","matrixCode":"shale","gradeCode":"prov","fragmentCount":12,"plateCount":1,"preparatorCode":"pr-6"}},{"catalogCode":"FSL-0007","recordedOn":"2026-07-11","record":{"preservationCode":"impr","matrixCode":"limestone","gradeCode":"ref","fragmentCount":6,"plateCount":1,"preparatorCode":"pr-7"}},{"catalogCode":"FSL-0008","recordedOn":"2026-07-12","record":{"preservationCode":"recr","matrixCode":"ash","gradeCode":"disc","fragmentCount":2,"plateCount":1,"preparatorCode":"pr-8"}},{"catalogCode":"FSL-0009","recordedOn":"2026-07-13","record":{"preservationCode":"impr","gradeCode":"ref","plateCount":1,"preparatorCode":"pr-9"}},{"catalogCode":"FSL-0010","recordedOn":"2026-08-20","record":{"preservationCode":"art","matrixCode":"sandstone","fragmentCount":15,"plateCount":1,"preparatorCode":"pr-10"}},{"catalogCode":"FSL-0011","recordedOn":"2026-04-01","record":{"preservationCode":"frag","matrixCode":"shale","gradeCode":"teach","fragmentCount":300,"plateCount":2,"preparatorCode":"pr-11"}},{"catalogCode":"FSL-0012","recordedOn":"2026-09-30","record":{"preservationCode":"impr","matrixCode":"limestone","gradeCode":"teach","fragmentCount":300,"plateCount":2,"preparatorCode":"pr-12"}},{"catalogCode":"FSL-0013","recordedOn":"2026-03-31","record":{"preservationCode":"recr","matrixCode":"ash","gradeCode":"prov","fragmentCount":55,"plateCount":2,"preparatorCode":"pr-13"}},{"catalogCode":"FSL-0014","recordedOn":"2026-10-01","record":{"preservationCode":"art","matrixCode":"sandstone","gradeCode":"disc","fragmentCount":55,"plateCount":2,"preparatorCode":"pr-14"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            fourteenBandedSpecimens:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"catalogCode":"FSL-0001","densityBand":"BAND-8","preparatorLabel":"PRP/PR-1","windowState":"IN_VALIDITY_WINDOW","preservation":"ARTICULATED","matrix":"SANDSTONE","grade":"REFERENCE"},{"catalogCode":"FSL-0002","densityBand":"BAND-7","preparatorLabel":"PRP/PR-2","windowState":"IN_VALIDITY_WINDOW","preservation":"FRAGMENTARY","matrix":"SHALE","grade":"TEACHING"},{"catalogCode":"FSL-0003","densityBand":"BAND-6","preparatorLabel":"PRP/PR-3","windowState":"IN_VALIDITY_WINDOW","preservation":"IMPRESSION","matrix":"LIMESTONE","grade":"PROVISIONAL"},{"catalogCode":"FSL-0004","densityBand":"BAND-5","preparatorLabel":"PRP/PR-4","windowState":"IN_VALIDITY_WINDOW","preservation":"RECRYSTALLISED","matrix":"VOLCANIC_ASH","grade":"REFERENCE"},{"catalogCode":"FSL-0005","densityBand":"BAND-4","preparatorLabel":"PRP/PR-5","windowState":"IN_VALIDITY_WINDOW","preservation":"ARTICULATED","matrix":"SANDSTONE","grade":"TEACHING"},{"catalogCode":"FSL-0006","densityBand":"BAND-3","preparatorLabel":"PRP/PR-6","windowState":"IN_VALIDITY_WINDOW","preservation":"FRAGMENTARY","matrix":"SHALE","grade":"PROVISIONAL"},{"catalogCode":"FSL-0007","densityBand":"BAND-2","preparatorLabel":"PRP/PR-7","windowState":"IN_VALIDITY_WINDOW","preservation":"IMPRESSION","matrix":"LIMESTONE","grade":"REFERENCE"},{"catalogCode":"FSL-0008","densityBand":"BAND-1","preparatorLabel":"PRP/PR-8","windowState":"IN_VALIDITY_WINDOW","preservation":"RECRYSTALLISED","matrix":"VOLCANIC_ASH","grade":"DISCARDED"},{"catalogCode":"FSL-0009","densityBand":"BAND-NONE","preparatorLabel":"PRP/PR-9","windowState":"IN_VALIDITY_WINDOW","preservation":"IMPRESSION","matrix":"SHALE","grade":"REFERENCE"},{"catalogCode":"FSL-0010","densityBand":"BAND-3","preparatorLabel":"PRP/PR-10","windowState":"IN_VALIDITY_WINDOW","preservation":"ARTICULATED","matrix":"SANDSTONE","grade":"PROVISIONAL"},{"catalogCode":"FSL-0011","densityBand":"BAND-7","preparatorLabel":"PRP/PR-11","windowState":"IN_VALIDITY_WINDOW","preservation":"FRAGMENTARY","matrix":"SHALE","grade":"TEACHING"},{"catalogCode":"FSL-0012","densityBand":"BAND-7","preparatorLabel":"PRP/PR-12","windowState":"IN_VALIDITY_WINDOW","preservation":"IMPRESSION","matrix":"LIMESTONE","grade":"TEACHING"},{"catalogCode":"FSL-0013","densityBand":"BAND-5","preparatorLabel":"PRP/PR-13","windowState":"OUT_OF_VALIDITY_WINDOW","preservation":"RECRYSTALLISED","matrix":"VOLCANIC_ASH","grade":"PROVISIONAL"},{"catalogCode":"FSL-0014","densityBand":"BAND-5","preparatorLabel":"PRP/PR-14","windowState":"OUT_OF_VALIDITY_WINDOW","preservation":"ARTICULATED","matrix":"SANDSTONE","grade":"DISCARDED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

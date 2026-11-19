@@ -1,0 +1,157 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sablebeacon::service::GradedReadingsInMonth
+{
+  pattern: '/sablebeacon/v1/readings/{cutoff}';
+  title: 'Sable Beacon - Graded Readings In The Rolling Cutoff Window';
+  owners:
+  [
+    'gauge-network',
+    'hydrology-eng'
+  ];
+  documentation: 'Returns readings taken between the first day of the month preceding the cutoff and the cutoff itself whose grade code is a member of the supplied grade list. The grade label branches over two recognised codes and falls back to null, and the basin name is resolved through the five-hop sensor to basin join chain.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: StrictDate[1], grades: String[*]|test::sablebeacon::domain::Reading.all()->filter(
+      r|($r.readingDate <= $cutoff) && ($r.readingDate >= firstDayOfMonth(adjust($cutoff, -1, DurationUnit.MONTHS))) && $r.gradeCode->in($grades)
+    )->project(
+      [
+        r|$r.readingId,
+        r|$r.gradeLabel,
+        r|$r.sensorName,
+        r|$r.basinName
+      ],
+      [
+        'ReadingId',
+        'GradeLabel',
+        'SensorName',
+        'BasinName'
+      ]
+    )->sort(
+      [
+        asc('ReadingId')
+      ]
+    )->take(10)};
+    mapping: test::sablebeacon::mapping::GaugeMapping;
+    runtime: test::sablebeacon::runtime::GaugeRuntime;
+  }
+  testSuites:
+  [
+    gradedReadingsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          gaugeConnection:
+            Relational
+            #{
+              hydro.reading:
+                'reading_id,sensor_id,reading_date,level_cm,grade_code\n'+
+                '1,1,2024-01-05,240,A\n'+
+                '2,1,2024-01-12,150,B\n'+
+                '3,1,2024-01-19,40,Z\n'+
+                '4,2,2024-01-26,95,A\n';
+              hydro.sensor:
+                'sensor_id,sensor_name,station_id\n'+
+                '1,Upper Weir Probe,1\n'+
+                '2,Lower Weir Probe,2\n';
+              hydro.station:
+                'station_id,station_name,district_id\n'+
+                '1,Alder Crossing,1\n'+
+                '2,Birch Crossing,2\n';
+              hydro.district:
+                'district_id,district_name,gauge_zone_id\n'+
+                '1,Upper Vale,1\n'+
+                '2,Lower Vale,2\n';
+              hydro.gauge_zone:
+                'gauge_zone_id,gauge_zone_name,basin_id\n'+
+                '1,Headwater Zone,1\n'+
+                '2,Floodplain Zone,2\n';
+              hydro.basin:
+                'basin_id,basin_name\n'+
+                '1,Alder Basin\n'+
+                '2,Birch Basin\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        januaryCutoff:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cutoff = %2024-01-31,
+            grades = ['A', 'B', 'Z']
+          ]
+          asserts:
+          [
+            fourGradedReadings:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ReadingId":1,"GradeLabel":"PRIMARY","SensorName":"Upper Weir Probe","BasinName":"Alder Basin"},{"ReadingId":2,"GradeLabel":"SECONDARY","SensorName":"Upper Weir Probe","BasinName":"Alder Basin"},{"ReadingId":3,"GradeLabel":null,"SensorName":"Upper Weir Probe","BasinName":"Alder Basin"},{"ReadingId":4,"GradeLabel":"PRIMARY","SensorName":"Lower Weir Probe","BasinName":"Birch Basin"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::sablebeacon::service::BasinLevelTotals
+{
+  pattern: '/sablebeacon/v1/basins/{cutoff}';
+  title: 'Sable Beacon - Basin Level Totals Over The Rolling Cutoff Window';
+  owners:
+  [
+    'gauge-network',
+    'hydrology-eng'
+  ];
+  documentation: 'Aggregates water level over the basin resolved by the join chain for readings inside the rolling window that ends at the cutoff, returning the summed level and the reading count per basin.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: StrictDate[1]|test::sablebeacon::domain::Reading.all()->filter(
+      r|($r.readingDate <= $cutoff) && ($r.readingDate >= firstDayOfMonth(adjust($cutoff, -1, DurationUnit.MONTHS)))
+    )->groupBy(
+      [
+        r|$r.basinName
+      ],
+      [
+        agg(r|$r.levelCm, y|$y->sum()),
+        agg(r|$r.readingId, y|$y->count())
+      ],
+      [
+        'Basin',
+        'TotalLevelCm',
+        'ReadingCount'
+      ]
+    )->sort(
+      [
+        asc('Basin')
+      ]
+    )};
+    mapping: test::sablebeacon::mapping::GaugeMapping;
+    runtime: test::sablebeacon::runtime::GaugeRuntime;
+  }
+}

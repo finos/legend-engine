@@ -1,0 +1,57 @@
+name: solar-gecko-3
+title: "Desert Gecko Register — A Business-Temporal Feature Graph Guarded by Warn-Level Constraints and Resolved As Of a Day"
+description: |
+  A monitoring register for a desert reserve, published mostly as a model layer: an abstract
+  business-temporal feature carries the register identity and the feature kinds that extend it —
+  the walked stretches, the burrows cut into them, the handling records and the rostered observers —
+  inherit the one calendar timeline the register is published against, so a query over either kind
+  sees the union of inherited and locally declared properties. Six closed value domains type the
+  substrate, patrol standing, entrance aspect, burrow state, handling verdict and rota standing, so
+  no vocabulary is carried as free text. Four associations bind the graph so it is traversable from
+  either end, with a to-one end facing a to-many end on three of them and a to-many pair on the
+  fourth. Eleven warn-level constraints with attached failure messages guard the register: several
+  nest boolean composition over an emptiness probe and a computed length, several fall back to an
+  emptiness test so an absent optional reading is accepted while a present one is bounded, and the
+  rest hold a single property against a declared floor. Two milestoned qualified properties take
+  the register day from the caller and read the burrow end of the association as of that day.
+  Alongside the temporal layer, a model-to-model mapping resolves the same register lines as an
+  upstream extract publishes them — with the effective window carried as ordinary day fields — into
+  an as-of view whose nested conditional arms state whether the requested day falls inside an open
+  window, inside a closed one, after a window that has already closed or before one that has not
+  yet opened, publishing nothing for a day the window does not cover. One graph-fetch suite proves
+  all four standings, the vocabulary sentinel substituted before the enumeration lookup and the
+  absent held count.
+modelSources:
+  model:
+    root: solar-gecko-3
+    files:
+      - test/solargecko3/domain/GeckoDomain.pure
+      - test/solargecko3/mapping/RegisterAsOfM2M.pure
+      - test/solargecko3/view/RegisterAsOfView.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:constraint
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-enum-of-expression
+  - mapping:m2m-transform
+  - milestoning:business-temporal
+  - execution:graph-fetch
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: intermediate
+tags:
+  - abstract-supertype
+  - as-of-resolution
+  - business-temporal
+  - class-inheritance
+  - conditional-arms
+  - enumeration
+  - graph-fetch
+  - milestoned-association
+  - out-of-range-window
+  - warn-constraint

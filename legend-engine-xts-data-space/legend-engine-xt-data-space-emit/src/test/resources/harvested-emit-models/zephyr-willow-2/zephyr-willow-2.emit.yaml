@@ -1,0 +1,119 @@
+name: zephyr-willow-2
+title: "Zephyr Willow 2 — a municipal recycling collection network whose handling instruction is decided inside the mapping and republished across two tiers, a reference tier and a staging tier"
+description: |
+  A municipal recycling collection network held across three relational stores. The network store
+  carries the collection rounds together with the containers they are lifted from and the depot,
+  ward, district and collection authority chain behind those containers, plus a grouped view that
+  folds the container register down to one row per depot. A separate reference store holds the
+  material grade and service tier registers, and a staging store holds the draft rounds that have
+  not yet been accepted into the register.
+
+  The interesting logic sits in the mapping rather than in the published queries. The round binding
+  attaches a named store filter that suppresses the retired rounds, declares its aliased main table
+  and primary key, and then derives most of its properties: an eight-arm conditional cascade decides
+  the handling instruction and falls through to no instruction at all when none of the eight
+  conditions hold, a composed and case-folded label is assembled from the grade and the round
+  reference, an arithmetic index combines the weighed load with the moisture reading, the register
+  name is pinned as a literal, the depot name is read two reference hops away, the authority name
+  five hops away, two further properties are read from the grouped container view, and an embedded
+  block decides both the sorting lane and the baling bay. The mapping graph is composed rather than
+  flat: the network binding includes the base binding and adds the three association
+  implementations, and the staging binding includes the reference binding so the draft rounds
+  inherit the reference registers.
+
+  Eight services publish the network over four runtimes, each backed by its own Snowflake
+  connection: two runtimes serve the network binding over the lake and archive warehouses, one
+  serves the reference binding and one serves the composed staging binding. The published shapes
+  span a three-parameter predicate combining collection membership, a weight floor and a ninety-day
+  window opened by date arithmetic, a duplicate-free digest with a row limit, a folded per-depot
+  weight total, a board that keeps only the rounds whose cascade resolved an instruction, a ranked
+  moisture watch and the two supporting-tier boards. Two data spaces group the tiers with their
+  default runtimes, the curated diagram and the featured endpoints, and the diagram lays the round,
+  container, depot, ward and embedded handling classes out with the association property views
+  between them.
+
+  Test coverage spans both testable element kinds. The mapping suite projects every derived
+  property, both embedded properties and the association path that walks round to container to
+  depot to ward against a register that hits each of the eight cascade arms once, leaves two rounds
+  in the unresolved fallback and suppresses one round through the store filter; a second test
+  repeats the same projection against a register in which every round is suppressed, so the empty
+  side of the filter is proven rather than assumed. Every service carries a suite over shared
+  relational data elements, and the parameterised services are exercised on two contrasting
+  parameter sets each.
+
+modelSources:
+  model:
+    root: zephyr-willow-2
+    files:
+      - test/zephyrwillow2/connection/NetworkConnections.pure
+      - test/zephyrwillow2/data/NetworkTestData.pure
+      - test/zephyrwillow2/dataspace/NetworkDataSpaces.pure
+      - test/zephyrwillow2/diagram/NetworkDiagram.pure
+      - test/zephyrwillow2/domain/NetworkDomain.pure
+      - test/zephyrwillow2/mapping/DraftMapping.pure
+      - test/zephyrwillow2/mapping/GradeReferenceMapping.pure
+      - test/zephyrwillow2/mapping/NetworkBaseMapping.pure
+      - test/zephyrwillow2/mapping/NetworkMapping.pure
+      - test/zephyrwillow2/runtime/NetworkRuntimes.pure
+      - test/zephyrwillow2/service/DepotServices.pure
+      - test/zephyrwillow2/service/RoundServices.pure
+      - test/zephyrwillow2/service/SupportingTierServices.pure
+      - test/zephyrwillow2/store/NetworkStores.pure
+
+features:
+  - execution:data-element
+  - execution:data-space
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:diagram
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-embedded
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - mapping:relational-view-backed-property
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - conditional-cascade
+  - data-space
+  - diagram
+  - embedded-mapping
+  - grouped-view
+  - h2
+  - literal-mapping
+  - mapping-include
+  - mapping-test
+  - multi-hop-join
+  - recycling-network
+  - service-test
+  - snowflake
+  - string-transform

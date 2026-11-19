@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::indigowillow5::connection::WillowH2Connection
+{
+  store: test::indigowillow5::store::WillowDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists willow;',
+      'create schema willow;',
+      'create table willow.willow_habitat (habitat_id integer not null, habitat_code varchar(20) not null, reed_area integer not null, last_check_on date not null, observer_id integer, from_z date, thru_z date);',
+      'create table willow.trail_observer (observer_id integer primary key, observer_code varchar(20) not null, permit_tag varchar(20));'
+      ];
+  };
+  auth: DefaultH2;
+}

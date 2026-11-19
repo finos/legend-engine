@@ -1,0 +1,411 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietquokka3::mapping::NurseryGraftMapping
+(
+  include mapping test::quietquokka3::mapping::NurseryLookupMapping
+
+  *test::quietquokka3::domain::GraftRecord[graft]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.graft_code,
+      [test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.valid_from
+    )
+    ~mainTable [test::quietquokka3::store::NurseryDb]nursery.graft_current_vw
+    graftCode: [test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.graft_code,
+    levelCode: [test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.level_code,
+    caliperMm: [test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.caliper_mm,
+    graftedOn: [test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.grafted_on,
+    conditionGrade: EnumerationMapping ConditionGradeMapping: case(
+                      equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'PRIME'),
+                      '1',
+                      case(
+                        equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'SOUND'),
+                        '2',
+                        case(
+                          equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'WATCH'),
+                          '3',
+                          case(
+                            equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'CULL'),
+                            '4',
+                            '9'
+                          )
+                        )
+                      )
+                    ),
+    vigourBand: EnumerationMapping VigourBandMapping: case(
+                  equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.vigour_raw), 'DWARF'),
+                  'D',
+                  case(
+                    equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.vigour_raw), 'SEMI'),
+                    'M',
+                    case(
+                      equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.vigour_raw), 'VIGOROUS'),
+                      'V',
+                      'Z'
+                    )
+                  )
+                ),
+    cultivarKind: EnumerationMapping CultivarKindMapping: case(
+                    equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.kind_raw), ''),
+                    '#BLANK#',
+                    case(
+                      isNotEmpty([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.kind_raw),
+                      toUpper(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.kind_raw)),
+                      '#NULL#'
+                    )
+                  ),
+    handlingNote: case(
+                    equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'PRIME'),
+                    'HOLD FOR FIELD LINING',
+                    case(
+                      equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'SOUND'),
+                      'STANDARD POTTING QUEUE',
+                      case(
+                        equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'WATCH'),
+                        'RECHECK UNION IN TWO WEEKS',
+                        case(
+                          equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'CULL'),
+                          'REMOVE FROM BENCH',
+                          case(
+                            equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'HOLD'),
+                            'HOLD UNDER MIST',
+                            case(
+                              equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'QUAR'),
+                              'ISOLATE ON QUARANTINE BENCH',
+                              case(
+                                equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'MOVE'),
+                                'MOVE TO SHADE BENCH',
+                                case(
+                                  equal(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.condition_raw), 'SHIP'),
+                                  'STAGE FOR DESPATCH',
+                                  sqlNull()
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    climateName: [test::quietquokka3::store::NurseryDb]@Graft_Block > @Block_Bench > @Bench_Climate | toUpper([test::quietquokka3::store::NurseryDb]nursery.climate_current_vw.climate_name),
+    acceptedName: [test::quietquokka3::store::NurseryDb]@Graft_Cultivar > (INNER) @Cultivar_Accepted | rtrim([test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.cultivar_name),
+    rootstockName: [test::quietquokka3::store::NurseryDb]@Graft_Rootstock | rtrim([test::quietquokka3::store::NurseryDb]nursery.rootstock_current_vw.rootstock_name),
+    bay
+    (
+      bayLabel: case(
+                  isNotEmpty([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.bay_label),
+                  toUpper(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.bay_label)),
+                  'UNPLACED BAY'
+                ),
+      rowLabel: case(
+                  equal(trim(coalesce([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.row_label, '')), ''),
+                  'ROW UNSET',
+                  concat('ROW ', trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.row_label))
+                ),
+      placementKind: 'NURSERY BENCH PLACEMENT',
+      benchName: [test::quietquokka3::store::NurseryDb]@Graft_Block > @Block_Bench | rtrim([test::quietquokka3::store::NurseryDb]nursery.bench_current_vw.bench_name),
+      tray
+      (
+        trayCode: substring(coalesce([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.tray_label, 'TRAY-000'), 1, 4),
+        trayNote: concat('TRAY ', coalesce(trim([test::quietquokka3::store::NurseryDb]nursery.graft_current_vw.tray_label), 'UNTRAYED'))
+      )
+    )
+  }
+
+  test::quietquokka3::domain::Cultivar[cultivarLocal]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.cultivar_code,
+      [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.valid_from
+    )
+    ~mainTable [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw
+    cultivarCode: [test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.cultivar_code,
+    cultivarName: concat('SCION ', toUpper(rtrim([test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.cultivar_name))),
+    cultivarKind: EnumerationMapping CultivarKindMapping: trim([test::quietquokka3::store::NurseryDb]nursery.cultivar_current_vw.kind_code)
+  }
+
+  test::quietquokka3::domain::GraftRecord_NurseryBlock: Relational
+  {
+    AssociationMapping
+    (
+      block[graft, block]: [test::quietquokka3::store::NurseryDb]@Graft_Block,
+      blockGrafts[block, graft]: [test::quietquokka3::store::NurseryDb]@Graft_Block
+    )
+  }
+
+  test::quietquokka3::domain::GraftRecord_Cultivar: Relational
+  {
+    AssociationMapping
+    (
+      scion[graft, cultivarLocal]: [test::quietquokka3::store::NurseryDb]@Graft_Cultivar,
+      scionGrafts[cultivarLocal, graft]: [test::quietquokka3::store::NurseryDb]@Graft_Cultivar
+    )
+  }
+
+  test::quietquokka3::domain::NurseryBlock_Bench: Relational
+  {
+    AssociationMapping
+    (
+      bench[block, bench]: [test::quietquokka3::store::NurseryDb]@Block_Bench,
+      benchBlocks[bench, block]: [test::quietquokka3::store::NurseryDb]@Block_Bench
+    )
+  }
+
+  test::quietquokka3::domain::Bench_ClimateZone: Relational
+  {
+    AssociationMapping
+    (
+      climate[bench, climate]: [test::quietquokka3::store::NurseryDb]@Bench_Climate,
+      climateBenches[climate, bench]: [test::quietquokka3::store::NurseryDb]@Bench_Climate
+    )
+  }
+
+  testSuites:
+  [
+    graftDigestSuite:
+    {
+      function: |test::quietquokka3::domain::GraftRecord.all()->project(
+  [
+    g|$g.graftCode,
+    g|$g.levelCode,
+    g|$g.conditionGrade,
+    g|$g.vigourBand,
+    g|$g.cultivarKind,
+    g|$g.handlingNote,
+    g|$g.bay.bayLabel
+  ],
+  [
+    'Graft',
+    'Level',
+    'Condition',
+    'Vigour',
+    'Kind',
+    'Note',
+    'Bay'
+  ]
+)->sort(
+  [
+    asc('Graft')
+  ]
+);
+      tests:
+      [
+        conditionArmsAndEnumBuckets:
+        {
+          doc: 'Every arm of the eight-armed handling conditional is hit by one staged graft, a ninth graft falls through all of them onto the null fallback, its unrecognised condition and vigour codes are rewritten onto the fallback enumeration buckets, a whitespace-only kind lands in the blank bucket while an absent one lands in the null bucket, and the graft whose validity window has closed is hidden by the view filter.';
+          data:
+          [
+            test::quietquokka3::store::NurseryDb:
+              Relational
+              #{
+                nursery.graft_stage:
+                  'graft_code,valid_from,valid_thru_seq,block_code,rootstock_code,scion_code,grade_path,condition_raw,vigour_raw,kind_raw,caliper_mm,bay_label,row_label,tray_label,grafted_on\n'+
+                  'GR-01,2026-01-01,99999999,BK-1,RS-1,CV-S1,BAR/12,PRIME,DWARF,ACCEPTED,14, north bay ,R1,T100-A,2026-02-01\n'+
+                  'GR-02,2026-01-01,99999999,BK-1,RS-2,CV-S2,CHP/07,SOUND,SEMI,SYNONYM,12,south bay,R2,T101-A,2026-02-02\n'+
+                  'GR-03,2026-01-01,99999999,BK-2,RS-1,CV-S1,WHP/03,WATCH,VIGOROUS,  ,11,east bay,  ,T102-B,2026-02-03\n'+
+                  'GR-04,2026-01-01,99999999,BK-2,RS-3,CV-S2,SAD/09,CULL,DWARF,,9,west bay,R4,,2026-02-04\n'+
+                  'GR-05,2026-01-01,99999999,BK-3,RS-2,CV-S1,AB,HOLD,SEMI,ACCEPTED,15,north bay,R5,T104-B,2026-02-05\n'+
+                  'GR-06,2026-01-01,99999999,BK-3,RS-9,CV-S2,TON/21,QUAR,VIGOROUS,ACCEPTED,17,south bay,R6,,2026-02-06\n'+
+                  'GR-07,2026-01-01,99999999,BK-9,RS-1,CV-S1,SPL/05,MOVE,DWARF,ACCEPTED,10,east bay,R7,,2026-02-07\n'+
+                  'GR-08,2026-01-01,99999999,BK-1,RS-2,CV-A1,BUD/14,SHIP,SEMI,ACCEPTED,13,west bay,R8,T107-C,2026-02-08\n'+
+                  'GR-09,2026-01-01,99999999,BK-2,RS-3,CV-S2,GRA/02,XX,ZZZ,ACCEPTED,8,north bay,R9,T108-C,2026-02-09\n'+
+                  'GR-10,2025-01-01,20251231,BK-1,RS-1,CV-S1,OLD/01,PRIME,DWARF,ACCEPTED,20,south bay,R10,T110-D,2025-02-01\n';
+              }#
+          ];
+          asserts:
+          [
+            digestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Graft":"GR-01","Level":"BAR","Condition":"Prime","Vigour":"Dwarf","Kind":"Accepted","Note":"HOLD FOR FIELD LINING","Bay":"NORTH BAY"},{"Graft":"GR-02","Level":"CHP","Condition":"Sound","Vigour":"SemiDwarf","Kind":"Synonym","Note":"STANDARD POTTING QUEUE","Bay":"SOUTH BAY"},{"Graft":"GR-03","Level":"WHP","Condition":"Watched","Vigour":"Vigorous","Kind":"Blank","Note":"RECHECK UNION IN TWO WEEKS","Bay":"EAST BAY"},{"Graft":"GR-04","Level":"SAD","Condition":"Cull","Vigour":"Dwarf","Kind":"Unstated","Note":"REMOVE FROM BENCH","Bay":"WEST BAY"},{"Graft":"GR-05","Level":"AB","Condition":"Unrecorded","Vigour":"SemiDwarf","Kind":"Accepted","Note":"HOLD UNDER MIST","Bay":"NORTH BAY"},{"Graft":"GR-06","Level":"TON","Condition":"Unrecorded","Vigour":"Vigorous","Kind":"Accepted","Note":"ISOLATE ON QUARANTINE BENCH","Bay":"SOUTH BAY"},{"Graft":"GR-07","Level":"SPL","Condition":"Unrecorded","Vigour":"Dwarf","Kind":"Accepted","Note":"MOVE TO SHADE BENCH","Bay":"EAST BAY"},{"Graft":"GR-08","Level":"BUD","Condition":"Unrecorded","Vigour":"SemiDwarf","Kind":"Accepted","Note":"STAGE FOR DESPATCH","Bay":"WEST BAY"},{"Graft":"GR-09","Level":"GRA","Condition":"Unrecorded","Vigour":"Unbanded","Kind":"Accepted","Note":null,"Bay":"NORTH BAY"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graftJoinPathSuite:
+    {
+      function: |test::quietquokka3::domain::GraftRecord.all()->filter(
+  g|$g.graftCode->in(['GR-01', 'GR-05', 'GR-07', 'GR-08'])
+)->project(
+  [
+    g|$g.graftCode,
+    g|$g.climateName,
+    g|$g.acceptedName,
+    g|$g.bay.benchName,
+    g|$g.bay.tray.trayCode,
+    g|$g.bay.rowLabel,
+    g|$g.rootstockName
+  ],
+  [
+    'Graft',
+    'Climate',
+    'Accepted',
+    'Bench',
+    'Tray',
+    'Row',
+    'Stock'
+  ]
+)->sort(
+  [
+    asc('Graft')
+  ]
+);
+      tests:
+      [
+        threeHopAndPseudonymPaths:
+        {
+          doc: 'The three-join path from the graft view through the block and bench views onto the climate view resolves for the graft whose whole chain is current, empties when the middle hop names a bench that is not staged and again when the first hop names a block that is not staged, while the pseudonym self-join reaches the accepted cultivar for every synonym scion and yields nothing for the scion that is itself an accepted name; the rootstock hop folds a coalesce over the nullable stock code so a graft with no stock recorded resolves to the substitute code that is not staged, the stock left open with an absent validity end is still visible through the coalescing view filter, and the tray block falls back to its literal default when no tray is recorded.';
+          data:
+          [
+            test::quietquokka3::store::NurseryDb:
+              Relational
+              #{
+                nursery.graft_stage:
+                  'graft_code,valid_from,valid_thru_seq,block_code,rootstock_code,scion_code,grade_path,condition_raw,vigour_raw,kind_raw,caliper_mm,bay_label,row_label,tray_label,grafted_on\n'+
+                  'GR-01,2026-01-01,99999999,BK-1,RS-1,CV-S1,BAR/12,PRIME,DWARF,ACCEPTED,14,north bay,R1,T100-A,2026-02-01\n'+
+                  'GR-05,2026-01-01,99999999,BK-3,RS-2,CV-S1,AB,HOLD,SEMI,ACCEPTED,15,north bay,R5,T104-B,2026-02-05\n'+
+                  'GR-07,2026-01-01,99999999,BK-9,,CV-S1,SPL/05,MOVE,DWARF,ACCEPTED,10,east bay,  ,,2026-02-07\n'+
+                  'GR-08,2026-01-01,99999999,BK-1,RS-2,CV-A1,BUD/14,SHIP,SEMI,ACCEPTED,13,west bay,R8,T107-C,2026-02-08\n';
+
+                nursery.block_stage:
+                  'block_code,valid_from,valid_thru_seq,block_name,bench_code\n'+
+                  'BK-1,2026-01-01,99999999,Grafting House One,BN-1\n'+
+                  'BK-3,2026-01-01,99999999,Cold Frame Row,BN-9\n';
+
+                nursery.rootstock_stage:
+                  'rootstock_code,valid_from,valid_thru_seq,rootstock_name,vigour_raw\n'+
+                  'RS-1,2026-01-01,99999999,Dwarfing Stock,DWARF\n'+
+                  'RS-2,2026-01-01,,Semi Stock,SEMI\n';
+
+                nursery.bench_stage:
+                  'bench_code,valid_from,valid_thru_seq,bench_name,climate_code\n'+
+                  'BN-1,2026-01-01,99999999,Warm Bench,CL-1\n'+
+                  'BN-2,2026-01-01,99999999,Shade Bench,CL-2\n';
+
+                nursery.climate_stage:
+                  'climate_code,valid_from,valid_thru_seq,climate_name,band_raw\n'+
+                  'CL-1,2026-01-01,99999999,Warm Tunnel,WARM\n'+
+                  'CL-2,2026-01-01,99999999,Cool Frame,COOL\n';
+
+                nursery.cultivar_stage:
+                  'cultivar_code,valid_from,valid_thru_seq,cultivar_name,accepted_code,kind_code\n'+
+                  'CV-S1,2026-01-01,99999999,Amber Pippin Synonym,CV-A1,SYNONYM\n'+
+                  'CV-S2,2026-01-01,99999999,Bramble Russet Synonym,CV-A2,SYNONYM\n'+
+                  'CV-A1,2026-01-01,99999999,Amber Pippin,CV-A1,ACCEPTED\n'+
+                  'CV-A2,2026-01-01,99999999,Bramble Russet,CV-A2,ACCEPTED\n';
+              }#
+          ];
+          asserts:
+          [
+            joinPathRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Graft":"GR-01","Climate":"WARM TUNNEL","Accepted":"Amber Pippin","Bench":"Warm Bench","Tray":"T100","Row":"ROW R1","Stock":"Dwarfing Stock"},{"Graft":"GR-05","Climate":null,"Accepted":"Amber Pippin","Bench":null,"Tray":"T104","Row":"ROW R5","Stock":"Semi Stock"},{"Graft":"GR-07","Climate":null,"Accepted":"Amber Pippin","Bench":null,"Tray":"TRAY","Row":"ROW UNSET","Stock":null},{"Graft":"GR-08","Climate":"WARM TUNNEL","Accepted":null,"Bench":"Warm Bench","Tray":"T107","Row":"ROW R8","Stock":"Semi Stock"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    blockCollectionSuite:
+    {
+      function: |test::quietquokka3::domain::NurseryBlock.all()->filter(
+  b|($b.blockCode->in(['BK-1', 'BK-2', 'BK-3', 'BK-4'])) && ($b.blockGrafts->exists(g|$g.caliperMm > 12))
+)->project(
+  [
+    b|$b.blockCode,
+    b|$b.blockName,
+    b|$b.bench.benchName,
+    b|$b.bench.climate.climateName
+  ],
+  [
+    'Block',
+    'Name',
+    'Bench',
+    'Climate'
+  ]
+)->sort(
+  [
+    asc('Block')
+  ]
+);
+      tests:
+      [
+        blocksWithHeavyGrafts:
+        {
+          doc: 'A membership test over four staged block codes is combined with an existence test over the to-many graft end: the block with three grafts qualifies on its heaviest one, the block whose grafts are all thin does not, the block with two heavy grafts qualifies but its bench is not staged so both onward hops empty, and the block with no grafts at all drops out.';
+          data:
+          [
+            test::quietquokka3::store::NurseryDb:
+              Relational
+              #{
+                nursery.graft_stage:
+                  'graft_code,valid_from,valid_thru_seq,block_code,rootstock_code,scion_code,grade_path,condition_raw,vigour_raw,kind_raw,caliper_mm,bay_label,row_label,tray_label,grafted_on\n'+
+                  'GR-01,2026-01-01,99999999,BK-1,RS-1,CV-S1,BAR/12,PRIME,DWARF,ACCEPTED,14,north bay,R1,T100-A,2026-02-01\n'+
+                  'GR-02,2026-01-01,99999999,BK-1,RS-2,CV-S2,CHP/07,SOUND,SEMI,SYNONYM,12,south bay,R2,T101-A,2026-02-02\n'+
+                  'GR-03,2026-01-01,99999999,BK-2,RS-1,CV-S1,WHP/03,WATCH,VIGOROUS,ACCEPTED,11,east bay,R3,T102-B,2026-02-03\n'+
+                  'GR-05,2026-01-01,99999999,BK-3,RS-2,CV-S1,AB,HOLD,SEMI,ACCEPTED,15,north bay,R5,T104-B,2026-02-05\n'+
+                  'GR-06,2026-01-01,99999999,BK-3,RS-9,CV-S2,TON/21,QUAR,VIGOROUS,ACCEPTED,17,south bay,R6,T105-B,2026-02-06\n'+
+                  'GR-10,2025-01-01,20251231,BK-4,RS-1,CV-S1,OLD/01,PRIME,DWARF,ACCEPTED,20,south bay,R10,T110-D,2025-02-01\n';
+
+                nursery.block_stage:
+                  'block_code,valid_from,valid_thru_seq,block_name,bench_code\n'+
+                  'BK-1,2026-01-01,99999999,Grafting House One,BN-1\n'+
+                  'BK-2,2026-01-01,99999999,Grafting House Two,BN-2\n'+
+                  'BK-3,2026-01-01,99999999,Cold Frame Row,BN-9\n'+
+                  'BK-4,2026-01-01,99999999,Standing Ground,BN-2\n';
+
+                nursery.bench_stage:
+                  'bench_code,valid_from,valid_thru_seq,bench_name,climate_code\n'+
+                  'BN-1,2026-01-01,99999999,Warm Bench,CL-1\n'+
+                  'BN-2,2026-01-01,99999999,Shade Bench,CL-2\n';
+
+                nursery.climate_stage:
+                  'climate_code,valid_from,valid_thru_seq,climate_name,band_raw\n'+
+                  'CL-1,2026-01-01,99999999,Warm Tunnel,WARM\n'+
+                  'CL-2,2026-01-01,99999999,Cool Frame,COOL\n';
+              }#
+          ];
+          asserts:
+          [
+            blockRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Block":"BK-1","Name":"Grafting House One","Bench":"Warm Bench","Climate":"Warm Tunnel"},{"Block":"BK-3","Name":"Cold Frame Row","Bench":null,"Climate":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

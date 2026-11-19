@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::easterncove4::domain::*;
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One tide-gauge reading taken at a cove station. A re-derived reading is kept as a new version on a processing axis, so every read has to pin an instant and a superseded version stays invisible.'} test::easterncove4::domain::GaugeReading
+{
+  readingId: Integer[1];
+  gaugeCode: String[1];
+  swellCode: String[1];
+  heightCm: Integer[1];
+  waterTempC: Float[1];
+  takenOn: StrictDate[1];
+  stationName: String[0..1];
+  wardenName: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'One inspection of a mooring buoy held off a cove station, versioned on the same processing axis as the gauge readings so a re-inspection supersedes rather than overwrites.'} test::easterncove4::domain::MooringCheck
+{
+  checkId: Integer[1];
+  buoyCode: String[1];
+  conditionCode: String[1];
+  scourDepthCm: Integer[1];
+  checkedOn: StrictDate[1];
+  stationName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A monitoring station on the shore of a cove, described by the cove it watches and the sensor it carries.'} test::easterncove4::domain::Station
+{
+  stationCode: String[1];
+  stationName: String[1];
+  coveCode: String[1];
+  sensorType: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A shore warden who keeps watch over one or more stations.'} test::easterncove4::domain::Warden
+{
+  wardenCode: String[1];
+  wardenName: String[1];
+  watchCode: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates each gauge reading to the station it was taken at and each station to the readings taken there. The reading end is versioned, so navigation carries the processing predicate across the relationship, and the collection end fans the projection out over the readings of a station.'} test::easterncove4::domain::Reading_Station_Rel
+{
+  readings: GaugeReading[*];
+  station: Station[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Relates each mooring inspection to the station whose water it was made in and each station to the inspections made off it, so the buoy board can be read from either end.'} test::easterncove4::domain::Check_Station_Rel
+{
+  checks: MooringCheck[*];
+  station: Station[0..1];
+}

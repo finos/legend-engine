@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryfossil3::mapping::FieldTagMapping
+(
+  include mapping test::ivoryfossil3::mapping::FossilBaseMapping
+
+  *test::ivoryfossil3::domain::SpecimenCard[specimenCard]: Pure
+  {
+    ~src test::ivoryfossil3::domain::FieldTag
+    tagRef: $src.tagRef->toUpper(),
+    grade: EnumerationMapping GradeMapping: [if($src.wearScore->isEmpty(), |'ZZ', |if($src.wearScore->toOne() <= 1, |'P', |if($src.wearScore->toOne() <= 4, |'W', |'F')))],
+    condition: EnumerationMapping GradeMapping: [if($src.lengthMm->isEmpty(), |'ZZ', |if($src.lengthMm->toOne() >= 50.0, |'P', |'F'))],
+    note: if($src.finderNote->isEmpty(), |'NO NOTE', |$src.finderNote->toOne()->trim()->toUpper())
+  }
+
+  testSuites:
+  [
+    fieldTagSuite:
+    {
+      function: |test::ivoryfossil3::domain::SpecimenCard.all()->graphFetch(
+        #{
+          test::ivoryfossil3::domain::SpecimenCard{
+            tagRef,
+            grade,
+            condition,
+            note
+          }
+        }#
+      )->serialize(
+        #{
+          test::ivoryfossil3::domain::SpecimenCard{
+            tagRef,
+            grade,
+            condition,
+            note
+          }
+        }#
+      );
+      tests:
+      [
+        wearAndLengthGrades:
+        {
+          doc: 'Field tags are graded from computed wear and length expressions: low, middling and heavy wear, a missing wear score and a missing length each land on a different preservation grade, and blank finder notes default.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivoryfossil3::domain::FieldTag:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tagRef":"t1","lengthMm":60.0,"wearScore":0,"finderNote":" cracked rim "},{"tagRef":"t2","lengthMm":20.0,"wearScore":3},{"tagRef":"t3","wearScore":7,"finderNote":"split"},{"tagRef":"t4","lengthMm":50.0}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            gradedCards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"tagRef":"T1","grade":"PRISTINE","condition":"PRISTINE","note":"CRACKED RIM"},{"tagRef":"T2","grade":"WEATHERED","condition":"FRAGMENT","note":"NO NOTE"},{"tagRef":"T3","grade":"FRAGMENT","condition":"UNGRADED","note":"SPLIT"},{"tagRef":"T4","grade":"UNGRADED","condition":"PRISTINE","note":"NO NOTE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

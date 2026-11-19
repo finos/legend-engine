@@ -1,0 +1,181 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivoryfossil3::mapping::FossilMapping
+(
+  include mapping test::ivoryfossil3::mapping::FossilBaseMapping
+
+  *test::ivoryfossil3::domain::Specimen[specimen]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(liveSpecimen, archiveSpecimen)
+  }
+
+  test::ivoryfossil3::domain::Specimen[liveSpecimen]: Relational
+  {
+    ~filter [test::ivoryfossil3::store::VaultDb]CataloguedSpecimen
+    ~primaryKey
+    (
+      [test::ivoryfossil3::store::VaultDb]vault.specimen.site_code,
+      [test::ivoryfossil3::store::VaultDb]vault.specimen.specimen_no
+    )
+    ~mainTable [test::ivoryfossil3::store::VaultDb]vault.specimen
+    catalogueRef: concat([test::ivoryfossil3::store::VaultDb]vault.specimen.site_code, '-LIVE'),
+    recordKind: 'LIVE',
+    siteCode: [test::ivoryfossil3::store::VaultDb]vault.specimen.site_code,
+    specimenNo: [test::ivoryfossil3::store::VaultDb]vault.specimen.specimen_no,
+    layerNo: [test::ivoryfossil3::store::VaultDb]vault.specimen.layer_no,
+    labelText: case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.label_note, '-'), sqlNull(), [test::ivoryfossil3::store::VaultDb]vault.specimen.label_note),
+    kindLabel: case(isNull([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code), 'UNSORTED',
+                 case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code, 'TR'), 'TRILOBITE',
+                   case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code, 'AM'), 'AMMONITE',
+                     case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code, 'CR'), 'CRINOID',
+                       case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code, 'BR'), 'BRACHIOPOD',
+                         case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code, 'GA'), 'GASTROPOD',
+                           case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code, 'CO'), 'CORAL',
+                             case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.kind_code, 'FE'), 'FERN', sqlNull())))))))),
+    grade: EnumerationMapping GradeMapping: case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.grade_code, 'P'), 'P',
+             case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.grade_code, 'W'), 'W',
+               case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen.grade_code, 'F'), 'F', 'ZZ'))),
+    foundOn: [test::ivoryfossil3::store::VaultDb]vault.specimen.found_on,
+    size
+    (
+      lengthMm: [test::ivoryfossil3::store::VaultDb]vault.specimen.length_mm,
+      widthMm: [test::ivoryfossil3::store::VaultDb]vault.specimen.width_mm
+    ),
+    siteName: [test::ivoryfossil3::store::VaultDb]@SpecimenStratum > @StratumSite | [test::ivoryfossil3::store::VaultDb]field.dig_site.site_name
+  }
+
+  test::ivoryfossil3::domain::Specimen[archiveSpecimen]: Relational
+  {
+    ~filter [test::ivoryfossil3::store::VaultDb]ShelvedArchive
+    ~primaryKey
+    (
+      [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.site_code,
+      [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.specimen_no
+    )
+    ~mainTable [test::ivoryfossil3::store::VaultDb]vault.specimen_archive
+    catalogueRef: concat([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.site_code, '-ARCHIVE'),
+    recordKind: 'ARCHIVE',
+    siteCode: [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.site_code,
+    specimenNo: [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.specimen_no,
+    layerNo: [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.layer_no,
+    labelText: case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.label_note, '-'), sqlNull(), [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.label_note),
+    kindLabel: case(isNull([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code), 'UNSORTED',
+                 case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code, 'TR'), 'TRILOBITE',
+                   case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code, 'AM'), 'AMMONITE',
+                     case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code, 'CR'), 'CRINOID',
+                       case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code, 'BR'), 'BRACHIOPOD',
+                         case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code, 'GA'), 'GASTROPOD',
+                           case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code, 'CO'), 'CORAL',
+                             case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.kind_code, 'FE'), 'FERN', sqlNull())))))))),
+    grade: EnumerationMapping GradeMapping: case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.grade_code, 'P'), 'P',
+             case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.grade_code, 'W'), 'W',
+               case(equal([test::ivoryfossil3::store::VaultDb]vault.specimen_archive.grade_code, 'F'), 'F', 'ZZ'))),
+    foundOn: [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.found_on,
+    size
+    (
+      lengthMm: [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.length_mm,
+      widthMm: [test::ivoryfossil3::store::VaultDb]vault.specimen_archive.width_mm
+    ),
+    siteName: [test::ivoryfossil3::store::VaultDb]@ArchiveStratum > @StratumSite | [test::ivoryfossil3::store::VaultDb]field.dig_site.site_name
+  }
+
+  testSuites:
+  [
+    specimenRegisterSuite:
+    {
+      function: |test::ivoryfossil3::domain::Specimen.all()->project(
+  [
+    s|$s.recordKind,
+    s|$s.siteCode,
+    s|$s.specimenNo,
+    s|$s.kindLabel,
+    s|$s.labelText,
+    s|$s.grade,
+    s|$s.size.lengthMm,
+    s|$s.siteName
+  ],
+  [
+    'Kind',
+    'Site',
+    'No',
+    'Type',
+    'Label',
+    'Grade',
+    'Length',
+    'SiteName'
+  ]
+)->sort(
+  [
+    asc('Kind'),
+    asc('Site'),
+    asc('No')
+  ]
+);
+      tests:
+      [
+        everyKindArmAndGrade:
+        {
+          doc: 'The union routes catalogued live specimens and shelved archive specimens onto one register. Each live row hits a different kind arm (null code, seven named codes) or the null fallback; an unknown grade code collapses onto the ungraded source value; the site name is reached two joins away and stays null for a layer with no stratum; withdrawn and unshelved rows are removed by their store filters.';
+          data:
+          [
+            test::ivoryfossil3::store::VaultDb:
+              Relational
+              #{
+                field.dig_site:
+                  'site_code,site_name,region_code\n'+
+                  'QS,Quarry Shelf,N1\n'+
+                  'RB,Red Bluff,S2\n';
+                field.stratum:
+                  'site_code,layer_no,era_code,depth_m\n'+
+                  'QS,1,CAM,2.5\n'+
+                  'QS,2,ORD,4.0\n'+
+                  'RB,1,DEV,1.5\n';
+                vault.specimen:
+                  'site_code,specimen_no,layer_no,label_note,kind_code,grade_code,length_mm,width_mm,found_on,status_code\n'+
+                  'QS,1,1,Spiral cast,TR,P,120.0,40.0,2026-03-02,C\n'+
+                  'QS,2,1,-,AM,W,80.0,30.0,2026-03-03,C\n'+
+                  'QS,3,2,Stem plate,CR,F,15.5,4.0,2026-03-04,C\n'+
+                  'QS,4,2,Hinge pair,BR,X,22.0,18.0,2026-03-05,C\n'+
+                  'QS,5,1,Withdrawn cast,TR,P,99.0,30.0,2026-03-06,W\n'+
+                  'RB,1,1,Coil shell,GA,P,35.0,20.0,2026-04-01,C\n'+
+                  'RB,2,1,Branch colony,CO,W,210.0,90.0,2026-04-02,C\n'+
+                  'RB,3,1,Frond print,FE,F,95.0,60.0,2026-04-03,C\n'+
+                  'RB,4,9,Loose nodule,,W,12.0,10.0,2026-04-04,C\n'+
+                  'RB,5,1,Odd lump,ZQ,P,8.0,7.0,2026-04-05,C\n';
+                vault.specimen_archive:
+                  'site_code,specimen_no,layer_no,label_note,kind_code,grade_code,length_mm,width_mm,found_on,shelf_state\n'+
+                  'QS,21,1,Old trilobite,TR,W,60.0,25.0,2019-07-01,S\n'+
+                  'RB,22,1,Lost coral,CO,F,40.0,30.0,2018-05-01,L\n';
+              }#
+          ];
+          asserts:
+          [
+            registerRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Kind":"ARCHIVE","Site":"QS","No":21,"Type":"TRILOBITE","Label":"Old trilobite","Grade":"WEATHERED","Length":60.0,"SiteName":"Quarry Shelf"},{"Kind":"LIVE","Site":"QS","No":1,"Type":"TRILOBITE","Label":"Spiral cast","Grade":"PRISTINE","Length":120.0,"SiteName":"Quarry Shelf"},{"Kind":"LIVE","Site":"QS","No":2,"Type":"AMMONITE","Label":null,"Grade":"WEATHERED","Length":80.0,"SiteName":"Quarry Shelf"},{"Kind":"LIVE","Site":"QS","No":3,"Type":"CRINOID","Label":"Stem plate","Grade":"FRAGMENT","Length":15.5,"SiteName":"Quarry Shelf"},{"Kind":"LIVE","Site":"QS","No":4,"Type":"BRACHIOPOD","Label":"Hinge pair","Grade":"UNGRADED","Length":22.0,"SiteName":"Quarry Shelf"},{"Kind":"LIVE","Site":"RB","No":1,"Type":"GASTROPOD","Label":"Coil shell","Grade":"PRISTINE","Length":35.0,"SiteName":"Red Bluff"},{"Kind":"LIVE","Site":"RB","No":2,"Type":"CORAL","Label":"Branch colony","Grade":"WEATHERED","Length":210.0,"SiteName":"Red Bluff"},{"Kind":"LIVE","Site":"RB","No":3,"Type":"FERN","Label":"Frond print","Grade":"FRAGMENT","Length":95.0,"SiteName":"Red Bluff"},{"Kind":"LIVE","Site":"RB","No":4,"Type":"UNSORTED","Label":"Loose nodule","Grade":"WEATHERED","Length":12.0,"SiteName":null},{"Kind":"LIVE","Site":"RB","No":5,"Type":null,"Label":"Odd lump","Grade":"PRISTINE","Length":8.0,"SiteName":"Red Bluff"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,23 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A free-floating buoy that drifts on coastal currents while reporting telemetry.'} test::umberlighthouse::domain::DriftBuoy
+{
+  {meta::pure::profiles::doc.doc = 'Opaque hull identifier stamped on the buoy.'} hullCode: String[1];
+  {meta::pure::profiles::doc.doc = 'Remaining battery charge as a fraction between zero and one.'} batteryFraction: Decimal[1];
+  {meta::pure::profiles::doc.doc = 'Count of satellite fixes acquired in the last hour.'} fixCount: Integer[1];
+  {meta::pure::profiles::doc.doc = 'Firmware revision byte currently installed on the buoy.'} firmwareByte: Byte[1];
+  {meta::pure::profiles::doc.doc = 'Whether the buoy has drifted outside its permitted watch circle.'} adrift: Boolean[1];
+  {meta::pure::profiles::doc.doc = 'Day of the buoy last confirmed position.'} lastFixOn: StrictDate[1];
+}

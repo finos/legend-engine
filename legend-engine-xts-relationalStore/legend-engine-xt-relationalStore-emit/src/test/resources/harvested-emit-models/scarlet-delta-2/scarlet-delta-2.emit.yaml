@@ -1,0 +1,35 @@
+name: scarlet-delta-2
+title: "Scarlet Delta — Business-Temporal Allotment Tenancy Mapping"
+description: |
+  A municipal allotment-garden registry in which each plot tenancy is held for one growing
+  season and tracked along a business validity window. A business-temporal class carrying typed
+  scalar properties plus a to-one reference to a sibling warden class is bound to a milestoned
+  relational table through an explicit composite primary key and an explicit main-table alias,
+  while the warden properties are reached through a named store join. The mapping test resolves
+  the tenancies at a supplied business date so the prior-season tenancy that closed before it and
+  the next-season tenancy that opens after it are both milestoned out of range.
+modelSources:
+  model:
+    root: scarlet-delta-2
+    files:
+      - test/scarletdelta2/domain/AllotmentDomain.pure
+      - test/scarletdelta2/mapping/AllotmentRegistryMapping.pure
+      - test/scarletdelta2/store/AllotmentRegistryDB.pure
+features:
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - allotment-garden
+  - business-temporal
+  - composite-primary-key
+  - h2
+  - main-table-alias
+  - milestoning
+  - relational-join

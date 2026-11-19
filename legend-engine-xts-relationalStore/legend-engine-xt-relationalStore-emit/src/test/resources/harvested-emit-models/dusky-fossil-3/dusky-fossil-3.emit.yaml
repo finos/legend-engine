@@ -1,0 +1,48 @@
+name: dusky-fossil-3
+title: "Dusky Fossil 3 — Six Pre-Canned Condition-Report Slices Over One Extent"
+description: >-
+  A trail-side fossil condition-reporting corpus whose entire published surface is a family of
+  six single-execution services over one wide relational extent. Each service pins two to four
+  dimensions with a right-nested conjunction of equality tests - the survey kind, region,
+  stratum and grade are baked into the query while only one dimension arrives as a path
+  parameter - and then publishes an explicit column list in which four slices carry a literal
+  marker column naming the slice, so two services returning the same underlying row still
+  produce distinguishable output. Recorder codes and free-text notes are normalised in the
+  projection by trimming, case folding and truncation rather than in the mapping, and one of
+  the six slices is deliberately gated by leaving automatic update activation off while the
+  other five activate it.
+modelSources:
+  model:
+    root: dusky-fossil-3
+    files:
+      - test/duskyfossil3/connection/TrailH2Connection.pure
+      - test/duskyfossil3/domain/ConditionReport.pure
+      - test/duskyfossil3/mapping/TrailMapping.pure
+      - test/duskyfossil3/runtime/TrailRuntime.pure
+      - test/duskyfossil3/service/TrailSliceDigest.pure
+      - test/duskyfossil3/service/TrailSliceRegister.pure
+      - test/duskyfossil3/store/TrailDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - condition-report
+  - fossil
+  - h2
+  - literal-defaulted-projection
+  - pre-canned-slices
+  - service-test
+  - single-execution

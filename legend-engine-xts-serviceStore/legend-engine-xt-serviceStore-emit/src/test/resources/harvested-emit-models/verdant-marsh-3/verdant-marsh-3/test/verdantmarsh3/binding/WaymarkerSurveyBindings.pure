@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###ExternalFormat
+Binding test::verdantmarsh3::binding::WaymarkerDetailBinding
+{
+  contentType: 'application/json';
+  modelIncludes:
+  [
+    test::verdantmarsh3::domain::WaymarkerDetailResponse,
+    test::verdantmarsh3::domain::WaymarkerDetailResult,
+    test::verdantmarsh3::domain::WaymarkerLocation,
+    test::verdantmarsh3::domain::SurveyQuestion,
+    test::verdantmarsh3::domain::AnswerScale,
+    test::verdantmarsh3::domain::QuestionOption,
+    test::verdantmarsh3::domain::AnswerRevision,
+    test::verdantmarsh3::domain::ValidationNote,
+    test::verdantmarsh3::domain::EntryType,
+    test::verdantmarsh3::domain::EntryExpiration,
+    test::verdantmarsh3::domain::SurveyMetadata,
+    test::verdantmarsh3::domain::SurveyPage
+  ];
+}
+
+Binding test::verdantmarsh3::binding::SurveyDataBinding
+{
+  contentType: 'application/json';
+  modelIncludes:
+  [
+    test::verdantmarsh3::domain::RamblerSurveyResponse,
+    test::verdantmarsh3::domain::RamblerSurveyResult,
+    test::verdantmarsh3::domain::WardenSurveyResponse,
+    test::verdantmarsh3::domain::WardenSurveyResult,
+    test::verdantmarsh3::domain::VolunteerSurveyResponse,
+    test::verdantmarsh3::domain::VolunteerSurveyResult,
+    test::verdantmarsh3::domain::ContractorSurveyResponse,
+    test::verdantmarsh3::domain::ContractorSurveyResult,
+    test::verdantmarsh3::domain::SurveyQuestion,
+    test::verdantmarsh3::domain::AnswerScale,
+    test::verdantmarsh3::domain::QuestionOption,
+    test::verdantmarsh3::domain::AnswerRevision,
+    test::verdantmarsh3::domain::EntryExpiration,
+    test::verdantmarsh3::domain::SurveyMetadata,
+    test::verdantmarsh3::domain::SurveyPage
+  ];
+}

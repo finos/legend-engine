@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::azureestuary3::store::EstuaryDB
+(
+  Schema census
+  (
+    Table roost_sector
+    (
+      sector_id INTEGER PRIMARY KEY,
+      sector_code VARCHAR(16),
+      sector_name VARCHAR(128),
+      zone_id INTEGER,
+      shelter_code VARCHAR(8),
+      capacity_birds INTEGER,
+      mudflat_hectares INTEGER,
+      status_code VARCHAR(16),
+      grid_reference VARCHAR(24),
+      access_note VARCHAR(128)
+    )
+    Table tidal_zone
+    (
+      zone_id INTEGER PRIMARY KEY,
+      zone_code VARCHAR(16),
+      zone_name VARCHAR(128),
+      reserve_id INTEGER,
+      exposure_code VARCHAR(8)
+    )
+    Table reserve_area
+    (
+      reserve_id INTEGER PRIMARY KEY,
+      reserve_code VARCHAR(16),
+      reserve_name VARCHAR(128),
+      district_id INTEGER,
+      warden_code VARCHAR(16)
+    )
+    Table survey_district
+    (
+      district_id INTEGER PRIMARY KEY,
+      district_code VARCHAR(16),
+      district_name VARCHAR(128),
+      region_code VARCHAR(8)
+    )
+    Table coast_region
+    (
+      region_code VARCHAR(8) PRIMARY KEY,
+      region_name VARCHAR(128),
+      coast_side VARCHAR(16)
+    )
+    Table observer_team
+    (
+      observer_id INTEGER PRIMARY KEY,
+      observer_code VARCHAR(16),
+      observer_name VARCHAR(128),
+      grade_code VARCHAR(8),
+      ring_scheme_code VARCHAR(16),
+      last_visit_at TIMESTAMP
+    )
+    Table roost_count
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+
+      count_id INTEGER PRIMARY KEY,
+      sector_id INTEGER,
+      observer_id INTEGER,
+      tide_code VARCHAR(8),
+      bird_tally INTEGER,
+      wader_tally INTEGER,
+      note_text VARCHAR(256),
+      counted_on DATE,
+      condition_code VARCHAR(8),
+      drift_metres INTEGER,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+    View zone_peak_vw
+    (
+      ~groupBy (census.roost_sector.zone_id)
+      zone_id: census.roost_sector.zone_id PRIMARY KEY,
+      sector_count: count(census.roost_sector.sector_id),
+      max_capacity: max(census.roost_sector.capacity_birds),
+      capacity_spread: minus(max(census.roost_sector.capacity_birds), min(census.roost_sector.capacity_birds))
+    )
+    View zone_label_vw
+    (
+      zone_id: census.tidal_zone.zone_id PRIMARY KEY,
+      zone_code: census.tidal_zone.zone_code,
+      zone_label: concat('ZONE-', census.tidal_zone.zone_code)
+    )
+  )
+
+  Filter ActiveSector(census.roost_sector.status_code != 'closed')
+  Filter NamedRegion(census.coast_region.region_name != '')
+
+  Join Count_Sector(census.roost_count.sector_id = census.roost_sector.sector_id)
+  Join Count_Observer(census.roost_count.observer_id = abs(census.observer_team.observer_id))
+  Join Sector_Zone(census.roost_sector.zone_id = census.tidal_zone.zone_id and census.tidal_zone.exposure_code != 'XX')
+  Join Zone_Reserve(census.tidal_zone.reserve_id = census.reserve_area.reserve_id)
+  Join Reserve_District(census.reserve_area.district_id = census.survey_district.district_id)
+  Join District_Region(toUpper(census.survey_district.region_code) = census.coast_region.region_code)
+  Join Zone_Peak(census.tidal_zone.zone_id = census.zone_peak_vw.zone_id)
+  Join Zone_Label(census.tidal_zone.zone_id = census.zone_label_vw.zone_id)
+)

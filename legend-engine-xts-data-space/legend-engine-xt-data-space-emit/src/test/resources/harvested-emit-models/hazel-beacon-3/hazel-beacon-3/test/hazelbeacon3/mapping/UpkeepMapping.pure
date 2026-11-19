@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelbeacon3::mapping::UpkeepMapping
+(
+  *test::hazelbeacon3::domain::UpkeepCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::UpkeepDB]crew.crew_record.crew_code
+    )
+    ~mainTable [test::hazelbeacon3::store::UpkeepDB]crew.crew_record
+    crewCode: [test::hazelbeacon3::store::UpkeepDB]crew.crew_record.crew_code,
+    crewName: [test::hazelbeacon3::store::UpkeepDB]crew.crew_record.crew_name,
+    depotName: [test::hazelbeacon3::store::UpkeepDB]crew.crew_record.depot_name
+  }
+
+  *test::hazelbeacon3::domain::UpkeepOrder[order]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::UpkeepDB]work.work_order.order_ref
+    )
+    ~mainTable [test::hazelbeacon3::store::UpkeepDB]work.work_order
+    orderRef: [test::hazelbeacon3::store::UpkeepDB]work.work_order.order_ref,
+    beaconCode: [test::hazelbeacon3::store::UpkeepDB]work.work_order.beacon_code,
+    openedOn: [test::hazelbeacon3::store::UpkeepDB]work.work_order.opened_on,
+    closedOn: [test::hazelbeacon3::store::UpkeepDB]work.work_order.closed_on,
+    priorityBand: case(
+                    equal([test::hazelbeacon3::store::UpkeepDB]work.work_order.priority_code, 'P1'),
+                    'next-tide',
+                    case(
+                      equal([test::hazelbeacon3::store::UpkeepDB]work.work_order.priority_code, 'P2'),
+                      'this-week',
+                      case(
+                        equal([test::hazelbeacon3::store::UpkeepDB]work.work_order.priority_code, 'P3'),
+                        'next-refit',
+                        sqlNull()
+                      )
+                    )
+                  ),
+    crewName: [test::hazelbeacon3::store::UpkeepDB]@Order_Crew | [test::hazelbeacon3::store::UpkeepDB]crew.crew_record.crew_name,
+    depotName: [test::hazelbeacon3::store::UpkeepDB]@Order_Crew | [test::hazelbeacon3::store::UpkeepDB]crew.crew_record.depot_name
+  }
+
+  *test::hazelbeacon3::domain::PartUsage[usage]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelbeacon3::store::UpkeepDB]work.part_usage.usage_ref
+    )
+    ~mainTable [test::hazelbeacon3::store::UpkeepDB]work.part_usage
+    usageRef: [test::hazelbeacon3::store::UpkeepDB]work.part_usage.usage_ref,
+    partCode: [test::hazelbeacon3::store::UpkeepDB]work.part_usage.part_code,
+    quantity: [test::hazelbeacon3::store::UpkeepDB]work.part_usage.quantity,
+    orderBeaconCode: [test::hazelbeacon3::store::UpkeepDB]@Usage_Order | [test::hazelbeacon3::store::UpkeepDB]work.work_order.beacon_code
+  }
+
+  test::hazelbeacon3::domain::Crew_Orders: Relational
+  {
+    AssociationMapping
+    (
+      orders[crew, order]: [test::hazelbeacon3::store::UpkeepDB]@Order_Crew,
+      crew[order, crew]: [test::hazelbeacon3::store::UpkeepDB]@Order_Crew
+    )
+  }
+
+  test::hazelbeacon3::domain::Order_Usages: Relational
+  {
+    AssociationMapping
+    (
+      usages[order, usage]: [test::hazelbeacon3::store::UpkeepDB]@Usage_Order,
+      order[usage, order]: [test::hazelbeacon3::store::UpkeepDB]@Usage_Order
+    )
+  }
+
+  testSuites:
+  [
+    orderPriorityBandSuite:
+    {
+      function: |test::hazelbeacon3::domain::UpkeepOrder.all()->project(
+  [
+    o|$o.orderRef,
+    o|$o.priorityBand,
+    o|$o.crewName,
+    o|$o.depotName,
+    o|$o.usages.partCode
+  ],
+  [
+    'ORDER_REF',
+    'PRIORITY_BAND',
+    'CREW',
+    'DEPOT',
+    'PART_CODE'
+  ]
+)->sort(
+  [
+    asc('ORDER_REF'),
+    asc('PART_CODE')
+  ]
+);
+      tests:
+      [
+        priorityArmsCrewHopAndPartFanOut:
+        {
+          doc: 'Drives the three priority arms plus the unlisted priority code that falls to the sentinel, resolves the crew hop where the order whose crew key has no crew row keeps its own columns, and fans the order out over the parts drawn against it so the order with no part keeps an absent part code.';
+          data:
+          [
+            test::hazelbeacon3::store::UpkeepDB:
+              Relational
+              #{
+                crew.crew_record:
+                  'crew_code,crew_name,depot_name\n'+
+                  'CR-01,North Shore Crew,Hazel Point Depot\n'+
+                  'CR-02,Harbour Crew,Quay Head Depot\n';
+                work.work_order:
+                  'order_ref,beacon_code,crew_code,priority_code,opened_on,closed_on\n'+
+                  'WO-01,BC-01,CR-01,P1,2026-04-03,2026-04-05\n'+
+                  'WO-02,BC-02,CR-01,P2,2026-04-10,\n'+
+                  'WO-03,BC-07,CR-02,P3,2026-04-12,\n'+
+                  'WO-04,BC-09,CR-09,P9,2026-04-14,\n';
+                work.part_usage:
+                  'usage_ref,order_ref,part_code,quantity\n'+
+                  'PU-01,WO-01,lamp-unit,1\n'+
+                  'PU-02,WO-01,gasket-set,2\n'+
+                  'PU-03,WO-03,ladder-rung,4\n';
+              }#
+          ];
+          asserts:
+          [
+            bandedOrdersWithTheirCrewAndParts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ORDER_REF":"WO-01","PRIORITY_BAND":"next-tide","CREW":"North Shore Crew","DEPOT":"Hazel Point Depot","PART_CODE":"gasket-set"},{"ORDER_REF":"WO-01","PRIORITY_BAND":"next-tide","CREW":"North Shore Crew","DEPOT":"Hazel Point Depot","PART_CODE":"lamp-unit"},{"ORDER_REF":"WO-02","PRIORITY_BAND":"this-week","CREW":"North Shore Crew","DEPOT":"Hazel Point Depot","PART_CODE":null},{"ORDER_REF":"WO-03","PRIORITY_BAND":"next-refit","CREW":"Harbour Crew","DEPOT":"Quay Head Depot","PART_CODE":"ladder-rung"},{"ORDER_REF":"WO-04","PRIORITY_BAND":null,"CREW":null,"DEPOT":null,"PART_CODE":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

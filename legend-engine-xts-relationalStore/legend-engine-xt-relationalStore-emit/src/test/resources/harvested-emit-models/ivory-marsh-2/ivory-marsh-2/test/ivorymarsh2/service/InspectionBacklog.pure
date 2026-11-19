@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivorymarsh2::service::InspectionBacklog
+{
+  pattern: '/marsh/v1/inspections/backlog';
+  title: 'Wetland Boardwalk - Inspection backlog ordered by defect tally';
+  owners:
+  [
+    'wetland-boardwalk-desk',
+    'reserve-estate-eng'
+  ];
+  documentation: 'Single-execution service that keeps an inspection when its grade is in the requested collection or its defect tally passes a threshold, then reports the backlog ordered by defect tally and truncated to the page a work party is given.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {gradeCodes: String[*], defectThreshold: Integer[1], pageSize: Integer[1]|test::ivorymarsh2::domain::SectionInspection.all()->filter(
+      i|($i.gradeCode->in($gradeCodes)) || (($i.defectCount > $defectThreshold) && (($i.sectionCode != 'UNSET') && ($i.defectCount >= 0)))
+    )->project(
+      [
+        col(i|$i.inspectionCode, 'Inspection'),
+        col(i|$i.sectionCode->toUpper(), 'Section'),
+        col(i|$i.defectCount, 'Defects'),
+        col(i|$i.gradeCode, 'Grade')
+      ]
+    )->sort(
+      [
+        desc('Defects'),
+        asc('Inspection')
+      ]
+    )->limit($pageSize)};
+    mapping: test::ivorymarsh2::mapping::MarshMapping;
+    runtime: test::ivorymarsh2::runtime::MarshTestRuntime;
+  }
+  testSuites:
+  [
+    backlogSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+              wetland.section_inspection:
+                'inspection_id,inspection_code,section_code,inspected_on,defect_count,grade_code\n'+
+                '1,IN-01,SC-01,2026-02-01,6,AMBER\n'+
+                '2,IN-02,SC-01,2026-03-01,2,GREEN\n'+
+                '3,IN-03,SC-02,2026-03-05,0,GREEN\n'+
+                '4,IN-04,SC-03,2026-03-09,11,RED\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        gradedOrDefectiveInspections:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gradeCodes = ['AMBER', 'RED'],
+            defectThreshold = 5,
+            pageSize = 3
+          ]
+          asserts:
+          [
+            cleanInspectionsAreOmitted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":"IN-04","Section":"SC-03","Defects":11,"Grade":"RED"},{"Inspection":"IN-01","Section":"SC-01","Defects":6,"Grade":"AMBER"}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyGradeCollectionFallsBackToTheThreshold:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gradeCodes = [],
+            defectThreshold = 1,
+            pageSize = 3
+          ]
+          asserts:
+          [
+            thresholdAloneSelectsTheBacklog:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":"IN-04","Section":"SC-03","Defects":11,"Grade":"RED"},{"Inspection":"IN-01","Section":"SC-01","Defects":6,"Grade":"AMBER"},{"Inspection":"IN-02","Section":"SC-01","Defects":2,"Grade":"GREEN"}]';
+                  }#;
+              }#
+          ]
+        },
+        pageSizeTruncatesTheBacklog:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            gradeCodes = [],
+            defectThreshold = 1,
+            pageSize = 1
+          ]
+          asserts:
+          [
+            onlyTheWorstInspectionIsPaged:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Inspection":"IN-04","Section":"SC-03","Defects":11,"Grade":"RED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

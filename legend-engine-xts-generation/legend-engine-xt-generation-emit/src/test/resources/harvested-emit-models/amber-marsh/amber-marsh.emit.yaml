@@ -1,0 +1,36 @@
+name: amber-marsh
+title: "Marsh Reserve Ringing Records — Constrained Record Hierarchy with a JSON-Schema Generation Pipeline"
+description: |
+  A wetland reserve catalogue whose ringed-bird and vegetation-quadrat records
+  specialise one catalogued-record supertype and carry eleven declared
+  constraints: closed-vocabulary membership tests over the plumage, age, habitat,
+  ring-size, capture-method, stand and condition codes, a nested rule matching the
+  upper-cased record-code prefix against a habitat set, a to-many rule over the
+  handler roles and two arithmetic range rules. A JSON-schema file generation is
+  scoped over the session digest class and ordered by a generation specification
+  so the artifact is produced as one runnable batch.
+modelSources:
+  model:
+    root: amber-marsh
+    files:
+      - test/ambermarsh/domain/MarshDomain.pure
+      - test/ambermarsh/generation/MarshGenerationSpecification.pure
+      - test/ambermarsh/generation/SessionDigestSchema.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:class-inheritance
+  - grammar:constraint
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - collection-op
+  - constraint
+  - file-generation
+  - generation-specification
+  - json-schema
+  - marsh
+  - ringing
+  - wetland

@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coppertundra3::mapping::CensusMapping
+(
+  *test::coppertundra3::domain::EnclosureCensus[census]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.census_id
+    )
+    ~mainTable [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census
+    enclosureCode: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.enclosure_code,
+    censusStatus: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.census_status,
+    habitatTier: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.habitat_tier,
+    zoneName: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.zone_name,
+    zoneDescription: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.zone_description,
+    sectorName: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.sector_name,
+    sectorDescription: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.sector_description,
+    reserveName: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.reserve_name,
+    reserveDescription: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.reserve_description,
+    keeperTeam: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.keeper_team,
+    stewardName: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.steward_name,
+    surveyMethod: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.survey_method,
+    accessLevel: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.access_level,
+    substrateClass: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.substrate_class,
+    regionCode: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.region_code,
+    observedOn: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.observed_on,
+    certifiedThrough: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.certified_through,
+    patrolDays: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.patrol_days,
+    dayCount: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.day_count,
+    fencedFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.fenced_flag,
+    shadedFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.shaded_flag,
+    wateredFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.watered_flag,
+    signedFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.signed_flag,
+    gatedFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.gated_flag,
+    pavedFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.paved_flag,
+    lockedFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.locked_flag,
+    mappedFlag: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.mapped_flag,
+    headcount: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.headcount,
+    forageKg: [test::coppertundra3::store::CensusDatabase]reserve.enclosure_census.forage_kg
+  }
+)

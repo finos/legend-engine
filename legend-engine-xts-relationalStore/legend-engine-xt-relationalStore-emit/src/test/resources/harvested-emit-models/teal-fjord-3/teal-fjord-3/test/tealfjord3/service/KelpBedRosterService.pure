@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealfjord3::service::KelpBedRosterService
+{
+  pattern: '/tealfjord3/kelpBedRoster/{observedOn}';
+  title: 'Fjord Shoreline - Recently Walked Kelp Bed Roster As Of A Date';
+  owners:
+  [
+    'shoreline-survey-desk',
+    'kelp-watch-eng'
+  ];
+  documentation: 'Opens the kelp bed extent as of the requested date, keeps the beds walked since the rolling survey horizon, and projects the bed code beside a derived programme label and the recorder who last walked it.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {observedOn: StrictDate[1], currentDate: StrictDate[1]|test::tealfjord3::domain::KelpBed.all($observedOn)->filter(
+      b|$b.lastSurveyOn >= test::tealfjord3::function::surveyHorizon($currentDate->adjust(-3650, meta::pure::functions::date::DurationUnit.DAYS)->cast(@StrictDate))
+    )->project(
+      [
+        b|$b.bedCode,
+        b|$b.programCode,
+        b|$b.recorder.recorderCode,
+        b|$b.bedCode->toUpper()
+      ],
+      [
+        'Bed',
+        'Programme',
+        'Recorder',
+        'Bed Label'
+      ]
+    )->distinct()->sort([asc('Bed')])};
+    mapping: test::tealfjord3::mapping::KelpMapping;
+    runtime: test::tealfjord3::runtime::KelpRuntime;
+  }
+  testSuites:
+  [
+    kelpBedRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kelpH2Connection:
+            Relational
+            #{
+              kelp.kelp_bed:
+                'bed_id,bed_code,canopy_area,last_survey_on,recorder_id,from_z,thru_z\n'+
+                '1,BED-A,42,2026-03-02,100,2026-01-01,9999-12-31\n'+
+                '2,BED-B,17,2005-04-19,200,2026-01-01,9999-12-31\n'+
+                '3,BED-C,23,2026-05-11,,2026-01-01,9999-12-31\n'+
+                '4,BED-D,31,2026-02-08,100,2015-01-01,2026-01-01\n';
+
+              kelp.survey_recorder:
+                'recorder_id,recorder_code,permit_tag\n'+
+                '100,REC-A,permit-north\n'+
+                '200,REC-B,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bedsWalkedSinceTheHorizon:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2026-06-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            staleAndRetiredBedsAreLeftOut:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Bed":"BED-A","Programme":"FJORD-KELP-BED-A","Recorder":"REC-A","Bed Label":"BED-A"}, {"Bed":"BED-C","Programme":"FJORD-KELP-BED-C","Recorder":null,"Bed Label":"BED-C"}]';
+                  }#;
+              }#
+          ]
+        },
+        dateBeforeEveryBedWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2011-06-01,
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            noBedStandsAtThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

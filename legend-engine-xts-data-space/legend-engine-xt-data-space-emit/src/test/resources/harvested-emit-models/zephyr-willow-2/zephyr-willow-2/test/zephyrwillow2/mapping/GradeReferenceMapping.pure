@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrwillow2::mapping::GradeReferenceMapping
+(
+  *test::zephyrwillow2::domain::MaterialGrade[materialGrade]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::GradeReferenceDB]reference.material_grade.grade_code
+    )
+    ~mainTable [test::zephyrwillow2::store::GradeReferenceDB]reference.material_grade
+    gradeCode: rtrim([test::zephyrwillow2::store::GradeReferenceDB]reference.material_grade.grade_code),
+    gradeName: [test::zephyrwillow2::store::GradeReferenceDB]reference.material_grade.grade_name,
+    recyclableFlag: [test::zephyrwillow2::store::GradeReferenceDB]reference.material_grade.recyclable_flag
+  }
+
+  *test::zephyrwillow2::domain::ServiceTier[serviceTier]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrwillow2::store::GradeReferenceDB]reference.service_tier.tier_code
+    )
+    ~mainTable [test::zephyrwillow2::store::GradeReferenceDB]reference.service_tier
+    tierCode: [test::zephyrwillow2::store::GradeReferenceDB]reference.service_tier.tier_code,
+    tierName: [test::zephyrwillow2::store::GradeReferenceDB]reference.service_tier.tier_name,
+    visitsPerMonth: [test::zephyrwillow2::store::GradeReferenceDB]reference.service_tier.visits_per_month
+  }
+)

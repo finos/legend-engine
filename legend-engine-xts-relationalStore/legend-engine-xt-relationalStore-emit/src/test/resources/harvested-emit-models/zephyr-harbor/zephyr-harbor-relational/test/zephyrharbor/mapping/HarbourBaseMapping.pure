@@ -1,0 +1,344 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::zephyrharbor::mapping::HarbourBaseMapping
+(
+  *test::zephyrharbor::domain::BuoyStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrharbor::store::HarbourDB]tide.buoy_station.station_id
+    )
+    ~mainTable [test::zephyrharbor::store::HarbourDB]tide.buoy_station
+    stationId: [test::zephyrharbor::store::HarbourDB]tide.buoy_station.station_id,
+    stationName: [test::zephyrharbor::store::HarbourDB]tide.buoy_station.station_name,
+    depthMetres: [test::zephyrharbor::store::HarbourDB]tide.buoy_station.depth_metres,
+    shelterNote: [test::zephyrharbor::store::HarbourDB]tide.buoy_station.shelter_note,
+    zoneLabel: [test::zephyrharbor::store::HarbourDB]@station_zone_join | [test::zephyrharbor::store::HarbourDB]shoreline.zone_reference.zone_label,
+    surveyTally: [test::zephyrharbor::store::HarbourDB]@station_summary_join | [test::zephyrharbor::store::HarbourDB]tide.station_cover_summary.survey_tally,
+    crewName: [test::zephyrharbor::store::HarbourDB]@station_survey_join > @survey_diver_join > @diver_crew_join | [test::zephyrharbor::store::HarbourDB]tide.crew_roster.crew_name,
+    crewBaseZoneLabel: [test::zephyrharbor::store::HarbourDB]@station_survey_join > @survey_diver_join > @diver_crew_join > @crew_zone_join | [test::zephyrharbor::store::HarbourDB]shoreline.zone_reference.zone_label,
+    coverBand: case(
+                 isNull(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct
+                 ),
+                 'UNSURVEYED',
+                 case(
+                 greaterThan(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+                   90.0
+                 ),
+                 'CANOPY_CLOSED',
+                 case(
+                 greaterThan(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+                   75.0
+                 ),
+                 'CANOPY_DENSE',
+                 case(
+                 greaterThan(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+                   60.0
+                 ),
+                 'CANOPY_BROKEN',
+                 case(
+                 greaterThan(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+                   45.0
+                 ),
+                 'BED_PATCHY',
+                 case(
+                 greaterThan(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+                   30.0
+                 ),
+                 'BED_SPARSE',
+                 case(
+                 greaterThan(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+                   15.0
+                 ),
+                 'BED_THIN',
+                 case(
+                 greaterThan(
+                   [test::zephyrharbor::store::HarbourDB]@station_survey_join | [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+                   5.0
+                 ),
+                 'BED_TRACE',
+                 'BED_BARE'
+               )
+               )
+               )
+               )
+               )
+               )
+               )
+               ),
+    mooring
+    (
+      mooringKind: EnumerationMapping MooringKindMap: toUpper(concat([test::zephyrharbor::store::HarbourDB]tide.buoy_station.mooring_code, '')),
+      berthLabel: concat([test::zephyrharbor::store::HarbourDB]tide.buoy_station.berth_label, '')
+    )
+  }
+
+  *test::zephyrharbor::domain::DiveSurvey[survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrharbor::store::HarbourDB]tide.dive_survey.survey_id
+    )
+    ~mainTable [test::zephyrharbor::store::HarbourDB]tide.dive_survey
+    surveyId: [test::zephyrharbor::store::HarbourDB]tide.dive_survey.survey_id,
+    kelpCoverPct: [test::zephyrharbor::store::HarbourDB]tide.dive_survey.kelp_cover_pct,
+    visibilityMetres: [test::zephyrharbor::store::HarbourDB]tide.dive_survey.visibility_metres,
+    grade: EnumerationMapping SurveyGradeMap: toUpper([test::zephyrharbor::store::HarbourDB]tide.dive_survey.survey_grade),
+    crew
+    (
+      crewId: [test::zephyrharbor::store::HarbourDB]@survey_diver_join > @diver_crew_join | [test::zephyrharbor::store::HarbourDB]tide.crew_roster.crew_id,
+      crewName: [test::zephyrharbor::store::HarbourDB]@survey_diver_join > @diver_crew_join | [test::zephyrharbor::store::HarbourDB]tide.crew_roster.crew_name
+    ) Otherwise ( [crewSet]: [test::zephyrharbor::store::HarbourDB]@survey_diver_join > @diver_crew_join )
+  }
+
+  test::zephyrharbor::domain::SurveyCrew[crewSet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrharbor::store::HarbourDB]tide.crew_roster.crew_id
+    )
+    ~mainTable [test::zephyrharbor::store::HarbourDB]tide.crew_roster
+    crewId: [test::zephyrharbor::store::HarbourDB]tide.crew_roster.crew_id,
+    crewName: [test::zephyrharbor::store::HarbourDB]tide.crew_roster.crew_name
+  }
+
+  *test::zephyrharbor::domain::Diver[diver]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrharbor::store::HarbourDB]tide.diver_log.diver_id
+    )
+    ~mainTable [test::zephyrharbor::store::HarbourDB]tide.diver_log
+    diverId: [test::zephyrharbor::store::HarbourDB]tide.diver_log.diver_id,
+    diverName: [test::zephyrharbor::store::HarbourDB]tide.diver_log.diver_name,
+    tier: EnumerationMapping DiverTierMap: concat([test::zephyrharbor::store::HarbourDB]tide.diver_log.tier_code, '')
+  }
+
+  *test::zephyrharbor::domain::HarbourZone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::zephyrharbor::store::HarbourDB]shoreline.zone_reference.zone_id
+    )
+    ~mainTable [test::zephyrharbor::store::HarbourDB]shoreline.zone_reference
+    zoneId: [test::zephyrharbor::store::HarbourDB]shoreline.zone_reference.zone_id,
+    zoneLabel: [test::zephyrharbor::store::HarbourDB]shoreline.zone_reference.zone_label,
+    shelterGrade: EnumerationMapping ShelterGradeMap: toUpper([test::zephyrharbor::store::HarbourDB]shoreline.zone_reference.shelter_code)
+  }
+
+  test::zephyrharbor::domain::MooringKind: EnumerationMapping MooringKindMap
+  {
+    FIXED_PILE: ['PILE/FIXED'],
+    SWING_MOORING: ['SWING/MOORED'],
+    FLOATING_PONTOON: ['PONTOON/FLOAT']
+  }
+
+  test::zephyrharbor::domain::SurveyGrade: EnumerationMapping SurveyGradeMap
+  {
+    ACCEPTED: ['ACCEPTED'],
+    REPEAT: ['REPEAT']
+  }
+
+  test::zephyrharbor::domain::DiverTier: EnumerationMapping DiverTierMap
+  {
+    LEAD: ['LEAD'],
+    ASSIST: ['ASSIST']
+  }
+
+  test::zephyrharbor::domain::ShelterGrade: EnumerationMapping ShelterGradeMap
+  {
+    SHELTERED: ['SHELTERED'],
+    EXPOSED: ['EXPOSED']
+  }
+
+  test::zephyrharbor::domain::StationSurveys: Relational
+  {
+    AssociationMapping
+    (
+      surveys[station, survey]: [test::zephyrharbor::store::HarbourDB]@station_survey_join,
+      station[survey, station]: [test::zephyrharbor::store::HarbourDB]@station_survey_join
+    )
+  }
+
+  test::zephyrharbor::domain::SurveyDivers: Relational
+  {
+    AssociationMapping
+    (
+      diver[survey, diver]: [test::zephyrharbor::store::HarbourDB]@survey_diver_join,
+      survey[diver, survey]: [test::zephyrharbor::store::HarbourDB]@survey_diver_join
+    )
+  }
+
+  testSuites:
+  [
+    stationSuite:
+    {
+      function: |test::zephyrharbor::domain::BuoyStation.all()->project(
+        [
+          s|$s.stationId,
+          s|$s.coverBand,
+          s|$s.mooring.berthLabel,
+          s|$s.mooring.mooringKind,
+          s|$s.zoneLabel,
+          s|$s.surveyTally,
+          s|$s.crewName
+        ],
+        [
+          'StationId',
+          'CoverBand',
+          'BerthLabel',
+          'MooringKind',
+          'ZoneLabel',
+          'SurveyTally',
+          'CrewName'
+        ]
+      )->sort([asc('StationId')]);
+      tests:
+      [
+        coverBandLadder:
+        {
+          doc: 'One driver row per conditional arm of the cover-band ladder, a station with no survey at all so the outer-join miss and the null arm are observable, a station whose three-hop crew path is fully populated, and a station whose mooring source value is outside the enumeration mapping.';
+          data:
+          [
+            test::zephyrharbor::store::HarbourDB:
+              Relational
+              #{
+                tide.buoy_station:
+                  'station_id,station_name,mooring_code,berth_label,depth_metres,shelter_note,zone_id\n'+
+                  'ST-01,North Pile Buoy,PILE/FIXED,BERTH-A1,6.5,clear of the channel,Z1\n'+
+                  'ST-02,Kelp Gate Buoy,SWING/MOORED,BERTH-A2,5,,Z1\n'+
+                  'ST-03,Outer Reef Buoy,PONTOON/FLOAT,BERTH-B1,9.25,swell exposed,Z2\n'+
+                  'ST-04,Shingle Spit Buoy,PILE/FIXED,BERTH-B2,4.75,,Z2\n'+
+                  'ST-05,Tern Shoal Buoy,SWING/MOORED,BERTH-C1,7,seasonal weed,Z3\n'+
+                  'ST-06,Slipway Buoy,PONTOON/FLOAT,BERTH-C2,3.5,,Z3\n'+
+                  'ST-07,Rope Walk Buoy,PILE/FIXED,BERTH-D1,8,,Z1\n'+
+                  'ST-08,Quarry Edge Buoy,SWING/MOORED,BERTH-D2,11.5,scoured bed,Z2\n'+
+                  'ST-09,Fog Bell Buoy,PONTOON/FLOAT,BERTH-E1,6,,Z3\n'+
+                  'ST-10,Crew Landing Buoy,PILE/FIXED,BERTH-E2,5.5,crew boarding point,Z1\n'+
+                  'ST-11,Drift Marker Buoy,ZZ/NONE,BERTH-F1,4,,Z2\n';
+
+                tide.dive_survey:
+                  'survey_id,station_id,kelp_cover_pct,visibility_metres,diver_id,survey_grade\n'+
+                  'SV-01,ST-01,95,7.5,,ACCEPTED\n'+
+                  'SV-02,ST-02,80,6,,ACCEPTED\n'+
+                  'SV-03,ST-03,65,5.5,,REPEAT\n'+
+                  'SV-04,ST-04,50,4.5,,ACCEPTED\n'+
+                  'SV-05,ST-05,35,4,,ACCEPTED\n'+
+                  'SV-06,ST-06,20,3.5,,REPEAT\n'+
+                  'SV-07,ST-07,10,3,,ACCEPTED\n'+
+                  'SV-08,ST-08,2,2.5,,ACCEPTED\n'+
+                  'SV-10,ST-10,55,5,DV-01,ACCEPTED\n'+
+                  'SV-11,ST-11,55,5,,ACCEPTED\n';
+
+                tide.diver_log:
+                  'diver_id,diver_name,crew_id,tier_code\n'+
+                  'DV-01,Ines Halvard,CR-01,LEAD\n'+
+                  'DV-02,Bo Kestrel,CR-02,ASSIST\n';
+
+                tide.crew_roster:
+                  'crew_id,crew_name,base_zone\n'+
+                  'CR-01,Kelp Line Team,Z1\n'+
+                  'CR-02,Shingle Team,Z2\n';
+
+                shoreline.zone_reference:
+                  'zone_id,zone_label,shelter_code\n'+
+                  'Z1,Inner Basin,SHELTERED\n'+
+                  'Z2,Outer Approach,EXPOSED\n'+
+                  'Z3,Weed Channel,SHELTERED\n';
+              }#
+          ];
+          asserts:
+          [
+            ladderRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationId":"ST-01","CoverBand":"CANOPY_CLOSED","BerthLabel":"BERTH-A1","MooringKind":"FIXED_PILE","ZoneLabel":"Inner Basin","SurveyTally":1,"CrewName":null},{"StationId":"ST-02","CoverBand":"CANOPY_DENSE","BerthLabel":"BERTH-A2","MooringKind":"SWING_MOORING","ZoneLabel":"Inner Basin","SurveyTally":1,"CrewName":null},{"StationId":"ST-03","CoverBand":"CANOPY_BROKEN","BerthLabel":"BERTH-B1","MooringKind":"FLOATING_PONTOON","ZoneLabel":"Outer Approach","SurveyTally":1,"CrewName":null},{"StationId":"ST-04","CoverBand":"BED_PATCHY","BerthLabel":"BERTH-B2","MooringKind":"FIXED_PILE","ZoneLabel":"Outer Approach","SurveyTally":1,"CrewName":null},{"StationId":"ST-05","CoverBand":"BED_SPARSE","BerthLabel":"BERTH-C1","MooringKind":"SWING_MOORING","ZoneLabel":"Weed Channel","SurveyTally":1,"CrewName":null},{"StationId":"ST-06","CoverBand":"BED_THIN","BerthLabel":"BERTH-C2","MooringKind":"FLOATING_PONTOON","ZoneLabel":"Weed Channel","SurveyTally":1,"CrewName":null},{"StationId":"ST-07","CoverBand":"BED_TRACE","BerthLabel":"BERTH-D1","MooringKind":"FIXED_PILE","ZoneLabel":"Inner Basin","SurveyTally":1,"CrewName":null},{"StationId":"ST-08","CoverBand":"BED_BARE","BerthLabel":"BERTH-D2","MooringKind":"SWING_MOORING","ZoneLabel":"Outer Approach","SurveyTally":1,"CrewName":null},{"StationId":"ST-09","CoverBand":"UNSURVEYED","BerthLabel":"BERTH-E1","MooringKind":"FLOATING_PONTOON","ZoneLabel":"Weed Channel","SurveyTally":null,"CrewName":null},{"StationId":"ST-10","CoverBand":"BED_PATCHY","BerthLabel":"BERTH-E2","MooringKind":"FIXED_PILE","ZoneLabel":"Inner Basin","SurveyTally":1,"CrewName":"Kelp Line Team"},{"StationId":"ST-11","CoverBand":"BED_PATCHY","BerthLabel":"BERTH-F1","MooringKind":null,"ZoneLabel":"Outer Approach","SurveyTally":1,"CrewName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    surveySuite:
+    {
+      function: |test::zephyrharbor::domain::DiveSurvey.all()->project(
+        [
+          d|$d.surveyId,
+          d|$d.grade,
+          d|$d.crew.crewName
+        ],
+        [
+          'SurveyId',
+          'Grade',
+          'CrewName'
+        ]
+      )->sort([asc('SurveyId')]);
+      tests:
+      [
+        gradeAndCrew:
+        {
+          doc: 'Resolves the enumeration-mapped grade for both mapped source values and reads the crew through the otherwise-embedded property, including a survey with no diver so the embedded key is absent.';
+          data:
+          [
+            test::zephyrharbor::store::HarbourDB:
+              Relational
+              #{
+                tide.dive_survey:
+                  'survey_id,station_id,kelp_cover_pct,visibility_metres,diver_id,survey_grade\n'+
+                  'SV-01,ST-01,95,7.5,DV-01,ACCEPTED\n'+
+                  'SV-03,ST-03,65,5.5,DV-02,REPEAT\n'+
+                  'SV-08,ST-08,2,2.5,,ACCEPTED\n';
+
+                tide.diver_log:
+                  'diver_id,diver_name,crew_id,tier_code\n'+
+                  'DV-01,Ines Halvard,CR-01,LEAD\n'+
+                  'DV-02,Bo Kestrel,CR-02,ASSIST\n';
+
+                tide.crew_roster:
+                  'crew_id,crew_name,base_zone\n'+
+                  'CR-01,Kelp Line Team,Z1\n'+
+                  'CR-02,Shingle Team,Z2\n';
+              }#
+          ];
+          asserts:
+          [
+            gradeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SurveyId":"SV-01","Grade":"ACCEPTED","CrewName":"Kelp Line Team"},{"SurveyId":"SV-03","Grade":"REPEAT","CrewName":"Shingle Team"},{"SurveyId":"SV-08","Grade":"ACCEPTED","CrewName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

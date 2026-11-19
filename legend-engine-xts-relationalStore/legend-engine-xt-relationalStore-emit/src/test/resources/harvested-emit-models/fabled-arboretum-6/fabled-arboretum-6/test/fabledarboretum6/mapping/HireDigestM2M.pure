@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::fabledarboretum6::mapping::HireDigestM2M
+(
+  test::fabledarboretum6::domain::MountKind: EnumerationMapping DeskMountMapping
+  {
+    EQUATORIAL: ['EQ'],
+    DOBSONIAN: ['DB'],
+    ALTAZIMUTH: ['AZ'],
+    ROBOTIC: ['RB']
+  }
+
+  *test::fabledarboretum6::domain::HireDigest[hireDigest]: Pure
+  {
+    ~src test::fabledarboretum6::domain::HireRequestPayload
+    requestRef: $src.requestRef->toOne(),
+    memberLabel: 'M' + $src.revision->toOne()->toString() + '-' + $src.entry.memberCode->toOne()->toUpper()->trim(),
+    nightBand: if($src.entry.nightsAsked->isEmpty(),
+                  | 'NIGHTS-NONE',
+                  | if($src.entry.nightsAsked->toOne() >= 21,
+                       | 'NIGHTS-7',
+                       | if($src.entry.nightsAsked->toOne() >= 14,
+                            | 'NIGHTS-6',
+                            | if($src.entry.nightsAsked->toOne() >= 10,
+                                 | 'NIGHTS-5',
+                                 | if($src.entry.nightsAsked->toOne() >= 7,
+                                      | 'NIGHTS-4',
+                                      | if($src.entry.nightsAsked->toOne() >= 4,
+                                           | 'NIGHTS-3',
+                                           | if($src.entry.nightsAsked->toOne() >= 2,
+                                                | 'NIGHTS-2',
+                                                | 'NIGHTS-1'))))))),
+    mountKind: EnumerationMapping DeskMountMapping: [if($src.entry.mountCode->isEmpty(), | 'AZ', | $src.entry.mountCode->toOne()->toUpper()->trim())]->toOne(),
+    deskLabel: if($src.entry.desk.deskName->isEmpty(),
+                  | 'DESK UNSTAFFED',
+                  | $src.entry.desk.deskName->toOne()->toUpper() + ' / ' + if($src.entry.desk.wardenCode->isEmpty(), | 'NO WARDEN', | $src.entry.desk.wardenCode->toOne()->toUpper()->trim()))
+  }
+
+  testSuites:
+  [
+    nightBandSuite:
+    {
+      function: |test::fabledarboretum6::domain::HireDigest.all()->graphFetch(
+        #{
+          test::fabledarboretum6::domain::HireDigest
+          {
+            requestRef,
+            memberLabel,
+            nightBand,
+            mountKind,
+            deskLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::fabledarboretum6::domain::HireDigest
+          {
+            requestRef,
+            memberLabel,
+            nightBand,
+            mountKind,
+            deskLabel
+          }
+        }#
+      );
+      tests:
+      [
+        everyNightBandAndBothDeskFallbacks:
+        {
+          doc: 'Every requested-night band is claimed by one lending-desk document, the request that names no night count falls through to the no-band label, the request taken without a named desk falls through to the unstaffed desk label, the request whose warden initials were never entered still carries its desk, and the request that names no mount reads the substituted sentinel before the enumeration lookup.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::fabledarboretum6::domain::HireRequestPayload:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"requestRef":"LR-01","revision":2,"entry":{"memberCode":"mb-1","nightsAsked":24,"mountCode":"eq","desk":{"deskName":"Front Desk","wardenCode":"wd-1"}}},{"requestRef":"LR-02","revision":3,"entry":{"memberCode":"mb-2","nightsAsked":16,"mountCode":"db","desk":{"deskName":"Front Desk","wardenCode":"wd-2"}}},{"requestRef":"LR-03","revision":4,"entry":{"memberCode":"mb-3","nightsAsked":11,"mountCode":"az","desk":{"deskName":"Side Desk","wardenCode":"wd-3"}}},{"requestRef":"LR-04","revision":5,"entry":{"memberCode":"mb-4","nightsAsked":8,"mountCode":"rb","desk":{"deskName":"Side Desk","wardenCode":"wd-4"}}},{"requestRef":"LR-05","revision":6,"entry":{"memberCode":"mb-5","nightsAsked":5,"mountCode":"eq","desk":{"deskName":"Night Desk","wardenCode":"wd-5"}}},{"requestRef":"LR-06","revision":7,"entry":{"memberCode":"mb-6","nightsAsked":3,"mountCode":"db","desk":{"deskName":"Night Desk","wardenCode":"wd-6"}}},{"requestRef":"LR-07","revision":8,"entry":{"memberCode":"mb-7","nightsAsked":1,"mountCode":"az","desk":{"deskName":"Night Desk"}}},{"requestRef":"LR-08","revision":9,"entry":{"memberCode":"mb-8","mountCode":"rb","desk":{"deskName":"Front Desk","wardenCode":"wd-8"}}},{"requestRef":"LR-09","revision":10,"entry":{"memberCode":"mb-9","nightsAsked":6,"desk":{"deskName":"Front Desk","wardenCode":"wd-9"}}},{"requestRef":"LR-10","revision":11,"entry":{"memberCode":"mb-10","nightsAsked":13,"mountCode":"eq"}}]';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            bandedDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"requestRef":"LR-01","memberLabel":"M2-MB-1","nightBand":"NIGHTS-7","mountKind":"EQUATORIAL","deskLabel":"FRONT DESK / WD-1"},{"requestRef":"LR-02","memberLabel":"M3-MB-2","nightBand":"NIGHTS-6","mountKind":"DOBSONIAN","deskLabel":"FRONT DESK / WD-2"},{"requestRef":"LR-03","memberLabel":"M4-MB-3","nightBand":"NIGHTS-5","mountKind":"ALTAZIMUTH","deskLabel":"SIDE DESK / WD-3"},{"requestRef":"LR-04","memberLabel":"M5-MB-4","nightBand":"NIGHTS-4","mountKind":"ROBOTIC","deskLabel":"SIDE DESK / WD-4"},{"requestRef":"LR-05","memberLabel":"M6-MB-5","nightBand":"NIGHTS-3","mountKind":"EQUATORIAL","deskLabel":"NIGHT DESK / WD-5"},{"requestRef":"LR-06","memberLabel":"M7-MB-6","nightBand":"NIGHTS-2","mountKind":"DOBSONIAN","deskLabel":"NIGHT DESK / WD-6"},{"requestRef":"LR-07","memberLabel":"M8-MB-7","nightBand":"NIGHTS-1","mountKind":"ALTAZIMUTH","deskLabel":"NIGHT DESK / NO WARDEN"},{"requestRef":"LR-08","memberLabel":"M9-MB-8","nightBand":"NIGHTS-NONE","mountKind":"ROBOTIC","deskLabel":"FRONT DESK / WD-8"},{"requestRef":"LR-09","memberLabel":"M10-MB-9","nightBand":"NIGHTS-3","mountKind":"ALTAZIMUTH","deskLabel":"FRONT DESK / WD-9"},{"requestRef":"LR-10","memberLabel":"M11-MB-10","nightBand":"NIGHTS-5","mountKind":"EQUATORIAL","deskLabel":"DESK UNSTAFFED"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

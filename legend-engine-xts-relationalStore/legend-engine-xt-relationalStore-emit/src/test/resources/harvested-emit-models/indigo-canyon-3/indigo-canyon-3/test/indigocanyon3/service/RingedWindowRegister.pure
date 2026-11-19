@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigocanyon3::service::RingedWindowRegister
+{
+  pattern: '/indigocanyon3/ringing/station-window';
+  title: 'Ringing Records Inside The Rolling Station Window';
+  owners:
+  [
+    'wetland-ringing-registry'
+  ];
+  documentation: 'Publishes the deduplicated ringing register for the surveyed wetland stations. The half-open window bounds are derived by shifting a reference date rather than supplied by the caller, and each record is compared on its submission date, one week after ringing.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::indigocanyon3::domain::RingingRecord.all()->project(
+      [
+        r|$r.recordCode,
+        r|$r.stationName,
+        r|$r.schemeCode,
+        r|$r.speciesGroup,
+        r|$r.ringedOn,
+        r|$r.broodSize,
+        r|$r.registerLabel
+      ],
+      [
+        'Record',
+        'Station',
+        'Scheme',
+        'Species',
+        'Ringed',
+        'BroodSize',
+        'Register'
+      ]
+    )->filter(
+      r|($r.getString('Station')->in(test::indigocanyon3::function::surveyedStations())) &&
+        ($r.getDate('Ringed')->adjust(7, DurationUnit.DAYS) >= test::indigocanyon3::function::seasonWindowStart()) &&
+        ($r.getDate('Ringed')->adjust(7, DurationUnit.DAYS) < test::indigocanyon3::function::seasonWindowEnd())
+    )->distinct()->sort([asc('Record')]);
+    mapping: test::indigocanyon3::mapping::RingingMapping;
+    runtime: test::indigocanyon3::runtime::RingingRuntime;
+  }
+  testSuites:
+  [
+    stationWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          ringingH2Connection:
+            Relational
+            #{
+              wetland.ringing_record:
+                'record_code,station_name,scheme_code,species_group,ringed_on,brood_size,condition_note\n'+
+                'rr-01,reedbed,rs-alpha,warbler,2025-10-14,5,healthy\n'+
+                'rr-02,reedbed,rs-bravo,warbler,2025-08-01,3,healthy\n'+
+                'rr-03,saltmarsh,rs-charlie,wader,2026-03-26,2,ruffled\n'+
+                'rr-04,upland-heath,rs-delta,pipit,2025-11-02,4,healthy\n'+
+                'rr-05,fen,rs-zulu,rail,2026-03-24,6,healthy\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        insideOutsideAndBoundary:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            surveyedStationsInsideWindow:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Record":"RR-01","Station":"REEDBED","Scheme":"RS-ALPHA","Species":"WARBLER","Ringed":"2025-10-14","BroodSize":5,"Register":"WETLAND-RINGING-V1"},{"Record":"RR-05","Station":"FEN","Scheme":"RS-ZULU","Species":"RAIL","Ringed":"2026-03-24","BroodSize":6,"Register":"WETLAND-RINGING-V1"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

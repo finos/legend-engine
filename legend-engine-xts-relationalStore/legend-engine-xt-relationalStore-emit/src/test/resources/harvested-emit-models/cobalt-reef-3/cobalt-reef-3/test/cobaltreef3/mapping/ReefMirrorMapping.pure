@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cobaltreef3::mapping::ReefMirrorMapping
+(
+  *test::cobaltreef3::domain::ReefSite[site]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_site.site_code
+    )
+    ~mainTable [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_site
+    siteCode: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_site.site_code,
+    siteName: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_site.site_name,
+    zoneStatus: EnumerationMapping ZoneStatusMap: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_site.status_code,
+    depthMetres: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_site.depth_m
+  }
+
+  *test::cobaltreef3::domain::MonitorProbe[probe]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.monitor_probe.probe_code
+    )
+    ~mainTable [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.monitor_probe
+    probeCode: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.monitor_probe.probe_code,
+    health: EnumerationMapping ProbeHealthMap: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.monitor_probe.health_code
+  }
+
+  *test::cobaltreef3::domain::ReefRegion[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_region.region_code
+    )
+    ~mainTable [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_region
+    regionCode: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_region.region_code,
+    regionName: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.reef_region.region_name
+  }
+
+  *test::cobaltreef3::domain::SurveyDive[dive]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.survey_dive.dive_code
+    )
+    ~mainTable [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.survey_dive
+    diveCode: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.survey_dive.dive_code,
+    diveLabel: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.survey_dive.dive_label
+  }
+
+  *test::cobaltreef3::domain::DiveCrew[crew]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.dive_crew.crew_code
+    )
+    ~mainTable [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.dive_crew
+    crewCode: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.dive_crew.crew_code,
+    crewName: [test::cobaltreef3::store::ReefMirrorDb]reef_mirror.dive_crew.crew_name
+  }
+
+  test::cobaltreef3::domain::SiteProbe: Relational
+  {
+    AssociationMapping
+    (
+      probe[site, probe]: [test::cobaltreef3::store::ReefMirrorDb]@Site_Probe,
+      anchoredSites[probe, site]: [test::cobaltreef3::store::ReefMirrorDb]@Site_Probe
+    )
+  }
+
+  test::cobaltreef3::domain::ProbeRegion: Relational
+  {
+    AssociationMapping
+    (
+      region[probe, region]: [test::cobaltreef3::store::ReefMirrorDb]@Probe_Region,
+      regionProbes[region, probe]: [test::cobaltreef3::store::ReefMirrorDb]@Probe_Region
+    )
+  }
+
+  test::cobaltreef3::domain::SiteDives: Relational
+  {
+    AssociationMapping
+    (
+      dives[site, dive]: [test::cobaltreef3::store::ReefMirrorDb]@Site_Dive,
+      site[dive, site]: [test::cobaltreef3::store::ReefMirrorDb]@Site_Dive
+    )
+  }
+
+  test::cobaltreef3::domain::DiveCrewing: Relational
+  {
+    AssociationMapping
+    (
+      crew[dive, crew]: [test::cobaltreef3::store::ReefMirrorDb]@Dive_Crew,
+      crewDives[crew, dive]: [test::cobaltreef3::store::ReefMirrorDb]@Dive_Crew
+    )
+  }
+
+  test::cobaltreef3::domain::ZoneStatus: EnumerationMapping ZoneStatusMap
+  {
+    OPEN: ['OPN'],
+    RESTRICTED: ['RST'],
+    CLOSED: ['CLS']
+  }
+
+  test::cobaltreef3::domain::ProbeHealth: EnumerationMapping ProbeHealthMap
+  {
+    ACTIVE: ['ACT'],
+    FAULTY: ['FLT'],
+    RETIRED: ['RET']
+  }
+)

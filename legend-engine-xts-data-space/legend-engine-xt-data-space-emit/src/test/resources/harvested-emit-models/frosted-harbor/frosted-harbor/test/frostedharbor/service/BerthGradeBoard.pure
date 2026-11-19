@@ -1,0 +1,160 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::frostedharbor::service::BerthGradeBoard
+{
+  pattern: '/frostedharbor/v1/berthgrade/{asOf}/{minLevel}';
+  ownership: UserList { users: ['harbor-berthing-desk'] };
+  documentation: 'Aggregates the point-in-time berth assignment extent by the zone reached through the two-hop berth-to-dock path and the period code, keeping the peak attachment level per group, then joins that grouped relation back to a detail projection of the same extent on the zone-and-period pair and returns the de-duplicated, ordered rows. An optional zone token narrows the grouped side or, when absent, leaves it open, and layup-graded rows are excluded by an enumeration inequality.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minLevel: Integer[1], zone: String[0..1]|test::frostedharbor::domain::BerthAssignment.all($asOf)->filter(
+      a|($a.attachLevel >= $minLevel) &&
+        ($a.reportedOn >= $asOf->adjust(-180, DurationUnit.DAYS)) &&
+        ($a.grade != test::frostedharbor::domain::BerthGrade.Layup) &&
+        ($zone->isEmpty() || ($a.dockZone == $zone->toOne()))
+    )->groupBy(
+      [
+        a|$a.dockZone,
+        a|$a.periodCode
+      ],
+      [
+        agg(a|$a.peakLevel, y|$y->max())
+      ],
+      [
+        'Zone',
+        'Period',
+        'PeakLevel'
+      ]
+    )->join(
+      test::frostedharbor::domain::BerthAssignment.all($asOf)->project(
+        [
+          a|$a.recordCode,
+          a|$a.dockZone,
+          a|$a.periodCode,
+          a|$a.attachLevel
+        ],
+        [
+          'Assignment',
+          'DetailZone',
+          'DetailPeriod',
+          'AttachLevel'
+        ]
+      ),
+      meta::relational::metamodel::join::JoinType.INNER,
+      {l, r|($l.getString('Zone') == $r.getString('DetailZone')) && ($l.getString('Period') == $r.getString('DetailPeriod'))}
+    )->restrict(
+      [
+        'Zone',
+        'Period',
+        'PeakLevel',
+        'Assignment',
+        'AttachLevel'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Zone'),
+        asc('Assignment')
+      ]
+    )};
+    mapping: test::frostedharbor::mapping::HarborMapping;
+    runtime: test::frostedharbor::runtime::HarborQuaysideRuntime;
+  }
+  testSuites:
+  [
+    berthGradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          harborQuaysideConnection:
+            Relational
+            #{
+              harbor.dock:
+                'dock_id,dock_code,dock_name,zone_code\n'+
+                '1,DK-01,North Quay,Z-1\n'+
+                '2,DK-02,South Quay,Z-2\n';
+
+              harbor.berth:
+                'berth_id,berth_code,dock_id,capacity_ton\n'+
+                '1,BR-01,1,500\n'+
+                '2,BR-02,1,650\n'+
+                '3,BR-03,2,400\n';
+
+              harbor.assignment:
+                'assignment_id,assignment_code,berth_id,grade_label,attach_level,base_level,peak_level,period_code,reported_on,logged_by,from_z,thru_z\n'+
+                '1,AS-01,1,PRIME,40,10,60,2026Q1A,2026-03-05,harbor-desk,2026-01-01,9999-12-31\n'+
+                '2,AS-02,2,STD,55,20,70,2026Q1A,2026-03-18,harbor-desk,2026-01-01,9999-12-31\n'+
+                '3,AS-03,3,STD,45,15,50,2026Q1B,2026-03-21,harbor-desk,2026-01-01,9999-12-31\n'+
+                '4,AS-04,1,LAY,80,30,90,2026Q1A,2026-03-25,harbor-desk,2026-01-01,9999-12-31\n'+
+                '5,AS-05,2,PRIME,25,10,35,2026Q1A,2026-03-28,harbor-desk,2026-01-01,9999-12-31\n'+
+                '6,AS-06,1,PRIME,60,20,75,2026Q1A,2026-04-02,harbor-desk,2026-06-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-01,
+            minLevel = 30,
+            zone = []
+          ]
+          asserts:
+          [
+            bothZonesReportTheirPeakBesideEveryDetailRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"Z-1","Period":"2026Q1A","PeakLevel":70,"Assignment":"AS-01","AttachLevel":40},{"Zone":"Z-1","Period":"2026Q1A","PeakLevel":70,"Assignment":"AS-02","AttachLevel":55},{"Zone":"Z-1","Period":"2026Q1A","PeakLevel":70,"Assignment":"AS-04","AttachLevel":80},{"Zone":"Z-1","Period":"2026Q1A","PeakLevel":70,"Assignment":"AS-05","AttachLevel":25},{"Zone":"Z-2","Period":"2026Q1B","PeakLevel":50,"Assignment":"AS-03","AttachLevel":45}]';
+                  }#;
+              }#
+          ]
+        },
+        oneZoneOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-05-01,
+            minLevel = 30,
+            zone = 'Z-2'
+          ]
+          asserts:
+          [
+            narrowingTheZoneLeavesTheSingleRowGroup:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"Z-2","Period":"2026Q1B","PeakLevel":50,"Assignment":"AS-03","AttachLevel":45}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

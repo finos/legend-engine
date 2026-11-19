@@ -1,0 +1,34 @@
+name: umber-lighthouse-domain
+title: "Umber Lighthouse — Coastal Feed Record Shapes"
+description: |
+  Flat, association-free domain classes describing the record shapes carried
+  by a coastal tide-and-wave telemetry feed. The classes span the scalar type
+  surface (String, Decimal, Integer, Boolean, Byte, StrictDate, plus one
+  optional String) and layer a documentation tagged value on every class and
+  every property. One class additionally declares properties whose identifiers
+  are not legal bare Pure identifiers — a name beginning with a digit, a name
+  containing a hyphen-digit sequence, and a name containing a plus sign — as
+  single-quoted names that must survive grammar composition and re-parse.
+
+modelSources:
+  model:
+    root: umber-lighthouse-domain
+    files:
+      - test/umber-lighthouse/domain/DriftBuoy.pure
+      - test/umber-lighthouse/domain/FeedBatch.pure
+      - test/umber-lighthouse/domain/SensorStation.pure
+      - test/umber-lighthouse/domain/TideReading.pure
+      - test/umber-lighthouse/domain/WaveObservation.pure
+
+features:
+  - grammar:profile
+  - grammar:quoted-identifier
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - coastal
+  - doc-profile
+  - quoted-identifiers
+  - telemetry-feed
+  - tide-gauge

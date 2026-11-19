@@ -1,0 +1,35 @@
+name: dusky-estuary-2
+modelSources:
+  model:
+    root: dusky-estuary-2
+    files:
+      - test/duskyestuary2/domain/EstuaryDomain.pure
+      - test/duskyestuary2/mapping/EstuaryMapping.pure
+      - test/duskyestuary2/store/EstuaryDB.pure
+      - test/duskyestuary2/store/EstuaryRefDB.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-cross-table-filter
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2

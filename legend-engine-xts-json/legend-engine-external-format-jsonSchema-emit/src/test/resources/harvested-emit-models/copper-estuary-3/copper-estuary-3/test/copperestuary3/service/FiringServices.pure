@@ -1,0 +1,465 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::copperestuary3::service::FiringWindowDigest
+{
+  pattern: '/copperestuary3/v1/firings/window-digest';
+  title: 'Copper Estuary 3 - Firing Window Digest';
+  owners:
+  [
+    'kiln-yard-office'
+  ];
+  documentation: 'Projects the firings of one kiln whose start timestamp falls inside a closed calendar-date window, de-duplicates and orders the projection, extends it with a derived banner column and slices the leading rows, so the whole chain - date-part coercion, composite predicate, projection, extension and row window - is pushed through a single tabular plan.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {kiln: String[1], fromDate: StrictDate[1], toDate: StrictDate[1]|test::copperestuary3::domain::KilnFiring.all()->filter(
+      f|($f.kilnName == $kiln) && ($f.startedAt->datePart() >= $fromDate) && ($f.startedAt->datePart() <= $toDate)
+    )->project(
+      [
+        col(
+          f|$f.firingCode,
+          'FiringCode'
+        ),
+        col(
+          f|$f.clayBody,
+          'ClayBody'
+        ),
+        col(
+          f|$f.glazeNote,
+          'GlazeNote'
+        ),
+        col(
+          f|$f.coneNumber,
+          'Cone'
+        ),
+        col(
+          f|$f.peakTempC,
+          'PeakTempC'
+        )
+      ]
+    )->distinct()->sort(
+      [
+        asc('FiringCode')
+      ]
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getString('ClayBody') + ' / ' + $r.getString('FiringCode'),
+        'Banner'
+      )
+    )->slice(0, 2)};
+    mapping: test::copperestuary3::mapping::KilnLogMapping;
+    runtime: test::copperestuary3::runtime::KilnLogRuntime;
+  }
+  testSuites:
+  [
+    firingWindowDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kilnLogConnection:
+            Relational
+            #{
+              kiln.firing_log:
+                'firing_code,kiln_name,clay_body,glaze_note,cone_number,peak_temp_c,started_at\n'+
+                'KF-01,East Anagama,stoneware,ash glaze streaked,10,1305.5,2024-03-04 07:15:00\n'+
+                'KF-02,East Anagama,porcelain,,9,1260.75,2024-03-11 06:40:00\n'+
+                'KF-03,East Anagama,earthenware,slip trailed rim,6,1222.25,2024-04-02 08:05:00\n'+
+                'KF-04,West Salt Kiln,stoneware,salt bloom heavy,10,1301.25,2024-03-18 05:55:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        marchWindowForOneKiln:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            kiln = 'East Anagama',
+            fromDate = %2024-03-01,
+            toDate = %2024-03-31
+          ]
+          asserts:
+          [
+            twoDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"FiringCode":"KF-01","ClayBody":"stoneware","GlazeNote":"ash glaze streaked","Cone":10,"PeakTempC":1305.5,"Banner":"stoneware / KF-01"},{"FiringCode":"KF-02","ClayBody":"porcelain","GlazeNote":null,"Cone":9,"PeakTempC":1260.75,"Banner":"porcelain / KF-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::copperestuary3::service::FiringPrefixDigest
+{
+  pattern: '/copperestuary3/v1/firings/prefix-digest';
+  title: 'Copper Estuary 3 - Firing Clay-Body Prefix Digest';
+  owners:
+  [
+    'kiln-yard-office'
+  ];
+  documentation: 'Adds a clay-body prefix test to the kiln and date-window predicate, so the composite predicate carries a string function alongside the two date-part comparisons and the equality; the surviving rows are projected, de-duplicated, ordered and extended with the derived banner column.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {kiln: String[1], bodyPrefix: String[1], fromDate: StrictDate[1], toDate: StrictDate[1]|test::copperestuary3::domain::KilnFiring.all()->filter(
+      f|($f.kilnName == $kiln) && ($f.clayBody->startsWith($bodyPrefix)) && ($f.startedAt->datePart() >= $fromDate) && ($f.startedAt->datePart() <= $toDate)
+    )->project(
+      [
+        col(
+          f|$f.firingCode,
+          'FiringCode'
+        ),
+        col(
+          f|$f.clayBody,
+          'ClayBody'
+        ),
+        col(
+          f|$f.glazeNote,
+          'GlazeNote'
+        ),
+        col(
+          f|$f.coneNumber,
+          'Cone'
+        ),
+        col(
+          f|$f.peakTempC,
+          'PeakTempC'
+        )
+      ]
+    )->distinct()->sort(
+      [
+        asc('FiringCode')
+      ]
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getString('ClayBody') + ' / ' + $r.getString('FiringCode'),
+        'Banner'
+      )
+    )};
+    mapping: test::copperestuary3::mapping::KilnLogMapping;
+    runtime: test::copperestuary3::runtime::KilnLogRuntime;
+  }
+  testSuites:
+  [
+    firingPrefixDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kilnLogConnection:
+            Relational
+            #{
+              kiln.firing_log:
+                'firing_code,kiln_name,clay_body,glaze_note,cone_number,peak_temp_c,started_at\n'+
+                'KF-01,East Anagama,stoneware,ash glaze streaked,10,1305.5,2024-03-04 07:15:00\n'+
+                'KF-02,East Anagama,porcelain,,9,1260.75,2024-03-11 06:40:00\n'+
+                'KF-03,East Anagama,earthenware,slip trailed rim,6,1222.25,2024-04-02 08:05:00\n'+
+                'KF-04,West Salt Kiln,stoneware,salt bloom heavy,10,1301.25,2024-03-18 05:55:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        prefixNarrowsTheWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            kiln = 'East Anagama',
+            bodyPrefix = 'stone',
+            fromDate = %2024-03-01,
+            toDate = %2024-03-31
+          ]
+          asserts:
+          [
+            oneDigestRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"FiringCode":"KF-01","ClayBody":"stoneware","GlazeNote":"ash glaze streaked","Cone":10,"PeakTempC":1305.5,"Banner":"stoneware / KF-01"}]';
+                  }#;
+              }#
+          ]
+        },
+        prefixMatchesNothingInTheWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            kiln = 'East Anagama',
+            bodyPrefix = 'terra',
+            fromDate = %2024-03-01,
+            toDate = %2024-03-31
+          ]
+          asserts:
+          [
+            noDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::copperestuary3::service::FiringArchiveDigest
+{
+  pattern: '/copperestuary3/v1/firings/archive-digest';
+  title: 'Copper Estuary 3 - Archived Firing Digest';
+  owners:
+  [
+    'kiln-yard-archive'
+  ];
+  documentation: 'Runs the same digest shape against the archive store through the second mapping and runtime pair, so the identical query body resolves to a different schema, table and connection without any change to the class layer.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {kiln: String[1], fromDate: StrictDate[1], toDate: StrictDate[1]|test::copperestuary3::domain::KilnFiring.all()->filter(
+      f|($f.kilnName == $kiln) && ($f.startedAt->datePart() >= $fromDate) && ($f.startedAt->datePart() <= $toDate)
+    )->project(
+      [
+        col(
+          f|$f.firingCode,
+          'FiringCode'
+        ),
+        col(
+          f|$f.clayBody,
+          'ClayBody'
+        ),
+        col(
+          f|$f.glazeNote,
+          'GlazeNote'
+        ),
+        col(
+          f|$f.coneNumber,
+          'Cone'
+        ),
+        col(
+          f|$f.peakTempC,
+          'PeakTempC'
+        )
+      ]
+    )->distinct()->sort(
+      [
+        asc('FiringCode')
+      ]
+    )->extend(
+      meta::pure::tds::col(
+        r: TDSRow[1]|$r.getString('ClayBody') + ' / ' + $r.getString('FiringCode'),
+        'Banner'
+      )
+    )};
+    mapping: test::copperestuary3::mapping::KilnArchiveMapping;
+    runtime: test::copperestuary3::runtime::KilnArchiveRuntime;
+  }
+  testSuites:
+  [
+    firingArchiveDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          kilnArchiveConnection:
+            Relational
+            #{
+              archive.firing_archive:
+                'firing_code,kiln_name,clay_body,glaze_note,cone_number,peak_temp_c,started_at\n'+
+                'KF-A1,East Anagama,stoneware,archived ash test,10,1298.5,2023-09-06 07:00:00\n'+
+                'KF-A2,East Anagama,porcelain,,8,1240.25,2023-09-20 06:30:00\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        septemberArchiveWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            kiln = 'East Anagama',
+            fromDate = %2023-09-01,
+            toDate = %2023-09-30
+          ]
+          asserts:
+          [
+            twoArchiveRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"FiringCode":"KF-A1","ClayBody":"stoneware","GlazeNote":"archived ash test","Cone":10,"PeakTempC":1298.5,"Banner":"stoneware / KF-A1"},{"FiringCode":"KF-A2","ClayBody":"porcelain","GlazeNote":null,"Cone":8,"PeakTempC":1240.25,"Banner":"porcelain / KF-A2"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::copperestuary3::service::FiringConeRoster
+{
+  pattern: '/copperestuary3/v1/firings/cone-roster';
+  title: 'Copper Estuary 3 - Firing Cone Roster';
+  owners:
+  [
+    'kiln-yard-office'
+  ];
+  documentation: 'Selects firings whose cone number is one of a requested set, projects a wider column list than it returns, restricts the projection down to the roster columns and limits the ordered result, so the plan carries a set-membership predicate and a post-projection column restriction.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cones: Integer[*]|test::copperestuary3::domain::KilnFiring.all()->filter(
+      f|$f.coneNumber->in($cones)
+    )->project(
+      [
+        col(
+          f|$f.firingCode,
+          'FiringCode'
+        ),
+        col(
+          f|$f.kilnName,
+          'KilnName'
+        ),
+        col(
+          f|$f.coneNumber,
+          'Cone'
+        ),
+        col(
+          f|$f.peakTempC,
+          'PeakTempC'
+        )
+      ]
+    )->restrict(
+      [
+        'FiringCode',
+        'KilnName',
+        'Cone'
+      ]
+    )->distinct()->sort(
+      [
+        asc('FiringCode')
+      ]
+    )->limit(3)};
+    mapping: test::copperestuary3::mapping::KilnLogMapping;
+    runtime: test::copperestuary3::runtime::KilnLogRuntime;
+  }
+}
+
+###Service
+Service test::copperestuary3::service::FiringTempRoster
+{
+  pattern: '/copperestuary3/v1/firings/temp-roster';
+  title: 'Copper Estuary 3 - Firing Peak Temperature Roster';
+  owners:
+  [
+    'kiln-yard-office'
+  ];
+  documentation: 'Selects the firings of one kiln whose peak temperature reaches a floor and returns the ordered, de-duplicated projection, so the numeric comparison arm of the predicate family is exercised on its own.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {kiln: String[1], minPeakTempC: Float[1]|test::copperestuary3::domain::KilnFiring.all()->filter(
+      f|($f.kilnName == $kiln) && ($f.peakTempC >= $minPeakTempC)
+    )->project(
+      [
+        col(
+          f|$f.firingCode,
+          'FiringCode'
+        ),
+        col(
+          f|$f.clayBody,
+          'ClayBody'
+        ),
+        col(
+          f|$f.peakTempC,
+          'PeakTempC'
+        )
+      ]
+    )->distinct()->sort(
+      [
+        asc('FiringCode')
+      ]
+    )};
+    mapping: test::copperestuary3::mapping::KilnLogMapping;
+    runtime: test::copperestuary3::runtime::KilnLogRuntime;
+  }
+}
+
+###Service
+Service test::copperestuary3::service::FiringGlazeRoster
+{
+  pattern: '/copperestuary3/v1/firings/glaze-roster';
+  title: 'Copper Estuary 3 - Firing Glaze Note Roster';
+  owners:
+  [
+    'kiln-yard-office'
+  ];
+  documentation: 'Selects only the firings that carry a glaze note and whose note opens with a requested token, so the optional property is tested for presence before the string function is applied to it.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {notePrefix: String[1]|test::copperestuary3::domain::KilnFiring.all()->filter(
+      f|($f.glazeNote->isNotEmpty()) && ($f.glazeNote->toOne()->startsWith($notePrefix))
+    )->project(
+      [
+        col(
+          f|$f.firingCode,
+          'FiringCode'
+        ),
+        col(
+          f|$f.glazeNote,
+          'GlazeNote'
+        )
+      ]
+    )->distinct()->sort(
+      [
+        asc('FiringCode')
+      ]
+    )};
+    mapping: test::copperestuary3::mapping::KilnLogMapping;
+    runtime: test::copperestuary3::runtime::KilnLogRuntime;
+  }
+}

@@ -1,0 +1,54 @@
+name: hazel-wharf
+title: "Hazel Wharf - bitemporal berth register with nested existence quantification and whole-row de-duplication"
+description: |
+  A marine research wharf whose mooring berths are corrected over processing
+  time and effective over business time, with the vessel calls they take, the
+  sample lots those calls land, and the steward, monitoring station and registry
+  chain a berth is listed through. A single endpoint opens both temporal
+  dimensions from query arguments, keeps the berths holding the operational
+  member of the berth-status enumeration that have at least one call landing at
+  least one crated lot, projects two scalar columns plus a registry identifier
+  reached three hops away, drops the rows whose deep column came back empty and
+  de-duplicates the remaining rows. Fixtures cover a berth with no calls, a
+  berth whose only lot is uncrated, an unstewarded berth, a superseded berth
+  outside the business range and two berths that collapse into a single row.
+modelSources:
+  model:
+    root: hazel-wharf
+    files:
+      - test/hazelwharf/connection/WharfConnections.pure
+      - test/hazelwharf/domain/WharfDomain.pure
+      - test/hazelwharf/mapping/WharfMapping.pure
+      - test/hazelwharf/runtime/WharfRuntimes.pure
+      - test/hazelwharf/service/CratedBerthRegister.pure
+      - test/hazelwharf/store/WharfDatabase.pure
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:enumeration
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:deep-property-path
+  - query:distinct
+  - query:enum-comparison
+  - query:filter
+  - query:post-projection-filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - bitemporal
+  - collection-op
+  - deep-navigation
+  - enumeration
+  - h2
+  - marine-wharf
+  - point-in-time
+  - tabular-data-set

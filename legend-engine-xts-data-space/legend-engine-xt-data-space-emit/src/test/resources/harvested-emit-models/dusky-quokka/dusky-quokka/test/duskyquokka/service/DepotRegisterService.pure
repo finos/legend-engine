@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyquokka::service::DepotRegisterService
+{
+  pattern: '/transit/v1/depot-register';
+  title: 'Depot Register';
+  owners:
+  [
+    'transit-network-operations',
+    'depot-planning'
+  ];
+  documentation: 'Projects the depot roster as a tabular result over the depot main table alias, mixing text, temporal and boolean columns in one row shape.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::duskyquokka::domain::Depot.all()->project(
+      [
+        col(
+          d|$d.depotCode,
+          'Code'
+        ),
+        col(
+          d|$d.depotName,
+          'Depot'
+        ),
+        col(
+          d|$d.districtName,
+          'District'
+        ),
+        col(
+          d|$d.staffedOvernight,
+          'Overnight'
+        )
+      ]
+    );
+    mapping: test::duskyquokka::mapping::TransitMapping;
+    runtime: test::duskyquokka::runtime::TransitRuntime;
+  }
+  testSuites:
+  [
+    depotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              transit.depot:
+                'depot_id,depot_code,depot_name,district_name,opened_on,staffed_overnight\n'+
+                '1,DEP-N,Northgate Depot,Northgate,1998-04-12,true\n'+
+                '2,DEP-S,Southbrook Depot,Southbrook,2006-09-30,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothDepots:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoDepotRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"DEP-N","Depot":"Northgate Depot","District":"Northgate","Overnight":true},{"Code":"DEP-S","Depot":"Southbrook Depot","District":"Southbrook","Overnight":false}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

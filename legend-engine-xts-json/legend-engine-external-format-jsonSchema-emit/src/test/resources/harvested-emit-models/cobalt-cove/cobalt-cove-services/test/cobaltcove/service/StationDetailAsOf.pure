@@ -1,0 +1,129 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::cobaltcove::service::StationDetailAsOf
+{
+  pattern: '/civic/v1/dock-detail/{stationCode}';
+  title: 'Cobalt Cove - Dock Detail As Of';
+  owners:
+  [
+    'cove-cycle-network',
+    'cove-city-planning'
+  ];
+  documentation: 'Resolves one cycle dock in the business-dated extent and counts the reportable blocked inspections - blocked and carrying at least two faults - that are effective at the requested business date and current at the requested processing date, so the milestoned inspection edge is re-resolved inside the projection. The response rows follow the station-detail external-format binding.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {stationCode: String[1]|demo::cobaltcove::domain::DockStation.all(%2026-03-01)->filter(
+      s|$s.stationCode == $stationCode
+    )->project(
+      [
+        s|$s.stationCode,
+        s|$s.capacity,
+        s|$s.capacityBand,
+        s|$s.inspections(%2026-04-01, %2026-03-01)->filter(
+          i|$i.condition == demo::cobaltcove::domain::DockCondition.BLOCKED && ($i.faultCount >= 2)
+        )->size()
+      ],
+      [
+        'Station Code',
+        'Capacity',
+        'Capacity Band',
+        'Blocked Inspections'
+      ]
+    )->distinct()};
+    mapping: demo::cobaltcove::mapping::CoveMapping;
+    runtime: demo::cobaltcove::runtime::CoveRuntime;
+  }
+  testSuites:
+  [
+    stationDetailSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          coveConnection:
+            Relational
+            #{
+              civic.district:
+                'district_id,district_code,district_name\n'+
+                '1,DST-NORTH,North Quarter\n'+
+                '2,DST-EAST,East Quarter\n';
+
+              civic.dock_station:
+                'station_id,station_code,capacity,status_code,district_id,from_z,thru_z\n'+
+                '1,DK-101,34,ACTIVE,1,2026-01-01,9999-12-31\n'+
+                '2,DK-102,18,ACTIVE,2,2026-01-01,9999-12-31\n'+
+                '4,DK-104,26,ACTIVE,1,2025-01-01,2025-06-30\n';
+
+              civic.dock_inspection:
+                'inspection_id,inspection_ref,condition_code,fault_count,station_id,in_z,out_z,from_z,thru_z\n'+
+                '10,INS-9001,BLOCKED,3,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '11,INS-9002,SERVICEABLE,0,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '12,INS-9003,BLOCKED,5,1,2026-01-01,2026-02-01,2026-01-01,9999-12-31\n'+
+                '13,INS-9004,BLOCKED,2,1,2026-01-01,9999-12-31,2025-01-01,2025-06-30\n'+
+                '14,INS-9005,BLOCKED,4,2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        blockedCountForRequestedDock:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            stationCode = 'DK-101'
+          ]
+          asserts:
+          [
+            onlyCurrentInRangeBlockedInspectionCounted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station Code":"DK-101","Capacity":34,"Capacity Band":"LARGE","Blocked Inspections":1}]';
+                  }#;
+              }#
+          ]
+        },
+        dockWithoutBlockedInspections:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            stationCode = 'DK-102'
+          ]
+          asserts:
+          [
+            countedOnlyOwnInspections:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station Code":"DK-102","Capacity":18,"Capacity Band":"MEDIUM","Blocked Inspections":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

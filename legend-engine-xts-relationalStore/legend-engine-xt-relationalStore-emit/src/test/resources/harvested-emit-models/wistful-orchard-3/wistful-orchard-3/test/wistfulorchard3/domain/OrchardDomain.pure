@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::wistfulorchard3::domain::*;
+
+Enum test::wistfulorchard3::domain::RipenessGrade
+{
+  UNDER_RIPE,
+  FIRM,
+  READY,
+  OVER_RIPE
+}
+
+Enum test::wistfulorchard3::domain::BlemishClass
+{
+  CLEAN,
+  SPECK,
+  SCUFF,
+  BRUISE
+}
+
+Enum test::wistfulorchard3::domain::HandlingClass
+{
+  DRY_PACK,
+  VENTED_PACK,
+  CHILL_PACK
+}
+
+Class {meta::pure::profiles::doc.doc = 'One picked lot of fruit as the packhouse inspection desk sees it, graded off the picking measurements and labelled by the block, grove, estate and district it was picked in.'} test::wistfulorchard3::domain::HarvestLot
+{
+  lotCode: String[1];
+  lotKey: String[0..1];
+  ripenessBand: String[0..1];
+  ripeness: RipenessGrade[0..1];
+  blemish: BlemishClass[0..1];
+  handling: HandlingClass[0..1];
+  blemishNote: String[0..1];
+  wasInspected: String[0..1];
+  crateIndex: Integer[0..1];
+  blockLabel: String[0..1];
+  groveLabel: String[0..1];
+  estateLabel: String[0..1];
+  districtLabel: String[0..1];
+  pickedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An inspector on the packhouse roster, held as its own record so lots can be read back to the person who graded them.'} test::wistfulorchard3::domain::InspectorRef
+{
+  inspectorCode: String[1];
+  inspectorLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A grading station in the packhouse, reached from the inspector rostered to it.'} test::wistfulorchard3::domain::StationRef
+{
+  stationCode: String[1];
+  stationLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The crate tally for one block on one picking day, served either from the per-lot detail or from the pre-tallied day rollup.'} test::wistfulorchard3::domain::BlockTally
+{
+  tallyCode: String[1];
+  blockCode: String[0..1];
+  tallyDay: StrictDate[0..1];
+  crateCount: Integer[0..1];
+}
+
+Association test::wistfulorchard3::domain::LotInspection
+{
+  inspectedLot: HarvestLot[0..1];
+  lotInspector: InspectorRef[0..1];
+}
+
+Association test::wistfulorchard3::domain::InspectorStationing
+{
+  stationedInspector: InspectorRef[0..1];
+  inspectorStation: StationRef[0..1];
+}

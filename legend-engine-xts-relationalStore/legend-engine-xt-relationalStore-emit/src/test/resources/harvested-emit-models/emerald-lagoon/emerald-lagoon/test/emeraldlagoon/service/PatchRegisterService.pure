@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emeraldlagoon::service::PatchRegisterService
+{
+  pattern: '/emeraldlagoon/v1/patch-register/{zoneCode}/{asOf}';
+  title: 'Emerald Lagoon - Reef Patch Register';
+  owners:
+  [
+    'emerald-lagoon-survey',
+    'reef-monitoring'
+  ];
+  documentation: 'Returns the monitored reef patches of one lagoon zone whose survey falls inside the forty-five day window that closes on the requested date and that was not recorded ahead of the day the register is read. Each row carries the patch cover, the cover-by-depth index derived from two measured columns and the age of the survey counted from the requested date.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {zoneCode: String[1], asOf: StrictDate[1], processingDate: StrictDate[1]|test::emeraldlagoon::domain::ReefPatch.all()->filter(
+      p|(($p.zoneCode == $zoneCode) && ($p.patchStatus == 'MONITORED')) && (($p.surveyedOn >= $asOf->adjust(-45, meta::pure::functions::date::DurationUnit.DAYS)) && ($p.surveyedOn <= $processingDate))
+    )->project(
+      [
+        p|$p.patchCode,
+        p|$p.zoneCode,
+        p|$p.coverPct,
+        p|$p.coverPct * $p.depthM,
+        p|dateDiff($p.surveyedOn, $asOf, meta::pure::functions::date::DurationUnit.DAYS)
+      ],
+      [
+        'Patch/Code',
+        'Patch/Zone',
+        'Patch/CoverPct',
+        'Patch/CoverByDepth',
+        'Patch/SurveyAgeDays'
+      ]
+    )->distinct()->sort([asc('Patch/Code')])};
+    mapping: test::emeraldlagoon::mapping::LagoonMapping;
+    runtime: test::emeraldlagoon::runtime::LagoonH2Runtime;
+  }
+  testSuites:
+  [
+    patchRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              lagoon.reef_patch:
+                'patch_id,patch_code,zone_code,patch_status,surveyed_on,cover_pct,depth_m\n'+
+                '1,RP-01,LAGOON-NORTH,MONITORED,2026-07-15,42.5,3.5\n'+
+                '2,RP-02,LAGOON-NORTH,MONITORED,2026-05-01,31.25,2.0\n'+
+                '3,RP-03,LAGOON-SOUTH,MONITORED,2026-07-20,55.0,4.0\n'+
+                '4,RP-04,LAGOON-NORTH,RETIRED,2026-07-18,12.75,1.5\n'+
+                '5,RP-05,LAGOON-NORTH,MONITORED,2099-07-18,60.0,5.0\n';
+
+              lagoon.inflow_reading:
+                'reading_id,reading_code,zone_code,reading_status,measured_on,litres_per_min,turbidity_ntu\n'+
+                '1,IR-01,LAGOON-NORTH,ACTIVE,2026-07-20,118.5,4.25\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyTheRecentMonitoredPatchOfTheZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zoneCode = 'LAGOON-NORTH',
+            asOf = %2026-08-01,
+            processingDate = %2026-08-01
+          ]
+          asserts:
+          [
+            oneQualifyingPatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Patch/Code":"RP-01","Patch/Zone":"LAGOON-NORTH","Patch/CoverPct":42.5,"Patch/CoverByDepth":148.75,"Patch/SurveyAgeDays":17}]';
+                  }#;
+              }#
+          ]
+        },
+        anEmptyZoneRegister:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zoneCode = 'LAGOON-WEST',
+            asOf = %2026-08-01,
+            processingDate = %2026-08-01
+          ]
+          asserts:
+          [
+            noQualifyingPatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

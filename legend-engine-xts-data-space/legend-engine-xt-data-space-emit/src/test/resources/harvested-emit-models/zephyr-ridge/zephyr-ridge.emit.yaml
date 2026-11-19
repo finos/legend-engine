@@ -1,0 +1,87 @@
+name: zephyr-ridge
+title: "Zephyr Ridge — a ridge-soaring register whose views, filters, embedded address and association mappings sit behind two mapper-post-processed connections"
+description: |
+  A ridge-soaring club network modelled relationally. One store carries the
+  regions, launch sites, gliders, pilots, logged flights, beacons and wind
+  readings, two derived views - a per-site roster label and a grouped per-region
+  site count and highest launch elevation - and five named filters that retire
+  closed sites, withdrawn gliders, unlogged flights and unnamed regions. Nine
+  named joins wire the tables and the views together, one of them matching an
+  upper-cased home region code against a concatenated region code. A single
+  relational mapping binds eight classes through explicit primary keys and
+  main-table aliases: two stored vocabularies fold onto shared enumerations
+  through computed cascades, the pilot's postal detail is mapped as an embedded
+  block on the same row, two properties are read from the inline views, the
+  posting path runs a second hop from the flight through its site into the region
+  register, an eight-armed cascade resolves the thermal band and falls through to
+  a relational null once the climb score leaves the scored range, a second
+  cascade bands the gust readings, and three associations are implemented over
+  the flight joins. Four derived properties and one qualified property compute on
+  the model side. Two Snowflake connections, each carrying a mapper stage that
+  rewrites the logical schema and one table onto a physical pair, stand behind two
+  runtimes, and one data space publishes both tiers alongside two diagrams. A
+  single-execution service registers the logged flights: a window sized by the
+  caller around an injected date, a whole-day distance bound, a duration floor
+  and two set-membership tests that only narrow when supplied, projected with the
+  band, the two-hop region, the roster label and the whole-day age.
+modelSources:
+  model:
+    root: zephyr-ridge
+    files:
+      - test/zephyrridge/connection/RidgeConnections.pure
+      - test/zephyrridge/data/RidgeSoaringData.pure
+      - test/zephyrridge/dataspace/RidgeDataSpace.pure
+      - test/zephyrridge/diagram/RidgeDiagrams.pure
+      - test/zephyrridge/domain/RidgeDomain.pure
+      - test/zephyrridge/mapping/RidgeSoaringMapping.pure
+      - test/zephyrridge/runtime/RidgeRuntimes.pure
+      - test/zephyrridge/service/RidgeFlightRegister.pure
+      - test/zephyrridge/store/RidgeSoaringDB.pure
+features:
+  - connection:mapper-postprocessor
+  - execution:data-space
+  - execution:service
+  - grammar:association
+  - grammar:derived-property
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:relational-embedded
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+complexity: advanced
+tags:
+  - association-mapping
+  - data-space
+  - date-arithmetic
+  - diagram
+  - embedded-mapping
+  - enumeration-mapping
+  - h2
+  - mapper-postprocessor
+  - multi-hop-join
+  - relational
+  - relational-views
+  - ridge-soaring
+  - snowflake
+  - store-filter
+  - thermal-cascade
+tds_variant: tabular-data-set
+stores:
+  - relational

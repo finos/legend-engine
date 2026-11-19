@@ -1,0 +1,233 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedwillow2::mapping::LendingMapping
+(
+  include mapping test::gildedwillow2::mapping::RoomBaseMapping
+
+  test::gildedwillow2::domain::BorrowerKind: EnumerationMapping BorrowerKindMapping
+  {
+    STUDENT: ['STU'],
+    STAFF: ['STA'],
+    ENSEMBLE: ['ENS']
+  }
+
+  *test::gildedwillow2::domain::InstrumentCheckout[checkout]: Relational
+  {
+    ~filter [test::gildedwillow2::store::LendingDb]LentOutFilter
+    ~primaryKey
+    (
+      [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.checkout_id
+    )
+    ~mainTable [test::gildedwillow2::store::LendingDb]lending.instrument_checkout
+    checkoutCode: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.checkout_code,
+    programName: 'SCHOOL-INSTRUMENT-LENDING',
+    borrowerKind: EnumerationMapping BorrowerKindMapping: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.borrower_kind,
+    instrumentLabel: [test::gildedwillow2::store::LendingDb]@Checkout_Instrument | lending.instrument_model.model_label,
+    familyCode: toUpper([test::gildedwillow2::store::LendingDb]@Checkout_Instrument | lending.instrument_model.family_code),
+    roomName: [test::gildedwillow2::store::LendingDb]@Checkout_Room | lending.rehearsal_room.room_name,
+    wingName: [test::gildedwillow2::store::LendingDb]@Checkout_Room | lending.rehearsal_room.wing_name,
+    checkedOutOn: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.checked_out_on,
+    dueDate: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.due_date,
+    returnedDate: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.returned_date,
+    overdueDays: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.overdue_days,
+    serviceHours: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.service_hours,
+    overdueBand: case(
+                   greaterThan([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.overdue_days, 30),
+                   'OVERDUE-LONG',
+                   case(
+                     greaterThan([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.overdue_days, 7),
+                     'OVERDUE-SHORT',
+                     case(
+                       greaterThan([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.overdue_days, 0),
+                       'OVERDUE-GRACE',
+                       case(
+                         equal([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.overdue_days, 0),
+                         'ON-TIME',
+                         sqlNull()
+                       )
+                     )
+                   )
+                 ),
+    wearLabel: case(
+                 equal(trim(toUpper([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.condition_code)), 'RPR'),
+                 'REPAIR-QUEUE',
+                 case(
+                   equal(trim(toUpper([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.condition_code)), 'WRN'),
+                   'WORN',
+                   case(
+                     equal(trim(toUpper([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.condition_code)), 'SVC'),
+                     'SERVICEABLE',
+                     case(
+                       equal(trim(toUpper([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.condition_code)), 'NEW'),
+                       'PRISTINE',
+                       sqlNull()
+                     )
+                   )
+                 )
+               ),
+    hoursPerCheckout: round(
+                    divide(
+                      coalesce([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.service_hours, 0.0),
+                      coalesce([test::gildedwillow2::store::LendingDb]@Checkout_Instrument | lending.instrument_model.list_hours, 1.0)
+                    ),
+                    2
+                  ),
+    carryCase
+    (
+      caseCode: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.case_code,
+      caseLabel: [test::gildedwillow2::store::LendingDb]lending.instrument_checkout.case_label,
+      caseGrade: concat('CASE-', toUpper([test::gildedwillow2::store::LendingDb]lending.instrument_checkout.case_grade))
+    )
+  }
+
+  testSuites:
+  [
+    checkoutDerivationSuite:
+    {
+      function: |test::gildedwillow2::domain::InstrumentCheckout.all(%2026-06-01)->project(
+  [
+    x|$x.checkoutCode,
+    x|$x.programName,
+    x|$x.instrumentLabel,
+    x|$x.familyCode,
+    x|$x.roomName,
+    x|$x.overdueBand,
+    x|$x.wearLabel,
+    x|$x.hoursPerCheckout,
+    x|$x.carryCase.caseCode,
+    x|$x.carryCase.caseGrade
+  ],
+  [
+    'CheckoutCode',
+    'Programme',
+    'Instrument',
+    'Family',
+    'Room',
+    'OverdueBand',
+    'WearLabel',
+    'HoursPerCheckout',
+    'CaseCode',
+    'CaseGrade'
+  ]
+)->sort(
+  [
+    asc('CheckoutCode')
+  ]
+);
+      tests:
+      [
+        everyBandAndWearArm:
+        {
+          doc: 'Every arm of the two mapped cascades is hit by its own row, one row falls through both cascades to no value, one row is milestoned out of range on the processing timeline and one row is excluded by the store filter.';
+          data:
+          [
+            test::gildedwillow2::store::LendingDb:
+              Relational
+              #{
+                lending.rehearsal_room:
+                  'room_id,room_code,room_name,wing_name\n'+
+                  '1,RM-01,Brass Room,North Wing\n'+
+                  '2,RM-02,Reed Room,South Wing\n';
+
+                lending.instrument_model:
+                  'instrument_id,model_code,model_label,family_code,list_hours\n'+
+                  '1,IM-01,Tenor Horn,brass,4.0\n'+
+                  '2,IM-02,Bass Clarinet,reed,5.0\n';
+
+                lending.instrument_checkout:
+                  'checkout_id,checkout_code,instrument_id,room_id,borrower_kind,condition_code,active_flag,checked_out_on,due_date,returned_date,overdue_days,service_hours,case_code,case_label,case_grade,in_z,out_z\n'+
+                  '1,LN-0001,1,1,STU,RPR,Y,2026-01-05,2026-02-05,,44,8.0,CS-01,Hard Case,a,2026-01-01,9999-12-31\n'+
+                  '2,LN-0002,1,1,STA,WRN,Y,2026-01-06,2026-02-06,,12,6.0,CS-02,Soft Case,b,2026-01-01,9999-12-31\n'+
+                  '3,LN-0003,2,2,ENS,SVC,Y,2026-01-07,2026-02-07,,3,5.0,CS-03,Gig Bag,c,2026-01-01,9999-12-31\n'+
+                  '4,LN-0004,2,2,STU,NEW,Y,2026-01-08,2026-02-08,2026-02-08,0,2.5,CS-04,Flight Case,d,2026-01-01,9999-12-31\n'+
+                  '5,LN-0005,1,1,STU,ZZZ,Y,2026-01-09,2026-02-09,,,1.0,CS-05,No Case,e,2026-01-01,9999-12-31\n'+
+                  '6,LN-0006,2,2,STA,RPR,Y,2026-01-10,2026-02-10,,31,10.0,CS-06,Hard Case,f,2026-01-01,9999-12-31\n'+
+                  '7,LN-0007,1,1,ENS,WRN,Y,2026-01-11,2026-02-11,,8,4.0,CS-07,Soft Case,g,2026-01-01,9999-12-31\n'+
+                  '8,LN-0008,2,2,STU,SVC,Y,2026-01-12,2026-02-12,,1,3.0,CS-08,Gig Bag,h,2026-01-01,9999-12-31\n'+
+                  '9,LN-0009,1,1,STU,NEW,Y,2026-01-13,2026-02-13,2026-02-13,0,0.0,CS-09,Flight Case,i,2026-01-01,9999-12-31\n'+
+                  '10,LN-0010,1,1,STU,WRN,Y,2026-01-14,2026-02-14,,5,2.0,CS-10,Soft Case,j,2020-01-01,2021-12-31\n'+
+                  '11,LN-0011,2,2,STA,SVC,N,2026-01-15,2026-02-15,,6,2.0,CS-11,Gig Bag,k,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            allNineLiveCheckouts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckoutCode":"LN-0001","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Tenor Horn","Family":"BRASS","Room":"Brass Room","OverdueBand":"OVERDUE-LONG","WearLabel":"REPAIR-QUEUE","HoursPerCheckout":2.0,"CaseCode":"CS-01","CaseGrade":"CASE-A"},{"CheckoutCode":"LN-0002","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Tenor Horn","Family":"BRASS","Room":"Brass Room","OverdueBand":"OVERDUE-SHORT","WearLabel":"WORN","HoursPerCheckout":1.5,"CaseCode":"CS-02","CaseGrade":"CASE-B"},{"CheckoutCode":"LN-0003","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Bass Clarinet","Family":"REED","Room":"Reed Room","OverdueBand":"OVERDUE-GRACE","WearLabel":"SERVICEABLE","HoursPerCheckout":1.0,"CaseCode":"CS-03","CaseGrade":"CASE-C"},{"CheckoutCode":"LN-0004","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Bass Clarinet","Family":"REED","Room":"Reed Room","OverdueBand":"ON-TIME","WearLabel":"PRISTINE","HoursPerCheckout":0.5,"CaseCode":"CS-04","CaseGrade":"CASE-D"},{"CheckoutCode":"LN-0005","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Tenor Horn","Family":"BRASS","Room":"Brass Room","HoursPerCheckout":0.25,"CaseCode":"CS-05","CaseGrade":"CASE-E"},{"CheckoutCode":"LN-0006","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Bass Clarinet","Family":"REED","Room":"Reed Room","OverdueBand":"OVERDUE-LONG","WearLabel":"REPAIR-QUEUE","HoursPerCheckout":2.0,"CaseCode":"CS-06","CaseGrade":"CASE-F"},{"CheckoutCode":"LN-0007","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Tenor Horn","Family":"BRASS","Room":"Brass Room","OverdueBand":"OVERDUE-SHORT","WearLabel":"WORN","HoursPerCheckout":1.0,"CaseCode":"CS-07","CaseGrade":"CASE-G"},{"CheckoutCode":"LN-0008","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Bass Clarinet","Family":"REED","Room":"Reed Room","OverdueBand":"OVERDUE-GRACE","WearLabel":"SERVICEABLE","HoursPerCheckout":0.6,"CaseCode":"CS-08","CaseGrade":"CASE-H"},{"CheckoutCode":"LN-0009","Programme":"SCHOOL-INSTRUMENT-LENDING","Instrument":"Tenor Horn","Family":"BRASS","Room":"Brass Room","OverdueBand":"ON-TIME","WearLabel":"PRISTINE","HoursPerCheckout":0.0,"CaseCode":"CS-09","CaseGrade":"CASE-I"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    rehearsalRoomWingSuite:
+    {
+      function: |test::gildedwillow2::domain::RehearsalRoom.all()->project(
+  [
+    x|$x.roomCode,
+    x|$x.roomName,
+    x|$x.wingLabel
+  ],
+  [
+    'RoomCode',
+    'RoomName',
+    'WingLabel'
+  ]
+)->sort(
+  [
+    asc('RoomCode')
+  ]
+);
+      tests:
+      [
+        wingLabelArmsAndFallback:
+        {
+          doc: 'The class mapping contributed by the included base mapping resolves both named wings and leaves an unrecognised wing without a label.';
+          data:
+          [
+            test::gildedwillow2::store::LendingDb:
+              Relational
+              #{
+                lending.rehearsal_room:
+                  'room_id,room_code,room_name,wing_name\n'+
+                  '1,RM-01,Brass Room,North Wing\n'+
+                  '2,RM-02,Reed Room,South Wing\n'+
+                  '3,RM-03,Percussion Room,Annexe\n';
+              }#
+          ];
+          asserts:
+          [
+            twoLabelledWingsAndOneWithout:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RoomCode":"RM-01","RoomName":"Brass Room","WingLabel":"WING-N"},{"RoomCode":"RM-02","RoomName":"Reed Room","WingLabel":"WING-S"},{"RoomCode":"RM-03","RoomName":"Percussion Room"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::gildedmeadow2::service::SculptureWindowBoard
+{
+  pattern: '/gildedmeadow2/v1/sculpture-window/{fromDate}/{toDate}';
+  title: 'Gilded Meadow 2 - Public Sculpture Condition Window';
+  ownership: UserList { users: ['sculpture-survey-desk'] };
+  documentation: 'Publishes the public sculpture condition surveys recorded inside a closed date window, so both ends of the window are inclusive and a survey sitting exactly on either boundary is still reported. The window is the whole predicate: everything else is republished as recorded.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1]|test::gildedmeadow2::domain::SculptureSurvey.all()->filter(
+      s|($s.surveyedOn >= $fromDate) && ($s.surveyedOn <= $toDate)
+    )->project(~[
+      survey: s|$s.surveyCode,
+      sculpture: s|$s.sculptureCode,
+      ward: s|$s.wardCode,
+      surveyed: s|$s.surveyedOn,
+      grade: s|$s.conditionGrade,
+      corrosion: s|$s.corrosionPct
+    ])->sort(~survey->ascending())};
+    mapping: test::gildedmeadow2::mapping::SculptureSurveyMapping;
+    runtime: test::gildedmeadow2::runtime::SculptureSurveyRuntime;
+  }
+  testSuites:
+  [
+    sculptureWindowSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sculptureSurveyConnection: Reference #{test::gildedmeadow2::data::SculptureTestData}#
+        ]
+      ]
+      tests:
+      [
+        theWindowIncludesBothBoundarySurveys:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-03-18,
+            toDate = %2026-05-11
+          ]
+          asserts:
+          [
+            surveysInsideTheClosedWindow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"survey":"SV-02","sculpture":"SC-12","ward":"W-1","surveyed":"2026-03-18","grade":"FAIR","corrosion":17},{"survey":"SV-03","sculpture":"SC-13","ward":"W-2","surveyed":"2026-04-06","grade":"POOR","corrosion":38},{"survey":"SV-04","sculpture":"SC-14","ward":"W-2","surveyed":"2026-05-11","grade":"SOUND","corrosion":2}]';
+                  }#;
+              }#
+          ]
+        },
+        aSingleDayWindowKeepsOnlyThatDay:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-06-29,
+            toDate = %2026-06-29
+          ]
+          asserts:
+          [
+            theSurveyOfThatDay:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"survey":"SV-05","sculpture":"SC-15","ward":"W-3","surveyed":"2026-06-29","grade":"FAIR","corrosion":12}]';
+                  }#;
+              }#
+          ]
+        },
+        aWindowClosingBeforeAnySurveyIsEmpty:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-01-01,
+            toDate = %2026-02-01
+          ]
+          asserts:
+          [
+            noSurveysAtAll:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

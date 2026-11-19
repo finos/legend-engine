@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::duskyquokka::domain::*;
+
+Class test::duskyquokka::domain::Depot
+{
+  depotId: Integer[1];
+  depotCode: String[1];
+  depotName: String[1];
+  districtName: String[1];
+  openedOn: StrictDate[1];
+  staffedOvernight: Boolean[1];
+}
+
+Class test::duskyquokka::domain::TransitLine
+{
+  lineId: Integer[1];
+  lineCode: String[1];
+  lineName: String[1];
+  serviceTier: String[1];
+  routeKm: Float[1];
+  homeDepotName: String[1];
+}
+
+Class test::duskyquokka::domain::Railcar
+{
+  railcarId: Integer[1];
+  fleetNumber: String[1];
+  propulsion: String[1];
+  seatedCapacity: Integer[1];
+  tareMassTonnes: Decimal[1];
+  assignedLineCode: String[0..1];
+}
+
+Class test::duskyquokka::domain::InspectionLog
+{
+  logId: Integer[1];
+  inspectedOn: StrictDate[1];
+  inspectorName: String[1];
+  outcome: String[1];
+  odometerKm: Decimal[1];
+  inspectedFleetNumber: String[1];
+}
+
+Association test::duskyquokka::domain::Depot_TransitLine
+{
+  homeDepot: Depot[1];
+  servedLines: TransitLine[*];
+}
+
+Association test::duskyquokka::domain::TransitLine_Railcar
+{
+  assignedLine: TransitLine[0..1];
+  allocatedRailcars: Railcar[*];
+}
+
+Association test::duskyquokka::domain::Railcar_InspectionLog
+{
+  inspectedRailcar: Railcar[1];
+  inspectionLogs: InspectionLog[*];
+}

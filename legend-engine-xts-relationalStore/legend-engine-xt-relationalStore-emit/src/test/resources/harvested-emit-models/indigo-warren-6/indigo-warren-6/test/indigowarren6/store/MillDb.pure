@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::indigowarren6::store::MillDb
+(
+  Schema milling
+  (
+    Table mill_site
+    (
+      site_code VARCHAR(16) PRIMARY KEY,
+      site_name VARCHAR(64) NOT NULL,
+      sail_kind VARCHAR(16) NOT NULL,
+      parish_name VARCHAR(64) NOT NULL
+    )
+
+    Table mill_parish
+    (
+      parish_name VARCHAR(64) PRIMARY KEY,
+      county_name VARCHAR(64) NOT NULL
+    )
+
+    Table millstone
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      stone_id INTEGER PRIMARY KEY,
+      stone_code VARCHAR(16) NOT NULL,
+      stone_name VARCHAR(64) NOT NULL,
+      site_code VARCHAR(16) NOT NULL,
+      furrow_count INTEGER NOT NULL,
+      dressed_on DATE NOT NULL,
+      grit_code VARCHAR(8) NOT NULL,
+      from_z DATE PRIMARY KEY,
+      thru_z DATE
+    )
+
+    Table grind_run
+    (
+      run_id INTEGER PRIMARY KEY,
+      stone_id INTEGER NOT NULL,
+      grain_kind VARCHAR(16) NOT NULL,
+      sack_count INTEGER NOT NULL,
+      moisture_pct FLOAT NOT NULL
+    )
+
+    View stone_run_vw
+    (
+      ~filter DryRunFilter
+      ~groupBy
+      (
+        milling.grind_run.stone_id
+      )
+      stoneId: milling.grind_run.stone_id PRIMARY KEY,
+      sackTotal: sum(milling.grind_run.sack_count),
+      runTally: count(milling.grind_run.grain_kind)
+    )
+  )
+
+  Join Stone_Site(milling.millstone.site_code = milling.mill_site.site_code)
+  Join Site_Parish(milling.mill_site.parish_name = milling.mill_parish.parish_name)
+  Join Stone_RunView(milling.millstone.stone_id = milling.stone_run_vw.stoneId)
+
+  Filter DryRunFilter(milling.grind_run.moisture_pct < 15.0)
+  Filter WorkingSailFilter(milling.mill_site.sail_kind = 'COMMON' or milling.mill_site.sail_kind = 'SPRING' or milling.mill_site.sail_kind = 'PATENT')
+)

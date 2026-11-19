@@ -1,0 +1,55 @@
+name: solar-cove-3
+title: "Bike-Share Dock Roster — Store-less Multi-Execution Services over an External JSON Binding"
+description: |
+  A store-less bike-share dock roster rebuilt in memory from an inbound
+  street-cabinet reading through a model-to-model mapping over a JSON model
+  connection. Two single-execution services — one filtering the roster by a
+  parameterised status membership set, one returning it whole — are fed by
+  shared JSON data elements and asserted against expected payloads, while two
+  multi-execution services keyed by deployment tier and operator region prove
+  the multi-execution feature through plan generation. A JSON external-format
+  binding over the station cards and a tabular projection function exercise the
+  external-format, collection, filter and project capabilities off a second
+  in-memory graph.
+modelSources:
+  model:
+    root: solar-cove-3
+    files:
+      - test/solarcove3/connection/DockFeedConnection.pure
+      - test/solarcove3/data/DockData.pure
+      - test/solarcove3/domain/NetworkDomain.pure
+      - test/solarcove3/external/StationBinding.pure
+      - test/solarcove3/function/NetworkFunctions.pure
+      - test/solarcove3/mapping/DockFromReading.pure
+      - test/solarcove3/runtime/DockRuntime.pure
+      - test/solarcove3/service/DockFeedServices.pure
+      - test/solarcove3/service/DockRoutedServices.pure
+      - test/solarcove3/source/DockFeed.pure
+
+features:
+  - execution:data-element
+  - execution:external-format-binding
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - mapping:m2m-transform
+  - query:collection-op
+  - query:filter
+  - execution:graph-fetch
+  - query:project
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - bike-share
+  - data-element
+  - external-format
+  - json-binding
+  - m2m
+  - multi-execution
+  - service-test
+  - store-less
+  - urban-mobility

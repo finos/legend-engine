@@ -1,0 +1,68 @@
+name: wistful-orchard-3
+title: "Wistful Orchard 3 — Deep Relational Packhouse Grading Of Cascades, Chained Joins, Computed Enumerations And An Aggregate-Serving Tally"
+description: |
+  A fruit-packhouse grading estate held in one relational schema: the picked-lot register, the
+  block, grove, estate and district it hangs off, the inspector roster and grading benches, and a
+  per-block per-day crate rollup. Lots are read through a named store filter that keeps only the
+  picked, unvoided rows, and every graded property is derived rather than carried: an eight-armed
+  ripeness cascade that falls through to an explicit null, a ripeness member translated off that
+  computed score rather than off a column, a blemish member translated off the upper-cased blemish
+  code, a handling member translated off a moisture branch, a blemish note that branches to a null
+  sentinel, an inspection flag that branches on whether the inspector leg matched, a doubled crate
+  index over a null-guarded count, and a lot key that upper- or lower-cases the code according to
+  the canopy style reached across the block join. Labels are reached one, two, three and four
+  chained hops out to the district. Two associations realise both of their ends over joins so a lot
+  reads back to its inspector and on to that inspector bench, which is mapped only by an included
+  reference mapping. The crate tally declares an aggregate-serving set over the day rollup
+  alongside the per-lot detail set, so a grouped query can be served from the rollup. Three suites
+  assert the cascade arm by arm, each join miss, the unlisted blemish source value, the filtered
+  rows and the grouped crate totals.
+modelSources:
+  model:
+    root: wistful-orchard-3
+    files:
+      - test/wistfulorchard3/domain/OrchardDomain.pure
+      - test/wistfulorchard3/mapping/OrchardEnumMapping.pure
+      - test/wistfulorchard3/mapping/OrchardPrimaryMapping.pure
+      - test/wistfulorchard3/mapping/OrchardRefMapping.pure
+      - test/wistfulorchard3/store/OrchardStore.pure
+features:
+  - execution:mapping-test
+  - grammar:association
+  - grammar:enumeration
+  - mapping:aggregation-aware-mapping
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-arithmetic-transform
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+  - store:relational-outer-join
+complexity: intermediate
+tags:
+  - aggregation-aware
+  - association-mapping
+  - conditional-cascade
+  - duckdb
+  - enum-of-expression
+  - mapping-include
+  - mapping-test
+  - multi-hop-join-path
+  - null-sentinel
+  - packhouse-grading
+  - relational
+  - store-filter
+stores:
+  - relational

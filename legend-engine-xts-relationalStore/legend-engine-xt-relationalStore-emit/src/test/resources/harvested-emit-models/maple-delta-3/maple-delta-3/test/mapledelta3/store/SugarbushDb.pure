@@ -1,0 +1,41 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::mapledelta3::store::SugarbushDb
+(
+  Schema sugarbush
+  (
+    Table tap_run
+    (
+      run_code VARCHAR(16) PRIMARY KEY,
+      stand_code VARCHAR(16) NOT NULL,
+      sap_grade VARCHAR(16) NOT NULL,
+      litres INTEGER NOT NULL,
+      collected_on DATE NOT NULL,
+      crew_label VARCHAR(64) NOT NULL,
+      season_code VARCHAR(16) NOT NULL
+    )
+
+    Table run_spile
+    (
+      spile_code VARCHAR(16) PRIMARY KEY,
+      run_code VARCHAR(16) NOT NULL,
+      spile_kind VARCHAR(16) NOT NULL,
+      bore_mm INTEGER NOT NULL
+    )
+  )
+
+  Join Run_Spile(sugarbush.tap_run.run_code = sugarbush.run_spile.run_code)
+)

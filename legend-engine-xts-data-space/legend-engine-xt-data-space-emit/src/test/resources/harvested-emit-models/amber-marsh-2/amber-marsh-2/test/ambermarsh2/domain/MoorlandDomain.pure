@@ -1,0 +1,209 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::ambermarsh2::domain::RestorationStage
+{
+  Surveyed,
+  Blocked,
+  Reprofiled,
+  Revegetated
+}
+
+Class test::ambermarsh2::domain::PeatDepthSurvey
+{
+  surveyId: Integer[1];
+  surveyCode: String[1];
+  gridRef: String[1];
+  depthCm: Integer[1];
+  probeCount: Integer[1];
+  surveyedOn: StrictDate[1];
+  surveyorName: String[1];
+}
+
+Class test::ambermarsh2::domain::GullyBlockInstall
+{
+  installId: Integer[1];
+  installCode: String[1];
+  gullyRef: String[1];
+  blockTally: Integer[1];
+  installedOn: StrictDate[1];
+  materialLabel: String[1];
+}
+
+Class test::ambermarsh2::domain::SphagnumPlugBatch
+{
+  batchId: Integer[1];
+  batchCode: String[1];
+  plugTally: Integer[1];
+  speciesMix: String[1];
+  plantedOn: StrictDate[1];
+}
+
+Class test::ambermarsh2::domain::BarePeatPatch
+{
+  patchId: Integer[1];
+  patchCode: String[1];
+  areaM2: Float[1];
+  stage: test::ambermarsh2::domain::RestorationStage[1];
+  mappedOn: StrictDate[1];
+  slopePct: Float[1];
+}
+
+Class test::ambermarsh2::domain::WaterTableDip
+{
+  dipId: Integer[1];
+  dipCode: String[1];
+  wellRef: String[1];
+  depthMm: Integer[1];
+  dippedOn: StrictDate[1];
+  loggerName: String[1];
+}
+
+Class test::ambermarsh2::domain::VegetationQuadrat
+{
+  quadratId: Integer[1];
+  quadratCode: String[1];
+  coverPct: Float[1];
+  speciesTally: Integer[1];
+  recordedOn: StrictDate[1];
+  recorderName: String[1];
+}
+
+Class test::ambermarsh2::domain::ErosionPinReading
+{
+  readingId: Integer[1];
+  readingCode: String[1];
+  pinRef: String[1];
+  exposedMm: Integer[1];
+  readOn: StrictDate[1];
+}
+
+Class test::ambermarsh2::domain::DamInspection
+{
+  inspectionId: Integer[1];
+  inspectionCode: String[1];
+  damRef: String[1];
+  conditionLabel: String[1];
+  inspectedOn: StrictDate[1];
+}
+
+Class test::ambermarsh2::domain::BrashBaleDelivery
+{
+  deliveryId: Integer[1];
+  deliveryCode: String[1];
+  baleTally: Integer[1];
+  deliveredOn: StrictDate[1];
+  haulierName: String[1];
+}
+
+Class test::ambermarsh2::domain::HeatherCutPlot
+{
+  plotId: Integer[1];
+  plotCode: String[1];
+  cutAreaM2: Float[1];
+  cutOn: StrictDate[1];
+  machineLabel: String[1];
+}
+
+Class test::ambermarsh2::domain::GripReprofileRun
+{
+  runId: Integer[1];
+  runCode: String[1];
+  gripMetres: Integer[1];
+  reprofiledOn: StrictDate[1];
+  operatorName: String[1];
+}
+
+Class test::ambermarsh2::domain::DroneFlightLog
+{
+  flightId: Integer[1];
+  flightCode: String[1];
+  frameTally: Integer[1];
+  flownAt: DateTime[1];
+  pilotName: String[1];
+}
+
+Class test::ambermarsh2::domain::PeatCoreSample
+{
+  sampleId: Integer[1];
+  sampleCode: String[1];
+  coreLengthCm: Integer[1];
+  bulkDensity: Float[1];
+  coredOn: StrictDate[1];
+}
+
+Class test::ambermarsh2::domain::RunoffFlumeReading
+{
+  flumeReadingId: Integer[1];
+  flumeReadingCode: String[1];
+  flumeRef: String[1];
+  litresPerSec: Float[1];
+  gaugedAt: DateTime[1];
+}
+
+Class test::ambermarsh2::domain::CarbonFluxChamber
+{
+  chamberId: Integer[1];
+  chamberCode: String[1];
+  fluxUmol: Float[1];
+  measuredAt: DateTime[1];
+  chamberNote: String[1];
+}
+
+Class test::ambermarsh2::domain::GrazingExclosure
+{
+  exclosureId: Integer[1];
+  exclosureCode: String[1];
+  fenceMetres: Integer[1];
+  erectedOn: StrictDate[1];
+  stockLabel: String[1];
+}
+
+Class test::ambermarsh2::domain::WildfireScarMap
+{
+  scarId: Integer[1];
+  scarCode: String[1];
+  burntAreaM2: Float[1];
+  burntOn: StrictDate[1];
+  severityLabel: String[1];
+}
+
+Class test::ambermarsh2::domain::PathRepairSection
+{
+  sectionId: Integer[1];
+  sectionCode: String[1];
+  stoneTonnes: Float[1];
+  repairedOn: StrictDate[1];
+  surfaceLabel: String[1];
+}
+
+Class test::ambermarsh2::domain::ContractorVisit
+{
+  visitId: Integer[1];
+  visitCode: String[1];
+  crewSize: Integer[1];
+  visitedOn: StrictDate[1];
+  contractorName: String[1];
+}
+
+Class test::ambermarsh2::domain::MossDonorSite
+{
+  donorId: Integer[1];
+  donorCode: String[1];
+  harvestAreaM2: Float[1];
+  licensedOn: StrictDate[1];
+  holdingName: String[1];
+  sourceMarker: String[1];
+}

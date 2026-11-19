@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::umberaviary4::profile::*;
+
+Profile test::umberaviary4::profile::AviaryPrivacyProfile
+{
+  stereotypes: [openRecord, keeperOnly];
+}
+
+Profile test::umberaviary4::profile::AviaryVendorProfile
+{
+  stereotypes: [catalogued];
+  tags: [steward, refreshCadence];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A leg ring fitted to one bird at the aviary ringing table; each correction is a new processing version.'} test::umberaviary4::domain::RingingRecord
+{
+  {doc.doc = 'Identifier of the leg ring, stable across versions.'} ringCode: String[1];
+  {doc.doc = 'Code of the bird species.'} speciesCode: String[1];
+  {doc.doc = 'Age class recorded at ringing.'} ageClass: String[0..1];
+  {doc.doc = 'Wing chord in millimetres.'} wingMm: Float[0..1];
+  {doc.doc = 'Body mass in grams.'} massG: Float[0..1];
+  {doc.doc = 'Day the ring was fitted.'} ringedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A keeper check of one nest box inside a flight hall.'} test::umberaviary4::domain::NestBoxCheck
+{
+  {doc.doc = 'Identifier of the check, stable across versions.'} checkCode: String[1];
+  {doc.doc = 'Identifier of the nest box.'} boxCode: String[1];
+  {doc.doc = 'Stage of the nest found in the box.'} nestStage: String[0..1];
+  {doc.doc = 'Number of eggs counted.'} eggCount: Float[0..1];
+  {doc.doc = 'Number of chicks counted.'} chickCount: Float[0..1];
+  {doc.doc = 'Day of the check.'} checkedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A tally of visits at one seed feeder during a morning count.'} test::umberaviary4::domain::FeederVisit
+{
+  {doc.doc = 'Identifier of the tally, stable across versions.'} visitCode: String[1];
+  {doc.doc = 'Identifier of the feeder.'} feederCode: String[1];
+  {doc.doc = 'Seed mix offered at the feeder.'} seedMix: String[0..1];
+  {doc.doc = 'Visits tallied in the count window.'} visitTally: Float[0..1];
+  {doc.doc = 'Day of the count.'} countedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A primary-feather moult score taken from a bird in the hand.'} test::umberaviary4::domain::MoultScore
+{
+  {doc.doc = 'Identifier of the score sheet, stable across versions.'} scoreCode: String[1];
+  {doc.doc = 'Ring of the scored bird.'} ringCode: String[1];
+  {doc.doc = 'Moult phase noted by the scorer.'} moultPhase: String[0..1];
+  {doc.doc = 'Summed primary moult score.'} primaryScore: Float[0..1];
+  {doc.doc = 'Day the bird was scored.'} scoredOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A weekly inspection of one flight hall enclosure.'} test::umberaviary4::domain::FlightHallInspection
+{
+  {doc.doc = 'Identifier of the inspection, stable across versions.'} inspectionCode: String[1];
+  {doc.doc = 'Identifier of the flight hall.'} hallCode: String[1];
+  {doc.doc = 'State of the enclosure mesh.'} meshState: String[0..1];
+  {doc.doc = 'Number of perches in place.'} perchCount: Float[0..1];
+  {doc.doc = 'Day of the inspection.'} inspectedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A daily diet ration plan for one aviary group; its table keeps no version columns.'} test::umberaviary4::domain::DietRation
+{
+  {doc.doc = 'Identifier of the ration plan.'} rationCode: String[1];
+  {doc.doc = 'Identifier of the bird group fed.'} groupCode: String[1];
+  {doc.doc = 'Main food kind of the ration.'} foodKind: String[0..1];
+  {doc.doc = 'Grams of food per bird per day.'} gramsPerBird: Float[0..1];
+  {doc.doc = 'Day the plan applies from.'} plannedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A routine health check of one bird by the aviary keeper; its table keeps no version columns.'} test::umberaviary4::domain::HealthCheck
+{
+  {doc.doc = 'Identifier of the health check.'} healthCode: String[1];
+  {doc.doc = 'Ring of the checked bird.'} ringCode: String[1];
+  {doc.doc = 'Free-text plumage note.'} plumageNote: String[0..1];
+  {doc.doc = 'Body condition score.'} bodyCondition: Float[0..1];
+  {doc.doc = 'Day of the check.'} checkedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A roost survey counting birds per perch at dusk; its table keeps no version columns.'} test::umberaviary4::domain::PerchSurvey
+{
+  {doc.doc = 'Identifier of the roost survey.'} surveyCode: String[1];
+  {doc.doc = 'Flight hall surveyed.'} hallCode: String[1];
+  {doc.doc = 'Side of the hall the roost sits on.'} roostSide: String[0..1];
+  {doc.doc = 'Birds counted roosting.'} birdsRoosting: Float[0..1];
+  {doc.doc = 'Day of the survey.'} surveyedOn: StrictDate[0..1];
+  {doc.doc = 'Instant the keeper first filed the entry.'} createdAt: DateTime[0..1];
+  {doc.doc = 'Instant the entry was last amended.'} updatedAt: DateTime[0..1];
+}

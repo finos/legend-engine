@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyquokka2::service::TrayRegisterService
+{
+  pattern: '/duskyquokka2/v1/trays/register';
+  title: 'Tray Register';
+  owners:
+  [
+    'nursery-propagation'
+  ];
+  documentation: 'Publishes the sown seedling tray register for the requested glasshouse zones, projecting the composed label tag alongside the block and grower crew reached through the two association implementations.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {zones: String[*], minCells: Integer[1]|test::duskyquokka2::domain::NurseryBlock.all()->filter(
+      b|($b.glasshouseZone->in($zones)) && ($b.trays->exists(t|$t.cellCount >= $minCells))
+    )->project(
+      [
+        b|$b.blockCode,
+        b|$b.blockName,
+        b|$b.trays.labelTag
+      ],
+      [
+        'BlockCode',
+        'BlockName',
+        'TrayTag'
+      ]
+    )->sort(
+      [
+        asc('BlockCode'),
+        asc('TrayTag')
+      ]
+    )};
+    mapping: test::duskyquokka2::mapping::NurseryMapping;
+    runtime: test::duskyquokka2::runtime::NurseryRuntime;
+  }
+  testSuites:
+  [
+    registerSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          nurseryConnection:
+            Relational
+            #{
+              nursery.propagation_block:
+                'block_code,block_name,glasshouse_zone,crew_code\n'+
+                'PB-01,Long Bench,EAST,GC-01\n'+
+                'PB-02,Cold Frame,WEST,GC-02\n';
+
+              nursery.seedling_tray:
+                'tray_code,block_code,cultivar,cell_count\n'+
+                'ST-01,PB-01,lupin,84\n'+
+                'ST-02,PB-01,foxglove,120\n'+
+                'ST-03,PB-02,cosmos,60\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        easternZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zones = ['EAST'],
+            minCells = 100
+          ]
+          asserts:
+          [
+            twoEasternTrays:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BlockCode":"PB-01","BlockName":"Long Bench","TrayTag":"FOXGLOVE-ST-02"},{"BlockCode":"PB-01","BlockName":"Long Bench","TrayTag":"LUPIN-ST-01"}]';
+                  }#;
+              }#
+          ]
+        },
+        unsownZone:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            zones = ['NORTH'],
+            minCells = 10
+          ]
+          asserts:
+          [
+            noTrays:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

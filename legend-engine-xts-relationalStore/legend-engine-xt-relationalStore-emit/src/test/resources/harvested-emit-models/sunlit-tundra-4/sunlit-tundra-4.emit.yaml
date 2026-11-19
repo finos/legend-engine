@@ -1,0 +1,76 @@
+name: sunlit-tundra-4
+title: "Sunlit Tundra 4 — Eight-Arm Exposure Grading, Computed Enumeration Decodes and a Two-Surface Scan Union over a Filtered Plate Archive"
+description: |
+  A photographic plate archive whose relational mapping grades an exposure through an eight-arm
+  conditional cascade closed by a null sentinel, decodes the photometric band and the seeing grade
+  through enumeration mappings driven by computed expressions, stamps a constant archive-surface
+  literal, composes a deep-exposure note with a string function and reaches the dome and ridge names
+  across a single-hop join, all behind a store filter that keeps only archived plates. A second
+  mapping includes that base and gathers the plate and spectrum relations behind the shared scan
+  record through a union operation, so the record is queried polymorphically across both surfaces
+  and its specialisations. A model-to-model mapping reproduces the same enumerations from
+  still-textual eyepiece notes through bracketed conditional source expressions, and the domain
+  classes carry instance-level constraints on their codes, exposures and rulings.
+modelSources:
+  model:
+    root: sunlit-tundra-4
+    files:
+      - test/sunlittundra4/connection/ObservatoryConnections.pure
+      - test/sunlittundra4/domain/ObservatoryDomain.pure
+      - test/sunlittundra4/mapping/ObservatoryBaseMapping.pure
+      - test/sunlittundra4/mapping/ObservatoryEnumMappings.pure
+      - test/sunlittundra4/mapping/ObservatoryMapping.pure
+      - test/sunlittundra4/mapping/ScanDigestM2M.pure
+      - test/sunlittundra4/runtime/ObservatoryRuntimes.pure
+      - test/sunlittundra4/store/ObservatoryDB.pure
+features:
+  - execution:mapping-test
+  - grammar:constraint
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-polymorphic-query
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - mapping:store-union
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - model
+  - relational
+complexity: intermediate
+tags:
+  - class-constraint
+  - class-inheritance
+  - conditional-transform
+  - duckdb
+  - enum-of-expression
+  - enumeration
+  - m2m
+  - mapping-include
+  - memsql
+  - null-sentinel
+  - observatory
+  - operation-union
+  - polymorphic-query
+  - primary-key
+  - relational-filter
+  - relational-literal
+  - string-transform

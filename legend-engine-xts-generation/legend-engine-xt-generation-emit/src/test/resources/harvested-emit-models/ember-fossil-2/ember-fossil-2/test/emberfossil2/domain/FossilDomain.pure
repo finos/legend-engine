@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::emberfossil2::domain::*;
+
+Enum test::emberfossil2::domain::FossilCondition
+{
+  PRISTINE,
+  FRACTURED,
+  ERODED,
+  UNPREPARED
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Base record raised whenever a dig team writes something into the quarry notebook, carrying the reference and the day the entry was made.'} test::emberfossil2::domain::DigRecord
+[
+  recordRefShape: $this.recordRef->length() >= 6
+]
+{
+  recordRef: String[1];
+  recordedOn: StrictDate[1];
+  crewInitials: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single visit to one quarry face, describing the grid squares the crew opened and the hours they worked the face.'} test::emberfossil2::domain::QuarryVisit extends DigRecord
+[
+  gridSquaresOpened: $this.gridSquares->isNotEmpty(),
+  faceHoursWithinShift: ($this.faceHours > 0) && ($this.faceHours <= 12)
+]
+{
+  quarryName: String[1];
+  faceHours: Integer[1];
+  gridSquares: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sample lifted out of one stratigraphic layer, kept with the depth it came from and the layer label the crew assigned.'} test::emberfossil2::domain::LayerSample extends DigRecord
+[
+  depthBelowDatumPositive: $this.depthCentimetres > 0
+]
+{
+  layerLabel: String[1];
+  depthCentimetres: Integer[1];
+  matrixType: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A request to take a cast of a specimen so the original can stay in the drawer while a copy travels.'} test::emberfossil2::domain::CastRequest extends DigRecord
+[
+  castCountPositive: $this.castCount > 0
+]
+{
+  specimenRef: String[1];
+  castCount: Integer[1];
+  castMaterial: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A walked sweep over a weathered slope, recording the squares checked and whether anything was flagged for a return visit.'} test::emberfossil2::domain::SurveySweep extends DigRecord
+[
+  sweepSquaresChecked: $this.squaresChecked->size() >= 1
+]
+{
+  slopeName: String[1];
+  squaresChecked: String[*];
+  flaggedForReturn: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A catalogued fossil specimen as it is held in the reference collection, with the condition band the preparators graded it at.'} test::emberfossil2::domain::FossilSpecimen
+[
+  specimenNamePresent: $this.specimenName->length() > 0,
+  massRecorded: $this.massGrams > 0
+]
+{
+  specimenId: String[1];
+  specimenName: String[1];
+  condition: FossilCondition[1];
+  massGrams: Integer[1];
+  collectedOn: StrictDate[1];
+  drawer: StorageDrawer[0..1];
+  labels: LabelCard[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One preparation session spent freeing a specimen from its matrix, with the tools used and the hours booked against it.'} test::emberfossil2::domain::PreparationLog
+{
+  logId: String[1];
+  specimenId: String[1];
+  toolsUsed: String[*];
+  benchHours: Integer[1];
+  preparedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A drawer in the collection store, identified by the cabinet and drawer position that together locate a specimen.'} test::emberfossil2::domain::StorageDrawer
+{
+  cabinetCode: String[1];
+  drawerPosition: Integer[1];
+  climateControlled: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field crew working a season, with the quarry they are assigned to and the members currently on the roster.'} test::emberfossil2::domain::FieldCrew
+{
+  crewCode: String[1];
+  quarryName: String[1];
+  members: String[*];
+  seasonYear: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A block of matrix lifted whole from the face so it can be split under bench conditions rather than in the quarry.'} test::emberfossil2::domain::MatrixBlock
+{
+  blockRef: String[1];
+  layerLabel: String[1];
+  blockWeightKg: Integer[1];
+  splitInLab: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One square of the surveyed grid laid over a quarry floor, giving the grid reference and the surface the square covers.'} test::emberfossil2::domain::SiteGrid
+{
+  gridRef: String[1];
+  quarryName: String[1];
+  surfaceType: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A written label filed with a specimen, holding the determination text and the initials of whoever wrote it.'} test::emberfossil2::domain::LabelCard
+{
+  cardRef: String[1];
+  determination: String[1];
+  writtenBy: String[1];
+  writtenOn: StrictDate[1];
+}

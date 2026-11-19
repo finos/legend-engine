@@ -1,0 +1,150 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldlantern::mapping::LanternMapping
+(
+  include mapping test::emeraldlantern::mapping::LanternEnumMappings
+  include mapping test::emeraldlantern::mapping::LanternVisitMapping
+
+  *test::emeraldlantern::domain::LanternStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldlantern::store::LanternDb]beacon.lantern_station.station_id
+    )
+    ~mainTable [test::emeraldlantern::store::LanternDb]beacon.lantern_station
+    stationCode: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.station_code,
+    stationName: rtrim([test::emeraldlantern::store::LanternDb]beacon.lantern_station.station_name),
+    districtCode: toUpper([test::emeraldlantern::store::LanternDb]beacon.lantern_station.district_code),
+    keeperName: case(
+                  isNotEmpty([test::emeraldlantern::store::LanternDb]beacon.lantern_station.keeper_name),
+                  rtrim([test::emeraldlantern::store::LanternDb]beacon.lantern_station.keeper_name),
+                  'NO KEEPER RECORDED'
+                ),
+    lampKind: ltrim([test::emeraldlantern::store::LanternDb]beacon.lantern_station.lamp_kind),
+    lensState: EnumerationMapping LensStateMapping: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.lens_state_code,
+    serviceTier: EnumerationMapping ServiceTierMapping: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.service_tier_code,
+    focalMetres: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.focal_metres,
+    candelaRating: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.candela_rating,
+    lensDiameterMetres: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.lens_diameter_metres,
+    commissionedOn: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.commissioned_on
+  }
+
+  *test::emeraldlantern::domain::RotatingLantern[rotating_station] extends [station]: Relational
+  {
+    ~filter [test::emeraldlantern::store::LanternDb]RotatingStation
+    rotationLabel: trim([test::emeraldlantern::store::LanternDb]beacon.lantern_station.rotation_label),
+    rotationPeriodSeconds: [test::emeraldlantern::store::LanternDb]beacon.lantern_station.rotation_period_seconds
+  }
+
+  testSuites:
+  [
+    lanternStationBindingSuite:
+    {
+      function: |test::emeraldlantern::domain::LanternStation.all()->project(
+  [
+    col(x|$x.stationCode, 'StationCode'),
+    col(x|$x.stationName, 'StationName'),
+    col(x|$x.districtCode, 'DistrictCode'),
+    col(x|$x.keeperName, 'KeeperName'),
+    col(x|$x.lampKind, 'LampKind'),
+    col(x|$x.lensState, 'LensState'),
+    col(x|$x.serviceTier, 'ServiceTier'),
+    col(x|$x.focalMetres, 'FocalMetres'),
+    col(x|$x.candelaRating, 'CandelaRating'),
+    col(x|$x.lensDiameterMetres, 'LensDiameterMetres'),
+    col(x|$x.commissionedOn, 'CommissionedOn')
+  ]
+)->sort([asc('StationCode')]);
+      tests:
+      [
+        everyStationBinding:
+        {
+          doc: 'Resolves every binding of the station family through the aliased main table: a rotating station, a fixed station whose keeper plate is blank so the defaulting literal stands in, a station whose lens code is the second source value folded onto the cracked constant, and a station recorded as unsurveyed.';
+          data:
+          [
+            test::emeraldlantern::store::LanternDb:
+              Relational
+              #{
+                beacon.lantern_station:
+                  'station_id,station_code,station_name,district_code,keeper_name,lamp_kind,optic_kind,rotation_label,lens_state_code,service_tier_code,focal_metres,candela_rating,lens_diameter_metres,rotation_period_seconds,commissioned_on\n'+
+                  '1,ST-1,Emerald Point,north,A Okafor,LED,ROTATING,BEAM-A,CL,R,18.5,12000.0,1.2,8.0,2019-04-01\n'+
+                  '2,ST-2,Harbour Mouth,north,,LED,FIXED,,HZ,P,12.0,4000.0,0.9,,2020-06-15\n'+
+                  '3,ST-3,Saddle Rock,east,C Duarte,HALOGEN,ROTATING,BEAM-B,CK,C,25.0,20000.0,1.6,6.0,2015-02-20\n'+
+                  '4,ST-4,Gull Ledge,west,D Moreau,LED,ROTATING,BEAM-A,UN,R,9.5,1500.0,0.7,10.0,2022-09-09\n';
+              }#
+          ];
+          asserts:
+          [
+            stationRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"ST-1","StationName":"Emerald Point","DistrictCode":"NORTH","KeeperName":"A Okafor","LampKind":"LED","LensState":"Clear","ServiceTier":"Routine","FocalMetres":18.5,"CandelaRating":12000.0,"LensDiameterMetres":1.2,"CommissionedOn":"2019-04-01"},{"StationCode":"ST-2","StationName":"Harbour Mouth","DistrictCode":"NORTH","KeeperName":"NO KEEPER RECORDED","LampKind":"LED","LensState":"Hazed","ServiceTier":"Priority","FocalMetres":12.0,"CandelaRating":4000.0,"LensDiameterMetres":0.9,"CommissionedOn":"2020-06-15"},{"StationCode":"ST-3","StationName":"Saddle Rock","DistrictCode":"EAST","KeeperName":"C Duarte","LampKind":"HALOGEN","LensState":"Cracked","ServiceTier":"Critical","FocalMetres":25.0,"CandelaRating":20000.0,"LensDiameterMetres":1.6,"CommissionedOn":"2015-02-20"},{"StationCode":"ST-4","StationName":"Gull Ledge","DistrictCode":"WEST","KeeperName":"D Moreau","LampKind":"LED","LensState":"Unrecorded","ServiceTier":"Routine","FocalMetres":9.5,"CandelaRating":1500.0,"LensDiameterMetres":0.7,"CommissionedOn":"2022-09-09"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    rotatingLanternBindingSuite:
+    {
+      function: |test::emeraldlantern::domain::RotatingLantern.all()->project(
+  [
+    col(x|$x.stationCode, 'StationCode'),
+    col(x|$x.rotationLabel, 'RotationLabel'),
+    col(x|$x.rotationPeriodSeconds, 'RotationPeriodSeconds'),
+    col(x|$x.lensState, 'LensState')
+  ]
+)->sort([asc('StationCode')]);
+      tests:
+      [
+        onlyTurningOpticsResolve:
+        {
+          doc: 'Resolves the specialised bindings that only a turning optic has, and proves the store filter on the specialisation keeps the fixed station out of the extent entirely.';
+          data:
+          [
+            test::emeraldlantern::store::LanternDb:
+              Relational
+              #{
+                beacon.lantern_station:
+                  'station_id,station_code,station_name,district_code,keeper_name,lamp_kind,optic_kind,rotation_label,lens_state_code,service_tier_code,focal_metres,candela_rating,lens_diameter_metres,rotation_period_seconds,commissioned_on\n'+
+                  '1,ST-1,Emerald Point,north,A Okafor,LED,ROTATING, BEAM-A ,CL,R,18.5,12000.0,1.2,8.0,2019-04-01\n'+
+                  '2,ST-2,Harbour Mouth,north,,LED,FIXED,,HZ,P,12.0,4000.0,0.9,,2020-06-15\n'+
+                  '3,ST-3,Saddle Rock,east,C Duarte,HALOGEN,ROTATING,BEAM-B,CK,C,25.0,20000.0,1.6,6.0,2015-02-20\n'+
+                  '4,ST-4,Gull Ledge,west,D Moreau,LED,ROTATING,BEAM-A,UN,R,9.5,1500.0,0.7,10.0,2022-09-09\n';
+              }#
+          ];
+          asserts:
+          [
+            rotatingRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StationCode":"ST-1","RotationLabel":"BEAM-A","RotationPeriodSeconds":8.0,"LensState":"Clear"},{"StationCode":"ST-3","RotationLabel":"BEAM-B","RotationPeriodSeconds":6.0,"LensState":"Cracked"},{"StationCode":"ST-4","RotationLabel":"BEAM-A","RotationPeriodSeconds":10.0,"LensState":"Unrecorded"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

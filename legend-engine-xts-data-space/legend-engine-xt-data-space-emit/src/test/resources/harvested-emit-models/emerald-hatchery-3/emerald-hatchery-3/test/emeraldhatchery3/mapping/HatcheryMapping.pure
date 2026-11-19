@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emeraldhatchery3::mapping::HatcheryMapping
+(
+  *test::emeraldhatchery3::domain::RearingPond[pond]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldhatchery3::store::HatcheryDb]rearing.pond.pond_id
+    )
+    ~mainTable [test::emeraldhatchery3::store::HatcheryDb]rearing.pond
+    pondCode: [test::emeraldhatchery3::store::HatcheryDb]rearing.pond.pond_code,
+    waterSource: [test::emeraldhatchery3::store::HatcheryDb]rearing.pond.water_source,
+    capacityLitres: [test::emeraldhatchery3::store::HatcheryDb]rearing.pond.capacity_litres,
+    gradeBand: [test::emeraldhatchery3::store::HatcheryDb]rearing.pond.grade_band,
+    decommissionedOn: [test::emeraldhatchery3::store::HatcheryDb]rearing.pond.decommissioned_on
+  }
+  *test::emeraldhatchery3::domain::RearingBatch[batch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch.batch_id
+    )
+    ~mainTable [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch
+    batchCode: [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch.batch_code,
+    pondCode: [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch.pond_code,
+    speciesGroup: [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch.species_group,
+    fryCount: [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch.fry_count,
+    stockedOn: [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch.stocked_on,
+    releasedOn: [test::emeraldhatchery3::store::HatcheryDb]rearing.rearing_batch.released_on
+  }
+)

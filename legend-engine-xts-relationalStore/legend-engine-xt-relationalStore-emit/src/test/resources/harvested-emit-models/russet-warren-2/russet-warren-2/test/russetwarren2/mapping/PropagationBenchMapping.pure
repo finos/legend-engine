@@ -1,0 +1,186 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::russetwarren2::mapping::PropagationBenchMapping
+(
+  *test::russetwarren2::domain::PropagationTray[propagationTray]: Relational
+  {
+    ~filter [test::russetwarren2::store::PropagationBenchStore]MistedTrayFilter
+    ~primaryKey
+    (
+      [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.tray_id
+    )
+    ~mainTable [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray
+    trayId: [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.tray_id,
+    trayCode: concat('TRAY-', toString([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.tray_id)),
+    trayName: toUpper([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.tray_label),
+    trayTail: toLower(substring([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.tray_label, 1, 5)),
+    cellCount: [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.cell_count,
+    mistSeconds: [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.mist_seconds,
+    mistPerCell: divide(
+                   [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.mist_seconds,
+                   [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.cell_count
+                 ),
+    band: case(
+            equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'A'),
+            'sand bed',
+            case(
+              equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'B'),
+              'peat bed',
+              case(
+                equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'C'),
+                'perlite bed',
+                case(
+                  equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'D'),
+                  'bark bed',
+                  case(
+                    equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'E'),
+                    'coir bed',
+                    case(
+                      equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'F'),
+                      'pumice bed',
+                      case(
+                        equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'G'),
+                        'loam bed',
+                        case(
+                          equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.band_code, 'H'),
+                          'grit bed',
+                          sqlNull()
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+    noteLabel: coalesce([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.note_text, 'unlabelled'),
+    stage: EnumerationMapping TrayStageMapping: concat(
+                                                  case(
+                                                    equal([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.stage_code, 'SLOW'),
+                                                    'RESTING',
+                                                    [test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.stage_code
+                                                  ),
+                                                  concat('/', toUpper([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.kind_code))
+                                                ),
+    kind: EnumerationMapping CuttingKindMapping: toUpper([test::russetwarren2::store::PropagationBenchStore]bench.propagation_tray.kind_code),
+    zoneName: [test::russetwarren2::store::PropagationBenchStore]@Tray_Zone | [test::russetwarren2::store::PropagationBenchStore]reference.bench_zone.zone_name,
+    keeperName: [test::russetwarren2::store::PropagationBenchStore]@Tray_Zone > @Zone_Keeper | [test::russetwarren2::store::PropagationBenchStore]reference.zone_keeper.keeper_name
+  }
+
+  test::russetwarren2::domain::TrayStage: EnumerationMapping TrayStageMapping
+  {
+    ROOTING: ['ROOTING/SOFTWOOD', 'ROOTING/SEMIRIPE'],
+    HARDENING: ['HARDENING/SOFTWOOD', 'HARDENING/SEMIRIPE'],
+    POTTING: ['POTTING/SOFTWOOD', 'POTTING/SEMIRIPE'],
+    RESTING: ['RESTING/SOFTWOOD', 'RESTING/SEMIRIPE']
+  }
+
+  test::russetwarren2::domain::CuttingKind: EnumerationMapping CuttingKindMapping
+  {
+    SOFTWOOD: ['SOFTWOOD'],
+    SEMIRIPE: ['SEMIRIPE']
+  }
+
+  testSuites:
+  [
+    trayBandSuite:
+    {
+      function: |test::russetwarren2::domain::PropagationTray.all()->project(
+  [
+    x|$x.trayId,
+    x|$x.trayCode,
+    x|$x.trayName,
+    x|$x.trayTail,
+    x|$x.mistPerCell,
+    x|$x.band,
+    x|$x.noteLabel,
+    x|$x.stage,
+    x|$x.kind,
+    x|$x.zoneName,
+    x|$x.keeperName
+  ],
+  [
+    'TrayId',
+    'TrayCode',
+    'TrayName',
+    'TrayTail',
+    'MistPerCell',
+    'Band',
+    'NoteLabel',
+    'Stage',
+    'Kind',
+    'ZoneName',
+    'KeeperName'
+  ]
+)->sort(
+  [
+    asc('TrayId')
+  ]
+);
+      tests:
+      [
+        everyBandArm:
+        {
+          doc: 'Twelve bench rows: one per banded bed arm, a code no arm answers so the band falls through to the null sentinel, and a stage code absent from the enumeration mapping so the decoded stage empties.';
+          data:
+          [
+            test::russetwarren2::store::PropagationBenchStore:
+              Relational
+              #{
+                reference.zone_keeper:
+                  'keeper_code,keeper_name\n'+
+                  'K1,Ida Loam\n'+
+                  'K2,Otto Vine\n';
+
+                reference.bench_zone:
+                  'zone_code,zone_name,keeper_code\n'+
+                  'Z1,Propagation Bay One,K1\n'+
+                  'Z2,Propagation Bay Two,K2\n';
+
+                bench.propagation_tray:
+                  'tray_id,tray_label,cell_count,mist_seconds,band_code,stage_code,kind_code,zone_code,note_text\n'+
+                  '1,front tray,3,45.0,A,ROOTING,SOFTWOOD,Z1,spring set\n'+
+                  '2,mid tray,4,50.0,B,HARDENING,SEMIRIPE,Z1,\n'+
+                  '3,rear tray,5,60.0,C,POTTING,SOFTWOOD,Z1,autumn set\n'+
+                  '4,north tray,2,30.0,D,SLOW,SEMIRIPE,Z1,winter set\n'+
+                  '5,south tray,6,72.0,E,ROOTING,SOFTWOOD,Z2,\n'+
+                  '6,east tray,3,21.0,F,HARDENING,SEMIRIPE,Z2,east set\n'+
+                  '7,west tray,4,34.0,G,POTTING,SOFTWOOD,Z2,\n'+
+                  '8,high tray,5,42.5,H,SLOW,SEMIRIPE,Z2,high set\n'+
+                  '9,low tray,2,25.0,X,ROOTING,SOFTWOOD,Z1,low set\n'+
+                  '10,odd tray,4,26.0,A,DRIFTING,SEMIRIPE,Z1,\n'+
+                  '11,quiet tray,5,27.5,B,HARDENING,SOFTWOOD,Z2,quiet set\n'+
+                  '12,spare tray,2,13.0,C,POTTING,SEMIRIPE,Z2,spare set\n';
+              }#
+          ];
+          asserts:
+          [
+            twelveBandedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"TrayId":1,"TrayCode":"TRAY-1","TrayName":"FRONT TRAY","TrayTail":"front","MistPerCell":15.0,"Band":"sand bed","NoteLabel":"spring set","Stage":"ROOTING","Kind":"SOFTWOOD","ZoneName":"Propagation Bay One","KeeperName":"Ida Loam"},{"TrayId":2,"TrayCode":"TRAY-2","TrayName":"MID TRAY","TrayTail":"mid t","MistPerCell":12.5,"Band":"peat bed","NoteLabel":"unlabelled","Stage":"HARDENING","Kind":"SEMIRIPE","ZoneName":"Propagation Bay One","KeeperName":"Ida Loam"},{"TrayId":3,"TrayCode":"TRAY-3","TrayName":"REAR TRAY","TrayTail":"rear ","MistPerCell":12.0,"Band":"perlite bed","NoteLabel":"autumn set","Stage":"POTTING","Kind":"SOFTWOOD","ZoneName":"Propagation Bay One","KeeperName":"Ida Loam"},{"TrayId":4,"TrayCode":"TRAY-4","TrayName":"NORTH TRAY","TrayTail":"north","MistPerCell":15.0,"Band":"bark bed","NoteLabel":"winter set","Stage":"RESTING","Kind":"SEMIRIPE","ZoneName":"Propagation Bay One","KeeperName":"Ida Loam"},{"TrayId":5,"TrayCode":"TRAY-5","TrayName":"SOUTH TRAY","TrayTail":"south","MistPerCell":12.0,"Band":"coir bed","NoteLabel":"unlabelled","Stage":"ROOTING","Kind":"SOFTWOOD","ZoneName":"Propagation Bay Two","KeeperName":"Otto Vine"},{"TrayId":6,"TrayCode":"TRAY-6","TrayName":"EAST TRAY","TrayTail":"east ","MistPerCell":7.0,"Band":"pumice bed","NoteLabel":"east set","Stage":"HARDENING","Kind":"SEMIRIPE","ZoneName":"Propagation Bay Two","KeeperName":"Otto Vine"},{"TrayId":7,"TrayCode":"TRAY-7","TrayName":"WEST TRAY","TrayTail":"west ","MistPerCell":8.5,"Band":"loam bed","NoteLabel":"unlabelled","Stage":"POTTING","Kind":"SOFTWOOD","ZoneName":"Propagation Bay Two","KeeperName":"Otto Vine"},{"TrayId":8,"TrayCode":"TRAY-8","TrayName":"HIGH TRAY","TrayTail":"high ","MistPerCell":8.5,"Band":"grit bed","NoteLabel":"high set","Stage":"RESTING","Kind":"SEMIRIPE","ZoneName":"Propagation Bay Two","KeeperName":"Otto Vine"},{"TrayId":9,"TrayCode":"TRAY-9","TrayName":"LOW TRAY","TrayTail":"low t","MistPerCell":12.5,"Band":null,"NoteLabel":"low set","Stage":"ROOTING","Kind":"SOFTWOOD","ZoneName":"Propagation Bay One","KeeperName":"Ida Loam"},{"TrayId":10,"TrayCode":"TRAY-10","TrayName":"ODD TRAY","TrayTail":"odd t","MistPerCell":6.5,"Band":"sand bed","NoteLabel":"unlabelled","Stage":null,"Kind":"SEMIRIPE","ZoneName":"Propagation Bay One","KeeperName":"Ida Loam"},{"TrayId":11,"TrayCode":"TRAY-11","TrayName":"QUIET TRAY","TrayTail":"quiet","MistPerCell":5.5,"Band":"peat bed","NoteLabel":"quiet set","Stage":"HARDENING","Kind":"SOFTWOOD","ZoneName":"Propagation Bay Two","KeeperName":"Otto Vine"},{"TrayId":12,"TrayCode":"TRAY-12","TrayName":"SPARE TRAY","TrayTail":"spare","MistPerCell":6.5,"Band":"perlite bed","NoteLabel":"spare set","Stage":"POTTING","Kind":"SEMIRIPE","ZoneName":"Propagation Bay Two","KeeperName":"Otto Vine"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,245 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::azurelighthouse2::mapping::LighthouseMapping
+(
+  demo::azurelighthouse2::domain::LighthouseStation: Relational
+  {
+    ~primaryKey
+    (
+      [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lighthouse_station.station_code
+    )
+    ~mainTable [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lighthouse_station
+    stationCode: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lighthouse_station.station_code,
+    stationName: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lighthouse_station.station_name,
+    coastZone: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lighthouse_station.coast_zone,
+    focalHeightM: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lighthouse_station.focal_height_m,
+    lampWatts: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lighthouse_station.lamp_watts
+  }
+
+  demo::azurelighthouse2::domain::LampRotation: Relational
+  {
+    ~primaryKey
+    (
+      [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lamp_rotation.rotation_id
+    )
+    ~mainTable [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lamp_rotation
+    rotationId: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lamp_rotation.rotation_id,
+    stationCode: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lamp_rotation.station_code,
+    flashPattern: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lamp_rotation.flash_pattern,
+    rotationSeconds: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.lamp_rotation.rotation_seconds
+  }
+
+  demo::azurelighthouse2::domain::KeeperShift: Relational
+  {
+    ~primaryKey
+    (
+      [demo::azurelighthouse2::store::LighthouseDatabase]beacons.keeper_shift.shift_id
+    )
+    ~mainTable [demo::azurelighthouse2::store::LighthouseDatabase]beacons.keeper_shift
+    shiftId: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.keeper_shift.shift_id,
+    stationCode: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.keeper_shift.station_code,
+    keeperName: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.keeper_shift.keeper_name,
+    shiftHours: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.keeper_shift.shift_hours
+  }
+
+  demo::azurelighthouse2::domain::WeatherLog: Relational
+  {
+    ~primaryKey
+    (
+      [demo::azurelighthouse2::store::LighthouseDatabase]beacons.weather_log.log_id
+    )
+    ~mainTable [demo::azurelighthouse2::store::LighthouseDatabase]beacons.weather_log
+    logId: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.weather_log.log_id,
+    stationCode: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.weather_log.station_code,
+    visibilityKm: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.weather_log.visibility_km,
+    windKnots: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.weather_log.wind_knots
+  }
+
+  demo::azurelighthouse2::domain::SupplyRun: Relational
+  {
+    ~primaryKey
+    (
+      [demo::azurelighthouse2::store::LighthouseDatabase]beacons.supply_run.run_id
+    )
+    ~mainTable [demo::azurelighthouse2::store::LighthouseDatabase]beacons.supply_run
+    runId: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.supply_run.run_id,
+    stationCode: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.supply_run.station_code,
+    cargoKind: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.supply_run.cargo_kind,
+    crateCount: [demo::azurelighthouse2::store::LighthouseDatabase]beacons.supply_run.crate_count
+  }
+
+  testSuites:
+  [
+    stationSuite:
+    {
+      function: |demo::azurelighthouse2::domain::LighthouseStation.all()->project(
+        [
+          x|$x.stationCode,
+          x|$x.stationName->toUpper(),
+          x|if(
+            $x.focalHeightM >= 60,
+            |'landfall',
+            |if(
+              $x.focalHeightM >= 30,
+              |'coastal',
+              |'harbour'
+            )
+          ),
+          x|$x.lampWatts / 1000
+        ],
+        [
+          'Station',
+          'Name',
+          'Class',
+          'Kilowatts'
+        ]
+      );
+      tests:
+      [
+        stationsClassifiedByFocalHeight:
+        {
+          doc: 'Projects the declared primary-key column beside a cased name, a three-arm height classification and a scaled lamp rating, so the main-table alias and the key binding of the station class mapping are both exercised.';
+          data:
+          [
+            demo::azurelighthouse2::store::LighthouseDatabase:
+              Relational
+              #{
+                beacons.lighthouse_station:
+                  'station_code,station_name,coast_zone,focal_height_m,lamp_watts\n'+
+                  'LS-01,North Spit Light,north-shore,72,4000\n'+
+                  'LS-02,Gull Rock Light,north-shore,44,2000\n'+
+                  'LS-03,Inner Quay Light,harbour-mouth,18,1000\n';
+              }#
+          ];
+          asserts:
+          [
+            threeStationsClassified:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"LS-01","Name":"NORTH SPIT LIGHT","Class":"landfall","Kilowatts":4},{"Station":"LS-02","Name":"GULL ROCK LIGHT","Class":"coastal","Kilowatts":2},{"Station":"LS-03","Name":"INNER QUAY LIGHT","Class":"harbour","Kilowatts":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    weatherSuite:
+    {
+      function: |demo::azurelighthouse2::domain::WeatherLog.all()->project(
+        [
+          x|$x.logId,
+          x|$x.visibilityKm,
+          x|if(
+            $x.visibilityKm >= 12,
+            |'clear',
+            |if(
+              $x.visibilityKm >= 4,
+              |'hazy',
+              |'fogbound'
+            )
+          )
+        ],
+        [
+          'Log',
+          'Visibility',
+          'Band'
+        ]
+      );
+      tests:
+      [
+        logsBandedByVisibility:
+        {
+          doc: 'Bands each recorded observation by visibility so every arm of the nested band expression surfaces from a second mapped table under the same store.';
+          data:
+          [
+            demo::azurelighthouse2::store::LighthouseDatabase:
+              Relational
+              #{
+                beacons.weather_log:
+                  'log_id,station_code,visibility_km,wind_knots\n'+
+                  'WL-01,LS-01,18,22\n'+
+                  'WL-02,LS-01,7,31\n'+
+                  'WL-03,LS-03,2,9\n';
+              }#
+          ];
+          asserts:
+          [
+            threeLogsBanded:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Log":"WL-01","Visibility":18,"Band":"clear"},{"Log":"WL-02","Visibility":7,"Band":"hazy"},{"Log":"WL-03","Visibility":2,"Band":"fogbound"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    keeperSuite:
+    {
+      function: |demo::azurelighthouse2::domain::KeeperShift.all()->project(
+        [
+          x|$x.shiftId,
+          x|$x.keeperName->toUpper(),
+          x|$x.shiftHours
+        ],
+        [
+          'Shift',
+          'Keeper',
+          'Hours'
+        ]
+      );
+      tests:
+      [
+        shiftsProjectedFromOwnMainTable:
+        {
+          doc: 'Projects the keeper roster from its own main table so the third class mapping resolves its alias and key independently of the station and observation tables.';
+          data:
+          [
+            demo::azurelighthouse2::store::LighthouseDatabase:
+              Relational
+              #{
+                beacons.keeper_shift:
+                  'shift_id,station_code,keeper_name,shift_hours\n'+
+                  'KS-01,LS-01,Marlow Fenwick,8\n'+
+                  'KS-02,LS-02,Ivy Carrick,12\n';
+              }#
+          ];
+          asserts:
+          [
+            twoShiftsProjected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shift":"KS-01","Keeper":"MARLOW FENWICK","Hours":8},{"Shift":"KS-02","Keeper":"IVY CARRICK","Hours":12}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::quietlagoon::service::CraftRollupRegister
+{
+  pattern: '/quietlagoon/v1/craft-rollup/{lagoonName}/{floorMinutes}';
+  title: 'Quiet Lagoon - Dock Band Craft Rollup';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Totals the time on the water and the number of paddles out of one caller-named lagoon, keeping only admitted craft kinds launched from one of three named docks that stayed out at least as long as the caller asks, and grouping them under a dock band the store does not hold.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {lagoonName: String[1], floorMinutes: Integer[1]|test::quietlagoon::domain::LaunchLog.all()->filter(
+      l|($l.lagoonName == $lagoonName) && (($l.craftKind->in(['SEA KAYAK', 'CANOE', 'PACKRAFT'])) && (((($l.dockCode == 'D-101') || ($l.dockCode == 'D-102')) || ($l.dockCode == 'D-201')) && (test::quietlagoon::function::isLongHaul($l.paddlerMinutes, $floorMinutes))))
+    )->groupBy(
+      [
+        l|test::quietlagoon::function::dockBand($l.dockCode)
+      ],
+      [
+        agg(l|$l.paddlerMinutes, y|$y->sum()),
+        agg(l|$l.launchCode, y|$y->count())
+      ],
+      [
+        'DockBand',
+        'TotalMinutes',
+        'Launches'
+      ]
+    )->distinct()->sort([asc('DockBand')])};
+    mapping: test::quietlagoon::mapping::LagoonMapping;
+    runtime: test::quietlagoon::runtime::LagoonRuntime;
+  }
+  testSuites:
+  [
+    craftRollupSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lagoonConnection:
+            Relational
+            #{
+              lagoon.launch_log:
+                'launch_code,paddler_name,craft_kind,hull_material,lagoon_name,dock_code,paddler_minutes,crew_size\n'+
+                'LG-01,Ada Wren,SEA KAYAK,FIBREGLASS,Quiet Lagoon,D-101,45,2\n'+
+                'LG-02,Bo Finch,SEA KAYAK,FIBREGLASS,Quiet Lagoon,D-102,20,1\n'+
+                'LG-03,Cy Heron,CANOE,CEDAR,Quiet Lagoon,D-201,60,3\n'+
+                'LG-04,Di Egret,PACKRAFT,VINYL,Still Lagoon,D-101,50,2\n'+
+                'LG-05,El Rail,CANOE,CEDAR,Quiet Lagoon,D-201,35,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        theTwoDockBandsOfTheNamedLagoon:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lagoonName = 'Quiet Lagoon',
+            floorMinutes = 30
+          ]
+          asserts:
+          [
+            innerAndOuterDockTotals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"DockBand":"INNER DOCKS","TotalMinutes":45,"Launches":1},{"DockBand":"OUTER DOCKS","TotalMinutes":95,"Launches":2}]';
+                  }#;
+              }#
+          ]
+        },
+        theFloorNoPaddleClears:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            lagoonName = 'Quiet Lagoon',
+            floorMinutes = 120
+          ]
+          asserts:
+          [
+            noDockBandAtAll:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

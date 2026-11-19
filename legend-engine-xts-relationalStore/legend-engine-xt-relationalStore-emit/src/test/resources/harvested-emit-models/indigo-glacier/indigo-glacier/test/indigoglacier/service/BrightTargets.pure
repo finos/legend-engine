@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigoglacier::service::BrightTargets
+{
+  pattern: '/indigoglacier/v1/bright-targets/{maxMag}';
+  title: 'Indigo Glacier - Bright Targets By Band';
+  owners:
+  [
+    'observatory-ops',
+    'sky-survey-eng'
+  ];
+  documentation: 'Projects observations no fainter than a magnitude threshold whose target name starts with a letter of interest and whose band is one of the requested spectral bands, ordered by target and observation.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {maxMag: Integer[1]|test::indigoglacier::domain::Observation.all()->filter(
+      o|((($o.magnitude <= $maxMag) && $o.band->in(['VIS', 'IR'])) && ($o.targetName->startsWith('N'))) && $o.sightings->exists(s|$s.quality == 'GOOD')
+    )->project(
+      [
+        o|$o.observationId,
+        o|$o.telescopeCode,
+        o|$o.targetName,
+        o|$o.magnitude,
+        o|$o.band
+      ],
+      [
+        'Observation',
+        'Telescope',
+        'Target',
+        'Magnitude',
+        'Band'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Target'),
+        asc('Observation')
+      ]
+    )->take(25)};
+    mapping: test::indigoglacier::mapping::SkyMapping;
+    runtime: test::indigoglacier::runtime::SkyNorthRuntime;
+  }
+  testSuites:
+  [
+    brightTargetsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyNorthConnection:
+            Relational
+            #{
+              sky.observation:
+                'observation_id,telescope_code,target_name,magnitude,exposure_s,band,observed_on\n'+
+                '1,T-1,Nebula A,3,100,VIS,2026-02-01\n'+
+                '2,T-1,Nebula B,6,120,VIS,2026-02-02\n'+
+                '3,T-2,Comet X,4,90,IR,2026-02-03\n'+
+                '4,T-2,Nova C,2,80,IR,2026-02-04\n'+
+                '5,T-3,Nebula D,8,200,UV,2026-02-05\n'+
+                '6,T-3,Nova E,5,140,VIS,2026-02-06\n'+
+                '7,T-1,Nebula F,7,160,IR,2026-02-07\n'+
+                '8,T-2,Nova G,1,60,VIS,2026-02-08\n'+
+                '9,T-3,Halo H,3,110,VIS,2026-02-09\n'+
+                '10,T-1,Nebula J,9,210,IR,2026-02-10\n';
+              sky.sighting:
+                'sighting_id,observation_id,quality\n'+
+                '1,1,GOOD\n'+
+                '2,2,GOOD\n'+
+                '3,3,GOOD\n'+
+                '4,4,GOOD\n'+
+                '5,5,GOOD\n'+
+                '6,6,GOOD\n'+
+                '7,8,POOR\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        brightTargetsByBand:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            maxMag = 6
+          ]
+          asserts:
+          [
+            fiveBrightTargets:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Observation":1,"Telescope":"T-1","Target":"Nebula A","Magnitude":3,"Band":"VIS"},{"Observation":2,"Telescope":"T-1","Target":"Nebula B","Magnitude":6,"Band":"VIS"},{"Observation":4,"Telescope":"T-2","Target":"Nova C","Magnitude":2,"Band":"IR"},{"Observation":6,"Telescope":"T-3","Target":"Nova E","Magnitude":5,"Band":"VIS"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

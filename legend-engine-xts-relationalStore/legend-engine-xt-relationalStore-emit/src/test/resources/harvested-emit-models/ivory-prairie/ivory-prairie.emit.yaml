@@ -1,0 +1,40 @@
+name: ivory-prairie
+title: "Prairie Wildflower Census — Business-Temporal Point-in-Time Service"
+description: |
+  A prairie corpus whose meadow wildflower census is milestoned on a business
+  timeline. A single-execution service exposes a parameterised point-in-time
+  query returning the census as of a requested business date, driving EMIT
+  service test execution and execution-plan generation over an in-process H2
+  runtime.
+modelSources:
+  model:
+    root: ivory-prairie
+    files:
+      - test/ivoryprairie/connection/PrairieH2Connection.pure
+      - test/ivoryprairie/domain/PrairieDomain.pure
+      - test/ivoryprairie/mapping/PrairieMapping.pure
+      - test/ivoryprairie/runtime/PrairieRuntime.pure
+      - test/ivoryprairie/service/MeadowsAsOf.pure
+      - test/ivoryprairie/store/PrairieDB.pure
+features:
+  - execution:service
+  - execution:service-test
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - business-temporal
+  - h2
+  - milestoning
+  - plan-generation
+  - point-in-time
+  - prairie
+  - relational
+  - service-test

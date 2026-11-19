@@ -1,0 +1,355 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralcove2::mapping::ReefMapping
+(
+  *test::coralcove2::domain::Cove[cove]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.cove.cove_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.cove
+    coveCode: [test::coralcove2::store::ReefDB]reef.cove.cove_code,
+    coveName: [test::coralcove2::store::ReefDB]reef.cove.cove_name,
+    shorelineCode: [test::coralcove2::store::ReefDB]reef.cove.shoreline_code
+  }
+
+  *test::coralcove2::domain::ReefSite[reefSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.reef_site.site_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.reef_site
+    siteCode: [test::coralcove2::store::ReefDB]reef.reef_site.site_code,
+    siteName: [test::coralcove2::store::ReefDB]reef.reef_site.site_name,
+    coveName: [test::coralcove2::store::ReefDB]@cove_site | [test::coralcove2::store::ReefDB]reef.cove.cove_name,
+    depthM: [test::coralcove2::store::ReefDB]reef.reef_site.depth_m,
+    establishedOn: [test::coralcove2::store::ReefDB]reef.reef_site.established_on
+  }
+
+  *test::coralcove2::domain::Transect[transect]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.transect.transect_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.transect
+    transectCode: [test::coralcove2::store::ReefDB]reef.transect.transect_code,
+    lengthM: [test::coralcove2::store::ReefDB]reef.transect.length_m,
+    bearingDeg: [test::coralcove2::store::ReefDB]reef.transect.bearing_deg
+  }
+
+  *test::coralcove2::domain::Observer[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.observer.observer_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.observer
+    observerCode: [test::coralcove2::store::ReefDB]reef.observer.observer_code,
+    observerName: [test::coralcove2::store::ReefDB]reef.observer.observer_name,
+    stationName: [test::coralcove2::store::ReefDB]@observer_station | [test::coralcove2::store::ReefDB]reef.station.station_name
+  }
+
+  *test::coralcove2::domain::Station[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.station.station_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.station
+    stationCode: [test::coralcove2::store::ReefDB]reef.station.station_code,
+    stationName: [test::coralcove2::store::ReefDB]reef.station.station_name,
+    coveCode: [test::coralcove2::store::ReefDB]reef.station.cove_code
+  }
+
+  *test::coralcove2::domain::SurveyBatch[surveyBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.survey_batch.batch_code,
+      [test::coralcove2::store::ReefDB]reef.survey_batch.version_no
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.survey_batch
+    batchCode: [test::coralcove2::store::ReefDB]reef.survey_batch.batch_code,
+    versionNo: [test::coralcove2::store::ReefDB]reef.survey_batch.version_no,
+    siteCode: [test::coralcove2::store::ReefDB]reef.survey_batch.site_code,
+    surveyedOn: [test::coralcove2::store::ReefDB]reef.survey_batch.surveyed_on,
+    visibilityM: [test::coralcove2::store::ReefDB]reef.survey_batch.visibility_m
+  }
+
+  *test::coralcove2::domain::CoralColony[coralColony]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.coral_colony.colony_code,
+      [test::coralcove2::store::ReefDB]reef.coral_colony.batch_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.coral_colony
+    colonyCode: [test::coralcove2::store::ReefDB]reef.coral_colony.colony_code,
+    batchCode: [test::coralcove2::store::ReefDB]reef.coral_colony.batch_code,
+    speciesCommonName: [test::coralcove2::store::ReefDB]@colony_species | [test::coralcove2::store::ReefDB]reef.species.common_name,
+    diameterCm: [test::coralcove2::store::ReefDB]reef.coral_colony.diameter_cm,
+    healthScore: [test::coralcove2::store::ReefDB]reef.coral_colony.health_score
+  }
+
+  *test::coralcove2::domain::Species[species]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.species.species_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.species
+    speciesCode: [test::coralcove2::store::ReefDB]reef.species.species_code,
+    commonName: [test::coralcove2::store::ReefDB]reef.species.common_name,
+    growthForm: [test::coralcove2::store::ReefDB]reef.species.growth_form
+  }
+
+  *test::coralcove2::domain::BleachingEvent[bleachingEvent]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.bleaching_event.event_code,
+      [test::coralcove2::store::ReefDB]reef.bleaching_event.event_seq
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.bleaching_event
+    eventCode: [test::coralcove2::store::ReefDB]reef.bleaching_event.event_code,
+    eventSeq: [test::coralcove2::store::ReefDB]reef.bleaching_event.event_seq,
+    eventOn: [test::coralcove2::store::ReefDB]reef.bleaching_event.event_on,
+    severityCode: [test::coralcove2::store::ReefDB]reef.bleaching_event.severity_code
+  }
+
+  *test::coralcove2::domain::WaterReading[waterReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralcove2::store::ReefDB]reef.water_reading.reading_code
+    )
+    ~mainTable [test::coralcove2::store::ReefDB]reef.water_reading
+    readingCode: [test::coralcove2::store::ReefDB]reef.water_reading.reading_code,
+    takenOn: [test::coralcove2::store::ReefDB]reef.water_reading.taken_on,
+    temperatureC: [test::coralcove2::store::ReefDB]reef.water_reading.temperature_c,
+    turbidityNtu: [test::coralcove2::store::ReefDB]reef.water_reading.turbidity_ntu
+  }
+
+  test::coralcove2::domain::Cove_Sites: Relational
+  {
+    AssociationMapping
+    (
+      sites[cove, reefSite]: [test::coralcove2::store::ReefDB]@cove_site,
+      cove[reefSite, cove]: [test::coralcove2::store::ReefDB]@cove_site
+    )
+  }
+
+  test::coralcove2::domain::Site_Transects: Relational
+  {
+    AssociationMapping
+    (
+      transects[reefSite, transect]: [test::coralcove2::store::ReefDB]@site_transect,
+      site[transect, reefSite]: [test::coralcove2::store::ReefDB]@site_transect
+    )
+  }
+
+  test::coralcove2::domain::Observer_Batches: Relational
+  {
+    AssociationMapping
+    (
+      batches[observer, surveyBatch]: [test::coralcove2::store::ReefDB]@observer_batch,
+      observer[surveyBatch, observer]: [test::coralcove2::store::ReefDB]@observer_batch
+    )
+  }
+
+  test::coralcove2::domain::Site_Readings: Relational
+  {
+    AssociationMapping
+    (
+      readings[reefSite, waterReading]: [test::coralcove2::store::ReefDB]@site_reading,
+      readingSite[waterReading, reefSite]: [test::coralcove2::store::ReefDB]@site_reading
+    )
+  }
+
+  testSuites:
+  [
+    siteDerivationSuite:
+    {
+      function: |test::coralcove2::domain::ReefSite.all()->project(
+  [
+    s|$s.siteCode,
+    s|$s.siteName,
+    s|$s.coveName,
+    s|$s.depthM,
+    s|$s.establishedOn
+  ],
+  [
+    'SiteCode',
+    'SiteName',
+    'CoveName',
+    'DepthM',
+    'EstablishedOn'
+  ]
+)->sort(
+  [
+    asc('SiteCode')
+  ]
+);
+      tests:
+      [
+        directAndJoinReachedColumns:
+        {
+          doc: 'Covers the direct column reads under the pinned site alias, the cove name reached over the one-hop join, and a site row whose optional depth and establishment columns are null.';
+          data:
+          [
+            test::coralcove2::store::ReefDB:
+              Relational
+              #{
+                reef.cove:
+                  'cove_code,cove_name,shoreline_code\n'+
+                  'CV-01,Lantern Cove,SH-N\n'+
+                  'CV-02,Turtle Cove,SH-S\n';
+                reef.reef_site:
+                  'site_code,site_name,cove_code,depth_m,established_on\n'+
+                  'RS-01,Lantern Shoulder,CV-01,12,2019-05-04\n'+
+                  'RS-02,Turtle Ledge,CV-02,,\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSitesOneWithNullOptionals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SiteCode":"RS-01","SiteName":"Lantern Shoulder","CoveName":"Lantern Cove","DepthM":12,"EstablishedOn":"2019-05-04"},{"SiteCode":"RS-02","SiteName":"Turtle Ledge","CoveName":"Turtle Cove","DepthM":null,"EstablishedOn":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    batchKeySuite:
+    {
+      function: |test::coralcove2::domain::SurveyBatch.all()->project(
+  [
+    b|$b.batchCode,
+    b|$b.versionNo,
+    b|$b.siteCode,
+    b|$b.visibilityM
+  ],
+  [
+    'BatchCode',
+    'VersionNo',
+    'SiteCode',
+    'VisibilityM'
+  ]
+)->sort(
+  [
+    asc('BatchCode'),
+    asc('VersionNo')
+  ]
+);
+      tests:
+      [
+        compositeKeyKeepsBothVersionsOfOneBatch:
+        {
+          doc: 'Two rows share the batch identifier and differ only on the version boundary column, so the explicit composite key keeps both instances instead of collapsing them.';
+          data:
+          [
+            test::coralcove2::store::ReefDB:
+              Relational
+              #{
+                reef.survey_batch:
+                  'batch_code,version_no,site_code,observer_code,surveyed_on,visibility_m\n'+
+                  'SB-01,1,RS-01,OB-01,2026-02-01,14\n'+
+                  'SB-01,2,RS-01,OB-01,2026-02-08,9\n'+
+                  'SB-02,1,RS-02,OB-02,2026-02-09,\n';
+              }#
+          ];
+          asserts:
+          [
+            threeDistinctKeyTuples:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BatchCode":"SB-01","VersionNo":1,"SiteCode":"RS-01","VisibilityM":14},{"BatchCode":"SB-01","VersionNo":2,"SiteCode":"RS-01","VisibilityM":9},{"BatchCode":"SB-02","VersionNo":1,"SiteCode":"RS-02","VisibilityM":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    associationTraversalSuite:
+    {
+      function: |test::coralcove2::domain::Cove.all()->project(
+  [
+    c|$c.coveCode,
+    c|$c.sites.siteCode
+  ],
+  [
+    'CoveCode',
+    'SiteCode'
+  ]
+)->sort(
+  [
+    asc('CoveCode'),
+    asc('SiteCode')
+  ]
+);
+      tests:
+      [
+        allThreeToManyCardinalities:
+        {
+          doc: 'Traverses the to-many association end from a cove with two sites, a cove with one site and a cove with none, so row multiplication and the outer-joined empty end are both observable.';
+          data:
+          [
+            test::coralcove2::store::ReefDB:
+              Relational
+              #{
+                reef.cove:
+                  'cove_code,cove_name,shoreline_code\n'+
+                  'CV-01,Lantern Cove,SH-N\n'+
+                  'CV-02,Turtle Cove,SH-S\n'+
+                  'CV-03,Empty Cove,SH-W\n';
+                reef.reef_site:
+                  'site_code,site_name,cove_code,depth_m,established_on\n'+
+                  'RS-01,Lantern Shoulder,CV-01,12,2019-05-04\n'+
+                  'RS-03,Lantern Spur,CV-01,18,2020-06-01\n'+
+                  'RS-02,Turtle Ledge,CV-02,7,2021-07-02\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSitesOneSiteAndAnOuterJoinedNull:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CoveCode":"CV-01","SiteCode":"RS-01"},{"CoveCode":"CV-01","SiteCode":"RS-03"},{"CoveCode":"CV-02","SiteCode":"RS-02"},{"CoveCode":"CV-03","SiteCode":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

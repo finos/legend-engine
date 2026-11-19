@@ -1,0 +1,142 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+Enum {doc.doc = 'Kinds of shoreline plot the programme surveys.'} test::azurecove3::survey::PlotType
+{
+  'Tidal Flat',
+  'Rocky/Boulder Shore',
+  'Sand-Dune Front',
+  'Salt Marsh',
+  'Shingle Ridge',
+  'Estuary Mouth'
+}
+
+Enum {doc.doc = 'How exposed a plot is to prevailing swell.'} test::azurecove3::survey::ExposureGrade
+{
+  SHELTERED,
+  'Moderately Exposed',
+  EXPOSED,
+  'Very Exposed'
+}
+
+Enum {doc.doc = 'Field methods approved for a sampling window.'} test::azurecove3::survey::SurveyMethodType
+{
+  'Quadrat Count',
+  'Line Transect',
+  'Drone/Photogrammetry',
+  'Core Sampling',
+  'Hand-Net Sweep'
+}
+
+Enum {doc.doc = 'Access arrangements a plot can be surveyed under.'} test::azurecove3::survey::AccessOptionType
+{
+  'Open Access',
+  'Permit-Only',
+  'Escorted Access',
+  'Boat/Tender Only'
+}
+
+Enum {doc.doc = 'Channels the programme publishes plot reports through.'} test::azurecove3::survey::ReportChannel
+{
+  'Public Atlas',
+  'Warden Bulletin',
+  'Research Portal',
+  'School/Outreach Pack'
+}
+
+Enum {doc.doc = 'Where a shoreline marker is placed relative to the tide line.'} test::azurecove3::survey::MarkerPlacement
+{
+  'Above High Water',
+  'Mid-Shore',
+  'Below Low Water',
+  'Back-Dune'
+}
+
+Enum {doc.doc = 'Habitat categories recorded against a plot.'} test::azurecove3::survey::HabitatCategory
+{
+  'Seagrass Bed',
+  'Kelp Forest',
+  'Mud/Sand Flat',
+  'Saltmarsh Sward',
+  'Shingle Vegetation'
+}
+
+Enum {doc.doc = 'Superseded habitat vocabulary retained for older sheets; duplicates the value set of the current habitat categories.'} test::azurecove3::survey::HabitatCategoryLegacy
+{
+  'Seagrass Bed',
+  'Kelp Forest',
+  'Mud/Sand Flat',
+  'Saltmarsh Sward',
+  'Shingle Vegetation'
+}
+
+Enum {doc.doc = 'Scope a stewardship arrangement covers.'} test::azurecove3::survey::StewardshipScope
+{
+  'Single Plot',
+  'Plot Cluster',
+  'Whole Cove',
+  'Cross-Cove'
+}
+
+Enum {doc.doc = 'Alternative spelling of the stewardship scope vocabulary carried by a second sheet with an identical value set.'} test::azurecove3::survey::StewardshipScopeAlternate
+{
+  'Single Plot',
+  'Plot Cluster',
+  'Whole Cove',
+  'Cross-Cove'
+}
+
+Enum {doc.doc = 'Sediment grades recognised by the coring protocol.'} test::azurecove3::survey::SedimentGrade
+{
+  'Very Coarse Gravel',
+  'Coarse Gravel',
+  'Medium Gravel',
+  'Fine Gravel',
+  'Very Fine Gravel',
+  'Very Coarse Sand',
+  'Coarse Sand',
+  'Medium Sand',
+  'Fine Sand',
+  'Very Fine Sand',
+  'Coarse Silt',
+  'Medium Silt',
+  'Fine Silt',
+  CLAY
+}
+
+Enum {doc.doc = 'The two tide stages a reading may be taken at.'} test::azurecove3::survey::TideStage
+{
+  FLOOD,
+  EBB
+}
+
+Enum {doc.doc = 'Reasons a seasonal closure is declared over a plot.'} test::azurecove3::survey::ClosureReason
+{
+  {doc.doc = 'Closed while ground-nesting birds are breeding.'} NESTING_SEASON,
+  {doc.doc = 'Closed while a storm-damaged shingle ridge is re-profiled.'} STORM_REPAIR,
+  {doc.doc = 'Closed because the substrate is being replanted.'} REPLANTING,
+  {doc.doc = 'Closed at the request of the coastal authority.'} AUTHORITY_REQUEST,
+  {doc.doc = 'Closed for reasons recorded only in the warden log.'} OTHER
+}
+
+Enum {doc.doc = 'Quality flags a laboratory can raise against a reading.'} test::azurecove3::survey::ReadingQualityFlag
+{
+  ACCEPTED,
+  'Below Detection Limit',
+  'Holding-Time Exceeded',
+  SUSPECT,
+  REJECTED
+}

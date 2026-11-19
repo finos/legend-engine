@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import test::quietridge::domain::*;
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A surveyed trail segment as the registry knew it at a processing instant.'} test::quietridge::domain::TrailSegment
+{
+  segmentCode: String[1];
+  trailName: String[1];
+  patrolZone: Integer[1];
+  elevationGainM: Integer[1];
+  surfaceKind: String[1];
+  hazards: HazardNote[*];
+}
+
+Class {doc.doc = 'An exposed ridge-line segment carrying an exposure rating.'} test::quietridge::domain::RidgeSegment extends TrailSegment
+{
+  exposureRating: Integer[1];
+}
+
+Class {doc.doc = 'A sheltered forest segment carrying a canopy cover percentage.'} test::quietridge::domain::ForestSegment extends TrailSegment
+{
+  canopyCoverPct: Integer[1];
+}
+
+Class {doc.doc = 'A hazard observation recorded against a trail segment.'} test::quietridge::domain::HazardNote
+{
+  hazardKind: String[1];
+  severityLevel: Integer[1];
+}

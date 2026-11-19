@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::duskyhatchery::service::StockDigest
+{
+  pattern: '/duskyhatchery/v1/stocks/digest';
+  title: 'Dusky Hatchery - Species Stock Digest';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the stockings of the requested species and resolves the owning pond and its watershed at the caller supplied processing instant, so a stocking against a superseded pond record resolves through the version in force.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], species: String[*]|test::duskyhatchery::domain::SpeciesStock.all()->filter(
+      s|$s.speciesName->in($species)
+    )->project(
+      [
+        s|$s.stockCode,
+        s|$s.speciesName,
+        s|$s.fryCount,
+        s|$s.meanGrams,
+        s|$s.stockedAt,
+        s|$s.pond($asOf).pondCode,
+        s|$s.pond($asOf).site.watershed
+      ],
+      [
+        'Stock',
+        'Species',
+        'Fry',
+        'MeanGrams',
+        'Stocked',
+        'Pond',
+        'Watershed'
+      ]
+    )->sort(
+      [
+        asc('Stock')
+      ]
+    )};
+    mapping: test::duskyhatchery::mapping::HatcheryMapping;
+    runtime: test::duskyhatchery::runtime::HatcheryRuntime;
+  }
+  testSuites:
+  [
+    stockDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          hatcheryConnection:
+            Relational
+            #{
+              hatchery.rearing_pond:
+              'pond_code,pond_name,site_code,volume_litres,aerated,commissioned_on,in_z,out_z\n'+
+              'P-01,Alder Raceway,S-1,42000,true,2024-03-01,2026-01-01,9999-12-31\n'+
+              'P-02,Birch Basin,S-1,31000,false,2023-07-15,2026-01-01,9999-12-31\n'+
+              'P-03,Cedar Channel,S-2,55000,true,2025-01-20,2026-01-01,9999-12-31\n'+
+              'P-04,Dogwood Trough,S-2,18000,false,2022-11-05,2026-01-01,9999-12-31\n'+
+              'P-05,Elm Pool,S-3,27000,true,2024-09-30,2026-01-01,9999-12-31\n'+
+              'P-06,Fir Tank,S-3,9000,false,2021-05-12,2020-01-01,2026-01-01\n'+
+              'P-06,Fir Tank,S-3,12000,true,2021-05-12,2026-01-01,9999-12-31\n';
+              hatchery.hatchery_site:
+              'site_code,site_name,watershed,elevation_metres\n'+
+              'S-1,Northern Hatchery,Aspen Creek,310\n'+
+              'S-2,Coastal Hatchery,Salt Marsh,40\n'+
+              'S-3,Upland Hatchery,Granite Brook,720\n';
+              hatchery.species_stock:
+              'stock_code,pond_code,species_name,fry_count,mean_grams,stocked_at\n'+
+              'ST-01,P-01,Brook Char,12000,4.5,2026-02-10 08:00:00\n'+
+              'ST-02,P-01,Rainbow Trout,9000,6.25,2026-03-04 09:30:00\n'+
+              'ST-03,P-02,Brook Char,4000,3.75,2026-01-22 07:45:00\n'+
+              'ST-04,P-03,Arctic Grayling,15000,2.5,2026-04-18 10:00:00\n'+
+              'ST-05,P-04,Rainbow Trout,1200,8.0,2026-05-02 11:15:00\n'+
+              'ST-06,P-05,Brook Char,7000,5.5,2026-05-21 06:30:00\n'+
+              'ST-07,P-06,Arctic Grayling,800,1.75,2026-03-30 12:00:00\n';
+              hatchery.feed_batch:
+              'batch_code,pond_code,feed_type,kilograms,delivered_on,supplier_note\n'+
+              'FB-01,P-01,STARTER,120.5,2026-02-01,Delivered in sealed drums\n'+
+              'FB-02,P-01,GROWER,340.0,2026-03-15,\n'+
+              'FB-03,P-02,STARTER,80.25,2026-02-20,Split across two pallets\n'+
+              'FB-04,P-03,FINISHER,560.0,2026-04-05,\n'+
+              'FB-05,P-04,GROWER,45.5,2026-05-10,Short delivery noted\n'+
+              'FB-06,P-05,STARTER,210.0,2026-05-25,\n'+
+              'FB-07,P-06,FINISHER,30.0,2026-04-02,Trial ration\n';
+              hatchery.water_reading:
+              'reading_id,pond_code,temperature_c,oxygen_mgl,recorded_at,compliant\n'+
+              '1,P-01,11.5,9.2,2026-05-30 06:00:00,true\n'+
+              '2,P-01,14.0,7.8,2026-05-31 06:00:00,true\n'+
+              '3,P-02,16.5,6.1,2026-05-30 06:00:00,false\n'+
+              '4,P-03,10.0,10.4,2026-05-30 06:00:00,true\n'+
+              '5,P-04,18.25,5.4,2026-05-31 06:00:00,false\n'+
+              '6,P-05,12.75,8.9,2026-05-30 06:00:00,true\n'+
+              '7,P-06,19.0,4.8,2026-05-31 06:00:00,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        twoSpeciesSelected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            species = ['Brook Char', 'Rainbow Trout']
+          ]
+          asserts:
+          [
+            selectedStocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stock":"ST-01","Species":"Brook Char","Fry":12000,"MeanGrams":4.5,"Stocked":"2026-02-10T08:00:00.000000000+0000","Pond":"P-01","Watershed":"Aspen Creek"},{"Stock":"ST-02","Species":"Rainbow Trout","Fry":9000,"MeanGrams":6.25,"Stocked":"2026-03-04T09:30:00.000000000+0000","Pond":"P-01","Watershed":"Aspen Creek"},{"Stock":"ST-03","Species":"Brook Char","Fry":4000,"MeanGrams":3.75,"Stocked":"2026-01-22T07:45:00.000000000+0000","Pond":"P-02","Watershed":"Aspen Creek"},{"Stock":"ST-05","Species":"Rainbow Trout","Fry":1200,"MeanGrams":8.0,"Stocked":"2026-05-02T11:15:00.000000000+0000","Pond":"P-04","Watershed":"Salt Marsh"},{"Stock":"ST-06","Species":"Brook Char","Fry":7000,"MeanGrams":5.5,"Stocked":"2026-05-21T06:30:00.000000000+0000","Pond":"P-05","Watershed":"Granite Brook"}]';
+                  }#;
+              }#
+          ]
+        },
+        singleSpeciesSelected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            species = ['Arctic Grayling']
+          ]
+          asserts:
+          [
+            graylingStocks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Stock":"ST-04","Species":"Arctic Grayling","Fry":15000,"MeanGrams":2.5,"Stocked":"2026-04-18T10:00:00.000000000+0000","Pond":"P-03","Watershed":"Salt Marsh"},{"Stock":"ST-07","Species":"Arctic Grayling","Fry":800,"MeanGrams":1.75,"Stocked":"2026-03-30T12:00:00.000000000+0000","Pond":"P-06","Watershed":"Granite Brook"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

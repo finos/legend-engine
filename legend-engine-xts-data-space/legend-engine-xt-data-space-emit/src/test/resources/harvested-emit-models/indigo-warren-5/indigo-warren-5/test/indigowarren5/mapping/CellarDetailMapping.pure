@@ -1,0 +1,119 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigowarren5::mapping::CellarDetailMapping
+(
+  include mapping test::indigowarren5::mapping::CellarBaseMapping
+
+  *test::indigowarren5::domain::Turner[turner]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowarren5::store::CellarDb]cellar.turner.turner_code
+    )
+    ~mainTable [test::indigowarren5::store::CellarDb]cellar.turner
+    turnerCode: [test::indigowarren5::store::CellarDb]cellar.turner.turner_code,
+    turnerName: rtrim([test::indigowarren5::store::CellarDb]cellar.turner.turner_name),
+    rotaLabel: case(
+                 isNull([test::indigowarren5::store::CellarDb]cellar.turner.rota_label),
+                 concat('ROTA-', [test::indigowarren5::store::CellarDb]cellar.turner.turner_code),
+                 toUpper([test::indigowarren5::store::CellarDb]cellar.turner.rota_label)
+               )
+  }
+
+  *test::indigowarren5::domain::Wheel[wheel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowarren5::store::CellarDb]cellar.wheel.wheel_code
+    )
+    ~mainTable [test::indigowarren5::store::CellarDb]cellar.wheel
+    wheelCode: [test::indigowarren5::store::CellarDb]cellar.wheel.wheel_code,
+    milkKind: toUpper(trim([test::indigowarren5::store::CellarDb]cellar.wheel.milk_kind)),
+    rindCode: case(
+                isNull([test::indigowarren5::store::CellarDb]cellar.wheel.rind_code),
+                sqlNull(),
+                toUpper(trim([test::indigowarren5::store::CellarDb]cellar.wheel.rind_code))
+              ),
+    weightGrams: [test::indigowarren5::store::CellarDb]cellar.wheel.weight_grams,
+    wrappedOn: [test::indigowarren5::store::CellarDb]cellar.wheel.wrapped_on
+  }
+
+  *test::indigowarren5::domain::RindCheck[rindCheck]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowarren5::store::CellarDb]cellar.rind_check.check_code
+    )
+    ~mainTable [test::indigowarren5::store::CellarDb]cellar.rind_check
+    checkCode: [test::indigowarren5::store::CellarDb]cellar.rind_check.check_code,
+    rindScore: [test::indigowarren5::store::CellarDb]cellar.rind_check.rind_score,
+    checkedOn: [test::indigowarren5::store::CellarDb]cellar.rind_check.checked_on,
+    noteText: case(
+                isNull([test::indigowarren5::store::CellarDb]cellar.rind_check.note_text),
+                sqlNull(),
+                rtrim(ltrim([test::indigowarren5::store::CellarDb]cellar.rind_check.note_text))
+              )
+  }
+
+  *test::indigowarren5::domain::AffinageEntry[affinageEntry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigowarren5::store::CellarDb]cellar.affinage_entry.entry_code
+    )
+    ~mainTable [test::indigowarren5::store::CellarDb]cellar.affinage_entry
+    entryCode: [test::indigowarren5::store::CellarDb]cellar.affinage_entry.entry_code,
+    gradeBand: case(
+                 isNull([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code),
+                 'BAND-NONE',
+                 case(
+                   equal(toUpper(trim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code)), 'BLOOMY'),
+                   'BAND-1',
+                   case(
+                     equal(toUpper(trim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code)), 'WASHED'),
+                     'BAND-2',
+                     case(
+                       equal(toUpper(trim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code)), 'NATURAL'),
+                       'BAND-3',
+                       case(
+                         equal(toUpper(trim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code)), 'WAXED'),
+                         'BAND-4',
+                         case(
+                           equal(toUpper(trim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code)), 'ASHED'),
+                           'BAND-5',
+                           case(
+                             equal(toUpper(trim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code)), 'CLOTH'),
+                             'BAND-6',
+                             case(
+                               equal(toUpper(trim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.rind_code)), 'BRINED'),
+                               'BAND-7',
+                               'BAND-UNLISTED'
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    turnCount: [test::indigowarren5::store::CellarDb]cellar.affinage_entry.turn_count,
+    roomNote: case(
+                isNull([test::indigowarren5::store::CellarDb]cellar.affinage_entry.room_note),
+                sqlNull(),
+                rtrim([test::indigowarren5::store::CellarDb]cellar.affinage_entry.room_note)
+              )
+  }
+)

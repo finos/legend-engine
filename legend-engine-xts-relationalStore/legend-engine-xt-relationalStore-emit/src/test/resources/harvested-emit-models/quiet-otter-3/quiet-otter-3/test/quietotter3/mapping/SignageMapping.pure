@@ -1,0 +1,146 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::quietotter3::mapping::SignageMapping
+(
+  *test::quietotter3::domain::LitTrailMarker[litMarker]: Relational
+  {
+    ~distinct
+    ~primaryKey
+    (
+      [test::quietotter3::store::SignageDatabase]signage.trail_marker.marker_code
+    )
+    ~mainTable [test::quietotter3::store::SignageDatabase]signage.trail_marker
+    markerCode: [test::quietotter3::store::SignageDatabase]signage.trail_marker.marker_code,
+    trailName: [test::quietotter3::store::SignageDatabase]signage.trail_marker.trail_name,
+    installedAt: [test::quietotter3::store::SignageDatabase]signage.trail_marker.installed_at,
+    surfaceNote: [test::quietotter3::store::SignageDatabase]signage.trail_marker.surface_note,
+    elevationMetres: [test::quietotter3::store::SignageDatabase]signage.trail_marker.elevation_metres
+  }
+
+  *test::quietotter3::domain::InspectionRound[inspectionRound]: Relational
+  {
+    ~primaryKey
+    (
+      [test::quietotter3::store::UpkeepDatabase]upkeep.inspection_round.round_code
+    )
+    ~mainTable [test::quietotter3::store::UpkeepDatabase]upkeep.inspection_round
+    roundCode: [test::quietotter3::store::UpkeepDatabase]upkeep.inspection_round.round_code,
+    inspectorNote: [test::quietotter3::store::UpkeepDatabase]upkeep.inspection_round.inspector_note,
+    walkedAt: [test::quietotter3::store::UpkeepDatabase]upkeep.inspection_round.walked_at,
+    checkedMarkers: [test::quietotter3::store::UpkeepDatabase]upkeep.inspection_round.checked_markers
+  }
+
+  testSuites:
+  [
+    litMarkerSuite:
+    {
+      function: |test::quietotter3::domain::LitTrailMarker.all()->project(
+        [
+          m|$m.markerCode,
+          m|$m.trailName,
+          m|$m.installedAt,
+          m|$m.surfaceNote,
+          m|$m.elevationMetres
+        ],
+        [
+          'MarkerCode',
+          'TrailName',
+          'InstalledAt',
+          'SurfaceNote',
+          'ElevationMetres'
+        ]
+      )->sort([asc('MarkerCode')]);
+      tests:
+      [
+        duplicateMarkerRowsAreDistinct:
+        {
+          doc: 'Projects the duplicate trail-marker fixture through the inherited class mapping, proving that mapping-level distinctness collapses byte-identical rows while retaining every bound property.';
+          data:
+          [
+            test::quietotter3::store::SignageDatabase:
+              Relational
+              #{
+                signage.trail_marker:
+                  'marker_code,trail_name,surface_note,installed_at,elevation_metres\n'+
+                  'TM-1,North Ridge Marker,reflective plate,2026-01-15 09:00:00,842.5\n'+
+                  'TM-1,North Ridge Marker,reflective plate,2026-01-15 09:00:00,842.5\n';
+              }#
+          ];
+          asserts:
+          [
+            oneDistinctMarker:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"MarkerCode":"TM-1","TrailName":"North Ridge Marker","InstalledAt":"2026-01-15T09:00:00.000000000+0000","SurfaceNote":"reflective plate","ElevationMetres":842.5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    inspectionRoundSuite:
+    {
+      function: |test::quietotter3::domain::InspectionRound.all()->project(
+        [
+          r|$r.roundCode,
+          r|$r.inspectorNote,
+          r|$r.walkedAt,
+          r|$r.checkedMarkers
+        ],
+        [
+          'RoundCode',
+          'InspectorNote',
+          'WalkedAt',
+          'CheckedMarkers'
+        ]
+      );
+      tests:
+      [
+        oneInspectionRound:
+        {
+          doc: 'Projects one upkeep inspection round from the separate database instance, proving the second store and its direct scalar bindings execute independently.';
+          data:
+          [
+            test::quietotter3::store::UpkeepDatabase:
+              Relational
+              #{
+                upkeep.inspection_round:
+                  'round_code,inspector_note,walked_at,checked_markers\n'+
+                  'IR-1,west loop sweep,2026-02-03 14:30:00,12\n';
+              }#
+          ];
+          asserts:
+          [
+            inspectionRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"RoundCode":"IR-1","InspectorNote":"west loop sweep","WalkedAt":"2026-02-03T14:30:00.000000000+0000","CheckedMarkers":12}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

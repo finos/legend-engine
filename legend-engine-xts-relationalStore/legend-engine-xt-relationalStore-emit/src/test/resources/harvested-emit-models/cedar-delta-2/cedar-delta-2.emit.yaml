@@ -1,0 +1,42 @@
+name: cedar-delta-2
+title: "Cedar Delta 2 — River Gauging Station Stage Register"
+description: |
+  A river-gauging stage register mapped from one relational reading table onto a
+  single published class. The mapping declares its primary key and main table
+  explicitly, reads every value through a table-alias-qualified column, stamps a
+  constant register label as a literal, resolves the gauge-instrument vocabulary
+  through an enumeration mapping, casts the text-held stage height to a number,
+  and grades the reading into an eight-arm stage band resolved entirely in the
+  relational transform, falling through to a null band when the recorded grade is
+  outside the graded range. The mapping test drives nine readings so that each of
+  the eight band arms is hit exactly once alongside the ungraded fallback row.
+modelSources:
+  model:
+    root: cedar-delta-2
+    files:
+      - test/cedardelta2/domain/GaugeDomain.pure
+      - test/cedardelta2/mapping/GaugeEnumMappings.pure
+      - test/cedardelta2/mapping/GaugeStageMapping.pure
+      - test/cedardelta2/store/GaugeDb.pure
+features:
+  - mapping:enumeration-mapping
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - scaffolding:relational-mapping
+stores:
+  - relational
+complexity: basic
+tags:
+  - conditional-transform
+  - enumeration-mapping
+  - h2
+  - literal-transform
+  - main-table-alias
+  - mapping-test
+  - primary-key
+  - relational
+  - river-gauging
+  - tabular-data-set

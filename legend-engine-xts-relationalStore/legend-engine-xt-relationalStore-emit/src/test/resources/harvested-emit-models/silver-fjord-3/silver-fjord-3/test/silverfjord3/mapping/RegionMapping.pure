@@ -1,0 +1,86 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::silverfjord3::mapping::RegionMapping
+(
+  *test::silverfjord3::domain::CoastalRegion[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::silverfjord3::store::RegionDb]coast.region.region_code,
+      [test::silverfjord3::store::RegionDb]coast.region.coast_code,
+      [test::silverfjord3::store::RegionDb]coast.region.basin_no
+    )
+    ~mainTable [test::silverfjord3::store::RegionDb]coast.region
+    regionCode: [test::silverfjord3::store::RegionDb]coast.region.region_code,
+    coastCode: [test::silverfjord3::store::RegionDb]coast.region.coast_code,
+    basinNo: [test::silverfjord3::store::RegionDb]coast.region.basin_no,
+    regionName: [test::silverfjord3::store::RegionDb]coast.region.region_name
+  }
+
+  *test::silverfjord3::domain::ChartedRegion[chartedRegion] extends [region]: Relational
+  {
+    ~filter [test::silverfjord3::store::RegionDb]SurveyedSinceChartRevision
+    chartedName: [test::silverfjord3::store::RegionDb]coast.region.region_name
+  }
+
+  testSuites:
+  [
+    chartedRegionSuite:
+    {
+      function: |test::silverfjord3::domain::ChartedRegion.all()->filter(
+        g|!$g.chartedName->trim()->toLower()->startsWith('unnamed')
+      )->project(~[
+        Region: g|$g.regionCode,
+        Coast: g|$g.coastCode,
+        Basin: g|$g.basinNo,
+        Name: g|$g.chartedName
+      ])->sort([~Region->ascending(), ~Basin->ascending()]);
+      tests:
+      [
+        regionsSurveyedSinceTheChartRevision:
+        {
+          doc: 'The child mapping narrows the region parent with the chart-revision store filter: the region surveyed before the revision is dropped, an unnamed placeholder fails the query filter, and two regions differ only on the basin key column.';
+          data:
+          [
+            test::silverfjord3::store::RegionDb:
+              Relational
+              #{
+                coast.region:
+                  'region_code,coast_code,basin_no,region_name,surveyed_at\n'+
+                  'RG-1,WC,1,Outer Sound,2019-05-01 00:00:00\n'+
+                  'RG-1,WC,2,Inner Sound,2020-05-01 00:00:00\n'+
+                  'RG-2,WC,1,Long Arm,2016-05-01 00:00:00\n'+
+                  'RG-3,EC,1, Unnamed Bay,2021-05-01 00:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            chartedRegions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Region":"RG-1","Coast":"WC","Basin":1,"Name":"Outer Sound"},{"Region":"RG-1","Coast":"WC","Basin":2,"Name":"Inner Sound"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

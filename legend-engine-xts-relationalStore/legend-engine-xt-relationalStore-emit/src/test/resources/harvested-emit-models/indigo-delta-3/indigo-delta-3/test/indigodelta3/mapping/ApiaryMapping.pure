@@ -1,0 +1,269 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigodelta3::mapping::ApiaryMapping
+(
+  *test::indigodelta3::domain::HiveInspection[inspection]: Relational
+  {
+    ~filter [test::indigodelta3::store::ApiaryDb]LoggedInspectionFilter
+    ~primaryKey
+    (
+      [test::indigodelta3::store::ApiaryDb]apiary.hive_inspection.inspection_id
+    )
+    ~mainTable [test::indigodelta3::store::ApiaryDb]apiary.hive_inspection
+    hiveTag: [test::indigodelta3::store::ApiaryDb]apiary.hive_inspection.hive_tag,
+    yardCode: [test::indigodelta3::store::ApiaryDb]apiary.hive_inspection.yard_code,
+    broodPattern: [test::indigodelta3::store::ApiaryDb]apiary.hive_inspection.brood_pattern,
+    miteWashCount: [test::indigodelta3::store::ApiaryDb]apiary.hive_inspection.mite_wash_count,
+    superCount: [test::indigodelta3::store::ApiaryDb]apiary.hive_inspection.super_count,
+    hiveLabel: concat(
+                 toUpper(trim([test::indigodelta3::store::ApiaryDb]apiary.hive_inspection.hive_tag)),
+                 '/BEE'
+               ),
+    registerSource: 'APIARY INSPECTION LOG',
+    stewardStatus: if(
+                     isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Yard | apiary.hive_yard.steward_name),
+                     'UNSTEWARDED',
+                     'STEWARDED'
+                   ),
+    shelterStatus: if(
+                     isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Yard | apiary.hive_yard.shelter_note),
+                     'OPEN GROUND',
+                     'SHELTERED'
+                   ),
+    forageZoneStatus: if(
+                        isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Yard | apiary.hive_yard.forage_zone),
+                        'ZONE UNSET',
+                        'ZONE SET'
+                      ),
+    yardNameStatus: if(
+                      isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Yard | apiary.hive_yard.yard_name),
+                      'UNNAMED YARD',
+                      'NAMED YARD'
+                    ),
+    yardLinkStatus: if(
+                      isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Yard | apiary.hive_yard.yard_code),
+                      'YARD UNMATCHED',
+                      'YARD MATCHED'
+                    ),
+    sampleStatus: if(
+                    isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Forage | apiary.yard_forage_view.sample_count),
+                    'NO SAMPLES',
+                    'SAMPLED'
+                  ),
+    yieldStatus: if(
+                   isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Forage | apiary.yard_forage_view.total_gram_yield),
+                   'YIELD UNKNOWN',
+                   'YIELD RECORDED'
+                 ),
+    topSourceStatus: if(
+                       isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Forage | apiary.yard_forage_view.top_source),
+                       'SOURCE UNKNOWN',
+                       'SOURCE RECORDED'
+                     ),
+    forageLinkStatus: if(
+                        isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Forage | apiary.yard_forage_view.yard_code),
+                        'FORAGE UNLINKED',
+                        'FORAGE LINKED'
+                      ),
+    surveyStatus: if(
+                    isEmpty([test::indigodelta3::store::ApiaryDb]@Inspection_Forage | apiary.yard_forage_view.sample_count),
+                    'SURVEY PENDING',
+                    'SURVEY DONE'
+                  )
+  }
+
+  *test::indigodelta3::domain::HiveYard[yard]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigodelta3::store::ApiaryDb]apiary.hive_yard.yard_id
+    )
+    ~mainTable [test::indigodelta3::store::ApiaryDb]apiary.hive_yard
+    yardCode: [test::indigodelta3::store::ApiaryDb]apiary.hive_yard.yard_code,
+    yardName: [test::indigodelta3::store::ApiaryDb]apiary.hive_yard.yard_name,
+    forageZone: [test::indigodelta3::store::ApiaryDb]apiary.hive_yard.forage_zone,
+    stewardName: [test::indigodelta3::store::ApiaryDb]apiary.hive_yard.steward_name
+  }
+
+  *test::indigodelta3::domain::YardForage[forage]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigodelta3::store::ApiaryDb]apiary.yard_forage_view.yard_code
+    )
+    ~mainTable [test::indigodelta3::store::ApiaryDb]apiary.yard_forage_view
+    yardCode: [test::indigodelta3::store::ApiaryDb]apiary.yard_forage_view.yard_code,
+    sampleCount: [test::indigodelta3::store::ApiaryDb]apiary.yard_forage_view.sample_count,
+    totalGramYield: [test::indigodelta3::store::ApiaryDb]apiary.yard_forage_view.total_gram_yield,
+    topSource: [test::indigodelta3::store::ApiaryDb]apiary.yard_forage_view.top_source
+  }
+
+  testSuites:
+  [
+    inspectionVerdictSuite:
+    {
+      function: |test::indigodelta3::domain::HiveInspection.all()->project(
+  [
+    i|$i.hiveTag,
+    i|$i.hiveLabel,
+    i|$i.registerSource,
+    i|$i.broodPattern,
+    i|$i.miteWashCount,
+    i|$i.superCount,
+    i|$i.stewardStatus,
+    i|$i.shelterStatus,
+    i|$i.forageZoneStatus,
+    i|$i.yardNameStatus,
+    i|$i.yardLinkStatus,
+    i|$i.sampleStatus,
+    i|$i.yieldStatus,
+    i|$i.topSourceStatus,
+    i|$i.forageLinkStatus,
+    i|$i.surveyStatus
+  ],
+  [
+    'HiveTag',
+    'HiveLabel',
+    'RegisterSource',
+    'BroodPattern',
+    'MiteWash',
+    'Supers',
+    'Steward',
+    'Shelter',
+    'Zone',
+    'YardName',
+    'YardLink',
+    'Samples',
+    'Yield',
+    'TopSource',
+    'ForageLink',
+    'Survey'
+  ]
+)->sort(
+  [
+    asc('HiveTag')
+  ]
+);
+      tests:
+      [
+        everyVerdictArm:
+        {
+          doc: 'Seeds the three inspection relations and drives every arm of the ten shelter, stewardship, naming and forage verdicts: a fully populated yard with samples takes each positive arm, a yard code with no standing ground at all takes every negative arm, two yards with individually blank columns take the blank-column arms, and a named yard with no forage sampling takes only the view-side negative arms. The suppressed row proves the store filter, and the composed hive label proves the nested string transform.';
+          data:
+          [
+            test::indigodelta3::store::ApiaryDb:
+              Relational
+              #{
+                apiary.hive_inspection:
+                  'inspection_id,hive_tag,yard_code,brood_pattern,mite_wash_count,super_count,log_state\n'+
+                  '1,HV-01,YD-1,solid frames,2,3,LOGGED\n'+
+                  '2,HV-02,YD-2,patchy frames,5,2,LOGGED\n'+
+                  '3,HV-03,YD-3,spotty frames,9,1,LOGGED\n'+
+                  '4,HV-04,YD-9,solid frames,1,4,LOGGED\n'+
+                  '5,HV-05,YD-4,solid frames,0,5,LOGGED\n'+
+                  '6,HV-06,YD-1,patchy frames,3,3,LOGGED\n'+
+                  '7,HV-07,YD-2,solid frames,4,2,LOGGED\n'+
+                  '8,HV-08,YD-3,drone heavy,7,1,LOGGED\n'+
+                  '9,HV-09,YD-4,solid frames,2,2,LOGGED\n'+
+                  '10,HV-10,YD-1,voided sheet,0,0,VOID\n';
+
+                apiary.hive_yard:
+                  'yard_id,yard_code,yard_name,forage_zone,steward_name,shelter_note\n'+
+                  '1,YD-1,Willow Row,Lowland heath,Ines Marek,Bramble on north edge\n'+
+                  '2,YD-2,,Lowland heath,Ola Bergstrom,\n'+
+                  '3,YD-3,Alder Slope,,,Stone wall\n'+
+                  '4,YD-4,Reed Hollow,Riverine,Tomas Ek,\n';
+
+                apiary.forage_sample:
+                  'sample_id,yard_code,nectar_source,gram_yield\n'+
+                  '1,YD-1,Clover,410\n'+
+                  '2,YD-1,Bramble,260\n'+
+                  '3,YD-2,Heather,320\n'+
+                  '4,YD-3,Lime blossom,180\n';
+              }#
+          ];
+          asserts:
+          [
+            nineLoggedInspections:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HiveTag":"HV-01","HiveLabel":"HV-01/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"solid frames","MiteWash":2,"Supers":3,"Steward":"STEWARDED","Shelter":"SHELTERED","Zone":"ZONE SET","YardName":"NAMED YARD","YardLink":"YARD MATCHED","Samples":"SAMPLED","Yield":"YIELD RECORDED","TopSource":"SOURCE RECORDED","ForageLink":"FORAGE LINKED","Survey":"SURVEY DONE"},{"HiveTag":"HV-02","HiveLabel":"HV-02/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"patchy frames","MiteWash":5,"Supers":2,"Steward":"STEWARDED","Shelter":"OPEN GROUND","Zone":"ZONE SET","YardName":"UNNAMED YARD","YardLink":"YARD MATCHED","Samples":"SAMPLED","Yield":"YIELD RECORDED","TopSource":"SOURCE RECORDED","ForageLink":"FORAGE LINKED","Survey":"SURVEY DONE"},{"HiveTag":"HV-03","HiveLabel":"HV-03/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"spotty frames","MiteWash":9,"Supers":1,"Steward":"UNSTEWARDED","Shelter":"SHELTERED","Zone":"ZONE UNSET","YardName":"NAMED YARD","YardLink":"YARD MATCHED","Samples":"SAMPLED","Yield":"YIELD RECORDED","TopSource":"SOURCE RECORDED","ForageLink":"FORAGE LINKED","Survey":"SURVEY DONE"},{"HiveTag":"HV-04","HiveLabel":"HV-04/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"solid frames","MiteWash":1,"Supers":4,"Steward":"UNSTEWARDED","Shelter":"OPEN GROUND","Zone":"ZONE UNSET","YardName":"UNNAMED YARD","YardLink":"YARD UNMATCHED","Samples":"NO SAMPLES","Yield":"YIELD UNKNOWN","TopSource":"SOURCE UNKNOWN","ForageLink":"FORAGE UNLINKED","Survey":"SURVEY PENDING"},{"HiveTag":"HV-05","HiveLabel":"HV-05/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"solid frames","MiteWash":0,"Supers":5,"Steward":"STEWARDED","Shelter":"OPEN GROUND","Zone":"ZONE SET","YardName":"NAMED YARD","YardLink":"YARD MATCHED","Samples":"NO SAMPLES","Yield":"YIELD UNKNOWN","TopSource":"SOURCE UNKNOWN","ForageLink":"FORAGE UNLINKED","Survey":"SURVEY PENDING"},{"HiveTag":"HV-06","HiveLabel":"HV-06/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"patchy frames","MiteWash":3,"Supers":3,"Steward":"STEWARDED","Shelter":"SHELTERED","Zone":"ZONE SET","YardName":"NAMED YARD","YardLink":"YARD MATCHED","Samples":"SAMPLED","Yield":"YIELD RECORDED","TopSource":"SOURCE RECORDED","ForageLink":"FORAGE LINKED","Survey":"SURVEY DONE"},{"HiveTag":"HV-07","HiveLabel":"HV-07/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"solid frames","MiteWash":4,"Supers":2,"Steward":"STEWARDED","Shelter":"OPEN GROUND","Zone":"ZONE SET","YardName":"UNNAMED YARD","YardLink":"YARD MATCHED","Samples":"SAMPLED","Yield":"YIELD RECORDED","TopSource":"SOURCE RECORDED","ForageLink":"FORAGE LINKED","Survey":"SURVEY DONE"},{"HiveTag":"HV-08","HiveLabel":"HV-08/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"drone heavy","MiteWash":7,"Supers":1,"Steward":"UNSTEWARDED","Shelter":"SHELTERED","Zone":"ZONE UNSET","YardName":"NAMED YARD","YardLink":"YARD MATCHED","Samples":"SAMPLED","Yield":"YIELD RECORDED","TopSource":"SOURCE RECORDED","ForageLink":"FORAGE LINKED","Survey":"SURVEY DONE"},{"HiveTag":"HV-09","HiveLabel":"HV-09/BEE","RegisterSource":"APIARY INSPECTION LOG","BroodPattern":"solid frames","MiteWash":2,"Supers":2,"Steward":"STEWARDED","Shelter":"OPEN GROUND","Zone":"ZONE SET","YardName":"NAMED YARD","YardLink":"YARD MATCHED","Samples":"NO SAMPLES","Yield":"YIELD UNKNOWN","TopSource":"SOURCE UNKNOWN","ForageLink":"FORAGE UNLINKED","Survey":"SURVEY PENDING"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    yardForageSuite:
+    {
+      function: |test::indigodelta3::domain::YardForage.all()->project(
+  [
+    f|$f.yardCode,
+    f|$f.sampleCount,
+    f|$f.totalGramYield,
+    f|$f.topSource
+  ],
+  [
+    'YardCode',
+    'Samples',
+    'GramYield',
+    'TopSource'
+  ]
+)->sort(
+  [
+    asc('YardCode')
+  ]
+);
+      tests:
+      [
+        aggregatedForage:
+        {
+          doc: 'Reads the grouped inline view directly, proving the counted, summed and maximum aggregate columns the inspection verdicts reach over a join.';
+          data:
+          [
+            test::indigodelta3::store::ApiaryDb:
+              Relational
+              #{
+                apiary.forage_sample:
+                  'sample_id,yard_code,nectar_source,gram_yield\n'+
+                  '1,YD-1,Clover,410\n'+
+                  '2,YD-1,Bramble,260\n'+
+                  '3,YD-2,Heather,320\n'+
+                  '4,YD-3,Lime blossom,180\n';
+              }#
+          ];
+          asserts:
+          [
+            threeSampledYards:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"YardCode":"YD-1","Samples":2,"GramYield":670,"TopSource":"Clover"},{"YardCode":"YD-2","Samples":1,"GramYield":320,"TopSource":"Heather"},{"YardCode":"YD-3","Samples":1,"GramYield":180,"TopSource":"Lime blossom"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

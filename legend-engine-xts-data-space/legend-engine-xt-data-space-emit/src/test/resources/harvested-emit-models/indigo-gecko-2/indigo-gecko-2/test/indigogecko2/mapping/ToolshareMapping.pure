@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::indigogecko2::mapping::ToolshareMapping
+(
+  test::indigogecko2::domain::CheckoutState: EnumerationMapping CheckoutStateMap
+  {
+    CHECKED_OUT: ['OUT'],
+    RETURNED: ['BACK'],
+    OVERDUE: ['LATE'],
+    MISSING: ['LOST', 'HOLD']
+  }
+
+  *test::indigogecko2::domain::ToolCheckout[checkout]: Relational
+  {
+    ~filter [test::indigogecko2::store::ToolshareStore]LiveCheckouts
+    ~primaryKey
+    (
+      [test::indigogecko2::store::ToolshareStore]toolshare.checkout.checkout_code
+    )
+    ~mainTable [test::indigogecko2::store::ToolshareStore]toolshare.checkout
+    checkoutCode: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.checkout_code,
+    period: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.period,
+    statusCode: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.status_code,
+    toolCode: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.tool_code,
+    wearPoints: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.wear_points,
+    setupPoints: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.setup_points,
+    takenOn: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.taken_on,
+    dueOn: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.due_on,
+    returnedOn: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.returned_on,
+    state: EnumerationMapping CheckoutStateMap: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.status_code,
+    statusLabel: case(equal([test::indigogecko2::store::ToolshareStore]toolshare.checkout.status_code, 'BACK'), 'CLOSED', 'OPEN'),
+    usage
+    (
+      minutesUsed: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.minutes_used,
+      wearGrade: [test::indigogecko2::store::ToolshareStore]toolshare.checkout.wear_grade
+    ),
+    member[member]: [test::indigogecko2::store::ToolshareStore]@Checkout_Member,
+    tool[tool]: [test::indigogecko2::store::ToolshareStore]@Checkout_Tool,
+    tags[tag]: [test::indigogecko2::store::ToolshareStore]@Checkout_Tag
+  }
+
+  *test::indigogecko2::domain::Member[member]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko2::store::ToolshareStore]toolshare.member.member_code
+    )
+    ~mainTable [test::indigogecko2::store::ToolshareStore]toolshare.member
+    memberCode: [test::indigogecko2::store::ToolshareStore]toolshare.member.member_code,
+    memberName: [test::indigogecko2::store::ToolshareStore]toolshare.member.member_name,
+    workshop[workshop]: [test::indigogecko2::store::ToolshareStore]@Member_Workshop
+  }
+
+  *test::indigogecko2::domain::Workshop[workshop]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko2::store::ToolshareStore]toolshare.workshop.workshop_code
+    )
+    ~mainTable [test::indigogecko2::store::ToolshareStore]toolshare.workshop
+    workshopCode: [test::indigogecko2::store::ToolshareStore]toolshare.workshop.workshop_code,
+    workshopName: [test::indigogecko2::store::ToolshareStore]toolshare.workshop.workshop_name,
+    steward[steward]: [test::indigogecko2::store::ToolshareStore]@Workshop_Steward
+  }
+
+  *test::indigogecko2::domain::Steward[steward]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko2::store::ToolshareStore]toolshare.steward.steward_code
+    )
+    ~mainTable [test::indigogecko2::store::ToolshareStore]toolshare.steward
+    stewardCode: [test::indigogecko2::store::ToolshareStore]toolshare.steward.steward_code,
+    stewardName: [test::indigogecko2::store::ToolshareStore]toolshare.steward.steward_name
+  }
+
+  *test::indigogecko2::domain::Tool[tool]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko2::store::ToolshareStore]toolshare.tool.tool_code
+    )
+    ~mainTable [test::indigogecko2::store::ToolshareStore]toolshare.tool
+    toolCode: [test::indigogecko2::store::ToolshareStore]toolshare.tool.tool_code,
+    toolName: [test::indigogecko2::store::ToolshareStore]toolshare.tool.tool_name,
+    supplier[supplier]: [test::indigogecko2::store::ToolshareStore]@Tool_Supplier
+  }
+
+  *test::indigogecko2::domain::Supplier[supplier]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko2::store::ToolshareStore]toolshare.supplier.supplier_code
+    )
+    ~mainTable [test::indigogecko2::store::ToolshareStore]toolshare.supplier
+    supplierCode: [test::indigogecko2::store::ToolshareStore]toolshare.supplier.supplier_code,
+    supplierName: [test::indigogecko2::store::ToolshareStore]toolshare.supplier.supplier_name
+  }
+
+  *test::indigogecko2::domain::CheckoutTag[tag]: Relational
+  {
+    ~primaryKey
+    (
+      [test::indigogecko2::store::ToolshareStore]toolshare.checkout_tag.checkout_code, [test::indigogecko2::store::ToolshareStore]toolshare.checkout_tag.tag_code
+    )
+    ~mainTable [test::indigogecko2::store::ToolshareStore]toolshare.checkout_tag
+    tagCode: [test::indigogecko2::store::ToolshareStore]toolshare.checkout_tag.tag_code
+  }
+)

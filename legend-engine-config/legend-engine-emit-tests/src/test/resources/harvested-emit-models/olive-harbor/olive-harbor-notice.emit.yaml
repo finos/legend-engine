@@ -1,0 +1,36 @@
+name: olive-harbor-notice
+title: "Olive Harbor — Store-less Sailing Notice Endpoint (Service, Three Test Suites, Text Documentation)"
+description: |
+  A coastal ferry-terminal model whose only executable surface is a
+  document-returning endpoint over a delimited sailing-notice payload. The
+  single-execution service binds neither mapping nor runtime: its parameter is
+  the source and its body is one call into the shared normalisation function,
+  so the compile-time contract is that function's parameter and return
+  multiplicity. Three independent test suites, each carrying one test with one
+  structural assertion, pin the populated-advisory document, the absent-advisory
+  document where the optional member serialises as an explicit null, and a
+  berth list whose uncoded entry is dropped. A markdown documentation element
+  carries the scope statement into the compiled element set without
+  participating in execution.
+
+modelSources:
+  model:
+    root: olive-harbor-notice
+    files:
+      - test/oliveharbor/doc/ScopeNote.pure
+      - test/oliveharbor/function/NoticeFunctions.pure
+      - test/oliveharbor/service/SailingNoticeDocument.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:text-element
+stores: []
+complexity: basic
+tags:
+  - document-response
+  - ferry-terminal
+  - markdown-documentation
+  - sailing-notice
+  - service-test
+  - store-less

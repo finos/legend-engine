@@ -1,0 +1,43 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::olivequarry2::source::*;
+
+Class {meta::pure::profiles::doc.doc = 'An inbound dispatch document for one cut stone block leaving the heritage quarry.'} test::olivequarry2::source::BlockDispatch
+{
+  dispatchRef: String[1];
+  blockCode: String[0..1];
+  gradeText: String[0..1];
+  finishText: String[0..1];
+  massKg: Integer[0..1];
+  faceCount: Integer[1];
+  legacyCode: String[0..1];
+  site: SiteRecord[0..1];
+  tags: TagRecord[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The nested quarry-site element of a dispatch document.'} test::olivequarry2::source::SiteRecord
+{
+  quarryName: String[1];
+  benchLabel: String[0..1];
+  elevationM: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A marking tag painted on the block, possibly retired.'} test::olivequarry2::source::TagRecord
+{
+  scheme: String[1];
+  tagValue: String[1];
+  retired: Boolean[0..1];
+}

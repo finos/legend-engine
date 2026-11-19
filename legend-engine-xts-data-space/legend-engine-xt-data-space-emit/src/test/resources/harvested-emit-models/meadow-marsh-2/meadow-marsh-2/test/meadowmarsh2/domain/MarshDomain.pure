@@ -1,0 +1,94 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::meadowmarsh2::domain::Station
+{
+  stationCode: String[1];
+  stationName: String[1];
+  wardName: String[1];
+  dockCapacity: Integer[0..1];
+}
+
+Class demo::meadowmarsh2::domain::Dock
+{
+  dockCode: String[1];
+  dockStatus: String[1];
+  installedOn: StrictDate[0..1];
+  stationName: String[0..1];
+}
+
+Class demo::meadowmarsh2::domain::Bicycle
+{
+  bicycleTag: String[1];
+  modelName: String[1];
+  gearCount: Integer[0..1];
+  wheelSizeMm: Integer[0..1];
+  dockStatus: String[0..1];
+}
+
+Class demo::meadowmarsh2::domain::Rider
+{
+  riderCode: String[1];
+  riderName: String[1];
+  membershipTier: String[1];
+  joinedOn: StrictDate[0..1];
+}
+
+Class demo::meadowmarsh2::domain::Ride
+{
+  rideCode: String[1];
+  startedAt: DateTime[0..1];
+  distanceKm: Float[0..1];
+  routeLabel: String[0..1];
+  bicycleModel: String[0..1];
+}
+
+Class demo::meadowmarsh2::domain::Ticket
+{
+  ticketCode: String[1];
+  raisedOn: StrictDate[0..1];
+  severityLabel: String[1];
+  noteText: String[0..1];
+}
+
+Association demo::meadowmarsh2::domain::Station_Dock
+{
+  station: demo::meadowmarsh2::domain::Station[0..1];
+  docks: demo::meadowmarsh2::domain::Dock[*];
+}
+
+Association demo::meadowmarsh2::domain::Dock_Bicycle
+{
+  dock: demo::meadowmarsh2::domain::Dock[0..1];
+  bicycles: demo::meadowmarsh2::domain::Bicycle[*];
+}
+
+Association demo::meadowmarsh2::domain::Bicycle_Ride
+{
+  bicycle: demo::meadowmarsh2::domain::Bicycle[0..1];
+  rides: demo::meadowmarsh2::domain::Ride[*];
+}
+
+Association demo::meadowmarsh2::domain::Rider_Ride
+{
+  rider: demo::meadowmarsh2::domain::Rider[0..1];
+  riderRides: demo::meadowmarsh2::domain::Ride[*];
+}
+
+Association demo::meadowmarsh2::domain::Bicycle_Ticket
+{
+  ticketedBicycle: demo::meadowmarsh2::domain::Bicycle[0..1];
+  tickets: demo::meadowmarsh2::domain::Ticket[*];
+}

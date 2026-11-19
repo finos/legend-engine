@@ -1,0 +1,41 @@
+name: sable-ridge
+title: "Reef Survey Stations - Point-In-Time Milestoning Behind Single and Multi Execution Services"
+description: |
+  A coral reef monitoring corpus whose survey stations are business-temporal, so
+  every station carries a validity window and a query must name the instant it is
+  resolved at. A single-execution service pins that instant to a literal far in the
+  future, gates rows on membership of a multi-valued identifier parameter and
+  branches the depth band inside the projection; its testSuite covers a version that
+  closed before the instant, one that contains it and one that opens after it. An
+  environment-keyed multi-execution twin serves the same shape across two execution
+  stacks and is proved by compile and execution-plan generation.
+modelSources:
+  model:
+    root: sable-ridge
+    files:
+      - test/sableridge/connection/ReefConnection.pure
+      - test/sableridge/domain/ReefDomain.pure
+      - test/sableridge/mapping/ReefMapping.pure
+      - test/sableridge/runtime/ReefRuntime.pure
+      - test/sableridge/service/ReefStationsAsOf.pure
+      - test/sableridge/store/ReefSurveyDB.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-op
+  - h2
+  - multi-execution
+  - plan-generation
+  - point-in-time
+  - reef-survey
+  - service-test

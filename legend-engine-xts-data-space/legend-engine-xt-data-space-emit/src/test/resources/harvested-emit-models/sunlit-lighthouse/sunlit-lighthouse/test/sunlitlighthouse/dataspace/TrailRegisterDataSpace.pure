@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace {meta::pure::profiles::doc.doc = 'Governed publication of the public trail network register.'} demo::sunlitlighthouse::dataspace::TrailRegisterDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'marker';
+      description: 'Marker tier - the waymarker register resolved against the register warehouse.';
+      mapping: demo::sunlitlighthouse::mapping::TrailRegisterMapping;
+      defaultRuntime: demo::sunlitlighthouse::runtime::MarkerRuntime;
+    },
+    {
+      name: 'shelter';
+      description: 'Shelter tier - the same mapping resolved for the shelter register reads.';
+      mapping: demo::sunlitlighthouse::mapping::TrailRegisterMapping;
+      defaultRuntime: demo::sunlitlighthouse::runtime::ShelterRuntime;
+    },
+    {
+      name: 'upkeep';
+      description: 'Upkeep tier - the same mapping resolved for the inspection register reads in the second schema.';
+      mapping: demo::sunlitlighthouse::mapping::TrailRegisterMapping;
+      defaultRuntime: demo::sunlitlighthouse::runtime::UpkeepRuntime;
+    }
+  ];
+  defaultExecutionContext: 'marker';
+  title: 'Public Trail Network Register';
+  description: 'A governed entry point over the public trail network register - waymarking posts, overnight shelters and the upkeep inspections recorded against them, each versioned on the processing window it was loaded in - wiring the mapping, the register warehouse runtimes and the featured endpoints consumers should start from.';
+  elements:
+  [
+    demo::sunlitlighthouse::domain
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Waymarker register feed';
+      description: 'Featured endpoint returning the hard-surface waymarkers open at a requested processing date.';
+      executable: demo::sunlitlighthouse::service::MarkerRegisterFeed;
+    },
+    {
+      id: 2;
+      title: 'Shelter register feed';
+      description: 'Featured endpoint returning the shelter register snapshot at a requested processing date.';
+      executable: demo::sunlitlighthouse::service::ShelterRegisterFeed;
+    },
+    {
+      id: 3;
+      title: 'Upkeep inspection feed';
+      description: 'Featured endpoint returning the reported upkeep outcomes open at a requested processing date.';
+      executable: demo::sunlitlighthouse::service::UpkeepInspectionFeed;
+    }
+  ];
+  supportInfo: Email {
+    address: 'trail-network-register@example.invalid';
+  };
+}

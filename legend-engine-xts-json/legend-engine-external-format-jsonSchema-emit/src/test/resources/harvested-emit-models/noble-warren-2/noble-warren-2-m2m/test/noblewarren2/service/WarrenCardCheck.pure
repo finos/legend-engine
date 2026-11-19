@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblewarren2::service::WarrenCardCheck
+{
+  pattern: '/warren/v1/cards/check';
+  title: 'Warren - Field Card Defect Check';
+  ownership: UserList { users: ['warren-survey-desk'] };
+  documentation: 'Fetches the single derived card property through the defect-checking graph specification and serialises the same one-property tree, so each result carries its defect list and raw source record. Its runtime is written inline into the execution rather than referenced, which makes the service self-contained.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: |test::noblewarren2::domain::SurveyorCard.all()->graphFetchChecked(
+      #{
+        test::noblewarren2::domain::SurveyorCard{
+          displayName
+        }
+      }#
+    )->serialize(
+      #{
+        test::noblewarren2::domain::SurveyorCard{
+          displayName
+        }
+      }#
+    );
+    mapping: test::noblewarren2::mapping::SurveyorCardM2M;
+    runtime:
+    #{
+      mappings:
+      [
+        test::noblewarren2::mapping::SurveyorCardM2M
+      ];
+      connections:
+      [
+        ModelStore:
+        [
+          inlineRosterConnection:
+          #{
+            JsonModelConnection
+            {
+              class: test::noblewarren2::source::WarrenSurveyor;
+              url: 'data:application/json,%7B%7D';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    checkedCardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inlineRosterConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"givenName":"Ida","familyName":"Renwick","homeBurrow":{"siteCode":"BS-11","siteName":"Alder Rise"}}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        wellFormedRecordHasNoDefects:
+        {
+          asserts:
+          [
+            emptyDefectLists:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"givenName\\":\\"Ida\\",\\"familyName\\":\\"Renwick\\",\\"homeBurrow\\":{\\"siteCode\\":\\"BS-11\\",\\"siteName\\":\\"Alder Rise\\"}}"},"value":{"familyName":"Renwick","givenName":"Ida"}},"value":{"displayName":"RENWICK, Ida"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    },
+    underPopulatedRecordSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          inlineRosterConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"givenName":"Ida"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        omittedMandatoryNamePart:
+        {
+          asserts:
+          [
+            defectListNonEmpty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"No Input Available","enforcementLevel":"Critical","ruleType":"NoInput","ruleDefinerPath":"test::noblewarren2::domain::SurveyorCard","path":[]}],"source":{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for familyName: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"test::noblewarren2::source::WarrenSurveyor","path":[]}],"source":{"number":1,"record":"{\\"givenName\\":\\"Ida\\"}"},"value":null},"value":null}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

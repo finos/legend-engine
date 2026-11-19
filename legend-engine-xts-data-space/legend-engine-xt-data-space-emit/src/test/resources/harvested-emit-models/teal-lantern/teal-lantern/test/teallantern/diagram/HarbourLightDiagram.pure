@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::teallantern::diagram::HarbourLightDiagram
+{
+  classView station
+  {
+    class: test::teallantern::domain::LanternStation;
+    position: (40.0, 40.0);
+    rectangle: (240.0, 150.0);
+  }
+  classView lamp
+  {
+    class: test::teallantern::domain::LampUnit;
+    position: (400.0, 40.0);
+    rectangle: (220.0, 120.0);
+  }
+  classView inspection
+  {
+    class: test::teallantern::domain::LampInspection;
+    position: (400.0, 260.0);
+    rectangle: (230.0, 140.0);
+  }
+  classView crew
+  {
+    class: test::teallantern::domain::KeeperCrew;
+    position: (40.0, 260.0);
+    rectangle: (220.0, 110.0);
+  }
+  propertyView
+  {
+    property: test::teallantern::domain::Station_Lamp.lamps;
+    source: station;
+    target: lamp;
+    points: [(160.0, 110.0), (510.0, 100.0)];
+  }
+  propertyView
+  {
+    property: test::teallantern::domain::Lamp_Inspection.inspections;
+    source: lamp;
+    target: inspection;
+    points: [(510.0, 100.0), (515.0, 330.0)];
+  }
+  propertyView
+  {
+    property: test::teallantern::domain::Station_Crew.crews;
+    source: station;
+    target: crew;
+    points: [(160.0, 110.0), (150.0, 315.0)];
+  }
+}

@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::quietestuary::function::*;
+
+Class {meta::pure::profiles::doc.doc = 'A tide-gauge reading published by the estuary monitoring model, valid over an explicit observation window.'} test::quietestuary::domain::GaugeReading
+{
+  stationCode: String[1];
+  reach: String[1];
+  waterLevelCm: Integer[1];
+  validFrom: DateTime[1];
+  validThru: DateTime[1];
+  tideBand() {tideBand($this.waterLevelCm)}: String[1];
+  stationLabel() {if($this.tideBand == 'SPRING',
+    | ($this.reach->toUpper()->substring(0, 3) + '/' + $this.stationCode->trim()->toLower() + '/' + $this.waterLevelCm->toString() + '!'),
+    | ($this.reach->toUpper()->substring(0, 3) + '/' + $this.stationCode->trim()->toLower() + '/' + $this.waterLevelCm->toString())
+  )}: String[1];
+}

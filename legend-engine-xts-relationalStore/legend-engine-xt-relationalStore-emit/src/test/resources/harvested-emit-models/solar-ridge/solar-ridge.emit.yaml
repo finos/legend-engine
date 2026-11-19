@@ -1,0 +1,52 @@
+name: solar-ridge
+title: "Allotment Harvest Rollup — Multi-Hop Grouping Keys, To-Many Reduction and Post-Grouping Deduplication"
+description: |
+  A community-allotment cultivation corpus whose single tabular service rolls up
+  weighed crop lifts for one zone over an inclusive date window. The predicate
+  mixes an equality test reached through a two-hop to-one chain with a two-sided
+  date comparison and a membership exclusion, and the grouping resolves ten keys
+  through chains of one to four hops, including a self-referencing parent-zone
+  traversal, before reducing the to-many warden visits to their latest date and
+  deduplicating the grouped table.
+
+modelSources:
+  model:
+    root: solar-ridge
+    files:
+      - test/solarridge/connection/GardenH2Connection.pure
+      - test/solarridge/domain/GardenDomain.pure
+      - test/solarridge/mapping/GardenMapping.pure
+      - test/solarridge/runtime/GardenRuntime.pure
+      - test/solarridge/service/ZoneHarvestRollup.pure
+      - test/solarridge/store/GardenDB.pure
+
+features:
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - allotment-garden
+  - collection-op
+  - deduplication
+  - group-by
+  - h2
+  - multi-hop-join
+  - self-join
+  - service-test

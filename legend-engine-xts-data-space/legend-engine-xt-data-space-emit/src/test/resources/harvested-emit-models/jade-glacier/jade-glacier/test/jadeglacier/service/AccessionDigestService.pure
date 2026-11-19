@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::jadeglacier::service::AccessionDigestService
+{
+  pattern: '/jadeglacier/accessionDigest';
+  title: 'Accession Digest';
+  owners:
+  [
+    'conservatory-curation',
+    'glasshouse-operations'
+  ];
+  documentation: 'Keeps accessions potted at or above a bench-size floor and projects the accession, graded taxon, census-view pot maximum and an acquisition band as a tabular data set.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::jadeglacier::domain::PlantAccession.all()->filter(
+      a|$a.potSizeCm->toOne() >= 20
+    )->project(
+      [
+        col(
+          a|$a.accessionCode,
+          'Accession'
+        ),
+        col(
+          a|$a.taxonName,
+          'Taxon'
+        ),
+        col(
+          a|$a.census.largestPotCm->toOne(),
+          'LargestPot'
+        ),
+        col(
+          a|if($a.acquiredYear->toOne() >= 2020, | 'RECENT', | 'ESTABLISHED'),
+          'Vintage'
+        )
+      ]
+    )->sort([asc('Accession')]);
+    mapping: test::jadeglacier::mapping::ConservatoryMapping;
+    runtime: test::jadeglacier::runtime::ConservatoryRuntime;
+  }
+  testSuites:
+  [
+    accessionDigestServiceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          conservatoryLakeConnection:
+            Relational
+            #{
+              conservatory.plant_accession:
+                'accession_code,taxon_name,glasshouse_code,pot_size_cm,acquired_year,curator_note\n'+
+                'AC-101,jade vine,GH-1,24,2019,repotted spring\n'+
+                'AC-102,tree fern,GH-1,40,2021,\n'+
+                'AC-103,silver moss,GH-2,12,2023,shade bench\n'+
+                'AC-104,stone pine,GH-2,30,2018,north bench\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        benchSizedAccessions:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Accession":"AC-101","Taxon":"JADE VINE","LargestPot":40,"Vintage":"ESTABLISHED"},{"Accession":"AC-102","Taxon":"TREE FERN","LargestPot":40,"Vintage":"RECENT"},{"Accession":"AC-104","Taxon":"STONE PINE","LargestPot":30,"Vintage":"ESTABLISHED"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

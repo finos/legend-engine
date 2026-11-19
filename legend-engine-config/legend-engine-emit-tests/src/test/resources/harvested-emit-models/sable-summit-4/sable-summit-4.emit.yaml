@@ -1,0 +1,35 @@
+name: sable-summit-4
+title: "Sable Summit — Street-Tree Inventory (three flat classes, one asymmetric association and a curated diagram with both property directions drawn)"
+description: |
+  A municipal street-tree inventory carried as model content only. Two of the
+  three classes are measurement rows — a mandatory identifier and date followed
+  by a long tail of optional metres, litres and follow-up dates — while the
+  third is an all-mandatory surveyor badge row that nothing else references. A
+  single binary association binds a tree to the canopy measurements taken
+  against it, to-many in one direction and to-one in the other, so reaching a
+  scalar from the tree side has to cross a collection. A diagram pins the two
+  associated classes onto a canvas with their own position and rectangle
+  geometry and draws both ends of the association as property views with
+  explicit edge waypoints, so the layout is compiled model content whose class
+  and association-property references must resolve, while the standalone badge
+  class stays off the canvas.
+
+modelSources:
+  model:
+    root: sable-summit-4
+    files:
+      - test/sablesummit4/diagram/InventoryDiagram.pure
+      - test/sablesummit4/domain/StreetTreeDomain.pure
+
+features:
+  - grammar:association
+  - grammar:diagram
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - diagram
+  - domain-only
+  - property-view
+  - street-tree

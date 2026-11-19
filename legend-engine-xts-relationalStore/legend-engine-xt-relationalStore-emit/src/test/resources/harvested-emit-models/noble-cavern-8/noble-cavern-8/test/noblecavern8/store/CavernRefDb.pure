@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::noblecavern8::store::CavernRefDb
+(
+  Schema ref
+  (
+    Table cave_system
+    (
+      system_id INTEGER PRIMARY KEY,
+      system_code VARCHAR(20) NOT NULL,
+      system_name VARCHAR(60) NOT NULL,
+      karst_region VARCHAR(40) NOT NULL
+    )
+
+    Table access_permit
+    (
+      permit_id INTEGER PRIMARY KEY,
+      system_code VARCHAR(20) NOT NULL,
+      permit_ref VARCHAR(20) NOT NULL,
+      permit_holder VARCHAR(60) NOT NULL
+    )
+  )
+
+  Schema gazetteer
+  (
+    Table karst_region
+    (
+      region_code VARCHAR(20) PRIMARY KEY,
+      region_name VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join CaveSystem_Permit(equal(ref.cave_system.system_code, ref.access_permit.system_code))
+
+  Join CaveSystem_Region(equal(ref.cave_system.karst_region, gazetteer.karst_region.region_code))
+)

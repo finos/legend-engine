@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarmeadow::service::BloomTallyJoinService
+{
+  pattern: '/solarmeadow/bloomTally/{asOf}';
+  title: 'Plot Beside Its Windowed Bloom Tally';
+  owners:
+  [
+    'meadow-monitoring'
+  ];
+  documentation: 'Places every live plot beside the stem tally counted in the twelve months up to the requested instant, joining the plot projection to a grouped projection of the counts on the plot key with an outer join so a plot with no counts in the window is kept with an empty tally.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|let windowStart = $asOf->adjust(-1, meta::pure::functions::date::DurationUnit.YEARS);
+    test::solarmeadow::domain::MeadowPlot.all()->project(
+      [
+        col(p|$p.plotCode, 'Plot'),
+        col(p|$p.swardName, 'Sward'),
+        col(p|$p.firstSurveyDate->year(), 'FirstYear')
+      ]
+    )->join(
+      test::solarmeadow::domain::BloomCount.all()->filter(
+        c|($c.countedOn >= $windowStart) && ($c.countedOn <= $asOf)
+      )->groupBy(
+        [
+          c|$c.plotCode
+        ],
+        [
+          agg(c|$c.stemTally, y|$y->sum())
+        ],
+        [
+          'TallyPlot',
+          'WindowStems'
+        ]
+      ),
+      meta::relational::metamodel::join::JoinType.LEFT_OUTER,
+      {l, r|$l.getString('Plot') == $r.getString('TallyPlot')}
+    )->restrict(
+      [
+        'Plot',
+        'Sward',
+        'FirstYear',
+        'WindowStems'
+      ]
+    )->sort(
+      [
+        asc('Plot')
+      ]
+    );};
+    mapping: test::solarmeadow::mapping::MeadowMapping;
+    runtime: test::solarmeadow::runtime::MeadowH2Runtime;
+  }
+  testSuites:
+  [
+    bloomTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowH2Connection:
+            Relational
+            #{
+              habitat.meadow_plot:
+                'plot_code,plot_name,sward_code,sown_year,area_m2,first_survey_date,retire_code,keeper_note\n'+
+                'P-01,Chalk Ridge,S-CH,2018,4200.0,2019-06-01,LIVE,mown late\n'+
+                'P-02,Mesic Terrace,S-MG,2020,3100.0,2021-06-01,LIVE,grazed\n'+
+                'P-03,Wet Flush,S-WF,2022,1800.0,2023-06-01,LIVE,scythed\n'+
+                'P-04,Old Verge,S-CH,2011,900.0,2012-06-01,RETIRED,handed back\n';
+
+              habitat.sward_type:
+                'sward_code,sward_name,canopy_tier\n'+
+                'S-CH,Chalk Sward,T1\n'+
+                'S-MG,Mesic Grass Sward,T2\n'+
+                'S-WF,Wet Flush Sward,T4\n';
+
+              habitat.bloom_count:
+                'count_id,plot_code,taxon_code,counted_on,stem_tally,cover_pct\n'+
+                '1,P-01,T-BEE,2026-05-04,40,0.5\n'+
+                '2,P-01,T-HOV,2026-05-11,25,3.0\n'+
+                '3,P-02,T-BEE,2026-06-01,60,41.0\n'+
+                '4,P-03,T-BUT,2024-06-15,12,9.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        rollingYear:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-09-30
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Sward":"CHALK SWARD","FirstYear":2019,"WindowStems":65},{"Plot":"P-02","Sward":"MESIC GRASS SWARD","FirstYear":2021,"WindowStems":60},{"Plot":"P-03","Sward":"WET FLUSH SWARD","FirstYear":2023,"WindowStems":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

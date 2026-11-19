@@ -1,0 +1,80 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::hazelbeacon3::dataspace::RegisterDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'registry';
+      description: 'Registry environment - the beacon and inspection binding served through the coastal register warehouse.';
+      mapping: test::hazelbeacon3::mapping::BeaconRegistryMapping;
+      defaultRuntime: test::hazelbeacon3::runtime::BeaconRegistryRuntime;
+    },
+    {
+      name: 'registry-local';
+      description: 'Local environment - the same binding served through the local test database used by the register endpoints.';
+      mapping: test::hazelbeacon3::mapping::BeaconRegistryMapping;
+      defaultRuntime: test::hazelbeacon3::runtime::BeaconH2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'registry';
+  title: 'Coastal Beacon Register And Inspections';
+  description: 'A governed entry point over the coastal beacon register - graded beacons with their shore stations and lamp units, the volunteer inspection visits and the defects raised from them - wiring the mapping, runtimes, curated diagrams and featured endpoints consumers should start from.';
+  elements:
+  [
+    test::hazelbeacon3::domain::NavigationBeacon,
+    test::hazelbeacon3::domain::BeaconStation,
+    test::hazelbeacon3::domain::LampUnit,
+    test::hazelbeacon3::domain::BeaconInspection,
+    test::hazelbeacon3::domain::InspectionDefect
+  ];
+  diagrams:
+  [
+    {
+      title: 'Beacon Register';
+      diagram: test::hazelbeacon3::diagram::RegisterDiagram;
+    },
+    {
+      title: 'Inspection And Defect';
+      diagram: test::hazelbeacon3::diagram::InspectionDiagram;
+    }
+  ];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Recent Inspection Register';
+      description: 'The fortnight register derived from the reporting date and narrowed to the rostered keepers.';
+      executable: test::hazelbeacon3::service::BeaconInspectionRegister;
+    },
+    {
+      id: 2;
+      title: 'Escalated Defect Feed';
+      description: 'The banded defects whose severity code sits in the shared escalation list.';
+      executable: test::hazelbeacon3::service::DefectEscalationFeed;
+    },
+    {
+      id: 3;
+      title: 'Lens Score Ranking';
+      description: 'The lens scores ranked inside each beacon partition.';
+      executable: test::hazelbeacon3::service::LensScoreRanking;
+    }
+  ];
+  supportInfo: Email
+  {
+    address: 'beacon-register-desk@coastaltrust.invalid';
+  };
+}

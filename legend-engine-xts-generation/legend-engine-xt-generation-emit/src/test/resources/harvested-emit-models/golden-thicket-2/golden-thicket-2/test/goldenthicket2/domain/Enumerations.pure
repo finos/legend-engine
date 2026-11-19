@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::goldenthicket2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Outcome of matching an intake record against the register.'} test::goldenthicket2::domain::MatchOutcome
+{
+  EXACT,
+  PARTIAL,
+  AMBIGUOUS,
+  NONE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'State of the field-form validation sweep.'} test::goldenthicket2::domain::ValidationState
+{
+  ACCEPTED,
+  QUERIED,
+  REJECTED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'State of the reference enrichment pass.'} test::goldenthicket2::domain::EnrichmentState
+{
+  ENRICHED,
+  PARTIAL,
+  SKIPPED,
+  FAILED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'State of the warden resolution step.'} test::goldenthicket2::domain::ResolutionState
+{
+  RESOLVED,
+  PENDING,
+  ESCALATED
+}

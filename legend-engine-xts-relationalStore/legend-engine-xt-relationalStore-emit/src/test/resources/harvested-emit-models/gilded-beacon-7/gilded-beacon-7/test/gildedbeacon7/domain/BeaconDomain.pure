@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::gildedbeacon7::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'The lamp fitted to a coastal beacon, which decides how the watch hours of the station are read.'} test::gildedbeacon7::domain::LampTier
+{
+  HALOGEN,
+  LED,
+  VAPOUR
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stretch of coast the beacon stations are grouped into for the purposes of the watch rota.'} test::gildedbeacon7::domain::BeaconDistrict
+{
+  districtCode: String[1];
+  districtName: String[1];
+  shoreLine: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A coastal beacon station whose lamp, lens and watch rota are restated over time, so the register has to be opened at a date before it can be read.'} test::gildedbeacon7::domain::BeaconStation
+{
+  stationCode: String[1];
+  keeperName: String[1];
+  lampTier: LampTier[1];
+  lensGrade: String[0..1];
+  watchHours: Integer[1];
+  luxReading: Float[1];
+  inspectedOn: StrictDate[1];
+  district: BeaconDistrict[0..1];
+}

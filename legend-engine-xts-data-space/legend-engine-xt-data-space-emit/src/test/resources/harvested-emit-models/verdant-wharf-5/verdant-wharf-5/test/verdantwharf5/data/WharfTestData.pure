@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::verdantwharf5::data::WharfTestData
+{
+  Relational
+  #{
+    harbour.wharf_berth:
+      'berth_code,opened_on,berth_name,tide_window,depth_m\n'+
+      'B-01,2024-01-01,North Quay,SPRING,12.5\n'+
+      'B-02,2024-02-01,South Quay,NEAP,9.0\n'+
+      'B-03,2024-03-01,East Basin,SPRING,7.25\n';
+
+    harbour.vessel_call:
+      'call_code,call_leg,berth_code,vessel_name,arrived_at,cargo_class,pallet_total,priority_code\n'+
+      'C-01,1,B-01,northern gull,2026-05-01 08:00:00,CONTAINER,40,EX\n'+
+      'C-01,2,B-01,northern gull,2026-05-08 15:00:00,RETURNS,7,RT\n'+
+      'C-02,1,B-01,harbour tern,2026-05-02 09:00:00,CONTAINER,25,HZ\n'+
+      'C-03,1,B-02,coastal skua,2026-05-03 10:00:00,REEFER,18,RF\n'+
+      'C-04,1,B-02,tidal petrel,2026-05-04 11:00:00,BULK,60,BK\n'+
+      'C-05,1,B-01,marsh heron,2026-05-05 12:00:00,BREAKBULK,12,OS\n'+
+      'C-06,1,B-02,quay swift,2026-05-06 13:00:00,CONTAINER,33,TR\n'+
+      'C-07,1,B-09,estuary pipit,2026-05-07 14:00:00,LIGHT,5,LT\n'+
+      'C-09,1,B-03,basin egret,2026-05-09 16:00:00,CONTAINER,,ZZ\n';
+
+    logistics.cargo_pallet:
+      'pallet_code,call_code,call_leg,pallet_weight_kg,seal_code\n'+
+      'P-01,C-01,1,850.00,SL-1\n'+
+      'P-02,C-01,1,1200.50,SL-2\n'+
+      'P-03,C-02,1,300.00,SL-3\n'+
+      'P-04,C-04,1,2100.00,\n'+
+      'P-05,C-01,2,90.00,SL-5\n'+
+      'P-06,C-99,1,500.00,SL-6\n';
+
+    logistics.pallet_check:
+      'check_code,pallet_code,inspector_team,checked_at,outcome_code\n'+
+      'K-01,P-01,dock wardens,2026-05-01 10:00:00,PASS\n'+
+      'K-02,P-01,night wardens,2026-05-01 18:00:00,HOLD\n'+
+      'K-03,P-02,dock wardens,2026-05-02 10:00:00,PASS\n'+
+      'K-04,P-04,quay wardens,2026-05-04 12:00:00,FAIL\n'+
+      'K-05,P-77,dock wardens,2026-05-05 12:00:00,PASS\n';
+  }#
+}

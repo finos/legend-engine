@@ -1,0 +1,69 @@
+name: coral-fossil-2
+title: "Coral Fossil Survey — Composite-Keyed Relational Survey Behind a Governed Data Space"
+description: |
+  A fossil-reef field-survey project. Four survey tables in one schema — dig
+  sites, catalogued specimens, coral colony readings and field collectors —
+  each declare a composite primary key of a survey date with an identifier and,
+  for colony readings, a recording instant. Specimens reach their dig site
+  through a two-column inner join implemented as a relational association.
+  Single-execution services owned by one deployment identifier project each
+  class into renamed columns, one of them filtering by a strict-date path
+  parameter, over a key-pair authenticated warehouse connection with query
+  tagging on. A data space with a classification stereotype, three tagged
+  values, a diagram and email support lists the parameterless services as its
+  executables.
+modelSources:
+  model:
+    root: coral-fossil-2
+    files:
+      - test/coralfossil2/connection/FossilConnection.pure
+      - test/coralfossil2/dataspace/FossilDataSpace.pure
+      - test/coralfossil2/diagram/FossilDiagram.pure
+      - test/coralfossil2/domain/FossilDomain.pure
+      - test/coralfossil2/mapping/FossilMapping.pure
+      - test/coralfossil2/profile/FossilCatalogueProfile.pure
+      - test/coralfossil2/runtime/FossilRuntime.pure
+      - test/coralfossil2/service/FossilServices.pure
+      - test/coralfossil2/store/FossilStore.pure
+features:
+  - connection:snowflake
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - execution:service-path-parameter
+  - grammar:association
+  - grammar:profile
+  - grammar:diagram
+  - grammar:tagged-value
+  - mapping:relational-association-implementation
+  - scaffolding:relational-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - execution:service-parameter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-composite-join
+  - store:relational-inner-join
+  - store:relational-multi-column-primary-key
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - composite-join
+  - composite-key
+  - data-space
+  - diagram
+  - h2
+  - palaeontology
+  - path-parameter
+  - relational
+  - service
+  - snowflake
+  - tagged-value

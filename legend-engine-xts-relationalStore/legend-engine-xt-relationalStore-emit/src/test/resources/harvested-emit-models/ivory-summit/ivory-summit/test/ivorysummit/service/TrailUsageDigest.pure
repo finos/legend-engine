@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::ivorysummit::service::TrailUsageDigest
+{
+  pattern: '/trails/v1/usage/{fromDate}/{toDate}';
+  title: 'Trail Counter - Usage Digest';
+  documentation: 'Restricts the counter readings to a closed date window taken from the URL pattern and groups them by trail and by a surfaced-or-not flag derived from a set-membership test, summing one unconditional tally and two conditionally selected tallies whose non-matching arm is an empty collection.';
+  autoActivateUpdates: false;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {fromDate: StrictDate[1], toDate: StrictDate[1]|demo::ivorysummit::domain::TrailReading.all()->filter(
+      r|($r.readingDate >= $fromDate) && ($r.readingDate <= $toDate)
+    )->groupBy(
+      [
+        r|$r.trailCode,
+        r|if($r.surfaceCode->in(['GRAVEL', 'BOARDWALK', 'COBBLE', 'ASPHALT', 'TIMBER', 'SHINGLE']), |1, |0)
+      ],
+      [
+        agg(x|$x.walkerTally, y|$y->sum()),
+        agg(x|if($x.weatherCode == 'DRY', |$x.cyclistTally, |[]), y|$y->sum()),
+        agg(x|if($x.weatherCode->in(['DRY', 'BREEZE', 'MILD']), |$x.walkerTally, |[]), y|$y->sum())
+      ],
+      [
+        'Trail/Code',
+        'Trail/Surfaced',
+        'Walkers/Total',
+        'Cyclists/DryTotal',
+        'Walkers/FairTotal'
+      ]
+    )->sort([asc('Trail/Code'), asc('Trail/Surfaced')])};
+    mapping: demo::ivorysummit::mapping::TrailMapping;
+    runtime: demo::ivorysummit::runtime::TrailRuntime;
+  }
+  testSuites:
+  [
+    trailUsageDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailConnection:
+            Relational
+            #{
+              park.trail_count:
+                'reading_id,trail_code,surface_code,reading_date,walker_tally,cyclist_tally,weather_code\n'+
+                '1,T-01,GRAVEL,2026-02-20,50,10,DRY\n'+
+                '2,T-01,GRAVEL,2026-03-01,40,8,DRY\n'+
+                '3,T-01,GRAVEL,2026-03-15,30,5,WET\n'+
+                '4,T-01,MUD,2026-03-20,20,4,DRY\n'+
+                '5,T-01,MUD,2026-03-22,15,3,WET\n'+
+                '6,T-02,BOARDWALK,2026-03-31,60,12,DRY\n'+
+                '7,T-02,BOARDWALK,2026-03-05,50,,BREEZE\n'+
+                '8,T-02,,2026-03-10,10,2,DRY\n'+
+                '9,T-02,BOARDWALK,2026-04-05,70,14,DRY\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowedUsage:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            fromDate = %2026-03-01,
+            toDate = %2026-03-31
+          ]
+          asserts:
+          [
+            groupedTalliesCoverBothConditionalArms:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Trail/Code":"T-01","Trail/Surfaced":0,"Walkers/Total":35,"Cyclists/DryTotal":4,"Walkers/FairTotal":20},{"Trail/Code":"T-01","Trail/Surfaced":1,"Walkers/Total":70,"Cyclists/DryTotal":8,"Walkers/FairTotal":40},{"Trail/Code":"T-02","Trail/Surfaced":0,"Walkers/Total":10,"Cyclists/DryTotal":2,"Walkers/FairTotal":10},{"Trail/Code":"T-02","Trail/Surfaced":1,"Walkers/Total":110,"Cyclists/DryTotal":12,"Walkers/FairTotal":110}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

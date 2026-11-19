@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarthicket2::mapping::ShelterMapping
+(
+  *test::cedarthicket2::domain::ShelterStay[shelterStay]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.stay_id
+    )
+    ~mainTable [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay
+    stayId: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.stay_id,
+    shelterCode: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.shelter_code,
+    shelterName: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.shelter_name,
+    zoneCode: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.zone_code,
+    partySize: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.party_size,
+    nightsBooked: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.nights_booked,
+    validThru: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.valid_thru,
+    stayLabel: concat(
+                 toUpper(trim(coalesce([test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.shelter_name, 'unnamed'))),
+                 concat(
+                   ' / ',
+                   concat(
+                     toLower(coalesce([test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.zone_code, 'nozone')),
+                     concat(
+                       ' #',
+                       substring(coalesce([test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.registry_code, 'na'), 0, 4)
+                     )
+                   )
+                 )
+               ),
+    identifier
+    (
+      registryCode: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.registry_code,
+      permitRef: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.permit_ref,
+      sequenceNo: [test::cedarthicket2::store::ParkCoreDb]shelter.shelter_stay.sequence_no
+    )
+  }
+
+  testSuites:
+  [
+    shelterStayIdentifierSuite:
+    {
+      function: |test::cedarthicket2::domain::ShelterStay.all()->project(
+  [
+    s|$s.stayId,
+    s|$s.shelterCode,
+    s|$s.shelterName,
+    s|$s.zoneCode,
+    s|$s.partySize,
+    s|$s.nightsBooked,
+    s|$s.validThru,
+    s|$s.stayLabel,
+    s|$s.identifier.registryCode,
+    s|$s.identifier.permitRef,
+    s|$s.identifier.sequenceNo
+  ],
+  [
+    'StayId',
+    'ShelterCode',
+    'ShelterName',
+    'ZoneCode',
+    'PartySize',
+    'NightsBooked',
+    'ValidThru',
+    'StayLabel',
+    'RegistrySlot',
+    'PermitSerial',
+    'SlotCount'
+  ]
+);
+      tests:
+      [
+        stayLabelAndNestedIdentifierReads:
+        {
+          doc: 'Projects every stored stay so the label composition runs over a stay with a zone and a registry code, a stay whose zone is absent and a stay whose whole nested identifier structure is absent, and so the nested reads are exercised alongside the direct ones in a single projection list.';
+          data:
+          [
+            test::cedarthicket2::store::ParkCoreDb: Reference
+              #{
+                test::cedarthicket2::data::ParkTestData
+              }#
+          ];
+          asserts:
+          [
+            projectedStays:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"StayId":11,"ShelterCode":"SH-LARCH","ShelterName":"Larch Hut","ZoneCode":"NORTH","PartySize":4,"NightsBooked":2,"ValidThru":"2033-06-01T00:00:00.000000000+0000","StayLabel":"LARCH HUT / north #RG-0","RegistrySlot":"RG-0091","PermitSerial":"PM-77","SlotCount":3},{"StayId":12,"ShelterCode":"SH-BIRCH","ShelterName":"Birch Hut","ZoneCode":null,"PartySize":2,"NightsBooked":1,"ValidThru":"2033-06-15T12:30:00.000000000+0000","StayLabel":"BIRCH HUT / nozone #RG-0","RegistrySlot":"RG-0104","PermitSerial":null,"SlotCount":8},{"StayId":13,"ShelterCode":"SH-ALDER","ShelterName":"Alder Shelter","ZoneCode":"SOUTH","PartySize":6,"NightsBooked":null,"ValidThru":"2033-05-20T00:00:00.000000000+0000","StayLabel":"ALDER SHELTER / south #na","RegistrySlot":null,"PermitSerial":null,"SlotCount":null},{"StayId":14,"ShelterCode":"SH-ROWAN","ShelterName":"Rowan Bothy","ZoneCode":"SOUTH","PartySize":null,"NightsBooked":4,"ValidThru":"2033-07-04T06:45:00.000000000+0000","StayLabel":"ROWAN BOTHY / south #RG-0","RegistrySlot":"RG-0117","PermitSerial":"PM-81","SlotCount":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

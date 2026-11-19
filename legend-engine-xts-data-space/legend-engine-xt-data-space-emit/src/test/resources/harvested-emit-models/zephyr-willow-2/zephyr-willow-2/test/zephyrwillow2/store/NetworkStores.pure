@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::zephyrwillow2::store::DepotNetworkDB
+(
+  Schema network
+  (
+    Table collection_round
+    (
+      round_id VARCHAR(12) PRIMARY KEY,
+      container_code VARCHAR(12) NOT NULL,
+      collected_on DATE NOT NULL,
+      gross_kg FLOAT NOT NULL,
+      moisture_pct FLOAT NOT NULL,
+      contamination_code CHAR(2) NOT NULL,
+      grade_code CHAR(2) NOT NULL,
+      crew_code VARCHAR(8) NOT NULL,
+      active_flag CHAR(1) NOT NULL
+    )
+
+    Table container
+    (
+      container_code VARCHAR(12) PRIMARY KEY,
+      site_code VARCHAR(12) NOT NULL,
+      container_kind VARCHAR(16) NOT NULL,
+      capacity_l INTEGER NOT NULL
+    )
+
+    Table depot_site
+    (
+      site_code VARCHAR(12) PRIMARY KEY,
+      site_name VARCHAR(80) NOT NULL,
+      ward_code VARCHAR(12) NOT NULL,
+      tier_code VARCHAR(8) NOT NULL
+    )
+
+    Table ward
+    (
+      ward_code VARCHAR(12) PRIMARY KEY,
+      ward_name VARCHAR(80) NOT NULL,
+      district_code VARCHAR(12) NOT NULL
+    )
+
+    Table district
+    (
+      district_code VARCHAR(12) PRIMARY KEY,
+      district_name VARCHAR(80) NOT NULL,
+      authority_code VARCHAR(12) NOT NULL
+    )
+
+    Table authority
+    (
+      authority_code VARCHAR(12) PRIMARY KEY,
+      authority_name VARCHAR(80) NOT NULL
+    )
+
+    View site_yield_view
+    (
+      ~groupBy
+      (
+        network.container.site_code
+      )
+      site_code: network.container.site_code PRIMARY KEY,
+      container_count: count(network.container.container_code),
+      total_capacity_l: sum(network.container.capacity_l)
+    )
+  )
+
+  Filter ActiveRoundFilter(network.collection_round.active_flag = 'Y')
+
+  Join Round_Container(network.collection_round.container_code = network.container.container_code)
+  Join Container_Site(network.container.site_code = network.depot_site.site_code)
+  Join Site_Ward(network.depot_site.ward_code = network.ward.ward_code)
+  Join Ward_District(network.ward.district_code = network.district.district_code)
+  Join District_Authority(network.district.authority_code = network.authority.authority_code)
+  Join Site_Yield(network.depot_site.site_code = network.site_yield_view.site_code)
+)
+
+###Relational
+Database test::zephyrwillow2::store::GradeReferenceDB
+(
+  Schema reference
+  (
+    Table material_grade
+    (
+      grade_code CHAR(2) PRIMARY KEY,
+      grade_name VARCHAR(60) NOT NULL,
+      recyclable_flag INTEGER NOT NULL
+    )
+
+    Table service_tier
+    (
+      tier_code VARCHAR(8) PRIMARY KEY,
+      tier_name VARCHAR(40) NOT NULL,
+      visits_per_month INTEGER NOT NULL
+    )
+  )
+)
+
+###Relational
+Database test::zephyrwillow2::store::DraftStagingDB
+(
+  Schema staging
+  (
+    Table draft_round
+    (
+      draft_id VARCHAR(12) PRIMARY KEY,
+      container_code VARCHAR(12) NOT NULL,
+      collected_on DATE NOT NULL,
+      gross_kg FLOAT NOT NULL,
+      grade_code CHAR(2) NOT NULL,
+      review_state VARCHAR(12) NOT NULL
+    )
+  )
+)

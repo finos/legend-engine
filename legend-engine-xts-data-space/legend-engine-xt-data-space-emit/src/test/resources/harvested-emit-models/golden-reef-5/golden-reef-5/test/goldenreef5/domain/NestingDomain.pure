@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A monitored nesting site on a stretch of coast, versioned by the instant the survey office recorded it.'} test::goldenreef5::domain::NestSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  beachCode: String[1];
+  sectorCode: String[1];
+  substrateCode: String[1];
+  beachName: String[0..1];
+  coastRegion: String[0..1];
+  regionStationName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A clutch recorded by a patrol team at a nesting site.'} test::goldenreef5::domain::NestRecord
+{
+  nestRef: String[1];
+  siteCode: String[1];
+  laidDate: StrictDate[1];
+  clutchSize: Integer[1];
+  hatchCount: Integer[0..1];
+  predationCode: String[0..1];
+  surveyProgram: String[1];
+  stationName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A patrol team walking the nesting beaches out of one field station.'} test::goldenreef5::domain::PatrolTeam
+{
+  teamCode: String[1];
+  teamName: String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Links a patrol team to the clutches it recorded.'} test::goldenreef5::domain::Team_Nests
+{
+  team: test::goldenreef5::domain::PatrolTeam[0..1];
+  nests: test::goldenreef5::domain::NestRecord[*];
+}

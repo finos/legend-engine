@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelisle4::mapping::ToolShedMapping
+(
+  include mapping test::hazelisle4::mapping::AllotmentEnumMappings
+
+  *test::hazelisle4::domain::ToolShed[toolShed]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelisle4::store::AllotmentDb]island.tool_shed.shed_code
+    )
+    ~mainTable [test::hazelisle4::store::AllotmentDb]island.tool_shed
+    shedCode: [test::hazelisle4::store::AllotmentDb]island.tool_shed.shed_code,
+    shedName: [test::hazelisle4::store::AllotmentDb]island.tool_shed.shed_name,
+    shedKind: EnumerationMapping ShedKindSource: [test::hazelisle4::store::AllotmentDb]island.tool_shed.shed_kind_code,
+    shelfCount: [test::hazelisle4::store::AllotmentDb]island.tool_shed.shelf_count,
+    shedRegistry: 'HAZEL ISLE SHED REGISTER',
+    shedPlate
+    (
+      plateLabel: [test::hazelisle4::store::AllotmentDb]island.tool_shed.plate_text,
+      kindLabel: [test::hazelisle4::store::AllotmentDb]island.tool_shed.shed_kind_code,
+      siteLabel: 'HAZEL ISLE SITE'
+    )
+  }
+
+  testSuites:
+  [
+    toolShedSuite:
+    {
+      function: |test::hazelisle4::domain::ToolShed.all()->project(
+        [
+          s|$s.shedCode,
+          s|$s.shedName,
+          s|$s.shedKind,
+          s|$s.shelfCount,
+          s|$s.shedRegistry,
+          s|$s.shedPlate.plateLabel,
+          s|$s.shedPlate.kindLabel,
+          s|$s.shedPlate.siteLabel
+        ],
+        [
+          'Shed',
+          'Name',
+          'Kind',
+          'Shelves',
+          'Registry',
+          'Plate',
+          'PlateKind',
+          'Site'
+        ]
+      )->sort([asc('Shed')]);
+      tests:
+      [
+        shedRegisterRows:
+        {
+          doc: 'Covers the enumeration mapping shared through the included mapping, a shed kind code listed nowhere, a null kind code and the embedded plate block whose site label is a literal rather than a column.';
+          data:
+          [
+            test::hazelisle4::store::AllotmentDb:
+              Relational
+              #{
+                island.tool_shed:
+                  'shed_code,shed_name,shed_kind_code,shelf_count,plate_text\n'+
+                  'S-01,Upper Store,TIMBER,5,upper store plate\n'+
+                  'S-02,Lower Store,BRICK,8,lower store plate\n'+
+                  'S-03,Gate Store,TARP,2,gate store plate\n'+
+                  'S-04,Bell Store,,3,bell store plate\n';
+              }#
+          ];
+          asserts:
+          [
+            shedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shed":"S-01","Name":"Upper Store","Kind":"TIMBER","Shelves":5,"Registry":"HAZEL ISLE SHED REGISTER","Plate":"upper store plate","PlateKind":"TIMBER","Site":"HAZEL ISLE SITE"},{"Shed":"S-02","Name":"Lower Store","Kind":"BRICK","Shelves":8,"Registry":"HAZEL ISLE SHED REGISTER","Plate":"lower store plate","PlateKind":"BRICK","Site":"HAZEL ISLE SITE"},{"Shed":"S-03","Name":"Gate Store","Kind":null,"Shelves":2,"Registry":"HAZEL ISLE SHED REGISTER","Plate":"gate store plate","PlateKind":"TARP","Site":"HAZEL ISLE SITE"},{"Shed":"S-04","Name":"Bell Store","Kind":null,"Shelves":3,"Registry":"HAZEL ISLE SHED REGISTER","Plate":"bell store plate","PlateKind":null,"Site":"HAZEL ISLE SITE"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

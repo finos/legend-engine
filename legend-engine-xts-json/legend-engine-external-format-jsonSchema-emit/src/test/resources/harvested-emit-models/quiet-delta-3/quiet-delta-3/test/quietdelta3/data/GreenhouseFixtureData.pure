@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::quietdelta3::data::GreenhouseFixtureData
+{
+  Relational
+  #{
+    nursery.bloom_log:
+      'log_id,bench_code,stage_code,note_text,petal_count,vigour_code\n'+
+      '1,B1,bud_tight,leaf_curl,0,R\n'+
+      '2,B1,spike-up,,0,S\n'+
+      '3,B2,first_open,two_open,2,R\n'+
+      '4,B2,full_open,,5,W\n'+
+      '5,B3,petal_drop,dropping,3,S\n'+
+      '6,B3,pod_set,,0,\n'+
+      '7,B9,,stray_bench,4,W\n'+
+      '8,B3,re_bud,,1,R\n';
+
+    nursery.bench_row:
+      'bench_code,house_code\n'+
+      'B1,H1\n'+
+      'B2,H1\n'+
+      'B3,H2\n';
+
+    nursery.glass_house:
+      'house_code,site_code\n'+
+      'H1,S1\n'+
+      'H2,S2\n';
+
+    nursery.grow_site:
+      'site_code,site_name,opened_at\n'+
+      'S1,Lower_Terrace,2025-03-01 08:00:00\n'+
+      'S2,Ridge_Annex,2025-09-15 07:30:00\n';
+  }#
+}

@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ambermarsh2::service::PeatDepthProfileBoard
+{
+  pattern: '/ambermarsh2/v1/peatdepth/{asOf}/{minDepth}';
+  ownership: UserList { users: ['moorland-restoration-desk'] };
+  documentation: 'Reads the peat depth probe register at a caller-supplied instant, keeps the probes that reach the requested depth inside a rolling twelve-month window ending at that instant, and returns a tabular projection whose depth-per-probe figure is derived arithmetically from the recorded depth and the probe tally. An optional grid token narrows the window to a single grid reference or, when absent, leaves the register open.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], minDepth: Integer[1], gridToken: String[0..1]|test::ambermarsh2::domain::PeatDepthSurvey.all()->filter(
+      s|($s.depthCm >= $minDepth) &&
+        ($s.surveyedOn >= $asOf->adjust(-365, DurationUnit.DAYS)) &&
+        ($s.surveyedOn <= $asOf) &&
+        ($gridToken->isEmpty() || ($s.gridRef == $gridToken->toOne()))
+    )->project(
+      [
+        s|$s.surveyCode->toUpper(),
+        s|$s.gridRef->trim()->toUpper() + ' / ' + $s.surveyorName->trim(),
+        s|($s.depthCm * 10) / ($s.probeCount + 1),
+        s|$s.surveyedOn
+      ],
+      [
+        'Survey',
+        'GridSurveyor',
+        'DepthPerProbeMm',
+        'SurveyedOn'
+      ]
+    )->sort(
+      [
+        asc('Survey')
+      ]
+    )};
+    mapping: test::ambermarsh2::mapping::MoorlandMapping;
+    runtime: test::ambermarsh2::runtime::MoorlandCoreRuntime;
+  }
+}

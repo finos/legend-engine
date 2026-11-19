@@ -1,0 +1,63 @@
+name: emerald-estuary-2
+title: "Emerald Estuary 2 - reed coverage banding over a store that borrows two reference stores through includes"
+description: |
+  An estuary reed-bed survey whose store declares no reference data of its own: it pulls a site
+  reference store and a species synonym store into its namespace through two store includes, so its
+  local joins correlate the local reed-plot table with borrowed tables it never declares. A base
+  mapping pins the composite key of plot code and survey sequence and an explicit main table alias,
+  then bands reed coverage through an eight-armed conditional, drops the cover band to a null
+  sentinel below the wet threshold, composes a tag and a trimmed name length through string
+  functions and reads the accepted species name across the borrowed synonym table. A second
+  included mapping resolves the borrowed site reference, and the mapping that includes both
+  implements three associations, each over its own store join onto the same borrowed site table.
+  Two mapping test suites read shared relational test-data elements: one hits every coverage arm,
+  the null sentinel and an absent synonym; the other walks all three site links, keeps two surveys
+  of one plot apart and leaves every link unresolved where the site codes are absent. Profiles
+  carry the stewardship, provenance and banding annotations across the classes, properties and
+  associations.
+modelSources:
+  model:
+    root: emerald-estuary-2
+    files:
+      - test/emeraldestuary2/data/EstuaryTestData.pure
+      - test/emeraldestuary2/domain/EstuaryDomain.pure
+      - test/emeraldestuary2/mapping/EstuaryBaseMapping.pure
+      - test/emeraldestuary2/mapping/EstuaryMapping.pure
+      - test/emeraldestuary2/mapping/SiteReferenceMapping.pure
+      - test/emeraldestuary2/profile/EstuaryProfiles.pure
+      - test/emeraldestuary2/store/EstuaryStore.pure
+      - test/emeraldestuary2/store/SiteReferenceStore.pure
+      - test/emeraldestuary2/store/SynonymReferenceStore.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:profile
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association
+  - composite-primary-key
+  - conditional-transform
+  - eight-arm-conditional
+  - mapping-include
+  - mapping-test
+  - null-sentinel
+  - profile
+  - store-include
+  - string-transform
+  - test-data

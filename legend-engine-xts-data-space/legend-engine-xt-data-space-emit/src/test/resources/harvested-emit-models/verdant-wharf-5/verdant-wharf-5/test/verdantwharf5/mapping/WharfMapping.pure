@@ -1,0 +1,242 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::verdantwharf5::mapping::WharfMapping
+(
+  *test::verdantwharf5::domain::WharfBerth[berth]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.berth_code,
+      [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.opened_on
+    )
+    ~mainTable [test::verdantwharf5::store::WharfDB]harbour.wharf_berth
+    berthCode: [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.berth_code,
+    openedOn: [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.opened_on,
+    berthName: [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.berth_name,
+    tideWindow: [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.tide_window,
+    depthM: [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.depth_m
+  }
+
+  *test::verdantwharf5::domain::VesselCall[call]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantwharf5::store::WharfDB]harbour.vessel_call.call_code,
+      [test::verdantwharf5::store::WharfDB]harbour.vessel_call.call_leg
+    )
+    ~mainTable [test::verdantwharf5::store::WharfDB]harbour.vessel_call
+    callCode: [test::verdantwharf5::store::WharfDB]harbour.vessel_call.call_code,
+    callLeg: [test::verdantwharf5::store::WharfDB]harbour.vessel_call.call_leg,
+    vesselName: toUpper(trim([test::verdantwharf5::store::WharfDB]harbour.vessel_call.vessel_name)),
+    arrivedAt: [test::verdantwharf5::store::WharfDB]harbour.vessel_call.arrived_at,
+    cargoClass: [test::verdantwharf5::store::WharfDB]harbour.vessel_call.cargo_class,
+    palletTotal: [test::verdantwharf5::store::WharfDB]harbour.vessel_call.pallet_total,
+    handlingLane: case(
+                    equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'EX'),
+                    'EXPRESS LANE',
+                    case(
+                      equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'HZ'),
+                      'HAZARD LANE',
+                      case(
+                        equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'RF'),
+                        'REEFER LANE',
+                        case(
+                          equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'BK'),
+                          'BULK LANE',
+                          case(
+                            equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'OS'),
+                            'OVERSIZE LANE',
+                            case(
+                              equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'TR'),
+                              'TRANSHIP LANE',
+                              case(
+                                equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'LT'),
+                                'LIGHT LANE',
+                                case(
+                                  equal([test::verdantwharf5::store::WharfDB]harbour.vessel_call.priority_code, 'RT'),
+                                  'RETURNS LANE',
+                                  sqlNull()
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+    berthName: [test::verdantwharf5::store::WharfDB]@Berth_Call | [test::verdantwharf5::store::WharfDB]harbour.wharf_berth.berth_name
+  }
+
+  *test::verdantwharf5::domain::CargoPallet[pallet]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantwharf5::store::WharfDB]logistics.cargo_pallet.pallet_code
+    )
+    ~mainTable [test::verdantwharf5::store::WharfDB]logistics.cargo_pallet
+    palletCode: [test::verdantwharf5::store::WharfDB]logistics.cargo_pallet.pallet_code,
+    palletWeightKg: [test::verdantwharf5::store::WharfDB]logistics.cargo_pallet.pallet_weight_kg,
+    sealCode: [test::verdantwharf5::store::WharfDB]logistics.cargo_pallet.seal_code
+  }
+
+  *test::verdantwharf5::domain::PalletCheck[check]: Relational
+  {
+    ~primaryKey
+    (
+      [test::verdantwharf5::store::WharfDB]logistics.pallet_check.check_code
+    )
+    ~mainTable [test::verdantwharf5::store::WharfDB]logistics.pallet_check
+    checkCode: [test::verdantwharf5::store::WharfDB]logistics.pallet_check.check_code,
+    inspectorTeam: [test::verdantwharf5::store::WharfDB]logistics.pallet_check.inspector_team,
+    checkedAt: [test::verdantwharf5::store::WharfDB]logistics.pallet_check.checked_at,
+    outcomeCode: [test::verdantwharf5::store::WharfDB]logistics.pallet_check.outcome_code,
+    callCode: [test::verdantwharf5::store::WharfDB]@Pallet_Check > @Call_Pallet | [test::verdantwharf5::store::WharfDB]harbour.vessel_call.call_code
+  }
+
+  test::verdantwharf5::domain::Berth_Calls: Relational
+  {
+    AssociationMapping
+    (
+      calls[berth, call]: [test::verdantwharf5::store::WharfDB]@Berth_Call,
+      berth[call, berth]: [test::verdantwharf5::store::WharfDB]@Berth_Call
+    )
+  }
+
+  test::verdantwharf5::domain::Call_Pallets: Relational
+  {
+    AssociationMapping
+    (
+      pallets[call, pallet]: [test::verdantwharf5::store::WharfDB]@Call_Pallet,
+      call[pallet, call]: [test::verdantwharf5::store::WharfDB]@Call_Pallet
+    )
+  }
+
+  test::verdantwharf5::domain::Pallet_Checks: Relational
+  {
+    AssociationMapping
+    (
+      checks[pallet, check]: [test::verdantwharf5::store::WharfDB]@Pallet_Check,
+      pallet[check, pallet]: [test::verdantwharf5::store::WharfDB]@Pallet_Check
+    )
+  }
+
+  testSuites:
+  [
+    callLaneSuite:
+    {
+      function: |test::verdantwharf5::domain::VesselCall.all()->project(
+  [
+    x|$x.callCode,
+    x|$x.callLeg,
+    x|$x.vesselName,
+    x|$x.cargoClass,
+    x|$x.palletTotal,
+    x|$x.handlingLane,
+    x|$x.berthName
+  ],
+  [
+    'CallCode',
+    'CallLeg',
+    'Vessel',
+    'CargoClass',
+    'Pallets',
+    'Lane',
+    'BerthName'
+  ]
+)->sort(
+  [
+    asc('CallCode'),
+    asc('CallLeg')
+  ]
+);
+      tests:
+      [
+        lanesAcrossCallLegs:
+        {
+          doc: 'Projects every call leg through the alias-bound class mapping: the composite key keeps the two legs of one call distinct, the eight-armed lane conditional hits one arm per recognised priority and falls through to nothing for the unrecognised one, the berth name is reached through the single-hop join and is absent for the leg whose berth key does not resolve, and the leg without a pallet total keeps that column absent.';
+          data:
+          [
+            test::verdantwharf5::store::WharfDB: Reference
+              #{
+                test::verdantwharf5::data::WharfTestData
+              }#
+          ];
+          asserts:
+          [
+            nineCallLegs:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CallCode":"C-01","CallLeg":1,"Vessel":"NORTHERN GULL","CargoClass":"CONTAINER","Pallets":40,"Lane":"EXPRESS LANE","BerthName":"North Quay"},{"CallCode":"C-01","CallLeg":2,"Vessel":"NORTHERN GULL","CargoClass":"RETURNS","Pallets":7,"Lane":"RETURNS LANE","BerthName":"North Quay"},{"CallCode":"C-02","CallLeg":1,"Vessel":"HARBOUR TERN","CargoClass":"CONTAINER","Pallets":25,"Lane":"HAZARD LANE","BerthName":"North Quay"},{"CallCode":"C-03","CallLeg":1,"Vessel":"COASTAL SKUA","CargoClass":"REEFER","Pallets":18,"Lane":"REEFER LANE","BerthName":"South Quay"},{"CallCode":"C-04","CallLeg":1,"Vessel":"TIDAL PETREL","CargoClass":"BULK","Pallets":60,"Lane":"BULK LANE","BerthName":"South Quay"},{"CallCode":"C-05","CallLeg":1,"Vessel":"MARSH HERON","CargoClass":"BREAKBULK","Pallets":12,"Lane":"OVERSIZE LANE","BerthName":"North Quay"},{"CallCode":"C-06","CallLeg":1,"Vessel":"QUAY SWIFT","CargoClass":"CONTAINER","Pallets":33,"Lane":"TRANSHIP LANE","BerthName":"South Quay"},{"CallCode":"C-07","CallLeg":1,"Vessel":"ESTUARY PIPIT","CargoClass":"LIGHT","Pallets":5,"Lane":"LIGHT LANE","BerthName":null},{"CallCode":"C-09","CallLeg":1,"Vessel":"BASIN EGRET","CargoClass":"CONTAINER","Pallets":null,"Lane":null,"BerthName":"East Basin"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    checkTraversalSuite:
+    {
+      function: |test::verdantwharf5::domain::PalletCheck.all()->project(
+  [
+    x|$x.checkCode,
+    x|$x.inspectorTeam,
+    x|$x.outcomeCode,
+    x|$x.callCode
+  ],
+  [
+    'CheckCode',
+    'Team',
+    'Outcome',
+    'CallCode'
+  ]
+)->sort(
+  [
+    asc('CheckCode')
+  ]
+);
+      tests:
+      [
+        checksReachTheirCall:
+        {
+          doc: 'Projects the wardens checks and resolves each one back to its vessel call across the two-hop join path that leaves the logistics schema for the harbour schema; the check whose pallet key does not resolve keeps an absent call code.';
+          data:
+          [
+            test::verdantwharf5::store::WharfDB: Reference
+              #{
+                test::verdantwharf5::data::WharfTestData
+              }#
+          ];
+          asserts:
+          [
+            fiveChecks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CheckCode":"K-01","Team":"dock wardens","Outcome":"PASS","CallCode":"C-01"},{"CheckCode":"K-02","Team":"night wardens","Outcome":"HOLD","CallCode":"C-01"},{"CheckCode":"K-03","Team":"dock wardens","Outcome":"PASS","CallCode":"C-01"},{"CheckCode":"K-04","Team":"quay wardens","Outcome":"FAIL","CallCode":"C-04"},{"CheckCode":"K-05","Team":"dock wardens","Outcome":"PASS","CallCode":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

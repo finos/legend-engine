@@ -1,0 +1,121 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::lunarridge5::mapping::TrailMapping
+(
+  include mapping test::lunarridge5::mapping::TrailEnumMappings
+
+  *test::lunarridge5::domain::TrailRegion[trailRegion]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarridge5::store::TrailDb]registry.trail_region.region_code
+    )
+    ~mainTable [test::lunarridge5::store::TrailDb]registry.trail_region
+    regionCode: [test::lunarridge5::store::TrailDb]registry.trail_region.region_code,
+    regionName: [test::lunarridge5::store::TrailDb]registry.trail_region.region_name
+  }
+
+  *test::lunarridge5::domain::TrailHead[trailHead]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarridge5::store::TrailDb]registry.trail_head.head_code
+    )
+    ~mainTable [test::lunarridge5::store::TrailDb]registry.trail_head
+    headCode: [test::lunarridge5::store::TrailDb]registry.trail_head.head_code,
+    headName: [test::lunarridge5::store::TrailDb]registry.trail_head.head_name,
+    regionName: [test::lunarridge5::store::TrailDb]@Head_Region | [test::lunarridge5::store::TrailDb]registry.trail_region.region_name
+  }
+
+  *test::lunarridge5::domain::TrailSegment[trailSegment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarridge5::store::TrailDb]field.trail_segment.segment_code
+    )
+    ~mainTable [test::lunarridge5::store::TrailDb]field.trail_segment
+    segmentCode: [test::lunarridge5::store::TrailDb]field.trail_segment.segment_code,
+    segmentName: toUpper([test::lunarridge5::store::TrailDb]field.trail_segment.segment_name),
+    surface: EnumerationMapping SurfaceTypeMapping: [test::lunarridge5::store::TrailDb]field.trail_segment.surface_code,
+    lengthMetres: [test::lunarridge5::store::TrailDb]field.trail_segment.length_metres,
+    ascentMetres: [test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres,
+    gradePercent: divide(
+                    times([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 100.0),
+                    [test::lunarridge5::store::TrailDb]field.trail_segment.length_metres
+                  ),
+    conditionBand: case(
+                     greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 400.0),
+                     'ALPINE-STEEP',
+                     case(
+                       greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 300.0),
+                       'STEEP',
+                       case(
+                         greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 220.0),
+                         'FIRM-CLIMB',
+                         case(
+                           greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 160.0),
+                           'ROLLING',
+                           case(
+                             greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 110.0),
+                             'GENTLE',
+                             case(
+                               greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 70.0),
+                               'EASY',
+                               case(
+                                 greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 30.0),
+                                 'FLAT-RUN',
+                                 case(
+                                   greaterThan([test::lunarridge5::store::TrailDb]field.trail_segment.ascent_metres, 0.0),
+                                   'TRACE-RISE',
+                                   sqlNull()
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   ),
+    crewLabel: case(
+                 equal([test::lunarridge5::store::TrailDb]field.trail_segment.survey_state, 'ACTIVE'),
+                 concat('CREW-', toUpper([test::lunarridge5::store::TrailDb]field.trail_segment.crew_note)),
+                 sqlNull()
+               ),
+    headName: [test::lunarridge5::store::TrailDb]@Segment_Head | [test::lunarridge5::store::TrailDb]registry.trail_head.head_name,
+    regionName: [test::lunarridge5::store::TrailDb]@Segment_Head > @Head_Region | [test::lunarridge5::store::TrailDb]registry.trail_region.region_name
+  }
+
+  *test::lunarridge5::domain::SurveyedSegment[surveyedSegment] extends [trailSegment]: Relational
+  {
+    ~filter [test::lunarridge5::store::TrailDb]ActiveSurvey
+    surveyState: [test::lunarridge5::store::TrailDb]field.trail_segment.survey_state
+  }
+
+  *test::lunarridge5::domain::MaintenanceVisit[maintenanceVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::lunarridge5::store::TrailDb]field.maintenance_visit.visit_code
+    )
+    ~mainTable [test::lunarridge5::store::TrailDb]field.maintenance_visit
+    visitCode: [test::lunarridge5::store::TrailDb]field.maintenance_visit.visit_code,
+    visitOn: [test::lunarridge5::store::TrailDb]field.maintenance_visit.visit_on,
+    hoursLogged: [test::lunarridge5::store::TrailDb]field.maintenance_visit.hours_logged,
+    segmentName: [test::lunarridge5::store::TrailDb]@Visit_Segment | [test::lunarridge5::store::TrailDb]field.trail_segment.segment_name,
+    headName: [test::lunarridge5::store::TrailDb]@Visit_Segment > @Segment_Head | [test::lunarridge5::store::TrailDb]registry.trail_head.head_name,
+    regionName: [test::lunarridge5::store::TrailDb]@Visit_Segment > @Segment_Head > @Head_Region | [test::lunarridge5::store::TrailDb]registry.trail_region.region_name
+  }
+)

@@ -1,0 +1,154 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarcanyon::service::SessionWindowService
+{
+  pattern: '/lunarcanyon/v1/session-window/{windowFrom}/{windowThru}';
+  title: 'Lunar Canyon - Catalogue Session Window';
+  documentation: 'Keeps the observing sessions whose catalogue is one of the requested set, whose observing date falls inside the closed window and whose filter code was actually recorded, then projects the surviving rows together with the instrument and observer attributes reached through the two booking relationships.';
+  ownership: DID { identifier: '000000' };
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {catalogues: String[*], windowFrom: StrictDate[1], windowThru: StrictDate[1]|test::lunarcanyon::domain::SkySession.all()->filter(
+      s|($s.catalogueCode->in($catalogues)) && (($s.observedOn >= $windowFrom) && (($s.observedOn <= $windowThru) && ($s.filterCode->isEmpty()->not())))
+    )->project(
+      [
+        col(
+          s|$s.sessionCode,
+          'Session/Code'
+        ),
+        col(
+          s|$s.catalogueCode,
+          'Session/Catalogue'
+        ),
+        col(
+          s|$s.observedOn,
+          'Session/Date'
+        ),
+        col(
+          s|$s.exposureCount,
+          'Session/Exposures'
+        ),
+        col(
+          s|$s.filterCode,
+          'Session/Filter'
+        ),
+        col(
+          s|$s.domeCode,
+          'Session/Dome'
+        ),
+        col(
+          s|$s.telescope.telescopeName,
+          'Telescope/Name'
+        ),
+        col(
+          s|$s.observer.observerName,
+          'Observer/Name'
+        )
+      ]
+    )->sort(
+      [
+        asc('Session/Code')
+      ]
+    )};
+    mapping: test::lunarcanyon::mapping::SkyMapping;
+    runtime: test::lunarcanyon::runtime::SkyRuntime;
+  }
+  testSuites:
+  [
+    sessionWindowSuite:
+    {
+      data:
+      [
+          connections:
+          [
+            skyConnection:
+              Relational
+              #{
+                sky.sky_session:
+                  'session_code,telescope_code,observer_code,observed_on,started_at,catalogue_code,seeing_index,exposure_count,filter_code,log_note\n'+
+                  'SS01,TL1,OB1,2025-09-01,2025-09-01 21:30:00,NGC,2.5,40,V,clear night\n'+
+                  'SS02,TL2,OB2,2025-09-02,2025-09-02 22:15:00,IC,3.25,25,R,thin cirrus\n'+
+                  'SS03,TL1,OB2,2025-09-03,2025-09-03 20:45:00,NGC,,60,,no filter wheel\n'+
+                  'SS04,TLX,OB1,2025-09-04,2025-09-04 23:05:00,MESSIER,1.75,15,B,instrument retired\n'+
+                  'SS05,,OB3,2025-09-05,,SHARPLESS,4.5,5,V,visual only\n'+
+                  'SS06,TL2,OB1,2025-10-01,2025-10-01 20:05:00,NGC,2.0,55,V,autumn run\n';
+
+                sky.telescope:
+                  'telescope_code,telescope_name,mirror_cm,mount_kind,dome_code\n'+
+                  'TL1,Ridge Reflector,60.0,EQUATORIAL,DOME-A\n'+
+                  'TL2,Vale Refractor,20.0,ALTAZIMUTH,DOME-B\n';
+
+                sky.observer:
+                  'observer_code,observer_name,certifications,home_site\n'+
+                  'OB1,Mira Halden,DEEP_SKY;ASTROMETRY,Ridge Camp\n'+
+                  'OB2,Tomas Rell,PHOTOMETRY,Vale Cottage\n'+
+                  'OB3,Yuki Sorne,,Hill Gate\n';
+              }#
+          ]
+      ]
+      tests:
+      [
+        twoCataloguesInsideTheWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            catalogues = ['NGC', 'IC'],
+            windowFrom = %2025-09-01,
+            windowThru = %2025-09-30
+          ]
+          asserts:
+          [
+            onlyFilteredSessionsWithARecordedFilterSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session/Code":"SS01","Session/Catalogue":"NGC","Session/Date":"2025-09-01","Session/Exposures":40,"Session/Filter":"V","Session/Dome":"DOME-A","Telescope/Name":"Ridge Reflector","Observer/Name":"Mira Halden"},{"Session/Code":"SS02","Session/Catalogue":"IC","Session/Date":"2025-09-02","Session/Exposures":25,"Session/Filter":"R","Session/Dome":"DOME-B","Telescope/Name":"Vale Refractor","Observer/Name":"Tomas Rell"}]';
+                  }#;
+              }#
+          ]
+        },
+        aCatalogueNobodyObserved:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            catalogues = ['CALDWELL'],
+            windowFrom = %2025-09-01,
+            windowThru = %2025-09-30
+          ]
+          asserts:
+          [
+            theMembershipTestDropsEveryRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

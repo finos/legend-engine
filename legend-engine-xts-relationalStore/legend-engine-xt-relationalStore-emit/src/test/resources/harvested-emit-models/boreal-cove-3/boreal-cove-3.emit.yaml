@@ -1,0 +1,44 @@
+name: boreal-cove-3
+title: "Boreal Cove 3 - seed-depot lot register resolved at a business date and published per environment"
+description: |
+  A dune seed depot. Seed lots and the meadow plots they were collected from are both effective over
+  business time, so every navigation of the register carries the requested day and a plot whose window
+  has already closed simply stops resolving. Two environment-keyed executables read one mapping through
+  two runtimes: a lot register whose three-clause guard pairs the lot state and the plot habitat with an
+  emptiness test that has to reach through the plot's germination trials, and a plot shortlist whose
+  habitat guard is a collection membership over supplied codes, whose survival test is an existence test
+  over the plot's milestoned lots and whose published page is ordered and capped.
+modelSources:
+  model:
+    root: boreal-cove-3
+    files:
+      - test/borealcove3/connection/SeedDepotConnections.pure
+      - test/borealcove3/domain/SeedDepotDomain.pure
+      - test/borealcove3/mapping/SeedDepotMapping.pure
+      - test/borealcove3/runtime/SeedDepotRuntimes.pure
+      - test/borealcove3/service/SeedLotRegisterByEnvironment.pure
+      - test/borealcove3/service/SeedPlotShortlistByEnvironment.pure
+      - test/borealcove3/store/SeedDepotDb.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:project
+  - query:sort-limit
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - collection-op
+  - dune-seed-depot
+  - enumeration-mapping
+  - h2
+  - milestoning-out-of-range
+  - multi-execution
+  - point-in-time
+  - set-membership
+  - sort-limit
+  - tabular-data-set

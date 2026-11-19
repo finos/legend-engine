@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::duskyquokka2::store::NurseryDB
+(
+  Schema nursery
+  (
+    Table propagation_block
+    (
+      block_code VARCHAR(24) PRIMARY KEY,
+      block_name VARCHAR(120) NOT NULL,
+      glasshouse_zone VARCHAR(24) NOT NULL,
+      crew_code VARCHAR(24) NOT NULL
+    )
+    Table seedling_tray
+    (
+      tray_code VARCHAR(24) PRIMARY KEY,
+      block_code VARCHAR(24) NOT NULL,
+      cultivar VARCHAR(64) NOT NULL,
+      cell_count INTEGER NOT NULL
+    )
+    Table grower_crew
+    (
+      crew_code VARCHAR(24) PRIMARY KEY,
+      crew_name VARCHAR(120) NOT NULL,
+      potting_shed VARCHAR(120) NOT NULL
+    )
+    Table viability_check
+    (
+      check_code VARCHAR(24) PRIMARY KEY,
+      block_code VARCHAR(24) NOT NULL,
+      viability_percent INTEGER NOT NULL
+    )
+    Table sowing_round
+    (
+      tray_code VARCHAR(24) PRIMARY KEY,
+      round_no INTEGER PRIMARY KEY,
+      sown_cells INTEGER NOT NULL,
+      germinated_cells INTEGER NOT NULL
+    )
+  )
+
+  Join Block_Tray(nursery.propagation_block.block_code = nursery.seedling_tray.block_code)
+  Join Block_Crew(nursery.propagation_block.crew_code = nursery.grower_crew.crew_code)
+  Join Check_Block(nursery.viability_check.block_code = nursery.propagation_block.block_code)
+  Join Tray_Round(nursery.seedling_tray.tray_code = nursery.sowing_round.tray_code)
+)

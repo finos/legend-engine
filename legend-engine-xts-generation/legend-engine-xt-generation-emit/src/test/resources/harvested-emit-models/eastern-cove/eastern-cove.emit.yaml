@@ -1,0 +1,79 @@
+name: eastern-cove
+title: "Coastal Cove Harbour — Bi-Temporal Moorings, Cross-Store Vessels and Keyed Berth Boards"
+description: |
+  A coastal ferry harbour whose mooring allocations are milestoned on both a
+  processing and a business axis and read back at explicit instants, while berths
+  and sailings are joined through an association and a qualified property that
+  narrows a berth's sailings by passenger load. A document source is catalogued
+  into vessel records by a model-to-model mapping, tied to the stored berths by a
+  cross-store association, and published as nested documents; tabular endpoints
+  add grouped totals, capped orderings and an environment-keyed pair of executions,
+  with a diagram and a json-schema generation sequenced by a generation specification.
+modelSources:
+  model:
+    root: eastern-cove
+    files:
+      - test/easterncove/connection/CoveConnections.pure
+      - test/easterncove/diagram/CoveDiagram.pure
+      - test/easterncove/domain/CoveDomain.pure
+      - test/easterncove/generation/CoveGeneration.pure
+      - test/easterncove/mapping/CoveCrossMapping.pure
+      - test/easterncove/mapping/CoveMapping.pure
+      - test/easterncove/mapping/InboundVesselM2M.pure
+      - test/easterncove/runtime/CoveRuntimes.pure
+      - test/easterncove/service/BerthBoards.pure
+      - test/easterncove/service/CoveBoards.pure
+      - test/easterncove/service/VesselDocuments.pure
+      - test/easterncove/store/CoveDb.pure
+features:
+  - scaffolding:model-connection
+  - connection:mapper-postprocessor
+  - grammar:diagram
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:graph-fetch
+  - execution:mapping-test
+  - execution:multi-execution-service
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - grammar:qualified-property
+  - mapping:cross-store
+  - mapping:m2m-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:bi-temporal
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-multi-table
+stores:
+  - model-store
+  - relational
+complexity: advanced
+tags:
+  - association
+  - bi-temporal
+  - cross-store
+  - diagram
+  - file-generation
+  - graph-fetch-serialize
+  - group-by
+  - h2
+  - harbour-berthing
+  - mapper-postprocessor
+  - multi-execution
+  - point-in-time
+  - qualified-property
+  - service-test
+  - snowflake

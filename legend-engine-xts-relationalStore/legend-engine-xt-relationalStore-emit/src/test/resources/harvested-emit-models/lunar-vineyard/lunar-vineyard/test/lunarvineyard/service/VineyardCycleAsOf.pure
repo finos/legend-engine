@@ -1,0 +1,120 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::lunarvineyard::service::VineyardCycleAsOf
+{
+  pattern: '/lunarvineyard/cyclesAsOf/{businessDate}';
+  ownership: UserList { users: ['vineyard-irrigation-desk'] };
+  documentation: 'Reads the irrigation timeline strictly as of a business date so a version whose validity window has not opened yet is absent and a superseded version is replaced, grouping the visible versions by cycle and sector.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::lunarvineyard::domain::IrrigationCycle.all($businessDate)->filter(
+      c|($c.scheduleCode == 'DAWN') || ($c.scheduleCode == 'DUSK')
+    )->groupBy(
+      [
+        c|$c.cycleId,
+        c|$c.block.sectorCode
+      ],
+      [
+        agg(c|$c.litresApplied, y|$y->sum())
+      ],
+      [
+        'Cycle',
+        'Sector',
+        'TotalLitres'
+      ]
+    )->sort(
+      [
+        asc('Cycle')
+      ]
+    )};
+    mapping: demo::lunarvineyard::mapping::VineyardMapping;
+    runtime: demo::lunarvineyard::runtime::VineyardRuntime;
+  }
+  testSuites:
+  [
+    asOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              vineyard.vine_block:
+                'block_code,sector_code\n'+
+                'BLK-1,NORTH-SLOPE\n'+
+                'BLK-2,NORTH-SLOPE\n'+
+                'BLK-3,RIVER-TERRACE\n'+
+                'BLK-4,RIVER-TERRACE\n';
+
+              vineyard.irrigation_cycle:
+                'cycle_id,applied_on,valve_code,schedule_code,litres_applied,soil_moisture_pct,block_code,from_z,thru_z\n'+
+                'IC-21,2026-02-03,V-21,DAWN,800,30,BLK-1,2026-01-01,2026-06-01\n'+
+                'IC-21,2026-02-03,V-21,DAWN,1200,30,BLK-1,2026-06-01,9999-12-31\n'+
+                'IC-22,2026-02-04,V-22,DUSK,650,26,BLK-3,2026-07-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        openVersionOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-03-01
+          ]
+          asserts:
+          [
+            outOfRangeVersionAbsent:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cycle":"IC-21","Sector":"NORTH-SLOPE","TotalLitres":800}]';
+                  }#;
+              }#
+          ]
+        },
+        laterWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-08-01
+          ]
+          asserts:
+          [
+            supersedingVersionAndNewCycle:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Cycle":"IC-21","Sector":"NORTH-SLOPE","TotalLitres":1200},{"Cycle":"IC-22","Sector":"RIVER-TERRACE","TotalLitres":650}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::quietthicket4::domain::*;
+
+Class <<test::quietthicket4::domain::AllotmentProfile.committeePublished>> {test::quietthicket4::domain::AllotmentProfile.custodianTeam = 'parish-allotment-committee', test::quietthicket4::domain::AllotmentProfile.reviewCadence = 'annual'} test::quietthicket4::domain::AllotmentSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  parishName: String[1];
+  hectares: Float[0..1];
+}
+
+Class <<test::quietthicket4::domain::AllotmentProfile.committeePublished>> {test::quietthicket4::domain::AllotmentProfile.registerSection = 'plots'} test::quietthicket4::domain::Plot
+{
+  plotCode: String[1];
+  squareMetres: Float[1];
+  shedPresent: Boolean[1];
+  soilNote: String[0..1];
+}
+
+Class <<test::quietthicket4::domain::AllotmentProfile.internalOnly>> test::quietthicket4::domain::Tenant
+{
+  membershipNumber: String[1];
+  displayName: String[1];
+  joinedOn: StrictDate[1];
+}
+
+Class test::quietthicket4::domain::CultivationNote
+{
+  noteReference: String[1];
+  writtenOn: StrictDate[1];
+  cultivatedFraction: Float[0..1];
+  observation: String[0..1];
+}
+
+Class test::quietthicket4::domain::WaterPoint
+{
+  waterPointCode: String[1];
+  troughCount: Integer[1];
+  metered: Boolean[1];
+}
+
+Class <<test::quietthicket4::domain::AllotmentProfile.tenancyControlled, temporal.businesstemporal>> {test::quietthicket4::domain::AllotmentProfile.registerSection = 'tenancies'} test::quietthicket4::domain::Tenancy
+{
+  tenancyReference: String[1];
+  peppercornAgreement: Boolean[1];
+  cultivationClause: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> test::quietthicket4::domain::FullPlotTenancy extends Tenancy
+{
+  keyIssued: Boolean[1];
+  compostBaysAllocated: Integer[0..1];
+}
+
+Class <<temporal.businesstemporal>> test::quietthicket4::domain::HalfPlotTenancy extends Tenancy
+{
+  halfLabel: String[1];
+  sharedPathResponsibility: Boolean[1];
+}
+
+Class <<temporal.businesstemporal>> test::quietthicket4::domain::SharedTenancy extends Tenancy
+{
+  coTenantNames: String[*];
+  rotaAgreed: Boolean[1];
+}
+
+Class <<test::quietthicket4::domain::AllotmentProfile.committeePublished, temporal.businesstemporal>> test::quietthicket4::domain::PlotAssessment
+{
+  assessmentReference: String[1];
+  assessedOn: StrictDate[1];
+  cultivationScore: Integer[1];
+  remedialNote: String[0..1];
+}

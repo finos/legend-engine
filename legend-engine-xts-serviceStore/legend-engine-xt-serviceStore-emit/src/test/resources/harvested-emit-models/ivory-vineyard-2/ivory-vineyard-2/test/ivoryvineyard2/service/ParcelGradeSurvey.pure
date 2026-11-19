@@ -1,0 +1,127 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivoryvineyard2::service::ParcelGradeSurvey
+{
+  pattern: '/ivoryvineyard/v1/parcel-grade-survey/{businessDate}/{processingDate}';
+  title: 'Ivory Vineyard - Parcel Grade Survey As Of';
+  ownership: UserList { users: ['vineyard-grade-desk'] };
+  documentation: 'Six-column projection of the business-temporal parcel extent where the awarded grade is resolved by a bitemporal qualified property at a processing date and a business date, narrowed on a projected column and de-duplicated, so a parcel whose planting window closed before the requested date drops out entirely.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], processingDate: StrictDate[1]|test::ivoryvineyard2::domain::Parcel.all($businessDate)->project(
+      [
+        p|$p.parcelCode,
+        p|$p.slopePct,
+        p|$p.trellisCode,
+        p|$p.grade($processingDate, $businessDate).gradeCode,
+        p|$p.grade($processingDate, $businessDate).panel.panelName,
+        p|$p.grade($processingDate, $businessDate).panel.wardenName
+      ],
+      [
+        'Parcel/Code',
+        'Parcel/Slope',
+        'Parcel/Trellis',
+        'Grade/Code',
+        'Grade/Panel',
+        'Grade/Warden'
+      ]
+    )->filter(
+      r|$r.getString('Parcel/Trellis') == 'TR-GUYOT'
+    )->distinct()->sort([asc('Parcel/Code')])};
+    mapping: test::ivoryvineyard2::mapping::VineyardMapping;
+    runtime: test::ivoryvineyard2::runtime::VineyardH2Runtime;
+  }
+  testSuites:
+  [
+    parcelGradeSurveySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Relational
+            #{
+              vine.panel:
+                'panel_id,panel_name,warden_name\n'+
+                '1,Ridge Panel,Ada Vinehand\n'+
+                '2,Hollow Panel,Bo Caskhand\n';
+
+              vine.grade:
+                'grade_id,grade_code,panel_id,in_z,out_z,from_z,thru_z\n'+
+                '10,GR-ALPHA,1,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                '11,GR-BETA,2,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n';
+
+              vine.parcel:
+                'parcel_id,parcel_code,trellis_code,slope_pct,grade_id,block_code,from_z,thru_z\n'+
+                '1,PC-01,TR-GUYOT,12.5,10,BL-N,2026-01-01,9999-12-31\n'+
+                '2,PC-02,TR-GUYOT,7.25,11,BL-S,2025-01-01,2025-06-30\n'+
+                '3,PC-03,TR-CORDON,3.5,10,BL-N,2026-01-01,9999-12-31\n'+
+                '4,PC-04,TR-GUYOT,9.75,11,BL-S,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        guyotParcelsAsOfMarch:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2026-03-01,
+            processingDate = %2026-03-01
+          ]
+          asserts:
+          [
+            onlyTheInRangeGuyotParcels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Parcel/Code":"PC-01","Parcel/Slope":12.5,"Parcel/Trellis":"TR-GUYOT","Grade/Code":"GR-ALPHA","Grade/Panel":"Ridge Panel","Grade/Warden":"Ada Vinehand"},{"Parcel/Code":"PC-04","Parcel/Slope":9.75,"Parcel/Trellis":"TR-GUYOT","Grade/Code":"GR-BETA","Grade/Panel":"Hollow Panel","Grade/Warden":"Bo Caskhand"}]';
+                  }#;
+              }#
+          ]
+        },
+        theSupersededParcelOnlyStandsInItsOwnWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-03-01,
+            processingDate = %2025-03-01
+          ]
+          asserts:
+          [
+            onlyTheParcelWhoseWindowWasOpenThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Parcel/Code":"PC-02","Parcel/Slope":7.25,"Parcel/Trellis":"TR-GUYOT","Grade/Code":"GR-BETA","Grade/Panel":"Hollow Panel","Grade/Warden":"Bo Caskhand"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

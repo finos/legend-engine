@@ -1,0 +1,169 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivoryestuary2::service::RoostCensusExtract
+{
+  pattern: '/estuary/v1/roosts/{asOfDate}/habitats';
+  title: 'Ivory Estuary - Roost census extract';
+  owners:
+  [
+    'estuary-census-office',
+    'shorebird-watch-platform'
+  ];
+  documentation: 'Site-level roost census extract pinned to one business instant: the requested instant is bound to a local variable, the site extent is selected at that instant, and qualifying sites are those in the requested habitat set that carry a high-tide flock tally and were last counted inside a relative-day window measured back from the current date. Aliased site and tally columns are projected and reduced with distinct.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate: StrictDate[1], habitats: String[*], currentDate: StrictDate[1]|let businessInstant = $asOfDate;
+      test::ivoryestuary2::domain::RoostSite.all($businessInstant)->filter(
+        s|($s.habitatCode->in($habitats)) && (($s.tallies($businessInstant)->exists(t|$t.flockLabel == 'HIGH-TIDE')) && ($s.lastCountOn >= adjust($currentDate, -3650, meta::pure::functions::date::DurationUnit.DAYS)))
+      )->project(
+        [
+          s|$s.siteCode,
+          s|$s.siteName,
+          s|$s.habitatCode,
+          s|$s.wardenCode,
+          s|$s.lastCountOn,
+          s|$s.tallies($businessInstant).tallyCode,
+          s|$s.tallies($businessInstant).birdCount,
+          s|$s.tallies($businessInstant).ringCode,
+          s|$s.tallies($businessInstant).flockLabel
+        ],
+        [
+          'Site/Code',
+          'Site/Name',
+          'Site/Habitat',
+          'Site/Warden',
+          'Site/LastCount',
+          'Tally/Code',
+          'Tally/Birds',
+          'Tally/Ring',
+          'Tally/Flock'
+        ]
+      )->distinct()->sort(
+        [
+          asc('Site/Code'),
+          asc('Tally/Code')
+        ]
+      );};
+    mapping: test::ivoryestuary2::mapping::EstuaryMapping;
+    runtime: test::ivoryestuary2::runtime::EstuaryCensusRuntime;
+  }
+  testSuites:
+  [
+    roostCensusSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estuaryConnection:
+            Relational
+            #{
+              estuary.roost_site:
+                'site_code,site_name,habitat_code,warden_code,last_count_on,from_z,thru_z\n'+
+                'RS-1,Tern Bank,MUDFLAT,warden-1,2026-05-01,2026-01-01,9999-12-31\n'+
+                'RS-2,Wader Spit,SALTMARSH,,2026-05-02,2026-01-01,9999-12-31\n'+
+                'RS-3,Gull Islet,DUNE,warden-3,2026-05-03,2026-01-01,9999-12-31\n'+
+                'RS-4,Heron Creek,MUDFLAT,warden-4,1999-01-01,2026-01-01,9999-12-31\n'+
+                'RS-5,Plover Flat,MUDFLAT,warden-5,2026-05-05,2026-01-01,2026-03-01\n'+
+                'RS-6,Curlew Bar,SALTMARSH,warden-6,2026-05-06,2026-01-01,9999-12-31\n';
+              estuary.roost_tally:
+                'tally_code,site_code,bird_count,ring_code,flock_label,from_z,thru_z\n'+
+                'RT-1,RS-1,120,ring-a,HIGH-TIDE,2026-01-01,9999-12-31\n'+
+                'RT-2,RS-1,40,,LOW-TIDE,2026-01-01,9999-12-31\n'+
+                'RT-3,RS-2,64,ring-c,HIGH-TIDE,2026-01-01,9999-12-31\n'+
+                'RT-4,RS-3,10,ring-d,HIGH-TIDE,2026-01-01,9999-12-31\n'+
+                'RT-5,RS-4,15,ring-e,HIGH-TIDE,2026-01-01,9999-12-31\n'+
+                'RT-6,RS-5,88,ring-f,HIGH-TIDE,2026-01-01,9999-12-31\n'+
+                'RT-7,RS-6,22,ring-g,LOW-TIDE,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentInstantQualifyingSites:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            habitats = ['MUDFLAT', 'SALTMARSH'],
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            habitatWindowAndTallyQualifiedSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site/Code":"RS-1","Site/Name":"Tern Bank","Site/Habitat":"MUDFLAT","Site/Warden":"warden-1","Site/LastCount":"2026-05-01","Tally/Code":"RT-1","Tally/Birds":120,"Tally/Ring":"ring-a","Tally/Flock":"HIGH-TIDE"},{"Site/Code":"RS-1","Site/Name":"Tern Bank","Site/Habitat":"MUDFLAT","Site/Warden":"warden-1","Site/LastCount":"2026-05-01","Tally/Code":"RT-2","Tally/Birds":40,"Tally/Ring":null,"Tally/Flock":"LOW-TIDE"},{"Site/Code":"RS-2","Site/Name":"Wader Spit","Site/Habitat":"SALTMARSH","Site/Warden":null,"Site/LastCount":"2026-05-02","Tally/Code":"RT-3","Tally/Birds":64,"Tally/Ring":"ring-c","Tally/Flock":"HIGH-TIDE"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierInstantIncludesTheClosedSite:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-02-15,
+            currentDate = %2026-08-01,
+            habitats = ['MUDFLAT', 'SALTMARSH']
+          ]
+          asserts:
+          [
+            siteInsideItsBusinessRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site/Code":"RS-1","Site/Name":"Tern Bank","Site/Habitat":"MUDFLAT","Site/Warden":"warden-1","Site/LastCount":"2026-05-01","Tally/Code":"RT-1","Tally/Birds":120,"Tally/Ring":"ring-a","Tally/Flock":"HIGH-TIDE"},{"Site/Code":"RS-1","Site/Name":"Tern Bank","Site/Habitat":"MUDFLAT","Site/Warden":"warden-1","Site/LastCount":"2026-05-01","Tally/Code":"RT-2","Tally/Birds":40,"Tally/Ring":null,"Tally/Flock":"LOW-TIDE"},{"Site/Code":"RS-2","Site/Name":"Wader Spit","Site/Habitat":"SALTMARSH","Site/Warden":null,"Site/LastCount":"2026-05-02","Tally/Code":"RT-3","Tally/Birds":64,"Tally/Ring":"ring-c","Tally/Flock":"HIGH-TIDE"},{"Site/Code":"RS-5","Site/Name":"Plover Flat","Site/Habitat":"MUDFLAT","Site/Warden":"warden-5","Site/LastCount":"2026-05-05","Tally/Code":"RT-6","Tally/Birds":88,"Tally/Ring":"ring-f","Tally/Flock":"HIGH-TIDE"}]';
+                  }#;
+              }#
+          ]
+        },
+        habitatSetWithNoQualifyingSite:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            habitats = ['SHINGLE'],
+            currentDate = %2026-08-01
+          ]
+          asserts:
+          [
+            emptyResult:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

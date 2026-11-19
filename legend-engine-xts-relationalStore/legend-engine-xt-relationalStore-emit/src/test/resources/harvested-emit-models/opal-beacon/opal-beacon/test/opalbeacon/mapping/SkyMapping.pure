@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::opalbeacon::mapping::SkyMapping
+(
+  include mapping test::opalbeacon::mapping::SkyBaseMapping
+
+  test::opalbeacon::domain::Star_Coverage: Relational
+  {
+    AssociationMapping
+    (
+      stations[star, station]: [test::opalbeacon::store::SkyDB]@Star_Sector > @Sector_TeamLink > @TeamLink_Team > @Team_Station,
+      stars[station, star]: [test::opalbeacon::store::SkyDB]@Team_Station > @TeamLink_Team > @Sector_TeamLink > @Star_Sector
+    )
+  }
+
+  test::opalbeacon::domain::Survey_Coverage: Relational
+  {
+    AssociationMapping
+    (
+      stations[survey, station]: [test::opalbeacon::store::SkyDB]@Survey_Sector > @Sector_TeamLink > @TeamLink_Team > @Team_Station,
+      surveys[station, survey]: [test::opalbeacon::store::SkyDB]@Team_Station > @TeamLink_Team > @Sector_TeamLink > @Survey_Sector
+    )
+  }
+
+  testSuites:
+  [
+    coveragePathSuite:
+    {
+      function: |test::opalbeacon::domain::BeaconStar.all(%2026-06-01, %2026-06-01)->project(
+        [
+          s|$s.starCode,
+          s|$s.registerTag,
+          s|$s.sectorName,
+          s|$s.teamName,
+          s|$s.stationName,
+          s|$s.domeKind
+        ],
+        [
+          'Star',
+          'Register',
+          'Sector',
+          'Team',
+          'Station',
+          'Dome'
+        ]
+      )->sort(
+        [
+          asc('Star'),
+          asc('Station')
+        ]
+      );
+      tests:
+      [
+        fourHopHitFanOutAndMiss:
+        {
+          doc: 'Resolves the star catalogue at one business and one processing instant, then walks the four-hop sector-to-station coverage path: one star fans out onto two stations, one lands on a single station, one misses because its only sector-team link is already closed against the current-time predicate, and one is out of range on the business axis.';
+          data:
+          [
+            test::opalbeacon::store::SkyDB:
+              Relational
+              #{
+                OPS.STATION:
+                  'station_code,station_name,dome_kind\n'+
+                  'ST-1,Ridge Observatory,SLIDING\n'+
+                  'ST-2,Plateau Observatory,ROLLOFF\n'+
+                  'ST-3,Basin Observatory,CLAMSHELL\n';
+                OPS.OBSERVING_TEAM:
+                  'team_code,team_name,station_code,valid_from,valid_thru\n'+
+                  'TM-1,Night Watch,ST-1,2020-01-01,9999-12-31\n'+
+                  'TM-2,Dawn Watch,ST-2,2020-01-01,9999-12-31\n'+
+                  'TM-3,Retired Watch,ST-3,2020-01-01,9999-12-31\n';
+                OPS.SECTOR_TEAM:
+                  'sector_code,team_code,valid_from,valid_thru\n'+
+                  'SC-1,TM-1,2020-01-01,9999-12-31\n'+
+                  'SC-1,TM-2,2020-01-01,9999-12-31\n'+
+                  'SC-2,TM-1,2020-01-01,9999-12-31\n'+
+                  'SC-3,TM-3,2020-01-01,2021-01-01\n';
+                SKY.SKY_SECTOR:
+                  'sector_code,sector_name\n'+
+                  'SC-1,Northern Fan\n'+
+                  'SC-2,Southern Fan\n'+
+                  'SC-3,Zenith Fan\n';
+                SKY.SURVEY_RUN:
+                  'run_code,run_name,sector_code\n'+
+                  'RN-1,Spring Sweep,SC-2\n';
+                SKY.BEACON_STAR:
+                  'star_code,star_name,magnitude,band_code,sector_code,bus_from,bus_thru,proc_in,proc_out\n'+
+                  'BS-1,Opal Alpha,3,radio,SC-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'BS-2,Opal Beta,5,optical,SC-2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'BS-3,Opal Gamma,7,radio,SC-3,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  'BS-4,Opal Delta,9,optical,SC-2,2020-01-01,2021-01-01,2026-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            hitFanOutAndMissRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Star":"BS-1","Register":"SKY CATALOGUE","Sector":"Northern Fan","Team":"Dawn Watch","Station":"Plateau Observatory","Dome":"ROLLOFF"},{"Star":"BS-1","Register":"SKY CATALOGUE","Sector":"Northern Fan","Team":"Night Watch","Station":"Ridge Observatory","Dome":"SLIDING"},{"Star":"BS-2","Register":"SKY CATALOGUE","Sector":"Southern Fan","Team":"Night Watch","Station":"Ridge Observatory","Dome":"SLIDING"},{"Star":"BS-3","Register":"SKY CATALOGUE","Sector":"Zenith Fan","Team":null,"Station":null,"Dome":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

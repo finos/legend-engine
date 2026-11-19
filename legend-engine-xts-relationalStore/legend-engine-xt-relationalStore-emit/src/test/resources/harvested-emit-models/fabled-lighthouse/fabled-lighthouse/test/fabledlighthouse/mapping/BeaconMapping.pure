@@ -1,0 +1,55 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::fabledlighthouse::mapping::BeaconMapping
+(
+  *demo::fabledlighthouse::domain::Station[station]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::fabledlighthouse::store::BeaconDb]signal.station.code
+    )
+    ~mainTable [demo::fabledlighthouse::store::BeaconDb]signal.station
+    code: [demo::fabledlighthouse::store::BeaconDb]signal.station.code,
+    name: [demo::fabledlighthouse::store::BeaconDb]signal.station.name,
+    region: [demo::fabledlighthouse::store::BeaconDb]signal.station.region,
+    commissionedDate: [demo::fabledlighthouse::store::BeaconDb]signal.station.commissioned_date,
+    focalHeightM: [demo::fabledlighthouse::store::BeaconDb]signal.station.focal_height_m
+  }
+  *demo::fabledlighthouse::domain::BeamLog[beamLog]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.log_id
+    )
+    ~mainTable [demo::fabledlighthouse::store::BeaconDb]signal.beam_log
+    logId: [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.log_id,
+    stationCode: [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.station_code,
+    region: [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.region,
+    logDate: [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.log_date,
+    visibilityDm: [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.visibility_dm,
+    activeHours: [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.active_hours,
+    rotations: [demo::fabledlighthouse::store::BeaconDb]signal.beam_log.rotations
+  }
+
+  demo::fabledlighthouse::domain::Station_BeamLog: Relational
+  {
+    AssociationMapping
+    (
+      station[beamLog,station]: [demo::fabledlighthouse::store::BeaconDb]@Station_BeamLog,
+      logs[station,beamLog]: [demo::fabledlighthouse::store::BeaconDb]@Station_BeamLog
+    )
+  }
+)

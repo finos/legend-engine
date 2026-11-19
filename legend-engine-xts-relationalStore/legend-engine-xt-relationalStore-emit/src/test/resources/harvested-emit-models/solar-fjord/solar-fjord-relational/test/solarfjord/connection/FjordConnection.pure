@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::solarfjord::connection::FjordConnection
+{
+  store: test::solarfjord::store::FjordDatabase;
+  type: DB2;
+  specification: Static
+  {
+    name: 'EXAMPLE_FJORD_DB';
+    host: 'example-fjord-host';
+    port: 50000;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'fjordharvestprincipal';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'kelp'; to: 'kelp_curated';},
+        table {from: 'shore_gather'; to: 'shore_gather_current'; schemaFrom: 'kelp'; schemaTo: 'kelp_curated';}
+      ];
+    }
+  ];
+}
+###Connection
+RelationalDatabaseConnection test::solarfjord::connection::FjordH2Connection
+{
+  store: test::solarfjord::store::FjordDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists kelp;',
+      'create schema kelp;',
+      'create table kelp.farm_site (site_code varchar(20) primary key, site_name varchar(120) not null, fjord_arm varchar(60) not null);',
+      'create table kelp.line_harvest (harvest_id integer primary key, lot_code varchar(30) not null, site_code varchar(20) not null, wet_mass_kg integer not null, blade_grade varchar(30) not null, qc_flag varchar(10) not null);',
+      'create table kelp.shore_gather (gather_id integer primary key, lot_code varchar(30) not null, site_code varchar(20) not null, wet_mass_kg integer not null, drift_grade varchar(30));'
+      ];
+  };
+  auth: DefaultH2
+  {
+  };
+}

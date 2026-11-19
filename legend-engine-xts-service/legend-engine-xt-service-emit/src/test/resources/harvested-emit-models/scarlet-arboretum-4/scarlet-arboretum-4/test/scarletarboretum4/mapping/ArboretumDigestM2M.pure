@@ -1,0 +1,271 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletarboretum4::mapping::ArboretumDigestM2M
+(
+  include mapping test::scarletarboretum4::mapping::ArboretumEnumMappings
+
+  test::scarletarboretum4::domain::FieldSteward[fieldStewardSet]: Pure
+  {
+    ~src test::scarletarboretum4::source::SpecimenSubmission
+    stewardCode: if($src.surveyorCode->isEmpty(),
+                    | 'UNSTAFFED',
+                    | $src.surveyorCode->toOne()->trim()->toUpper()),
+    displayLabel: 'FIELD/' + if($src.plotTag->isEmpty(),
+                                | 'UNPLOTTED',
+                                | $src.plotTag->toOne()->trim()->toUpper()),
+    tier: EnumerationMapping VigourMap: [test::scarletarboretum4::function::vigourInput($src.surveyorTier)]->toOne(),
+    rosterCode: 'RS-' + $src.surveyorCode->defaultIfEmpty('unstaffed')->toOne()->trim()->toUpper()
+  }
+
+  test::scarletarboretum4::domain::AuditSteward[auditStewardSet]: Pure
+  {
+    ~src test::scarletarboretum4::source::SpecimenSubmission
+    stewardCode: if($src.auditRef->isEmpty(),
+                    | 'UNREVIEWED',
+                    | $src.auditRef->toOne()->trim()->toUpper()),
+    displayLabel: 'AUDIT/' + if($src.reviewedOn->isEmpty(),
+                                | 'UNDATED',
+                                | $src.reviewedOn->toOne()->toString()),
+    tier: EnumerationMapping VigourMap: [test::scarletarboretum4::function::vigourInput(if($src.vigourKey == 'UNSET',
+                                                                                          | $src.auditTier,
+                                                                                          | $src.vigourKey))]->toOne(),
+    reviewCycle: if($src.reviewedOn->isEmpty(),
+                    | 'CYCLE/UNDATED',
+                    | 'CYCLE/' + $src.reviewedOn->toOne()->year()->toString())
+  }
+
+  test::scarletarboretum4::domain::ArboretumRecord[fieldRecordSet]: Pure
+  {
+    ~src test::scarletarboretum4::source::SpecimenSubmission
+    ~filter $src.routingKey == 'FIELD'
+    recordRef: 'FLD-' + $src.submissionRef->trim()->toUpper(),
+    specimenLabel: if($src.specimenCode->isEmpty(),
+                      | 'UNIDENTIFIED SPECIMEN',
+                      | 'SPECIMEN ' + $src.specimenCode->toOne()->trim()->toUpper()),
+    provenanceLabel: if($src.bed->isEmpty(),
+                        | 'UNBEDDED',
+                        | if($src.bed.section->isEmpty(),
+                             | 'BED/' + $src.bedLabel,
+                             | if($src.bed.section.regionLabel->isEmpty(),
+                                  | 'BED/' + $src.bedLabel + '/UNZONED',
+                                  | 'BED/' + $src.bedLabel + '/' + $src.bed.section.regionLabel->toOne()->trim()->toUpper()))),
+    vigour: EnumerationMapping VigourMap: [test::scarletarboretum4::function::vigourInput(if($src.noteCount == 0,
+                                                                                          | $src.vigourKey,
+                                                                                          | if($src.careNotes->first()->toOne()->trim()->toUpper()->startsWith('PRUNE'),
+                                                                                               | 'ROBUST',
+                                                                                               | $src.vigourKey)))]->toOne(),
+    canopyLabel: test::scarletarboretum4::function::canopyBand($src.canopyPct),
+    careDigest: test::scarletarboretum4::function::careDigest($src.careNotes),
+    ringCount: $src.ringCount,
+    measuredOn: $src.measuredOn,
+    careTags: $src.careNotes->map(n | 'CARE/' + $n->trim()->toUpper()),
+    stewards[fieldStewardSet]: $src
+  }
+
+  test::scarletarboretum4::domain::ArboretumRecord[auditRecordSet]: Pure
+  {
+    ~src test::scarletarboretum4::source::SpecimenSubmission
+    ~filter $src.routingKey == 'AUDIT'
+    recordRef: 'AUD-' + $src.submissionRef->trim()->toUpper(),
+    specimenLabel: if($src.specimenCode->isEmpty(),
+                      | 'UNIDENTIFIED SPECIMEN',
+                      | 'SPECIMEN ' + $src.specimenCode->toOne()->trim()->toUpper()),
+    provenanceLabel: if($src.bedLabel == 'UNBEDDED',
+                        | 'REVIEW/UNBEDDED',
+                        | 'REVIEW/' + $src.bedLabel),
+    vigour: EnumerationMapping VigourMap: [test::scarletarboretum4::function::vigourInput(if($src.vigourKey == 'UNSET',
+                                                                                          | $src.auditTier,
+                                                                                          | $src.vigourKey))]->toOne(),
+    canopyLabel: if($src.canopyPct->isEmpty(),
+                    | 'UNMEASURED ON REVIEW',
+                    | test::scarletarboretum4::function::canopyBand($src.canopyPct)),
+    careDigest: test::scarletarboretum4::function::careDigest($src.careNotes),
+    ringCount: $src.ringCount,
+    measuredOn: $src.measuredOn,
+    careTags: $src.careNotes->map(n | 'CARE/' + $n->trim()->toUpper()),
+    stewards[auditStewardSet]: $src
+  }
+
+  test::scarletarboretum4::domain::WalkedSurveyRecord[walkedSurveyRecordSet]: Pure
+  {
+    ~src test::scarletarboretum4::source::SpecimenSubmission
+    ~filter $src.routingKey == 'FIELD'
+    recordRef: 'FLD-' + $src.submissionRef->trim()->toUpper(),
+    specimenLabel: if($src.specimenCode->isEmpty(),
+                      | 'UNIDENTIFIED SPECIMEN',
+                      | 'SPECIMEN ' + $src.specimenCode->toOne()->trim()->toUpper()),
+    provenanceLabel: if($src.bed->isEmpty(),
+                        | 'UNBEDDED',
+                        | if($src.bed.section->isEmpty(),
+                             | 'BED/' + $src.bedLabel,
+                             | if($src.bed.section.regionLabel->isEmpty(),
+                                  | 'BED/' + $src.bedLabel + '/UNZONED',
+                                  | 'BED/' + $src.bedLabel + '/' + $src.bed.section.regionLabel->toOne()->trim()->toUpper()))),
+    vigour: EnumerationMapping VigourMap: [test::scarletarboretum4::function::vigourInput(if($src.noteCount == 0,
+                                                                                          | $src.vigourKey,
+                                                                                          | if($src.careNotes->first()->toOne()->trim()->toUpper()->startsWith('PRUNE'),
+                                                                                               | 'ROBUST',
+                                                                                               | $src.vigourKey)))]->toOne(),
+    canopyLabel: test::scarletarboretum4::function::canopyBand($src.canopyPct),
+    careDigest: test::scarletarboretum4::function::careDigest($src.careNotes),
+    ringCount: $src.ringCount,
+    measuredOn: $src.measuredOn,
+    careTags: $src.careNotes->map(n | 'CARE/' + $n->trim()->toUpper()),
+    stewards[fieldStewardSet]: $src,
+    rosterCode: 'RS-' + $src.surveyorCode->defaultIfEmpty('unstaffed')->toOne()->trim()->toUpper()
+  }
+
+  *test::scarletarboretum4::domain::ArboretumRecord[allRecords]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(fieldRecordSet, auditRecordSet)
+  }
+
+  testSuites:
+  [
+    arboretumDigestSuite:
+    {
+      function: |test::scarletarboretum4::domain::ArboretumRecord.all()->graphFetch(
+        #{
+          test::scarletarboretum4::domain::ArboretumRecord{
+            recordRef,
+            specimenLabel,
+            provenanceLabel,
+            vigour,
+            canopyLabel,
+            careDigest,
+            ringCount,
+            measuredOn,
+            careTags,
+            stewards{
+              stewardCode,
+              displayLabel,
+              tier
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::scarletarboretum4::domain::ArboretumRecord{
+            recordRef,
+            specimenLabel,
+            provenanceLabel,
+            vigour,
+            canopyLabel,
+            careDigest,
+            ringCount,
+            measuredOn,
+            careTags,
+            stewards{
+              stewardCode,
+              displayLabel,
+              tier
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        everyCanopyAndVigourArmIsReached:
+        {
+          doc: 'Drives the four canopy arms and the unmeasured fallback, the pruned-note vigour override, the untranslated stored vigour code and all three bed-provenance arms on the routed slice, so every alternative derivation in the transform set is observable in one mapped document.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::scarletarboretum4::source::SpecimenSubmission:
+                  Reference
+                  #{
+                    test::scarletarboretum4::data::ArmCoverageFixtures
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mappedRecords:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"recordRef":"FLD-SP-01","specimenLabel":"SPECIMEN QC-11","provenanceLabel":"BED/BD-1/NORTH WALK","vigour":"ROBUST","canopyLabel":"FULL CANOPY","careDigest":"MULCHED | WATERED","ringCount":140,"measuredOn":"2026-03-02","careTags":["CARE/MULCHED","CARE/WATERED"],"stewards":[{"stewardCode":"SR-7","displayLabel":"FIELD/PT-9","tier":"ROBUST"}]},{"recordRef":"FLD-SP-02","specimenLabel":"SPECIMEN QC-12","provenanceLabel":"BED/BD-2/UNZONED","vigour":"ROBUST","canopyLabel":"PARTIAL CANOPY","careDigest":"PRUNE CROWN","ringCount":88,"measuredOn":"2026-03-03","careTags":["CARE/PRUNE CROWN"],"stewards":[{"stewardCode":"KW-3","displayLabel":"FIELD/PT-4","tier":"FAIR"}]},{"recordRef":"FLD-SP-03","specimenLabel":"UNIDENTIFIED SPECIMEN","provenanceLabel":"BED/BD-3","vigour":"POOR","canopyLabel":"THIN CANOPY","careDigest":"NO CARE NOTES","ringCount":null,"measuredOn":"2026-03-04","careTags":[],"stewards":[{"stewardCode":"UNSTAFFED","displayLabel":"FIELD/UNPLOTTED","tier":"FAIR"}]},{"recordRef":"FLD-SP-04","specimenLabel":"SPECIMEN QC-14","provenanceLabel":"UNBEDDED","vigour":"POOR","canopyLabel":"BARE CROWN","careDigest":"STAKED","ringCount":12,"measuredOn":"2026-03-05","careTags":["CARE/STAKED"],"stewards":[{"stewardCode":"UNSTAFFED","displayLabel":"FIELD/UNPLOTTED","tier":"FAIR"}]}]';
+                  }#;
+              }#
+          ];
+        },
+        absentOptionalInputsFallThroughToDefaults:
+        {
+          doc: 'Supplies a routed submission with every optional input absent, so the specimen, canopy, care-digest, provenance and steward derivations all resolve through their literal defaults and the derived source properties fall through to their own fallbacks.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::scarletarboretum4::source::SpecimenSubmission:
+                  Reference
+                  #{
+                    test::scarletarboretum4::data::DefaultFallbackFixtures
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            defaultedRecords:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"recordRef":"FLD-SP-07","specimenLabel":"UNIDENTIFIED SPECIMEN","provenanceLabel":"UNBEDDED","vigour":"POOR","canopyLabel":"UNMEASURED","careDigest":"NO CARE NOTES","ringCount":null,"measuredOn":null,"careTags":[],"stewards":[{"stewardCode":"UNSTAFFED","displayLabel":"FIELD/UNPLOTTED","tier":"FAIR"}]}';
+                  }#;
+              }#
+          ];
+        },
+        unroutedSubmissionsNeverReachTheRegister:
+        {
+          doc: 'Offers submissions whose routing attribute is unrecognised or absent alongside a routed submission, so only the routed submission is admitted and the slice filter keeps the unrecognised documents out of the register.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::scarletarboretum4::source::SpecimenSubmission:
+                  Reference
+                  #{
+                    test::scarletarboretum4::data::DisjointRoutingFixtures
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            onlyRoutedSubmissionsSurvive:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"recordRef":"FLD-SP-11","specimenLabel":"SPECIMEN QC-21","provenanceLabel":"UNBEDDED","vigour":"POOR","canopyLabel":"PARTIAL CANOPY","careDigest":"WEEDED","ringCount":null,"measuredOn":"2026-03-09","careTags":["CARE/WEEDED"],"stewards":[{"stewardCode":"SR-1","displayLabel":"FIELD/UNPLOTTED","tier":"ROBUST"}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

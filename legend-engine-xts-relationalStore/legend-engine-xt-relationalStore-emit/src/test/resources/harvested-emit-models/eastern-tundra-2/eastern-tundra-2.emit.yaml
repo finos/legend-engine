@@ -1,0 +1,47 @@
+name: eastern-tundra-2
+title: "Caribou collar telemetry with batch-normalized readings and an eight-band movement rollup"
+description: |
+  A caribou collar telemetry register with one relational store, one main reading table,
+  and a self-join used to attach stable herd labels to grouped movement totals. The mapped
+  class keeps the collar identity, location, signal, habitat, deployment, and recovery
+  columns together under an explicit primary key and main-table alias. Seven derived
+  properties normalize year and battery text, classify movement into eight meaningful
+  bands, and calculate a reporting distance. Two single-execution services expose a
+  filtered collar digest and a grouped herd-distance summary, with fixtures pinning every
+  movement band plus the unknown-status fallback across nine telemetry rows.
+modelSources:
+  model:
+    root: eastern-tundra-2
+    files:
+      - test/easterntundra2/connection/TelemetryConnections.pure
+      - test/easterntundra2/domain/TelemetryDomain.pure
+      - test/easterntundra2/mapping/TelemetryMapping.pure
+      - test/easterntundra2/runtime/TelemetryRuntime.pure
+      - test/easterntundra2/service/TelemetryServices.pure
+      - test/easterntundra2/store/TelemetryStore.pure
+features:
+  - execution:service
+  - grammar:derived-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:group-by
+  - query:join
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - caribou
+  - collar-telemetry
+  - conditional-classification
+  - duckdb
+  - group-by
+  - h2
+  - relational-join
+  - snow-country
+  - telemetry-register

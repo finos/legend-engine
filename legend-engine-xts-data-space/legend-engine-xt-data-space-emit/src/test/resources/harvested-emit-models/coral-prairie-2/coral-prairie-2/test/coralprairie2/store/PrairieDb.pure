@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::coralprairie2::store::PrairieDb
+(
+  Schema prairie
+  (
+    Table meadow_plot
+    (
+      plot_id INTEGER PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      plot_code VARCHAR(16) NOT NULL,
+      plot_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(16) NOT NULL,
+      hectares DOUBLE NOT NULL,
+      sward_score INTEGER,
+      grazing_note VARCHAR(200)
+    )
+    Table region
+    (
+      region_code VARCHAR(16) PRIMARY KEY,
+      region_name VARCHAR(120) NOT NULL,
+      biome VARCHAR(40) NOT NULL
+    )
+    Table climate_norm
+    (
+      region_code VARCHAR(16) PRIMARY KEY,
+      rainfall_mm INTEGER NOT NULL,
+      frost_days INTEGER NOT NULL
+    )
+    Table sward_sample
+    (
+      sample_id INTEGER PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      plot_id INTEGER NOT NULL,
+      species_count INTEGER NOT NULL,
+      biomass_kg DOUBLE NOT NULL,
+      sampled_on DATE NOT NULL
+    )
+  )
+
+  Join PlotRegion(prairie.meadow_plot.region_code = prairie.region.region_code)
+  Join RegionClimate(prairie.region.region_code = prairie.climate_norm.region_code)
+  Join PlotSample(prairie.meadow_plot.plot_id = prairie.sward_sample.plot_id)
+)

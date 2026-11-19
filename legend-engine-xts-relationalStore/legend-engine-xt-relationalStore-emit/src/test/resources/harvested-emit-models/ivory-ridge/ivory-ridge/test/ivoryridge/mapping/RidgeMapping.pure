@@ -1,0 +1,530 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ivoryridge::mapping::RidgeMapping
+(
+  demo::ivoryridge::domain::ExceptionKind: EnumerationMapping ExceptionKindMapping
+  {
+    ACCESS_BLOCKED: ['AB'],
+    MATERIAL_SHORT: ['MS'],
+    WEATHER_HOLD: ['WH'],
+    SURVEY_GAP: ['SG']
+  }
+
+  demo::ivoryridge::domain::ResolutionStatus: EnumerationMapping ResolutionStatusMapping
+  {
+    OPEN: ['OP'],
+    CLEARED: ['CL'],
+    DEFERRED: ['DF']
+  }
+
+  *demo::ivoryridge::domain::TrailTask[trail_task_set]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ivoryridge::store::RidgeDB]ridge.trail_task.task_ref
+    )
+    ~mainTable [demo::ivoryridge::store::RidgeDB]ridge.trail_task
+    taskRef: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.task_ref,
+    recordCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.record_code,
+    crewCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.crew_code,
+    surveyDate: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.survey_date,
+    processedAt: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.processed_at,
+    segmentCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.segment_code,
+    habitatCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.habitat_code,
+    unitCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.unit_code,
+    priorityCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.priority_code,
+    directionCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.direction_code,
+    toolCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.tool_code,
+    weatherCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.weather_code,
+    gateCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.gate_code,
+    permitCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.permit_code,
+    markerCode: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.marker_code,
+    upstreamRefOne: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.upstream_ref_one,
+    upstreamRefTwo: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.upstream_ref_two,
+    upstreamRefThree: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.upstream_ref_three,
+    quantity: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.quantity,
+    lengthMetres: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.length_metres,
+    versionNo: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.version_no,
+    plannedDate: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.planned_date,
+    closedDate: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.closed_date,
+    accessNote: [demo::ivoryridge::store::RidgeDB]ridge.trail_task.access_note,
+    taskLabel: concat(
+                 concat(
+                   toUpper(trim([demo::ivoryridge::store::RidgeDB]ridge.trail_task.record_code)),
+                   '-'
+                 ),
+                 [demo::ivoryridge::store::RidgeDB]ridge.trail_task.task_ref
+               ),
+    pairingKindCode: [demo::ivoryridge::store::RidgeDB]@Task_Pairing | ridge.task_pairing.exception_kind_code
+  }
+
+  *demo::ivoryridge::domain::TaskPairing[task_pairing_set]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ivoryridge::store::RidgeDB]ridge.task_pairing.task_ref,
+      [demo::ivoryridge::store::RidgeDB]ridge.task_pairing.valid_to
+    )
+    ~mainTable [demo::ivoryridge::store::RidgeDB]ridge.task_pairing
+    pairingId: [demo::ivoryridge::store::RidgeDB]ridge.task_pairing.pairing_id,
+    taskRef: [demo::ivoryridge::store::RidgeDB]ridge.task_pairing.task_ref,
+    exceptionKind: EnumerationMapping ExceptionKindMapping: [demo::ivoryridge::store::RidgeDB]ridge.task_pairing.exception_kind_code,
+    raisedBy: [demo::ivoryridge::store::RidgeDB]ridge.task_pairing.raised_by,
+    validTo: [demo::ivoryridge::store::RidgeDB]ridge.task_pairing.valid_to,
+    detailNoteText: [demo::ivoryridge::store::RidgeDB]@Pairing_Detail | ridge.pairing_detail.note_text
+  }
+
+  *demo::ivoryridge::domain::TaskClassification[task_classification_set]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ivoryridge::store::RidgeDB]ridge.task_classification.task_ref,
+      [demo::ivoryridge::store::RidgeDB]ridge.task_classification.valid_to
+    )
+    ~mainTable [demo::ivoryridge::store::RidgeDB]ridge.task_classification
+    taskRef: [demo::ivoryridge::store::RidgeDB]ridge.task_classification.task_ref,
+    classCode: [demo::ivoryridge::store::RidgeDB]ridge.task_classification.class_code,
+    className: [demo::ivoryridge::store::RidgeDB]ridge.task_classification.class_name,
+    validTo: [demo::ivoryridge::store::RidgeDB]ridge.task_classification.valid_to
+  }
+
+  *demo::ivoryridge::domain::TaskTrailer[task_trailer_set]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ivoryridge::store::RidgeDB]ridge.task_trailer.task_ref,
+      [demo::ivoryridge::store::RidgeDB]ridge.task_trailer.valid_to
+    )
+    ~mainTable [demo::ivoryridge::store::RidgeDB]ridge.task_trailer
+    taskRef: [demo::ivoryridge::store::RidgeDB]ridge.task_trailer.task_ref,
+    trailerText: [demo::ivoryridge::store::RidgeDB]ridge.task_trailer.trailer_text,
+    trailerSeq: [demo::ivoryridge::store::RidgeDB]ridge.task_trailer.trailer_seq,
+    validTo: [demo::ivoryridge::store::RidgeDB]ridge.task_trailer.valid_to
+  }
+
+  *demo::ivoryridge::domain::PairingDetail[pairing_detail_set]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ivoryridge::store::RidgeDB]ridge.pairing_detail.pairing_id
+    )
+    ~mainTable [demo::ivoryridge::store::RidgeDB]ridge.pairing_detail
+    pairingId: [demo::ivoryridge::store::RidgeDB]ridge.pairing_detail.pairing_id,
+    status: EnumerationMapping ResolutionStatusMapping: [demo::ivoryridge::store::RidgeDB]ridge.pairing_detail.status_code,
+    noteText: [demo::ivoryridge::store::RidgeDB]ridge.pairing_detail.note_text
+  }
+
+  demo::ivoryridge::domain::TrailTask_TaskPairing: Relational
+  {
+    AssociationMapping
+    (
+      pairings[trail_task_set, task_pairing_set]: [demo::ivoryridge::store::RidgeDB]@Task_Pairing,
+      task[task_pairing_set, trail_task_set]: [demo::ivoryridge::store::RidgeDB]@Task_Pairing
+    )
+  }
+
+  demo::ivoryridge::domain::TaskClassification_TaskPairing: Relational
+  {
+    AssociationMapping
+    (
+      classifiedPairings[task_classification_set, task_pairing_set]: [demo::ivoryridge::store::RidgeDB]@Classification_Pairing,
+      classifications[task_pairing_set, task_classification_set]: [demo::ivoryridge::store::RidgeDB]@Classification_Pairing
+    )
+  }
+
+  demo::ivoryridge::domain::TaskTrailer_TaskPairing: Relational
+  {
+    AssociationMapping
+    (
+      trailedPairings[task_trailer_set, task_pairing_set]: [demo::ivoryridge::store::RidgeDB]@Trailer_Pairing,
+      trailers[task_pairing_set, task_trailer_set]: [demo::ivoryridge::store::RidgeDB]@Trailer_Pairing
+    )
+  }
+
+  demo::ivoryridge::domain::TaskPairing_PairingDetail: Relational
+  {
+    AssociationMapping
+    (
+      detail[task_pairing_set, pairing_detail_set]: [demo::ivoryridge::store::RidgeDB]@Pairing_Detail,
+      pairing[pairing_detail_set, task_pairing_set]: [demo::ivoryridge::store::RidgeDB]@Pairing_Detail
+    )
+  }
+
+  testSuites:
+  [
+    trailTaskSuite:
+    {
+      function: |demo::ivoryridge::domain::TrailTask.all()->graphFetch(
+        #{
+          demo::ivoryridge::domain::TrailTask
+          {
+            taskRef,
+            recordCode,
+            crewCode,
+            surveyDate,
+            segmentCode,
+            quantity,
+            lengthMetres,
+            taskLabel,
+            pairingKindCode,
+            pairings
+            {
+              pairingId,
+              exceptionKind
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::ivoryridge::domain::TrailTask
+          {
+            taskRef,
+            recordCode,
+            crewCode,
+            surveyDate,
+            segmentCode,
+            quantity,
+            lengthMetres,
+            taskLabel,
+            pairingKindCode,
+            pairings
+            {
+              pairingId,
+              exceptionKind
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        wideTaskCarriesLabelAndPairing:
+        {
+          doc: 'A fully populated activity row serializes its named tree, the concatenated label built in the mapping and the pairing reached through the hub join.';
+          data:
+          [
+            demo::ivoryridge::store::RidgeDB:
+              Relational
+              #{
+                ridge.trail_task:
+                  'task_ref,record_code,crew_code,survey_date,processed_at,segment_code,quantity,length_metres\n'+
+                  'TT-101,rec-a,CREW-N,2026-03-05,2026-03-05 08:15:00,SEG-4,3,180\n';
+
+                ridge.task_pairing:
+                  'pairing_id,task_ref,exception_kind_code,raised_by,valid_to\n'+
+                  'PR-101,TT-101,AB,Ridge Warden,9999-12-31\n';
+
+                ridge.pairing_detail:
+                  'pairing_id,status_code,note_text\n'+
+                  'PR-101,OP,culvert still blocked\n';
+              }#
+          ];
+          asserts:
+          [
+            wideTaskDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"taskRef":"TT-101","recordCode":"rec-a","crewCode":"CREW-N","surveyDate":"2026-03-05","segmentCode":"SEG-4","quantity":3,"lengthMetres":180,"taskLabel":"REC-A-TT-101","pairingKindCode":"AB","pairings":[{"pairingId":"PR-101","exceptionKind":"ACCESS_BLOCKED"}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    taskPairingSuite:
+    {
+      function: |demo::ivoryridge::domain::TaskPairing.all()->graphFetch(
+        #{
+          demo::ivoryridge::domain::TaskPairing
+          {
+            pairingId,
+            taskRef,
+            exceptionKind,
+            raisedBy,
+            validTo,
+            detailNoteText,
+            detail
+            {
+              pairingId,
+              status,
+              noteText
+            },
+            task
+            {
+              taskRef,
+              crewCode
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::ivoryridge::domain::TaskPairing
+          {
+            pairingId,
+            taskRef,
+            exceptionKind,
+            raisedBy,
+            validTo,
+            detailNoteText,
+            detail
+            {
+              pairingId,
+              status,
+              noteText
+            },
+            task
+            {
+              taskRef,
+              crewCode
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        hubPairingReachesDetailAndTask:
+        {
+          doc: 'The hub row decodes its enumerated exception kind, reaches its downstream detail in a second hop and navigates back to the activity row that shares its reference.';
+          data:
+          [
+            demo::ivoryridge::store::RidgeDB:
+              Relational
+              #{
+                ridge.trail_task:
+                  'task_ref,record_code,crew_code,survey_date,processed_at\n'+
+                  'TT-201,rec-b,CREW-S,2026-03-06,2026-03-06 09:00:00\n';
+
+                ridge.task_pairing:
+                  'pairing_id,task_ref,exception_kind_code,raised_by,valid_to\n'+
+                  'PR-201,TT-201,WH,Ridge Warden,9999-12-31\n';
+
+                ridge.pairing_detail:
+                  'pairing_id,status_code,note_text\n'+
+                  'PR-201,DF,waiting on frost thaw\n';
+              }#
+          ];
+          asserts:
+          [
+            hubPairingDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"pairingId":"PR-201","taskRef":"TT-201","exceptionKind":"WEATHER_HOLD","raisedBy":"Ridge Warden","validTo":"9999-12-31","detailNoteText":"waiting on frost thaw","detail":{"pairingId":"PR-201","status":"DEFERRED","noteText":"waiting on frost thaw"},"task":{"taskRef":"TT-201","crewCode":"CREW-S"}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    taskClassificationSuite:
+    {
+      function: |demo::ivoryridge::domain::TaskClassification.all()->graphFetch(
+        #{
+          demo::ivoryridge::domain::TaskClassification
+          {
+            taskRef,
+            classCode,
+            className,
+            validTo,
+            classifiedPairings
+            {
+              pairingId,
+              exceptionKind
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::ivoryridge::domain::TaskClassification
+          {
+            taskRef,
+            classCode,
+            className,
+            validTo,
+            classifiedPairings
+            {
+              pairingId,
+              exceptionKind
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        closedAndOpenClassificationsCoexist:
+        {
+          doc: 'Two classification rows differing only in the interval-closing column surface as distinct objects because that column is part of the declared key, and the row whose optional name is empty keeps no name.';
+          data:
+          [
+            demo::ivoryridge::store::RidgeDB:
+              Relational
+              #{
+                ridge.task_classification:
+                  'task_ref,class_code,class_name,valid_to\n'+
+                  'TT-301,CLS-DRAIN,drainage works,9999-12-31\n'+
+                  'TT-301,CLS-DRAIN,,2026-01-31\n';
+
+                ridge.task_pairing:
+                  'pairing_id,task_ref,exception_kind_code,raised_by,valid_to\n'+
+                  'PR-301,TT-301,MS,Ridge Warden,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            classificationDocuments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"taskRef":"TT-301","classCode":"CLS-DRAIN","className":"drainage works","validTo":"9999-12-31","classifiedPairings":[{"pairingId":"PR-301","exceptionKind":"MATERIAL_SHORT"}]},{"taskRef":"TT-301","classCode":"CLS-DRAIN","className":null,"validTo":"2026-01-31","classifiedPairings":[{"pairingId":"PR-301","exceptionKind":"MATERIAL_SHORT"}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    taskTrailerSuite:
+    {
+      function: |demo::ivoryridge::domain::TaskTrailer.all()->graphFetch(
+        #{
+          demo::ivoryridge::domain::TaskTrailer
+          {
+            taskRef,
+            trailerText,
+            trailerSeq,
+            validTo
+          }
+        }#
+      )->serialize(
+        #{
+          demo::ivoryridge::domain::TaskTrailer
+          {
+            taskRef,
+            trailerText,
+            trailerSeq,
+            validTo
+          }
+        }#
+      );
+      tests:
+      [
+        trailerRowsCarryBothIntervals:
+        {
+          doc: 'The trailer rows show the sentinel-bearing open interval beside a closed one, and a row whose nullable trailer columns are all empty still materialises from its key alone.';
+          data:
+          [
+            demo::ivoryridge::store::RidgeDB:
+              Relational
+              #{
+                ridge.task_trailer:
+                  'task_ref,trailer_text,trailer_seq,valid_to\n'+
+                  'TT-401,ridge cairn rebuilt,1,9999-12-31\n'+
+                  'TT-401,,,2026-02-28\n';
+              }#
+          ];
+          asserts:
+          [
+            trailerDocuments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"taskRef":"TT-401","trailerText":"ridge cairn rebuilt","trailerSeq":1,"validTo":"9999-12-31"},{"taskRef":"TT-401","trailerText":null,"trailerSeq":null,"validTo":"2026-02-28"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    pairingDetailSuite:
+    {
+      function: |demo::ivoryridge::domain::PairingDetail.all()->graphFetch(
+        #{
+          demo::ivoryridge::domain::PairingDetail
+          {
+            pairingId,
+            status,
+            noteText,
+            pairing
+            {
+              pairingId,
+              validTo
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          demo::ivoryridge::domain::PairingDetail
+          {
+            pairingId,
+            status,
+            noteText,
+            pairing
+            {
+              pairingId,
+              validTo
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        detailWithAndWithoutCounterpart:
+        {
+          doc: 'One detail row resolves its hub counterpart through the pairing-identifier join while a detail whose hub row is absent serialises without one, and both decode their enumerated status.';
+          data:
+          [
+            demo::ivoryridge::store::RidgeDB:
+              Relational
+              #{
+                ridge.task_pairing:
+                  'pairing_id,task_ref,exception_kind_code,raised_by,valid_to\n'+
+                  'PR-501,TT-501,SG,Ridge Warden,9999-12-31\n';
+
+                ridge.pairing_detail:
+                  'pairing_id,status_code,note_text\n'+
+                  'PR-501,CL,survey gap closed\n'+
+                  'PR-502,OP,\n';
+              }#
+          ];
+          asserts:
+          [
+            detailDocuments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"pairingId":"PR-501","status":"CLEARED","noteText":"survey gap closed","pairing":{"pairingId":"PR-501","validTo":"9999-12-31"}},{"pairingId":"PR-502","status":"OPEN","noteText":null,"pairing":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

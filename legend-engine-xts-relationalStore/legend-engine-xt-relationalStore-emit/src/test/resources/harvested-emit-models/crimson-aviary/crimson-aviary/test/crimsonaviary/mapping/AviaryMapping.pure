@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::crimsonaviary::mapping::AviaryMapping
+(
+  demo::crimsonaviary::domain::PlumageStage: EnumerationMapping StageCodes
+  {
+    HATCHLING: ['HA'],
+    FLEDGLING: ['FL'],
+    JUVENILE: ['JU'],
+    ADULT: ['AD']
+  }
+
+  demo::crimsonaviary::domain::FlightEnclosure[enclosure]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::crimsonaviary::store::AviaryDb]aviary.flight_enclosure.enclosure_code
+    )
+    ~mainTable [demo::crimsonaviary::store::AviaryDb]aviary.flight_enclosure
+    enclosureCode: [demo::crimsonaviary::store::AviaryDb]aviary.flight_enclosure.enclosure_code,
+    enclosureName: [demo::crimsonaviary::store::AviaryDb]aviary.flight_enclosure.enclosure_name,
+    canopyHeightMetres: [demo::crimsonaviary::store::AviaryDb]aviary.flight_enclosure.canopy_height_m
+  }
+
+  demo::crimsonaviary::domain::BirdCohort[cohort]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort.cohort_code
+    )
+    ~mainTable [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort
+    cohortCode: [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort.cohort_code,
+    speciesName: [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort.species_name,
+    ringSeries: [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort.ring_series,
+    fledglingCount: [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort.fledgling_count,
+    broodSize: [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort.brood_size,
+    stage: EnumerationMapping StageCodes: [demo::crimsonaviary::store::AviaryDb]aviary.bird_cohort.stage_code
+  }
+
+  demo::crimsonaviary::domain::Enclosure_Cohorts: Relational
+  {
+    AssociationMapping
+    (
+      enclosure[cohort, enclosure]: [demo::crimsonaviary::store::AviaryDb]@Cohort_Enclosure,
+      cohorts[enclosure, cohort]: [demo::crimsonaviary::store::AviaryDb]@Cohort_Enclosure
+    )
+  }
+)

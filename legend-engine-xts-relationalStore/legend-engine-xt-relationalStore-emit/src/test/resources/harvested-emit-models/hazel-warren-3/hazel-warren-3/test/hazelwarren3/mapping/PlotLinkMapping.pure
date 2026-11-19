@@ -1,0 +1,325 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::hazelwarren3::mapping::PlotLinkMapping
+(
+  include mapping test::hazelwarren3::mapping::SiteReferenceMapping
+
+  *test::hazelwarren3::domain::AllotmentPlot[plot_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwarren3::store::PlotCoreDb]allotment.plot.plot_code
+    )
+    ~mainTable [test::hazelwarren3::store::PlotCoreDb]allotment.plot
+    plotCode: [test::hazelwarren3::store::PlotCoreDb]allotment.plot.plot_code,
+    sownOn: [test::hazelwarren3::store::PlotCoreDb]allotment.plot.sown_on,
+    active: [test::hazelwarren3::store::PlotCoreDb]allotment.plot.active
+  }
+
+  *test::hazelwarren3::domain::PlotGrading[grading_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::hazelwarren3::store::PlotLinkDb]allotment.plot.plot_code
+    )
+    ~mainTable [test::hazelwarren3::store::PlotLinkDb]allotment.plot
+    plotCode: [test::hazelwarren3::store::PlotLinkDb]allotment.plot.plot_code,
+    gradeBand: case(
+                 equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G1'),
+                 'tier-one',
+                 case(
+                   equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G2'),
+                   'tier-two',
+                   case(
+                     equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G3'),
+                     'tier-three',
+                     case(
+                       equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G4'),
+                       'tier-four',
+                       case(
+                         equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G5'),
+                         'tier-five',
+                         case(
+                           equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G6'),
+                           'tier-six',
+                           case(
+                             equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G7'),
+                             'tier-seven',
+                             case(
+                               equal(toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.grade_code), 'G8'),
+                               'tier-eight',
+                               sqlNull()
+                             )
+                           )
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+    keeperLabel: case(
+                   isNotEmpty([test::hazelwarren3::store::PlotLinkDb]@Plot_Tending_J | [test::hazelwarren3::store::PlotLinkDb]allotment.tending.keeper_code),
+                   concat('KEEPER-', toUpper([test::hazelwarren3::store::PlotLinkDb]@Plot_Tending_J | [test::hazelwarren3::store::PlotLinkDb]allotment.tending.keeper_code)),
+                   'UNASSIGNED'
+                 ),
+    districtLabel: case(
+                     isNotEmpty([test::hazelwarren3::store::PlotLinkDb]@Plot_Site_J | [test::hazelwarren3::store::PlotLinkDb]allotmentref.site.district_name),
+                     [test::hazelwarren3::store::PlotLinkDb]@Plot_Site_J | [test::hazelwarren3::store::PlotLinkDb]allotmentref.site.district_name,
+                     'UNZONED'
+                   ),
+    seasonLabel: case(
+                   equal([test::hazelwarren3::store::PlotLinkDb]@Plot_Crop_J | [test::hazelwarren3::store::PlotLinkDb]allotmentref.crop.season_code, 'S1'),
+                   'spring-sown',
+                   case(
+                     equal([test::hazelwarren3::store::PlotLinkDb]@Plot_Crop_J | [test::hazelwarren3::store::PlotLinkDb]allotmentref.crop.season_code, 'S2'),
+                     'summer-sown',
+                     'off-season'
+                   )
+                 ),
+    effortLabel: case(
+                   greaterThan([test::hazelwarren3::store::PlotLinkDb]@Plot_Tending_J | [test::hazelwarren3::store::PlotLinkDb]allotment.tending.hours, 4),
+                   'HEAVY',
+                   'LIGHT'
+                 ),
+    freshnessLabel: case(
+                      greaterThan([test::hazelwarren3::store::PlotLinkDb]allotment.plot.sown_on, today()),
+                      'FUTURE',
+                      'SOWN'
+                    ),
+    curationLabel: 'ALLOTMENT-MANAGED',
+    displayLabel: concat('PLOT-', toUpper([test::hazelwarren3::store::PlotLinkDb]allotment.plot.plot_code))
+  }
+
+  test::hazelwarren3::domain::Plot_Site: Relational
+  {
+    AssociationMapping
+    (
+      site[plot_set, site_set]: [test::hazelwarren3::store::PlotLinkDb]@Plot_Site_J,
+      plots[site_set, plot_set]: [test::hazelwarren3::store::PlotLinkDb]@Plot_Site_J
+    )
+  }
+
+  testSuites:
+  [
+    plotLinkSuite:
+    {
+      function: |test::hazelwarren3::domain::PlotGrading.all()->project(
+        [
+          g|$g.plotCode,
+          g|$g.gradeBand,
+          g|$g.keeperLabel,
+          g|$g.districtLabel,
+          g|$g.seasonLabel,
+          g|$g.effortLabel,
+          g|$g.freshnessLabel,
+          g|$g.curationLabel,
+          g|$g.displayLabel
+        ],
+        [
+          'Plot',
+          'Grade Band',
+          'Keeper',
+          'District',
+          'Season',
+          'Effort',
+          'Freshness',
+          'Curation',
+          'Display'
+        ]
+      )->sort(
+        [
+          asc('Plot')
+        ]
+      );
+      tests:
+      [
+        everyBranchOfTheGradeSelectionIsReached:
+        {
+          doc: 'Seeds one plot per grade code plus a plot whose grade code is absent, so all eight arms of the grade selection and its fallback are hit in one read, alongside the guarded keeper and district branches, the season selection reached through the crop join and the two computed labels.';
+          data:
+          [
+            test::hazelwarren3::store::PlotLinkDb:
+              Relational
+              #{
+                allotment.plot:
+                  'plot_code,site_code,crop_code,grade_code,sown_on,active\n'+
+                  'P-01,S-01,C-01,G1,2000-01-04,true\n'+
+                  'P-02,S-01,C-02,G2,2000-02-04,true\n'+
+                  'P-03,S-02,C-01,G3,2000-03-04,false\n'+
+                  'P-04,S-02,C-03,G4,2000-04-04,true\n'+
+                  'P-05,S-03,C-02,G5,2000-05-04,true\n'+
+                  'P-06,S-03,C-03,G6,2000-06-04,false\n'+
+                  'P-07,S-01,C-01,G7,2000-07-04,true\n'+
+                  'P-08,S-09,C-09,G8,9999-12-31,true\n'+
+                  'P-09,S-02,C-01,,2000-09-04,true\n';
+                allotment.tending:
+                  'plot_code,tended_on,keeper_code,hours\n'+
+                  'P-01,2000-01-10,K-01,6\n'+
+                  'P-02,2000-02-10,K-02,2\n'+
+                  'P-03,2000-03-10,,5\n'+
+                  'P-05,2000-05-10,K-03,9\n';
+                allotmentref.site:
+                  'site_code,site_name,district_name\n'+
+                  'S-01,North Field,Northern District\n'+
+                  'S-02,South Field,Southern District\n'+
+                  'S-03,East Field,\n';
+                allotmentref.crop:
+                  'crop_code,crop_name,season_code\n'+
+                  'C-01,Broad Bean,S1\n'+
+                  'C-02,Leaf Chard,S2\n'+
+                  'C-03,Root Beet,\n';
+              }#
+          ];
+          asserts:
+          [
+            allNineBranchOutcomes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Grade Band":"tier-one","Keeper":"KEEPER-K-01","District":"Northern District","Season":"spring-sown","Effort":"HEAVY","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-01"},{"Plot":"P-02","Grade Band":"tier-two","Keeper":"KEEPER-K-02","District":"Northern District","Season":"summer-sown","Effort":"LIGHT","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-02"},{"Plot":"P-03","Grade Band":"tier-three","Keeper":"UNASSIGNED","District":"Southern District","Season":"spring-sown","Effort":"HEAVY","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-03"},{"Plot":"P-04","Grade Band":"tier-four","Keeper":"UNASSIGNED","District":"Southern District","Season":"off-season","Effort":"LIGHT","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-04"},{"Plot":"P-05","Grade Band":"tier-five","Keeper":"KEEPER-K-03","District":"UNZONED","Season":"summer-sown","Effort":"HEAVY","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-05"},{"Plot":"P-06","Grade Band":"tier-six","Keeper":"UNASSIGNED","District":"UNZONED","Season":"off-season","Effort":"LIGHT","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-06"},{"Plot":"P-07","Grade Band":"tier-seven","Keeper":"UNASSIGNED","District":"Northern District","Season":"spring-sown","Effort":"LIGHT","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-07"},{"Plot":"P-08","Grade Band":"tier-eight","Keeper":"UNASSIGNED","District":"UNZONED","Season":"off-season","Effort":"LIGHT","Freshness":"FUTURE","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-08"},{"Plot":"P-09","Grade Band":null,"Keeper":"UNASSIGNED","District":"Southern District","Season":"spring-sown","Effort":"LIGHT","Freshness":"SOWN","Curation":"ALLOTMENT-MANAGED","Display":"PLOT-P-09"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    plotRegisterSuite:
+    {
+      function: |test::hazelwarren3::domain::AllotmentPlot.all()->filter(
+        p|$p.active == true
+      )->project(
+        [
+          p|$p.plotCode,
+          p|$p.sownOn,
+          p|$p.site.siteName,
+          p|$p.site.districtName
+        ],
+        [
+          'Plot',
+          'Sown On',
+          'Site Name',
+          'District'
+        ]
+      )->sort(
+        [
+          asc('Plot')
+        ]
+      );
+      tests:
+      [
+        theAssociationResolvesOnlyThroughTheIncludedImplementation:
+        {
+          doc: 'Reads the three locally bound plot properties and traverses the association whose far end is implemented only in the included mapping, so a plot pointing at an absent site reports empty site columns while the inactive plots are excluded by the predicate.';
+          data:
+          [
+            test::hazelwarren3::store::PlotLinkDb:
+              Relational
+              #{
+                allotment.plot:
+                  'plot_code,site_code,crop_code,grade_code,sown_on,active\n'+
+                  'P-01,S-01,C-01,G1,2000-01-04,true\n'+
+                  'P-03,S-02,C-01,G3,2000-03-04,false\n'+
+                  'P-05,S-03,C-02,G5,2000-05-04,true\n'+
+                  'P-08,S-09,C-09,G8,9999-12-31,true\n';
+                allotment.tending:
+                  'plot_code,tended_on,keeper_code,hours\n'+
+                  'P-01,2000-01-10,K-01,6\n';
+                allotmentref.site:
+                  'site_code,site_name,district_name\n'+
+                  'S-01,North Field,Northern District\n'+
+                  'S-02,South Field,Southern District\n'+
+                  'S-03,East Field,\n';
+                allotmentref.crop:
+                  'crop_code,crop_name,season_code\n'+
+                  'C-01,Broad Bean,S1\n'+
+                  'C-02,Leaf Chard,S2\n';
+              }#
+          ];
+          asserts:
+          [
+            activePlotsWithTheirTraversedSite:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Sown On":"2000-01-04","Site Name":"North Field","District":"Northern District"},{"Plot":"P-05","Sown On":"2000-05-04","Site Name":"East Field","District":null},{"Plot":"P-08","Sown On":"9999-12-31","Site Name":null,"District":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    tendingRegisterSuite:
+    {
+      function: |test::hazelwarren3::domain::PlotTending.all()->project(
+        [
+          t|$t.plotCode,
+          t|$t.tendedOn,
+          t|$t.keeperCode,
+          t|$t.hours
+        ],
+        [
+          'Plot',
+          'Tended On',
+          'Keeper Code',
+          'Hours'
+        ]
+      )->sort(
+        [
+          asc('Plot'),
+          asc('Tended On')
+        ]
+      );
+      tests:
+      [
+        theIncludedTendingImplementationResolvesThroughTheComposition:
+        {
+          doc: 'Reads the composite-keyed tending implementation contributed by the included mapping, including a row with no keeper recorded, proving the include is what makes the class resolvable in the composed model.';
+          data:
+          [
+            test::hazelwarren3::store::PlotLinkDb:
+              Relational
+              #{
+                allotment.tending:
+                  'plot_code,tended_on,keeper_code,hours\n'+
+                  'P-01,2000-01-10,K-01,6\n'+
+                  'P-01,2000-02-10,K-01,3\n'+
+                  'P-03,2000-03-10,,5\n';
+              }#
+          ];
+          asserts:
+          [
+            everyTendingRowIsReturned:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Tended On":"2000-01-10","Keeper Code":"K-01","Hours":6},{"Plot":"P-01","Tended On":"2000-02-10","Keeper Code":"K-01","Hours":3},{"Plot":"P-03","Tended On":"2000-03-10","Keeper Code":null,"Hours":5}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

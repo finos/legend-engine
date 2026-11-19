@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A wheel of cheese ripening in the cave cellar.'} test::lunarmeadow::domain::CheeseWheel
+{
+  wheelId: Integer[1];
+  wheelCode: String[1];
+  milkType: String[1];
+  formedOn: StrictDate[1];
+  weightGrams: Integer[1];
+  chamberName: String[1];
+  humidityPct: Integer[1];
+  makerName: String[1];
+  rack: test::lunarmeadow::domain::RipeningRack[1];
+}
+
+Class {doc.doc = 'A ripening rack holding wheels inside one cave chamber.'} test::lunarmeadow::domain::RipeningRack
+{
+  rackCode: String[1];
+  rackTier: Integer[1];
+}
+
+Class {doc.doc = 'A climate-controlled chamber of the ripening cave.'} test::lunarmeadow::domain::CaveChamber
+{
+  chamberCode: String[1];
+  chamberName: String[1];
+  humidityPct: Integer[1];
+  tempCelsius: Integer[1];
+}
+
+Class {doc.doc = 'A cheesemaker accountable for the racks in a chamber.'} test::lunarmeadow::domain::Cheesemaker
+{
+  makerCode: String[1];
+  makerName: String[1];
+  certifiedOn: StrictDate[1];
+}

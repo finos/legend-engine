@@ -1,0 +1,51 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::profiles::*;
+import test::quiettundra2::source::*;
+
+Class {doc.doc = 'A plot record as submitted from a field tablet.'} test::quiettundra2::source::PlotSubmission
+{
+  plotCode: String[0..1];
+  season: String[0..1];
+  plotName: String[0..1];
+  habitatCode: String[0..1];
+  coverPct: Integer[0..1];
+  quadrats: Integer[0..1];
+  covered: Integer[0..1];
+  station: StationBlock[0..1];
+  samples: SampleBlock[*];
+}
+
+Class {doc.doc = 'Station block nested in a plot submission.'} test::quiettundra2::source::StationBlock
+{
+  code: String[0..1];
+  name: String[0..1];
+  ridge: String[0..1];
+}
+
+Class {doc.doc = 'Sample bag block nested in a plot submission.'} test::quiettundra2::source::SampleBlock
+{
+  code: String[0..1];
+  kindCode: String[0..1];
+  mass: Float[0..1];
+}
+
+Class {doc.doc = 'A crew record as submitted from a field tablet.'} test::quiettundra2::source::CrewSubmission
+{
+  crewCode: String[0..1];
+  lead: String[0..1];
+  members: String[*];
+}

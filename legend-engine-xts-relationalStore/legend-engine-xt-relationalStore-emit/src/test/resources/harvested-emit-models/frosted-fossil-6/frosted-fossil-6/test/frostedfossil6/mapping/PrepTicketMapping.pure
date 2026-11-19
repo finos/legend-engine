@@ -1,0 +1,280 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedfossil6::mapping::PrepTicketMapping
+(
+  test::frostedfossil6::domain::PrepStage: EnumerationMapping TicketStageMapping
+  {
+    Intake: ['I'],
+    Active: ['A'],
+    Held: ['H'],
+    Closed: ['C']
+  }
+
+  test::frostedfossil6::domain::MatrixGrade: EnumerationMapping TicketGradeMapping
+  {
+    Soft: ['SFT'],
+    Firm: ['FRM'],
+    Hard: ['HRD']
+  }
+
+  *test::frostedfossil6::domain::FieldRegion[region]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil6::store::FossilPrepDb]catalogue.field_region.region_id
+    )
+    ~mainTable [test::frostedfossil6::store::FossilPrepDb]catalogue.field_region
+    regionId: [test::frostedfossil6::store::FossilPrepDb]catalogue.field_region.region_id,
+    regionLabel: [test::frostedfossil6::store::FossilPrepDb]catalogue.field_region.region_label
+  }
+
+  *test::frostedfossil6::domain::QuarrySite[quarry]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil6::store::FossilPrepDb]catalogue.quarry_site.quarry_id
+    )
+    ~mainTable [test::frostedfossil6::store::FossilPrepDb]catalogue.quarry_site
+    quarryId: [test::frostedfossil6::store::FossilPrepDb]catalogue.quarry_site.quarry_id,
+    quarryLabel: [test::frostedfossil6::store::FossilPrepDb]catalogue.quarry_site.quarry_label
+  }
+
+  *test::frostedfossil6::domain::RockFormation[formation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil6::store::FossilPrepDb]catalogue.rock_formation.formation_id
+    )
+    ~mainTable [test::frostedfossil6::store::FossilPrepDb]catalogue.rock_formation
+    formationId: [test::frostedfossil6::store::FossilPrepDb]catalogue.rock_formation.formation_id,
+    formationLabel: [test::frostedfossil6::store::FossilPrepDb]catalogue.rock_formation.formation_label
+  }
+
+  *test::frostedfossil6::domain::SpecimenBlock[block]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil6::store::FossilPrepDb]catalogue.specimen_block.specimen_id
+    )
+    ~mainTable [test::frostedfossil6::store::FossilPrepDb]catalogue.specimen_block
+    specimenId: [test::frostedfossil6::store::FossilPrepDb]catalogue.specimen_block.specimen_id,
+    blockCode: [test::frostedfossil6::store::FossilPrepDb]catalogue.specimen_block.block_code,
+    blockLabel: [test::frostedfossil6::store::FossilPrepDb]catalogue.specimen_block.block_label
+  }
+
+  *test::frostedfossil6::domain::PrepBench[bench]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil6::store::FossilPrepDb]prep.prep_bench.bench_id
+    )
+    ~mainTable [test::frostedfossil6::store::FossilPrepDb]prep.prep_bench
+    benchId: [test::frostedfossil6::store::FossilPrepDb]prep.prep_bench.bench_id,
+    benchLabel: [test::frostedfossil6::store::FossilPrepDb]prep.prep_bench.bench_label
+  }
+
+  *test::frostedfossil6::domain::PrepTicket[ticket]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.ticket_id
+    )
+    ~mainTable [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket
+    ticketCode: [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.ticket_code,
+    registerName: 'FOSSIL-PREPARATION-REGISTER',
+    prepStage: EnumerationMapping TicketStageMapping: [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.stage_code,
+    matrixGrade: EnumerationMapping TicketGradeMapping: [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.matrix_code,
+    gritLevel: [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level,
+    prepHours: [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.prep_hours,
+    openedOn: [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.opened_on,
+    noteText: [test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.note_text,
+    gritBand: case(
+        equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 1),
+        'STEP-ONE',
+        case(
+          equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 2),
+          'STEP-TWO',
+          case(
+            equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 3),
+            'STEP-THREE',
+            case(
+              equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 4),
+              'STEP-FOUR',
+              case(
+                equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 5),
+                'STEP-FIVE',
+                case(
+                  equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 6),
+                  'STEP-SIX',
+                  case(
+                    equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 7),
+                    'STEP-SEVEN',
+                    case(
+                      equal([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.grit_level, 8),
+                      'STEP-EIGHT',
+                      sqlNull()
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+    noteLabel: case(
+                 startsWith([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.note_text, 'HOLD'),
+                 concat('HOLD:', toUpper(trim([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.note_text))),
+                 case(
+                   startsWith([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.note_text, 'RUSH'),
+                   concat('RUSH:', toLower(trim([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.note_text))),
+                   sqlNull()
+                 )
+               ),
+    hoursBand: case(
+                 greaterThanEqual(coalesce([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.prep_hours, 0.0), 8.0),
+                 'HOURS-DEEP',
+                 case(
+                   greaterThanEqual(coalesce([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.prep_hours, 0.0), 4.0),
+                   'HOURS-MID',
+                   'HOURS-LIGHT'
+                 )
+               ),
+    noteStem: substring(trim([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.note_text), 1, 4),
+    noteSize: length(trim([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.note_text)),
+    effortScore: round(
+                   times(
+                     divide(
+                       coalesce([test::frostedfossil6::store::FossilPrepDb]prep.prep_ticket.prep_hours, 0.0),
+                       2.0
+                     ),
+                     10
+                   )
+                 ),
+    benchLabel: [test::frostedfossil6::store::FossilPrepDb]@Ticket_Bench | prep.prep_bench.bench_label,
+    blockLabel: [test::frostedfossil6::store::FossilPrepDb]@Ticket_Specimen | catalogue.specimen_block.block_label,
+    formationLabel: [test::frostedfossil6::store::FossilPrepDb]@Ticket_Specimen > @Specimen_Formation | catalogue.rock_formation.formation_label,
+    quarryLabel: [test::frostedfossil6::store::FossilPrepDb]@Ticket_Specimen > @Specimen_Formation > @Formation_Quarry | catalogue.quarry_site.quarry_label,
+    regionLabel: [test::frostedfossil6::store::FossilPrepDb]@Ticket_Specimen > @Specimen_Formation > @Formation_Quarry > @Quarry_Region | catalogue.field_region.region_label
+  }
+
+  testSuites:
+  [
+    ticketDerivationSuite:
+    {
+      function: |test::frostedfossil6::domain::PrepTicket.all(%2026-06-01)->project(
+        ~[
+          ticketCode: t|$t.ticketCode,
+          register: t|$t.registerName,
+          stage: t|$t.prepStage,
+          grade: t|$t.matrixGrade,
+          gritBand: t|$t.gritBand,
+          noteLabel: t|$t.noteLabel,
+          hoursBand: t|$t.hoursBand,
+          noteStem: t|$t.noteStem,
+          noteSize: t|$t.noteSize,
+          effort: t|$t.effortScore,
+          bench: t|$t.benchLabel,
+          block: t|$t.blockLabel,
+          formation: t|$t.formationLabel,
+          quarry: t|$t.quarryLabel,
+          region: t|$t.regionLabel
+        ]
+      )->sort(~ticketCode->ascending());
+      tests:
+      [
+        everyArmAndEveryHopOfThePath:
+        {
+          doc: 'Every arm of the grit cascade is hit by its own ticket, one ticket falls through the cascade to no band, one ticket carries a note the label cascade does not recognise, four tickets miss the catalogue path at each of its four hops in turn, one ticket walks the whole four-hop path, one ticket carries a stage code no enumeration member claims and one restated ticket is outside its business-time window on the requested instant.';
+          data:
+          [
+            test::frostedfossil6::store::FossilPrepDb:
+              Relational
+              #{
+                catalogue.field_region:
+                  'region_id,region_label\n'+
+                  '1,Frost Plateau Region\n';
+
+                catalogue.quarry_site:
+                  'quarry_id,quarry_label,region_id\n'+
+                  '1,North Face Quarry,1\n'+
+                  '2,South Face Quarry,\n';
+
+                catalogue.rock_formation:
+                  'formation_id,formation_label,quarry_id\n'+
+                  '1,Upper Cliff Formation,1\n'+
+                  '2,Middle Talus Formation,\n'+
+                  '3,Lower Scree Formation,2\n';
+
+                catalogue.specimen_block:
+                  'specimen_id,block_code,block_label,formation_id\n'+
+                  '1,SB-01,Cliff Slab,1\n'+
+                  '2,SB-02,Loose Slab,\n'+
+                  '3,SB-03,Talus Slab,2\n'+
+                  '4,SB-04,Scree Slab,3\n';
+
+                prep.prep_bench:
+                  'bench_id,bench_label\n'+
+                  '1,Bench One\n'+
+                  '2,Bench Two\n';
+
+                prep.prep_ticket:
+                  'ticket_id,ticket_code,specimen_id,bench_id,stage_code,matrix_code,grit_level,prep_hours,opened_on,note_text,from_z,thru_z\n'+
+                  '1,FP-01,1,1,I,SFT,1,9.0,2026-02-01,HOLD bay one,2026-01-01,9999-12-31\n'+
+                  '2,FP-02,1,1,A,FRM,2,5.0,2026-02-02,RUSH bay two,2026-01-01,9999-12-31\n'+
+                  '3,FP-03,1,2,H,HRD,3,2.0,2026-02-03,HOLD bay three,2026-01-01,9999-12-31\n'+
+                  '4,FP-04,1,2,C,SFT,4,8.0,2026-02-04,RUSH bay four,2026-01-01,9999-12-31\n'+
+                  '5,FP-05,1,1,I,FRM,5,4.0,2026-02-05,HOLD bay five,2026-01-01,9999-12-31\n'+
+                  '6,FP-06,1,1,A,HRD,6,1.0,2026-02-06,RUSH bay six,2026-01-01,9999-12-31\n'+
+                  '7,FP-07,1,2,H,SFT,7,12.0,2026-02-07,HOLD bay seven,2026-01-01,9999-12-31\n'+
+                  '8,FP-08,1,2,C,FRM,8,0.0,2026-02-08,RUSH bay eight,2026-01-01,9999-12-31\n'+
+                  '9,FP-09,1,1,I,HRD,9,6.0,2026-02-09,IDLE bay nine,2026-01-01,9999-12-31\n'+
+                  '10,FP-10,,1,A,SFT,1,3.0,2026-02-10,HOLD bay ten,2026-01-01,9999-12-31\n'+
+                  '11,FP-11,2,1,H,FRM,2,3.0,2026-02-11,HOLD bay eleven,2026-01-01,9999-12-31\n'+
+                  '12,FP-12,3,2,C,HRD,3,3.0,2026-02-12,HOLD bay twelve,2026-01-01,9999-12-31\n'+
+                  '13,FP-13,4,2,I,SFT,4,3.0,2026-02-13,HOLD bay thirteen,2026-01-01,9999-12-31\n'+
+                  '14,FP-14,1,1,A,FRM,5,7.0,2026-02-14,HOLD bay fourteen,2026-01-01,9999-12-31\n'+
+                  '15,FP-15,1,1,Z,ZZZ,6,7.0,2026-02-15,HOLD bay fifteen,2026-01-01,9999-12-31\n'+
+                  '16,FP-16,1,1,I,SFT,7,7.0,2026-02-16,HOLD bay sixteen,2020-01-01,2021-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            derivedTickets:
+              Relation
+              #{
+                ticketCode,register,stage,grade,gritBand,noteLabel,hoursBand,noteStem,noteSize,effort,bench,block,formation,quarry,region
+                FP-01,FOSSIL-PREPARATION-REGISTER,Intake,Soft,STEP-ONE,HOLD:HOLD BAY ONE,HOURS-DEEP,HOLD,12,45,Bench One,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-02,FOSSIL-PREPARATION-REGISTER,Active,Firm,STEP-TWO,RUSH:rush bay two,HOURS-MID,RUSH,12,25,Bench One,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-03,FOSSIL-PREPARATION-REGISTER,Held,Hard,STEP-THREE,HOLD:HOLD BAY THREE,HOURS-LIGHT,HOLD,14,10,Bench Two,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-04,FOSSIL-PREPARATION-REGISTER,Closed,Soft,STEP-FOUR,RUSH:rush bay four,HOURS-DEEP,RUSH,13,40,Bench Two,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-05,FOSSIL-PREPARATION-REGISTER,Intake,Firm,STEP-FIVE,HOLD:HOLD BAY FIVE,HOURS-MID,HOLD,13,20,Bench One,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-06,FOSSIL-PREPARATION-REGISTER,Active,Hard,STEP-SIX,RUSH:rush bay six,HOURS-LIGHT,RUSH,12,5,Bench One,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-07,FOSSIL-PREPARATION-REGISTER,Held,Soft,STEP-SEVEN,HOLD:HOLD BAY SEVEN,HOURS-DEEP,HOLD,14,60,Bench Two,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-08,FOSSIL-PREPARATION-REGISTER,Closed,Firm,STEP-EIGHT,RUSH:rush bay eight,HOURS-LIGHT,RUSH,14,0,Bench Two,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-09,FOSSIL-PREPARATION-REGISTER,Intake,Hard,,,HOURS-MID,IDLE,13,30,Bench One,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-10,FOSSIL-PREPARATION-REGISTER,Active,Soft,STEP-ONE,HOLD:HOLD BAY TEN,HOURS-LIGHT,HOLD,12,15,Bench One,,,,
+                FP-11,FOSSIL-PREPARATION-REGISTER,Held,Firm,STEP-TWO,HOLD:HOLD BAY ELEVEN,HOURS-LIGHT,HOLD,15,15,Bench One,Loose Slab,,,
+                FP-12,FOSSIL-PREPARATION-REGISTER,Closed,Hard,STEP-THREE,HOLD:HOLD BAY TWELVE,HOURS-LIGHT,HOLD,15,15,Bench Two,Talus Slab,Middle Talus Formation,,
+                FP-13,FOSSIL-PREPARATION-REGISTER,Intake,Soft,STEP-FOUR,HOLD:HOLD BAY THIRTEEN,HOURS-LIGHT,HOLD,17,15,Bench Two,Scree Slab,Lower Scree Formation,South Face Quarry,
+                FP-14,FOSSIL-PREPARATION-REGISTER,Active,Firm,STEP-FIVE,HOLD:HOLD BAY FOURTEEN,HOURS-MID,HOLD,17,35,Bench One,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region
+                FP-15,FOSSIL-PREPARATION-REGISTER,,,STEP-SIX,HOLD:HOLD BAY FIFTEEN,HOURS-MID,HOLD,16,35,Bench One,Cliff Slab,Upper Cliff Formation,North Face Quarry,Frost Plateau Region;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

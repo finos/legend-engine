@@ -1,0 +1,50 @@
+name: azure-lighthouse-4
+title: "Azure Lighthouse 4 - skatepark inspection registers with a windowed ward rank"
+description: >
+  A self-contained skatepark upkeep model. Inspection visits and their crack findings are
+  mapped through a small relational store while the executable behavior sits in five
+  profiled services: an open-finding ward register whose band column is derived by a
+  deterministic cascade, a windowed repair rank inside each ward, a narrowed distinct read,
+  a finding-level detail read and a bounded ordered backlog board.
+modelSources:
+  model:
+    root: azure-lighthouse-4
+    files:
+      - test/azurelighthouse4/connection/ParkConnections.pure
+      - test/azurelighthouse4/domain/ParkDomain.pure
+      - test/azurelighthouse4/function/ParkQueries.pure
+      - test/azurelighthouse4/mapping/ParkMapping.pure
+      - test/azurelighthouse4/profile/ParkProfiles.pure
+      - test/azurelighthouse4/runtime/ParkRuntimes.pure
+      - test/azurelighthouse4/service/ParkServices.pure
+      - test/azurelighthouse4/store/ParkStore.pure
+tds_variant: tabular-data-set
+complexity: advanced
+stores:
+  - relational
+tags:
+  - emit
+  - h2
+  - profiles
+  - skatepark
+  - window
+features:
+  - execution:service
+  - execution:service-test
+  - grammar:function
+  - grammar:profile
+  - mapping:relational-association-implementation
+  - query:collection-op
+  - query:distinct
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - query:tds-restrict
+  - query:window
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table

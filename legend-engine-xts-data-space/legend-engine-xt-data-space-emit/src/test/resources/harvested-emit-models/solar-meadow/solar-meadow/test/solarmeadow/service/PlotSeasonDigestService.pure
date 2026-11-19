@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::solarmeadow::service::PlotSeasonDigestService
+{
+  pattern: '/solarmeadow/plotSeasonDigest/{seasonStart}';
+  title: 'Plot Season Digest';
+  owners:
+  [
+    'meadow-restoration',
+    'meadow-monitoring'
+  ];
+  documentation: 'Rolls seeded bloom counts up per plot and cover band inside a ninety-day window derived from the requested season start, so the parameter reaches the plan as a pair of date bounds and the grouped stem total is produced by the store.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {seasonStart: StrictDate[1]|let seasonEnd = $seasonStart->adjust(90, meta::pure::functions::date::DurationUnit.DAYS);
+    test::solarmeadow::domain::BloomCount.all()->filter(
+      c|($c.countedOn >= $seasonStart) && ($c.countedOn <= $seasonEnd) && $c.coverPct->isNotEmpty()
+    )->groupBy(
+      [
+        c|$c.plotCode,
+        c|$c.coverBand
+      ],
+      [
+        agg(c|$c.stemTally, y|$y->sum())
+      ],
+      [
+        'Plot',
+        'Band',
+        'Stems'
+      ]
+    )->sort(
+      [
+        asc('Plot'),
+        asc('Band')
+      ]
+    );};
+    mapping: test::solarmeadow::mapping::MeadowMapping;
+    runtime: test::solarmeadow::runtime::MeadowH2Runtime;
+  }
+  testSuites:
+  [
+    plotSeasonDigestSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowH2Connection:
+            Relational
+            #{
+              habitat.bloom_count:
+                'count_id,plot_code,taxon_code,counted_on,stem_tally,cover_pct\n'+
+                '1,P-01,T-BEE,2026-05-04,40,0.5\n'+
+                '2,P-01,T-HOV,2026-05-11,25,3.0\n'+
+                '3,P-01,T-BUT,2026-05-18,18,9.0\n'+
+                '4,P-01,T-MOT,2026-06-25,12,22.0\n'+
+                '5,P-02,T-BEE,2026-06-01,60,41.0\n'+
+                '6,P-02,T-HOV,2026-06-08,35,64.0\n'+
+                '7,P-02,T-BUT,2026-06-15,22,80.0\n'+
+                '8,P-02,T-MOT,2026-06-22,15,96.0\n'+
+                '9,P-02,T-BEE,2026-06-29,9,\n'+
+                '10,P-03,T-HOV,2026-11-06,50,12.0\n'+
+                '11,P-01,T-BEE,2026-05-25,5,0.5\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        springWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonStart = %2026-05-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Plot":"P-01","Band":"MODEST","Stems":12},{"Plot":"P-01","Band":"PATCHY","Stems":18},{"Plot":"P-01","Band":"SPARSE","Stems":25},{"Plot":"P-01","Band":"TRACE","Stems":45},{"Plot":"P-02","Band":"BROAD","Stems":60},{"Plot":"P-02","Band":"CARPET","Stems":22},{"Plot":"P-02","Band":"CLOSED","Stems":15},{"Plot":"P-02","Band":"DENSE","Stems":35}]';
+                  }#;
+              }#
+          ]
+        },
+        emptyWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonStart = %2027-01-01
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

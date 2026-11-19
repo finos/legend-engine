@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::sunlitlighthouse::service::ShelterRegisterFeed
+{
+  pattern: '/sunlitlighthouse/v1/shelters/{asOf}';
+  title: 'Sunlit Lighthouse - Shelter Register As Of A Processing Date';
+  owners:
+  [
+    'trail-network-register',
+    'trail-upkeep-eng'
+  ];
+  documentation: 'Publishes the whole shelter register as it stood at a requested processing date with no predicate beyond the temporal rewrite, so the projection is the register snapshot itself ordered by shelter code.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|demo::sunlitlighthouse::domain::TrailShelter.all($asOf)->project(
+      [
+        s|$s.shelterCode,
+        s|$s.shelterName,
+        s|$s.routeCode,
+        s|$s.conditionBand,
+        s|$s.bunkCount,
+        s|$s.floorAreaM2,
+        s|$s.openedOn
+      ],
+      [
+        'SHELTER_CODE',
+        'SHELTER_NAME',
+        'ROUTE_CODE',
+        'CONDITION_BAND',
+        'BUNK_COUNT',
+        'FLOOR_AREA_M2',
+        'OPENED_ON'
+      ]
+    )->sort(
+      [
+        asc('SHELTER_CODE')
+      ]
+    )};
+    mapping: demo::sunlitlighthouse::mapping::TrailRegisterMapping;
+    runtime: demo::sunlitlighthouse::runtime::ShelterRuntime;
+  }
+  testSuites:
+  [
+    shelterFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          shelterWarehouseConnection:
+            Relational
+            #{
+              trail.shelter_register:
+                'shelter_code,shelter_name,route_code,condition_band,bunk_count,floor_area_m2,opened_on,in_z,out_z\n'+
+                'SH-01,Ridge Bothy,RT-NORTH,SOUND,8,24.5,2019-06-01,2026-01-01,9999-12-31\n'+
+                'SH-01,Ridge Bothy,RT-NORTH,WORN,8,24.5,2019-06-01,2025-01-01,2026-01-01\n'+
+                'SH-02,Beck Hut,RT-WEST,SERVICEABLE,4,15.75,2021-05-14,2026-01-01,9999-12-31\n'+
+                'SH-03,Quarry Refuge,RT-WEST,SOUND,6,18.0,2023-08-09,2026-08-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        snapshotAtRequestedProcessingDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            openShelterVersionsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"SHELTER_CODE":"SH-01","SHELTER_NAME":"Ridge Bothy","ROUTE_CODE":"RT-NORTH","CONDITION_BAND":"SOUND","BUNK_COUNT":8,"FLOOR_AREA_M2":24.5,"OPENED_ON":"2019-06-01"},{"SHELTER_CODE":"SH-02","SHELTER_NAME":"Beck Hut","ROUTE_CODE":"RT-WEST","CONDITION_BAND":"SERVICEABLE","BUNK_COUNT":4,"FLOOR_AREA_M2":15.75,"OPENED_ON":"2021-05-14"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

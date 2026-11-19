@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::goldenotter2::store::GardenDb
+(
+  Schema beds
+  (
+    Table plant_bed
+    (
+      bed_code VARCHAR(32) PRIMARY KEY,
+      bed_name VARCHAR(120) NOT NULL,
+      glasshouse_code VARCHAR(32),
+      soil_code VARCHAR(60) NOT NULL,
+      active_flag VARCHAR(1) NOT NULL
+    )
+    Table plant_accession
+    (
+      accession_code VARCHAR(32) PRIMARY KEY,
+      bed_code VARCHAR(32),
+      taxon_name VARCHAR(120) NOT NULL,
+      potted_count INTEGER NOT NULL,
+      label_text VARCHAR(120) NOT NULL
+    )
+    View bed_label_vw
+    (
+      bed_code: beds.plant_bed.bed_code PRIMARY KEY,
+      bed_label: concat('BED-', beds.plant_bed.bed_code)
+    )
+  )
+
+  Schema glass
+  (
+    Table glasshouse
+    (
+      glasshouse_code VARCHAR(32) PRIMARY KEY,
+      glasshouse_name VARCHAR(120) NOT NULL,
+      zone_code VARCHAR(32) NOT NULL
+    )
+    Table watering_rota
+    (
+      rota_code VARCHAR(32) PRIMARY KEY,
+      glasshouse_code VARCHAR(32) NOT NULL,
+      rota_label VARCHAR(60) NOT NULL,
+      week_number INTEGER NOT NULL
+    )
+  )
+
+  Filter ActiveBeds(beds.plant_bed.active_flag = 'Y')
+
+  Join Bed_Accession(beds.plant_bed.bed_code = beds.plant_accession.bed_code)
+  Join Bed_Label(beds.plant_bed.bed_code = beds.bed_label_vw.bed_code)
+  Join Bed_Glasshouse(beds.plant_bed.glasshouse_code = glass.glasshouse.glasshouse_code)
+  Join Glasshouse_Rota(glass.glasshouse.glasshouse_code = glass.watering_rota.glasshouse_code)
+)

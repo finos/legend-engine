@@ -1,0 +1,56 @@
+name: emerald-marsh-4
+title: "Emerald Marsh 4 - two-stage nest register over a chained document feed"
+description: |
+  A marsh nest register. Nest reports arrive as nested documents through an
+  inline document connection. A first model-to-model stage standardises each
+  report: a depth function walks an eight-arm conditional ladder with a null
+  fallback, kind and egg-stage codes are computed through nested conditionals
+  before enumeration lookups so unlisted codes fold onto sentinels, and the
+  lead and backup observers are split through an operation union bound by an
+  association. A second stage, reached through an inline chaining connection,
+  qualifies each standardised nest with boolean helper functions that drive a
+  further enumeration lookup. A parameterised service delegates to a single
+  entry function, and its tests read inline and reusable data elements and
+  compare results in the plain serialisation format.
+modelSources:
+  model:
+    root: emerald-marsh-4
+    files:
+      - test/emeraldmarsh4/data/RaftNestReport.pure
+      - test/emeraldmarsh4/doc/MarshNotes.pure
+      - test/emeraldmarsh4/domain/NestDomain.pure
+      - test/emeraldmarsh4/function/NestFunctions.pure
+      - test/emeraldmarsh4/mapping/NestQualificationMapping.pure
+      - test/emeraldmarsh4/mapping/NestStandardMapping.pure
+      - test/emeraldmarsh4/runtime/NestRuntimes.pure
+      - test/emeraldmarsh4/service/NestDigestService.pure
+      - test/emeraldmarsh4/source/NestReportSource.pure
+features:
+  - scaffolding:model-connection
+  - scaffolding:model-chain-connection
+  - execution:data-element
+  - execution:service
+  - execution:service-test
+  - execution:service-test-serialization-format
+  - execution:service-user-ownership
+  - grammar:association
+  - grammar:function
+  - grammar:text-element
+  - mapping:enumeration-mapping
+  - mapping:enumeration-mapping-of-expression
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:operation-mapping
+  - execution:service-parameter
+  - scaffolding:m2m-mapping
+  - scaffolding:runtime
+stores: []
+complexity: intermediate
+tags:
+  - chained-mapping
+  - conditional-ladder
+  - enumeration-of-expression
+  - marsh-nest-register
+  - model-to-model
+  - operation-union
+  - parameterised-service

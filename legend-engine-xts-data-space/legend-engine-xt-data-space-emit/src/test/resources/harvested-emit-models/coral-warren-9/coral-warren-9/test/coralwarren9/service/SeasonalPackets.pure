@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::coralwarren9::service::SeasonalPackets
+{
+  pattern: '/coralwarren9/v1/packets/{harvestYear}';
+  title: 'Seed Library - Seasonal Packets';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the packets saved in one harvest year and shelved at the two lending branches in the membership set, with the variety label and donor name reached through one join each.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {harvestYear: Integer[1]|test::coralwarren9::domain::SeedPacket.all()->filter(
+      p|($p.harvestYear == $harvestYear) && $p.branchCode->in(['BR-1', 'BR-3'])
+    )->project(
+      [
+        p|$p.packetCode,
+        p|$p.variety.varietyLabel,
+        p|$p.donor.gardenerName,
+        p|$p.gramWeight
+      ],
+      [
+        'Packet',
+        'Variety',
+        'Donor',
+        'Grams'
+      ]
+    )->sort([asc('Packet')])};
+    mapping: test::coralwarren9::mapping::SeedLibraryMapping;
+    runtime: test::coralwarren9::runtime::SeedLibraryRuntime;
+  }
+  testSuites:
+  [
+    seasonalPacketsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedLibraryWarehouse:
+            Reference
+            #{
+              test::coralwarren9::data::SeedLibraryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        currentHarvest:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            harvestYear = 2025
+          ]
+          asserts:
+          [
+            hollinsPacketDropped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Packet":"PK-01","Variety":"Red Baron Onion","Donor":"Ruth Okafor","Grams":12},{"Packet":"PK-02","Variety":"Cavolo Nero","Donor":"Mei Tanaka","Grams":8},{"Packet":"PK-05","Variety":"Purple Sprouting Broccoli","Donor":"Sam Hollis","Grams":10}]';
+                  }#;
+              }#
+          ]
+        },
+        priorHarvest:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            harvestYear = 2024
+          ]
+          asserts:
+          [
+            priorYearPackets:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Packet":"PK-04","Variety":"Gardeners Delight Tomato","Donor":"Mei Tanaka","Grams":5},{"Packet":"PK-06","Variety":"Painted Lady Bean","Donor":"Ruth Okafor","Grams":18}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

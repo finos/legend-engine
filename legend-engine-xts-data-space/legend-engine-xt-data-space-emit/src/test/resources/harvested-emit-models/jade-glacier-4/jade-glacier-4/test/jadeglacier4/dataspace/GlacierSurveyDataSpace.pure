@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###DataSpace
+DataSpace test::jadeglacier4::dataspace::GlacierSurveyDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'icefield';
+      description: 'Reads the recovered ice-core register through the ice-core mapping over the survey warehouse runtime.';
+      mapping: test::jadeglacier4::mapping::IceCoreSampleMapping;
+      defaultRuntime: test::jadeglacier4::runtime::IceCoreSampleRuntime;
+    }
+  ];
+  defaultExecutionContext: 'icefield';
+  title: 'Glacier Survey - Ice Core Register';
+  description: 'The recovered ice-core register of a monitored icefield: one wide core relation, the descriptive grades the drilling crews log for every recovered column and the archive attributes of the storage boxes the columns are shelved in.';
+  elements:
+  [
+    test::jadeglacier4::domain::IceCoreSample
+  ];
+  supportInfo: Email
+  {
+    address: 'glacier-survey-desk@example.invalid';
+  };
+}

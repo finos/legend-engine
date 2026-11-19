@@ -1,0 +1,97 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::crimsonprairie2::store::PrairieRangeDatabase
+(
+  Schema range_survey
+  (
+    Table burn_unit
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z),
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      unit_id INTEGER PRIMARY KEY,
+      unit_code VARCHAR(24) NOT NULL,
+      unit_name VARCHAR(64) NOT NULL,
+      cover_code VARCHAR(16) NOT NULL,
+      moisture_pct FLOAT,
+      break_flag VARCHAR(8) NOT NULL,
+      in_z DATE NOT NULL,
+      out_z DATE NOT NULL,
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+
+    Table unit_marker
+    (
+      unit_id INTEGER PRIMARY KEY,
+      marker_id INTEGER PRIMARY KEY,
+      marker_status VARCHAR(16) NOT NULL
+    )
+
+    Table marker_ref
+    (
+      marker_id INTEGER PRIMARY KEY,
+      marker_code INTEGER NOT NULL,
+      marker_label VARCHAR(64) NOT NULL,
+      active_flag VARCHAR(4) NOT NULL
+    )
+  )
+
+  Schema range_tree
+  (
+    Table unit_node
+    (
+      unit_id INTEGER PRIMARY KEY,
+      parent_code VARCHAR(24) NOT NULL,
+      region_name VARCHAR(64) NOT NULL
+    )
+
+    Table node_parent
+    (
+      parent_code VARCHAR(24) PRIMARY KEY,
+      ancestor_code VARCHAR(24) NOT NULL,
+      parent_name VARCHAR(64) NOT NULL
+    )
+
+    Table node_ancestor
+    (
+      ancestor_code VARCHAR(24) PRIMARY KEY,
+      office_code VARCHAR(24) NOT NULL,
+      ancestor_name VARCHAR(64) NOT NULL,
+      steward_name VARCHAR(64) NOT NULL
+    )
+
+    Table node_office
+    (
+      office_code VARCHAR(24) PRIMARY KEY,
+      office_name VARCHAR(64) NOT NULL
+    )
+  )
+
+  Join Unit_Marker(range_survey.burn_unit.unit_id = range_survey.unit_marker.unit_id and range_survey.unit_marker.marker_status = 'ACTIVE')
+
+  Join Marker_Ref(range_survey.unit_marker.marker_id = range_survey.marker_ref.marker_id and range_survey.marker_ref.active_flag = 'Y')
+
+  Join Unit_Node(range_survey.burn_unit.unit_id = range_tree.unit_node.unit_id)
+
+  Join Node_Parent(range_tree.unit_node.parent_code = range_tree.node_parent.parent_code)
+
+  Join Parent_Ancestor(range_tree.node_parent.ancestor_code = range_tree.node_ancestor.ancestor_code)
+
+  Join Ancestor_Office(range_tree.node_ancestor.office_code = range_tree.node_office.office_code)
+)

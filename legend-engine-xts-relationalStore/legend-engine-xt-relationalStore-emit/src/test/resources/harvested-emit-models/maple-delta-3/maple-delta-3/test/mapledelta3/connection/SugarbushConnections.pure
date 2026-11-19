@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::mapledelta3::connection::SugarbushPrimaryConnection
+{
+  store: test::mapledelta3::store::SugarbushDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists sugarbush;',
+      'create schema sugarbush;',
+      'create table sugarbush.tap_run (run_code varchar(16) primary key, stand_code varchar(16) not null, sap_grade varchar(16) not null, litres integer not null, collected_on date not null, crew_label varchar(64) not null, season_code varchar(16) not null);',
+      'create table sugarbush.run_spile (spile_code varchar(16) primary key, run_code varchar(16) not null, spile_kind varchar(16) not null, bore_mm integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection test::mapledelta3::connection::SugarbushArchiveConnection
+{
+  store: test::mapledelta3::store::SugarbushDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists sugarbush;',
+      'create schema sugarbush;',
+      'create table sugarbush.tap_run (run_code varchar(16) primary key, stand_code varchar(16) not null, sap_grade varchar(16) not null, litres integer not null, collected_on date not null, crew_label varchar(64) not null, season_code varchar(16) not null);',
+      'create table sugarbush.run_spile (spile_code varchar(16) primary key, run_code varchar(16) not null, spile_kind varchar(16) not null, bore_mm integer not null);'
+      ];
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,33 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::mapledelta::connection::DeltaH2Connection
+{
+  store: test::mapledelta::store::DeltaDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists delta;',
+      'create schema delta;',
+      'create table delta.channel (channel_id integer primary key, channel_name varchar(200) not null, basin_code varchar(50) not null, channel_state varchar(20) not null, flow_rate integer not null, sediment_load integer not null);',
+      'insert into delta.channel values (1, \'Main Stem\', \'NorthReach\', \'OPEN\', 120, 40);',
+      'insert into delta.channel values (2, \'Side Cut\', \'NorthReach\', \'ACTIVE\', 80, 60);',
+      'insert into delta.channel values (3, \'Dry Wash\', \'NorthReach\', \'CLOSED\', 0, 10);',
+      'insert into delta.channel values (4, \'Far Bend\', \'SouthReach\', \'OPEN\', 200, 90);'
+      ];
+  };
+  auth: DefaultH2;
+}

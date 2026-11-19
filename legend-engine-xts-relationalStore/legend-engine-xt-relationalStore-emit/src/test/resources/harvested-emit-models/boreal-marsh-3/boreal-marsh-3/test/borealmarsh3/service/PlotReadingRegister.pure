@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::borealmarsh3::service::PlotReadingRegister
+{
+  pattern: '/borealmarsh3/v1/plot-reading-register';
+  title: 'Peat Marsh - Probe Readings Placed Beside The Points They Were Read At';
+  ownership: UserList { users: ['marsh-survey-desk'] };
+  documentation: 'Reads the probe register of one business date, keeps the readings whose wetness band the caller names and whose water table stands above a depth the caller names, reaches the point of each reading through the association as well as through the mapped column, folds the probe arithmetic deep enough that the plan has to compute it before it reads the columns, then places each reading beside a distinct projection of the point book over an inner join and keeps the ordered rows.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query:
+    {
+      asOfDate: StrictDate[1], bands: String[*], minTable: Float[1]|
+      test::borealmarsh3::domain::PlotReading.all($asOfDate)->filter(
+        x|($x.wetnessBand()->in($bands)) && ($x.standsAbove($minTable)) && ($x.probeCount > 0) && ($x.surveyorName->isNotEmpty())
+      )->project(
+        [
+          x|$x.readingCode,
+          x|$x.point.pointCode,
+          x|$x.pointName,
+          x|$x.basinName,
+          x|$x.surveyorName,
+          x|$x.readingOn,
+          x|$x.waterTableCm,
+          x|$x.probeIndex(),
+          x|$x.wetnessBand()
+        ],
+        [
+          'Reading',
+          'Point Code',
+          'Point',
+          'Basin',
+          'Surveyor',
+          'Read On',
+          'Water Table',
+          'Probe Index',
+          'Wetness'
+        ]
+      )->join(
+        test::borealmarsh3::domain::MonitorPoint.all()->filter(
+          x|$x.pointName->isNotEmpty()
+        )->project(
+          [
+            x|$x.pointName->toOne(),
+            x|$x.basinName
+          ],
+          [
+            'Joined Point',
+            'Point Basin'
+          ]
+        )->distinct(),
+        meta::relational::metamodel::join::JoinType.INNER,
+        {l, r|$l.getString('Point') == $r.getString('Joined Point')}
+      )->restrict(
+        [
+          'Reading',
+          'Point Code',
+          'Point',
+          'Basin',
+          'Surveyor',
+          'Read On',
+          'Water Table',
+          'Probe Index',
+          'Wetness',
+          'Point Basin'
+        ]
+      )->sort(
+        [
+          asc('Reading')
+        ]
+      )->limit(10)
+    };
+    mapping: test::borealmarsh3::mapping::MarshReadingMapping;
+    runtime: test::borealmarsh3::runtime::MarshReadingRuntime;
+  }
+  testSuites:
+  [
+    plotReadingRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Reference
+            #{
+              test::borealmarsh3::data::MarshTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        namedBandsAtOneBusinessDate:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOfDate = %2026-06-01,
+            bands = ['BAND ONE WET', 'BAND TWO DAMP', 'BAND THREE DRAWN'],
+            minTable = 10.0
+          ]
+          asserts:
+          [
+            twoNamedReadingsPlacedBesideTheirPoint:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reading":"PR-01","Point Code":"MP-01","Point":"Sphagnum Hollow","Basin":"Upper Fen Basin","Surveyor":"j.rowan","Read On":"2026-04-02","Water Table":45.0,"Probe Index":25.625,"Wetness":"BAND ONE WET","Point Basin":"Upper Fen Basin"},{"Reading":"PR-02","Point Code":"MP-01","Point":"Sphagnum Hollow","Basin":"Upper Fen Basin","Surveyor":"j.rowan","Read On":"2026-04-03","Water Table":30.0,"Probe Index":10.0625,"Wetness":"BAND TWO DAMP","Point Basin":"Upper Fen Basin"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

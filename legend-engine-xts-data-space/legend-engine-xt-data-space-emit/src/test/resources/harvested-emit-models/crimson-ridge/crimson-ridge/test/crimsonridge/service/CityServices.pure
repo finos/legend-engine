@@ -1,0 +1,436 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::crimsonridge::service::RegionalParksInDistrict
+{
+  pattern: '/greening/v1/parks/{districtCode}';
+  title: 'City greening - regional parks in a district';
+  owners:
+  [
+    'city-greening-office',
+    'parks-operations'
+  ];
+  documentation: 'Narrows the green-space extent with a conjunction of a two-hop navigated district comparison and an enumeration comparison before the terminal projection, so the plan pushes both predicates and the park-to-neighborhood-to-district join chain into the relational layer.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {districtCode: String[1]|test::crimsonridge::domain::Park.all()->filter(p|$p.parkNeighborhood.district.code == $districtCode && $p.category == test::crimsonridge::domain::ParkCategory.REGIONAL)->project([p|$p.code, p|$p.name, p|$p.parkNeighborhood.district.name], ['Code', 'Name', 'District'])->sort([asc('Code')])};
+    mapping: test::crimsonridge::mapping::CityMapping;
+    runtime: test::crimsonridge::runtime::CityRuntime;
+  }
+  testSuites:
+  [
+    regionalParksInDistrictSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Reference
+            #{
+              test::crimsonridge::data::CityFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        northgateRegional:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districtCode = 'D-N'
+          ]
+          asserts:
+          [
+            onlyTheRegionalPark:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"P-01","Name":"Cedar Ridge Commons","District":"Northgate"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonridge::service::ParkRegister
+{
+  pattern: '/greening/v1/register';
+  title: 'City greening - full park register';
+  owners:
+  [
+    'city-greening-office',
+    'parks-operations'
+  ];
+  documentation: 'Projects the whole green-space register with the neighborhood reached through the declared join, ordered by code, as the unfiltered counterpart of the narrowed endpoints.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::crimsonridge::domain::Park.all()->project([p|$p.code, p|$p.name, p|$p.parkNeighborhood.name], ['Code', 'Name', 'Neighborhood'])->sort([asc('Code')])};
+    mapping: test::crimsonridge::mapping::CityMapping;
+    runtime: test::crimsonridge::runtime::CityRuntime;
+  }
+  testSuites:
+  [
+    parkRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Reference
+            #{
+              test::crimsonridge::data::CityFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyPark:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+
+          ]
+          asserts:
+          [
+            threeParksWithNeighborhoods:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"P-01","Name":"Cedar Ridge Commons","Neighborhood":"Cedar Heights"},{"Code":"P-02","Name":"Willow Pocket","Neighborhood":"Willow Flats"},{"Code":"P-03","Name":"Kiln Quarter Green","Neighborhood":"Kiln Quarter"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonridge::service::ShelteredStopsInNeighborhood
+{
+  pattern: '/greening/v1/stops/{neighborhoodCode}/{minSeats}';
+  title: 'City greening - sheltered transit stops in a neighborhood';
+  owners:
+  [
+    'city-greening-office',
+    'parks-operations'
+  ];
+  documentation: 'Combines a navigated neighborhood comparison with a numeric threshold on shelter capacity, then projects the surviving stops so the emitted SQL carries both the join and the range predicate.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {neighborhoodCode: String[1], minSeats: Integer[1]|test::crimsonridge::domain::TransitStop.all()->filter(s|$s.stopNeighborhood.code == $neighborhoodCode && ($s.shelterSeats > $minSeats))->project([s|$s.code, s|$s.name, s|$s.shelterSeats], ['Code', 'Name', 'Seats'])->sort([asc('Code')])};
+    mapping: test::crimsonridge::mapping::CityMapping;
+    runtime: test::crimsonridge::runtime::CityRuntime;
+  }
+  testSuites:
+  [
+    shelteredStopsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Reference
+            #{
+              test::crimsonridge::data::CityFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        cedarHeightsStops:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            neighborhoodCode = 'N-01',
+            minSeats = 3
+          ]
+          asserts:
+          [
+            onlyTheShelteredStop:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"S-01","Name":"Cedar Heights North","Seats":6}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonridge::service::AmenityInventory
+{
+  pattern: '/greening/v1/amenities';
+  title: 'City greening - amenity inventory by district';
+  owners:
+  [
+    'city-greening-office',
+    'parks-operations'
+  ];
+  documentation: 'Walks amenity to park to neighborhood to district in the projection, so the plan emits the full three-hop inner-join chain and drops any amenity whose chain does not resolve.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::crimsonridge::domain::Amenity.all()->project([a|$a.code, a|$a.kind, a|$a.amenityPark.parkNeighborhood.district.name], ['Code', 'Kind', 'District'])->sort([asc('Code')])};
+    mapping: test::crimsonridge::mapping::CityMapping;
+    runtime: test::crimsonridge::runtime::CityRuntime;
+  }
+  testSuites:
+  [
+    amenityInventorySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Reference
+            #{
+              test::crimsonridge::data::CityFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        allAmenities:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+
+          ]
+          asserts:
+          [
+            eachAmenityResolvesItsDistrict:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"A-01","Kind":"splash pad","District":"Northgate"},{"Code":"A-02","Kind":"bandstand","District":"Northgate"},{"Code":"A-03","Kind":"climbing frame","District":"Southbank"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonridge::service::CrewRoster
+{
+  pattern: '/greening/v1/crews/{districtCode}/{minHeadcount}';
+  title: 'City greening - grounds crews for a district';
+  owners:
+  [
+    'city-greening-office',
+    'parks-operations'
+  ];
+  documentation: 'Filters the grounds crews by the district reached through the crew join and by a headcount floor, then projects the roster with the district name so the join is exercised on both sides of the predicate.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {districtCode: String[1], minHeadcount: Integer[1]|test::crimsonridge::domain::MaintenanceCrew.all()->filter(c|$c.crewDistrict.code == $districtCode && ($c.headcount >= $minHeadcount))->project([c|$c.code, c|$c.crewName, c|$c.crewDistrict.name], ['Code', 'Crew', 'District'])->sort([asc('Code')])};
+    mapping: test::crimsonridge::mapping::CityMapping;
+    runtime: test::crimsonridge::runtime::CityRuntime;
+  }
+  testSuites:
+  [
+    crewRosterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Reference
+            #{
+              test::crimsonridge::data::CityFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        southbankCrews:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            districtCode = 'D-S',
+            minHeadcount = 6
+          ]
+          asserts:
+          [
+            oneCrewClearsTheFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"C-02","Crew":"Southbank Grounds","District":"Southbank"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonridge::service::DistrictSummary
+{
+  pattern: '/greening/v1/districts';
+  title: 'City greening - district summary';
+  owners:
+  [
+    'city-greening-office',
+    'parks-operations'
+  ];
+  documentation: 'Projects the planning districts with their planner establishment, de-duplicates and caps the result, giving the register a bounded root-table-only shape with no join.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|test::crimsonridge::domain::District.all()->project([d|$d.code, d|$d.name, d|$d.plannerCount], ['Code', 'Name', 'Planners'])->distinct()->sort([asc('Code')])->limit(10)};
+    mapping: test::crimsonridge::mapping::CityMapping;
+    runtime: test::crimsonridge::runtime::CityRuntime;
+  }
+  testSuites:
+  [
+    districtSummarySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Reference
+            #{
+              test::crimsonridge::data::CityFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        bothDistricts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+
+          ]
+          asserts:
+          [
+            twoDistricts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"D-N","Name":"Northgate","Planners":4},{"Code":"D-S","Name":"Southbank","Planners":3}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::crimsonridge::service::UnfencedLargeParks
+{
+  pattern: '/greening/v1/parks/open/{minArea}';
+  title: 'City greening - large unfenced parks';
+  owners:
+  [
+    'city-greening-office',
+    'parks-operations'
+  ];
+  documentation: 'Conjoins a floating-point area threshold with a boolean fencing test and projects the boolean straight through, so the plan pushes a mixed-type predicate and materialises a typed row shape.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minArea: Float[1]|test::crimsonridge::domain::Park.all()->filter(p|($p.areaHectares > $minArea) && ($p.fenced == false))->project([p|$p.code, p|$p.areaHectares, p|$p.fenced], ['Code', 'Area', 'Fenced'])->sort([asc('Code')])};
+    mapping: test::crimsonridge::mapping::CityMapping;
+    runtime: test::crimsonridge::runtime::CityRuntime;
+  }
+  testSuites:
+  [
+    unfencedLargeParksSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2Connection:
+            Reference
+            #{
+              test::crimsonridge::data::CityFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        aboveOneHectare:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minArea = 1.0
+          ]
+          asserts:
+          [
+            twoOpenParks:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"P-01","Area":12.5,"Fenced":false},{"Code":"P-03","Area":3.2,"Fenced":false}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

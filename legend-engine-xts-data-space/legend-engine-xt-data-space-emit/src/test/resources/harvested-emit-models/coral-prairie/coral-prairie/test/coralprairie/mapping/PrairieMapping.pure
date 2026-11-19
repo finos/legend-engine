@@ -1,0 +1,203 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralprairie::mapping::PrairieMapping
+(
+  *test::coralprairie::domain::RestorationPlot[restorationPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralprairie::store::PrairieStore]restoration.restoration_plot.plot_id
+    )
+    ~mainTable [test::coralprairie::store::PrairieStore]restoration.restoration_plot
+    plotCode: concat('PLOT-', toString([test::coralprairie::store::PrairieStore]restoration.restoration_plot.plot_id)),
+    plotName: toUpper(trim(substring(toLower(trim([test::coralprairie::store::PrairieStore]restoration.restoration_plot.plot_name)), 0, 18))),
+    plotSlug: toLower(substring(trim(toUpper([test::coralprairie::store::PrairieStore]restoration.restoration_plot.plot_name)), 0, 5)),
+    hectares: [test::coralprairie::store::PrairieStore]restoration.restoration_plot.hectares
+  }
+
+  *test::coralprairie::domain::ManagementZone[managementZone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralprairie::store::PrairieStore]restoration.management_zone.zone_code
+    )
+    ~mainTable [test::coralprairie::store::PrairieStore]restoration.management_zone
+    zoneCode: [test::coralprairie::store::PrairieStore]restoration.management_zone.zone_code,
+    zoneName: toUpper(trim([test::coralprairie::store::PrairieStore]restoration.management_zone.zone_name))
+  }
+
+  *test::coralprairie::domain::BurnUnit[burnUnit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralprairie::store::PrairieStore]restoration.burn_unit.burn_code
+    )
+    ~mainTable [test::coralprairie::store::PrairieStore]restoration.burn_unit
+    burnCode: [test::coralprairie::store::PrairieStore]restoration.burn_unit.burn_code,
+    burnName: trim([test::coralprairie::store::PrairieStore]restoration.burn_unit.burn_name),
+    rotationYears: [test::coralprairie::store::PrairieStore]restoration.burn_unit.rotation_years
+  }
+
+  *test::coralprairie::domain::SeedMix[seedMix]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralprairie::store::PrairieStore]restoration.seed_mix.mix_code
+    )
+    ~mainTable [test::coralprairie::store::PrairieStore]restoration.seed_mix
+    mixCode: [test::coralprairie::store::PrairieStore]restoration.seed_mix.mix_code,
+    mixLabel: trim([test::coralprairie::store::PrairieStore]restoration.seed_mix.mix_label),
+    speciesCount: [test::coralprairie::store::PrairieStore]restoration.seed_mix.species_count
+  }
+
+  *test::coralprairie::domain::SoilSeries[soilSeries]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralprairie::store::PrairieStore]restoration.soil_series.soil_code
+    )
+    ~mainTable [test::coralprairie::store::PrairieStore]restoration.soil_series
+    soilCode: [test::coralprairie::store::PrairieStore]restoration.soil_series.soil_code,
+    soilLabel: trim([test::coralprairie::store::PrairieStore]restoration.soil_series.soil_label)
+  }
+
+  *test::coralprairie::domain::FieldTechnician[fieldTechnician]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralprairie::store::PrairieStore]restoration.field_technician.technician_code
+    )
+    ~mainTable [test::coralprairie::store::PrairieStore]restoration.field_technician
+    technicianCode: [test::coralprairie::store::PrairieStore]restoration.field_technician.technician_code,
+    technicianName: toUpper(trim([test::coralprairie::store::PrairieStore]restoration.field_technician.technician_name))
+  }
+
+  test::coralprairie::domain::Plot_Zone: Relational
+  {
+    AssociationMapping
+    (
+      zonePlots[managementZone,restorationPlot]: [test::coralprairie::store::PrairieStore]@Plot_Zone_Join,
+      zone[restorationPlot,managementZone]: [test::coralprairie::store::PrairieStore]@Plot_Zone_Join
+    )
+  }
+
+  test::coralprairie::domain::Plot_SeedMix: Relational
+  {
+    AssociationMapping
+    (
+      mixPlots[seedMix,restorationPlot]: [test::coralprairie::store::PrairieStore]@Plot_Mix_Join,
+      seedMix[restorationPlot,seedMix]: [test::coralprairie::store::PrairieStore]@Plot_Mix_Join
+    )
+  }
+
+  test::coralprairie::domain::Plot_Soil: Relational
+  {
+    AssociationMapping
+    (
+      soilPlots[soilSeries,restorationPlot]: [test::coralprairie::store::PrairieStore]@Plot_Soil_Join,
+      soilSeries[restorationPlot,soilSeries]: [test::coralprairie::store::PrairieStore]@Plot_Soil_Join
+    )
+  }
+
+  test::coralprairie::domain::Plot_Technician: Relational
+  {
+    AssociationMapping
+    (
+      technicianPlots[fieldTechnician,restorationPlot]: [test::coralprairie::store::PrairieStore]@Plot_Technician_Join,
+      technician[restorationPlot,fieldTechnician]: [test::coralprairie::store::PrairieStore]@Plot_Technician_Join
+    )
+  }
+
+  test::coralprairie::domain::Zone_Burn: Relational
+  {
+    AssociationMapping
+    (
+      burnZones[burnUnit,managementZone]: [test::coralprairie::store::PrairieStore]@Zone_Burn_Join,
+      burnUnit[managementZone,burnUnit]: [test::coralprairie::store::PrairieStore]@Zone_Burn_Join
+    )
+  }
+
+  test::coralprairie::domain::Plot_Burn: Relational
+  {
+    AssociationMapping
+    (
+      burnPlots[burnUnit,restorationPlot]: [test::coralprairie::store::PrairieStore]@Zone_Burn_Join > @Plot_Zone_Join,
+      plotBurnUnit[restorationPlot,burnUnit]: [test::coralprairie::store::PrairieStore]@Plot_Zone_Join > @Zone_Burn_Join
+    )
+  }
+
+  testSuites:
+  [
+    plotRegisterSuite:
+    {
+      function: |test::coralprairie::domain::RestorationPlot.all()->project(
+  [
+    x|$x.plotCode,
+    x|$x.plotName,
+    x|$x.plotSlug,
+    x|$x.hectares,
+    x|$x.zone.zoneName,
+    x|$x.seedMix.mixLabel,
+    x|$x.soilSeries.soilLabel,
+    x|$x.technician.technicianName,
+    x|$x.plotBurnUnit.burnName
+  ],
+  [
+    'PlotCode',
+    'PlotName',
+    'PlotSlug',
+    'Hectares',
+    'Zone',
+    'SeedMix',
+    'Soil',
+    'Technician',
+    'BurnUnit'
+  ]
+)->sort(
+  [
+    asc('PlotCode')
+  ]
+);
+      tests:
+      [
+        hubAndSpokes:
+        {
+          doc: 'Projects the plot hub with every spoke reached through its implemented association, including the burn unit reached through the two-link zone chain.';
+          data:
+          [
+            test::coralprairie::store::PrairieStore: Reference
+              #{
+                test::coralprairie::data::PrairieTestData
+              }#
+          ];
+          asserts:
+          [
+            fourPlots:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PLOT-1","PlotName":"NORTH TERRACE STRI","PlotSlug":"north","Hectares":12.5,"Zone":"NORTH TERRACE","SeedMix":"Tallgrass Mix","Soil":"Loam Series","Technician":"REN OKAFOR","BurnUnit":"Spring Rotation"},{"PlotCode":"PLOT-2","PlotName":"WILLOW CREEK BENCH","PlotSlug":"willo","Hectares":8.25,"Zone":"NORTH TERRACE","SeedMix":"Shortgrass Mix","Soil":"Silt Series","Technician":"REN OKAFOR","BurnUnit":"Spring Rotation"},{"PlotCode":"PLOT-3","PlotName":"SOUTH TERRACE FLAT","PlotSlug":"south","Hectares":15.75,"Zone":"SOUTH TERRACE","SeedMix":"Tallgrass Mix","Soil":"Loam Series","Technician":"MIRA LINDQVIST","BurnUnit":"Spring Rotation"},{"PlotCode":"PLOT-4","PlotName":"CREEK MARGIN VERGE","PlotSlug":"creek","Hectares":4.5,"Zone":"CREEK MARGIN","SeedMix":"Shortgrass Mix","Soil":"Silt Series","Technician":"MIRA LINDQVIST","BurnUnit":"Autumn Rotation"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

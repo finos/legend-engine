@@ -1,0 +1,70 @@
+name: amber-vineyard-2
+title: "Amber Vineyard 2 - Fossil Dig Catalogue (store-include, operation mapping, business milestoning)"
+description: |
+  An advanced relational model over a business-temporally milestoned fossil
+  dig catalogue. A single addressable store includes two other stores and
+  declares joins spanning their boundaries, including a self-join and
+  literal-filtered cross-table joins across schemas. The mapping specialises a
+  base dig record through class inheritance, folds an eight-arm conditional and
+  an enum-of-expression grade over source codes, resolves an excavator across a
+  two-hop join, embeds provenance and inline field metrics, defaults a literal
+  register, and unions two note tables through an operation mapping. A data
+  space with combined support info and a diagram surface the curated model.
+modelSources:
+  model:
+    root: amber-vineyard-2
+    files:
+      - test/ambervineyard2/connection/PaleoConnection.pure
+      - test/ambervineyard2/dataspace/PaleoDataSpace.pure
+      - test/ambervineyard2/diagram/PaleoDiagram.pure
+      - test/ambervineyard2/domain/PaleoDomain.pure
+      - test/ambervineyard2/mapping/PaleoBaseMapping.pure
+      - test/ambervineyard2/mapping/PaleoMapping.pure
+      - test/ambervineyard2/runtime/PaleoRuntime.pure
+      - test/ambervineyard2/store/FossilStore.pure
+      - test/ambervineyard2/store/PaleoStore.pure
+      - test/ambervineyard2/store/SiteStore.pure
+features:
+  - execution:data-space
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:diagram
+  - grammar:enumeration
+  - grammar:profile
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:operation-mapping
+  - mapping:relational-embedded
+  - mapping:relational-inline-embedded
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - milestoning:business-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-cross-table-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-self-join
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - business-temporal
+  - cross-schema
+  - data-space
+  - diagram
+  - fossil-catalogue
+  - h2
+  - mapping-include
+  - operation-mapping
+  - paleontology
+  - self-join
+  - snowflake
+  - store-include

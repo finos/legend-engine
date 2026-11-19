@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram test::ivoryotter2::diagram::SurveyDomainDiagram
+{
+  classView c52e8ab9-d2c0-418b-8c9d-a74d4372aff8
+  {
+    class: test::ivoryotter2::domain::TidepoolSite;
+    position: (120.0,140.0);
+    rectangle: (220.0,110.0);
+  }
+  classView 040e7b88-d9a6-4db8-8a2a-b6db53bd51ed
+  {
+    class: test::ivoryotter2::domain::InvertebrateSpecies;
+    position: (460.0,140.0);
+    rectangle: (220.0,110.0);
+  }
+  classView 83d33e6e-b39f-4745-95d7-25cc5c982f14
+  {
+    class: test::ivoryotter2::domain::SurveyObservation;
+    position: (300.0,360.0);
+    rectangle: (220.0,110.0);
+  }
+  classView 1eb90d86-1f83-43fa-a8d5-6c0b9add53a1
+  {
+    class: test::ivoryotter2::domain::FieldResearcher;
+    position: (640.0,360.0);
+    rectangle: (200.0,90.0);
+  }
+}

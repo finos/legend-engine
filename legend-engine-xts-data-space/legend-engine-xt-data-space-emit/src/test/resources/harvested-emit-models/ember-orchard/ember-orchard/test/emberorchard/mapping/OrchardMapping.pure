@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::emberorchard::mapping::OrchardMapping
+(
+  *test::emberorchard::domain::SpecimenRecord[specimenRecord]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberorchard::store::OrchardDB]nursery.specimen_register.specimen_code
+    )
+    ~mainTable [test::emberorchard::store::OrchardDB]nursery.specimen_register
+    specimenCode: [test::emberorchard::store::OrchardDB]nursery.specimen_register.specimen_code,
+    blockCode: [test::emberorchard::store::OrchardDB]nursery.specimen_register.block_code,
+    rowCode: [test::emberorchard::store::OrchardDB]nursery.specimen_register.row_code,
+    commonName: [test::emberorchard::store::OrchardDB]nursery.specimen_register.common_name,
+    botanicalName: [test::emberorchard::store::OrchardDB]nursery.specimen_register.botanical_name,
+    cultivarName: [test::emberorchard::store::OrchardDB]nursery.specimen_register.cultivar_name,
+    rootstockCode: [test::emberorchard::store::OrchardDB]nursery.specimen_register.rootstock_code,
+    propagationMethod: [test::emberorchard::store::OrchardDB]nursery.specimen_register.propagation_method,
+    germinationBatch: [test::emberorchard::store::OrchardDB]nursery.specimen_register.germination_batch,
+    sownOn: [test::emberorchard::store::OrchardDB]nursery.specimen_register.sown_on,
+    transplantedOn: [test::emberorchard::store::OrchardDB]nursery.specimen_register.transplanted_on,
+    containerSize: [test::emberorchard::store::OrchardDB]nursery.specimen_register.container_size,
+    substrateMix: [test::emberorchard::store::OrchardDB]nursery.specimen_register.substrate_mix,
+    canopyHeightCm: [test::emberorchard::store::OrchardDB]nursery.specimen_register.canopy_height_cm,
+    stemCaliperMm: [test::emberorchard::store::OrchardDB]nursery.specimen_register.stem_caliper_mm,
+    leafCount: [test::emberorchard::store::OrchardDB]nursery.specimen_register.leaf_count,
+    rootZoneDepthCm: [test::emberorchard::store::OrchardDB]nursery.specimen_register.root_zone_depth_cm,
+    vigourGrade: [test::emberorchard::store::OrchardDB]nursery.specimen_register.vigour_grade,
+    hardinessZone: [test::emberorchard::store::OrchardDB]nursery.specimen_register.hardiness_zone,
+    sunExposure: [test::emberorchard::store::OrchardDB]nursery.specimen_register.sun_exposure,
+    pruningCycle: [test::emberorchard::store::OrchardDB]nursery.specimen_register.pruning_cycle,
+    lastInspectedOn: [test::emberorchard::store::OrchardDB]nursery.specimen_register.last_inspected_on,
+    inspectorCode: [test::emberorchard::store::OrchardDB]nursery.specimen_register.inspector_code,
+    healthNote: [test::emberorchard::store::OrchardDB]nursery.specimen_register.health_note,
+    nurseryTier: [test::emberorchard::store::OrchardDB]nursery.specimen_register.nursery_tier,
+    saleReadyFlag: [test::emberorchard::store::OrchardDB]nursery.specimen_register.sale_ready_flag,
+    retiredFlag: [test::emberorchard::store::OrchardDB]nursery.specimen_register.retired_flag,
+    updatedAt: [test::emberorchard::store::OrchardDB]nursery.specimen_register.updated_at
+  }
+
+  *test::emberorchard::domain::IrrigationAllocation[irrigationAllocation]: Relational
+  {
+    ~primaryKey
+    (
+      [test::emberorchard::store::OrchardDB]irrigation.irrigation_allocation.allocation_id
+    )
+    ~mainTable [test::emberorchard::store::OrchardDB]irrigation.irrigation_allocation
+    allocationId: [test::emberorchard::store::OrchardDB]irrigation.irrigation_allocation.allocation_id,
+    blockCode: [test::emberorchard::store::OrchardDB]irrigation.irrigation_allocation.block_code,
+    litresPerDay: [test::emberorchard::store::OrchardDB]irrigation.irrigation_allocation.litres_per_day,
+    scheduleCode: [test::emberorchard::store::OrchardDB]irrigation.irrigation_allocation.schedule_code
+  }
+)

@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::solarisle3::domain::*;
+import meta::pure::profiles::*;
+
+Class {doc.doc = 'A district of the isle that footpath stations are grouped under.'} test::solarisle3::domain::IsleDistrict
+{
+  {doc.doc = 'Code the registry holds the district under.'} districtCode: String[1];
+  {doc.doc = 'Name of the district.'} districtName: String[1];
+}
+
+Class {doc.doc = 'A field station that keeps the trail segments of one part of the isle.'} test::solarisle3::domain::FieldStation
+{
+  {doc.doc = 'Code the registry holds the station under.'} stationCode: String[1];
+  {doc.doc = 'Name of the station.'} stationName: String[1];
+}
+
+Class {doc.doc = 'A stretch of footpath a station patrols.'} test::solarisle3::domain::TrailSegment
+{
+  {doc.doc = 'Code the registry holds the segment under.'} segmentCode: String[1];
+  {doc.doc = 'Name of the segment.'} segmentName: String[1];
+}
+
+Class {doc.doc = 'A condition sensor pegged onto one trail segment.'} test::solarisle3::domain::TrailSensor
+{
+  {doc.doc = 'Code the registry holds the sensor under.'} sensorCode: String[1];
+  {doc.doc = 'Name of the sensor.'} sensorName: String[1];
+}
+
+Class {doc.doc = 'One condition reading taken on the footpath, landed on the field schema and reaching every descriptive name it publishes across the schema boundary into the registry schema.'} test::solarisle3::domain::TrailReading
+{
+  {doc.doc = 'Code the field log holds the reading under.'} readingId: String[1];
+  {doc.doc = 'Code of the sensor that took the reading.'} sensorCode: String[0..1];
+  {doc.doc = 'Tier the survey files the reading under.'} tierCode: String[0..1];
+  {doc.doc = 'Condition grade the surveyor entered, driving the banding arms and left absent for a reading that was never graded.'} gradeLevel: Integer[0..1];
+  {doc.doc = 'Samples the sensor folded into the reading.'} sampleCount: Integer[0..1];
+  {doc.doc = 'Raw condition figure the sensor reported.'} signalValue: Float[0..1];
+  {doc.doc = 'Status the field log carries, absent for a reading filed without one.'} statusText: String[0..1];
+  {doc.doc = 'Free label the surveyor wrote onto the reading.'} labelText: String[0..1];
+  {doc.doc = 'Date the reading was taken on.'} takenOn: StrictDate[0..1];
+  {doc.doc = 'Instant the reading was logged at.'} takenAt: DateTime[0..1];
+  {doc.doc = 'Band the entered condition grade places the reading in, publishing a database null once the grade falls outside the banded range.'} conditionBand: String[0..1];
+  {doc.doc = 'Label folded from the tier and the trimmed free label.'} tierLabel: String[0..1];
+  {doc.doc = 'Leading part of the trimmed free label.'} labelStem: String[0..1];
+  {doc.doc = 'Length of the trimmed free label.'} labelSize: Integer[0..1];
+  {doc.doc = 'Status the reading publishes, defaulted when the field log left it out.'} statusOrDefault: String[0..1];
+  {doc.doc = 'Patrol score fitted from the raw condition figure and the folded sample count.'} patrolScore: Float[0..1];
+  {doc.doc = 'Name of the sensor that took the reading, reached over one hop into the registry schema.'} sensorName: String[0..1];
+  {doc.doc = 'Name of the segment the sensor sits on, reached over two hops.'} segmentName: String[0..1];
+  {doc.doc = 'Name of the station patrolling that segment, reached over three hops.'} stationName: String[0..1];
+  {doc.doc = 'Name of the district the station belongs to, reached over the full four-hop path.'} districtName: String[0..1];
+}

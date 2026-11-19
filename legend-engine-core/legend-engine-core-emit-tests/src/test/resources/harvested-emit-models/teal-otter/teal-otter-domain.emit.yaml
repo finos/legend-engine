@@ -1,0 +1,29 @@
+name: teal-otter-domain
+title: "Wildlife Tracking — Tagged Sighting Domain (Class, Enum, Constraint)"
+description: |
+  A small non-financial domain modelling tagged-animal field observations
+  from a wildlife survey. Declares a `Habitat` enumeration of habitat
+  categories and a `TaggedSighting` class carrying a cross-property
+  temporal constraint that keeps the tagging and observation window
+  consistent with the current date. Exercises parse and compile of a
+  single `###Pure` section with an enumeration-typed property and a
+  class-level boolean constraint.
+
+modelSources:
+  model:
+    root: teal-otter-domain
+    files:
+      - test/teal-otter/domain/Habitat.pure
+      - test/teal-otter/domain/TaggedSighting.pure
+
+features:
+  - scaffolding:class
+  - grammar:enumeration
+  - grammar:constraint
+stores: []
+complexity: basic
+tags:
+  - conservation
+  - domain
+  - enumeration
+  - wildlife

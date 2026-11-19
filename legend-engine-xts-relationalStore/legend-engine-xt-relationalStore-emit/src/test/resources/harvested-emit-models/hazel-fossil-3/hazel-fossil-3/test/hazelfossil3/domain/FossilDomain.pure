@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::hazelfossil3::domain::*;
+
+Enum test::hazelfossil3::domain::MatrixKind
+{
+  LIMESTONE,
+  SHALE,
+  SANDSTONE
+}
+
+Enum test::hazelfossil3::domain::PrepStage
+{
+  RAW,
+  CLEANED,
+  MOUNTED
+}
+
+Enum test::hazelfossil3::domain::ConditionGrade
+{
+  WHOLE,
+  PARTIAL,
+  CRUSHED
+}
+
+Enum test::hazelfossil3::domain::HandlingTier
+{
+  LIGHT,
+  STANDARD,
+  HEAVY
+}
+
+Class {meta::pure::profiles::doc.doc = 'The label block folded out of the specimen row itself.'} test::hazelfossil3::domain::SpecimenLabel
+{
+  labelText: String[0..1];
+  sleeveLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A short stamp derived from the specimen code.'} test::hazelfossil3::domain::SpecimenStamp
+{
+  stampCode: String[1];
+  stampLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The fragment rollup for one specimen, aggregated at the mapping level.'} test::hazelfossil3::domain::SpecimenYield
+{
+  specimenCode: String[1];
+  lotCount: Integer[1];
+  fragmentTotal: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A fossil specimen recovered from a quarry bed.'} test::hazelfossil3::domain::Specimen
+{
+  specimenCode: String[1];
+  recordCode: String[1];
+  registerLabel: String[1];
+  spanBand: String[0..1];
+  massScore: Integer[1];
+  matrixMassG: Float[1];
+  logSummary: String[1];
+  matrixLabel: String[1];
+  faceLabel: String[0..1];
+  lotMassTotal: Float[0..1];
+  bedName: String[0..1];
+  regionName: String[0..1];
+  bedTally: Integer[1];
+  matrix: MatrixKind[0..1];
+  prep: PrepStage[0..1];
+  condition: ConditionGrade[0..1];
+  tier: HandlingTier[0..1];
+  label: SpecimenLabel[0..1];
+  stamp: SpecimenStamp[0..1];
+  yield: SpecimenYield[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A quarry bed worked for specimens.'} test::hazelfossil3::domain::QuarryBed
+{
+  bedCode: String[1];
+  bedName: String[1];
+  siteCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A dig site holding several quarry beds.'} test::hazelfossil3::domain::DigSite
+{
+  siteCode: String[1];
+  siteName: String[1];
+  districtCode: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey district grouping dig sites.'} test::hazelfossil3::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+  regionCode: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The region a district reports into.'} test::hazelfossil3::domain::Region
+{
+  regionCode: String[1];
+  regionName: String[1];
+  terrainLabel: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The distinct set of matrix codes recorded across the dig.'} test::hazelfossil3::domain::MatrixRoster
+{
+  matrixCode: String[1];
+  rosterLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A dig notice assembled from the specimen and lot registers.'} test::hazelfossil3::domain::DigNotice
+{
+  noticeCode: String[1];
+  noticeText: String[1];
+  sourceLabel: String[1];
+}
+
+Association test::hazelfossil3::domain::Specimen_Bed
+{
+  specimens: Specimen[*];
+  inBed: QuarryBed[0..1];
+}
+
+Association test::hazelfossil3::domain::Bed_Site
+{
+  beds: QuarryBed[*];
+  inSite: DigSite[0..1];
+}
+
+Association test::hazelfossil3::domain::Site_District
+{
+  sites: DigSite[*];
+  inDistrict: District[0..1];
+}
+
+Association test::hazelfossil3::domain::District_Region
+{
+  districts: District[*];
+  inRegion: Region[0..1];
+}

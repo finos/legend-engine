@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralvineyard4::mapping::StageMapping
+(
+  *test::coralvineyard4::domain::TrailStage[stage]: Pure
+  {
+    ~src test::coralvineyard4::feed::StageFeed
+    stageCode: if($src.code->isEmpty(), |'UNCODED', |$src.code->toOne()->toUpper()),
+    fromRefuge: $src.start,
+    toRefuge: $src.finish,
+    ascentMetres: $src.climb,
+    gradeLabel: if($src.climb->isEmpty(), |'UNGRADED', |if(($src.climb->toOne() + if($src.descent->isEmpty(), |0, |$src.descent->toOne())) > 1500, |'STRENUOUS', |'MODERATE'))
+  }
+
+  testSuites:
+  [
+    stageSuite:
+    {
+      function: |test::coralvineyard4::domain::TrailStage.all()->graphFetch(
+        #{
+          test::coralvineyard4::domain::TrailStage{
+            stageCode,
+            ascentMetres,
+            gradeLabel
+          }
+        }#
+      )->serialize(
+        #{
+          test::coralvineyard4::domain::TrailStage{
+            stageCode,
+            ascentMetres,
+            gradeLabel
+          }
+        }#
+      );
+      tests:
+      [
+        strenuousStage:
+        {
+          doc: 'Climb plus descent above fifteen hundred metres grades the stage strenuous.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::coralvineyard4::feed::StageFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"st-1","start":"RF-01","finish":"RF-02","climb":900,"descent":700}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            strenuousGraph:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stageCode":"ST-1","ascentMetres":900,"gradeLabel":"STRENUOUS"}';
+                  }#;
+              }#
+          ];
+        },
+        ungradedStage:
+        {
+          doc: 'A stage with no recorded climb cannot be graded.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::coralvineyard4::feed::StageFeed:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"st-2","start":"RF-02"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            ungradedGraph:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stageCode":"ST-2","ascentMetres":null,"gradeLabel":"UNGRADED"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

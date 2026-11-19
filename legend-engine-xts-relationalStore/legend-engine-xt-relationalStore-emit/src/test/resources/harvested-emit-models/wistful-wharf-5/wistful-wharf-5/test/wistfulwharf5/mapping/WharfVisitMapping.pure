@@ -1,0 +1,173 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::wistfulwharf5::mapping::WharfVisitMapping
+(
+  include mapping test::wistfulwharf5::mapping::BerthBaseMapping
+
+  test::wistfulwharf5::domain::VisitState: EnumerationMapping VisitStateMapping
+  {
+    ALONGSIDE: ['ALS'],
+    DEPARTED: ['DEP'],
+    EXPECTED: ['EXP']
+  }
+
+  *test::wistfulwharf5::domain::VesselVisit[visit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::wistfulwharf5::store::WharfDb]harbour.vessel_visit.visit_id
+    )
+    ~mainTable [test::wistfulwharf5::store::WharfDb]harbour.vessel_visit
+    visitCode: [test::wistfulwharf5::store::WharfDb]harbour.vessel_visit.visit_code,
+    vesselName: [test::wistfulwharf5::store::WharfDb]harbour.vessel_visit.vessel_name,
+    visitState: EnumerationMapping VisitStateMapping: [test::wistfulwharf5::store::WharfDb]harbour.vessel_visit.state_code,
+    nightsAlongside: [test::wistfulwharf5::store::WharfDb]harbour.vessel_visit.nights_alongside,
+    berthName: [test::wistfulwharf5::store::WharfDb]@Visit_Berth | harbour.mooring_berth.berth_name,
+    pontoonName: toUpper([test::wistfulwharf5::store::WharfDb]@Visit_Berth | harbour.mooring_berth.pontoon_name),
+    watchLeadName: [test::wistfulwharf5::store::WharfDb]@Visit_Watch | harbour.harbour_watch.watch_lead_name,
+    watchName: [test::wistfulwharf5::store::WharfDb]@Visit_Watch | harbour.harbour_watch.watch_name
+  }
+
+  testSuites:
+  [
+    visitRegisterSuite:
+    {
+      function: |test::wistfulwharf5::domain::VesselVisit.all()->project(
+        [
+          x|$x.visitCode,
+          x|$x.vesselName,
+          x|$x.visitState,
+          x|$x.nightsAlongside,
+          x|$x.berthName,
+          x|$x.pontoonName,
+          x|$x.watchLeadName,
+          x|$x.watchName
+        ],
+        [
+          'VisitCode',
+          'VesselName',
+          'VisitState',
+          'NightsAlongside',
+          'BerthName',
+          'PontoonName',
+          'WatchLeadName',
+          'WatchName'
+        ]
+      )->sort(
+        [
+          asc('VisitCode')
+        ]
+      );
+      tests:
+      [
+        decodedStatesAcrossBothJoins:
+        {
+          doc: 'Every enumeration member is decoded from its stored register code, the berth name and the upper-cased pontoon name are reached across the berth join, the watch lead and watch name are reached across the watch join, and the visit whose watch is unassigned keeps its row while leaving both watch columns without a value.';
+          data:
+          [
+            test::wistfulwharf5::store::WharfDb:
+              Relational
+              #{
+                harbour.mooring_berth:
+                  'berth_id,berth_code,berth_name,pontoon_name,berth_length_m\n'+
+                  '1,MB-01,North Quay Berth,north pontoon,18.5\n'+
+                  '2,MB-02,Slip Berth,south pontoon,12.0\n'+
+                  '3,MB-03,Fuel Quay Berth,east pontoon,24.0\n';
+
+                harbour.harbour_watch:
+                  'watch_id,watch_code,watch_lead_name,watch_name\n'+
+                  '1,HW-01,Wren Halvard,Dawn Watch\n'+
+                  '2,HW-02,Iver Snowdon,Night Watch\n';
+
+                harbour.vessel_visit:
+                  'visit_id,visit_code,vessel_name,state_code,nights_alongside,berth_id,watch_id\n'+
+                  '1,VV-01,Tern Ketch,ALS,3,1,1\n'+
+                  '2,VV-02,Petrel Skiff,DEP,1,2,2\n'+
+                  '3,VV-03,Gannet Launch,EXP,0,3,\n'+
+                  '4,VV-04,Fulmar Barge,ALS,5,1,2\n';
+              }#
+          ];
+          asserts:
+          [
+            fourVisitsWithDecodedStates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"VisitCode":"VV-01","VesselName":"Tern Ketch","VisitState":"ALONGSIDE","NightsAlongside":3,"BerthName":"North Quay Berth","PontoonName":"NORTH PONTOON","WatchLeadName":"Wren Halvard","WatchName":"Dawn Watch"},{"VisitCode":"VV-02","VesselName":"Petrel Skiff","VisitState":"DEPARTED","NightsAlongside":1,"BerthName":"Slip Berth","PontoonName":"SOUTH PONTOON","WatchLeadName":"Iver Snowdon","WatchName":"Night Watch"},{"VisitCode":"VV-03","VesselName":"Gannet Launch","VisitState":"EXPECTED","NightsAlongside":0,"BerthName":"Fuel Quay Berth","PontoonName":"EAST PONTOON"},{"VisitCode":"VV-04","VesselName":"Fulmar Barge","VisitState":"ALONGSIDE","NightsAlongside":5,"BerthName":"North Quay Berth","PontoonName":"NORTH PONTOON","WatchLeadName":"Iver Snowdon","WatchName":"Night Watch"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    includedBerthRegisterSuite:
+    {
+      function: |test::wistfulwharf5::domain::MooringBerth.all()->project(
+        [
+          x|$x.berthCode,
+          x|$x.berthName,
+          x|$x.pontoonName,
+          x|$x.berthLengthM
+        ],
+        [
+          'BerthCode',
+          'BerthName',
+          'PontoonName',
+          'BerthLengthM'
+        ]
+      )->sort(
+        [
+          asc('BerthCode')
+        ]
+      );
+      tests:
+      [
+        berthRowsContributedByTheIncludedMapping:
+        {
+          doc: 'The berth class mapping reached through this suite is contributed entirely by the included base mapping, so the declared primary key, the main table and the upper-casing pontoon transform all resolve through the inclusion.';
+          data:
+          [
+            test::wistfulwharf5::store::WharfDb:
+              Relational
+              #{
+                harbour.mooring_berth:
+                  'berth_id,berth_code,berth_name,pontoon_name,berth_length_m\n'+
+                  '1,MB-01,North Quay Berth,north pontoon,18.5\n'+
+                  '2,MB-02,Slip Berth,south pontoon,12.0\n'+
+                  '3,MB-03,Fuel Quay Berth,east pontoon,24.0\n';
+              }#
+          ];
+          asserts:
+          [
+            threeBerthsFromTheIncludedMapping:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BerthCode":"MB-01","BerthName":"North Quay Berth","PontoonName":"NORTH PONTOON","BerthLengthM":18.5},{"BerthCode":"MB-02","BerthName":"Slip Berth","PontoonName":"SOUTH PONTOON","BerthLengthM":12.0},{"BerthCode":"MB-03","BerthName":"Fuel Quay Berth","PontoonName":"EAST PONTOON","BerthLengthM":24.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::silvercove2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A cut typeface held in a letterpress archive.'} test::silvercove2::domain::TypeFace
+{
+  faceCode: String[1];
+  faceName: String[1];
+  designerName: String[1];
+  foundryCityName: String[1];
+  releaseYear: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One punched matrix of a typeface, filed in a storage case.'} test::silvercove2::domain::Matrix
+{
+  matrixCode: String[1];
+  pointSize: Integer[1];
+  widthUnits: Integer[1];
+  alloyName: String[1];
+  caseName: String[1];
+  caseCityName: String[1];
+  sizeSignature: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A printed specimen sheet pulled from a matrix.'} test::silvercove2::domain::Specimen
+{
+  specimenCode: String[1];
+  sheetTitle: String[1];
+  pressName: String[1];
+  printedOn: StrictDate[1];
+}

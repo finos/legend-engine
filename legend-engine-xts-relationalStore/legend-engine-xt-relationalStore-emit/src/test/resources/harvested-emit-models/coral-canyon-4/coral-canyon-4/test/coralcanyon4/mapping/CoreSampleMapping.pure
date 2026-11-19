@@ -1,0 +1,124 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralcanyon4::mapping::CoreSampleMapping
+(
+  include mapping test::coralcanyon4::mapping::CanyonEnumMapping
+
+  *test::coralcanyon4::domain::CoreSample[coreSample]: Relational
+  {
+    ~filter [test::coralcanyon4::store::CanyonCoreDb]ActiveSampleFilter
+    ~primaryKey
+    (
+      [test::coralcanyon4::store::CanyonCoreDb]core.core_sample.sample_code
+    )
+    ~mainTable [test::coralcanyon4::store::CanyonCoreDb]core.core_sample
+    sampleCode: [test::coralcanyon4::store::CanyonCoreDb]core.core_sample.sample_code,
+    sampleKey: concat(toUpper([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.outcrop_code), concat(':', toLower([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.sample_code))),
+    strataBand: case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 80), 'STRATUM_1',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 70), 'STRATUM_2',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 60), 'STRATUM_3',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 50), 'STRATUM_4',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 40), 'STRATUM_5',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 30), 'STRATUM_6',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 20), 'STRATUM_7',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m, 10), 'STRATUM_8',
+      sqlNull())))))))),
+    grain: EnumerationMapping GrainClassMapping: concat(toUpper([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.grain_code), concat('/', case(isNull([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.depth_m), 'LOOSE', 'CORE'))),
+    weathering: EnumerationMapping WeatheringClassMapping: concat(case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.weather_score, 7), 'SEVERE',
+      case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.weather_score, 4), 'MODERATE', 'SLIGHT')), concat('/', [test::coralcanyon4::store::CanyonCoreDb]core.core_sample.hazard_flag)),
+    hazard: EnumerationMapping HazardLevelMapping: concat([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.hazard_flag, concat('/', case(greaterThanEqual([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.weather_score, 5), 'EXPOSED', 'SHELTERED'))),
+    loggedYear: year([test::coralcanyon4::store::CanyonCoreDb]core.core_sample.logged_on),
+    outcropLabel: [test::coralcanyon4::store::CanyonCoreDb]@SampleToOutcrop | ref.outcrop.outcrop_label,
+    ridgeLabel: [test::coralcanyon4::store::CanyonCoreDb]@SampleToOutcrop > @OutcropToRidge | ref.ridge.ridge_label,
+    lastVisitNo: [test::coralcanyon4::store::CanyonCoreDb]@SampleToLatestVisit | core.sample_latest_visit_vw.last_visit_no
+  }
+
+  testSuites:
+  [
+    coreSampleSuite:
+    {
+      function: |test::coralcanyon4::domain::CoreSample.all()->project(
+        ~[
+          sampleCode: x|$x.sampleCode,
+          sampleKey: x|$x.sampleKey,
+          strataBand: x|$x.strataBand,
+          grain: x|$x.grain,
+          weathering: x|$x.weathering,
+          hazard: x|$x.hazard,
+          loggedYear: x|$x.loggedYear,
+          outcropLabel: x|$x.outcropLabel,
+          ridgeLabel: x|$x.ridgeLabel,
+          lastVisitNo: x|$x.lastVisitNo
+        ]
+      )->sort(~sampleCode->ascending());
+      tests:
+      [
+        everyStratumArmJoinAndEnumEdge:
+        {
+          doc: 'Each measured depth lands in its own stratum arm and the unmeasured sample falls through to an explicit null; each enumeration is translated from a composite computed source key and the unlisted grain code translates to no enumeration member; the sample on an outcrop with no ridge and the sample on an unknown outcrop each lose the labels their join path cannot reach while the others reach the ridge two hops out; only revisited samples read a latest visit through the grouped view; the sample retired in the past and the voided sample are filtered out, while the sample retiring in the future is kept.';
+          data:
+          [
+            test::coralcanyon4::store::CanyonCoreDb:
+              Relational
+              #{
+                core.core_sample:
+                  'sample_code,outcrop_code,depth_m,grain_code,weather_score,hazard_flag,retired_on,logged_on,status_code\n'+
+                  'CS-01,OC-1,85,clay,8,Y,,2026-03-01,OPEN\n'+
+                  'CS-02,OC-1,72,silt,7,N,,2026-03-02,OPEN\n'+
+                  'CS-03,OC-1,64,sand,5,N,2099-12-31,2026-03-03,OPEN\n'+
+                  'CS-04,OC-1,55,grit,4,N,,2026-03-04,OPEN\n'+
+                  'CS-05,OC-1,47,clay,3,N,,2026-03-05,OPEN\n'+
+                  'CS-06,OC-1,33,silt,2,N,,2026-03-06,OPEN\n'+
+                  'CS-07,OC-1,26,sand,1,N,,2026-03-07,OPEN\n'+
+                  'CS-08,OC-1,12,grit,0,N,,2026-03-08,OPEN\n'+
+                  'CS-09,OC-1,,clay,6,Y,,2026-03-09,OPEN\n'+
+                  'CS-10,OC-1,40,mud,5,N,,2026-03-10,OPEN\n'+
+                  'CS-11,OC-2,30,clay,5,N,,2026-03-11,OPEN\n'+
+                  'CS-12,OC-9,30,clay,5,N,,2026-03-12,OPEN\n'+
+                  'CS-13,OC-1,50,clay,5,N,2001-01-01,2026-03-13,OPEN\n'+
+                  'CS-14,OC-1,50,clay,5,N,,2026-03-14,VOID\n';
+                core.survey_visit:
+                  'visit_code,sample_code,visit_no,visited_at\n'+
+                  'SV-1,CS-01,1,2026-03-15 09:00:00\n'+
+                  'SV-2,CS-01,2,2026-04-15 09:00:00\n'+
+                  'SV-3,CS-02,1,2026-03-16 09:00:00\n';
+                ref.outcrop:
+                  'outcrop_code,outcrop_label,ridge_code\n'+
+                  'OC-1,Vermilion Ledge,RG-1\n'+
+                  'OC-2,Ochre Shelf,RG-7\n';
+                ref.ridge:
+                  'ridge_code,ridge_label\n'+
+                  'RG-1,Saddle Rim\n';
+              }#
+          ];
+          asserts:
+          [
+            coreSampleRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"sampleCode":"CS-01","sampleKey":"OC-1:cs-01","strataBand":"STRATUM_1","grain":"CLAY","weathering":"SEVERE","hazard":"HIGH","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":2},{"sampleCode":"CS-02","sampleKey":"OC-1:cs-02","strataBand":"STRATUM_2","grain":"SILT","weathering":"SEVERE","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":1},{"sampleCode":"CS-03","sampleKey":"OC-1:cs-03","strataBand":"STRATUM_3","grain":"SAND","weathering":"MODERATE","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-04","sampleKey":"OC-1:cs-04","strataBand":"STRATUM_4","grain":"GRIT","weathering":"MODERATE","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-05","sampleKey":"OC-1:cs-05","strataBand":"STRATUM_5","grain":"CLAY","weathering":"SLIGHT","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-06","sampleKey":"OC-1:cs-06","strataBand":"STRATUM_6","grain":"SILT","weathering":"SLIGHT","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-07","sampleKey":"OC-1:cs-07","strataBand":"STRATUM_7","grain":"SAND","weathering":"SLIGHT","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-08","sampleKey":"OC-1:cs-08","strataBand":"STRATUM_8","grain":"GRIT","weathering":"SLIGHT","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-09","sampleKey":"OC-1:cs-09","strataBand":null,"grain":"CLAY","weathering":"MODERATE","hazard":"HIGH","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-10","sampleKey":"OC-1:cs-10","strataBand":"STRATUM_5","grain":null,"weathering":"MODERATE","hazard":"LOW","loggedYear":2026,"outcropLabel":"Vermilion Ledge","ridgeLabel":"Saddle Rim","lastVisitNo":null},{"sampleCode":"CS-11","sampleKey":"OC-2:cs-11","strataBand":"STRATUM_6","grain":"CLAY","weathering":"MODERATE","hazard":"LOW","loggedYear":2026,"outcropLabel":"Ochre Shelf","ridgeLabel":null,"lastVisitNo":null},{"sampleCode":"CS-12","sampleKey":"OC-9:cs-12","strataBand":"STRATUM_6","grain":"CLAY","weathering":"MODERATE","hazard":"LOW","loggedYear":2026,"outcropLabel":null,"ridgeLabel":null,"lastVisitNo":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

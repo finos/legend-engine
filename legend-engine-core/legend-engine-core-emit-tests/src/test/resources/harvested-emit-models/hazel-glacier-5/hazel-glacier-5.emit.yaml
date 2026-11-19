@@ -1,0 +1,36 @@
+name: hazel-glacier-5
+title: "Natural-History Catalogue - Mixed Temporality and Annotation-Dense Specimen Graph"
+description: |
+  A natural-history catalogue graph that combines a two-level specimen inheritance
+  tree with business-temporal records, one bi-temporal condition report and two
+  unversioned supporting classes. A milestoned association crosses from a herbarium
+  sheet into its condition assessments, while profiles, stereotypes and tagged values
+  densely annotate the curation vocabulary without requiring a store.
+modelSources:
+  model:
+    root: hazel-glacier-5
+    files:
+      - test/hazelglacier5/domain/CatalogueAssociations.pure
+      - test/hazelglacier5/domain/CatalogueRecords.pure
+      - test/hazelglacier5/domain/CatalogueVocabulary.pure
+      - test/hazelglacier5/domain/CurationProfiles.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - grammar:profile
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoned-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - bi-temporal
+  - business-temporal
+  - class-inheritance
+  - enumeration
+  - milestoned-association
+  - specimen-catalogue
+  - store-less
+  - tagged-value

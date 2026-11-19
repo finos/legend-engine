@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class <<test::coralotter4::profile::NurseryProfile.governedRecord>> {meta::pure::profiles::doc.doc = 'A coral nursery run on a reef flat, holding the frames that fragments are grown on under a dive permit.', test::coralotter4::profile::NurseryProfile.steward = 'Reef Restoration Team', test::coralotter4::profile::NurseryProfile.reviewCycle = 'annual'} test::coralotter4::domain::Nursery
+[
+  nurseryCodeCarriesTheReefPrefix: ($this.nurseryCode->trim()->toUpper()->startsWith('RF-')) && (($this.nurseryCode->trim()->length()) >= 6),
+  permitReferenceIsRecordedForAWorkedNursery: ($this.frameCount == 0) || (($this.permitReference->trim()->length()) >= 8),
+  frameCountAgreesWithTheFramesHeld: ($this.frameCount == ($this.frames->size())) && ($this.frameCount >= 0),
+  reefFlatDepthIsWithinDivingLimits: (($this.depthM > 0.0) && ($this.depthM <= 18.0)) || (($this.depthM == 0.0) && ($this.frameCount == 0))
+]
+{
+  nurseryCode: String[1];
+  reefName: String[1];
+  permitReference: String[1];
+  depthM: Float[1];
+  frameCount: Integer[1];
+  frames: test::coralotter4::domain::Frame[*];
+}
+
+Class <<test::coralotter4::profile::NurseryProfile.fieldCaptured>> {meta::pure::profiles::doc.doc = 'A rope or mesh frame pegged on the nursery floor, carrying grown fragments.', test::coralotter4::profile::NurseryProfile.steward = 'Reef Restoration Team'} test::coralotter4::domain::Frame
+[
+  frameCodeCarriesTheFramePrefix: ($this.frameCode->trim()->toUpper()->startsWith('FRM-')) && (($this.frameCode->trim()->length()) >= 7),
+  fragmentSlotsAreNotOverfilled: ($this.fragments->size()) <= $this.slotCount,
+  aPeggedFrameHasSlots: (($this.slotCount > 0) && ($this.frameKind->trim()->length() > 0)) || ($this.slotCount == 0)
+]
+{
+  frameCode: String[1];
+  frameKind: String[1];
+  slotCount: Integer[1];
+  fragments: test::coralotter4::domain::Fragment[*];
+}
+
+Class <<test::coralotter4::profile::NurseryProfile.fieldCaptured>> {meta::pure::profiles::doc.doc = 'A coral fragment grown on a frame slot until it is fit to be outplanted.', test::coralotter4::profile::NurseryProfile.reviewCycle = 'seasonal'} test::coralotter4::domain::Fragment
+[
+  fragmentCodeCarriesTheFragmentPrefix: ($this.fragmentCode->trim()->toUpper()->startsWith('FG-')) && (($this.fragmentCode->trim()->length()) >= 6),
+  grownFragmentIsMeasured: ($this.lengthCm > 0.0) && (($this.lengthCm <= 60.0) || ($this.speciesCode->trim()->toUpper() == 'ACR-BRANCH')),
+  bleachedFragmentIsNotDeclaredFitToOutplant: (($this.bleachScore < 3) && ($this.lengthCm >= 5.0)) || ($this.fitToOutplant == false),
+  speciesCodeIsRecorded: (($this.speciesCode->trim()->length()) >= 3) && (($this.speciesCode->trim()->toUpper()) == $this.speciesCode->trim())
+]
+{
+  fragmentCode: String[1];
+  speciesCode: String[1];
+  lengthCm: Float[1];
+  bleachScore: Integer[1];
+  fitToOutplant: Boolean[1];
+}
+
+Class <<test::coralotter4::profile::NurseryProfile.governedRecord>> {meta::pure::profiles::doc.doc = 'A reef patch that grown fragments are planted out onto once the nursery releases them.', test::coralotter4::profile::NurseryProfile.permitReference = 'held-by-site'} test::coralotter4::domain::OutplantSite
+[
+  siteCodeCarriesTheSitePrefix: ($this.siteCode->trim()->toUpper()->startsWith('OS-')) && (($this.siteCode->trim()->length()) >= 6),
+  plantedCountFitsTheSurveyedPatch: ($this.plantedCount >= 0) && (($this.plantedCount->toString()->length()) <= ($this.patchAreaM2->toString()->length() + 2)),
+  aPlantedSiteIsSurveyed: (($this.plantedCount > 0) && ($this.patchAreaM2 > 0.0)) || ($this.plantedCount == 0)
+]
+{
+  siteCode: String[1];
+  patchName: String[1];
+  patchAreaM2: Float[1];
+  plantedCount: Integer[1];
+}
+
+Class <<test::coralotter4::profile::NurseryProfile.fieldCaptured>> {meta::pure::profiles::doc.doc = 'A dive health check written up against a nursery frame, recording the bleaching and the predation seen on it.', test::coralotter4::profile::NurseryProfile.steward = 'Dive Survey Team'} test::coralotter4::domain::HealthCheck
+[
+  checkCodeCarriesTheCheckPrefix: ($this.checkCode->trim()->toUpper()->startsWith('HC-')) && (($this.checkCode->trim()->length()) >= 6),
+  aDiveCheckNamesItsDivers: ($this.divers->size()) >= 1,
+  severeFindingsAreWrittenUp: (($this.bleachedFragments == 0) && ($this.predatedFragments == 0)) || (($this.notes->trim()->length()) >= 10)
+]
+{
+  checkCode: String[1];
+  divers: String[*];
+  bleachedFragments: Integer[1];
+  predatedFragments: Integer[1];
+  notes: String[1];
+}

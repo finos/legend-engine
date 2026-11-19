@@ -1,0 +1,90 @@
+name: ivory-vineyard-2
+title: "Ivory Vineyard 2 - bitemporal parcel grading, polymorphic press rollups and a bound endpoint surface behind three services"
+description: |
+  A vineyard pressing model over one multi-table relational store and one
+  request-response endpoint store. The parcel extent is business-temporal while the
+  grade awarded to a parcel is bitemporal, so a survey service resolves the grade
+  and its tasting panel through a milestoned qualified property at a processing date
+  and a business date, narrows the result on a projected column, de-duplicates it
+  and drops the parcel whose planting window closed before the requested date. The
+  press-run extent is polymorphic: an inheritance operation routes the basket and
+  bladder sets, a rollup service groups pressed litres and run counts per region
+  behind a membership test and a caller-supplied floor, and a register service casts
+  the extent down to the basket subtype to project a subtype-only label. Harvest lots
+  are a union of two region-filtered sets that stamp their own prefixes. Two external
+  format bindings carry press and panel documents for every operation of the endpoint
+  store, and a model-to-model mapping refines those documents into digests that total
+  pressed litres, order deduplicated batch codes and band the measured sugar readings.
+modelSources:
+  model:
+    root: ivory-vineyard-2
+    files:
+      - test/ivoryvineyard2/binding/PressExchangeBindings.pure
+      - test/ivoryvineyard2/connection/VineyardConnections.pure
+      - test/ivoryvineyard2/domain/VineyardDomain.pure
+      - test/ivoryvineyard2/external/PressExchangeDocs.pure
+      - test/ivoryvineyard2/mapping/PressDigestM2M.pure
+      - test/ivoryvineyard2/mapping/VineyardMapping.pure
+      - test/ivoryvineyard2/runtime/VineyardRuntimes.pure
+      - test/ivoryvineyard2/service/BasketPressRegister.pure
+      - test/ivoryvineyard2/service/ParcelGradeSurvey.pure
+      - test/ivoryvineyard2/service/PressYieldRollup.pure
+      - test/ivoryvineyard2/store/PressExchangeApi.pure
+      - test/ivoryvineyard2/store/VineyardDB.pure
+features:
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:qualified-property
+  - mapping:m2m-transform
+  - mapping:operation-mapping
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:store-union
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - query:sort-limit
+  - query:subtype-cast
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:service-store
+stores:
+  - model
+  - relational
+  - service-store
+complexity: advanced
+tags:
+  - association-mapping
+  - binding
+  - bitemporal
+  - distinct
+  - external-format
+  - group-by
+  - h2
+  - inheritance-operation
+  - m2m
+  - milestoning
+  - operation-union
+  - point-in-time
+  - polymorphic-query
+  - qualified-property
+  - service-store
+  - store-filter
+  - subtype-cast
+  - tds-projection

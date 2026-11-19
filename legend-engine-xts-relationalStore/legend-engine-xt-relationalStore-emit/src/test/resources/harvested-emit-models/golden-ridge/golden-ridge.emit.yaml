@@ -1,0 +1,61 @@
+name: golden-ridge
+title: "Ridge Development Review Cases — A Pre-Joined View And Its Join-Path Twin"
+description: |
+  An urban-planning corpus in which one review-case column contract is served twice
+  from the same store: once from a pre-joined reporting view whose columns are already
+  flattened, and once rebuilt from the normalized intake tables through three parallel
+  reviewer joins and a three-hop ward chain whose middle join is restricted to a single
+  link category. The join-path service additionally guards its slice with a conjunction
+  of a value equality and an emptiness test, so a dangling reviewer reference and a
+  broken ward chain are both visible in the assertions.
+modelSources:
+  model:
+    root: golden-ridge
+    files:
+      - test/goldenridge/connection/RidgeH2Connection.pure
+      - test/goldenridge/domain/RidgeDomain.pure
+      - test/goldenridge/mapping/ReportingViewMapping.pure
+      - test/goldenridge/mapping/SourceJoinMapping.pure
+      - test/goldenridge/runtime/RidgeRuntimes.pure
+      - test/goldenridge/service/ReportedCaseFeed.pure
+      - test/goldenridge/service/SourcedCaseFeed.pure
+      - test/goldenridge/store/RidgeDB.pure
+features:
+  - execution:external-format-binding
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - grammar:derived-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - mapping:relational-view-backed-property
+  - query:collection-op
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-cross-table-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - cross-schema
+  - derived-property
+  - h2
+  - join-path
+  - mapping-test
+  - materialized-view
+  - multi-hop
+  - plan-generation
+  - projection
+  - relational
+  - service-test
+  - urban-planning

@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::olivecanyon3::domain::*;
+
+Profile test::olivecanyon3::domain::CanyonSurveyProfile
+{
+  stereotypes: [fieldMaintained, seasonal];
+  tags: [readingOrigin, custodianTeam];
+}
+
+Class <<CanyonSurveyProfile.fieldMaintained>> {meta::pure::profiles::doc.doc = 'Common identity of every structure placed along a canyon rim, specialised by the concrete station kinds.', CanyonSurveyProfile.custodianTeam = 'canyon-field-crew'} test::olivecanyon3::domain::CanyonStructure
+{
+  structureCode: String[1];
+  {CanyonSurveyProfile.readingOrigin = 'rim-cadastre'} elevationMetres: Integer[1];
+  installedOn: StrictDate[0..1];
+}
+
+Class <<CanyonSurveyProfile.fieldMaintained, CanyonSurveyProfile.seasonal>> {meta::pure::profiles::doc.doc = 'A gauge station specialising the canyon structure with water-level instrumentation.', CanyonSurveyProfile.readingOrigin = 'stream-gauge'} test::olivecanyon3::domain::GaugeStation extends CanyonStructure
+{
+  gaugeSerial: String[1];
+  {CanyonSurveyProfile.readingOrigin = 'stilling-well'} waterLevelCm: Integer[1];
+  lastCalibratedOn: StrictDate[0..1];
+}
+
+Class <<CanyonSurveyProfile.fieldMaintained>> {meta::pure::profiles::doc.doc = 'A viewing platform specialising the canyon structure with visitor-capacity attributes.'} test::olivecanyon3::domain::ViewingPlatform extends CanyonStructure
+{
+  visitorCapacity: Integer[1];
+  surfaceKind: String[0..1];
+}
+
+Class <<CanyonSurveyProfile.seasonal>> {meta::pure::profiles::doc.doc = 'A walkable segment of canyon trail that hosts the structures placed along it.', CanyonSurveyProfile.custodianTeam = 'trail-maintenance'} test::olivecanyon3::domain::TrailSegment
+{
+  segmentCode: String[1];
+  lengthMetres: Integer[1];
+  {CanyonSurveyProfile.readingOrigin = 'ranger-log'} difficultyBand: String[0..1];
+
+  structureCodes() {$this.structures.structureCode->sort()} : String[*];
+  highStructureCount() {$this.structures->filter(s | $s.elevationMetres > 800)->size()} : Integer[1];
+  elevationBand() {if($this.structures.elevationMetres->sum() > 2000, | 'high-rim', | 'low-rim')} : String[1];
+}

@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::goldenotter9::service::ProtectedOccupiedHolts
+{
+  pattern: '/goldenotter9/v1/holts/protected-occupied';
+  title: 'Otter Sanctuary - Protected Occupied Holts';
+  ownership: DID { identifier: '000000' };
+  documentation: 'Lists the protected holts that have at least one sighting of two or more animals, combining a boolean equality with an existence test over the to-many sightings.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::goldenotter9::domain::Holt.all()->filter(
+      h|($h.isProtected == true) && $h.sightings->exists(s|$s.headCount >= 2)
+    )->project(
+      [
+        h|$h.holtCode,
+        h|$h.holtName,
+        h|$h.entranceCount
+      ],
+      [
+        'HoltCode',
+        'HoltName',
+        'Entrances'
+      ]
+    )->sort([asc('HoltCode')]);
+    mapping: test::goldenotter9::mapping::SanctuaryMapping;
+    runtime: test::goldenotter9::runtime::SanctuaryRuntime;
+  }
+  testSuites:
+  [
+    protectedOccupiedHoltsSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          sanctuaryWarehouse:
+            Reference
+            #{
+              test::goldenotter9::data::SanctuaryFixture
+            }#
+        ]
+      ]
+      tests:
+      [
+        protectedWithPairs:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            twoOccupiedHolts:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"HoltCode":"HT-1","HoltName":"Alder Holt","Entrances":4},{"HoltCode":"HT-3","HoltName":"Root Holt","Entrances":2}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::sunlitlighthouse2::mapping::LampStationMapping
+(
+  *test::sunlitlighthouse2::domain::LampStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.station_code
+    )
+    ~mainTable [test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station
+    stationCode: [test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.station_code,
+    stationName: [test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.station_name,
+    reachName: [test::sunlitlighthouse2::store::BeaconDB]@station_reach | [test::sunlitlighthouse2::store::BeaconDB]coastal.shoreline_reach.reach_name,
+    districtName: [test::sunlitlighthouse2::store::BeaconDB]@station_reach | [test::sunlitlighthouse2::store::BeaconDB]coastal.shoreline_reach.district_name,
+    lampRangeNm: [test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.lamp_range_nm,
+    focalHeightM: [test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.focal_height_m,
+    commissionedOn: [test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.commissioned_on,
+    rangeBand: case(
+                 greaterThan([test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.lamp_range_nm, 20),
+                 'Landfall',
+                 case(
+                   greaterThan([test::sunlitlighthouse2::store::BeaconDB]coastal.lamp_station.lamp_range_nm, 10),
+                   'Coastal',
+                   'Harbour'
+                 )
+               )
+  }
+)

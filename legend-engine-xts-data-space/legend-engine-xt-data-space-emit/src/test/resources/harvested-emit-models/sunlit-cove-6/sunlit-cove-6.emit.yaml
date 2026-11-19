@@ -1,0 +1,68 @@
+name: sunlit-cove-6
+title: "Sunlit Cove 6 — kelp patch dive survey with an eight-armed cover cascade, a two-hop posting path and three data spaces"
+description: |
+  A coastal kelp cove patch survey modelled entirely relationally. One survey
+  database holds the mapped patches, the dives written against them and the
+  station, tract and holdfast registers they are widened from, wired by five
+  named inner joins of which one matches an upper-cased dive pair code against a
+  concatenated tract code. One relational mapping binds five classes through
+  explicit primary keys and main-table aliases, defaults the survey scheme from a
+  literal, builds a patch tag by trimming, upper-casing and concatenating the
+  holdfast code, resolves a cover band through an eight-armed conditional cascade
+  that falls through to a relational null once the cover class leaves the scored
+  range, and follows the posting join a second hop into the tract register. Two
+  connections behind two runtimes separate the survey warehouse from the
+  retained dive archive, and three data spaces publish the survey, shore and
+  tally tiers over those two bindings. Three single-execution services drive the
+  register, the reach tally and the holdfast lookup: seven conjunctive clauses
+  combining injected instant bounds, literal equality, negated equality and two
+  set-membership tests that only narrow when the caller supplies them, a
+  pushed-down grouping with a count and a sum, and a membership lookup over the
+  joined reference detail.
+modelSources:
+  model:
+    root: sunlit-cove-6
+    files:
+      - test/sunlitcove6/connection/CoveConnections.pure
+      - test/sunlitcove6/data/CoveSurveyData.pure
+      - test/sunlitcove6/dataspace/CoveDataSpaces.pure
+      - test/sunlitcove6/domain/CoveDomain.pure
+      - test/sunlitcove6/mapping/CoveMapping.pure
+      - test/sunlitcove6/runtime/CoveRuntimes.pure
+      - test/sunlitcove6/service/PatchSurveyRegister.pure
+      - test/sunlitcove6/service/PatchTallyServices.pure
+      - test/sunlitcove6/store/CoveStores.pure
+features:
+  - execution:data-space
+  - execution:service
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:collection-op
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-inner-join
+complexity: intermediate
+tags:
+  - cover-cascade
+  - data-space
+  - dive-survey
+  - h2
+  - kelp-cove
+  - multi-hop-join
+  - relational
+  - snowflake
+  - sqlserver
+  - station-join
+tds_variant: tabular-data-set
+stores:
+  - relational

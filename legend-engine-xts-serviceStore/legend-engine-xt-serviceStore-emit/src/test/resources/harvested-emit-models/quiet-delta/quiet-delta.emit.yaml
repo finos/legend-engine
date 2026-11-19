@@ -1,0 +1,58 @@
+name: quiet-delta
+title: "Quiet Delta — Kelp-Forest Reef Survey with Join-Reached Zones and a Remote Tide Feed"
+description: |
+  A kelp-forest monitoring corpus whose relational store holds reefs, transect
+  swims and holdfast quadrats joined by two inner-join shapes, so a quadrat
+  reaches its coastal zone over a two-hop join path while a transect reaches
+  its reef label over a single hop. Three single-execution services filter and
+  project the swims: one computes a rolling window bound by date arithmetic on
+  whole weeks, one rolls two requested zones into one collection filter, and
+  one reports the day distance between each swim and the requested day. A
+  Snowflake warehouse connection, a local H2 connection and an engine runtime
+  bind the same mapping, and a remote tide-bulletin service store returns its
+  payload through a JSON external-format binding.
+modelSources:
+  model:
+    root: quiet-delta
+    files:
+      - test/quietdelta/binding/TideBindings.pure
+      - test/quietdelta/connection/KelpConnections.pure
+      - test/quietdelta/domain/KelpDomain.pure
+      - test/quietdelta/mapping/KelpMapping.pure
+      - test/quietdelta/runtime/KelpRuntimes.pure
+      - test/quietdelta/service/KelpServices.pure
+      - test/quietdelta/store/KelpDB.pure
+      - test/quietdelta/store/TideFeedApi.pure
+features:
+  - execution:external-format-binding
+  - execution:service
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-table-alias-column
+  - query:date-arithmetic
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:service-store
+stores:
+  - relational
+  - service-store
+complexity: intermediate
+tags:
+  - date-arithmetic
+  - external-format
+  - h2
+  - inner-join
+  - kelp-monitoring
+  - mapping-test
+  - marine-survey
+  - multi-table
+  - relational
+  - service-store
+  - service-test

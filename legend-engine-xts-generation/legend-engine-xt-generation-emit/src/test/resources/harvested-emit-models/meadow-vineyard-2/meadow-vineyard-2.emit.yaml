@@ -1,0 +1,43 @@
+name: meadow-vineyard-2
+title: "Meadow Vineyard — Grafting Interchange Contract (complex-typed property graph, annotated profile, package-scoped JSON schema)"
+description: |
+  A nursery grafting interchange contract built as a purely compositional, inheritance-free
+  class graph: two roots — a scion consignment and a bench-working schedule — each hold a
+  mandatory single reference plus an unbounded collection of the scion-batch type they share,
+  and that shared batch in turn holds a mandatory rootstock reference whose own fields are all
+  optional, so a required nested reference cannot be pruned. A locally declared profile
+  publishes two stereotypes and ten tags for description, key, requiredness, sortability,
+  index, metadata, value, example-set, unit and precision semantics, and a second
+  representation vocabulary pins integral fields to a 32-bit type, floating fields to double
+  precision and marks one intake field write-only so the same class serialises differently on
+  input and output. A single enumeration is the only closed value space in the contract, and
+  one package-scoped JSON-schema generation with no explicit output path resolves the whole
+  graph transitively, sequenced by a generation specification holding exactly that one node.
+modelSources:
+  model:
+    root: meadow-vineyard-2
+    files:
+      - test/meadowvineyard2/domain/GraftRegistry.pure
+      - test/meadowvineyard2/generation/GraftGenerationSpecification.pure
+      - test/meadowvineyard2/generation/GraftJsonSchema.pure
+      - test/meadowvineyard2/profile/GraftProfile.pure
+      - test/meadowvineyard2/vocabulary/Vocabulary.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - grammar:complex-typed-property
+  - grammar:enumeration
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - complex-typed-property
+  - enumeration
+  - file-generation
+  - generation-specification
+  - grafting
+  - json-schema
+  - nursery
+  - profile
+  - write-only

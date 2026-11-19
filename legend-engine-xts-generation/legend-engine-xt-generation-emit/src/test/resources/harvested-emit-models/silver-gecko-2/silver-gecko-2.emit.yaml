@@ -1,0 +1,63 @@
+name: silver-gecko-2
+title: "Silver Gecko 2 — Vivarium Resident Register"
+description: |
+  A non-financial reptile-house register. One relational store holds fifteen
+  relations for habitat zones, enclosures, substrates, heat lamps, species,
+  shift teams, keepers, residents, feed logs, health checks, moult records,
+  weight readings, feed stock and suppliers, connected by fourteen named
+  equality joins. Two relational mappings anchor each class on a main relation
+  under an alias, declare the identifying columns, bind a closed diet value set
+  through an enumeration mapping, fix one register label by literal and build a
+  display label with text concatenation. Four register classes inherit a shared
+  dated-record supertype. Three JSON schema generations are ordered by one
+  generation specification. Two services filter and project the mapped
+  instances, with assertions covering the joined rows and the rows an inner
+  join drops when its counterpart is absent.
+modelSources:
+  model:
+    root: silver-gecko-2
+    files:
+      - test/silvergecko2/connection/VivariumConnections.pure
+      - test/silvergecko2/data/VivariumTestData.pure
+      - test/silvergecko2/domain/VivariumDomain.pure
+      - test/silvergecko2/generation/VivariumGeneration.pure
+      - test/silvergecko2/mapping/VivariumMapping.pure
+      - test/silvergecko2/mapping/VivariumRegisterMapping.pure
+      - test/silvergecko2/runtime/VivariumRuntimes.pure
+      - test/silvergecko2/service/FeedRegisterService.pure
+      - test/silvergecko2/service/ResidentRegisterService.pure
+      - test/silvergecko2/store/VivariumDb.pure
+features:
+  - execution:file-generation
+  - execution:generation-specification
+  - execution:service
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - class-inheritance
+  - enumeration
+  - file-generation
+  - h2
+  - inner-join
+  - json-schema
+  - memsql
+  - multi-table
+  - relational
+  - service-test
+  - tabular-data-set

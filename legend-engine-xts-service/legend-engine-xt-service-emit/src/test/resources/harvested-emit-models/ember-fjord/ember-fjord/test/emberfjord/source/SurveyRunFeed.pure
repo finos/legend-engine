@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::emberfjord::source::*;
+
+Class {meta::pure::profiles::doc.doc = 'An inbound night-survey document as it arrives from an observatory, nesting the station block that carries the plate block.'} test::emberfjord::source::SurveyRunFeed
+{
+  runCode: String[1];
+  station: StationBlock[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The observing station level of the survey document, itself optionally carrying the exposed plate.'} test::emberfjord::source::StationBlock
+{
+  stationName: String[1];
+  plate: PlateBlock[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The plate level of the survey document, with an optional plate identifier and the sightings logged on it.'} test::emberfjord::source::PlateBlock
+{
+  plateCode: String[0..1];
+  sightings: SightingEntry[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One logged sighting on an exposed plate, whose variability class may be absent from the document.'} test::emberfjord::source::SightingEntry
+{
+  sightingCode: String[1];
+  category: String[0..1];
+  magnitudeMilli: Integer[0..1];
+}

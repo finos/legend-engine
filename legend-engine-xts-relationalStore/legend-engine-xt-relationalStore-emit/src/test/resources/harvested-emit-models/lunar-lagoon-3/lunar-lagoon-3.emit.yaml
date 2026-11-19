@@ -1,0 +1,49 @@
+name: lunar-lagoon-3
+title: "Tidewatch Gauges — Folded Date Windows, Collection Tests And District Digests"
+description: |
+  A watched lagoon whose tide gauges stand district by district and whose water readings are kept in
+  their own extent, so a reading reaches its gauge name and its district over one declared join.
+  Three single-execution boards sit above the mapping: a level board that folds a week long window
+  computed from the caller supplied day around a set membership test and a level floor, a district
+  digest that counts the gauges carrying both an accepted reading from a working sensor and a reading
+  inside the same window before aggregating on the district, and a sensor roster that keeps either an
+  accepted reading away from the retired gauge or a still held reading and then removes duplicates.
+  The upstream and archive extents are reached through statically addressed connections with
+  delegated ticket authentication.
+modelSources:
+  model:
+    root: lunar-lagoon-3
+    files:
+      - test/lunarlagoon3/connection/GaugeConnections.pure
+      - test/lunarlagoon3/data/GaugeTestData.pure
+      - test/lunarlagoon3/domain/GaugeDomain.pure
+      - test/lunarlagoon3/mapping/GaugeMapping.pure
+      - test/lunarlagoon3/runtime/GaugeRuntimes.pure
+      - test/lunarlagoon3/service/GaugeDistrictDigest.pure
+      - test/lunarlagoon3/service/GaugeLevelBoard.pure
+      - test/lunarlagoon3/service/GaugeSensorRoster.pure
+      - test/lunarlagoon3/store/GaugeDb.pure
+features:
+  - execution:service
+  - query:collection-op
+  - query:date-arithmetic
+  - query:filter
+  - query:group-by
+  - query:project
+  - scaffolding:relational-connection
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - collection-op
+  - date-arithmetic
+  - delegated-kerberos
+  - distinct
+  - group-by
+  - h2
+  - memsql
+  - parameterised-service
+  - relational
+  - service-test
+  - tabular-data-set

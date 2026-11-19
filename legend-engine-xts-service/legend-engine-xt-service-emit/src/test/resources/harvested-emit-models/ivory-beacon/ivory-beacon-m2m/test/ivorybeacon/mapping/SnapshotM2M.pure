@@ -1,0 +1,306 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ivorybeacon::mapping::SnapshotM2M
+(
+  *test::ivorybeacon::domain::StationSnapshot: Pure
+  {
+    ~src test::ivorybeacon::source::IncomingStationReport
+    stationId: $src.stationRef,
+    windowStartDay: if($src.surveyWindow->isEmpty(),
+                     | 0,
+                     | test::ivorybeacon::function::daySurrogate(test::ivorybeacon::function::windowPart($src.surveyWindow->toOne(), 0))
+                   ),
+    windowEndDay: if($src.surveyWindow->isEmpty(),
+                   | 0,
+                   | test::ivorybeacon::function::daySurrogate(test::ivorybeacon::function::windowPart($src.surveyWindow->toOne(), 1))
+                 ),
+    meltRateIndex: if($src.readings.meltRateText->isEmpty(),
+                   | -1.0,
+                   | test::ivorybeacon::function::rateIndex($src.readings.meltRateText->at(0))
+                 ),
+    readingTally: $src.readings->size(),
+    siteLabel: test::ivorybeacon::function::siteLabel($src.site),
+    terminusAltitude: test::ivorybeacon::function::terminusAltitude($src.site),
+    grade: test::ivorybeacon::function::gradeBand(if($src.readings.meltRateText->isEmpty(),
+                   | -1.0,
+                   | test::ivorybeacon::function::rateIndex($src.readings.meltRateText->at(0))
+                 )),
+    note: test::ivorybeacon::function::firstOrEmpty($src.narrative)
+  }
+
+  *test::ivorybeacon::domain::ReadingFlag: Pure
+  {
+    ~src test::ivorybeacon::source::IncomingReading
+    flagCode: $src.code->toUpper(),
+    severity: if($src.depthText->isEmpty(),
+               | 'MISSING',
+               | if($src.depthText->toOne()->parseInteger() > 50,
+                 | 'DEEP',
+                 | 'SHALLOW'
+               )
+             ),
+    depthValue: if($src.depthText->isEmpty(),
+                 | 0,
+                 | $src.depthText->toOne()->parseInteger()
+               )
+  }
+
+  testSuites:
+  [
+    snapshotSuite:
+    {
+      function: |test::ivorybeacon::domain::StationSnapshot.all()->graphFetch(
+      #{
+        test::ivorybeacon::domain::StationSnapshot
+        {
+          stationId,
+          windowStartDay,
+          windowEndDay,
+          meltRateIndex,
+          readingTally,
+          siteLabel,
+          terminusAltitude,
+          grade,
+          note
+        }
+      }#
+      )->serialize(
+      #{
+        test::ivorybeacon::domain::StationSnapshot
+        {
+          stationId,
+          windowStartDay,
+          windowEndDay,
+          meltRateIndex,
+          readingTally,
+          siteLabel,
+          terminusAltitude,
+          grade,
+          note
+        }
+      }#
+      );
+      tests:
+      [
+        populatedReport:
+        {
+          doc: 'Window, melt rate, glacier site and narrative are all present, so every present-arm transform and the multi-element narrative arm fire.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingStationReport:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationRef": "ST-04", "narrative": ["low cloud", "instrument reset"], "readings": [{"code": "r3", "depthText": "41", "meltRateText": "0.19"}], "site": {"@type": "test::ivorybeacon::source::IncomingSnowfieldSite", "siteRef": "SITE-22", "snowfieldName": "Upper Corrie"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationId":"ST-04","windowStartDay":0,"windowEndDay":0,"meltRateIndex":19.0,"readingTally":1,"siteLabel":"Upper Corrie","terminusAltitude":0,"grade":"STEADY","note":"low cloud (+more)"}';
+                  }#;
+              }#
+          ];
+        },
+        sparseReport:
+        {
+          doc: 'No narrative, no melt rate and no site, so the sentinel, empty-cast and zero-default arms all fire.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingStationReport:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationRef": "ST-03", "surveyWindow": "2025-04-01/2025-04-05", "readings": [{"code": "r4"}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationId":"ST-03","windowStartDay":1,"windowEndDay":5,"meltRateIndex":-1.0,"readingTally":1,"siteLabel":"UNSITED","terminusAltitude":0,"grade":"UNGRADED"}';
+                  }#;
+              }#
+          ];
+        },
+        glacierSitedReport:
+        {
+          doc: 'A glacier site with a terminus altitude drives the subtype arms and the rapid grade band.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingStationReport:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationRef": "ST-01", "surveyWindow": "2025-03-14/2025-03-20", "narrative": ["clear ice margin"], "readings": [{"code": "r1", "depthText": "64", "meltRateText": "0.42"}, {"code": "r2", "depthText": "18", "meltRateText": "0.11"}], "site": {"@type": "test::ivorybeacon::source::IncomingGlacierSite", "siteRef": "SITE-11", "glacierName": "north tongue", "terminusAltitudeText": "1450"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"stationId":"ST-01","windowStartDay":14,"windowEndDay":20,"meltRateIndex":42.0,"readingTally":2,"siteLabel":"NORTH TONGUE","terminusAltitude":1450,"grade":"RAPID","note":"clear ice margin"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    readingFlagSuite:
+    {
+      function: |test::ivorybeacon::domain::ReadingFlag.all()->graphFetch(
+      #{
+        test::ivorybeacon::domain::ReadingFlag
+        {
+          flagCode,
+          severity,
+          depthValue
+        }
+      }#
+      )->serialize(
+      #{
+        test::ivorybeacon::domain::ReadingFlag
+        {
+          flagCode,
+          severity,
+          depthValue
+        }
+      }#
+      );
+      tests:
+      [
+        deepReading:
+        {
+          doc: 'A depth above the threshold selects the deep arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingReading:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"r9","depthText":"91","meltRateText":"0.55"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"flagCode":"R9","severity":"DEEP","depthValue":91}';
+                  }#;
+              }#
+          ];
+        },
+        shallowReading:
+        {
+          doc: 'A depth below the threshold selects the shallow arm.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingReading:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"r8","depthText":"12"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"flagCode":"R8","severity":"SHALLOW","depthValue":12}';
+                  }#;
+              }#
+          ];
+        },
+        depthlessReading:
+        {
+          doc: 'An absent depth selects the missing arm and the zero default.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::ivorybeacon::source::IncomingReading:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"r7"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            mapped:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"flagCode":"R7","severity":"MISSING","depthValue":0}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

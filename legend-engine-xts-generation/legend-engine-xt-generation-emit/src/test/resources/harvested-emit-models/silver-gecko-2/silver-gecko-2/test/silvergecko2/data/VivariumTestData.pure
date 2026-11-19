@@ -1,0 +1,99 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::silvergecko2::data::VivariumTestData
+{
+  Relational
+  #{
+    vivarium.habitat_zone:
+      'zone_id,zone_code,zone_name\n'+
+      '1,HZ-1,Arid Hall\n'+
+      '2,HZ-2,Humid Hall\n';
+
+    vivarium.zone_note:
+      'note_id,zone_id,note_code,note_text\n'+
+      '1,1,ZN-1,Dry glass fronts wiped weekly\n'+
+      '2,2,ZN-2,Misting runs on a timer\n';
+
+    vivarium.enclosure:
+      'enclosure_id,zone_id,enclosure_code,enclosure_name,humidity_pct\n'+
+      '1,1,EN-1,Sand Terrace,35\n'+
+      '2,2,EN-2,Fern Terrace,80\n';
+
+    vivarium.substrate:
+      'substrate_id,enclosure_id,substrate_code,substrate_name\n'+
+      '1,1,SB-1,Fine Sand\n'+
+      '2,2,SB-2,Leaf Litter\n';
+
+    vivarium.heat_lamp:
+      'lamp_id,enclosure_id,lamp_code,watts\n'+
+      '1,1,HL-1,75\n'+
+      '2,2,HL-2,50\n';
+
+    vivarium.species:
+      'species_id,species_code,species_name,diet_code\n'+
+      '1,SP-1,Banded Gecko,INS\n'+
+      '2,SP-2,Leaf Skink,HERB\n'+
+      '3,SP-3,Rock Agama,OMNI\n';
+
+    vivarium.shift_team:
+      'team_id,team_code,team_name\n'+
+      '1,TM-1,Morning Team\n'+
+      '2,TM-2,Evening Team\n';
+
+    vivarium.keeper:
+      'keeper_id,team_id,keeper_code,keeper_name\n'+
+      '1,1,KP-1,Example Keeper Alpha\n'+
+      '2,2,KP-2,Example Keeper Beta\n';
+
+    vivarium.resident:
+      'resident_id,enclosure_id,species_id,resident_code,resident_name,hatched_on,length_mm\n'+
+      '1,1,1,RS-1,Pebble,2024-03-04,120\n'+
+      '2,1,3,RS-2,Ochre,2023-07-19,210\n'+
+      '3,2,2,RS-3,Willow,2025-01-08,95\n'+
+      '4,9,1,RS-4,Cinder,2025-06-02,80\n';
+
+    vivarium.feed_log:
+      'log_id,resident_id,keeper_id,log_code,feed_code,feed_grams,fed_on\n'+
+      '1,1,1,FL-1,CR-1,12,2026-05-04\n'+
+      '2,2,2,FL-2,CR-2,20,2026-05-05\n'+
+      '3,3,1,FL-3,CR-1,7,2026-05-06\n'+
+      '4,1,9,FL-4,CR-2,9,2026-05-07\n';
+
+    vivarium.health_check:
+      'check_id,resident_id,keeper_id,check_code,outcome_code,checked_on\n'+
+      '1,1,2,HC-1,CLEAR,2026-05-06\n'+
+      '2,3,1,HC-2,WATCH,2026-05-07\n';
+
+    vivarium.moult_record:
+      'moult_id,resident_id,moult_code,stage_code,recorded_on\n'+
+      '1,2,MR-1,COMPLETE,2026-05-02\n';
+
+    vivarium.weight_reading:
+      'reading_id,resident_id,reading_code,grams,read_on\n'+
+      '1,1,WR-1,48,2026-05-03\n'+
+      '2,3,WR-2,26,2026-05-03\n';
+
+    vivarium.feed_stock:
+      'stock_id,feed_code,stock_name,supplier_code\n'+
+      '1,CR-1,Crickets,SU-1\n'+
+      '2,CR-2,Chopped Greens,SU-2\n';
+
+    vivarium.supplier:
+      'supplier_id,supplier_code,supplier_name\n'+
+      '1,SU-1,Example Insect Supply\n'+
+      '2,SU-2,Example Greens Supply\n';
+  }#
+}

@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::lunarridge5::service::SegmentVisitRegister
+{
+  pattern: '/lunarridge5/v1/segment-visit-register/{asOf}';
+  title: 'Lunar Ridge 5 - Maintenance Visit Register';
+  ownership: UserList { users: ['ridge-trail-survey-desk'] };
+  documentation: 'Lists the maintenance visits logged inside a window derived by a model function, resolving the segment, its trail head and its region from the visit row across a three-hop join path so the deepest chained path in the mapping is planned and asserted.';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: {asOf: StrictDate[1]|test::lunarridge5::domain::MaintenanceVisit.all()->filter(
+      v|($v.visitOn <= $asOf) && (($v.visitOn > test::lunarridge5::function::visitWindowFloor($asOf, 60)) && ($v.hoursLogged > 0.0))
+    )->project(
+      [
+        v|$v.visitCode,
+        v|$v.visitOn,
+        v|$v.hoursLogged,
+        v|$v.segmentName,
+        v|$v.headName,
+        v|$v.regionName
+      ],
+      [
+        'Visit',
+        'VisitedOn',
+        'Hours',
+        'Segment',
+        'Head',
+        'Region'
+      ]
+    )->sort(
+      [
+        asc('Visit')
+      ]
+    )};
+    key: 'estate';
+    executions['primary']:
+    {
+      mapping: test::lunarridge5::mapping::TrailMapping;
+      runtime: test::lunarridge5::runtime::TrailPrimaryRuntime;
+    }
+    executions['archive']:
+    {
+      mapping: test::lunarridge5::mapping::TrailMapping;
+      runtime: test::lunarridge5::runtime::TrailArchiveRuntime;
+    }
+  }
+  testSuites:
+  [
+    visitRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          trailArchive:
+            Relational
+            #{
+              registry.trail_region:
+                'region_code,region_name\n'+
+                'RG-1,North Corrie\n'+
+                'RG-2,South Glen\n';
+
+              registry.trail_head:
+                'head_code,head_name,region_code\n'+
+                'HD-1,Larch Gate,RG-1\n'+
+                'HD-2,Boulder Steps,RG-2\n';
+
+              field.trail_segment:
+                'segment_code,segment_name,head_code,surface_code,survey_state,crew_note,length_metres,ascent_metres\n'+
+                'S-01,north spur,HD-1,SC,ACTIVE,alpha crew,1000.0,450.0\n'+
+                'S-04,boulder bench,HD-1,TF,ACTIVE,bravo crew,1000.0,180.0\n'+
+                'S-09,level causeway,HD-2,GR,ACTIVE,echo crew,1000.0,0.0\n';
+
+              field.maintenance_visit:
+                'visit_code,segment_code,visit_on,hours_logged\n'+
+                'V-1,S-01,2026-03-02,6.5\n'+
+                'V-2,S-04,2026-03-05,4.0\n'+
+                'V-3,S-09,2026-03-09,0.0\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        archiveKeyThreeHopVisits:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys: ['archive'];
+          parameters:
+          [
+            asOf = %2026-04-01
+          ]
+          asserts:
+          [
+            visitReachesHeadAndRegionAndSkipsZeroHours:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"V-1","VisitedOn":"2026-03-02","Hours":6.5,"Segment":"north spur","Head":"Larch Gate","Region":"North Corrie"},{"Visit":"V-2","VisitedOn":"2026-03-05","Hours":4.0,"Segment":"boulder bench","Head":"Larch Gate","Region":"North Corrie"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

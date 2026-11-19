@@ -1,0 +1,85 @@
+name: dusky-cove
+title: "Dusky Cove — Layered Dune Planting Register With Deep Conditional, Enumerated And Multi-Hop Relational Transforms"
+description: |
+  A coastal dune restoration planting register whose single cross-schema store carries the planted
+  and retired plot tables, a processing-milestoned plot survey table, the transect, sector and
+  reserve hierarchy tables, three grouped or derived views and two named filters. Three chained
+  mappings compile in order: a shared enumeration layer over four site vocabularies; a base layer
+  that resolves the plot vigour label through eight case arms and an unrecorded fallback, folds
+  missing names, notes and approaches onto sentinels or SQL nulls, translates two enumerations from
+  computed source expressions, and binds view-backed properties one, two and four join hops out
+  with the one-hop tally narrowed to an inner join; and a register layer that resolves the
+  milestoned survey extent at a fixed instant five hops out and projects the retired plot extent
+  of the same store through its own conditional arms. Above the mappings sit an eight-step
+  conditional banding function, a day-count survey-age helper and a headline composer used by a
+  qualified property, two JSON bindings over the published classes, a local H2 and a Snowflake
+  OAuth connection, and two runtimes over the register mapping.
+modelSources:
+  model:
+    root: dusky-cove
+    files:
+      - test/duskycove/connection/DuneConnections.pure
+      - test/duskycove/domain/DuneDomain.pure
+      - test/duskycove/external/DuneBindings.pure
+      - test/duskycove/function/DuneFunctions.pure
+      - test/duskycove/mapping/DuneBaseMapping.pure
+      - test/duskycove/mapping/DuneEnumMappings.pure
+      - test/duskycove/mapping/DuneRegisterMapping.pure
+      - test/duskycove/runtime/DuneRuntimes.pure
+      - test/duskycove/store/DunePlantingDatabase.pure
+features:
+  - execution:external-format-binding
+  - execution:mapping-test
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - grammar:enumeration
+  - grammar:function
+  - grammar:profile
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:date-arithmetic
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-cross-schema
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-left-outer-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - conditional-transform
+  - cross-schema
+  - dune-stewardship
+  - enumeration-mapping
+  - external-format-binding
+  - h2
+  - layered-mappings
+  - mapping-include
+  - multi-hop-join
+  - point-in-time
+  - processing-temporal
+  - relational
+  - relational-views
+  - store-filter
+  - tabular-data-set

@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::westerncavern::store::CavernSurveyDatabase
+(
+  Schema speleo
+  (
+    Table cave_system
+    (
+      system_code VARCHAR(20) PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      system_name VARCHAR(120),
+      region_name VARCHAR(80),
+      discovered_on DATE,
+      mapped_length_metres FLOAT,
+      system_note VARCHAR(200)
+    )
+
+    Table passage
+    (
+      passage_code VARCHAR(20) PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      system_code VARCHAR(20),
+      passage_name VARCHAR(120),
+      passage_length_metres FLOAT,
+      passage_width_metres FLOAT,
+      hazard_note VARCHAR(200)
+    )
+
+    Table survey_run
+    (
+      run_code VARCHAR(20) PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      system_code VARCHAR(20),
+      run_name VARCHAR(120),
+      run_date DATE,
+      lead_surveyor VARCHAR(80),
+      instrument_note VARCHAR(200)
+    )
+
+    Table survey_leg
+    (
+      leg_code VARCHAR(20) PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      run_code VARCHAR(20),
+      passage_code VARCHAR(20),
+      leg_length_metres FLOAT,
+      depth_change_metres FLOAT,
+      grade_code INTEGER
+    )
+
+    Table climate_station
+    (
+      station_code VARCHAR(20) PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      passage_code VARCHAR(20),
+      station_name VARCHAR(120),
+      installed_on DATE,
+      sensor_note VARCHAR(200)
+    )
+
+    Table climate_reading
+    (
+      reading_code VARCHAR(20) PRIMARY KEY,
+      batch_id INTEGER PRIMARY KEY,
+      station_code VARCHAR(20),
+      reading_date DATE,
+      air_temperature_celsius FLOAT,
+      humidity_percent FLOAT,
+      drip_rate_per_minute INTEGER
+    )
+  )
+
+  Join System_Passage
+  (
+    speleo.cave_system.system_code = speleo.passage.system_code
+  )
+
+  Join System_SurveyRun
+  (
+    speleo.cave_system.system_code = speleo.survey_run.system_code
+  )
+
+  Join SurveyRun_SurveyLeg
+  (
+    speleo.survey_run.run_code = speleo.survey_leg.run_code
+  )
+
+  Join Passage_SurveyLeg
+  (
+    speleo.passage.passage_code = speleo.survey_leg.passage_code
+  )
+
+  Join ClimateStation_ClimateReading
+  (
+    speleo.climate_station.station_code = speleo.climate_reading.station_code
+  )
+)

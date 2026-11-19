@@ -1,0 +1,326 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::solarisle3::mapping::IsleTrailMapping
+(
+  *test::solarisle3::domain::IsleDistrict[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle3::store::IsleTrailDb]registry.isle_district.district_code
+    )
+    ~mainTable [test::solarisle3::store::IsleTrailDb]registry.isle_district
+    districtCode: [test::solarisle3::store::IsleTrailDb]registry.isle_district.district_code,
+    districtName: [test::solarisle3::store::IsleTrailDb]registry.isle_district.district_name
+  }
+
+  *test::solarisle3::domain::FieldStation[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle3::store::IsleTrailDb]registry.field_station.station_code
+    )
+    ~mainTable [test::solarisle3::store::IsleTrailDb]registry.field_station
+    stationCode: [test::solarisle3::store::IsleTrailDb]registry.field_station.station_code,
+    stationName: [test::solarisle3::store::IsleTrailDb]registry.field_station.station_name
+  }
+
+  *test::solarisle3::domain::TrailSegment[segment]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle3::store::IsleTrailDb]registry.trail_segment.segment_code
+    )
+    ~mainTable [test::solarisle3::store::IsleTrailDb]registry.trail_segment
+    segmentCode: [test::solarisle3::store::IsleTrailDb]registry.trail_segment.segment_code,
+    segmentName: [test::solarisle3::store::IsleTrailDb]registry.trail_segment.segment_name
+  }
+
+  *test::solarisle3::domain::TrailSensor[sensor]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle3::store::IsleTrailDb]registry.trail_sensor.sensor_code
+    )
+    ~mainTable [test::solarisle3::store::IsleTrailDb]registry.trail_sensor
+    sensorCode: [test::solarisle3::store::IsleTrailDb]registry.trail_sensor.sensor_code,
+    sensorName: [test::solarisle3::store::IsleTrailDb]registry.trail_sensor.sensor_name
+  }
+
+  *test::solarisle3::domain::TrailReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::solarisle3::store::IsleTrailDb]field.trail_reading.reading_id
+    )
+    ~mainTable [test::solarisle3::store::IsleTrailDb]field.trail_reading
+    readingId: [test::solarisle3::store::IsleTrailDb]field.trail_reading.reading_id,
+    sensorCode: [test::solarisle3::store::IsleTrailDb]field.trail_reading.sensor_code,
+    tierCode: [test::solarisle3::store::IsleTrailDb]field.trail_reading.tier_code,
+    gradeLevel: [test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level,
+    sampleCount: [test::solarisle3::store::IsleTrailDb]field.trail_reading.sample_count,
+    signalValue: [test::solarisle3::store::IsleTrailDb]field.trail_reading.signal_value,
+    statusText: [test::solarisle3::store::IsleTrailDb]field.trail_reading.status_text,
+    labelText: [test::solarisle3::store::IsleTrailDb]field.trail_reading.label_text,
+    takenOn: [test::solarisle3::store::IsleTrailDb]field.trail_reading.taken_on,
+    takenAt: [test::solarisle3::store::IsleTrailDb]field.trail_reading.taken_at,
+    conditionBand: case(
+        equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 1),
+        'BAND-CREST',
+        case(
+          equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 2),
+          'BAND-RIDGE',
+          case(
+            equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 3),
+            'BAND-SLOPE',
+            case(
+              equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 4),
+              'BAND-SHELF',
+              case(
+                equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 5),
+                'BAND-DUNE',
+                case(
+                  equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 6),
+                  'BAND-COVE',
+                  case(
+                    equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 7),
+                    'BAND-INLET',
+                    case(
+                      equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.grade_level, 8),
+                      'BAND-FLAT',
+                      sqlNull()
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+    tierLabel: case(
+                 equal([test::solarisle3::store::IsleTrailDb]field.trail_reading.tier_code, 'T1'),
+                 concat(toUpper(trim([test::solarisle3::store::IsleTrailDb]field.trail_reading.label_text)), '-CORE'),
+                 concat(toLower(trim([test::solarisle3::store::IsleTrailDb]field.trail_reading.label_text)), '-EDGE')
+               ),
+    labelStem: substring(trim([test::solarisle3::store::IsleTrailDb]field.trail_reading.label_text), 1, 4),
+    labelSize: length(trim([test::solarisle3::store::IsleTrailDb]field.trail_reading.label_text)),
+    statusOrDefault: coalesce([test::solarisle3::store::IsleTrailDb]field.trail_reading.status_text, 'UNFILED'),
+    patrolScore: round(
+                   times(
+                     divide(
+                       coalesce([test::solarisle3::store::IsleTrailDb]field.trail_reading.signal_value, 0.0),
+                       4.0
+                     ),
+                     100
+                   ),
+                   1
+                 ),
+    sensorName: [test::solarisle3::store::IsleTrailDb]@Reading_Sensor | [test::solarisle3::store::IsleTrailDb]registry.trail_sensor.sensor_name,
+    segmentName: [test::solarisle3::store::IsleTrailDb]@Reading_Sensor > @Sensor_Segment | [test::solarisle3::store::IsleTrailDb]registry.trail_segment.segment_name,
+    stationName: [test::solarisle3::store::IsleTrailDb]@Reading_Sensor > @Sensor_Segment > @Segment_Station | [test::solarisle3::store::IsleTrailDb]registry.field_station.station_name,
+    districtName: [test::solarisle3::store::IsleTrailDb]@Reading_Sensor > @Sensor_Segment > @Segment_Station > @Station_District | [test::solarisle3::store::IsleTrailDb]registry.isle_district.district_name
+  }
+
+  testSuites:
+  [
+    conditionBandSuite:
+    {
+      function: |test::solarisle3::domain::TrailReading.all()->project(
+        ~[
+          Reading: r|$r.readingId,
+          Band: r|$r.conditionBand,
+          Tier: r|$r.tierLabel,
+          Status: r|$r.statusOrDefault
+        ]
+      )->sort(~Reading->ascending());
+      tests:
+      [
+        band_arm_one:
+        {
+          doc: 'The reading enters the register at condition grade 1, so the banding cascade resolves on its one arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-01,,T1,1,3,1.0,OPEN,Alpha Path,2026-03-01,2026-03-01 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-01,BAND-CREST,ALPHA PATH-CORE,OPEN;
+              }#
+          ];
+        },
+        band_arm_two:
+        {
+          doc: 'The reading enters the register at condition grade 2, so the banding cascade resolves on its two arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-02,,T2,2,4,2.0,OPEN,Beta Path,2026-03-02,2026-03-02 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-02,BAND-RIDGE,beta path-EDGE,OPEN;
+              }#
+          ];
+        },
+        band_arm_three:
+        {
+          doc: 'The reading enters the register at condition grade 3, so the banding cascade resolves on its three arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-03,,T1,3,5,3.0,OPEN,Alpha Path,2026-03-03,2026-03-03 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-03,BAND-SLOPE,ALPHA PATH-CORE,OPEN;
+              }#
+          ];
+        },
+        band_arm_four:
+        {
+          doc: 'The reading enters the register at condition grade 4, so the banding cascade resolves on its four arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-04,,T2,4,6,4.0,OPEN,Beta Path,2026-03-04,2026-03-04 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-04,BAND-SHELF,beta path-EDGE,OPEN;
+              }#
+          ];
+        },
+        band_arm_five:
+        {
+          doc: 'The reading enters the register at condition grade 5, so the banding cascade resolves on its five arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-05,,T1,5,7,5.0,OPEN,Alpha Path,2026-03-05,2026-03-05 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-05,BAND-DUNE,ALPHA PATH-CORE,OPEN;
+              }#
+          ];
+        },
+        band_arm_six:
+        {
+          doc: 'The reading enters the register at condition grade 6, so the banding cascade resolves on its six arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-06,,T2,6,8,6.0,OPEN,Beta Path,2026-03-06,2026-03-06 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-06,BAND-COVE,beta path-EDGE,OPEN;
+              }#
+          ];
+        },
+        band_arm_seven:
+        {
+          doc: 'The reading enters the register at condition grade 7, so the banding cascade resolves on its seven arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-07,,T1,7,9,7.0,OPEN,Alpha Path,2026-03-07,2026-03-07 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-07,BAND-INLET,ALPHA PATH-CORE,OPEN;
+              }#
+          ];
+        },
+        band_arm_eight:
+        {
+          doc: 'The reading enters the register at condition grade 8, so the banding cascade resolves on its eight arm while the tier label folds the trimmed free label.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-08,,T2,8,10,8.0,OPEN,Beta Path,2026-03-08,2026-03-08 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-08,BAND-FLAT,beta path-EDGE,OPEN;
+              }#
+          ];
+        },
+        band_fallback_null:
+        {
+          doc: 'The reading carries a condition grade outside the banded range, so the cascade falls through to a database null while every other published value still resolves.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-09,,T1,9,11,9.0,OPEN,Alpha Path,2026-03-09,2026-03-09 06:15:00.000\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Band,Tier,Status
+            TR-09,,ALPHA PATH-CORE,OPEN;
+              }#
+          ];
+        }
+      ];
+    },
+    districtPathSuite:
+    {
+      function: |test::solarisle3::domain::TrailReading.all()->filter(
+        r|$r.labelSize > 4
+      )->project(
+        ~[
+          Reading: r|$r.readingId,
+          Sensor: r|$r.sensorName,
+          Segment: r|$r.segmentName,
+          Station: r|$r.stationName,
+          District: r|$r.districtName,
+          LabelSize: r|$r.labelSize,
+          Score: r|$r.patrolScore
+        ]
+      )->sort(~Reading->ascending());
+      tests:
+      [
+        path_four_hop_hit:
+        {
+          doc: 'The reading names a registered sensor, so the sensor, segment, station and district names all resolve across the schema boundary along the full four-hop path.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-21,SN-01,T1,2,6,8.0,OPEN,Alpha Path,2026-03-21,2026-03-21 06:15:00.000\n';registry.trail_sensor: 'sensor_code,sensor_name,segment_code\nSN-01,Cliff Path Sensor,SG-01\n';registry.trail_segment: 'segment_code,segment_name,station_code\nSG-01,Windward Cliff Stretch,FS-01\n';registry.field_station: 'station_code,station_name,district_code\nFS-01,Windward Field Station,DS-01\n';registry.isle_district: 'district_code,district_name\nDS-01,Windward District\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Sensor,Segment,Station,District,LabelSize,Score
+            TR-21,Cliff Path Sensor,Windward Cliff Stretch,Windward Field Station,Windward District,10,200.0;
+              }#
+          ];
+        },
+        path_four_hop_miss:
+        {
+          doc: 'The reading names no sensor, so every hop of the path misses and the reading keeps its row with all four registry names unresolved.';
+          data: [test::solarisle3::store::IsleTrailDb: Relational #{field.trail_reading: 'reading_id,sensor_code,tier_code,grade_level,sample_count,signal_value,status_text,label_text,taken_on,taken_at\nTR-22,,T2,3,6,4.0,SHUT,Beta Path,2026-03-22,2026-03-22 06:15:00.000\n';registry.trail_sensor: 'sensor_code,sensor_name,segment_code\nSN-01,Cliff Path Sensor,SG-01\n';registry.trail_segment: 'segment_code,segment_name,station_code\nSG-01,Windward Cliff Stretch,FS-01\n';registry.field_station: 'station_code,station_name,district_code\nFS-01,Windward Field Station,DS-01\n';registry.isle_district: 'district_code,district_name\nDS-01,Windward District\n';}#];
+          asserts:
+          [
+            projectedReadings:
+              Relation
+              #{
+            Reading,Sensor,Segment,Station,District,LabelSize,Score
+            TR-22,,,,,9,100.0;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

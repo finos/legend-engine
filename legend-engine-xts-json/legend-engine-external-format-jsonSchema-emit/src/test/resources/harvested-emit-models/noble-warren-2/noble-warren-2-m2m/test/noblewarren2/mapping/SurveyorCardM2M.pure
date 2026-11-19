@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::noblewarren2::mapping::SurveyorCardM2M
+(
+  *test::noblewarren2::domain::SurveyorCard: Pure
+  {
+    ~src test::noblewarren2::source::WarrenSurveyor
+    displayName: $src.familyName->trim()->toUpper() + ', ' + $src.givenName->trim()->replace('  ', ' '),
+    cardKind: 'WARREN-FIELD-CARD'
+  }
+
+  testSuites:
+  [
+    plainCardSuite:
+    {
+      function: |test::noblewarren2::domain::SurveyorCard.all()->graphFetch(
+  #{
+    test::noblewarren2::domain::SurveyorCard{
+      displayName,
+      cardKind
+    }
+  }#
+)->serialize(
+  #{
+    test::noblewarren2::domain::SurveyorCard{
+      displayName,
+      cardKind
+    }
+  }#
+);
+      tests:
+      [
+        bothNamePartsPresent:
+        {
+          doc: 'A fully populated roster record folds the family part to upper case, keeps the given part as written and assembles both around the separator literal while the card kind stays at its constant.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::noblewarren2::source::WarrenSurveyor:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"givenName":"Ida","familyName":"Renwick","homeBurrow":{"siteCode":"BS-11","siteName":"Alder Rise"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            assembledName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"displayName":"RENWICK, Ida","cardKind":"WARREN-FIELD-CARD"}';
+                  }#;
+              }#
+          ];
+        },
+        doubledSpaceInGivenPart:
+        {
+          doc: 'A given part carrying a doubled interior space is collapsed by the normalisation leg before it is concatenated, so the printed name differs from the raw source value.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::noblewarren2::source::WarrenSurveyor:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"givenName":"Ida  Mae","familyName":"Renwick","homeBurrow":{"siteCode":"BS-11","siteName":"Alder Rise"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            collapsedInteriorSpace:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"displayName":"RENWICK, Ida Mae","cardKind":"WARREN-FIELD-CARD"}';
+                  }#;
+              }#
+          ];
+        },
+        emptyGivenNamePart:
+        {
+          doc: 'An empty given-name part shortens the derived name to the separator boundary and leaves the source-independent card kind untouched, so the two transforms are shown to move independently.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::noblewarren2::source::WarrenSurveyor:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"givenName":"","familyName":"Renwick","homeBurrow":{"siteCode":"BS-11","siteName":"Alder Rise"}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            truncatedName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"displayName":"RENWICK, ","cardKind":"WARREN-FIELD-CARD"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,77 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::noblequarry::archive::service::ArchivedSurveyRegister
+{
+  pattern: '/noble-quarry/v1/archive/surveys';
+  title: 'Noble Quarry - Archived Bench Survey Register';
+  documentation: 'Every bench survey frozen into an archive cycle, projected column for column.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::noblequarry::archive::domain::BenchSurvey.all()->project(
+      [
+        s|$s.surveyRef,
+        s|$s.archiveCycle,
+        s|$s.benchCode,
+        s|$s.surveyorCode,
+        s|$s.faceHeightMetres,
+        s|$s.surveyedOn,
+        s|$s.validFrom,
+        s|$s.validTo
+      ],
+      [
+        'Survey Ref',
+        'Archive Cycle',
+        'Bench Code',
+        'Surveyor Code',
+        'Face Height Metres',
+        'Surveyed On',
+        'Valid From',
+        'Valid To'
+      ]
+    );
+    mapping: test::noblequarry::archive::mapping::QuarryArchiveMapping;
+    runtime: test::noblequarry::archive::runtime::QuarryArchiveRuntime;
+  }
+  testSuites:
+  [
+    archivedSurveyRegisterSuite:
+    {
+      data: [connections: [quarryArchiveStore: Reference #{test::noblequarry::data::ArchiveQuarryFixture}#]]
+      tests:
+      [
+        everyArchivedSurvey:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            bothArchivedSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey Ref":"AS-1","Archive Cycle":1,"Bench Code":"BENCH-D","Surveyor Code":"QS-01","Face Height Metres":8.5,"Surveyed On":"2025-06-01","Valid From":"2025-06-01","Valid To":"2025-09-01"},{"Survey Ref":"AS-2","Archive Cycle":1,"Bench Code":"BENCH-E","Surveyor Code":"QS-02","Face Height Metres":10.0,"Surveyed On":"2025-07-01","Valid From":"2025-07-01","Valid To":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

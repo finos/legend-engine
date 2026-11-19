@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::easterncove4::store::CoveDatabase
+(
+  Schema tide
+  (
+    Table station
+    (
+      station_code VARCHAR(16) PRIMARY KEY,
+      station_name VARCHAR(120) NOT NULL,
+      cove_code VARCHAR(16) NOT NULL,
+      sensor_type VARCHAR(24) NOT NULL
+    )
+
+    Table gauge_reading
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      reading_id INTEGER PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      station_code VARCHAR(16),
+      gauge_code VARCHAR(24) NOT NULL,
+      swell_code VARCHAR(16) NOT NULL,
+      height_cm INTEGER NOT NULL,
+      water_temp_c DOUBLE NOT NULL,
+      taken_on DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+  )
+
+  Schema crew
+  (
+    Table warden
+    (
+      warden_code VARCHAR(16) PRIMARY KEY,
+      warden_name VARCHAR(120) NOT NULL,
+      watch_code VARCHAR(16) NOT NULL
+    )
+
+    Table station_watch
+    (
+      station_code VARCHAR(16) PRIMARY KEY,
+      warden_code VARCHAR(16) PRIMARY KEY
+    )
+
+    Table mooring_check
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31)
+      )
+
+      check_id INTEGER PRIMARY KEY,
+      in_z DATE PRIMARY KEY,
+      station_code VARCHAR(16),
+      buoy_code VARCHAR(24) NOT NULL,
+      condition_code VARCHAR(16) NOT NULL,
+      scour_depth_cm INTEGER NOT NULL,
+      checked_on DATE NOT NULL,
+      out_z DATE NOT NULL
+    )
+  )
+
+  Join Reading_Station(tide.gauge_reading.station_code = tide.station.station_code)
+  Join Station_Watch(tide.station.station_code = crew.station_watch.station_code)
+  Join Watch_Warden(crew.station_watch.warden_code = crew.warden.warden_code)
+  Join Check_Station(crew.mooring_check.station_code = tide.station.station_code)
+)

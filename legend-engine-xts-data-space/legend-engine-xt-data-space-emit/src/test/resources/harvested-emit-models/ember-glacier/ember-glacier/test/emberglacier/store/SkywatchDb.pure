@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::emberglacier::store::SkywatchDb
+(
+  Schema skywatch
+  (
+    Table observatory
+    (
+      observatory_id INTEGER PRIMARY KEY,
+      observatory_code VARCHAR(20) NOT NULL,
+      observatory_name VARCHAR(60) NOT NULL,
+      elevation_m INTEGER NOT NULL,
+      opened_on DATE NOT NULL,
+      public_nights BIT NOT NULL
+    )
+    Table dome
+    (
+      dome_id INTEGER PRIMARY KEY,
+      dome_code VARCHAR(20) NOT NULL,
+      observatory_id INTEGER NOT NULL,
+      aperture_m DOUBLE NOT NULL,
+      shutter_kind VARCHAR(20) NOT NULL
+    )
+    Table telescope
+    (
+      telescope_id INTEGER PRIMARY KEY,
+      telescope_code VARCHAR(20) NOT NULL,
+      dome_id INTEGER NOT NULL,
+      mirror_cm INTEGER NOT NULL,
+      mount_kind VARCHAR(20) NOT NULL
+    )
+    Table instrument
+    (
+      instrument_id INTEGER PRIMARY KEY,
+      instrument_code VARCHAR(20) NOT NULL,
+      telescope_id INTEGER NOT NULL,
+      band_name VARCHAR(20) NOT NULL,
+      pixel_scale DOUBLE NOT NULL
+    )
+    Table observer
+    (
+      observer_id INTEGER PRIMARY KEY,
+      observer_code VARCHAR(20) NOT NULL,
+      observer_name VARCHAR(60) NOT NULL,
+      cohort_code VARCHAR(20)
+    )
+    Table sky_target
+    (
+      target_id INTEGER PRIMARY KEY,
+      target_code VARCHAR(20) NOT NULL,
+      target_name VARCHAR(60) NOT NULL,
+      catalog_code VARCHAR(20) NOT NULL,
+      magnitude DOUBLE NOT NULL
+    )
+    Table observing_session
+    (
+      session_id INTEGER PRIMARY KEY,
+      session_code VARCHAR(20) NOT NULL,
+      telescope_id INTEGER NOT NULL,
+      observer_id INTEGER NOT NULL,
+      target_id INTEGER NOT NULL,
+      instrument_id INTEGER NOT NULL,
+      started_at TIMESTAMP NOT NULL,
+      exposure_s INTEGER NOT NULL,
+      frames_kept INTEGER NOT NULL,
+      session_state VARCHAR(20),
+      logged_on DATE NOT NULL
+    )
+    Table seeing_reading
+    (
+      reading_id INTEGER PRIMARY KEY,
+      reading_code VARCHAR(20) NOT NULL,
+      session_id INTEGER NOT NULL,
+      site_code VARCHAR(20) NOT NULL,
+      seeing_arcsec DOUBLE NOT NULL,
+      cloud_cover INTEGER NOT NULL,
+      recorded_at TIMESTAMP NOT NULL
+    )
+  )
+
+  Join Dome_Observatory(skywatch.dome.observatory_id = skywatch.observatory.observatory_id)
+  Join Telescope_Dome(skywatch.telescope.dome_id = skywatch.dome.dome_id)
+  Join Instrument_Telescope(skywatch.instrument.telescope_id = skywatch.telescope.telescope_id)
+  Join Session_Telescope(skywatch.observing_session.telescope_id = skywatch.telescope.telescope_id)
+  Join Session_Observer(skywatch.observing_session.observer_id = skywatch.observer.observer_id)
+  Join Session_Target(skywatch.observing_session.target_id = skywatch.sky_target.target_id)
+  Join Session_Instrument(skywatch.observing_session.instrument_id = skywatch.instrument.instrument_id)
+  Join Reading_Session(skywatch.seeing_reading.session_id = skywatch.observing_session.session_id)
+)

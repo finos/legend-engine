@@ -1,0 +1,123 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::ivorybeacon::service::StationSnapshotFeed
+{
+  pattern: '/ivorybeacon/v1/station-snapshot/{minReadings}';
+  owners:
+  [
+    'glacier-observation-platform',
+    'field-logger-eng'
+  ];
+  documentation: 'Accepts an inbound field-logger station report as JSON and returns the flattened station snapshot graph, keeping only reports whose reading tally reaches the supplied floor so that both a matching and an empty result are reachable.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minReadings: Integer[1]|test::ivorybeacon::domain::StationSnapshot.all()->filter(s|$s.readingTally >= $minReadings)->graphFetch(
+      #{
+        test::ivorybeacon::domain::StationSnapshot
+        {
+          stationId,
+          windowStartDay,
+          windowEndDay,
+          meltRateIndex,
+          readingTally,
+          siteLabel,
+          terminusAltitude,
+          grade,
+          note
+        }
+      }#
+    )->serialize(
+      #{
+        test::ivorybeacon::domain::StationSnapshot
+        {
+          stationId,
+          windowStartDay,
+          windowEndDay,
+          meltRateIndex,
+          readingTally,
+          siteLabel,
+          terminusAltitude,
+          grade,
+          note
+        }
+      }#
+    )};
+    mapping: test::ivorybeacon::mapping::SnapshotM2M;
+    runtime: test::ivorybeacon::runtime::SnapshotRuntime;
+  }
+  testSuites:
+  [
+    snapshotFeedSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          snapshotFeedConnection:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"stationRef": "ST-01", "surveyWindow": "2025-03-14/2025-03-20", "narrative": ["clear ice margin"], "readings": [{"code": "r1", "depthText": "64", "meltRateText": "0.42"}, {"code": "r2", "depthText": "18", "meltRateText": "0.11"}], "site": {"@type": "test::ivorybeacon::source::IncomingGlacierSite", "siteRef": "SITE-11", "glacierName": "north tongue", "terminusAltitudeText": "1450"}}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        reachesReadingFloor:
+        {
+          parameters:
+          [
+            minReadings = 1
+          ]
+          asserts:
+          [
+            snapshotEmitted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "builder" : {\n    "_type" : "json"\n  },\n  "values" : {\n    "stationId" : "ST-01",\n    "windowStartDay" : 14,\n    "windowEndDay" : 20,\n    "meltRateIndex" : 42.0,\n    "readingTally" : 2,\n    "siteLabel" : "NORTH TONGUE",\n    "terminusAltitude" : 1450,\n    "grade" : "RAPID",\n    "note" : "clear ice margin"\n  }\n}';
+                  }#;
+              }#
+          ]
+        },
+        belowReadingFloor:
+        {
+          parameters:
+          [
+            minReadings = 99
+          ]
+          asserts:
+          [
+            nothingEmitted:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "builder" : {\n    "_type" : "json"\n  },\n  "values" : [ ]\n}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

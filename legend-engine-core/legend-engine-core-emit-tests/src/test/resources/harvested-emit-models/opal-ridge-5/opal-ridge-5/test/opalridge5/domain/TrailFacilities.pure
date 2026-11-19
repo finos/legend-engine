@@ -1,0 +1,54 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::opalridge5::domain::*;
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'Shared identity shape of every entry in the trail facility register; subtypes inherit it rather than redeclaring it.'} test::opalridge5::domain::TrailFacilityRecord
+{
+  facilityCode: String[1];
+  displayLabel: String[1];
+  {meta::pure::profiles::doc.doc = 'Optional remark so an entry can be registered before it has been described in the field.'} commentary: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A trailhead zone whose footprint is treated as fixed, so it is read without a business date and one traversal can cross from a versioned grain into this unversioned one.'} test::opalridge5::domain::TrailheadZone extends TrailFacilityRecord
+{
+  walkingLoopCount: Integer[1];
+  footprintHectares: Float[0..1];
+  gravelSurfaced: Boolean[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An interpretive panel mounted at a trailhead; an unversioned subtype that proves the inherited identity properties resolve through the hierarchy.'} test::opalridge5::domain::InterpretivePanel extends TrailFacilityRecord
+{
+  panelText: String[1];
+  installedYear: Integer[1];
+  brailleFitted: Boolean[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A wayfinding signpost versioned along business time, so a re-lettering supersedes the earlier version instead of replacing it and a row outside the queried date disappears without an explicit filter.'} test::opalridge5::domain::SignPost
+{
+  signPostCode: String[1];
+  headingDegrees: Integer[1];
+  {meta::pure::profiles::doc.doc = 'The unversioned trailhead zone the signpost stands in, so this traversal leaves the milestoned grain.'} zone: TrailheadZone[1];
+  postHeightCentimetres: Integer[0..1];
+  routeName: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'One legibility survey of a signpost, versioned along business time so a corrected grade supersedes the grade it replaces.'} test::opalridge5::domain::LegibilitySurvey
+{
+  surveyCode: String[1];
+  legibilityScore: Integer[1];
+  reflectivityRatio: Float[1];
+  {meta::pure::profiles::doc.doc = 'Optional note from the surveyor; left empty for a walk-past grade.'} surveyorNote: String[0..1];
+}

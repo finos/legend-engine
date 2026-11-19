@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::fabledarboretum6::data::ScopeTestData
+{
+  Relational
+  #{
+    hirepool.sky_region:
+      'region_code,region_name,light_code\n'+
+      'R-01,Moor Sky,DK\n'+
+      'R-02,Ridge Sky,RU\n'+
+      'R-03,Lane Sky,SU\n';
+
+    hirepool.mount_site:
+      'site_code,site_name,region_code,altitude_m\n'+
+      'ST-01,North Dome,R-01,210\n'+
+      'ST-02,Ridge Hut,R-02,460\n'+
+      'ST-03,Lane Pier,R-03,80\n';
+
+    hirepool.telescope:
+      'scope_id,scope_code,scope_name,aperture_mm,mount_code,optic_code,tube_state,site_code,logged_hours,service_note\n'+
+      '1,TS-01,North Dome Refractor,450,EQ,RF,FIELD,ST-01,120,\n'+
+      '2,TS-02,Moor Sweeper,250,DB,RL,FIELD,ST-01,500,\n'+
+      '3,TS-03,Ridge Finder,120,AZ,RL,FIELD,ST-02,100,\n'+
+      '4,TS-04,Ridge Tracker,320,RB,CT,WORKSHOP,ST-02,900,\n'+
+      '5,TS-05,Lane Comet Hunter,180,EQ,RL,WORKSHOP,ST-03,100,\n'+
+      '6,TS-06,Lane Deep Field,340,DB,XX,STORE,ST-03,500,\n'+
+      '7,TS-07,Moor Grab Scope,150,AZ,RL,STORE,ST-01,200,\n'+
+      '8,TS-08,Ridge Hire Scope,200,RB,RF,HIRE,ST-02,300,\n'+
+      '9,TS-09,Lane Retired Tube,200,EQ,RL,RETIRED,ST-03,300,\n'+
+      '10,TS-10,Moor Hired Mount,130,ZZ,RL,FIELD,ST-01,100,\n'+
+      '11,TS-11,Unlisted Bench Scope,260,DB,RF,FIELD,ST-99,100,\n';
+  }#
+}
+
+###Data
+Data test::fabledarboretum6::data::CoatingTestData
+{
+  Relational
+  #{
+    optics.optic_grade:
+      'optic_code,coating_code,grade_note,strehl_pct\n'+
+      'RF,FL,Fluoride doublet holds a crisp edge,96\n'+
+      'RL,AL,Aluminium mirror wants a recoat by spring,88\n'+
+      'CT,DE,Dielectric corrector reads clean,94\n'+
+      'XX,ZZ,Coating never recorded at the bench,70\n';
+  }#
+}

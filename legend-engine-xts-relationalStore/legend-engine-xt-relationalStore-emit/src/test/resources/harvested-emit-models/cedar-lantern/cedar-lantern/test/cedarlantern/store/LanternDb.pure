@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::cedarlantern::store::LanternDb
+(
+  Schema harbour
+  (
+    Table lantern_service
+    (
+      service_id INTEGER PRIMARY KEY,
+      service_code VARCHAR(24) NOT NULL,
+      service_name VARCHAR(64),
+      wick_mm INTEGER,
+      burn_hours INTEGER,
+      glass_code VARCHAR(16),
+      lens_code VARCHAR(16),
+      note_text VARCHAR(128)
+    )
+
+    Table lens_grade
+    (
+      lens_code VARCHAR(16) PRIMARY KEY,
+      grade_label VARCHAR(64) NOT NULL,
+      tower_code VARCHAR(16) NOT NULL
+    )
+
+    Table lantern_tower
+    (
+      tower_code VARCHAR(16) PRIMARY KEY,
+      tower_name VARCHAR(64) NOT NULL,
+      keeper_name VARCHAR(64) NOT NULL
+    )
+
+    Table keeper_post
+    (
+      keeper_name VARCHAR(64) PRIMARY KEY,
+      post_name VARCHAR(64) NOT NULL
+    )
+  )
+
+  Join Service_Lens(harbour.lantern_service.lens_code = harbour.lens_grade.lens_code)
+  Join Lens_Tower(harbour.lens_grade.tower_code = harbour.lantern_tower.tower_code)
+  Join Tower_Keeper(harbour.lantern_tower.keeper_name = harbour.keeper_post.keeper_name)
+)

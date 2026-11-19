@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::sablebeacon2::domain::*;
+
+Profile test::sablebeacon2::domain::BeaconMeta
+{
+  stereotypes: [surveyed, provisional];
+  tags: [steward, inventoryRound];
+}
+
+Enum test::sablebeacon2::domain::CanopyHealth
+{
+  VIGOROUS,
+  STABLE,
+  STRESSED,
+  DECLINING
+}
+
+Enum test::sablebeacon2::domain::SurfaceKind
+{
+  VERGE,
+  PLAZA
+}
+
+Class test::sablebeacon2::domain::InventoryRecord
+{
+  recordCode: String[1];
+}
+
+Class <<BeaconMeta.surveyed>> {BeaconMeta.steward = 'City Tree Board'} test::sablebeacon2::domain::StreetTree extends InventoryRecord
+{
+  treeCode: String[1];
+  treeName: String[1];
+  treeAbbrev: String[1];
+  trunkCm: Integer[1];
+  crownSpreadM: Float[1];
+  nameLength: Integer[1];
+  canopyBand: String[0..1];
+  plaqueLabel: String[1];
+  tallyNote: String[1];
+  health: CanopyHealth[0..1];
+  surface: SurfaceKind[0..1];
+  stewardPost: String[0..1];
+  genusName: String[0..1];
+}
+
+Class <<BeaconMeta.provisional>> test::sablebeacon2::domain::VeteranTree extends StreetTree
+{
+  heritageLabel: String[1];
+}
+
+Class test::sablebeacon2::domain::PlantingSite extends InventoryRecord
+{
+  siteCode: String[1];
+  siteName: String[1];
+  surfaceType: String[1];
+  treeCount: Integer[0..1];
+  maxTrunkCm: Integer[0..1];
+}
+
+Class test::sablebeacon2::domain::WardCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  siteCode: String[1];
+}
+
+Class test::sablebeacon2::domain::RawCrew
+{
+  crewCode: String[1];
+  crewName: String[1];
+  siteCode: String[1];
+}
+
+Association test::sablebeacon2::domain::SiteTrees
+{
+  site: PlantingSite[0..1];
+  trees: StreetTree[*];
+}
+
+Association test::sablebeacon2::domain::SiteCrew
+{
+  crew: WardCrew[*];
+  postedSite: PlantingSite[0..1];
+}

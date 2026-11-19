@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::duskyestuary4::mapping::ProfileMapping
+(
+  *test::duskyestuary4::domain::AnimalProfile: Pure
+  {
+    ~src test::duskyestuary4::domain::IntakeRecord
+    profileCode: $src.intakeCode,
+    displayName: $src.animalName,
+    speciesLabel: $src.species,
+    rescueCenterName: $src.rescueCenter,
+    arrivedOn: $src.arrivalDate,
+    originRegion: $src.originRegion,
+    weightKg: $src.intakeWeightKg,
+    weightPounds: times([abs(round(coalesce($src.intakeWeightKg, 0.0), 2)), 2.20462]),
+    healthStatus: $src.healthStatus,
+    microchipCode: $src.microchipCode
+  }
+
+  testSuites:
+  [
+    profileMappingSuite:
+    {
+      doc: 'Maps one intake record into the ten-property public profile, including the two-value arithmetic weight expansion.';
+      function: |test::duskyestuary4::domain::AnimalProfile.all()->graphFetch(
+        #{
+          test::duskyestuary4::domain::AnimalProfile
+          {
+            profileCode,
+            displayName,
+            speciesLabel,
+            rescueCenterName,
+            arrivedOn,
+            originRegion,
+            weightKg,
+            weightPounds,
+            healthStatus,
+            microchipCode
+          }
+        }#
+      )->serialize(
+        #{
+          test::duskyestuary4::domain::AnimalProfile
+          {
+            profileCode,
+            displayName,
+            speciesLabel,
+            rescueCenterName,
+            arrivedOn,
+            originRegion,
+            weightKg,
+            weightPounds,
+            healthStatus,
+            microchipCode
+          }
+        }#
+      );
+      tests:
+      [
+        mappedRescueProfile:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::duskyestuary4::domain::IntakeRecord:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"intakeCode":"IN-17","animalName":"Moss","species":"River Otter","rescueCenter":"Dusky Estuary Care","arrivalDate":"2026-05-10","originRegion":"South Reedbank","intakeWeightKg":10.0,"healthStatus":"STABLE","microchipCode":"MC-017","intakeNote":"Found near the east sluice"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            profileProjection:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"profileCode":"IN-17","displayName":"Moss","speciesLabel":"River Otter","rescueCenterName":"Dusky Estuary Care","arrivedOn":"2026-05-10","originRegion":"South Reedbank","weightKg":10.0,"weightPounds":22.0462,"healthStatus":"STABLE","microchipCode":"MC-017"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

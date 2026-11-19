@@ -1,0 +1,377 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::easternaviary2::mapping::RunFlattenMapping
+(
+  *test::easternaviary2::domain::FlatInspectionRun[flatRun]: Pure
+  {
+    ~src test::easternaviary2::source::RunSubmission
+    runRef: $src.runRef,
+    header[flatHeader]: $src.header,
+    sectionRows[flatSections]: $src.sections,
+    defectRows[flatDefects]: $src.sections,
+    defectCodeRows[flatDefectCodes]: $src.sections,
+    sleeperRows[flatSleepers]: $src.sections,
+    gaugeRows[flatGauges]: $src.sections,
+    ballastRows[flatBallast]: $src.sections,
+    noteRows[flatNotes]: $src.sections
+  }
+
+  *test::easternaviary2::domain::FlatRunHeader[flatHeader]: Pure
+  {
+    ~src test::easternaviary2::source::RunHeaderBlock
+    notebookRef: $src.notebookRef,
+    loggedAt: $src.loggedAt,
+    surveyedOn: $src.surveyedOn,
+    gangName: $src.gangName
+  }
+
+  *test::easternaviary2::domain::FlatSectionRow[flatSections]: Pure
+  {
+    ~src test::easternaviary2::source::RunSectionBlock
+    sectionCode: $src.sectionCode,
+    mileageChain: $src.mileageChain,
+    sectionLabel: $src.sectionCode->toUpper() + ' @ ' + $src.mileageChain->toString()
+  }
+
+  *test::easternaviary2::domain::FlatDefectRow[flatDefects]: Pure
+  {
+    ~src test::easternaviary2::source::RunSectionBlock
+    ~filter $src.railDefects->isNotEmpty()
+    sectionCode: $src.sectionCode,
+    defectCodes: $src.railDefects.defectCode,
+    severityBands: $src.railDefects.severityBand,
+    defectLengthsMm: $src.railDefects.lengthMm,
+    defectTally: $src.railDefects->size()
+  }
+
+  *test::easternaviary2::domain::FlatDefectCodeRow[flatDefectCodes]: Pure
+  {
+    ~src test::easternaviary2::source::RunSectionBlock
+    ~filter $src.railDefects->isNotEmpty()
+    sectionCode: $src.sectionCode,
+    rawDefectCodes: $src.railDefects.defectCode,
+    upperDefectCodes: $src.railDefects.defectCode->map(code|$code->toUpper()),
+    longDefectDigest: $src.railDefects->filter(defect|$defect.lengthMm > 40)->map(defect|$defect.defectCode->toUpper())->joinStrings('|')
+  }
+
+  *test::easternaviary2::domain::FlatSleeperRow[flatSleepers]: Pure
+  {
+    ~src test::easternaviary2::source::RunSectionBlock
+    ~filter $src.sleeperChecks->isNotEmpty()
+    sectionCode: $src.sectionCode,
+    sleeperRefs: $src.sleeperChecks.sleeperRef,
+    conditionCodes: $src.sleeperChecks.conditionCode,
+    voidDepthsMm: $src.sleeperChecks.voidDepthMm,
+    replaceCount: $src.sleeperChecks->filter(check|$check.replaceFlag)->size()
+  }
+
+  *test::easternaviary2::domain::FlatGaugeRow[flatGauges]: Pure
+  {
+    ~src test::easternaviary2::source::RunSectionBlock
+    sectionCode: $src.sectionCode,
+    widenMm: $src.gaugeSummary.widenMm,
+    twistMm: $src.gaugeSummary.twistMm,
+    sampleCount: $src.gaugeSummary.sampleCount
+  }
+
+  *test::easternaviary2::domain::FlatBallastRow[flatBallast]: Pure
+  {
+    ~src test::easternaviary2::source::RunSectionBlock
+    sectionCode: $src.sectionCode,
+    ballastGrade: $src.ballastSummary.ballastGrade,
+    shoulderMm: $src.ballastSummary.shoulderMm,
+    fouledFlag: $src.ballastSummary.fouledFlag
+  }
+
+  *test::easternaviary2::domain::FlatNoteRow[flatNotes]: Pure
+  {
+    ~src test::easternaviary2::source::RunSectionBlock
+    ~filter $src.sectionNote->isNotEmpty()
+    sectionCode: $src.sectionCode,
+    sectionNote: $src.sectionNote->map(note|$note->trim())
+  }
+
+  testSuites:
+  [
+    runFlattenSuite:
+    {
+      function: |test::easternaviary2::domain::FlatInspectionRun.all()->graphFetchChecked(
+        #{
+          test::easternaviary2::domain::FlatInspectionRun
+          {
+            runRef,
+            header
+            {
+              notebookRef,
+              gangName,
+              surveyedOn
+            },
+            sectionRows
+            {
+              sectionCode,
+              sectionLabel
+            },
+            defectRows
+            {
+              sectionCode,
+              defectCodes,
+              severityBands,
+              defectTally
+            },
+            defectCodeRows
+            {
+              sectionCode,
+              rawDefectCodes,
+              upperDefectCodes,
+              longDefectDigest
+            },
+            sleeperRows
+            {
+              sectionCode,
+              sleeperRefs,
+              replaceCount
+            },
+            gaugeRows
+            {
+              sectionCode,
+              widenMm,
+              sampleCount
+            },
+            ballastRows
+            {
+              sectionCode,
+              ballastGrade,
+              fouledFlag
+            },
+            noteRows
+            {
+              sectionCode,
+              sectionNote
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          test::easternaviary2::domain::FlatInspectionRun
+          {
+            runRef,
+            header
+            {
+              notebookRef,
+              gangName,
+              surveyedOn
+            },
+            sectionRows
+            {
+              sectionCode,
+              sectionLabel
+            },
+            defectRows
+            {
+              sectionCode,
+              defectCodes,
+              severityBands,
+              defectTally
+            },
+            defectCodeRows
+            {
+              sectionCode,
+              rawDefectCodes,
+              upperDefectCodes,
+              longDefectDigest
+            },
+            sleeperRows
+            {
+              sectionCode,
+              sleeperRefs,
+              replaceCount
+            },
+            gaugeRows
+            {
+              sectionCode,
+              widenMm,
+              sampleCount
+            },
+            ballastRows
+            {
+              sectionCode,
+              ballastGrade,
+              fouledFlag
+            },
+            noteRows
+            {
+              sectionCode,
+              sectionNote
+            }
+          }
+        }#
+      );
+      tests:
+      [
+        defectChildrenOnly:
+        {
+          doc: 'A section carrying rail defects but no sleeper checks, so the two defect-guarded collections appear while the sleeper collection stays empty.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternaviary2::source::RunSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-8801","header":{"notebookRef":"NB-14","loggedAt":"2026-04-02T07:15:00.000+0000","surveyedOn":"2026-04-01","gangName":"North Ridge Gang"},"sections":[{"sectionCode":"SEC-14A","mileageChain":9120,"sectionNote":"  jointed rail through the cutting  ","railDefects":[{"defectCode":"squat-b","severityBand":"amber","lengthMm":52,"foundAt":"2026-04-01T09:00:00.000+0000"},{"defectCode":"corr-a","lengthMm":18,"foundAt":"2026-04-01T09:30:00.000+0000"}],"sleeperChecks":[],"gaugeSummary":{"widenMm":6,"twistMm":3,"sampleCount":140},"ballastSummary":{"ballastGrade":"B","shoulderMm":320,"fouledFlag":false}}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            flattenedRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"runRef\\":\\"RUN-8801\\",\\"header\\":{\\"notebookRef\\":\\"NB-14\\",\\"loggedAt\\":\\"2026-04-02T07:15:00.000+0000\\",\\"surveyedOn\\":\\"2026-04-01\\",\\"gangName\\":\\"North Ridge Gang\\"},\\"sections\\":[{\\"sectionCode\\":\\"SEC-14A\\",\\"mileageChain\\":9120,\\"sectionNote\\":\\"  jointed rail through the cutting  \\",\\"railDefects\\":[{\\"defectCode\\":\\"squat-b\\",\\"severityBand\\":\\"amber\\",\\"lengthMm\\":52,\\"foundAt\\":\\"2026-04-01T09:00:00.000+0000\\"},{\\"defectCode\\":\\"corr-a\\",\\"lengthMm\\":18,\\"foundAt\\":\\"2026-04-01T09:30:00.000+0000\\"}],\\"sleeperChecks\\":[],\\"gaugeSummary\\":{\\"widenMm\\":6,\\"twistMm\\":3,\\"sampleCount\\":140},\\"ballastSummary\\":{\\"ballastGrade\\":\\"B\\",\\"shoulderMm\\":320,\\"fouledFlag\\":false}}]}"},"value":{"header":{"gangName":"North Ridge Gang","notebookRef":"NB-14","surveyedOn":"2026-04-01"},"runRef":"RUN-8801","sections":[{"ballastSummary":{"ballastGrade":"B","fouledFlag":false},"gaugeSummary":{"sampleCount":140,"widenMm":6},"mileageChain":9120,"railDefects":[{"defectCode":"squat-b","lengthMm":52,"severityBand":"amber"},{"defectCode":"corr-a","lengthMm":18,"severityBand":null}],"sectionCode":"SEC-14A","sectionNote":"  jointed rail through the cutting  ","sleeperChecks":[]}]}},"value":{"runRef":"RUN-8801","header":{"notebookRef":"NB-14","gangName":"North Ridge Gang","surveyedOn":"2026-04-01"},"sectionRows":[{"sectionCode":"SEC-14A","sectionLabel":"SEC-14A @ 9120"}],"defectRows":[{"sectionCode":"SEC-14A","defectCodes":["squat-b","corr-a"],"severityBands":["amber"],"defectTally":2}],"defectCodeRows":[{"sectionCode":"SEC-14A","rawDefectCodes":["squat-b","corr-a"],"upperDefectCodes":["SQUAT-B","CORR-A"],"longDefectDigest":"SQUAT-B"}],"sleeperRows":[],"gaugeRows":[{"sectionCode":"SEC-14A","widenMm":6,"sampleCount":140}],"ballastRows":[{"sectionCode":"SEC-14A","ballastGrade":"B","fouledFlag":false}],"noteRows":[{"sectionCode":"SEC-14A","sectionNote":"jointed rail through the cutting"}]}}';
+                  }#;
+              }#
+          ];
+        },
+        sleeperChildrenOnly:
+        {
+          doc: 'A section carrying sleeper checks but no rail defects, so both defect-guarded collections stay empty while the sleeper collection appears.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternaviary2::source::RunSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-8802","header":{"notebookRef":"NB-15","loggedAt":"2026-04-03T07:05:00.000+0000","surveyedOn":"2026-04-02","gangName":"South Ridge Gang"},"sections":[{"sectionCode":"SEC-22C","mileageChain":4460,"railDefects":[],"sleeperChecks":[{"sleeperRef":"SL-001","conditionCode":"C2","voidDepthMm":4,"checkedOn":"2026-04-02","replaceFlag":true},{"sleeperRef":"SL-002","conditionCode":"C1","voidDepthMm":1,"checkedOn":"2026-04-02","replaceFlag":false}],"ballastSummary":{"ballastGrade":"C","shoulderMm":280,"fouledFlag":true}}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            flattenedRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"runRef\\":\\"RUN-8802\\",\\"header\\":{\\"notebookRef\\":\\"NB-15\\",\\"loggedAt\\":\\"2026-04-03T07:05:00.000+0000\\",\\"surveyedOn\\":\\"2026-04-02\\",\\"gangName\\":\\"South Ridge Gang\\"},\\"sections\\":[{\\"sectionCode\\":\\"SEC-22C\\",\\"mileageChain\\":4460,\\"railDefects\\":[],\\"sleeperChecks\\":[{\\"sleeperRef\\":\\"SL-001\\",\\"conditionCode\\":\\"C2\\",\\"voidDepthMm\\":4,\\"checkedOn\\":\\"2026-04-02\\",\\"replaceFlag\\":true},{\\"sleeperRef\\":\\"SL-002\\",\\"conditionCode\\":\\"C1\\",\\"voidDepthMm\\":1,\\"checkedOn\\":\\"2026-04-02\\",\\"replaceFlag\\":false}],\\"ballastSummary\\":{\\"ballastGrade\\":\\"C\\",\\"shoulderMm\\":280,\\"fouledFlag\\":true}}]}"},"value":{"header":{"gangName":"South Ridge Gang","notebookRef":"NB-15","surveyedOn":"2026-04-02"},"runRef":"RUN-8802","sections":[{"ballastSummary":{"ballastGrade":"C","fouledFlag":true},"gaugeSummary":null,"mileageChain":4460,"railDefects":[],"sectionCode":"SEC-22C","sectionNote":null,"sleeperChecks":[{"replaceFlag":true,"sleeperRef":"SL-001"},{"replaceFlag":false,"sleeperRef":"SL-002"}]}]}},"value":{"runRef":"RUN-8802","header":{"notebookRef":"NB-15","gangName":"South Ridge Gang","surveyedOn":"2026-04-02"},"sectionRows":[{"sectionCode":"SEC-22C","sectionLabel":"SEC-22C @ 4460"}],"defectRows":[],"defectCodeRows":[],"sleeperRows":[{"sectionCode":"SEC-22C","sleeperRefs":["SL-001","SL-002"],"replaceCount":1}],"gaugeRows":[{"sectionCode":"SEC-22C","widenMm":null,"sampleCount":null}],"ballastRows":[{"sectionCode":"SEC-22C","ballastGrade":"C","fouledFlag":true}],"noteRows":[]}}';
+                  }#;
+              }#
+          ];
+        },
+        bothChildCollections:
+        {
+          doc: 'A section carrying both child collections, so every guarded collection appears and the digest excludes the short defect.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternaviary2::source::RunSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-8803","header":{"notebookRef":"NB-16","loggedAt":"2026-04-04T06:45:00.000+0000","surveyedOn":"2026-04-03","gangName":"Summit Gang"},"sections":[{"sectionCode":"SEC-31B","mileageChain":15230,"sectionNote":"regraded shoulder after the wet week","railDefects":[{"defectCode":"wheel-burn","severityBand":"red","lengthMm":95,"foundAt":"2026-04-03T08:10:00.000+0000"},{"defectCode":"lip-c","severityBand":"green","lengthMm":12,"foundAt":"2026-04-03T08:40:00.000+0000"}],"sleeperChecks":[{"sleeperRef":"SL-101","conditionCode":"C3","voidDepthMm":9,"checkedOn":"2026-04-03","replaceFlag":true}],"gaugeSummary":{"widenMm":11,"twistMm":7,"sampleCount":260},"ballastSummary":{"ballastGrade":"A","shoulderMm":410,"fouledFlag":false}}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            flattenedRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"runRef\\":\\"RUN-8803\\",\\"header\\":{\\"notebookRef\\":\\"NB-16\\",\\"loggedAt\\":\\"2026-04-04T06:45:00.000+0000\\",\\"surveyedOn\\":\\"2026-04-03\\",\\"gangName\\":\\"Summit Gang\\"},\\"sections\\":[{\\"sectionCode\\":\\"SEC-31B\\",\\"mileageChain\\":15230,\\"sectionNote\\":\\"regraded shoulder after the wet week\\",\\"railDefects\\":[{\\"defectCode\\":\\"wheel-burn\\",\\"severityBand\\":\\"red\\",\\"lengthMm\\":95,\\"foundAt\\":\\"2026-04-03T08:10:00.000+0000\\"},{\\"defectCode\\":\\"lip-c\\",\\"severityBand\\":\\"green\\",\\"lengthMm\\":12,\\"foundAt\\":\\"2026-04-03T08:40:00.000+0000\\"}],\\"sleeperChecks\\":[{\\"sleeperRef\\":\\"SL-101\\",\\"conditionCode\\":\\"C3\\",\\"voidDepthMm\\":9,\\"checkedOn\\":\\"2026-04-03\\",\\"replaceFlag\\":true}],\\"gaugeSummary\\":{\\"widenMm\\":11,\\"twistMm\\":7,\\"sampleCount\\":260},\\"ballastSummary\\":{\\"ballastGrade\\":\\"A\\",\\"shoulderMm\\":410,\\"fouledFlag\\":false}}]}"},"value":{"header":{"gangName":"Summit Gang","notebookRef":"NB-16","surveyedOn":"2026-04-03"},"runRef":"RUN-8803","sections":[{"ballastSummary":{"ballastGrade":"A","fouledFlag":false},"gaugeSummary":{"sampleCount":260,"widenMm":11},"mileageChain":15230,"railDefects":[{"defectCode":"wheel-burn","lengthMm":95,"severityBand":"red"},{"defectCode":"lip-c","lengthMm":12,"severityBand":"green"}],"sectionCode":"SEC-31B","sectionNote":"regraded shoulder after the wet week","sleeperChecks":[{"replaceFlag":true,"sleeperRef":"SL-101"}]}]}},"value":{"runRef":"RUN-8803","header":{"notebookRef":"NB-16","gangName":"Summit Gang","surveyedOn":"2026-04-03"},"sectionRows":[{"sectionCode":"SEC-31B","sectionLabel":"SEC-31B @ 15230"}],"defectRows":[{"sectionCode":"SEC-31B","defectCodes":["wheel-burn","lip-c"],"severityBands":["red","green"],"defectTally":2}],"defectCodeRows":[{"sectionCode":"SEC-31B","rawDefectCodes":["wheel-burn","lip-c"],"upperDefectCodes":["WHEEL-BURN","LIP-C"],"longDefectDigest":"WHEEL-BURN"}],"sleeperRows":[{"sectionCode":"SEC-31B","sleeperRefs":["SL-101"],"replaceCount":1}],"gaugeRows":[{"sectionCode":"SEC-31B","widenMm":11,"sampleCount":260}],"ballastRows":[{"sectionCode":"SEC-31B","ballastGrade":"A","fouledFlag":false}],"noteRows":[{"sectionCode":"SEC-31B","sectionNote":"regraded shoulder after the wet week"}]}}';
+                  }#;
+              }#
+          ];
+        },
+        headerAbsent:
+        {
+          doc: 'A submission with no header block at all, so the header child mapping produces nothing while the section collections still flatten.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternaviary2::source::RunSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-8804","sections":[{"sectionCode":"SEC-07D","mileageChain":2110,"railDefects":[{"defectCode":"corr-a","severityBand":"amber","lengthMm":64,"foundAt":"2026-04-05T10:00:00.000+0000"}],"sleeperChecks":[],"gaugeSummary":{"widenMm":2,"twistMm":1,"sampleCount":75}}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            flattenedRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"runRef\\":\\"RUN-8804\\",\\"sections\\":[{\\"sectionCode\\":\\"SEC-07D\\",\\"mileageChain\\":2110,\\"railDefects\\":[{\\"defectCode\\":\\"corr-a\\",\\"severityBand\\":\\"amber\\",\\"lengthMm\\":64,\\"foundAt\\":\\"2026-04-05T10:00:00.000+0000\\"}],\\"sleeperChecks\\":[],\\"gaugeSummary\\":{\\"widenMm\\":2,\\"twistMm\\":1,\\"sampleCount\\":75}}]}"},"value":{"header":null,"runRef":"RUN-8804","sections":[{"ballastSummary":null,"gaugeSummary":{"sampleCount":75,"widenMm":2},"mileageChain":2110,"railDefects":[{"defectCode":"corr-a","lengthMm":64,"severityBand":"amber"}],"sectionCode":"SEC-07D","sectionNote":null,"sleeperChecks":[]}]}},"value":{"runRef":"RUN-8804","header":null,"sectionRows":[{"sectionCode":"SEC-07D","sectionLabel":"SEC-07D @ 2110"}],"defectRows":[{"sectionCode":"SEC-07D","defectCodes":["corr-a"],"severityBands":["amber"],"defectTally":1}],"defectCodeRows":[{"sectionCode":"SEC-07D","rawDefectCodes":["corr-a"],"upperDefectCodes":["CORR-A"],"longDefectDigest":"CORR-A"}],"sleeperRows":[],"gaugeRows":[{"sectionCode":"SEC-07D","widenMm":2,"sampleCount":75}],"ballastRows":[{"sectionCode":"SEC-07D","ballastGrade":null,"fouledFlag":null}],"noteRows":[]}}';
+                  }#;
+              }#
+          ];
+        },
+        surveyDateAbsent:
+        {
+          doc: 'A submission whose optional survey date is absent and whose only section has neither child collection, so all four guards are unsatisfied at once.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::easternaviary2::source::RunSubmission:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"runRef":"RUN-8805","header":{"notebookRef":"NB-17","loggedAt":"2026-04-06T05:55:00.000+0000","gangName":"Relief Gang"},"sections":[{"sectionCode":"SEC-44E","mileageChain":880,"railDefects":[],"sleeperChecks":[]}]}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            flattenedRun:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"runRef\\":\\"RUN-8805\\",\\"header\\":{\\"notebookRef\\":\\"NB-17\\",\\"loggedAt\\":\\"2026-04-06T05:55:00.000+0000\\",\\"gangName\\":\\"Relief Gang\\"},\\"sections\\":[{\\"sectionCode\\":\\"SEC-44E\\",\\"mileageChain\\":880,\\"railDefects\\":[],\\"sleeperChecks\\":[]}]}"},"value":{"header":{"gangName":"Relief Gang","notebookRef":"NB-17","surveyedOn":null},"runRef":"RUN-8805","sections":[{"ballastSummary":null,"gaugeSummary":null,"mileageChain":880,"railDefects":[],"sectionCode":"SEC-44E","sectionNote":null,"sleeperChecks":[]}]}},"value":{"runRef":"RUN-8805","header":{"notebookRef":"NB-17","gangName":"Relief Gang","surveyedOn":null},"sectionRows":[{"sectionCode":"SEC-44E","sectionLabel":"SEC-44E @ 880"}],"defectRows":[],"defectCodeRows":[],"sleeperRows":[],"gaugeRows":[{"sectionCode":"SEC-44E","widenMm":null,"sampleCount":null}],"ballastRows":[{"sectionCode":"SEC-44E","ballastGrade":null,"fouledFlag":null}],"noteRows":[]}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

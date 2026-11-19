@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowwarren5::service::SampleRegister
+{
+  pattern: '/meadowwarren5/v1/forage-samples/{asOf}';
+  title: 'Meadow Warren 5 - Forage Sample Register As Of A Processing Instant';
+  owners:
+  [
+    'alpine-meadow-monitoring',
+    'forage-survey-eng'
+  ];
+  documentation: 'Reads the forage sample register as it was known at one processing instant supplied as the only service parameter, so the compiler rewrites the milestoned accessor into a window predicate over the processing in and out columns before the wide tabular projection is taken; the projection fixes the published column list across the whole mixed type surface of the sample, and the ordering and cap shape the result set the endpoint returns.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::meadowwarren5::domain::ForageSample.all($asOf)->project(
+      [
+        s|$s.sampleCode,
+        s|$s.plotCode,
+        s|$s.speciesCode,
+        s|$s.cutHeightCm,
+        s|$s.dryMassKg,
+        s|$s.moisturePct,
+        s|$s.collectedOn
+      ],
+      [
+        'Sample',
+        'Plot',
+        'Species',
+        'CutHeightCm',
+        'DryMassKg',
+        'MoisturePct',
+        'CollectedOn'
+      ]
+    )->sort(
+      [
+        asc('Sample')
+      ]
+    )->take(100)};
+    mapping: test::meadowwarren5::mapping::MeadowMapping;
+    runtime: test::meadowwarren5::runtime::MeadowRuntime;
+  }
+  testSuites:
+  [
+    sampleRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowWarehouseConnection:
+            Relational
+            #{
+              meadow.forage_sample:
+                'sample_code,plot_code,species_code,cut_height_cm,dry_mass_kg,moisture_pct,collected_on,logged_at,in_z,out_z\n'+
+                'FS-0001,PL-01,SP-FES,5,12.400,61.5,2026-05-12,2026-05-13 08:00:00,2026-05-13,9999-12-31\n'+
+                'FS-0002,PL-01,SP-POA,5,8.250,58.25,2026-05-12,2026-05-13 08:05:00,2026-05-13,2026-03-01\n'+
+                'FS-0003,PL-02,SP-TRI,4,4.750,64.75,2026-05-19,2026-05-20 07:45:00,2026-05-20,2026-07-01\n'+
+                'FS-0003,PL-02,SP-TRI,4,5.125,63.5,2026-05-19,2026-07-01 09:30:00,2026-07-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAtJuneInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            openVersionsOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sample":"FS-0001","Plot":"PL-01","Species":"SP-FES","CutHeightCm":5,"DryMassKg":12.400,"MoisturePct":61.5,"CollectedOn":"2026-05-12"},{"Sample":"FS-0003","Plot":"PL-02","Species":"SP-TRI","CutHeightCm":4,"DryMassKg":4.750,"MoisturePct":64.75,"CollectedOn":"2026-05-19"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

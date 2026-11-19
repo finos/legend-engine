@@ -1,0 +1,31 @@
+name: ivory-prairie-4
+title: "Wetland Wader Survey — annotated class hierarchy with JSON-schema generation"
+description: |
+  A store-less wetland-survey model whose observation base class carries the
+  transect and observer attributes shared by every survey record, and whose
+  wader-count subtype adds species, count, depth and a nested weather snapshot
+  without restating the inherited properties. A stereotype-and-tag vocabulary is
+  declared once and annotates the base class, the subtype and the nested weather
+  class, and a JSON-schema file generation scopes to the subtype, walks the type
+  graph into the nested weather schema and carries the declared stereotypes into
+  the emitted artifact.
+modelSources:
+  model:
+    root: ivory-prairie-4
+    files:
+      - test/ivoryprairie4/domain/WetlandDomain.pure
+      - test/ivoryprairie4/generation/WetlandGeneration.pure
+features:
+  - execution:file-generation
+  - grammar:class-inheritance
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - file-generation
+  - json-schema
+  - profile
+  - stereotype
+  - wetland-survey

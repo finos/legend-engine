@@ -1,0 +1,49 @@
+name: ivory-cove
+title: "Street Tree Inventory — Cross-Schema Store, Nested Joins and Literal Defaults"
+description: |
+  A municipal street-tree inventory whose plot class binds direct scalar,
+  temporal, boolean and enum-typed columns alongside literal defaults, a
+  one-hop measurement lookup and a two-hop borough lookup across two schemas of
+  the same relational store. A store-level dynamic function normalises the
+  status column inside the mapping filter, and the district class reaches its
+  plots back through the same join so the to-many end is covered as well.
+modelSources:
+  model:
+    root: ivory-cove
+    files:
+      - test/ivorycove/data/CanopyData.pure
+      - test/ivorycove/domain/Canopy.pure
+      - test/ivorycove/mapping/CanopyMapping.pure
+      - test/ivorycove/store/CanopyDatabase.pure
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:relational-literal
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - cross-schema
+  - data-element
+  - dyna-function
+  - enumeration-mapping
+  - literal-default
+  - mapping-test
+  - multi-hop-join
+  - nested-join
+  - relational
+  - store-filter

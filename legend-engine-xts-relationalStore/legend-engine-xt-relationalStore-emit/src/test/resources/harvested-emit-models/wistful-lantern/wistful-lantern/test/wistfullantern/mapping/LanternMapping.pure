@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::wistfullantern::mapping::LanternMapping
+(
+  *demo::wistfullantern::domain::ShoreSector[sectorSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfullantern::store::LanternDB]beacon.shore_sector.sector_code
+    )
+    ~mainTable [demo::wistfullantern::store::LanternDB]beacon.shore_sector
+    sectorCode: [demo::wistfullantern::store::LanternDB]beacon.shore_sector.sector_code,
+    coastName: [demo::wistfullantern::store::LanternDB]beacon.shore_sector.coast_name
+  }
+
+  *demo::wistfullantern::domain::RotatingOptic[opticSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfullantern::store::LanternDB]beacon.rotating_optic.optic_code
+    )
+    ~mainTable [demo::wistfullantern::store::LanternDB]beacon.rotating_optic
+    opticCode: [demo::wistfullantern::store::LanternDB]beacon.rotating_optic.optic_code,
+    lampWattage: [demo::wistfullantern::store::LanternDB]beacon.rotating_optic.lamp_wattage,
+    rotationSeconds: [demo::wistfullantern::store::LanternDB]beacon.rotating_optic.rotation_seconds
+  }
+
+  *demo::wistfullantern::domain::TenderVessel[vesselSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfullantern::store::LanternDB]beacon.tender_vessel.vessel_code
+    )
+    ~mainTable [demo::wistfullantern::store::LanternDB]beacon.tender_vessel
+    vesselCode: [demo::wistfullantern::store::LanternDB]beacon.tender_vessel.vessel_code,
+    homePortName: [demo::wistfullantern::store::LanternDB]beacon.tender_vessel.home_port_name
+  }
+
+  *demo::wistfullantern::domain::MaintenanceVisit[visitSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfullantern::store::LanternDB]beacon.maintenance_visit.visit_code
+    )
+    ~mainTable [demo::wistfullantern::store::LanternDB]beacon.maintenance_visit
+    visitCode: [demo::wistfullantern::store::LanternDB]beacon.maintenance_visit.visit_code,
+    visitDate: [demo::wistfullantern::store::LanternDB]beacon.maintenance_visit.visit_date,
+    workSummary: [demo::wistfullantern::store::LanternDB]beacon.maintenance_visit.work_summary
+  }
+
+  *demo::wistfullantern::domain::LightStation[stationSet]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::wistfullantern::store::LanternDB]beacon.light_station.station_code
+    )
+    ~mainTable [demo::wistfullantern::store::LanternDB]beacon.light_station
+    stationCode: [demo::wistfullantern::store::LanternDB]beacon.light_station.station_code,
+    stationName: [demo::wistfullantern::store::LanternDB]beacon.light_station.station_name,
+    focalHeightMetres: [demo::wistfullantern::store::LanternDB]beacon.light_station.focal_height_metres,
+    characterCode: [demo::wistfullantern::store::LanternDB]beacon.light_station.character_code,
+    sector[sectorSet]: [demo::wistfullantern::store::LanternDB]@Station_Sector
+  }
+
+  demo::wistfullantern::domain::Visit_Vessel: Relational
+  {
+    AssociationMapping
+    (
+      vessel[visitSet,vesselSet]: [demo::wistfullantern::store::LanternDB]@Visit_Tender,
+      visits[vesselSet,visitSet]: [demo::wistfullantern::store::LanternDB]@Visit_Tender
+    )
+  }
+
+  testSuites:
+  [
+    stationTimelineSuite:
+    {
+      function: demo::wistfullantern::domain::LightStation.all(%2026-03-01)->project(~[stationCode: x|$x.stationCode, stationName: x|$x.stationName, focalHeightMetres: x|$x.focalHeightMetres, coastName: x|$x.sector.coastName, coastTag: x|$x.sector.coastName->toUpper()]);
+      tests:
+      [
+        openVersionsOnly:
+        {
+          doc: 'Projects the business-temporal station timeline as of a fixed date across the station-to-sector inner join; the superseded version and the version whose window has not opened are both absent.';
+          data:
+          [
+            demo::wistfullantern::store::LanternDB:
+              Relational
+              #{
+                beacon.shore_sector:
+                  'sector_code,coast_name\n'+
+                  'SS-1,Northern Shingle Coast\n'+
+                  'SS-2,Western Basalt Coast\n';
+
+                beacon.rotating_optic:
+                  'optic_code,lamp_wattage,rotation_seconds\n'+
+                  'RO-1,1200,8\n'+
+                  'RO-2,900,12\n';
+
+                beacon.tender_vessel:
+                  'vessel_code,home_port_name\n'+
+                  'TV-1,Kelp Quay\n';
+
+                beacon.maintenance_visit:
+                  'visit_code,visit_date,work_summary,station_code,vessel_code\n'+
+                  'MV-1,2026-02-10,lamp changed,LS-1,TV-1\n'+
+                  'MV-2,2026-02-18,glazing cleaned,LS-2,TV-1\n';
+
+                beacon.light_station:
+                  'station_code,station_name,focal_height_metres,character_code,sector_code,from_z,thru_z\n'+
+                  'LS-1,Gannet Point Light,42,FL-W-10,SS-1,2026-01-01,9999-12-31\n'+
+                  'LS-2,Cormorant Head Light,28,OC-R-6,SS-2,2026-01-01,2026-02-15\n'+
+                  'LS-2,Cormorant Head Light,31,OC-R-6,SS-2,2026-02-15,9999-12-31\n'+
+                  'LS-3,Kelp Reach Light,19,ISO-W-4,SS-1,2026-06-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoOpenStations:
+              Relation
+              #{
+                stationCode,stationName,focalHeightMetres,coastName,coastTag
+                LS-1,Gannet Point Light,42,Northern Shingle Coast,NORTHERN SHINGLE COAST
+                LS-2,Cormorant Head Light,31,Western Basalt Coast,WESTERN BASALT COAST;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

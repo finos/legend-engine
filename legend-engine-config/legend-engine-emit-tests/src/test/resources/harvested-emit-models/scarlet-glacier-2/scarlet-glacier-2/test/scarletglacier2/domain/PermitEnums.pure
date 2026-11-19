@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum {meta::pure::profiles::doc.doc = 'How a gardener holds the plot the application concerns.'} demo::scarletglacier2::domain::TenureKind
+{
+  ALLOTTED_PLOT,
+  LEASED_PLOT,
+  SHARED_PLOT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The role an address plays for a gardener.'} demo::scarletglacier2::domain::AddressKind
+{
+  RESIDENTIAL,
+  POSTAL,
+  SITE_GATE
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The kind of paper a gardener offers to evidence residency.'} demo::scarletglacier2::domain::IdentificationKind
+{
+  LIBRARY_CARD,
+  RESIDENCY_LETTER,
+  UTILITY_STATEMENT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Where an application stands in the site committee cycle.'} demo::scarletglacier2::domain::ApplicationStatus
+{
+  DRAFT,
+  LODGED,
+  UNDER_REVIEW,
+  GRANTED,
+  DECLINED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The category of a document attached to an application.'} demo::scarletglacier2::domain::DocumentCategory
+{
+  SITE_SKETCH,
+  SOIL_REPORT,
+  CONSENT_LETTER,
+  PLOT_PHOTOGRAPH
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How the site office reaches a gardener.'} demo::scarletglacier2::domain::ContactMethod
+{
+  POST,
+  TELEPHONE,
+  NOTICEBOARD
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The standing plot fractions the site lets out. Exercised at both ends of its value list.'} demo::scarletglacier2::domain::PlotFraction
+{
+  QUARTER,
+  HALF,
+  FULL
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The soil grade recorded for a plot bed.'} demo::scarletglacier2::domain::SoilGrade
+{
+  SANDY,
+  LOAM,
+  CLAY,
+  PEAT
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The watering window a plot is rostered onto.'} demo::scarletglacier2::domain::WateringWindow
+{
+  DAWN,
+  DUSK,
+  ROTA
+}
+
+Enum {meta::pure::profiles::doc.doc = 'How a related person stands to the applying gardener.'} demo::scarletglacier2::domain::RelationKind
+{
+  HOUSEHOLD_MEMBER,
+  NEIGHBOUR,
+  GUARDIAN
+}
+
+Enum {meta::pure::profiles::doc.doc = 'The channel a document upload arrived through.'} demo::scarletglacier2::domain::UploadChannel
+{
+  SITE_OFFICE,
+  KIOSK,
+  POSTBOX
+}
+
+Enum {meta::pure::profiles::doc.doc = 'What a plot inspection concluded.'} demo::scarletglacier2::domain::InspectionOutcome
+{
+  PASS,
+  ADVISORY,
+  FAIL
+}

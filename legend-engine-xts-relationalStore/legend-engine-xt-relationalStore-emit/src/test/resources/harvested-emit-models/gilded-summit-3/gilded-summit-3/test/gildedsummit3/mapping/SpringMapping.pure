@@ -1,0 +1,115 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedsummit3::mapping::SpringMapping
+(
+  *test::gildedsummit3::domain::SpringSource: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.spring_source.source_code,
+      [test::gildedsummit3::store::SpringDB]gauge.spring_source.in_z
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.spring_source
+    springName: [test::gildedsummit3::store::SpringDB]gauge.spring_source.spring_name,
+    sourceCode: [test::gildedsummit3::store::SpringDB]gauge.spring_source.source_code,
+    identity[test_gildedsummit3_domain_SpringIdentity]: [test::gildedsummit3::store::SpringDB]@Source_Identity,
+    traits[test_gildedsummit3_domain_SpringTraits]: [test::gildedsummit3::store::SpringDB]@Source_Traits,
+    closures[test_gildedsummit3_domain_SeasonalClosure]: [test::gildedsummit3::store::SpringDB]@Source_Closure
+  }
+
+  *test::gildedsummit3::domain::SpringIdentity: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.spring_identity.source_code
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.spring_identity
+    catchmentCode: [test::gildedsummit3::store::SpringDB]gauge.spring_identity.catchment_code,
+    cairnCode: [test::gildedsummit3::store::SpringDB]gauge.spring_identity.cairn_code,
+    surveyTag: [test::gildedsummit3::store::SpringDB]gauge.spring_identity.survey_tag
+  }
+
+  *test::gildedsummit3::domain::SpringTraits: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.spring_traits.source_code
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.spring_traits
+    aspect: [test::gildedsummit3::store::SpringDB]gauge.spring_traits.aspect,
+    elevationM: [test::gildedsummit3::store::SpringDB]gauge.spring_traits.elevation_m,
+    gaugingWindow[test_gildedsummit3_domain_GaugingWindow]: [test::gildedsummit3::store::SpringDB]@Traits_Window,
+    flowChanges[test_gildedsummit3_domain_FlowRateChange]: [test::gildedsummit3::store::SpringDB]@Traits_Flow
+  }
+
+  *test::gildedsummit3::domain::GaugingWindow: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.gauging_window.window_code
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.gauging_window
+    windowCode: [test::gildedsummit3::store::SpringDB]gauge.gauging_window.window_code,
+    openedOn: [test::gildedsummit3::store::SpringDB]gauge.gauging_window.opened_on,
+    closedOn: [test::gildedsummit3::store::SpringDB]gauge.gauging_window.closed_on
+  }
+
+  *test::gildedsummit3::domain::FlowRateChange: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.flow_rate_change.change_code
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.flow_rate_change
+    changeCode: [test::gildedsummit3::store::SpringDB]gauge.flow_rate_change.change_code,
+    changedOn: [test::gildedsummit3::store::SpringDB]gauge.flow_rate_change.changed_on,
+    litresPerMinute: [test::gildedsummit3::store::SpringDB]gauge.flow_rate_change.litres_per_minute
+  }
+
+  *test::gildedsummit3::domain::SeasonalClosure: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.seasonal_closure.closure_code
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.seasonal_closure
+    closureCode: [test::gildedsummit3::store::SpringDB]gauge.seasonal_closure.closure_code,
+    notice[test_gildedsummit3_domain_ClosureNotice]: [test::gildedsummit3::store::SpringDB]@Closure_Notice
+  }
+
+  *test::gildedsummit3::domain::ClosureNotice: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.closure_notice.notice_code
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.closure_notice
+    noticeCode: [test::gildedsummit3::store::SpringDB]gauge.closure_notice.notice_code,
+    reason[test_gildedsummit3_domain_ClosureReason]: [test::gildedsummit3::store::SpringDB]@Notice_Reason
+  }
+
+  *test::gildedsummit3::domain::ClosureReason: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedsummit3::store::SpringDB]gauge.closure_reason.reason_code
+    )
+    ~mainTable [test::gildedsummit3::store::SpringDB]gauge.closure_reason
+    reasonCode: [test::gildedsummit3::store::SpringDB]gauge.closure_reason.reason_code,
+    reasonText: [test::gildedsummit3::store::SpringDB]gauge.closure_reason.reason_text,
+    hazardLevel: [test::gildedsummit3::store::SpringDB]gauge.closure_reason.hazard_level
+  }
+)

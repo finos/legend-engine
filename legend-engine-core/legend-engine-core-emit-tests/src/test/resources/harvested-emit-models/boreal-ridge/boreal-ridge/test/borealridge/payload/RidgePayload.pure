@@ -1,0 +1,45 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::borealridge::domain::*;
+import test::borealridge::payload::*;
+import test::borealridge::profile::*;
+
+Class test::borealridge::payload::PatrolPayload
+{
+  sectionCode: String[1];
+  patrolledOn: StrictDate[1];
+  record: PatrolPayloadRecord[1];
+}
+
+Class test::borealridge::payload::PatrolPayloadRecord
+{
+  surfaceCode: String[0..1];
+  gradeCode: String[0..1];
+  markersMissing: Integer[0..1];
+  stewardCode: String[1];
+  plannedOn: StrictDate[0..1];
+}
+
+Class <<RidgeVocabulary.publishedSurface>> test::borealridge::payload::PatrolDigest
+{
+  {RidgeVocabulary.displayName = 'Section Code', RidgeVocabulary.targetName = 'section_code'} sectionCode: String[1];
+  {RidgeVocabulary.displayName = 'Marker Band'} markerBand: String[1];
+  {RidgeVocabulary.displayName = 'Steward Label'} stewardLabel: String[1];
+  registrationState: String[1];
+  effectiveOn: StrictDate[1];
+  surface: SurfaceType[1];
+  grade: RouteGrade[1];
+}

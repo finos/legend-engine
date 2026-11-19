@@ -1,0 +1,42 @@
+name: jade-vineyard
+title: "Vineyard Irrigation Schedules with Conditional Crop Labels and Multi-Execution Queries"
+description: |
+  A vineyard irrigation schedule joins runs through vine blocks, estate parcels, districts,
+  and climate zones while deriving trellis labels and null-aware readiness bands. A
+  multi-execution service selects an independently configured runtime by district key.
+modelSources:
+  model:
+    root: jade-vineyard
+    files:
+      - test/jadevineyard/connection/VineyardConnections.pure
+      - test/jadevineyard/domain/VineyardDomain.pure
+      - test/jadevineyard/mapping/VineyardMapping.pure
+      - test/jadevineyard/runtime/VineyardRuntimes.pure
+      - test/jadevineyard/service/VineyardServices.pure
+      - test/jadevineyard/store/VineyardDatabase.pure
+features:
+  - execution:multi-execution-service
+  - execution:service
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - query:filter
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - duckdb
+  - h2
+  - irrigation-schedule
+  - multi-execution
+  - multi-hop-join
+  - vineyard

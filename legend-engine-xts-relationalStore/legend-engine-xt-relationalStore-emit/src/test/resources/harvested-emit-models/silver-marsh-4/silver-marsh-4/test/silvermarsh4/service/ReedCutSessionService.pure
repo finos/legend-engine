@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::silvermarsh4::service::ReedCutSessionService
+{
+  pattern: '/silvermarsh4/reedCutSessions';
+  title: 'Reed Cut Session Register';
+  ownership: DID { identifier: 'wetland-reserve-volunteering' };
+  documentation: 'Publishes the individual reed-cutting sessions of the requested habitat window as a projected register rather than an aggregate, so the plan shape is a filtered projection over the same mapping the rollups use.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {seasonStart: StrictDate[1], habitat: String[1]|test::silvermarsh4::domain::ReedCut.all()->filter(
+      c|($c.cutOn >= $seasonStart) && ($c.habitatType == $habitat)
+    )->project(
+      [
+        c|$c.sessionCode,
+        c|$c.sectorName,
+        c|$c.crewName,
+        c|$c.cutOn,
+        c|$c.metresCut,
+        c|$c.volunteerHours,
+        c|$c.cutNote
+      ],
+      [
+        'Session',
+        'Sector',
+        'Crew',
+        'Cut On',
+        'Metres Cut',
+        'Volunteer Hours',
+        'Note'
+      ]
+    )->sort(
+      [
+        asc('Session')
+      ]
+    )};
+    mapping: test::silvermarsh4::mapping::ReserveMapping;
+    runtime: test::silvermarsh4::runtime::ReserveRuntime;
+  }
+  testSuites:
+  [
+    reedCutSessionSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          reserveH2Connection:
+            Reference
+            #{
+              test::silvermarsh4::data::ReedCutSeasonData
+            }#
+        ]
+      ]
+      tests:
+      [
+        windowedSessionsIncludingOneWithoutANote:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonStart = %2026-03-01,
+            habitat = 'REEDBED'
+          ]
+          asserts:
+          [
+            fourSessionsOneNoteless:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session":"RC-0001","Sector":"NORTH FEN","Crew":"MARSH TEAM","Cut On":"2026-03-01","Metres Cut":120.5,"Volunteer Hours":8.0,"Note":"Cut back to the sluice line"},{"Session":"RC-0002","Sector":"NORTH FEN","Crew":"MARSH TEAM","Cut On":"2026-03-08","Metres Cut":80.25,"Volunteer Hours":6.0,"Note":"Second pass along the dyke"},{"Session":"RC-0003","Sector":"SOUTH CARR","Crew":"WILLOW TEAM","Cut On":"2026-03-09","Metres Cut":45.75,"Volunteer Hours":4.5,"Note":"Brash stacked clear of the ditch"},{"Session":"RC-0006","Sector":"EAST SCRAPE","Crew":"OTTER TEAM","Cut On":"2026-03-11","Metres Cut":10.0,"Volunteer Hours":1.5}]';
+                  }#;
+              }#
+          ]
+        },
+        fenWindowHoldsOneSession:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            seasonStart = %2026-03-01,
+            habitat = 'FEN'
+          ]
+          asserts:
+          [
+            oneFenSession:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Session":"RC-0004","Sector":"SOUTH CARR","Crew":"WILLOW TEAM","Cut On":"2026-03-10","Metres Cut":30.0,"Volunteer Hours":3.0,"Note":"Sedge left uncut for the warblers"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

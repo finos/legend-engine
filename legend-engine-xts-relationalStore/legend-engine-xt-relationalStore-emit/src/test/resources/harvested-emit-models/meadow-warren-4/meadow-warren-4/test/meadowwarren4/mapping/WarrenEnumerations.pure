@@ -1,0 +1,44 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::meadowwarren4::mapping::WarrenEnumerations
+(
+  demo::meadowwarren4::domain::SwardCondition: EnumerationMapping SwardConditionMap
+  {
+    CLOSE_GRAZED: ['C1'],
+    TUSSOCK: ['C2'],
+    MIXED_SWARD: ['C3'],
+    RANK: ['C4'],
+    SCRUBBING_OVER: ['C5'],
+    BARE_GROUND: ['C6'],
+    FLOWER_RICH: ['C7'],
+    MOSS_DOMINANT: ['C8'],
+    UNSURVEYED: ['C9']
+  }
+
+  demo::meadowwarren4::domain::WardenAction: EnumerationMapping WardenActionMap
+  {
+    PATROL: ['PTL'],
+    REPAIR: ['RPR'],
+    MONITOR: ['MON']
+  }
+
+  demo::meadowwarren4::domain::AccessKind: EnumerationMapping AccessKindMap
+  {
+    GATE_KEY: ['KEY'],
+    VEHICLE: ['VEH'],
+    ON_FOOT: ['FOOT']
+  }
+)

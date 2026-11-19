@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import demo::opalgecko::domain::*;
+import meta::pure::profiles::*;
+
+Class <<temporal.processingtemporal>> {doc.doc = 'Anything the seed vault keeps a versioned record of. Every record kind extends this root, so the processing timeline is declared once and inherited by the whole graph.'} demo::opalgecko::domain::VaultRecord
+{
+  {doc.doc = 'Vault-wide identifier of the record.'} recordCode: String[1];
+  {doc.doc = 'Label of the shelf or bay the record is filed against.'} shelfLabel: String[1];
+  {doc.doc = 'Team keeping the record up to date.'} custodianTeam: String[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A stored propagule sample: the wide record kind carrying its conservation tier, the form it was collected in and the mass held.'} demo::opalgecko::domain::StoredSample extends VaultRecord
+{
+  {doc.doc = 'How the sample is conserved.'} tier: ConservationTier[1];
+  {doc.doc = 'Part of the plant the sample was collected from.'} form: PropaguleForm[1];
+  {doc.doc = 'Mass of material held, in grams.'} gramsHeld: Integer[1];
+  {doc.doc = 'Field note kept by the collectors.'} collectionNote: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A sample that has been through curation, two levels down the record hierarchy and inheriting its processing timeline rather than declaring a different one.'} demo::opalgecko::domain::CuratedSample extends StoredSample
+{
+  {doc.doc = 'Label the curation round filed the sample under.'} curationLabel: String[1];
+  {doc.doc = 'Whether the curated sample is cleared for exchange with other vaults.'} clearedForExchange: Boolean[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A germination trial run against a sample, versioned on the same processing timeline as the sample it was sown from.'} demo::opalgecko::domain::GerminationTrial extends VaultRecord
+{
+  {doc.doc = 'Verdict the trial left the sample in.'} grade: ViabilityGrade[1];
+  {doc.doc = 'How many propagules were sown.'} sownCount: Integer[1];
+  {doc.doc = 'How many of the sown propagules sprouted.'} sproutedCount: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A vessel of the vault holding samples in one storage medium.'} demo::opalgecko::domain::StorageVessel extends VaultRecord
+{
+  {doc.doc = 'Medium the vessel keeps its samples in.'} medium: StorageMedium[1];
+  {doc.doc = 'Mass the vessel can hold, in grams.'} capacityGrams: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> {doc.doc = 'A pressed voucher sheet filed for a sample; the presence of the link to it is the information, not any value on it.'} demo::opalgecko::domain::VoucherSheet extends VaultRecord
+{
+  {doc.doc = 'Number the voucher sheet is filed under in the herbarium cabinet.'} sheetNumber: String[1];
+}

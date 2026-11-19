@@ -1,0 +1,89 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::cobaltmarsh::service::BirdTallies
+{
+  pattern: '/cobaltmarsh/birdTallies';
+  owners:
+  [
+    'wetland-monitoring'
+  ];
+  documentation: 'Projects bird tallies with the conditional flock-size band covering large, medium, empty and small observations.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::cobaltmarsh::domain::BirdCount.all()->project(
+      [
+        x|$x.countId,
+        x|$x.speciesCode,
+        x|$x.tally,
+        x|$x.flockSize
+      ],
+      [
+        'CountId',
+        'Species',
+        'Tally',
+        'FlockSize'
+      ]
+    )->sort(
+      [
+        asc('CountId')
+      ]
+    );
+    mapping: test::cobaltmarsh::mapping::MarshMapping;
+    runtime: test::cobaltmarsh::runtime::MarshRuntime;
+  }
+  testSuites:
+  [
+    birdTalliesSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          marshConnection:
+            Relational
+            #{
+                marsh.bird_count:
+                  'count_id,station_id,species_code,tally,observed_on\n'+
+                  'BC-01,ST-01,WADER,140,2024-05-04\n'+
+                  'BC-02,ST-02,DUCK,45,2024-05-04\n'+
+                  'BC-03,ST-03,EGRET,0,2024-05-05\n'+
+                  'BC-04,ST-04,GULL,7,2024-05-05\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        projectedRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected: ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"CountId":"BC-01","Species":"WADER","Tally":140,"FlockSize":"Large"},{"CountId":"BC-02","Species":"DUCK","Tally":45,"FlockSize":"Medium"},{"CountId":"BC-03","Species":"EGRET","Tally":0,"FlockSize":"None"},{"CountId":"BC-04","Species":"GULL","Tally":7,"FlockSize":"Small"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelestuary::service::GaugeReadingsAsOf
+{
+  pattern: '/estuary/v1/gauge-readings/{processingDate}';
+  title: 'Estuary - Gauge Readings As Of';
+  owners:
+  [
+    'estuary-monitoring',
+    'tideflat-survey'
+  ];
+  documentation: 'Returns the estuary gauge readings whose processing window is in force on the requested processing date, projecting the station, its upper-cased zone, a three-character gauge label cut out of the station code and the turbidity index. The milestoning window is the only predicate.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1]|test::hazelestuary::domain::GaugeReading.all($processingDate)->project(
+      [
+        g|$g.stationCode,
+        g|$g.zoneName,
+        g|$g.gaugeLabel,
+        g|$g.turbidityIndex
+      ],
+      [
+        'Station',
+        'Zone',
+        'Gauge',
+        'Turbidity'
+      ]
+    )->sort(
+      [
+        asc('Station')
+      ]
+    )};
+    mapping: test::hazelestuary::mapping::EstuaryMapping;
+    runtime: test::hazelestuary::runtime::EstuaryRuntime;
+  }
+  testSuites:
+  [
+    gaugeReadingsAsOfSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          estuaryConnection:
+            Relational
+            #{
+              tideflat.gauge_reading:
+                'reading_id,station_code,zone_code,turbidity_index,in_z,out_z\n'+
+                '1,STN-01,tidal,12.5,2026-01-01,9999-12-31\n'+
+                '2,STN-02,brackish,8.0,2025-01-01,2025-06-30\n'+
+                '3,STN-03,tidal,4.25,2025-02-01,2025-09-30\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        inForceOnly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-03-01
+          ]
+          asserts:
+          [
+            onlyTheInWindowReading:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Station":"STN-01","Zone":"TIDAL","Gauge":"STN","Turbidity":12.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

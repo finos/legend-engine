@@ -1,0 +1,34 @@
+name: lunar-willow-5
+title: "Lunar Willow Public Library Catalogue"
+description: |
+  A public library catalogue with one wide relational record and two supporting
+  relations in a single schema. The wide class binds sixty-four scalar
+  properties through a store-qualified main-table alias and explicit primary
+  key, while the supporting classes exercise the additional catalogue tables.
+  Three mapping test suites project the catalogue record and each supporting
+  relation over deterministic fixtures.
+modelSources:
+  model:
+    root: lunar-willow-5
+    files:
+      - test/lunarwillow5/domain/LibraryDomain.pure
+      - test/lunarwillow5/mapping/LibraryMapping.pure
+      - test/lunarwillow5/store/LibraryDatabase.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - catalogue
+  - h2
+  - library
+  - mapping-test
+  - relational
+  - wide-table

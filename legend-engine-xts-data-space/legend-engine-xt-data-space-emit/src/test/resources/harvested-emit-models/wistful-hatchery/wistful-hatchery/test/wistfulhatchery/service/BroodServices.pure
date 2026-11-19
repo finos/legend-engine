@@ -1,0 +1,271 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::wistfulhatchery::service::CohortReadinessDigest
+{
+  pattern: '/wistfulhatchery/v1/cohortReadiness/{region}/{minLarvae}/{asOf}';
+  title: 'Wistful Hatchery - Cohort Readiness Digest';
+  documentation: 'Lists the cohorts in force at a supplied processing date for one conservatory region, reporting the relational vigour band and the derived readiness note for every cohort whose larva tally clears a supplied floor.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'conservatory-rearing-team',
+    'conservatory-platform-eng'
+  ];
+  execution: Single
+  {
+    query: {region: String[1], minLarvae: Integer[1], asOf: StrictDate[1]|test::wistfulhatchery::domain::LarvalCohort.all($asOf)->filter(
+      c|($c.regionName == $region) && ($c.larvaCount >= $minLarvae) && ($c.cohortCode->startsWith('C-'))
+    )->project(
+      ~[
+        cohort: c|$c.cohortCode,
+        band: c|$c.vigourBand,
+        readiness: c|$c.readinessNote,
+        larvae: c|$c.larvaCount
+      ]
+    )->sort([~cohort->ascending()])};
+    mapping: test::wistfulhatchery::mapping::BroodMapping;
+    runtime: test::wistfulhatchery::runtime::BroodRuntime;
+  }
+  testSuites:
+  [
+    readinessSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          broodConnection:
+            Relational
+            #{
+              brood.facility:
+                'facility_id,facility_name,region_name\n'+
+                '1,Ridge Conservatory,North Ridge\n'+
+                '2,Fen Conservatory,South Fen\n';
+              brood.brood_room:
+                'room_id,room_code,facility_id,temperature_c\n'+
+                '1,BR-100,1,24.5\n'+
+                '2,BR-200,2,21.0\n';
+              brood.larval_cohort:
+                'cohort_id,cohort_code,room_id,species_name,larva_count,vigour_score,started_on,in_z,out_z\n'+
+                '1,C-01,1,Ridge Swallowtail,500,1,2026-03-01,2026-01-01,9999-12-31\n'+
+                '2,C-02,1,Ridge Swallowtail,150,8,2026-03-02,2026-01-01,9999-12-31\n'+
+                '3,C-03,1,Fen Blue,320,,2026-03-03,2026-01-01,9999-12-31\n'+
+                '4,C-04,2,Heath Copper,400,7,2026-03-04,2026-01-01,9999-12-31\n'+
+                '5,C-05,1,Marsh Ringlet,600,5,2020-03-05,2020-01-01,2021-12-31\n';
+              brood.host_plant:
+                'plant_id,plant_code,room_id,plant_species,planted_on\n'+
+                '1,HP-01,1,Ridge Fennel,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        readyNorthRidgeCohorts:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            region = 'North Ridge',
+            minLarvae = 200,
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            northRidgeRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "cohort" : "C-01",\n  "band" : "dormant",\n  "readiness" : "DORMANT-DENSE",\n  "larvae" : 500\n}, {\n  "cohort" : "C-03",\n  "band" : null,\n  "readiness" : "unassessed",\n  "larvae" : 320\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::wistfulhatchery::service::RoomStockRollup
+{
+  pattern: '/wistfulhatchery/v1/roomStock/{asOf}';
+  title: 'Wistful Hatchery - Room Stock Rollup';
+  documentation: 'Aggregates the larva tallies of the cohorts in force at a supplied processing date into one row per brood room, reporting both the cohort count and the summed larva stock.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'conservatory-rearing-team'
+  ];
+  execution: Single
+  {
+    query: {asOf: StrictDate[1]|test::wistfulhatchery::domain::LarvalCohort.all($asOf)->project(
+      ~[
+        roomCode: c|$c.roomCode,
+        larvae: c|$c.larvaCount
+      ]
+    )->groupBy(
+      ~[roomCode],
+      ~[
+        cohorts: x|$x.larvae: y|$y->count(),
+        stock: x|$x.larvae: y|$y->sum()
+      ]
+    )->sort([~roomCode->ascending()])};
+    mapping: test::wistfulhatchery::mapping::BroodMapping;
+    runtime: test::wistfulhatchery::runtime::BroodRuntime;
+  }
+  testSuites:
+  [
+    roomStockSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          broodConnection:
+            Relational
+            #{
+              brood.facility:
+                'facility_id,facility_name,region_name\n'+
+                '1,Ridge Conservatory,North Ridge\n'+
+                '2,Fen Conservatory,South Fen\n';
+              brood.brood_room:
+                'room_id,room_code,facility_id,temperature_c\n'+
+                '1,BR-100,1,24.5\n'+
+                '2,BR-200,2,21.0\n';
+              brood.larval_cohort:
+                'cohort_id,cohort_code,room_id,species_name,larva_count,vigour_score,started_on,in_z,out_z\n'+
+                '1,C-01,1,Ridge Swallowtail,500,1,2026-03-01,2026-01-01,9999-12-31\n'+
+                '2,C-02,1,Ridge Swallowtail,150,8,2026-03-02,2026-01-01,9999-12-31\n'+
+                '3,C-03,2,Heath Copper,400,7,2026-03-04,2026-01-01,9999-12-31\n'+
+                '4,C-04,2,Marsh Ringlet,600,5,2020-03-05,2020-01-01,2021-12-31\n';
+              brood.host_plant:
+                'plant_id,plant_code,room_id,plant_species,planted_on\n'+
+                '1,HP-01,1,Ridge Fennel,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        stockPerRoom:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01
+          ]
+          asserts:
+          [
+            roomStockRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "roomCode" : "BR-100",\n  "cohorts" : 2,\n  "stock" : 650\n}, {\n  "roomCode" : "BR-200",\n  "cohorts" : 1,\n  "stock" : 400\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Service
+Service test::wistfulhatchery::service::CohortAgeSpan
+{
+  pattern: '/wistfulhatchery/v1/cohortAge/{asOf}/{windowDays}';
+  title: 'Wistful Hatchery - Cohort Age Span';
+  documentation: 'Reports the age in days of every cohort started inside a rolling window measured back from a supplied reference date, using the same date as the processing correction point.';
+  autoActivateUpdates: true;
+  owners:
+  [
+    'conservatory-rearing-team'
+  ];
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], windowDays: Integer[1]|test::wistfulhatchery::domain::LarvalCohort.all($asOf)->filter(
+      c|($c.startedOn >= $asOf->adjust(-$windowDays, meta::pure::functions::date::DurationUnit.DAYS)) && ($c.startedOn <= $asOf)
+    )->project(
+      ~[
+        cohort: c|$c.cohortCode,
+        room: c|$c.roomCode,
+        ageDays: c|$c.startedOn->dateDiff($asOf, meta::pure::functions::date::DurationUnit.DAYS)
+      ]
+    )->sort([~cohort->ascending()])};
+    mapping: test::wistfulhatchery::mapping::BroodMapping;
+    runtime: test::wistfulhatchery::runtime::BroodRuntime;
+  }
+  testSuites:
+  [
+    cohortAgeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          broodConnection:
+            Relational
+            #{
+              brood.facility:
+                'facility_id,facility_name,region_name\n'+
+                '1,Ridge Conservatory,North Ridge\n';
+              brood.brood_room:
+                'room_id,room_code,facility_id,temperature_c\n'+
+                '1,BR-100,1,24.5\n';
+              brood.larval_cohort:
+                'cohort_id,cohort_code,room_id,species_name,larva_count,vigour_score,started_on,in_z,out_z\n'+
+                '1,C-01,1,Ridge Swallowtail,500,1,2026-05-20,2026-01-01,9999-12-31\n'+
+                '2,C-02,1,Ridge Swallowtail,150,8,2026-05-01,2026-01-01,9999-12-31\n'+
+                '3,C-03,1,Fen Blue,320,3,2026-01-05,2026-01-01,9999-12-31\n';
+              brood.host_plant:
+                'plant_id,plant_code,room_id,plant_species,planted_on\n'+
+                '1,HP-01,1,Ridge Fennel,2026-02-01\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        cohortsInsideWindow:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-06-01,
+            windowDays = 45
+          ]
+          asserts:
+          [
+            windowedCohortRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "cohort" : "C-01",\n  "room" : "BR-100",\n  "ageDays" : 12\n}, {\n  "cohort" : "C-02",\n  "room" : "BR-100",\n  "ageDays" : 31\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

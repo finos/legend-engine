@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'One scheduled hive-inspection appointment in an apiary calendar together with the attendee who runs it. The strict multiplicities mirror the not-null columns of the backing schedule table; only the free-text notes are optional.'} test::frostedapiary::domain::HiveInspectionVisit
+{
+  visitReference: String[1];
+  visitTitle: String[1];
+  visitKind: String[1];
+  calendarName: String[1];
+  organiserName: String[1];
+  inspectorContact: String[1];
+  siteCode: String[1];
+  apiaryZone: String[1];
+  hiveCount: Integer[1];
+  locationNote: String[0..1];
+  agendaNote: String[0..1];
+  weatherNote: String[0..1];
+  startsAt: DateTime[1];
+  endsAt: DateTime[1];
+  allDay: Boolean[1];
+  recurring: Boolean[1];
+  cancelled: Boolean[1];
+  confirmed: Boolean[1];
+  protectiveGearRequired: Boolean[1];
+  smokerRequired: Boolean[1];
+  queenCheckPlanned: Boolean[1];
+  broodCheckPlanned: Boolean[1];
+  varroaCheckPlanned: Boolean[1];
+  harvestPlanned: Boolean[1];
+  feedingPlanned: Boolean[1];
+  travelRequired: Boolean[1];
+  reminderSent: Boolean[1];
+  inspectorName: String[0..1];
+  inspectorTeam: String[0..1];
+  inspectorRegion: String[0..1];
+  siteName: String[0..1];
+  forageType: String[0..1];
+}

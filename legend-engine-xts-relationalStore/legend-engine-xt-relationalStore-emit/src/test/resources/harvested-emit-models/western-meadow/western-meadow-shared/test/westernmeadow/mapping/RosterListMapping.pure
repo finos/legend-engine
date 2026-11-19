@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::westernmeadow::mapping::RosterListMapping
+(
+  include test::westernmeadow::mapping::HabitatLakeMapping
+
+  *test::westernmeadow::domain::WalkRoster[walkRoster]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernmeadow::store::MeadowDB]meadow.walk_roster.roster_code
+    )
+    ~mainTable [test::westernmeadow::store::MeadowDB]meadow.walk_roster
+    rosterCode: [test::westernmeadow::store::MeadowDB]meadow.walk_roster.roster_code,
+    rosterName: [test::westernmeadow::store::MeadowDB]meadow.walk_roster.roster_name,
+    coordinatorName: [test::westernmeadow::store::MeadowDB]meadow.walk_roster.coordinator_name
+  }
+
+  *test::westernmeadow::domain::RosterMember[rosterMember]: Relational
+  {
+    ~primaryKey
+    (
+      [test::westernmeadow::store::MeadowDB]meadow.roster_member.member_ref
+    )
+    ~mainTable [test::westernmeadow::store::MeadowDB]meadow.roster_member
+    memberRef: [test::westernmeadow::store::MeadowDB]meadow.roster_member.member_ref,
+    memberName: [test::westernmeadow::store::MeadowDB]meadow.roster_member.member_name
+  }
+
+  test::westernmeadow::domain::Roster_Member: Relational
+  {
+    AssociationMapping
+    (
+      members[walkRoster, rosterMember]: [test::westernmeadow::store::MeadowDB]@Roster_Member,
+      roster[rosterMember, walkRoster]: [test::westernmeadow::store::MeadowDB]@Roster_Member
+    )
+  }
+
+  test::westernmeadow::domain::Member_Habitat: Relational
+  {
+    AssociationMapping
+    (
+      habitatProfile[rosterMember, habitatProfile]: [test::westernmeadow::store::MeadowDB]@Member_Habitat,
+      profileMember[habitatProfile, rosterMember]: [test::westernmeadow::store::MeadowDB]@Member_Habitat
+    )
+  }
+)

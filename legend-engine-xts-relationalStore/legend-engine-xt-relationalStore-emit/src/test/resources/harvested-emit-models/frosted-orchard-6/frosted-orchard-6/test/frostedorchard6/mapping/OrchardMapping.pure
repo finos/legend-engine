@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::frostedorchard6::mapping::OrchardMapping
+(
+  *test::frostedorchard6::domain::TreeRow[treeRow]: Relational
+  {
+    ~primaryKey
+    (
+      [test::frostedorchard6::store::OrchardDb]orchard.tree_row.row_id
+    )
+    ~mainTable [test::frostedorchard6::store::OrchardDb]orchard.tree_row
+    rowCode: [test::frostedorchard6::store::OrchardDb]orchard.tree_row.row_code,
+    varietyName: [test::frostedorchard6::store::OrchardDb]orchard.tree_row.variety_name,
+    rootstockCode: [test::frostedorchard6::store::OrchardDb]orchard.tree_row.rootstock_code,
+    varietyLabel: concat(
+                    [test::frostedorchard6::store::OrchardDb]orchard.tree_row.variety_name,
+                    ' on ',
+                    [test::frostedorchard6::store::OrchardDb]orchard.tree_row.rootstock_code
+                  ),
+    graftYear: [test::frostedorchard6::store::OrchardDb]orchard.tree_row.graft_year,
+    healthClass: [test::frostedorchard6::store::OrchardDb]orchard.tree_row.health_class,
+    treeCount: [test::frostedorchard6::store::OrchardDb]orchard.tree_row.tree_count
+  }
+
+  testSuites:
+  [
+    treeRowSuite:
+    {
+      function: test::frostedorchard6::domain::TreeRow.all()->project(~[rowCode: x|$x.rowCode, varietyLabel: x|$x.varietyLabel, healthTag: x|$x.healthClass->toUpper(), graftYear: x|$x.graftYear, treeCount: x|$x.treeCount]);
+      tests:
+      [
+        graftedRowsCarryTheirRootstockLabel:
+        {
+          doc: 'Projects the primary-keyed orchard rows off their main-table alias, asserting the relational string transform that welds the grafted variety onto its rootstock code and the query-side upper-casing of the health class.';
+          data:
+          [
+            test::frostedorchard6::store::OrchardDb:
+              Relational
+              #{
+                orchard.tree_row:
+                  'row_id,row_code,variety_name,rootstock_code,graft_year,health_class,tree_count\n'+
+                  '1,RW-01,Frost Pippin,RS-DWARF,2019,vigorous,42\n'+
+                  '2,RW-02,Hollow Russet,RS-SEMI,2021,steady,36\n'+
+                  '3,RW-03,Lantern Crab,RS-STANDARD,2016,frost bitten,18\n';
+              }#
+          ];
+          asserts:
+          [
+            everyGraftedRow:
+              Relation
+              #{
+                rowCode,varietyLabel,healthTag,graftYear,treeCount
+                RW-01,Frost Pippin on RS-DWARF,VIGOROUS,2019,42
+                RW-02,Hollow Russet on RS-SEMI,STEADY,2021,36
+                RW-03,Lantern Crab on RS-STANDARD,FROST BITTEN,2016,18;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

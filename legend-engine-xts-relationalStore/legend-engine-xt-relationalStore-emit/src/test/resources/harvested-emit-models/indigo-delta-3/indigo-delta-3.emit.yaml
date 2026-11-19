@@ -1,0 +1,59 @@
+name: indigo-delta-3
+title: "Indigo Delta 3 — Apiary Inspection Verdicts: Ten Blank-Column Conditionals over a Filtered Log, a Yard Hop and a Grouped Forage View"
+description: |
+  A beekeeping inspection log whose single wide inspection class is bound to a
+  filtered main table and reaches two different relations over two
+  dyna-function join conditions: the standing-ground table for stewardship,
+  shelter, naming and linkage verdicts, and a grouped inline view for sampling,
+  yield, top-source and survey verdicts. Ten property bindings are emptiness
+  conditionals over the join-reached columns, one binding is a nested
+  upper-cased and trimmed string composition, one is a constant the store is
+  never consulted for, and the remaining bindings read the driver table
+  directly. A named store filter suppresses voided log sheets with an
+  inequality predicate. Two mapping test suites seed the three relations: the
+  first drives every positive and negative arm of all ten verdicts — a fully
+  populated yard with samples, an inspection whose yard code has no standing
+  ground at all, two yards with individually blank columns, and a named yard
+  with no forage sampling — and the second reads the grouped view directly so
+  the counted, summed and maximum aggregates are asserted on their own.
+modelSources:
+  model:
+    root: indigo-delta-3
+    files:
+      - test/indigodelta3/connection/ApiaryConnection.pure
+      - test/indigodelta3/domain/ApiaryDomain.pure
+      - test/indigodelta3/mapping/ApiaryMapping.pure
+      - test/indigodelta3/runtime/ApiaryRuntime.pure
+      - test/indigodelta3/store/ApiaryDb.pure
+features:
+  - mapping:relational-conditional-transform
+  - mapping:relational-literal
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-view-backed-property
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-dyna-function
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - apiary-inspection
+  - conditional-transform
+  - dyna-function
+  - grouped-inline-view
+  - h2
+  - inner-join
+  - mapping-test
+  - relational
+  - store-filter
+  - string-transform
+  - view-backed-property

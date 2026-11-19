@@ -1,0 +1,34 @@
+name: golden-thicket-5
+title: "Golden Thicket 5 — cross-schema rail yard store scaffolding stitched by inner joins"
+description: |
+  A freight rail yard wagon register held as store scaffolding only. A staging database
+  publishes one flattened arrival table as the yard receives it, while an operations database
+  splits the same material across a yard schema of wagons, consists, sidings and inspection
+  tables and a roster schema of shift crews and the depots they answer to. Inner joins stitch a
+  wagon to its consist, its siding and its latest inspection, and two further joins cross from
+  the yard schema into the roster schema to reach the crew that shunted a consist and the depot
+  that crew belongs to; one of those joins keys on a composite primary key. Plain classes
+  publish the same subject logically. No mapping, connection, runtime or executable element sits
+  on top, so the run exercises the store shapes on their own.
+modelSources:
+  model:
+    root: golden-thicket-5
+    files:
+      - test/goldenthicket5/domain/YardDomain.pure
+      - test/goldenthicket5/store/YardStores.pure
+features:
+  - scaffolding:class
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: basic
+tags:
+  - cross-schema
+  - inner-join
+  - multi-table
+  - rail-yard
+  - relational
+  - scaffolding

@@ -1,0 +1,90 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::sunlitwarren2::store::WarrenDb
+(
+  Schema warrens
+  (
+    Table burrow
+    (
+      burrow_id INTEGER PRIMARY KEY,
+      burrow_code VARCHAR(20) NOT NULL,
+      warren_code VARCHAR(12) NOT NULL,
+      keeper_code VARCHAR(12) NOT NULL,
+      zone_code VARCHAR(12) NOT NULL,
+      chamber_count INTEGER NOT NULL
+    )
+
+    Table warren
+    (
+      warren_code VARCHAR(12) PRIMARY KEY,
+      warren_name VARCHAR(60) NOT NULL,
+      heath_code VARCHAR(12) NOT NULL
+    )
+
+    Table heath
+    (
+      heath_code VARCHAR(12) PRIMARY KEY,
+      heath_name VARCHAR(60) NOT NULL,
+      reserve_code VARCHAR(12) NOT NULL
+    )
+
+    Table reserve
+    (
+      reserve_code VARCHAR(12) PRIMARY KEY,
+      reserve_name VARCHAR(60) NOT NULL,
+      biome_kind VARCHAR(40) NOT NULL
+    )
+
+    Table keeper
+    (
+      keeper_code VARCHAR(12) PRIMARY KEY,
+      keeper_name VARCHAR(60) NOT NULL,
+      zone_code VARCHAR(12) NOT NULL
+    )
+
+    Table zone
+    (
+      zone_code VARCHAR(12) PRIMARY KEY,
+      zone_name VARCHAR(60) NOT NULL
+    )
+  )
+
+  Join Burrow_Warren
+  (
+    warrens.burrow.warren_code = warrens.warren.warren_code
+  )
+
+  Join Warren_Heath
+  (
+    warrens.warren.heath_code = warrens.heath.heath_code
+  )
+
+  Join Heath_Reserve
+  (
+    warrens.heath.reserve_code = warrens.reserve.reserve_code
+  )
+
+  Join Burrow_Keeper
+  (
+    warrens.burrow.keeper_code = toUpper(warrens.keeper.keeper_code)
+      and warrens.burrow.zone_code = warrens.keeper.zone_code
+  )
+
+  Join Keeper_Zone
+  (
+    warrens.keeper.zone_code = warrens.zone.zone_code
+  )
+)

@@ -1,0 +1,82 @@
+name: golden-quokka-2
+title: "Golden Quokka 2 - Parallel Segment Schemas Over One Composed Reserve Store"
+description: |
+  A wildlife reserve's burrow register, modelled so that one logical model is
+  served three times over per-segment copies of the same physical layout. A
+  single reserve store composes three separately declared reference stores
+  through store-level includes - the species reference, the warden roster and
+  the sector estate - and then declares three parallel schemas of its own, each
+  carrying its own copy of the burrow, habitat-zone, inspection and forage
+  tables. Every join is declared locally in the composing store, and each
+  segment's joins reach both sideways into its own schema and across into the
+  borrowed reference tables, so the enrichment join graph only resolves because
+  of the store composition. Eight classes, four enumerations and four
+  associations sit above that layout. Two leaf mappings hold the shared parts:
+  one carries the four enumeration mappings and the other binds the four
+  reference classes to the borrowed tables. Three sibling mappings then bind the
+  same four segment classes and the same four association implementations with
+  byte-for-byte identical transform logic, differing only in which segment
+  schema their main-table aliases and join references point at, each including
+  both leaf mappings so the shared parts are declared once and consumed three
+  times. The transform logic is where the model earns its complexity: an
+  eight-armed conditional cascade over a condition column whose final arm emits
+  a typed SQL null, an enumeration mapping applied to a computed expression
+  rather than a bare column so an unrecognised code resolves to no member at
+  all, a sentinel column that becomes a null note, a concatenated and
+  upper-cased label, and a join-reached species name borrowed from an included
+  store. Three mapping test suites carry the proof: two over the first segment,
+  covering all eight conditional arms, the null fallback, the unmapped
+  enumeration source value, the sentinel null and both association walks, and
+  one over the second segment asserting that the parallel variant derives
+  identically from its own schema.
+modelSources:
+  model:
+    root: golden-quokka-2
+    files:
+      - test/goldenquokka2/domain/ReserveDomain.pure
+      - test/goldenquokka2/mapping/ReserveEastMapping.pure
+      - test/goldenquokka2/mapping/ReserveEnumMappings.pure
+      - test/goldenquokka2/mapping/ReserveNorthMapping.pure
+      - test/goldenquokka2/mapping/ReserveReferenceMapping.pure
+      - test/goldenquokka2/mapping/ReserveSouthMapping.pure
+      - test/goldenquokka2/store/ReserveStores.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping-include
+  - mapping:parallel-schema-variant-mappings
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-store-include
+stores:
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - branch-coverage
+  - conditional-cascade
+  - enumeration-mapping
+  - h2
+  - mapping-include
+  - mapping-tests
+  - null-sentinel
+  - parallel-schema-variants
+  - store-include
+  - tabular-data-set

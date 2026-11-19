@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::verdantcove2::domain::*;
+
+Enum {meta::pure::profiles::doc.doc = 'Stage of the tidal cycle during which a shoreline survey was carried out.'} test::verdantcove2::domain::TidePhase
+{
+  EBB,
+  SLACK,
+  FLOOD
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Dominant substrate of a surveyed quadrat or shoreline segment.'} test::verdantcove2::domain::SubstrateType
+{
+  SAND,
+  COBBLE,
+  BEDROCK,
+  KELP
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Editorial state of a survey record inside the shoreline catalogue.'} test::verdantcove2::domain::SurveyStatus
+{
+  DRAFT,
+  REVIEWED,
+  PUBLISHED
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Banded abundance of a counted species within one quadrat.'} test::verdantcove2::domain::AbundanceBand
+{
+  RARE,
+  OCCASIONAL,
+  COMMON,
+  ABUNDANT
+}
+
+Class {meta::pure::profiles::doc.doc = 'Reference detail of a field observer, defined once and embedded by every record shape that credits an observer.'} test::verdantcove2::domain::ObserverRef
+{
+  observerId: Integer[1];
+  displayName: String[1];
+  station: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Reference detail of a shoreline location, defined once and embedded by every record shape that is geo-located.'} test::verdantcove2::domain::LocationRef
+{
+  siteCode: String[1];
+  shoreline: String[1];
+  latitude: Float[1];
+  longitude: Float[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Bookkeeping detail carried by a page envelope: an opaque continuation marker plus the page size that produced it.'} test::verdantcove2::domain::PageMarker
+{
+  continuationMarker: String[0..1];
+  pageSize: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single shoreline survey visit with its tidal context, editorial state and embedded observer and location details.'} test::verdantcove2::domain::SurveyRecord
+{
+  surveyId: Integer[1];
+  conductedOn: StrictDate[1];
+  recordedAt: DateTime[1];
+  tidePhase: TidePhase[1];
+  status: SurveyStatus[1];
+  observer: ObserverRef[1];
+  location: LocationRef[1];
+  notes: String[0..1];
+  sampleTags: String[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A counted species occurrence within a survey, banded by abundance and credited to an observer.'} test::verdantcove2::domain::SpeciesCount
+{
+  countId: Integer[1];
+  speciesName: String[1];
+  individuals: Integer[1];
+  abundance: AbundanceBand[1];
+  meanLengthCm: Float[0..1];
+  observer: ObserverRef[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A quadrat placed on the shoreline with its substrate, cover fraction and embedded location detail.'} test::verdantcove2::domain::QuadratReading
+{
+  readingId: Integer[1];
+  quadratLabel: String[1];
+  substrate: SubstrateType[1];
+  coveragePct: Float[1];
+  depthCm: Integer[1];
+  location: LocationRef[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A water sample drawn during a survey, carrying salinity and temperature readings.'} test::verdantcove2::domain::WaterSample
+{
+  sampleId: Integer[1];
+  salinityPpt: Float[1];
+  temperatureC: Float[1];
+  collectedAt: DateTime[1];
+  location: LocationRef[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A named stretch of shoreline with its measured length and exposure rating.'} test::verdantcove2::domain::ShorelineSegment
+{
+  segmentId: Integer[1];
+  name: String[1];
+  lengthMetres: Float[1];
+  substrate: SubstrateType[1];
+  exposureIndex: Integer[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A survey team holding an unbounded collection of observer references.'} test::verdantcove2::domain::SurveyTeam
+{
+  teamId: Integer[1];
+  teamName: String[1];
+  members: ObserverRef[*];
+  activeSince: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A piece of field equipment with an optional calibration date.'} test::verdantcove2::domain::EquipmentItem
+{
+  itemId: Integer[1];
+  description: String[1];
+  serial: String[1];
+  calibratedOn: StrictDate[0..1];
+}

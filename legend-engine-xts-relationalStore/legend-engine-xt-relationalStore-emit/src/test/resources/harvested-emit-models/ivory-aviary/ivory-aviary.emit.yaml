@@ -1,0 +1,47 @@
+name: ivory-aviary
+title: "Ivory Aviary - Processing-temporal shorebird ring roster with a compound case-normalised predicate"
+description: |
+  A shorebird ringing observatory whose ring register is processing-temporal, so
+  every roster query pins the extent to a caller-supplied processing date and the
+  generated statement carries the validity window on top of the user predicate.
+  The service body mixes an upper-cased mode comparison with two set memberships
+  under conjunction and disjunction, and projects an eight-way conditional age
+  band, a remark sentinel and string-derived observer and ring measures.
+modelSources:
+  model:
+    root: ivory-aviary
+    files:
+      - test/ivoryaviary/connection/AviaryConnection.pure
+      - test/ivoryaviary/data/AviaryFixture.pure
+      - test/ivoryaviary/domain/AviaryDomain.pure
+      - test/ivoryaviary/mapping/AviaryMapping.pure
+      - test/ivoryaviary/runtime/AviaryRuntime.pure
+      - test/ivoryaviary/service/RingRosterService.pure
+      - test/ivoryaviary/store/AviaryStore.pure
+features:
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - milestoning:processing-temporal
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - conditional-transform
+  - h2
+  - null-sentinel
+  - processing-temporal
+  - relational
+  - ringing-observatory
+  - service-test
+  - set-membership
+  - shorebird-survey
+  - string-function-transform
+  - tabular-data-set

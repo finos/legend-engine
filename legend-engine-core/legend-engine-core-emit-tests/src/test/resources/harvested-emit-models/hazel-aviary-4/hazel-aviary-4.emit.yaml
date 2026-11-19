@@ -1,0 +1,28 @@
+name: hazel-aviary-4
+title: "Hazel Aviary 4 - an inherited aviary domain with an enumerated resident hierarchy and a business-temporal occupancy extent"
+description: |
+  A store-less aviary domain. One resident base class carries the shared ring and plumage shape and is
+  specialised by two extending kinds, a perching one and a wading one, so the enumerated plumage stage
+  and feeding habit are inherited rather than restated. A flight cage class is reached from the resident
+  extent through an association, and a business-temporal occupancy extent records head counts over a
+  cage so every traversal of it resolves as of a business date. The group carries no store, mapping or
+  runtime, so the shapes are proven by compilation alone.
+modelSources:
+  model:
+    root: hazel-aviary-4
+    files:
+      - test/hazelaviary4/domain/AviaryDomain.pure
+features:
+  - grammar:association
+  - grammar:class-inheritance
+  - grammar:enumeration
+  - milestoning:business-temporal
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - business-temporal
+  - class-inheritance
+  - enumeration
+  - store-less

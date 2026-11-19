@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::azurethistle::data::TurbineEstateData
+{
+  Relational
+  #{
+    estate.turbine_record:
+      'reading_date,asset_code,turbine_name,park_code,feeder_code,track_code,mast_code,blade_set_code,model_code,hub_height_m,rotor_diameter_m,rated_output_kw,generated_kwh,available_hours,downtime_hours,rotor_speed_rpm,pitch_angle_deg,nacelle_bearing_deg,wind_speed_ms,ambient_temp_c,commissioned_on,last_service_on,logged_at,service_crew,terrain_class,curtailment_flag,yaw_fault_flag,deice_flag,service_lock_flag\n'+
+      '2026-03-01,TB-01,Turbine 01,PARK-A,FDR-1,TRK-1,MST-1,BLD-01,MDL-1,81.00,111.00,3250.00,18250.00,701.00,11.00,9.25,2.50,181.00,7.40,4.30,2019-06-01,2026-01-01,2026-03-31 06:20:00,Corrie Crew,peat,1,1,1,1\n'+
+      '2026-03-02,TB-02,Turbine 02,PARK-B,FDR-2,TRK-2,MST-2,BLD-02,MDL-2,82.00,112.00,3300.00,18500.00,702.00,12.00,9.50,3.00,182.00,7.80,4.60,2019-06-02,2026-01-02,2026-03-31 06:20:00,Glen Crew,moraine,0,0,0,0\n'+
+      '2026-03-03,TB-03,Turbine 03,PARK-A,FDR-3,TRK-3,MST-3,BLD-03,MDL-1,83.00,113.00,3350.00,18750.00,703.00,13.00,9.75,3.50,183.00,8.20,4.90,2019-06-03,2026-01-03,2026-03-31 06:20:00,Ridge Crew,scree,,,,\n'+
+      '2026-03-04,TB-04,Turbine 04,PARK-B,FDR-1,TRK-1,MST-1,BLD-04,MDL-2,84.00,114.00,3400.00,19000.00,704.00,14.00,10.00,4.00,184.00,8.60,5.20,2019-06-04,2026-01-04,2026-03-31 06:20:00,Corrie Crew,peat,1,0,1,0\n'+
+      '2026-03-05,TB-05,Turbine 05,PARK-A,FDR-2,TRK-2,MST-2,BLD-05,MDL-1,85.00,115.00,3450.00,19250.00,705.00,15.00,10.25,4.50,185.00,9.00,5.50,2019-06-05,2026-01-05,2026-03-31 06:20:00,Glen Crew,moraine,0,1,0,1\n'+
+      '2026-03-06,TB-06,Turbine 06,PARK-B,FDR-3,TRK-3,MST-3,BLD-06,MDL-2,86.00,116.00,3500.00,19500.00,706.00,16.00,10.50,5.00,186.00,9.40,5.80,2019-06-06,2026-01-06,2026-03-31 06:20:00,Ridge Crew,scree,1,,0,\n'+
+      '2026-03-07,TB-07,Turbine 07,PARK-A,FDR-1,TRK-1,MST-1,BLD-07,MDL-1,87.00,117.00,3550.00,19750.00,707.00,17.00,10.75,5.50,187.00,9.80,6.10,2019-06-07,2026-01-07,2026-03-31 06:20:00,Corrie Crew,peat,,1,,0\n'+
+      '2026-03-08,TB-08,Turbine 08,PARK-B,FDR-2,TRK-2,MST-2,BLD-08,MDL-2,88.00,118.00,3600.00,20000.00,708.00,18.00,11.00,6.00,188.00,10.20,6.40,2019-06-08,2026-01-08,2026-03-31 06:20:00,Glen Crew,moraine,0,0,1,1\n'+
+      '2026-03-09,TB-09,Turbine 09,PARK-A,FDR-3,TRK-3,MST-3,BLD-09,MDL-1,89.00,119.00,3650.00,20250.00,709.00,19.00,11.25,6.50,189.00,10.60,6.70,2019-06-09,2026-01-09,2026-03-31 06:20:00,Ridge Crew,scree,1,1,0,0\n'+
+      '2026-03-10,TB-10,Turbine 10,PARK-B,FDR-1,TRK-1,MST-1,BLD-10,MDL-2,90.00,120.00,3700.00,20500.00,710.00,20.00,11.50,7.00,190.00,11.00,7.00,2019-06-10,2026-01-10,2026-03-31 06:20:00,Corrie Crew,peat,,0,1,\n';
+
+    estate.nacelle_reading:
+      'reading_date,asset_code,reading_seq,gearbox_temp_c,generator_temp_c,vibration_mms,oil_pressure_bar,mast_code,alarm_flag,logged_at\n'+
+      '2026-03-01,TB-01,1,61.00,71.00,1.20,3.10,MST-1,1,2026-03-31 06:20:00\n'+
+      '2026-03-02,TB-02,2,62.00,72.00,1.40,3.20,MST-2,0,2026-03-31 06:20:00\n'+
+      '2026-03-03,TB-03,3,63.00,73.00,1.60,3.30,MST-3,,2026-03-31 06:20:00\n'+
+      '2026-03-04,TB-04,4,64.00,74.00,1.80,3.40,MST-1,1,2026-03-31 06:20:00\n';
+
+    estate.blade_inspection:
+      'inspection_date,blade_set_code,asset_code,inspector_name,defect_count,leading_edge_grade,root_bolt_torque_nm,repair_flag,logged_at\n'+
+      '2026-02-01,BLD-01,TB-01,Inspector 01,1,LE-1,501.00,1,2026-03-31 06:20:00\n'+
+      '2026-02-02,BLD-02,TB-02,Inspector 02,2,LE-2,502.00,0,2026-03-31 06:20:00\n'+
+      '2026-02-03,BLD-03,TB-03,Inspector 03,3,LE-3,503.00,,2026-03-31 06:20:00\n';
+
+    estate.substation_feeder:
+      'reading_date,feeder_code,substation_name,export_capacity_kw,voltage_kv,track_code,islanded_flag,logged_at\n'+
+      '2026-03-01,FDR-1,Corrie Substation,12500.00,34.00,TRK-1,1,2026-03-31 06:20:00\n'+
+      '2026-03-02,FDR-2,Glen Substation,13000.00,35.00,TRK-2,0,2026-03-31 06:20:00\n'+
+      '2026-03-03,FDR-3,Corrie Substation,13500.00,36.00,TRK-3,,2026-03-31 06:20:00\n';
+
+    estate.access_track:
+      'survey_date,track_code,track_name,length_km,gradient_pct,mast_code,passable_flag,logged_at\n'+
+      '2026-01-01,TRK-1,Track 1,2.50,6.00,MST-1,1,2026-03-31 06:20:00\n'+
+      '2026-01-02,TRK-2,Track 2,3.00,7.00,MST-2,0,2026-03-31 06:20:00\n'+
+      '2026-01-03,TRK-3,Track 3,3.50,8.00,MST-3,,2026-03-31 06:20:00\n';
+
+    estate.met_mast:
+      'reading_date,mast_code,mast_name,height_m,mean_wind_ms,turbulence_pct,icing_flag,logged_at\n'+
+      '2026-03-01,MST-1,Mast 1,79.00,8.30,11.00,1,2026-03-31 06:20:00\n'+
+      '2026-03-02,MST-2,Mast 2,80.00,8.60,12.00,0,2026-03-31 06:20:00\n'+
+      '2026-03-03,MST-3,Mast 3,81.00,8.90,13.00,,2026-03-31 06:20:00\n';
+  }#
+}

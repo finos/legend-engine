@@ -1,0 +1,64 @@
+name: western-gecko
+title: "Western Gecko - One Point-in-Time Search Query: Predicate, Projection, Post-Projection Restriction and De-Duplication"
+description: |
+  A gecko monitoring register whose whole surface is a single search endpoint.
+  The query pins the business-temporal sighting class to a survey day returned by
+  a helper function, narrows it with a four-way conjunction mixing a text test on
+  a navigated habitat, a boolean test on a navigated protection flag, membership
+  in an enumerated habit group, a negated tail condition and a disjunction of two
+  containment tests, and requires a matching observation tag through an existence
+  test over a to-many relationship. The two labelled site columns it projects are
+  then restricted again by the caller's search term against their concatenation
+  and de-duplicated, so distinct site combinations rather than matched sightings
+  decide the output cardinality.
+
+modelSources:
+  model:
+    root: western-gecko
+    files:
+      - test/westerngecko/connection/GeckoConnection.pure
+      - test/westerngecko/domain/GeckoDomain.pure
+      - test/westerngecko/function/GeckoAsOf.pure
+      - test/westerngecko/mapping/GeckoMapping.pure
+      - test/westerngecko/runtime/GeckoRuntime.pure
+      - test/westerngecko/service/GeckoSiteSearch.pure
+      - test/westerngecko/store/GeckoSurveyDb.pure
+
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:enumeration
+  - grammar:function
+  - grammar:qualified-property
+  - mapping:enumeration-mapping
+  - milestoning:point-in-time-query
+  - query:collection-op
+  - query:distinct
+  - query:enum-comparison
+  - query:filter
+  - query:project
+  - query:string-function
+  - query:post-projection-filter
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - as-of
+  - business-temporal
+  - collection-op
+  - distinct
+  - enumeration
+  - h2
+  - point-in-time
+  - post-filter
+  - service-test
+  - string-op
+  - wildlife-tracking

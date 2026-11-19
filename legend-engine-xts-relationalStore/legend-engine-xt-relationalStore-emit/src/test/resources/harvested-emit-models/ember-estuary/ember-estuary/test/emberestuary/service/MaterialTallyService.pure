@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::emberestuary::service::MaterialTallyService
+{
+  pattern: '/emberestuary/materialTally/{reviewDate}';
+  title: 'Material Condition Tally As Of';
+  owners:
+  [
+    'estuary-collection-care'
+  ];
+  documentation: 'Aggregates the conservation reviews effective on a requested review date, keeping only the reviews recorded in the same calendar month and year as that date, and publishes the checked-item totals per gallery and material once the aggregate has been narrowed to the display materials.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {reviewDate: StrictDate[1]|test::emberestuary::domain::ConditionReview.all($reviewDate)->filter(
+      r|($r.reviewMonth == $reviewDate->monthNumber()) && ($r.reviewYear == $reviewDate->year())
+    )->groupBy(
+      [
+        r|$r.galleryCode,
+        r|$r.materialClass
+      ],
+      [
+        agg(r|$r.itemsChecked, y|$y->sum())
+      ],
+      [
+        'Gallery',
+        'Material',
+        'ItemsChecked'
+      ]
+    )->filter(
+      t|($t.getString('Material')->in(['CERAMIC', 'TEXTILE', 'GLASS'])) && (($t.getString('Gallery') != 'G-STORE') && (($t.getInteger('ItemsChecked') > 2) && ($t.getString('Gallery') != 'G-OFFSITE')))
+    )->sort(
+      [
+        asc('Gallery'),
+        asc('Material')
+      ]
+    )};
+    mapping: test::emberestuary::mapping::CuratorialMapping;
+    runtime: test::emberestuary::runtime::CuratorialRuntime;
+  }
+  testSuites:
+  [
+    materialTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          curatorialH2Connection:
+            Relational
+            #{
+              curation.condition_review:
+                'review_id,object_ref,gallery_code,material_class,condition_grade,items_checked,review_month,review_year,bus_from,bus_thru\n'+
+                '1,obj-ceramic-a,G-EAST,CERAMIC,A,6,6,2026,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '2,obj-ceramic-b,G-EAST,CERAMIC,B,4,6,2026,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '3,obj-textile-a,G-WEST,TEXTILE,B,9,6,2026,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '4,obj-glass-a,G-WEST,GLASS,C,1,6,2026,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '5,obj-stone-a,G-EAST,STONE,A,12,6,2026,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '6,obj-ceramic-c,G-STORE,CERAMIC,A,7,6,2026,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '7,obj-textile-b,G-WEST,TEXTILE,A,5,3,2026,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '8,obj-textile-c,G-WEST,TEXTILE,A,8,6,2025,2026-01-01 00:00:00.000,9999-12-31 00:00:00.000\n'+
+                '9,obj-ceramic-d,G-EAST,CERAMIC,A,30,6,2026,2024-01-01 00:00:00.000,2025-01-01 00:00:00.000\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        midYearTally:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            reviewDate = %2026-06-15
+          ]
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Gallery":"G-EAST","Material":"CERAMIC","ItemsChecked":10},{"Gallery":"G-WEST","Material":"TEXTILE","ItemsChecked":9}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

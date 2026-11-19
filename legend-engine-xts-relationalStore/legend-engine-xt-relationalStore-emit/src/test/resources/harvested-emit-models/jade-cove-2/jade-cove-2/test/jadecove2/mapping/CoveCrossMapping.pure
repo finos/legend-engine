@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::jadecove2::mapping::CoveCrossMapping
+(
+  include mapping test::jadecove2::mapping::CoveMapping
+  include mapping test::jadecove2::mapping::PoolDigestM2M
+
+  test::jadecove2::domain::Pool_Digest: XStore
+  {
+    pool[poolDigest, tidePool]: $this.poolCode == $that.poolCode,
+    digest[tidePool, poolDigest]: $this.poolCode == $that.poolCode
+  }
+
+  testSuites:
+  [
+    digestReachesItsPoolSuite:
+    {
+      function: |test::jadecove2::domain::PoolDigest.all()->graphFetch(#{test::jadecove2::domain::PoolDigest{digestCode, poolCode, gradeBand, technicianLabel, pool{poolCode, reachName, wardenName, salinityPpt, waterDepthCm}}}#)->serialize(#{test::jadecove2::domain::PoolDigest{digestCode, poolCode, gradeBand, technicianLabel, pool{poolCode, reachName, wardenName, salinityPpt, waterDepthCm}}}#);
+      tests:
+      [
+        digestsCrossIntoTheShoreStore:
+        {
+          doc: 'Digests folded out of the intake documents resolve their rock pool across a cross-store association into the shore store, covering a digest whose pool is held there and a digest naming a pool that the shore store does not carry.';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::jadecove2::domain::PoolIntake:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"intakeCode":"pi-0001","poolCode":"tp-0001","sampleGrade":"clean","sampleNote":"low swell","technicianCode":"tc-01"},{"intakeCode":"pi-0009","poolCode":"tp-0009","sampleGrade":"clean","sampleNote":"spare pool","technicianCode":"tc-09"}]';
+                  }#
+              }#,
+            test::jadecove2::store::CoveDb:
+              Relational
+              #{
+                shore.tide_pool:
+                  'pool_id,pool_code,shore_code,salinity_ppt,water_depth_cm,substrate_code,surveyor_code\n'+
+                  '1,TP-0001,SH-NORTH,34.25,42,BOULDER,SV-01\n';
+
+                shore.shore_reach:
+                  'reach_id,shore_code,reach_name,warden_name\n'+
+                  '1,SH-NORTH,North Reach,Ada Kelp\n';
+              }#
+          ];
+          asserts:
+          [
+            crossedDigestRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"digestCode":"PI-0001","poolCode":"TP-0001","gradeBand":"CLEAN-SAMPLE","technicianLabel":"TECH/TC-01","pool":{"poolCode":"TP-0001","reachName":"North Reach","wardenName":"Ada Kelp","salinityPpt":34.25,"waterDepthCm":42}},{"digestCode":"PI-0009","poolCode":"TP-0009","gradeBand":"CLEAN-SAMPLE","technicianLabel":"TECH/TC-09","pool":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

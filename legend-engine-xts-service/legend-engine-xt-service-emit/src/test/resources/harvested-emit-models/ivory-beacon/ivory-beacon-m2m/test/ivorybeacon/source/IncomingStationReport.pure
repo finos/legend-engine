@@ -1,0 +1,47 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::ivorybeacon::source::*;
+
+Class {meta::pure::profiles::doc.doc = 'Raw glacier-station report as it arrives from a field logger, with measurements still carried as text and every optional branch genuinely optional.'} test::ivorybeacon::source::IncomingStationReport
+{
+  stationRef: String[1];
+  surveyWindow: String[0..1];
+  narrative: String[*];
+  readings: IncomingReading[*];
+  site: IncomingSite[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One inbound instrument reading, whose depth and melt-rate values may be absent.'} test::ivorybeacon::source::IncomingReading
+{
+  code: String[1];
+  depthText: String[0..1];
+  meltRateText: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Inbound site record a station report may be attached to.'} test::ivorybeacon::source::IncomingSite
+{
+  siteRef: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Inbound site sitting on a named glacier tongue.'} test::ivorybeacon::source::IncomingGlacierSite extends IncomingSite
+{
+  glacierName: String[1];
+  terminusAltitudeText: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Inbound site sitting on a seasonal snowfield.'} test::ivorybeacon::source::IncomingSnowfieldSite extends IncomingSite
+{
+  snowfieldName: String[1];
+}

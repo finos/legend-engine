@@ -1,0 +1,47 @@
+name: eastern-apiary
+title: "Eastern Apiary — relational two-class inner-join EMIT model (keyed main-table mappings, mapping test suite & parameterised service test)"
+description: |
+  A non-financial apiary forage-monitoring model in which one relational store holds two
+  keyed tables in a single schema joined on their site identifier, and one mapping binds a
+  site class and a colony class with explicit primary keys and main table aliases, reaching
+  the site attributes through the declared join. Assertion-backed coverage: a mapping test
+  suite projects across the join over embedded relational fixtures, and a single-execution
+  service filters on a conjunction of two parameter equalities before projecting, with one
+  matching and one non-matching parameter binding.
+modelSources:
+  model:
+    root: eastern-apiary
+    files:
+      - test/easternapiary/domain/ForageDomain.pure
+      - test/easternapiary/mapping/ForageMapping.pure
+      - test/easternapiary/runtime/ForageRuntime.pure
+      - test/easternapiary/service/ColoniesBySiteService.pure
+      - test/easternapiary/store/ForageDatabase.pure
+features:
+  - execution:mapping-test
+  - execution:service
+  - execution:service-test
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:filter
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - apiary
+  - forage
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - multi-table
+  - primary-key
+  - relational
+  - service-test

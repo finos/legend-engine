@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::frostedquarry2::store::FrostQuarryDB
+(
+  Schema frostquarry
+  (
+    Table ice_quarry
+    (
+      quarry_id VARCHAR(24) PRIMARY KEY,
+      quarry_name VARCHAR(120) NOT NULL,
+      region_code VARCHAR(16) NOT NULL,
+      licence_status VARCHAR(16) NOT NULL
+    )
+
+    Table extraction_panel
+    (
+      panel_id VARCHAR(24) PRIMARY KEY,
+      quarry_id VARCHAR(24) NOT NULL,
+      panel_code VARCHAR(24) NOT NULL,
+      ice_thickness_m DOUBLE NOT NULL
+    )
+
+    Table harvest_cycle
+    (
+      cycle_id VARCHAR(24) PRIMARY KEY,
+      panel_id VARCHAR(24) NOT NULL,
+      cycle_code VARCHAR(24) NOT NULL,
+      started_on DATE NOT NULL,
+      crew_size INTEGER NOT NULL
+    )
+
+    Table ice_block
+    (
+      block_id VARCHAR(24) PRIMARY KEY,
+      cycle_id VARCHAR(24) NOT NULL,
+      block_code VARCHAR(24) NOT NULL,
+      mass_kg INTEGER NOT NULL,
+      melt_loss_ratio DOUBLE NOT NULL
+    )
+
+    Table clarity_grade
+    (
+      grade_id VARCHAR(24) PRIMARY KEY,
+      block_id VARCHAR(24) NOT NULL,
+      grade_code VARCHAR(16) NOT NULL,
+      clarity_score INTEGER NOT NULL
+    )
+
+    Table melt_audit
+    (
+      audit_id VARCHAR(24) PRIMARY KEY,
+      block_id VARCHAR(24) NOT NULL,
+      audit_code VARCHAR(24) NOT NULL,
+      measured_loss_ratio DOUBLE NOT NULL
+    )
+
+    Table haul_sled
+    (
+      sled_id VARCHAR(24) PRIMARY KEY,
+      sled_code VARCHAR(24) NOT NULL,
+      capacity_kg INTEGER NOT NULL
+    )
+
+    Table transfer_run
+    (
+      run_id VARCHAR(24) PRIMARY KEY,
+      sled_id VARCHAR(24) NOT NULL,
+      store_id VARCHAR(24) NOT NULL,
+      run_code VARCHAR(24) NOT NULL,
+      run_date DATE NOT NULL
+    )
+
+    Table cold_store
+    (
+      store_id VARCHAR(24) PRIMARY KEY,
+      store_code VARCHAR(24) NOT NULL,
+      store_name VARCHAR(120) NOT NULL,
+      holding_temp_c DOUBLE NOT NULL
+    )
+  )
+
+  Join Quarry_Panel(frostquarry.ice_quarry.quarry_id = frostquarry.extraction_panel.quarry_id)
+  Join Panel_Cycle(frostquarry.extraction_panel.panel_id = frostquarry.harvest_cycle.panel_id)
+  Join Cycle_Block(frostquarry.harvest_cycle.cycle_id = frostquarry.ice_block.cycle_id)
+  Join Block_Grade(frostquarry.ice_block.block_id = frostquarry.clarity_grade.block_id)
+  Join Block_Audit(frostquarry.ice_block.block_id = frostquarry.melt_audit.block_id)
+  Join Sled_Run(frostquarry.haul_sled.sled_id = frostquarry.transfer_run.sled_id)
+  Join Run_Store(frostquarry.transfer_run.store_id = frostquarry.cold_store.store_id)
+)

@@ -1,0 +1,40 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A coastal lighthouse station identified by its call code.'} demo::fabledlighthouse::domain::Station
+{
+  code: String[1];
+  name: String[1];
+  region: String[1];
+  commissionedDate: StrictDate[1];
+  focalHeightM: Integer[1];
+  peakVisibility() {$this.logs->filter(l | $l.rotations > 0)->map(l | $l.visibilityDm)->sort()->reverse()->first()->toOne()}: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A nightly beam-watch log recorded at a lighthouse station.'} demo::fabledlighthouse::domain::BeamLog
+{
+  logId: String[1];
+  stationCode: String[1];
+  region: String[1];
+  logDate: StrictDate[1];
+  visibilityDm: Integer[1];
+  activeHours: Integer[1];
+  rotations: Integer[1];
+}
+
+Association demo::fabledlighthouse::domain::Station_BeamLog
+{
+  station: demo::fabledlighthouse::domain::Station[1];
+  logs: demo::fabledlighthouse::domain::BeamLog[*];
+}

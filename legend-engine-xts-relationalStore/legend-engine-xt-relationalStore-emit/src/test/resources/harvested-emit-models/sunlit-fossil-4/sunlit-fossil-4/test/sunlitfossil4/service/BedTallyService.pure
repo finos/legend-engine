@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::sunlitfossil4::service::BedTallyService
+{
+  pattern: '/sunlitfossil4/bedTally';
+  title: 'Quarry Bed Specimen Tally';
+  owners:
+  [
+    'palaeontology-collections-desk'
+  ];
+  documentation: 'Rolls every logged specimen find up behind the quarry and bed pair it was lifted from, publishing the summed specimen count, the summed matrix mass, the largest single block lifted and the number of logged finds standing behind each summary row.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::sunlitfossil4::domain::SpecimenFind.all()->groupBy(
+      [
+        f|$f.quarryName,
+        f|$f.bedName
+      ],
+      [
+        agg(f|$f.specimenCount, y|$y->sum()),
+        agg(f|$f.matrixMassKg, y|$y->sum()),
+        agg(f|$f.specimenCount, y|$y->max()),
+        agg(f|$f.findCode, y|$y->count())
+      ],
+      [
+        'Quarry',
+        'Bed',
+        'Specimen Total',
+        'Matrix Mass Total',
+        'Largest Find Specimens',
+        'Find Count'
+      ]
+    )->sort(
+      [
+        asc('Quarry'),
+        asc('Bed')
+      ]
+    );
+    mapping: test::sunlitfossil4::mapping::QuarryMapping;
+    runtime: test::sunlitfossil4::runtime::QuarryRuntime;
+  }
+  testSuites:
+  [
+    bedTallySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          quarryH2Connection:
+            Reference
+            #{
+              test::sunlitfossil4::data::QuarrySeasonData
+            }#
+        ]
+      ]
+      tests:
+      [
+        bedRollup:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Quarry":"DUSTY BENCH","Bed":"LOWER MARL","Specimen Total":10,"Matrix Mass Total":21.25,"Largest Find Specimens":9,"Find Count":2},{"Quarry":"DUSTY BENCH","Bed":"UPPER SHALE","Specimen Total":5,"Matrix Mass Total":5.0,"Largest Find Specimens":5,"Find Count":1},{"Quarry":"SUNLIT SCARP","Bed":"LOWER MARL","Specimen Total":10,"Matrix Mass Total":19.75,"Largest Find Specimens":6,"Find Count":2},{"Quarry":"SUNLIT SCARP","Bed":"UPPER SHALE","Specimen Total":2,"Matrix Mass Total":3.0,"Largest Find Specimens":2,"Find Count":1}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

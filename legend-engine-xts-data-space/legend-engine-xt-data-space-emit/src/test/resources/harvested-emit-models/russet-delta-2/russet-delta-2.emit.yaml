@@ -1,0 +1,75 @@
+name: russet-delta-2
+title: "Russet Delta - Two Store Surfaces, A Curated Diagram And A Catalogued Data Space"
+description: |
+  A non-financial apiary record spanning two independent relational store surfaces.
+  The yard surface declares hive yards, the hives sited in them, their dated
+  inspections and the forage patches worked from each yard, with three named inner
+  joins; the harvest surface declares the extracted honey lots and the runs that spun
+  them, with a fourth. One relational mapping per surface binds six classes, each
+  naming its main table explicitly and fixing its identity columns, and property
+  bindings mix direct column reads with composed labels, a chained colony-strength
+  decode guarded down to an explicit null sentinel, guarded and unguarded arithmetic
+  and a district reached through a single inner hop. Four bidirectional associations
+  are routed onto the named joins across both mappings. Two single-execution services
+  carry parameterised predicates, relation projections, a second predicate over the
+  projected relation, ordering and a cap, and both are covered by service test suites
+  alongside four mapping test suites. A curated diagram lays out the yard cluster and
+  its association edges, and a data space catalogues three execution contexts, the
+  diagram, the domain elements, both featured endpoints and a support mailbox.
+modelSources:
+  model:
+    root: russet-delta-2
+    files:
+      - test/russetdelta2/connection/ApiaryConnections.pure
+      - test/russetdelta2/dataspace/ApiaryDataSpace.pure
+      - test/russetdelta2/diagram/ApiaryDiagram.pure
+      - test/russetdelta2/domain/ApiaryAssociations.pure
+      - test/russetdelta2/domain/ApiaryDomain.pure
+      - test/russetdelta2/mapping/ApiaryMapping.pure
+      - test/russetdelta2/mapping/HarvestMapping.pure
+      - test/russetdelta2/runtime/ApiaryRuntimes.pure
+      - test/russetdelta2/service/HiveRegister.pure
+      - test/russetdelta2/service/LotSummary.pure
+      - test/russetdelta2/store/ApiaryDb.pure
+      - test/russetdelta2/store/HarvestDb.pure
+features:
+  - execution:data-space
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:diagram
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - mapping:relational-table-alias-column
+  - query:filter
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - apiary-record
+  - association
+  - conditional-transform
+  - data-space
+  - diagram
+  - duckdb
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - multi-store
+  - relation-projection
+  - service-test
+  - snowflake-connection

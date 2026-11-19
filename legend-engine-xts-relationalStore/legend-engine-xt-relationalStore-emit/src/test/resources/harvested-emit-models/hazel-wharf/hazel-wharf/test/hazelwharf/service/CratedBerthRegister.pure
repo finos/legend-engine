@@ -1,0 +1,176 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::hazelwharf::service::CratedBerthRegister
+{
+  pattern: '/hazelwharf/v1/crated-berth-register';
+  title: 'Hazel Wharf - Crated Berth Register As Of';
+  documentation: 'Opens the berth extent at a processing date and a business date supplied as query arguments, keeps the berths whose status is the operational member of the berth-status enumeration and that have at least one visit landing at least one lot with a crate identifier present, projects the berth identifier, its label and the registry identifier reached three hops away through the steward, drops the rows whose registry identifier came back empty, and de-duplicates whole rows so berths sharing an identifier, label and registry collapse to one.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: StrictDate[1], businessDate: StrictDate[1]|test::hazelwharf::domain::MooringBerth.all($processingDate, $businessDate)->filter(
+      b|($b.status == test::hazelwharf::domain::BerthStatus.OPERATIONAL) && $b.visits->exists(
+        v|$v.lots->exists(
+          l|!$l.crateTag->isEmpty()
+        )
+      )
+    )->project(
+      [
+        b|$b.berthCode,
+        b|$b.berthLabel,
+        b|$b.steward.station.registry.registryCode
+      ],
+      [
+        'Berth',
+        'Label',
+        'Registry'
+      ]
+    )->filter(
+      r|!$r.getString('Registry')->isEmpty()
+    )->distinct()->sort(
+      [
+        asc('Berth'),
+        asc('Label')
+      ]
+    )};
+    mapping: test::hazelwharf::mapping::WharfMapping;
+    runtime: test::hazelwharf::runtime::WharfH2Runtime;
+  }
+  testSuites:
+  [
+    cratedBerthSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          wharfConnection:
+            Relational
+            #{
+              marine.station_registry:
+                'registry_id,registry_code,registry_name\n'+
+                '1,REG-N,Northern Coastal Registry\n';
+
+              marine.monitoring_station:
+                'station_id,station_name,registry_id\n'+
+                '1,North Head Station,1\n';
+
+              marine.berth_steward:
+                'steward_id,steward_name,station_id\n'+
+                '1,Fenn Harbour Steward,1\n';
+
+              marine.berth:
+                'berth_id,berth_code,berth_label,berth_status,steward_id,in_z,out_z,from_z,thru_z\n'+
+                '1,B-01,North Jetty,OPERATIONAL,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '2,B-01,North Jetty,OPERATIONAL,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '3,B-03,East Jetty,OPERATIONAL,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '4,B-04,West Jetty,RESTRICTED,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '5,B-05,South Jetty,OPERATIONAL,,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                '6,B-06,Old Jetty,OPERATIONAL,1,2026-01-01,9999-12-31,2025-01-01,2025-06-30\n'+
+                '7,B-07,Slip Jetty,OPERATIONAL,1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n';
+
+              marine.mooring_visit:
+                'visit_id,berth_id,visit_code,visit_kind\n'+
+                '1,1,MV-01,SURVEY\n'+
+                '2,2,MV-02,SURVEY\n'+
+                '3,3,MV-03,SURVEY\n'+
+                '4,4,MV-04,RESUPPLY\n'+
+                '5,5,MV-05,SURVEY\n'+
+                '6,6,MV-06,SURVEY\n';
+
+              marine.sample_lot:
+                'lot_id,visit_id,lot_code,crate_tag\n'+
+                '1,1,SL-01,CR-0001\n'+
+                '2,2,SL-02,CR-0002\n'+
+                '3,3,SL-03,\n'+
+                '4,4,SL-04,CR-0004\n'+
+                '5,5,SL-05,CR-0005\n'+
+                '6,6,SL-06,CR-0006\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        onlyOperationalCratedInRangeBerthsSurviveAndDuplicateRowsCollapse:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-03-01,
+            businessDate = %2026-03-01
+          ]
+          asserts:
+          [
+            oneDeDuplicatedRow:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Berth":"B-01","Label":"North Jetty","Registry":"REG-N"}]';
+                  }#;
+              }#
+          ]
+        },
+        aBusinessDateBeforeAnyBerthWasEffectiveSelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-03-01,
+            businessDate = %2024-06-01
+          ]
+          asserts:
+          [
+            emptyRegister:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        },
+        theSupersededJettyIsReachedAtItsOwnBusinessDateButCarriesNoCrateAtThatPoint:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2026-03-01,
+            businessDate = %2025-03-01
+          ]
+          asserts:
+          [
+            onlyTheSupersededJetty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Berth":"B-06","Label":"Old Jetty","Registry":"REG-N"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

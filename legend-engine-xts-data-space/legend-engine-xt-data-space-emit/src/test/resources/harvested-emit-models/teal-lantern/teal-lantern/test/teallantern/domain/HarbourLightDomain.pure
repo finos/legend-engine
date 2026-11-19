@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A harbour navigation light kept on a named reach, described by a mostly optional survey record.'} test::teallantern::domain::LanternStation
+{
+  stationCode: String[1];
+  stationName: String[0..1];
+  reachCode: String[0..1];
+  elevationM: Float[0..1];
+  commissionedOn: StrictDate[0..1];
+  lastCheckedAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A single lamp assembly fitted to a station, carrying an optional measured output.'} test::teallantern::domain::LampUnit
+{
+  lampCode: String[1];
+  lampKind: String[1];
+  lumenOutput: Float[0..1];
+  installedOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A dated inspection of one lamp carrying the graded glare score read on the day.'} test::teallantern::domain::LampInspection
+{
+  inspectionId: Integer[1];
+  inspectorName: String[0..1];
+  inspectedOn: StrictDate[0..1];
+  glareScore: Integer[1];
+  faultNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper crew rostered to a station on a shift of a named kind.'} test::teallantern::domain::KeeperCrew
+{
+  crewName: String[1];
+  shiftKind: String[0..1];
+  rosteredOn: StrictDate[0..1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a station to the lamps fitted to it; both directions are reached through the declared station join.'} test::teallantern::domain::Station_Lamp
+{
+  station: test::teallantern::domain::LanternStation[1];
+  lamps: test::teallantern::domain::LampUnit[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a lamp to the inspections filed against it; an uninspected lamp keeps an empty end.'} test::teallantern::domain::Lamp_Inspection
+{
+  lamp: test::teallantern::domain::LampUnit[1];
+  inspections: test::teallantern::domain::LampInspection[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Binds a station to the keeper crews rostered on it.'} test::teallantern::domain::Station_Crew
+{
+  rosteredStation: test::teallantern::domain::LanternStation[1];
+  crews: test::teallantern::domain::KeeperCrew[*];
+}

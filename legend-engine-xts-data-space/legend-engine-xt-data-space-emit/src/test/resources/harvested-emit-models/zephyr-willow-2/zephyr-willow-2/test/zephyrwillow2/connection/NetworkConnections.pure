@@ -1,0 +1,101 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::zephyrwillow2::connection::NetworkLakeConnection
+{
+  store: test::zephyrwillow2::store::DepotNetworkDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'NETWORK_LAKE_DB';
+    account: 'network_lake_account';
+    warehouse: 'NETWORK_LAKE_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'NETWORK_LAKE_ROLE';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'NETWORK_LAKE_USER';
+    privateKeyVaultReference: 'network-lake-private-key';
+    passPhraseVaultReference: 'network-lake-passphrase';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::zephyrwillow2::connection::NetworkArchiveConnection
+{
+  store: test::zephyrwillow2::store::DepotNetworkDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'NETWORK_ARCHIVE_DB';
+    account: 'network_archive_account';
+    warehouse: 'NETWORK_ARCHIVE_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'NETWORK_ARCHIVE_ROLE';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'NETWORK_ARCHIVE_USER';
+    privateKeyVaultReference: 'network-archive-private-key';
+    passPhraseVaultReference: 'network-archive-passphrase';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::zephyrwillow2::connection::GradeReferenceConnection
+{
+  store: test::zephyrwillow2::store::GradeReferenceDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'GRADE_REFERENCE_DB';
+    account: 'grade_reference_account';
+    warehouse: 'GRADE_REFERENCE_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'GRADE_REFERENCE_ROLE';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'GRADE_REFERENCE_USER';
+    privateKeyVaultReference: 'grade-reference-private-key';
+    passPhraseVaultReference: 'grade-reference-passphrase';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection test::zephyrwillow2::connection::DraftStagingConnection
+{
+  store: test::zephyrwillow2::store::DraftStagingDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'DRAFT_STAGING_DB';
+    account: 'draft_staging_account';
+    warehouse: 'DRAFT_STAGING_WH';
+    region: 'eu-west-2';
+    cloudType: 'aws';
+    role: 'DRAFT_STAGING_ROLE';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'DRAFT_STAGING_USER';
+    privateKeyVaultReference: 'draft-staging-private-key';
+    passPhraseVaultReference: 'draft-staging-passphrase';
+  };
+}

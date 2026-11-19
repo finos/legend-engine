@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::cedarsummit::runtime::NorthNurseryRuntime
+{
+  mappings:
+  [
+    test::cedarsummit::mapping::SeedlingLookupMapping
+  ];
+  connections:
+  [
+    test::cedarsummit::store::NurseryApi:
+    [
+      northNurseryConnection: test::cedarsummit::connection::NorthNurseryConnection
+    ]
+  ];
+}
+
+Runtime test::cedarsummit::runtime::SouthNurseryRuntime
+{
+  mappings:
+  [
+    test::cedarsummit::mapping::SeedlingLookupMapping
+  ];
+  connections:
+  [
+    test::cedarsummit::store::NurseryApi:
+    [
+      southNurseryConnection: test::cedarsummit::connection::SouthNurseryConnection
+    ]
+  ];
+}
+
+Runtime test::cedarsummit::runtime::PropagationLotRuntime
+{
+  mappings:
+  [
+    test::cedarsummit::mapping::LotLookupMapping
+  ];
+  connections:
+  [
+    test::cedarsummit::store::NurseryApi:
+    [
+      propagationLotConnection: test::cedarsummit::connection::PropagationLotConnection
+    ]
+  ];
+}

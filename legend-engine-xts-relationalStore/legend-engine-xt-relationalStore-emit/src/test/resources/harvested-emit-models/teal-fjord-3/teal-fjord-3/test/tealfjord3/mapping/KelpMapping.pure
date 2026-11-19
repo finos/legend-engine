@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealfjord3::mapping::KelpMapping
+(
+  *test::tealfjord3::domain::KelpBed: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealfjord3::store::KelpDatabase]kelp.kelp_bed.bed_id
+    )
+    ~mainTable [test::tealfjord3::store::KelpDatabase]kelp.kelp_bed
+    bedCode: [test::tealfjord3::store::KelpDatabase]kelp.kelp_bed.bed_code,
+    canopyArea: [test::tealfjord3::store::KelpDatabase]kelp.kelp_bed.canopy_area,
+    lastSurveyOn: [test::tealfjord3::store::KelpDatabase]kelp.kelp_bed.last_survey_on,
+    programCode: concat('FJORD-KELP-', [test::tealfjord3::store::KelpDatabase]kelp.kelp_bed.bed_code),
+    recorder: [test::tealfjord3::store::KelpDatabase]@Bed_Recorder
+  }
+
+  *test::tealfjord3::domain::SurveyRecorder: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealfjord3::store::KelpDatabase]kelp.survey_recorder.recorder_id
+    )
+    ~mainTable [test::tealfjord3::store::KelpDatabase]kelp.survey_recorder
+    recorderCode: [test::tealfjord3::store::KelpDatabase]kelp.survey_recorder.recorder_code,
+    permitTag: [test::tealfjord3::store::KelpDatabase]kelp.survey_recorder.permit_tag
+  }
+)

@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::scarletwillow3::data::ReserveWarehouseData
+{
+  Relational
+  #{
+    reserve_core.warden:
+      'warden_code,warden_name,contact_kind\n'+
+      'WD-1,Ash Warden,RADIO\n'+
+      'WD-2,Birch Warden,PHONE\n';
+
+    reserve_core.region:
+      'region_code,region_name,warden_code\n'+
+      'RG-1,Northern Levels,WD-1\n'+
+      'RG-2,Southern Levels,WD-9\n';
+
+    reserve_core.reserve_site:
+      'site_id,site_name,region_code,status_code,deactivated_on\n'+
+      'ST-1,Willow Carr Reserve,RG-1,ACTIVE,\n'+
+      'ST-2,Reed Levels Reserve,RG-2,A,\n'+
+      'ST-3,Retired Mire Reserve,RG-1,RETIRED,2025-01-01\n';
+
+    reserve_core.site_link:
+      'child_site_id,parent_site_id\n'+
+      'ST-2,ST-1\n'+
+      'ST-3,ST-3\n';
+
+    reserve_core.habitat_patch:
+      'patch_id,patch_code,site_id,habitat_code,scrub_code,area_hectares,wetness_pct,peat_depth_cm,in_z,out_z\n'+
+      'HP-1,hp-1,ST-1,willow carr,D,6.5,35,120,2026-01-01,9999-12-31\n'+
+      'HP-2,hp-2,ST-1,fen, ,1.5,85,,2026-01-01,9999-12-31\n'+
+      'HP-3,hp-3,ST-2,scrubland,O,3.0,12,,2026-01-01,9999-12-31\n'+
+      'HP-4,hp-4,ST-2,fen,S,2.0,25,,2020-01-01,2021-01-01\n'+
+      'HP-5,hp-5,ST-1,reedbed,O,0.5,3,,2026-01-01,9999-12-31\n';
+
+    survey_core.observer:
+      'observer_id,observer_name,role_code,team_code\n'+
+      'OB-1,Rowan Field,SENIOR,TM-1\n'+
+      'OB-2,Sage Field,JUNIOR,TM-9\n';
+
+    survey_core.observer_team:
+      'team_code,team_name,region_code\n'+
+      'TM-1,Fen Team,RG-1\n';
+
+    survey_core.survey_visit:
+      'visit_id,visit_code,patch_id,observer_id,visit_code_kind,species_count,remark_text,in_z,out_z\n'+
+      'SV-1,sv-1,HP-1,OB-1,WALK,12,ditch cleared,2026-01-01,9999-12-31\n'+
+      'SV-2,sv-2,HP-1,OB-2,FP,4, ,2026-01-01,9999-12-31\n'+
+      'SV-3,sv-3,HP-2,OB-1,WALKOVER,2,reed cut,2026-01-01,9999-12-31\n'+
+      'SV-4,sv-4,HP-3,OB-1,TR,6,old note,2020-01-01,2021-01-01\n';
+
+    survey_core.patch_attribute:
+      'patch_id,attribute_id,attribute_value\n'+
+      'HP-1,7,DITCH CLEARED\n'+
+      'HP-2,9,PUMP FITTED\n';
+  }#
+}
+
+###Data
+Data test::scarletwillow3::data::ReserveLakeData
+{
+  Relational
+  #{
+    reserve_core.warden:
+      'warden_code,warden_name,contact_kind\n'+
+      'WD-1,Alder Warden,RADIO\n';
+
+    reserve_core.region:
+      'region_code,region_name,warden_code\n'+
+      'RG-1,Northern Levels,WD-1\n';
+
+    reserve_core.reserve_site:
+      'site_id,site_name,region_code,status_code,deactivated_on\n'+
+      'ST-1,Willow Carr Reserve,RG-1,ACTIVE,\n';
+
+    reserve_core.site_link:
+      'child_site_id,parent_site_id\n'+
+      'ST-1,ST-1\n';
+
+    reserve_core.habitat_patch:
+      'patch_id,patch_code,site_id,habitat_code,scrub_code,area_hectares,wetness_pct,peat_depth_cm,in_z,out_z\n'+
+      'HP-1,hp-1,ST-1,willow carr,S,8.5,90,60,2026-01-01,9999-12-31\n';
+
+    survey_core.observer:
+      'observer_id,observer_name,role_code,team_code\n'+
+      'OB-1,Rowan Field,SENIOR,TM-1\n';
+
+    survey_core.observer_team:
+      'team_code,team_name,region_code\n'+
+      'TM-1,Fen Team,RG-1\n';
+
+    survey_core.survey_visit:
+      'visit_id,visit_code,patch_id,observer_id,visit_code_kind,species_count,remark_text,in_z,out_z\n'+
+      'SV-1,sv-1,HP-1,OB-1,WALK,3,lake note,2026-01-01,9999-12-31\n';
+
+    survey_core.patch_attribute:
+      'patch_id,attribute_id,attribute_value\n'+
+      'HP-1,7,LAKE DITCH\n';
+  }#
+}

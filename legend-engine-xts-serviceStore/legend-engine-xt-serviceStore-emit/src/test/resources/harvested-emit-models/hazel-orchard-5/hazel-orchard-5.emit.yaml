@@ -1,0 +1,73 @@
+name: hazel-orchard-5
+title: "Hazel Orchard - Remote Hive-Visit API Sync (service store, chained model connections, flat-data and document bindings, wide tabular projections)"
+description: |
+  An orchard pollination-monitoring model whose primary read path is an upstream HTTP api rather than a
+  database. One service store models the upstream hive-visit HTTP API as a store, declaring endpoint
+  paths, verbs, typed query parameters, a request body and binding-typed responses, so the remote
+  contract is part of the model. Three bindings over two schema sets serialise the payload classes:
+  two bind flat-data schema sets for the platform's flat-data content type and one binds the document
+  classes to a JSON content type by listing included models, so the same shapes cross the boundary in
+  two formats. One model-to-model mapping projects the externally fetched visit instances onto the
+  published class with three expression transforms - a collection mapping over a to-many navigation,
+  an upper-cased label and a literal default - beside thirty direct carry-overs. A single engine
+  runtime binds that mapping to both a service-store connection and a model-chain connection, so one
+  execution context covers fetching from the API and transforming the result, and plan generation has
+  to combine an external call with an in-memory transform rather than a single relational node. Two
+  single-execution services publish the two halves of that picture: a seven-column digest graph-fetched
+  through the chained api runtime, and a twenty-five column tabular ledger projected out of a small
+  relational ledger database with its own store, mapping, connection and runtime, so the group carries
+  both a relational execution path and an api-only one.
+modelSources:
+  model:
+    root: hazel-orchard-5
+    files:
+      - test/hazelorchard5/connection/OrchardConnections.pure
+      - test/hazelorchard5/domain/OrchardSyncDomain.pure
+      - test/hazelorchard5/external/OrchardFormats.pure
+      - test/hazelorchard5/mapping/PollinationLedgerMapping.pure
+      - test/hazelorchard5/mapping/PollinationSyncMapping.pure
+      - test/hazelorchard5/runtime/PollinationSyncRuntime.pure
+      - test/hazelorchard5/service/VisitDigestService.pure
+      - test/hazelorchard5/service/VisitLedgerService.pure
+      - test/hazelorchard5/store/HiveVisitApi.pure
+      - test/hazelorchard5/store/HiveVisitLedgerDatabase.pure
+features:
+  - execution:external-format-binding
+  - execution:graph-fetch
+  - execution:mapping-test
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:m2m-transform
+  - mapping:relational-primary-key
+  - query:collection-op
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:non-relational-connection
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:service-store
+stores:
+  - model-store
+  - relational
+  - service-store
+complexity: intermediate
+tags:
+  - collection-op
+  - external-format-binding
+  - flat-data-binding
+  - graph-fetch
+  - h2
+  - model-chain-connection
+  - model-to-model
+  - orchard-pollination
+  - plan-generation
+  - relational-ledger
+  - service-store
+  - service-test
+  - tds-project

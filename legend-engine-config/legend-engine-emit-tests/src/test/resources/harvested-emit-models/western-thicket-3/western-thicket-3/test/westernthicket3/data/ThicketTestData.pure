@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data test::westernthicket3::data::ThicketTestData
+{
+  Relational
+  #{
+    thref.grove_block:
+      'grove_id,grove_code,grove_name,warden_code\n'+
+      '1,GV-01,North Coppice Grove,WD-01\n'+
+      '2,GV-02,,WD-02\n'+
+      '3,GV-03,Hazel Ring Grove,WD-03\n';
+    thref.coppice_stand:
+      'stand_id,stand_code,stand_name,grove_id,canopy_code,stand_note\n'+
+      '1,ST-01,Hazel Ridge Stand,1,O,cut back in march\n'+
+      '2,ST-02,,1,M,\n'+
+      '3,ST-03,Ash Corner Stand,2,C,browsed along the edge\n'+
+      '4,ST-04,Withdrawn Ledge Stand,3,X,out of service\n';
+    thref.warden_roster:
+      'warden_code,warden_name,roster_kind,rota_code,certified_until,supplier_org\n'+
+      'WD-01,a.holloway,GROVE,D,2027-03-31,\n'+
+      'WD-02,m.fenwick,CONTRACT,,,Thicket Cutting Partnership\n'+
+      'WD-03,s.oakden,GROVE,N,2026-09-30,\n';
+    thcore.cut_survey:
+      'survey_id,survey_code,stand_id,warden_code,cut_kind,regrowth_code,stem_count,stool_height_cm,canopy_gap_pct,surveyed_on,cycle_started_on,spare_label,from_z,thru_z\n'+
+      '1,CS-01,1,WD-01,coppice,A,100,35.0,20.0,2026-03-04,2026-01-04,,2026-01-01,9999-12-31\n'+
+      '2,CS-02,1,WD-01,coppice,B,80,32.0,15.0,2026-03-05,2026-01-05,,2026-01-01,9999-12-31\n'+
+      '3,CS-03,2,WD-02,singling,C,60,31.0,10.0,2026-03-06,2026-02-06,,2026-01-01,9999-12-31\n'+
+      '4,CS-04,2,WD-02,singling,D,40,29.0,12.0,2026-03-07,2026-02-07,,2026-01-01,9999-12-31\n'+
+      '5,CS-05,3,WD-03,layering,E,30,22.5,45.0,2026-03-08,2026-01-08,,2026-01-01,9999-12-31\n'+
+      '6,CS-06,3,WD-03,layering,F,20,18.0,30.0,2026-03-09,2026-01-09,,2026-01-01,9999-12-31\n'+
+      '7,CS-07,1,WD-01,pollarding,G,14,16.0,25.0,2026-03-10,2026-01-10,,2026-01-01,9999-12-31\n'+
+      '8,CS-08,1,WD-01,pollarding,H,8,12.0,22.0,2026-03-11,2026-01-11,,2026-01-01,9999-12-31\n'+
+      '9,CS-09,2,WD-02,coppice,Z,4,10.0,5.0,2026-03-12,2026-03-01,,2026-01-01,9999-12-31\n'+
+      '10,CS-10,3,WD-03,coppice,A,90,34.0,18.0,2026-03-13,2026-01-13,,2026-01-01,9999-12-31\n'+
+      '11,CS-11,1,WD-01,coppice,B,50,30.0,20.0,2024-05-01,2024-01-01,,2024-01-01,2024-12-31\n'+
+      '12,CS-12,2,WD-02,coppice,C,45,28.0,16.0,2027-01-05,2027-01-01,,2027-01-01,9999-12-31\n';
+    thaudit.survey_check:
+      'survey_id,checked_by,check_note\n'+
+      '1,r.finn,checked after the march cut\n'+
+      '2,r.finn,\n'+
+      '3,e.mundy,stools counted twice\n'+
+      '10,e.mundy,tally checked\n';
+  }#
+}

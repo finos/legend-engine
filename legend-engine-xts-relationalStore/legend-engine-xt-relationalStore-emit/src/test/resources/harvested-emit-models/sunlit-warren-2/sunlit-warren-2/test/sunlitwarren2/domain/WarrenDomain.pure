@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A single burrow entrance counted on a heathland warren survey.'} test::sunlitwarren2::domain::Burrow
+{
+  burrowCode: String[1];
+  keeperCode: String[1];
+  zoneCode: String[1];
+  chamberCount: Integer[1];
+  burrowLabel: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A warren the burrows are grouped into.'} test::sunlitwarren2::domain::Warren
+{
+  warrenCode: String[1];
+  warrenName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stretch of heath the warrens sit on.'} test::sunlitwarren2::domain::Heath
+{
+  heathCode: String[1];
+  heathName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A reserve the heaths belong to.'} test::sunlitwarren2::domain::Reserve
+{
+  reserveCode: String[1];
+  reserveName: String[1];
+  biomeKind: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A keeper who works the burrows of one patrol zone.'} test::sunlitwarren2::domain::Keeper
+{
+  keeperCode: String[1];
+  keeperName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A patrol zone the keepers are rostered onto.'} test::sunlitwarren2::domain::Zone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A rostered patrol round, held in the roster store rather than the survey store.'} test::sunlitwarren2::domain::PatrolRound
+{
+  roundCode: String[1];
+  roundName: String[1];
+  seasonCode: String[1];
+}
+
+Association test::sunlitwarren2::domain::Burrow_Warren
+{
+  warren: test::sunlitwarren2::domain::Warren[0..1];
+  burrows: test::sunlitwarren2::domain::Burrow[*];
+}
+
+Association test::sunlitwarren2::domain::Warren_Heath
+{
+  heath: test::sunlitwarren2::domain::Heath[0..1];
+  warrens: test::sunlitwarren2::domain::Warren[*];
+}
+
+Association test::sunlitwarren2::domain::Heath_Reserve
+{
+  reserve: test::sunlitwarren2::domain::Reserve[0..1];
+  heaths: test::sunlitwarren2::domain::Heath[*];
+}
+
+Association test::sunlitwarren2::domain::Burrow_Keeper
+{
+  keeper: test::sunlitwarren2::domain::Keeper[0..1];
+  burrowsKept: test::sunlitwarren2::domain::Burrow[*];
+}
+
+Association test::sunlitwarren2::domain::Keeper_Zone
+{
+  zone: test::sunlitwarren2::domain::Zone[0..1];
+  keepers: test::sunlitwarren2::domain::Keeper[*];
+}
+
+Association test::sunlitwarren2::domain::Burrow_Reserve
+{
+  reserveOfRecord: test::sunlitwarren2::domain::Reserve[0..1];
+  burrowsInReserve: test::sunlitwarren2::domain::Burrow[*];
+}
+
+Association test::sunlitwarren2::domain::Warren_Zone
+{
+  patrolZones: test::sunlitwarren2::domain::Zone[*];
+  warrensCovered: test::sunlitwarren2::domain::Warren[*];
+}

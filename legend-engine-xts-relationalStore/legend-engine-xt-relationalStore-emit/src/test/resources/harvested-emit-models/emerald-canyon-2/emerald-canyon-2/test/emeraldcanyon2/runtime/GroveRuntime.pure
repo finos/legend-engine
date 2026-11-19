@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Runtime
+Runtime test::emeraldcanyon2::runtime::GroveRuntime
+{
+  mappings:
+  [
+    test::emeraldcanyon2::mapping::GroveMapping
+  ];
+  connections:
+  [
+    test::emeraldcanyon2::store::GroveHarvestDb:
+    [
+      groveConnection:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::emeraldcanyon2::store::GroveHarvestDb;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupSqls: [
+              'drop schema if exists grove cascade;',
+              'drop schema if exists harvest cascade;',
+              'create schema grove;',
+              'create schema harvest;',
+              'create table grove.cooperative (coop_code varchar(24) primary key, coop_name varchar(96) not null, district_name varchar(96) not null, climate_zone varchar(32) not null);',
+              'create table grove.orchard (orchard_code varchar(24), coop_code varchar(24) not null, orchard_name varchar(96) not null, elevation_m integer not null, from_z date, thru_z date);',
+              'create table harvest.picking_block (block_code varchar(24) primary key, orchard_code varchar(24) not null, block_name varchar(96) not null, tree_count integer not null);',
+              'create table harvest.consignment (consignment_code varchar(24) primary key, block_code varchar(24) not null, grade_label varchar(32) not null, crate_count integer not null, picked_on date not null);',
+              'create table harvest.packhouse_check (check_code varchar(24), consignment_code varchar(24) not null, inspector_team varchar(96) not null, defect_percent integer not null, in_z date, out_z date);'
+            ];
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime test::emeraldcanyon2::runtime::GroveFeedRuntime
+{
+  mappings:
+  [
+    test::emeraldcanyon2::mapping::GroveMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      groveFeedConnection: test::emeraldcanyon2::connection::GroveFeedConnection
+    ]
+  ];
+}

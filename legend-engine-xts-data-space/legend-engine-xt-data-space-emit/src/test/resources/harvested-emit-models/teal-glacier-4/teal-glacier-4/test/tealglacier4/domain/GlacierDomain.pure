@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::tealglacier4::domain::field::*;
+import test::tealglacier4::domain::archive::*;
+
+Class {meta::pure::profiles::doc.doc = 'A monitored glacier, identified by its code within a mountain range.'} test::tealglacier4::domain::field::Glacier
+{
+  glacierCode: String[1];
+  rangeCode: String[1];
+  glacierName: String[0..1];
+  basinName: String[0..1];
+  areaSqKm: Decimal[0..1];
+  monitored: Boolean[0..1];
+  registeredOn: StrictDate[0..1];
+  updatedAt: DateTime[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One ablation stake reading taken on a glacier by a field observer.'} test::tealglacier4::domain::field::StakeReading
+{
+  stakeCode: String[1];
+  glacierCode: String[1];
+  rangeCode: String[1];
+  readOn: StrictDate[1];
+  ablationCm: Float[0..1];
+  snowDepth: String[0..1];
+  observerCode: String[1];
+  calibrated: Boolean[1];
+  meltClass: String[0..1];
+  glacierName: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> {meta::pure::profiles::doc.doc = 'A crevasse survey row, restated in processing time whenever the survey is re-entered.'} test::tealglacier4::domain::field::CrevasseSurvey
+{
+  crevasseCode: String[1];
+  glacierCode: String[1];
+  rangeCode: String[1];
+  widthM: Float[0..1];
+  surveyNote: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A glacier row carried in the long-term archive.'} test::tealglacier4::domain::archive::ArchivedGlacier
+{
+  glacierCode: String[1];
+  rangeCode: String[1];
+  glacierName: String[0..1];
+  basinName: String[0..1];
+  registeredOn: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An archived stake reading, kept with the same shape as the live reading.'} test::tealglacier4::domain::archive::ArchivedStakeReading
+{
+  stakeCode: String[1];
+  glacierCode: String[1];
+  rangeCode: String[1];
+  readOn: StrictDate[1];
+  snowDepth: String[0..1];
+  observerCode: String[1];
+  glacierName: String[0..1];
+}
+
+Association test::tealglacier4::domain::field::Glacier_StakeReading
+{
+  glacier: Glacier[0..1];
+  stakeReadings: StakeReading[*];
+}
+
+Association test::tealglacier4::domain::archive::ArchivedGlacier_ArchivedStakeReading
+{
+  archivedGlacier: ArchivedGlacier[0..1];
+  archivedStakeReadings: ArchivedStakeReading[*];
+}

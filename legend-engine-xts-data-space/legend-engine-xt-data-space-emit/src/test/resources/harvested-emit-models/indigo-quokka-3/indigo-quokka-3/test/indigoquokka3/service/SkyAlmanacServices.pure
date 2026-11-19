@@ -1,0 +1,894 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::indigoquokka3::service::StarMagnitudeAlmanac
+{
+  pattern: '/indigoquokka3/v1/star-magnitudes';
+  title: 'Indigo Quokka 3 - Star magnitude almanac';
+  documentation: 'Every variable-star magnitude estimate projected into titled columns, ordered by star and night.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::indigoquokka3::domain::StarMagnitude.all()->project(
+      [
+        s|$s.starCode,
+        s|$s.observedOn,
+        s|$s.bandCode,
+        s|$s.magnitude,
+        s|$s.magnitudeError,
+        s|$s.airmass,
+        s|$s.observerCode
+      ],
+      [
+        'Star',
+        'Observed On',
+        'Band',
+        'Magnitude',
+        'Magnitude Error',
+        'Airmass',
+        'Observer'
+      ]
+    )->sort(
+      [
+        asc('Star'),
+        asc('Observed On')
+      ]
+    );
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    starMagnitudeAlmanacSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.star_magnitude_raw:
+                'star_code,observed_on,band_code,magnitude,magnitude_error,airmass,observer_code\n'+
+                'VS-ALG,2026-03-02,V,2.12,0.03,1.21,OBS-07\n'+
+                'VS-ALG,2026-03-05,V,3.39,0.04,1.34,OBS-07\n'+
+                'VS-MIR,2026-03-02,R,6.47,,1.58,OBS-11\n'+
+                'VS-DEL,2026-03-02,B,4.21,0.02,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRowProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Star":"VS-ALG","Observed On":"2026-03-02","Band":"V","Magnitude":2.12,"Magnitude Error":0.03,"Airmass":1.21,"Observer":"OBS-07"},{"Star":"VS-ALG","Observed On":"2026-03-05","Band":"V","Magnitude":3.39,"Magnitude Error":0.04,"Airmass":1.34,"Observer":"OBS-07"},{"Star":"VS-DEL","Observed On":"2026-03-02","Band":"B","Magnitude":4.21,"Magnitude Error":0.02,"Airmass":null,"Observer":null},{"Star":"VS-MIR","Observed On":"2026-03-02","Band":"R","Magnitude":6.47,"Magnitude Error":null,"Airmass":1.58,"Observer":"OBS-11"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::StarSeasonAlmanac
+{
+  pattern: '/indigoquokka3/v1/star-seasons';
+  title: 'Indigo Quokka 3 - Star season almanac';
+  documentation: 'Seasonal brightness statistics of every variable star, ordered by star and season.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::indigoquokka3::domain::StarStatistics.all()->project(
+      [
+        s|$s.starCode,
+        s|$s.seasonYear,
+        s|$s.meanMagnitude,
+        s|$s.minMagnitude,
+        s|$s.maxMagnitude,
+        s|$s.observationCount,
+        s|$s.lastObservedOn
+      ],
+      [
+        'Star',
+        'Season',
+        'Mean Magnitude',
+        'Brightest',
+        'Faintest',
+        'Observations',
+        'Last Observed'
+      ]
+    )->sort(
+      [
+        asc('Star'),
+        asc('Season')
+      ]
+    );
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    starSeasonAlmanacSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.star_season_raw:
+                'star_code,season_year,mean_magnitude,min_magnitude,max_magnitude,observation_count,last_observed_on\n'+
+                'VS-ALG,2025,2.87,2.09,3.41,118,2025-12-30\n'+
+                'VS-ALG,2026,2.76,2.12,3.39,24,2026-03-05\n'+
+                'VS-MIR,2025,,3.46,9.27,61,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRowProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Star":"VS-ALG","Season":2025,"Mean Magnitude":2.87,"Brightest":2.09,"Faintest":3.41,"Observations":118,"Last Observed":"2025-12-30"},{"Star":"VS-ALG","Season":2026,"Mean Magnitude":2.76,"Brightest":2.12,"Faintest":3.39,"Observations":24,"Last Observed":"2026-03-05"},{"Star":"VS-MIR","Season":2025,"Mean Magnitude":null,"Brightest":3.46,"Faintest":9.27,"Observations":61,"Last Observed":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::CometMagnitudeAlmanac
+{
+  pattern: '/indigoquokka3/v1/comet-magnitudes';
+  title: 'Indigo Quokka 3 - Comet magnitude almanac';
+  documentation: 'Every comet magnitude and coma estimate, ordered by comet and night.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::indigoquokka3::domain::CometMagnitude.all()->project(
+      [
+        c|$c.cometCode,
+        c|$c.observedOn,
+        c|$c.totalMagnitude,
+        c|$c.comaArcmin,
+        c|$c.tailDegrees,
+        c|$c.observerCode
+      ],
+      [
+        'Comet',
+        'Observed On',
+        'Total Magnitude',
+        'Coma Arcmin',
+        'Tail Degrees',
+        'Observer'
+      ]
+    )->sort(
+      [
+        asc('Comet'),
+        asc('Observed On')
+      ]
+    );
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    cometMagnitudeAlmanacSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.comet_magnitude_raw:
+                'comet_code,observed_on,total_magnitude,coma_arcmin,tail_degrees,observer_code\n'+
+                'CM-12P,2026-02-14,7.35,4.25,0.75,OBS-03\n'+
+                'CM-12P,2026-02-21,6.85,5.5,,OBS-03\n'+
+                'CM-29P,2026-02-14,11.42,1.25,,OBS-09\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRowProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Comet":"CM-12P","Observed On":"2026-02-14","Total Magnitude":7.35,"Coma Arcmin":4.25,"Tail Degrees":0.75,"Observer":"OBS-03"},{"Comet":"CM-12P","Observed On":"2026-02-21","Total Magnitude":6.85,"Coma Arcmin":5.5,"Tail Degrees":null,"Observer":"OBS-03"},{"Comet":"CM-29P","Observed On":"2026-02-14","Total Magnitude":11.42,"Coma Arcmin":1.25,"Tail Degrees":null,"Observer":"OBS-09"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::CometApparitionAlmanac
+{
+  pattern: '/indigoquokka3/v1/comet-apparitions';
+  title: 'Indigo Quokka 3 - Comet apparition almanac';
+  documentation: 'Apparition statistics of every comet, ordered by comet and year.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::indigoquokka3::domain::CometStatistics.all()->project(
+      [
+        c|$c.cometCode,
+        c|$c.apparitionYear,
+        c|$c.peakMagnitude,
+        c|$c.perihelionOn,
+        c|$c.observationCount
+      ],
+      [
+        'Comet',
+        'Apparition',
+        'Peak Magnitude',
+        'Perihelion',
+        'Observations'
+      ]
+    )->sort(
+      [
+        asc('Comet'),
+        asc('Apparition')
+      ]
+    );
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    cometApparitionAlmanacSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.comet_apparition_raw:
+                'comet_code,apparition_year,peak_magnitude,perihelion_on,observation_count\n'+
+                'CM-12P,2026,4.65,2026-04-21,212\n'+
+                'CM-29P,2025,10.85,,37\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRowProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Comet":"CM-12P","Apparition":2026,"Peak Magnitude":4.65,"Perihelion":"2026-04-21","Observations":212},{"Comet":"CM-29P","Apparition":2025,"Peak Magnitude":10.85,"Perihelion":null,"Observations":37}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::AsteroidOppositionAlmanac
+{
+  pattern: '/indigoquokka3/v1/asteroid-oppositions';
+  title: 'Indigo Quokka 3 - Asteroid opposition almanac';
+  documentation: 'Opposition statistics of every asteroid, ordered by asteroid and year.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::indigoquokka3::domain::AsteroidStatistics.all()->project(
+      [
+        a|$a.asteroidCode,
+        a|$a.oppositionYear,
+        a|$a.meanMagnitude,
+        a|$a.lightcurveAmplitude,
+        a|$a.observationCount,
+        a|$a.oppositionOn
+      ],
+      [
+        'Asteroid',
+        'Opposition',
+        'Mean Magnitude',
+        'Lightcurve Amplitude',
+        'Observations',
+        'Opposition On'
+      ]
+    )->sort(
+      [
+        asc('Asteroid'),
+        asc('Opposition')
+      ]
+    );
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    asteroidOppositionAlmanacSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.asteroid_opposition_raw:
+                'asteroid_code,opposition_year,mean_magnitude,lightcurve_amplitude,observation_count,opposition_on\n'+
+                'AS-0004,2026,3.27,0.15,44,2026-01-21\n'+
+                'AS-0433,2026,10.91,,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRowProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Asteroid":"AS-0004","Opposition":2026,"Mean Magnitude":3.27,"Lightcurve Amplitude":0.15,"Observations":44,"Opposition On":"2026-01-21"},{"Asteroid":"AS-0433","Opposition":2026,"Mean Magnitude":10.91,"Lightcurve Amplitude":null,"Observations":null,"Opposition On":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::MeteorSeasonAlmanac
+{
+  pattern: '/indigoquokka3/v1/meteor-seasons';
+  title: 'Indigo Quokka 3 - Meteor season almanac';
+  documentation: 'Seasonal rate statistics of every meteor shower, ordered by shower and season.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::indigoquokka3::domain::MeteorShowerStatistics.all()->project(
+      [
+        m|$m.showerCode,
+        m|$m.seasonYear,
+        m|$m.peakRate,
+        m|$m.peakOn,
+        m|$m.meanRate
+      ],
+      [
+        'Shower',
+        'Season',
+        'Peak Rate',
+        'Peak On',
+        'Mean Rate'
+      ]
+    )->sort(
+      [
+        asc('Shower'),
+        asc('Season')
+      ]
+    );
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    meteorSeasonAlmanacSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.meteor_season_raw:
+                'shower_code,season_year,peak_rate,peak_on,mean_rate\n'+
+                'QUA,2026,84,2026-01-03,41.5\n'+
+                'PER,2025,112,2025-08-12,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRowProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shower":"PER","Season":2025,"Peak Rate":112,"Peak On":"2025-08-12","Mean Rate":null},{"Shower":"QUA","Season":2026,"Peak Rate":84,"Peak On":"2026-01-03","Mean Rate":41.5}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::NovaMagnitudeAlmanac
+{
+  pattern: '/indigoquokka3/v1/nova-magnitudes';
+  title: 'Indigo Quokka 3 - Nova magnitude almanac';
+  documentation: 'Every nova magnitude estimate with its decline rate, ordered by nova and night.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: |test::indigoquokka3::domain::NovaMagnitude.all()->project(
+      [
+        n|$n.novaCode,
+        n|$n.observedOn,
+        n|$n.visualMagnitude,
+        n|$n.declineRate,
+        n|$n.observerCode
+      ],
+      [
+        'Nova',
+        'Observed On',
+        'Visual Magnitude',
+        'Decline Rate',
+        'Observer'
+      ]
+    )->sort(
+      [
+        asc('Nova'),
+        asc('Observed On')
+      ]
+    );
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    novaMagnitudeAlmanacSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.nova_magnitude_raw:
+                'nova_code,observed_on,visual_magnitude,decline_rate,observer_code\n'+
+                'NV-CAS26,2026-02-01,5.65,,OBS-02\n'+
+                'NV-CAS26,2026-02-09,7.15,0.19,OBS-02\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        everyRowProjected:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Nova":"NV-CAS26","Observed On":"2026-02-01","Visual Magnitude":5.65,"Decline Rate":null,"Observer":"OBS-02"},{"Nova":"NV-CAS26","Observed On":"2026-02-09","Visual Magnitude":7.15,"Decline Rate":0.19,"Observer":"OBS-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::StarMagnitudesOnNightForStar
+{
+  pattern: '/indigoquokka3/v1/star-magnitudes/{observedOn}/{starCode}';
+  title: 'Indigo Quokka 3 - Star magnitudes of one star on one night';
+  documentation: 'The magnitude estimates of one requested star on one requested observing night; other stars and other nights are excluded before projection.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {observedOn: StrictDate[1], starCode: String[1]|test::indigoquokka3::domain::StarMagnitude.all()->filter(
+      s|($s.observedOn == $observedOn) && ($s.starCode == $starCode)
+    )->project(
+      [
+        s|$s.starCode,
+        s|$s.observedOn,
+        s|$s.bandCode,
+        s|$s.magnitude,
+        s|$s.magnitudeError,
+        s|$s.airmass,
+        s|$s.observerCode
+      ],
+      [
+        'Star',
+        'Observed On',
+        'Band',
+        'Magnitude',
+        'Magnitude Error',
+        'Airmass',
+        'Observer'
+      ]
+    )->sort(
+      [
+        asc('Star'),
+        asc('Observed On')
+      ]
+    )};
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    starMagnitudesOnNightForStarSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.star_magnitude_raw:
+                'star_code,observed_on,band_code,magnitude,magnitude_error,airmass,observer_code\n'+
+                'VS-ALG,2026-03-02,V,2.12,0.03,1.21,OBS-07\n'+
+                'VS-ALG,2026-03-05,V,3.39,0.04,1.34,OBS-07\n'+
+                'VS-MIR,2026-03-02,R,6.47,,1.58,OBS-11\n'+
+                'VS-DEL,2026-03-02,B,4.21,0.02,,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        filteredRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2026-03-02,
+            starCode = 'VS-ALG'
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Star":"VS-ALG","Observed On":"2026-03-02","Band":"V","Magnitude":2.12,"Magnitude Error":0.03,"Airmass":1.21,"Observer":"OBS-07"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::CometMagnitudesOnNightForComet
+{
+  pattern: '/indigoquokka3/v1/comet-magnitudes/{observedOn}/{cometCode}';
+  title: 'Indigo Quokka 3 - Comet magnitudes of one comet on one night';
+  documentation: 'The total magnitude and coma estimates of one requested comet on one requested observing night.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {observedOn: StrictDate[1], cometCode: String[1]|test::indigoquokka3::domain::CometMagnitude.all()->filter(
+      c|($c.observedOn == $observedOn) && ($c.cometCode == $cometCode)
+    )->project(
+      [
+        c|$c.cometCode,
+        c|$c.observedOn,
+        c|$c.totalMagnitude,
+        c|$c.comaArcmin,
+        c|$c.tailDegrees,
+        c|$c.observerCode
+      ],
+      [
+        'Comet',
+        'Observed On',
+        'Total Magnitude',
+        'Coma Arcmin',
+        'Tail Degrees',
+        'Observer'
+      ]
+    )->sort(
+      [
+        asc('Comet'),
+        asc('Observed On')
+      ]
+    )};
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    cometMagnitudesOnNightForCometSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.comet_magnitude_raw:
+                'comet_code,observed_on,total_magnitude,coma_arcmin,tail_degrees,observer_code\n'+
+                'CM-12P,2026-02-14,7.35,4.25,0.75,OBS-03\n'+
+                'CM-12P,2026-02-21,6.85,5.5,,OBS-03\n'+
+                'CM-29P,2026-02-14,11.42,1.25,,OBS-09\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        filteredRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2026-02-14,
+            cometCode = 'CM-12P'
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Comet":"CM-12P","Observed On":"2026-02-14","Total Magnitude":7.35,"Coma Arcmin":4.25,"Tail Degrees":0.75,"Observer":"OBS-03"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::AsteroidMagnitudesOnNight
+{
+  pattern: '/indigoquokka3/v1/asteroid-magnitudes/{observedOn}';
+  title: 'Indigo Quokka 3 - Asteroid magnitudes on one night';
+  documentation: 'Every reduced asteroid magnitude measured on one requested observing night.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {observedOn: StrictDate[1]|test::indigoquokka3::domain::AsteroidMagnitude.all()->filter(
+      a|($a.observedOn == $observedOn)
+    )->project(
+      [
+        a|$a.asteroidCode,
+        a|$a.observedOn,
+        a|$a.reducedMagnitude,
+        a|$a.phaseAngleDeg,
+        a|$a.rotationHours
+      ],
+      [
+        'Asteroid',
+        'Observed On',
+        'Reduced Magnitude',
+        'Phase Angle',
+        'Rotation Hours'
+      ]
+    )->sort(
+      [
+        asc('Asteroid'),
+        asc('Observed On')
+      ]
+    )};
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    asteroidMagnitudesOnNightSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.asteroid_magnitude_raw:
+                'asteroid_code,observed_on,reduced_magnitude,phase_angle_deg,rotation_hours\n'+
+                'AS-0004,2026-01-18,3.21,12.5,5.34\n'+
+                'AS-0433,2026-01-18,10.83,,5.27\n'+
+                'AS-0004,2026-01-25,3.36,14.75,\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        filteredRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2026-01-18
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Asteroid":"AS-0004","Observed On":"2026-01-18","Reduced Magnitude":3.21,"Phase Angle":12.5,"Rotation Hours":5.34},{"Asteroid":"AS-0433","Observed On":"2026-01-18","Reduced Magnitude":10.83,"Phase Angle":null,"Rotation Hours":5.27}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service test::indigoquokka3::service::MeteorRatesOnNight
+{
+  pattern: '/indigoquokka3/v1/meteor-rates/{observedOn}';
+  title: 'Indigo Quokka 3 - Meteor rates on one night';
+  documentation: 'Every hourly meteor rate counted by any station on one requested observing night.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {observedOn: StrictDate[1]|test::indigoquokka3::domain::MeteorShowerRate.all()->filter(
+      m|($m.observedOn == $observedOn)
+    )->project(
+      [
+        m|$m.showerCode,
+        m|$m.observedOn,
+        m|$m.stationCode,
+        m|$m.hourlyRate,
+        m|$m.limitingMagnitude,
+        m|$m.cloudCoverPct
+      ],
+      [
+        'Shower',
+        'Observed On',
+        'Station',
+        'Hourly Rate',
+        'Limiting Magnitude',
+        'Cloud Cover Pct'
+      ]
+    )->sort(
+      [
+        asc('Shower'),
+        asc('Observed On')
+      ]
+    )};
+    mapping: test::indigoquokka3::mapping::SkyAlmanacMapping;
+    runtime: test::indigoquokka3::runtime::SkyAlmanacRuntime;
+  }
+  testSuites:
+  [
+    meteorRatesOnNightSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          skyAlmanacWarehouse:
+            Relational
+            #{
+              almanac.meteor_rate_raw:
+                'shower_code,observed_on,station_code,hourly_rate,limiting_magnitude,cloud_cover_pct\n'+
+                'QUA,2026-01-03,ST-HILL,84,6.25,10\n'+
+                'QUA,2026-01-04,ST-HILL,37,5.75,40\n'+
+                'QUA,2026-01-03,ST-LAKE,,,95\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        filteredRows:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            observedOn = %2026-01-03
+          ]
+          asserts:
+          [
+            projectedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Shower":"QUA","Observed On":"2026-01-03","Station":"ST-HILL","Hourly Rate":84,"Limiting Magnitude":6.25,"Cloud Cover Pct":10},{"Shower":"QUA","Observed On":"2026-01-03","Station":"ST-LAKE","Hourly Rate":null,"Limiting Magnitude":null,"Cloud Cover Pct":95}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

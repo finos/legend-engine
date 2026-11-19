@@ -1,0 +1,214 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::olivehatchery2::mapping::HatcheryCoreMapping
+(
+  include mapping test::olivehatchery2::mapping::HatcheryFacilityMapping
+
+  *test::olivehatchery2::domain::BroodstockLot[lot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot.lot_id
+    )
+    ~mainTable [test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot
+    recordCode: [test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot.record_code,
+    lotCode: [test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot.lot_code,
+    originBay: rtrim([test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot.origin_bay),
+    conditionedOn: [test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot.conditioned_on,
+    lotNote: case(
+               isNotEmpty([test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot.lot_note),
+               ltrim(rtrim([test::olivehatchery2::store::HatcheryDb]hatchery.broodstock_lot.lot_note)),
+               'NO LOT NOTE'
+             )
+  }
+
+  *test::olivehatchery2::domain::SpawningRun[run]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivehatchery2::store::HatcheryDb]hatchery.spawning_run.run_id
+    )
+    ~mainTable [test::olivehatchery2::store::HatcheryDb]hatchery.spawning_run
+    recordCode: [test::olivehatchery2::store::HatcheryDb]hatchery.spawning_run.record_code,
+    runCode: [test::olivehatchery2::store::HatcheryDb]hatchery.spawning_run.run_code,
+    spawnedOn: [test::olivehatchery2::store::HatcheryDb]hatchery.spawning_run.spawned_on,
+    waterTemperature: [test::olivehatchery2::store::HatcheryDb]hatchery.spawning_run.water_temp_c
+  }
+
+  *test::olivehatchery2::domain::LarvalBatch[batch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.batch_id
+    )
+    ~mainTable [test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch
+    recordCode: [test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.record_code,
+    batchCode: [test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.batch_code,
+    stockedCount: [test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.stocked_count,
+    stockedOn: [test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.stocked_on,
+    vigourLabel: case(
+      equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V1'),
+      'VIGOROUS SWIMMERS',
+      case(
+        equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V2'),
+        'STRONG SWIMMERS',
+        case(
+          equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V3'),
+          'STEADY SWIMMERS',
+          case(
+            equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V4'),
+            'MIXED SWIMMERS',
+            case(
+              equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V5'),
+              'SLOW SWIMMERS',
+              case(
+                equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V6'),
+                'WEAK SWIMMERS',
+                case(
+                  equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V7'),
+                  'FALTERING SWIMMERS',
+                  case(
+                    equal([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.vigour_code, 'V8'),
+                    'FAILING SWIMMERS',
+                    'UNRECORDED VIGOUR'
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    batchNote: case(
+                 isNotEmpty([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.batch_note),
+                 rtrim([test::olivehatchery2::store::HatcheryDb]hatchery.larval_batch.batch_note),
+                 'NO BATCH NOTE'
+               ),
+    tankVolumeLitres: [test::olivehatchery2::store::HatcheryDb]@Batch_Tank | [test::olivehatchery2::store::HatcheryDb]facility.rearing_tank.volume_litres,
+    hallLabel: [test::olivehatchery2::store::HatcheryDb]@Batch_Tank > (INNER) [test::olivehatchery2::store::HatcheryDb]@Tank_Hall | [test::olivehatchery2::store::HatcheryDb]facility.hatchery_hall.hall_name,
+    siteLabel: [test::olivehatchery2::store::HatcheryDb]@Batch_Tank > @Tank_Hall > @Hall_Site | [test::olivehatchery2::store::HatcheryDb]facility.hatchery_site.site_name
+  }
+
+  test::olivehatchery2::domain::Lot_Run: Relational
+  {
+    AssociationMapping
+    (
+      runs[lot, run]: [test::olivehatchery2::store::HatcheryDb]@Run_Lot,
+      lot[run, lot]: [test::olivehatchery2::store::HatcheryDb]@Run_Lot
+    )
+  }
+
+  test::olivehatchery2::domain::Run_Batch: Relational
+  {
+    AssociationMapping
+    (
+      batches[run, batch]: [test::olivehatchery2::store::HatcheryDb]@Batch_Run,
+      run[batch, run]: [test::olivehatchery2::store::HatcheryDb]@Batch_Run
+    )
+  }
+
+  test::olivehatchery2::domain::Batch_Tank: Relational
+  {
+    AssociationMapping
+    (
+      batches[tank, batch]: [test::olivehatchery2::store::HatcheryDb]@Batch_Tank,
+      tank[batch, tank]: [test::olivehatchery2::store::HatcheryDb]@Batch_Tank
+    )
+  }
+
+  testSuites:
+  [
+    batchVigourSuite:
+    {
+      function: |test::olivehatchery2::domain::LarvalBatch.all()->project(
+        [
+          b|$b.batchCode,
+          b|$b.vigourLabel,
+          b|$b.batchNote,
+          b|$b.tankVolumeLitres->toOne(),
+          b|$b.hallLabel->toOne(),
+          b|$b.siteLabel->toOne(),
+          b|$b.batchLabel(),
+          b|$b.stockedCount
+        ],
+        [
+          'Batch',
+          'Vigour',
+          'Note',
+          'Volume',
+          'Hall',
+          'Site',
+          'Label',
+          'Stocked'
+        ]
+      )->sort([asc('Batch')]);
+      tests:
+      [
+        batchVigour:
+        {
+          doc: 'Projects every rearing batch through all eight vigour case arms plus the unrecorded fallback, the missing-note sentinel, the derived batch label, and the one-hop tank volume, two-hop inner-joined hall name and three-hop site name.';
+          data:
+          [
+            test::olivehatchery2::store::HatcheryDb:
+              Relational
+              #{
+                hatchery.larval_batch:
+                  'batch_id,run_id,batch_code,tank_code,stocked_count,stocked_on,vigour_code,record_code,batch_note\n'+
+                  '1,1,LB-101,TK-1,120000,2026-02-03,V1,OH-101,seeded from first run\n'+
+                  '2,1,LB-102,TK-1,110000,2026-02-04,V2,OH-102,\n'+
+                  '3,1,LB-103,TK-2,95000,2026-02-05,V3,OH-103,split from tank one\n'+
+                  '4,2,LB-104,TK-2,88000,2026-02-17,V4,OH-104,\n'+
+                  '5,2,LB-105,TK-2,76000,2026-02-18,V5,OH-105,slow start\n'+
+                  '6,2,LB-106,TK-3,64000,2026-02-19,V6,OH-106,\n'+
+                  '7,2,LB-107,TK-3,52000,2026-02-20,V7,OH-107,thin walls\n'+
+                  '8,2,LB-108,TK-3,41000,2026-02-21,V8,OH-108,\n'+
+                  '9,2,LB-109,TK-3,33000,2026-02-22,V9,OH-109,unclassed vigour\n';
+
+                facility.rearing_tank:
+                  'tank_code,hall_code,volume_litres\n'+
+                  'TK-1,HL-1,4000\n'+
+                  'TK-2,HL-1,6000\n'+
+                  'TK-3,HL-2,8000\n';
+
+                facility.hatchery_hall:
+                  'hall_code,site_code,hall_name\n'+
+                  'HL-1,ST-1,North Rearing Hall\n'+
+                  'HL-2,ST-2,South Rearing Hall\n';
+
+                facility.hatchery_site:
+                  'site_code,site_name,shoreline\n'+
+                  'ST-1,Cold Inlet Hatchery,North Shore\n'+
+                  'ST-2,Warm Inlet Hatchery,South Shore\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Batch":"LB-101","Vigour":"VIGOROUS SWIMMERS","Note":"seeded from first run","Volume":4000,"Hall":"North Rearing Hall","Site":"Cold Inlet Hatchery","Label":"LB-101 / VIGOROUS SWIMMERS","Stocked":120000},{"Batch":"LB-102","Vigour":"STRONG SWIMMERS","Note":"NO BATCH NOTE","Volume":4000,"Hall":"North Rearing Hall","Site":"Cold Inlet Hatchery","Label":"LB-102 / STRONG SWIMMERS","Stocked":110000},{"Batch":"LB-103","Vigour":"STEADY SWIMMERS","Note":"split from tank one","Volume":6000,"Hall":"North Rearing Hall","Site":"Cold Inlet Hatchery","Label":"LB-103 / STEADY SWIMMERS","Stocked":95000},{"Batch":"LB-104","Vigour":"MIXED SWIMMERS","Note":"NO BATCH NOTE","Volume":6000,"Hall":"North Rearing Hall","Site":"Cold Inlet Hatchery","Label":"LB-104 / MIXED SWIMMERS","Stocked":88000},{"Batch":"LB-105","Vigour":"SLOW SWIMMERS","Note":"slow start","Volume":6000,"Hall":"North Rearing Hall","Site":"Cold Inlet Hatchery","Label":"LB-105 / SLOW SWIMMERS","Stocked":76000},{"Batch":"LB-106","Vigour":"WEAK SWIMMERS","Note":"NO BATCH NOTE","Volume":8000,"Hall":"South Rearing Hall","Site":"Warm Inlet Hatchery","Label":"LB-106 / WEAK SWIMMERS","Stocked":64000},{"Batch":"LB-107","Vigour":"FALTERING SWIMMERS","Note":"thin walls","Volume":8000,"Hall":"South Rearing Hall","Site":"Warm Inlet Hatchery","Label":"LB-107 / FALTERING SWIMMERS","Stocked":52000},{"Batch":"LB-108","Vigour":"FAILING SWIMMERS","Note":"NO BATCH NOTE","Volume":8000,"Hall":"South Rearing Hall","Site":"Warm Inlet Hatchery","Label":"LB-108 / FAILING SWIMMERS","Stocked":41000},{"Batch":"LB-109","Vigour":"UNRECORDED VIGOUR","Note":"unclassed vigour","Volume":8000,"Hall":"South Rearing Hall","Site":"Warm Inlet Hatchery","Label":"LB-109 / UNRECORDED VIGOUR","Stocked":33000}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

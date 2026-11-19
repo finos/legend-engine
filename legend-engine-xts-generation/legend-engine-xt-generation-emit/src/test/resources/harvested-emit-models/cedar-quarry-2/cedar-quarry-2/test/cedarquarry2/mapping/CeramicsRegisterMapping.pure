@@ -1,0 +1,260 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::cedarquarry2::mapping::CeramicsRegisterMapping
+(
+  test::cedarquarry2::domain::ClayBody: EnumerationMapping ClayBodyCodes
+  {
+    EARTHENWARE: ['EARTHENWARE'],
+    STONEWARE: ['STONEWARE'],
+    PORCELAIN: ['PORCELAIN']
+  }
+
+  test::cedarquarry2::domain::ConditionGrade: EnumerationMapping ConditionCodes
+  {
+    INTACT: ['INTACT'],
+    CHIPPED: ['CHIPPED'],
+    RESTORED: ['RESTORED']
+  }
+
+  test::cedarquarry2::domain::FiringAtmosphere: EnumerationMapping AtmosphereCodes
+  {
+    OXIDISING: ['OXIDISING'],
+    REDUCING: ['REDUCING'],
+    NEUTRAL: ['NEUTRAL']
+  }
+
+  test::cedarquarry2::domain::VesselEntry[vessel]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry.vessel_id
+    )
+    ~mainTable [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry
+    accessionCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry.accession_code,
+    heightMm: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry.height_mm,
+    clayBody: EnumerationMapping ClayBodyCodes: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry.clay_body,
+    condition: EnumerationMapping ConditionCodes: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry.condition_code,
+    rimDiameterMm: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry.rim_diameter_mm,
+    baseDiameterMm: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.vessel_entry.base_diameter_mm
+  }
+
+  test::cedarquarry2::domain::TileEntry[tile]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry.tile_id
+    )
+    ~mainTable [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry
+    accessionCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry.accession_code,
+    heightMm: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry.height_mm,
+    clayBody: EnumerationMapping ClayBodyCodes: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry.clay_body,
+    condition: EnumerationMapping ConditionCodes: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry.condition_code,
+    glazedFaceCount: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry.glazed_face_count,
+    tileEdgeMm: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.tile_entry.tile_edge_mm
+  }
+
+  test::cedarquarry2::domain::CollectionRoom[room]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.collection_room.room_code
+    )
+    ~mainTable [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.collection_room
+    roomCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.collection_room.room_code,
+    roomName: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.collection_room.room_name
+  }
+
+  test::cedarquarry2::domain::KilnFiringRecord[firing]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.kiln_firing_record.firing_id
+    )
+    ~mainTable [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.kiln_firing_record
+    firingCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.kiln_firing_record.firing_code,
+    kilnCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.kiln_firing_record.kiln_code,
+    atmosphere: EnumerationMapping AtmosphereCodes: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.kiln_firing_record.atmosphere_code,
+    peakTemperatureC: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.kiln_firing_record.peak_temperature_c
+  }
+
+  test::cedarquarry2::domain::CatalogueRevision[revision]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.catalogue_revision.revision_id
+    )
+    ~mainTable [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.catalogue_revision
+    revisionCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.catalogue_revision.revision_code,
+    accessionCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.catalogue_revision.accession_code,
+    revisionNote: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.catalogue_revision.revision_note
+  }
+
+  test::cedarquarry2::domain::DisplayPlacement[placement]: Relational
+  {
+    ~primaryKey
+    (
+      [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.display_placement.placement_id
+    )
+    ~mainTable [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.display_placement
+    placementCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.display_placement.placement_code,
+    accessionCode: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.display_placement.accession_code,
+    venueName: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.display_placement.venue_name,
+    crateCount: [test::cedarquarry2::store::CeramicsRegisterDatabase]ceramics.display_placement.crate_count
+  }
+
+  testSuites:
+  [
+    vesselCatalogueSuite:
+    {
+      function: test::cedarquarry2::domain::VesselEntry.all()->project(~[Accession: v|$v.accessionCode, Height: v|$v.heightMm, Clay: v|$v.clayBody->toOne()->toString(), Condition: v|$v.condition->toOne()->toString(), Rim: v|$v.rimDiameterMm, Foot: v|$v.baseDiameterMm])->sort([~Accession->ascending()]);
+      tests:
+      [
+        vesselRowsCarryTheirClayBodyAndConditionCodes:
+        {
+          data:
+          [
+            test::cedarquarry2::store::CeramicsRegisterDatabase:
+              Reference
+              #{
+                test::cedarquarry2::data::CeramicsRegisterData
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              Relation
+              #{
+                Accession,Height,Clay,Condition,Rim,Foot
+                CER-0001,240,STONEWARE,INTACT,180,120
+                CER-0002,150,PORCELAIN,CHIPPED,90,80
+                CER-0003,320,EARTHENWARE,RESTORED,210,150;
+              }#
+          ];
+        }
+      ];
+    },
+    tileCatalogueSuite:
+    {
+      function: test::cedarquarry2::domain::TileEntry.all()->project(~[Accession: t|$t.accessionCode, Height: t|$t.heightMm, Clay: t|$t.clayBody->toOne()->toString(), Faces: t|$t.glazedFaceCount, Edge: t|$t.tileEdgeMm])->sort([~Accession->ascending()]);
+      tests:
+      [
+        tileRowsCarryTheirGlazedFaceCounts:
+        {
+          data:
+          [
+            test::cedarquarry2::store::CeramicsRegisterDatabase:
+              Reference
+              #{
+                test::cedarquarry2::data::CeramicsRegisterData
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              Relation
+              #{
+                Accession,Height,Clay,Faces,Edge
+                CER-0101,20,EARTHENWARE,1,150
+                CER-0102,18,STONEWARE,2,200;
+              }#
+          ];
+        }
+      ];
+    },
+    kilnFiringSuite:
+    {
+      function: test::cedarquarry2::domain::KilnFiringRecord.all(%2026-03-15)->project(~[Firing: f|$f.firingCode, Kiln: f|$f.kilnCode, Atmosphere: f|$f.atmosphere->toOne()->toString(), Peak: f|$f.peakTemperatureC])->sort([~Firing->ascending()]);
+      tests:
+      [
+        onlyTheFiringsInsideTheBusinessWindowAreHeld:
+        {
+          data:
+          [
+            test::cedarquarry2::store::CeramicsRegisterDatabase:
+              Reference
+              #{
+                test::cedarquarry2::data::CeramicsRegisterData
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              Relation
+              #{
+                Firing,Kiln,Atmosphere,Peak
+                FIR-01,KILN-A,OXIDISING,1180
+                FIR-02,KILN-B,REDUCING,1260;
+              }#
+          ];
+        }
+      ];
+    },
+    catalogueRevisionSuite:
+    {
+      function: test::cedarquarry2::domain::CatalogueRevision.all(%2026-03-15)->project(~[Revision: r|$r.revisionCode, Accession: r|$r.accessionCode, Note: r|$r.revisionNote])->sort([~Revision->ascending()]);
+      tests:
+      [
+        onlyTheRevisionsHeldAtThatProcessingDateAreRead:
+        {
+          data:
+          [
+            test::cedarquarry2::store::CeramicsRegisterDatabase:
+              Reference
+              #{
+                test::cedarquarry2::data::CeramicsRegisterData
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              Relation
+              #{
+                Revision,Accession,Note
+                REV-01,CER-0001,Foot ring re-measured;
+              }#
+          ];
+        }
+      ];
+    },
+    displayPlacementSuite:
+    {
+      function: test::cedarquarry2::domain::DisplayPlacement.all(%2026-03-15, %2026-03-15)->project(~[Placement: p|$p.placementCode, Accession: p|$p.accessionCode, Venue: p|$p.venueName, Crates: p|$p.crateCount])->sort([~Placement->ascending()]);
+      tests:
+      [
+        onlyThePlacementInsideBothWindowsIsHeld:
+        {
+          data:
+          [
+            test::cedarquarry2::store::CeramicsRegisterDatabase:
+              Reference
+              #{
+                test::cedarquarry2::data::CeramicsRegisterData
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              Relation
+              #{
+                Placement,Accession,Venue,Crates
+                DSP-01,CER-0002,Riverside Gallery,3;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

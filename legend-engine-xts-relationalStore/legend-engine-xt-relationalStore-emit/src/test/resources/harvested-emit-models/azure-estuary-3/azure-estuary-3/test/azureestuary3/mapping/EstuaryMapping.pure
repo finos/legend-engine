@@ -1,0 +1,468 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azureestuary3::mapping::EstuaryMapping
+(
+  include mapping test::azureestuary3::mapping::EstuaryEnumMappings
+
+  *test::azureestuary3::domain::RoostSector[sector]: Relational
+  {
+    ~filter [test::azureestuary3::store::EstuaryDB]ActiveSector
+    ~primaryKey
+    (
+      [test::azureestuary3::store::EstuaryDB]census.roost_sector.sector_id
+    )
+    ~mainTable [test::azureestuary3::store::EstuaryDB]census.roost_sector
+    featureCode: [test::azureestuary3::store::EstuaryDB]census.roost_sector.sector_code,
+    featureName: rtrim([test::azureestuary3::store::EstuaryDB]census.roost_sector.sector_name),
+    reviewNote: [test::azureestuary3::store::EstuaryDB]census.roost_sector.access_note,
+    shelter: EnumerationMapping ShelterMapping: [test::azureestuary3::store::EstuaryDB]census.roost_sector.shelter_code,
+    capacityBirds: [test::azureestuary3::store::EstuaryDB]census.roost_sector.capacity_birds,
+    mudflatHectares: [test::azureestuary3::store::EstuaryDB]census.roost_sector.mudflat_hectares,
+    headroomBirds: minus(
+                     [test::azureestuary3::store::EstuaryDB]census.roost_sector.capacity_birds,
+                     times([test::azureestuary3::store::EstuaryDB]census.roost_sector.mudflat_hectares, 2)
+                   ),
+    statusCode: ltrim([test::azureestuary3::store::EstuaryDB]census.roost_sector.status_code),
+    zoneLabel: [test::azureestuary3::store::EstuaryDB]@Sector_Zone > @Zone_Label | [test::azureestuary3::store::EstuaryDB]census.zone_label_vw.zone_label,
+    location
+    (
+      gridReference: [test::azureestuary3::store::EstuaryDB]census.roost_sector.grid_reference,
+      approachLabel: case(
+                       isNotEmpty([test::azureestuary3::store::EstuaryDB]census.roost_sector.access_note),
+                       concat(
+                         [test::azureestuary3::store::EstuaryDB]census.roost_sector.access_note,
+                         concat(' via ', [test::azureestuary3::store::EstuaryDB]@Sector_Zone | [test::azureestuary3::store::EstuaryDB]census.tidal_zone.zone_name)
+                       ),
+                       'NO MAPPED APPROACH'
+                     )
+    )
+  }
+
+  *test::azureestuary3::domain::TidalZone[zone]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureestuary3::store::EstuaryDB]census.tidal_zone.zone_id
+    )
+    ~mainTable [test::azureestuary3::store::EstuaryDB]census.tidal_zone
+    featureCode: [test::azureestuary3::store::EstuaryDB]census.tidal_zone.zone_code,
+    featureName: rtrim([test::azureestuary3::store::EstuaryDB]census.tidal_zone.zone_name),
+    exposureLabel: case(
+                     equal([test::azureestuary3::store::EstuaryDB]census.tidal_zone.exposure_code, 'SH'),
+                     'SHELTERED',
+                     case(
+                       equal([test::azureestuary3::store::EstuaryDB]census.tidal_zone.exposure_code, 'EX'),
+                       'EXPOSED',
+                       'MIXED SHELTER'
+                     )
+                   ),
+    peakCapacity: [test::azureestuary3::store::EstuaryDB]@Zone_Peak | [test::azureestuary3::store::EstuaryDB]census.zone_peak_vw.max_capacity
+  }
+
+  *test::azureestuary3::domain::ReserveArea[reserve]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureestuary3::store::EstuaryDB]census.reserve_area.reserve_id
+    )
+    ~mainTable [test::azureestuary3::store::EstuaryDB]census.reserve_area
+    featureCode: [test::azureestuary3::store::EstuaryDB]census.reserve_area.reserve_code,
+    featureName: rtrim([test::azureestuary3::store::EstuaryDB]census.reserve_area.reserve_name),
+    wardenLabel: case(
+                   isNull([test::azureestuary3::store::EstuaryDB]census.reserve_area.warden_code),
+                   'UNWARDENED RESERVE',
+                   [test::azureestuary3::store::EstuaryDB]census.reserve_area.warden_code
+                 )
+  }
+
+  *test::azureestuary3::domain::SurveyDistrict[district]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureestuary3::store::EstuaryDB]census.survey_district.district_id
+    )
+    ~mainTable [test::azureestuary3::store::EstuaryDB]census.survey_district
+    districtCode: [test::azureestuary3::store::EstuaryDB]census.survey_district.district_code,
+    districtName: rtrim([test::azureestuary3::store::EstuaryDB]census.survey_district.district_name)
+  }
+
+  *test::azureestuary3::domain::CoastRegion[region]: Relational
+  {
+    ~filter [test::azureestuary3::store::EstuaryDB]NamedRegion
+    ~primaryKey
+    (
+      [test::azureestuary3::store::EstuaryDB]census.coast_region.region_code
+    )
+    ~mainTable [test::azureestuary3::store::EstuaryDB]census.coast_region
+    regionCode: [test::azureestuary3::store::EstuaryDB]census.coast_region.region_code,
+    regionName: rtrim([test::azureestuary3::store::EstuaryDB]census.coast_region.region_name),
+    coastSideLabel: case(
+                      equal([test::azureestuary3::store::EstuaryDB]census.coast_region.coast_side, 'west'),
+                      'WEST SHORE',
+                      'EAST SHORE'
+                    )
+  }
+
+  *test::azureestuary3::domain::ObserverTeam[observer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureestuary3::store::EstuaryDB]census.observer_team.observer_id
+    )
+    ~mainTable [test::azureestuary3::store::EstuaryDB]census.observer_team
+    observerCode: [test::azureestuary3::store::EstuaryDB]census.observer_team.observer_code,
+    observerName: toUpper([test::azureestuary3::store::EstuaryDB]census.observer_team.observer_name),
+    grade: EnumerationMapping ObserverGradeMapping: [test::azureestuary3::store::EstuaryDB]census.observer_team.grade_code,
+    ringSchemeLabel: concat('SCHEME-', [test::azureestuary3::store::EstuaryDB]census.observer_team.ring_scheme_code),
+    lastVisitAt: [test::azureestuary3::store::EstuaryDB]census.observer_team.last_visit_at
+  }
+
+  *test::azureestuary3::domain::RoostCount[count]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azureestuary3::store::EstuaryDB]census.roost_count.count_id
+    )
+    ~mainTable [test::azureestuary3::store::EstuaryDB]census.roost_count
+    countId: [test::azureestuary3::store::EstuaryDB]census.roost_count.count_id,
+    tide: EnumerationMapping TideMapping: [test::azureestuary3::store::EstuaryDB]census.roost_count.tide_code,
+    birdTally: [test::azureestuary3::store::EstuaryDB]census.roost_count.bird_tally,
+    waderTally: [test::azureestuary3::store::EstuaryDB]census.roost_count.wader_tally,
+    noteText: case(
+                isNotEmpty([test::azureestuary3::store::EstuaryDB]census.roost_count.note_text),
+                rtrim([test::azureestuary3::store::EstuaryDB]census.roost_count.note_text),
+                'NO ROOST NOTE'
+              ),
+    countedOn: [test::azureestuary3::store::EstuaryDB]census.roost_count.counted_on,
+    conditionBand: case(
+                     equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A1'),
+                     'roost-full',
+                     case(
+                       equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A2'),
+                       'roost-partial',
+                       case(
+                         equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A3'),
+                         'roost-shifted',
+                         case(
+                           equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A4'),
+                           'roost-flushed',
+                           case(
+                             equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A5'),
+                             'roost-tide-cut',
+                             case(
+                               equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A6'),
+                               'roost-fog-bound',
+                               case(
+                                 equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A7'),
+                                 'roost-part-count',
+                                 case(
+                                   equal([test::azureestuary3::store::EstuaryDB]census.roost_count.condition_code, 'A8'),
+                                   'roost-abandoned',
+                                   sqlNull()
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   ),
+    effortScore: plus(
+                   [test::azureestuary3::store::EstuaryDB]census.roost_count.bird_tally,
+                   abs([test::azureestuary3::store::EstuaryDB]census.roost_count.drift_metres)
+                 ),
+    regionName: [test::azureestuary3::store::EstuaryDB]@Count_Sector > @Sector_Zone > @Zone_Reserve > @Reserve_District > @District_Region | [test::azureestuary3::store::EstuaryDB]census.coast_region.region_name,
+    zonePeakCapacity: [test::azureestuary3::store::EstuaryDB]@Count_Sector > @Sector_Zone > @Zone_Peak | [test::azureestuary3::store::EstuaryDB]census.zone_peak_vw.max_capacity
+  }
+
+  test::azureestuary3::domain::Sector_Counts: Relational
+  {
+    AssociationMapping
+    (
+      sectorCounts[sector, count]: [test::azureestuary3::store::EstuaryDB]@Count_Sector,
+      countedSector[count, sector]: [test::azureestuary3::store::EstuaryDB]@Count_Sector
+    )
+  }
+
+  test::azureestuary3::domain::Zone_Sectors: Relational
+  {
+    AssociationMapping
+    (
+      zoneSectors[zone, sector]: [test::azureestuary3::store::EstuaryDB]@Sector_Zone,
+      zone[sector, zone]: [test::azureestuary3::store::EstuaryDB]@Sector_Zone
+    )
+  }
+
+  test::azureestuary3::domain::Reserve_Zones: Relational
+  {
+    AssociationMapping
+    (
+      reserveZones[reserve, zone]: [test::azureestuary3::store::EstuaryDB]@Zone_Reserve,
+      reserve[zone, reserve]: [test::azureestuary3::store::EstuaryDB]@Zone_Reserve
+    )
+  }
+
+  test::azureestuary3::domain::District_Reserves: Relational
+  {
+    AssociationMapping
+    (
+      districtReserves[district, reserve]: [test::azureestuary3::store::EstuaryDB]@Reserve_District,
+      district[reserve, district]: [test::azureestuary3::store::EstuaryDB]@Reserve_District
+    )
+  }
+
+  test::azureestuary3::domain::Region_Districts: Relational
+  {
+    AssociationMapping
+    (
+      regionDistricts[region, district]: [test::azureestuary3::store::EstuaryDB]@District_Region,
+      region[district, region]: [test::azureestuary3::store::EstuaryDB]@District_Region
+    )
+  }
+
+  test::azureestuary3::domain::Observer_Counts: Relational
+  {
+    AssociationMapping
+    (
+      observedCounts[observer, count]: [test::azureestuary3::store::EstuaryDB]@Count_Observer,
+      observer[count, observer]: [test::azureestuary3::store::EstuaryDB]@Count_Observer
+    )
+  }
+
+  testSuites:
+  [
+    roostCountSuite:
+    {
+      function: |test::azureestuary3::domain::RoostCount.all(%2026-06-01, %2026-06-01)->project(
+        [
+          c|$c.countId,
+          c|$c.tide,
+          c|$c.birdTally,
+          c|$c.waderTally,
+          c|$c.noteText,
+          c|$c.conditionBand,
+          c|$c.effortScore,
+          c|$c.regionName,
+          c|$c.zonePeakCapacity,
+          c|$c.countedSector.featureCode
+        ],
+        [
+          'Count',
+          'Tide',
+          'Birds',
+          'Waders',
+          'Note',
+          'Band',
+          'Effort',
+          'Region',
+          'Peak',
+          'Sector'
+        ]
+      )->sort([asc('Count')]);
+      tests:
+      [
+        everyConditionArm:
+        {
+          doc: 'Resolves the bi-temporal roost census at one business and one processing instant, translating the tide vocabulary onto the enumeration, walking every arm of the eight-way condition case plus its null fallback, computing the effort figure arithmetically from the tally and the absolute drift, and reaching the coast region five joins away and the grouped zone view three joins away; the count whose processing window has closed and the count whose business window has closed are both out of range.';
+          data:
+          [
+            test::azureestuary3::store::EstuaryDB:
+              Relational
+              #{
+                census.roost_count:
+                  'count_id,sector_id,observer_id,tide_code,bird_tally,wader_tally,note_text,counted_on,condition_code,drift_metres,in_z,out_z,from_z,thru_z\n'+
+                  '1,1,1,EB,1200,860,High water roost intact,2026-05-02,A1,12,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '2,1,1,FL,940,610,,2026-05-03,A2,-8,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '3,2,2,SL,410,300,Birds shifted to the reed bed,2026-05-04,A3,4,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '4,2,2,SP,150,90,Flushed by a raptor,2026-05-05,A4,-3,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '5,3,3,NP,80,55,Tide cut the count short,2026-05-06,A5,7,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '6,3,3,EB,60,40,,2026-05-07,A6,-5,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '7,1,2,FL,720,520,Partial count from the causeway,2026-05-08,A7,9,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '8,2,3,SL,0,0,Roost abandoned after works,2026-05-09,A8,-1,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '9,3,1,SP,330,210,Condition code not recognised,2026-05-10,ZZ,2,2026-01-01,9999-12-31,2026-01-01,9999-12-31\n'+
+                  '10,1,3,NP,540,410,Superseded processing window,2026-04-01,A1,6,2024-01-01,2025-01-01,2026-01-01,9999-12-31\n'+
+                  '11,2,1,EB,260,180,Superseded business window,2026-04-02,A2,3,2026-01-01,9999-12-31,2024-01-01,2025-01-01\n';
+
+                census.roost_sector:
+                  'sector_id,sector_code,sector_name,zone_id,shelter_code,capacity_birds,mudflat_hectares,status_code,grid_reference,access_note\n'+
+                  '1,AE-01,Willow Spit Roost,1,SH,900,42,open,NS 4821,North causeway track\n'+
+                  '2,AE-02,Reed Bed Roost,1,PA,480,18,open,NS 4930,\n'+
+                  '3,AE-03,Shell Bar Roost,2,EX,260,7,open,NS 5104,Boat landing only\n'+
+                  '4,AE-04,Old Sluice Roost,2,SH,120,3,closed,NS 5210,Closed for erosion works\n';
+
+                census.tidal_zone:
+                  'zone_id,zone_code,zone_name,reserve_id,exposure_code\n'+
+                  '1,TZ-1,Inner Mudflat Zone,1,SH\n'+
+                  '2,TZ-2,Outer Sandbar Zone,2,EX\n';
+
+                census.reserve_area:
+                  'reserve_id,reserve_code,reserve_name,district_id,warden_code\n'+
+                  '1,RA-1,Heron Flats Reserve,1,WD-1\n'+
+                  '2,RA-2,Tern Bar Reserve,2,\n';
+
+                census.survey_district:
+                  'district_id,district_code,district_name,region_code\n'+
+                  '1,SD-1,Brackish Marsh District,NC\n'+
+                  '2,SD-2,Outer Bar District,EC\n';
+
+                census.coast_region:
+                  'region_code,region_name,coast_side\n'+
+                  'NC,North Sands Coast,west\n'+
+                  'EC,East Flats Coast,east\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Count":1,"Tide":"Ebb","Birds":1200,"Waders":860,"Note":"High water roost intact","Band":"roost-full","Effort":1212,"Region":"North Sands Coast","Peak":900,"Sector":"AE-01"},{"Count":2,"Tide":"Flood","Birds":940,"Waders":610,"Note":"NO ROOST NOTE","Band":"roost-partial","Effort":948,"Region":"North Sands Coast","Peak":900,"Sector":"AE-01"},{"Count":3,"Tide":"Slack","Birds":410,"Waders":300,"Note":"Birds shifted to the reed bed","Band":"roost-shifted","Effort":414,"Region":"North Sands Coast","Peak":900,"Sector":"AE-02"},{"Count":4,"Tide":"Spring","Birds":150,"Waders":90,"Note":"Flushed by a raptor","Band":"roost-flushed","Effort":153,"Region":"North Sands Coast","Peak":900,"Sector":"AE-02"},{"Count":5,"Tide":"Neap","Birds":80,"Waders":55,"Note":"Tide cut the count short","Band":"roost-tide-cut","Effort":87,"Region":"East Flats Coast","Peak":260,"Sector":"AE-03"},{"Count":6,"Tide":"Ebb","Birds":60,"Waders":40,"Note":"NO ROOST NOTE","Band":"roost-fog-bound","Effort":65,"Region":"East Flats Coast","Peak":260,"Sector":"AE-03"},{"Count":7,"Tide":"Flood","Birds":720,"Waders":520,"Note":"Partial count from the causeway","Band":"roost-part-count","Effort":729,"Region":"North Sands Coast","Peak":900,"Sector":"AE-01"},{"Count":8,"Tide":"Slack","Birds":0,"Waders":0,"Note":"Roost abandoned after works","Band":"roost-abandoned","Effort":1,"Region":"North Sands Coast","Peak":900,"Sector":"AE-02"},{"Count":9,"Tide":"Spring","Birds":330,"Waders":210,"Note":"Condition code not recognised","Band":null,"Effort":332,"Region":"East Flats Coast","Peak":260,"Sector":"AE-03"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sectorDigestSuite:
+    {
+      function: |test::azureestuary3::domain::RoostSector.all()->project(
+        [
+          s|$s.featureCode,
+          s|$s.featureName,
+          s|$s.shelter,
+          s|$s.capacityBirds,
+          s|$s.headroomBirds,
+          s|$s.statusCode,
+          s|$s.zoneLabel,
+          s|$s.location.gridReference,
+          s|$s.location.approachLabel
+        ],
+        [
+          'Sector',
+          'Name',
+          'Shelter',
+          'Capacity',
+          'Headroom',
+          'Status',
+          'Zone',
+          'Grid',
+          'Approach'
+        ]
+      )->sort([asc('Sector')]);
+      tests:
+      [
+        sectorDigest:
+        {
+          doc: 'Projects the active roost sectors through the inherited feature properties, the shelter vocabulary, the arithmetic headroom derivation, the embedded location block whose approach label is concatenated across a join, and the label view reached two joins away; the closed sector is dropped by the store filter and the sector without an access note falls back to the sentinel approach.';
+          data:
+          [
+            test::azureestuary3::store::EstuaryDB:
+              Relational
+              #{
+                census.roost_sector:
+                  'sector_id,sector_code,sector_name,zone_id,shelter_code,capacity_birds,mudflat_hectares,status_code,grid_reference,access_note\n'+
+                  '1,AE-01,Willow Spit Roost,1,SH,900,42,open,NS 4821,North causeway track\n'+
+                  '2,AE-02,Reed Bed Roost,1,PA,480,18,open,NS 4930,\n'+
+                  '3,AE-03,Shell Bar Roost,2,EX,260,7,open,NS 5104,Boat landing only\n'+
+                  '4,AE-04,Old Sluice Roost,2,SH,120,3,closed,NS 5210,Closed for erosion works\n';
+
+                census.tidal_zone:
+                  'zone_id,zone_code,zone_name,reserve_id,exposure_code\n'+
+                  '1,TZ-1,Inner Mudflat Zone,1,SH\n'+
+                  '2,TZ-2,Outer Sandbar Zone,2,EX\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sector":"AE-01","Name":"Willow Spit Roost","Shelter":"Sheltered","Capacity":900,"Headroom":816,"Status":"open","Zone":"ZONE-TZ-1","Grid":"NS 4821","Approach":"North causeway track via Inner Mudflat Zone"},{"Sector":"AE-02","Name":"Reed Bed Roost","Shelter":"Partial","Capacity":480,"Headroom":444,"Status":"open","Zone":"ZONE-TZ-1","Grid":"NS 4930","Approach":"NO MAPPED APPROACH"},{"Sector":"AE-03","Name":"Shell Bar Roost","Shelter":"Exposed","Capacity":260,"Headroom":246,"Status":"open","Zone":"ZONE-TZ-2","Grid":"NS 5104","Approach":"Boat landing only via Outer Sandbar Zone"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    zoneRollupSuite:
+    {
+      function: |test::azureestuary3::domain::TidalZone.all()->project(
+        [
+          z|$z.featureCode,
+          z|$z.featureName,
+          z|$z.exposureLabel,
+          z|$z.peakCapacity,
+          z|$z.firstShelteredSectorCode(),
+          z|$z.hasSectorNamed('AE-02')
+        ],
+        [
+          'Zone',
+          'Name',
+          'Exposure',
+          'Peak',
+          'FirstSheltered',
+          'HoldsReedBed'
+        ]
+      )->sort([asc('Zone')]);
+      tests:
+      [
+        zoneRollup:
+        {
+          doc: 'Projects the tidal zones with the two-armed exposure case, the peak capacity read from the grouped view and two parameterised navigations over the zone-to-sector collection - the first sheltered sector code and a containment test - so the closed sector is absent from both qualified results.';
+          data:
+          [
+            test::azureestuary3::store::EstuaryDB:
+              Relational
+              #{
+                census.roost_sector:
+                  'sector_id,sector_code,sector_name,zone_id,shelter_code,capacity_birds,mudflat_hectares,status_code,grid_reference,access_note\n'+
+                  '1,AE-01,Willow Spit Roost,1,SH,900,42,open,NS 4821,North causeway track\n'+
+                  '2,AE-02,Reed Bed Roost,1,PA,480,18,open,NS 4930,\n'+
+                  '3,AE-03,Shell Bar Roost,2,EX,260,7,open,NS 5104,Boat landing only\n'+
+                  '4,AE-04,Old Sluice Roost,2,SH,120,3,closed,NS 5210,Closed for erosion works\n';
+
+                census.tidal_zone:
+                  'zone_id,zone_code,zone_name,reserve_id,exposure_code\n'+
+                  '1,TZ-1,Inner Mudflat Zone,1,SH\n'+
+                  '2,TZ-2,Outer Sandbar Zone,2,EX\n';
+              }#
+          ];
+          asserts:
+          [
+            rows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Zone":"TZ-1","Name":"Inner Mudflat Zone","Exposure":"SHELTERED","Peak":900,"FirstSheltered":"AE-01","HoldsReedBed":true},{"Zone":"TZ-2","Name":"Outer Sandbar Zone","Exposure":"EXPOSED","Peak":260,"FirstSheltered":null,"HoldsReedBed":false}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

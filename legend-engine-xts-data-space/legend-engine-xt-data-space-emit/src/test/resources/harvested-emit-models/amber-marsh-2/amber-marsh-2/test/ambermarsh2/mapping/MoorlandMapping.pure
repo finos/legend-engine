@@ -1,0 +1,313 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::ambermarsh2::mapping::MoorlandMapping
+(
+  test::ambermarsh2::domain::RestorationStage: EnumerationMapping StageMapping
+  {
+    Surveyed: 'SV',
+    Blocked: 'BL',
+    Reprofiled: 'RP',
+    Revegetated: 'RV'
+  }
+
+  *test::ambermarsh2::domain::PeatDepthSurvey[peatDepthSurvey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.survey_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey
+    surveyId: [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.survey_id,
+    surveyCode: [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.survey_code,
+    gridRef: [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.grid_ref,
+    depthCm: [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.depth_cm,
+    probeCount: [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.probe_count,
+    surveyedOn: [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.surveyed_on,
+    surveyorName: [test::ambermarsh2::store::MoorlandDb]moor.peat_depth_survey.surveyor_name
+  }
+
+  *test::ambermarsh2::domain::GullyBlockInstall[gullyBlockInstall]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install.install_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install
+    installId: [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install.install_id,
+    installCode: [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install.install_code,
+    gullyRef: [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install.gully_ref,
+    blockTally: [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install.block_tally,
+    installedOn: [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install.installed_on,
+    materialLabel: [test::ambermarsh2::store::MoorlandDb]moor.gully_block_install.material_label
+  }
+
+  *test::ambermarsh2::domain::SphagnumPlugBatch[sphagnumPlugBatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.sphagnum_plug_batch.batch_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.sphagnum_plug_batch
+    batchId: [test::ambermarsh2::store::MoorlandDb]moor.sphagnum_plug_batch.batch_id,
+    batchCode: [test::ambermarsh2::store::MoorlandDb]moor.sphagnum_plug_batch.batch_code,
+    plugTally: [test::ambermarsh2::store::MoorlandDb]moor.sphagnum_plug_batch.plug_tally,
+    speciesMix: [test::ambermarsh2::store::MoorlandDb]moor.sphagnum_plug_batch.species_mix,
+    plantedOn: [test::ambermarsh2::store::MoorlandDb]moor.sphagnum_plug_batch.planted_on
+  }
+
+  *test::ambermarsh2::domain::BarePeatPatch[barePeatPatch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch.patch_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch
+    patchId: [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch.patch_id,
+    patchCode: [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch.patch_code,
+    areaM2: [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch.area_m2,
+    stage: EnumerationMapping StageMapping: [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch.stage_code,
+    mappedOn: [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch.mapped_on,
+    slopePct: [test::ambermarsh2::store::MoorlandDb]moor.bare_peat_patch.slope_pct
+  }
+
+  *test::ambermarsh2::domain::WaterTableDip[waterTableDip]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip.dip_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip
+    dipId: [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip.dip_id,
+    dipCode: [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip.dip_code,
+    wellRef: [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip.well_ref,
+    depthMm: [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip.depth_mm,
+    dippedOn: [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip.dipped_on,
+    loggerName: [test::ambermarsh2::store::MoorlandDb]moor.water_table_dip.logger_name
+  }
+
+  *test::ambermarsh2::domain::VegetationQuadrat[vegetationQuadrat]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat.quadrat_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat
+    quadratId: [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat.quadrat_id,
+    quadratCode: [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat.quadrat_code,
+    coverPct: [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat.cover_pct,
+    speciesTally: [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat.species_tally,
+    recordedOn: [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat.recorded_on,
+    recorderName: [test::ambermarsh2::store::MoorlandDb]moor.vegetation_quadrat.recorder_name
+  }
+
+  *test::ambermarsh2::domain::ErosionPinReading[erosionPinReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.erosion_pin_reading.reading_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.erosion_pin_reading
+    readingId: [test::ambermarsh2::store::MoorlandDb]moor.erosion_pin_reading.reading_id,
+    readingCode: [test::ambermarsh2::store::MoorlandDb]moor.erosion_pin_reading.reading_code,
+    pinRef: [test::ambermarsh2::store::MoorlandDb]moor.erosion_pin_reading.pin_ref,
+    exposedMm: [test::ambermarsh2::store::MoorlandDb]moor.erosion_pin_reading.exposed_mm,
+    readOn: [test::ambermarsh2::store::MoorlandDb]moor.erosion_pin_reading.read_on
+  }
+
+  *test::ambermarsh2::domain::DamInspection[damInspection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.dam_inspection.inspection_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.dam_inspection
+    inspectionId: [test::ambermarsh2::store::MoorlandDb]moor.dam_inspection.inspection_id,
+    inspectionCode: [test::ambermarsh2::store::MoorlandDb]moor.dam_inspection.inspection_code,
+    damRef: [test::ambermarsh2::store::MoorlandDb]moor.dam_inspection.dam_ref,
+    conditionLabel: [test::ambermarsh2::store::MoorlandDb]moor.dam_inspection.condition_label,
+    inspectedOn: [test::ambermarsh2::store::MoorlandDb]moor.dam_inspection.inspected_on
+  }
+
+  *test::ambermarsh2::domain::BrashBaleDelivery[brashBaleDelivery]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.brash_bale_delivery.delivery_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.brash_bale_delivery
+    deliveryId: [test::ambermarsh2::store::MoorlandDb]moor.brash_bale_delivery.delivery_id,
+    deliveryCode: [test::ambermarsh2::store::MoorlandDb]moor.brash_bale_delivery.delivery_code,
+    baleTally: [test::ambermarsh2::store::MoorlandDb]moor.brash_bale_delivery.bale_tally,
+    deliveredOn: [test::ambermarsh2::store::MoorlandDb]moor.brash_bale_delivery.delivered_on,
+    haulierName: [test::ambermarsh2::store::MoorlandDb]moor.brash_bale_delivery.haulier_name
+  }
+
+  *test::ambermarsh2::domain::HeatherCutPlot[heatherCutPlot]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.heather_cut_plot.plot_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.heather_cut_plot
+    plotId: [test::ambermarsh2::store::MoorlandDb]moor.heather_cut_plot.plot_id,
+    plotCode: [test::ambermarsh2::store::MoorlandDb]moor.heather_cut_plot.plot_code,
+    cutAreaM2: [test::ambermarsh2::store::MoorlandDb]moor.heather_cut_plot.cut_area_m2,
+    cutOn: [test::ambermarsh2::store::MoorlandDb]moor.heather_cut_plot.cut_on,
+    machineLabel: [test::ambermarsh2::store::MoorlandDb]moor.heather_cut_plot.machine_label
+  }
+
+  *test::ambermarsh2::domain::GripReprofileRun[gripReprofileRun]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.grip_reprofile_run.run_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.grip_reprofile_run
+    runId: [test::ambermarsh2::store::MoorlandDb]moor.grip_reprofile_run.run_id,
+    runCode: [test::ambermarsh2::store::MoorlandDb]moor.grip_reprofile_run.run_code,
+    gripMetres: [test::ambermarsh2::store::MoorlandDb]moor.grip_reprofile_run.grip_metres,
+    reprofiledOn: [test::ambermarsh2::store::MoorlandDb]moor.grip_reprofile_run.reprofiled_on,
+    operatorName: [test::ambermarsh2::store::MoorlandDb]moor.grip_reprofile_run.operator_name
+  }
+
+  *test::ambermarsh2::domain::DroneFlightLog[droneFlightLog]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.drone_flight_log.flight_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.drone_flight_log
+    flightId: [test::ambermarsh2::store::MoorlandDb]moor.drone_flight_log.flight_id,
+    flightCode: [test::ambermarsh2::store::MoorlandDb]moor.drone_flight_log.flight_code,
+    frameTally: [test::ambermarsh2::store::MoorlandDb]moor.drone_flight_log.frame_tally,
+    flownAt: [test::ambermarsh2::store::MoorlandDb]moor.drone_flight_log.flown_at,
+    pilotName: [test::ambermarsh2::store::MoorlandDb]moor.drone_flight_log.pilot_name
+  }
+
+  *test::ambermarsh2::domain::PeatCoreSample[peatCoreSample]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.peat_core_sample.sample_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.peat_core_sample
+    sampleId: [test::ambermarsh2::store::MoorlandDb]moor.peat_core_sample.sample_id,
+    sampleCode: [test::ambermarsh2::store::MoorlandDb]moor.peat_core_sample.sample_code,
+    coreLengthCm: [test::ambermarsh2::store::MoorlandDb]moor.peat_core_sample.core_length_cm,
+    bulkDensity: [test::ambermarsh2::store::MoorlandDb]moor.peat_core_sample.bulk_density,
+    coredOn: [test::ambermarsh2::store::MoorlandDb]moor.peat_core_sample.cored_on
+  }
+
+  *test::ambermarsh2::domain::RunoffFlumeReading[runoffFlumeReading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.runoff_flume_reading.flume_reading_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.runoff_flume_reading
+    flumeReadingId: [test::ambermarsh2::store::MoorlandDb]moor.runoff_flume_reading.flume_reading_id,
+    flumeReadingCode: [test::ambermarsh2::store::MoorlandDb]moor.runoff_flume_reading.flume_reading_code,
+    flumeRef: [test::ambermarsh2::store::MoorlandDb]moor.runoff_flume_reading.flume_ref,
+    litresPerSec: [test::ambermarsh2::store::MoorlandDb]moor.runoff_flume_reading.litres_per_sec,
+    gaugedAt: [test::ambermarsh2::store::MoorlandDb]moor.runoff_flume_reading.gauged_at
+  }
+
+  *test::ambermarsh2::domain::CarbonFluxChamber[carbonFluxChamber]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.carbon_flux_chamber.chamber_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.carbon_flux_chamber
+    chamberId: [test::ambermarsh2::store::MoorlandDb]moor.carbon_flux_chamber.chamber_id,
+    chamberCode: [test::ambermarsh2::store::MoorlandDb]moor.carbon_flux_chamber.chamber_code,
+    fluxUmol: [test::ambermarsh2::store::MoorlandDb]moor.carbon_flux_chamber.flux_umol,
+    measuredAt: [test::ambermarsh2::store::MoorlandDb]moor.carbon_flux_chamber.measured_at,
+    chamberNote: [test::ambermarsh2::store::MoorlandDb]moor.carbon_flux_chamber.chamber_note
+  }
+
+  *test::ambermarsh2::domain::GrazingExclosure[grazingExclosure]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.grazing_exclosure.exclosure_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.grazing_exclosure
+    exclosureId: [test::ambermarsh2::store::MoorlandDb]moor.grazing_exclosure.exclosure_id,
+    exclosureCode: [test::ambermarsh2::store::MoorlandDb]moor.grazing_exclosure.exclosure_code,
+    fenceMetres: [test::ambermarsh2::store::MoorlandDb]moor.grazing_exclosure.fence_metres,
+    erectedOn: [test::ambermarsh2::store::MoorlandDb]moor.grazing_exclosure.erected_on,
+    stockLabel: [test::ambermarsh2::store::MoorlandDb]moor.grazing_exclosure.stock_label
+  }
+
+  *test::ambermarsh2::domain::WildfireScarMap[wildfireScarMap]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.wildfire_scar_map.scar_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.wildfire_scar_map
+    scarId: [test::ambermarsh2::store::MoorlandDb]moor.wildfire_scar_map.scar_id,
+    scarCode: [test::ambermarsh2::store::MoorlandDb]moor.wildfire_scar_map.scar_code,
+    burntAreaM2: [test::ambermarsh2::store::MoorlandDb]moor.wildfire_scar_map.burnt_area_m2,
+    burntOn: [test::ambermarsh2::store::MoorlandDb]moor.wildfire_scar_map.burnt_on,
+    severityLabel: [test::ambermarsh2::store::MoorlandDb]moor.wildfire_scar_map.severity_label
+  }
+
+  *test::ambermarsh2::domain::PathRepairSection[pathRepairSection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.path_repair_section.section_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.path_repair_section
+    sectionId: [test::ambermarsh2::store::MoorlandDb]moor.path_repair_section.section_id,
+    sectionCode: [test::ambermarsh2::store::MoorlandDb]moor.path_repair_section.section_code,
+    stoneTonnes: [test::ambermarsh2::store::MoorlandDb]moor.path_repair_section.stone_tonnes,
+    repairedOn: [test::ambermarsh2::store::MoorlandDb]moor.path_repair_section.repaired_on,
+    surfaceLabel: [test::ambermarsh2::store::MoorlandDb]moor.path_repair_section.surface_label
+  }
+
+  *test::ambermarsh2::domain::ContractorVisit[contractorVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.contractor_visit.visit_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.contractor_visit
+    visitId: [test::ambermarsh2::store::MoorlandDb]moor.contractor_visit.visit_id,
+    visitCode: [test::ambermarsh2::store::MoorlandDb]moor.contractor_visit.visit_code,
+    crewSize: [test::ambermarsh2::store::MoorlandDb]moor.contractor_visit.crew_size,
+    visitedOn: [test::ambermarsh2::store::MoorlandDb]moor.contractor_visit.visited_on,
+    contractorName: [test::ambermarsh2::store::MoorlandDb]moor.contractor_visit.contractor_name
+  }
+
+  *test::ambermarsh2::domain::MossDonorSite[mossDonorSite]: Relational
+  {
+    ~primaryKey
+    (
+      [test::ambermarsh2::store::MoorlandDb]moor.moss_donor_site.donor_id
+    )
+    ~mainTable [test::ambermarsh2::store::MoorlandDb]moor.moss_donor_site
+    donorId: [test::ambermarsh2::store::MoorlandDb]moor.moss_donor_site.donor_id,
+    donorCode: [test::ambermarsh2::store::MoorlandDb]moor.moss_donor_site.donor_code,
+    harvestAreaM2: [test::ambermarsh2::store::MoorlandDb]moor.moss_donor_site.harvest_area_m2,
+    licensedOn: [test::ambermarsh2::store::MoorlandDb]moor.moss_donor_site.licensed_on,
+    holdingName: [test::ambermarsh2::store::MoorlandDb]moor.moss_donor_site.holding_name,
+    sourceMarker: 'MOOR-CORE'
+  }
+
+)

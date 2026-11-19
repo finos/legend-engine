@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::scarletwillow2::mapping::RecordRefMapping
+(
+  *test::scarletwillow2::domain::RecordRef[recordRef]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::RecordRefDB]registry.record_ref.record_no,
+      [test::scarletwillow2::store::RecordRefDB]registry.record_ref.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::RecordRefDB]registry.record_ref
+    recordNo: [test::scarletwillow2::store::RecordRefDB]registry.record_ref.record_no,
+    recordLabel: toString([test::scarletwillow2::store::RecordRefDB]registry.record_ref.record_no),
+    raisedBy: [test::scarletwillow2::store::RecordRefDB]registry.record_ref.raised_by
+  }
+
+  *test::scarletwillow2::domain::EntityRef[entityRef]: Relational
+  {
+    ~primaryKey
+    (
+      [test::scarletwillow2::store::RecordRefDB]registry.entity_ref.entity_code,
+      [test::scarletwillow2::store::RecordRefDB]registry.entity_ref.bus_from
+    )
+    ~mainTable [test::scarletwillow2::store::RecordRefDB]registry.entity_ref
+    entityCode: [test::scarletwillow2::store::RecordRefDB]registry.entity_ref.entity_code,
+    entityName: [test::scarletwillow2::store::RecordRefDB]registry.entity_ref.entity_name
+  }
+)

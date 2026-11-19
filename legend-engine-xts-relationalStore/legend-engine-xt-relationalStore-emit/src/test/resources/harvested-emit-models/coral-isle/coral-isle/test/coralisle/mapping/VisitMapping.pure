@@ -1,0 +1,91 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralisle::mapping::VisitMapping
+(
+  *test::coralisle::domain::SurveyVisit[surveyVisit]: Relational
+  {
+    ~primaryKey
+    (
+      [test::coralisle::store::ReefSurveyDb]survey.survey_visit.visit_ref
+    )
+    ~mainTable [test::coralisle::store::ReefSurveyDb]survey.survey_visit
+    visitRef: [test::coralisle::store::ReefSurveyDb]survey.survey_visit.visit_ref,
+    stationCode: [test::coralisle::store::ReefSurveyDb]survey.survey_visit.station_code,
+    visitedOn: [test::coralisle::store::ReefSurveyDb]survey.survey_visit.visited_on,
+    surfaceTempC: [test::coralisle::store::ReefSurveyDb]survey.survey_visit.surface_temp_c,
+    swellNoted: [test::coralisle::store::ReefSurveyDb]survey.survey_visit.swell_noted,
+    observerCode: [test::coralisle::store::ReefSurveyDb]survey.survey_visit.observer_code
+  }
+
+  testSuites:
+  [
+    swellVisitSuite:
+    {
+      function: |test::coralisle::domain::SurveyVisit.all()->filter(
+  v|$v.swellNoted == true
+)->project(
+  [
+    v|$v.visitRef,
+    v|$v.stationCode,
+    v|$v.surfaceTempC,
+    v|$v.observerCode
+  ],
+  [
+    'Visit',
+    'Station',
+    'Surface Temp',
+    'Observer'
+  ]
+)->sort(
+  [
+    asc('Visit')
+  ]
+);
+      tests:
+      [
+        swellVisitsOnly:
+        {
+          doc: 'The visit extent projects four alias-qualified columns of its own aliased main table, keeping only the visits where swell was noted.';
+          data:
+          [
+            test::coralisle::store::ReefSurveyDb:
+              Relational
+              #{
+                survey.survey_visit:
+                  'visit_ref,station_code,visited_on,surface_temp_c,swell_noted,observer_code,visibility_meters,weather_note,logged_on\n'+
+                  'SV-100,ST-01,2026-02-03 06:40:00,21,true,OB-1,8,Choppy with light rain,2026-02-03 18:00:00\n'+
+                  'SV-101,ST-01,2026-02-10 06:45:00,23,false,OB-2,12,Calm and clear,2026-02-10 18:00:00\n'+
+                  'SV-102,ST-02,2026-02-11 07:05:00,19,true,OB-2,6,Swell across the ledge,2026-02-11 18:00:00\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSwellVisits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Visit":"SV-100","Station":"ST-01","Surface Temp":21,"Observer":"OB-1"},{"Visit":"SV-102","Station":"ST-02","Surface Temp":19,"Observer":"OB-2"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

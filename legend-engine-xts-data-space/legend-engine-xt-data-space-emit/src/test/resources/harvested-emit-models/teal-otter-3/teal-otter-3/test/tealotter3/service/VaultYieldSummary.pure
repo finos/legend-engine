@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::tealotter3::service::VaultYieldSummary
+{
+  pattern: '/tealotter/v1/vault-yield-summary/{familyCode}';
+  title: 'Seed Vault - Vault Yield Summary';
+  owners:
+  [
+    'seed-conservation-office'
+  ];
+  documentation: 'Totals the seeds stored per vault and taxon for one plant family, admitting only the accessions whose vault code is one of the recognised cold rooms, and orders the rolled-up result by vault and then by descending total so the aggregate shape differs structurally from the register endpoint.';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: {familyCode: String[1], minSeeds: Integer[1]|test::tealotter3::domain::SeedAccession.all()->filter(
+      a|(($a.taxon.familyCode == $familyCode) && ($a.seedCount >= $minSeeds)) && $a.vault.vaultCode->in(['VL-01', 'VL-02', 'VL-03'])
+    )->groupBy(
+      [
+        a|$a.vault.vaultName,
+        a|$a.taxon.taxonName
+      ],
+      [
+        agg(
+          a|$a.seedCount,
+          v|$v->sum()
+        )
+      ],
+      [
+        'Vault Name',
+        'Taxon Name',
+        'Total Seeds'
+      ]
+    )->sort(
+      [
+        asc('Vault Name'),
+        desc('Total Seeds')
+      ]
+    )};
+    mapping: test::tealotter3::mapping::SeedArchiveMapping;
+    runtime: test::tealotter3::runtime::SeedVaultRuntime;
+  }
+  testSuites:
+  [
+    vaultYieldSummarySuite:
+    {
+      data:
+      [
+        connections:
+        [
+          seedVaultWarehouse: Reference
+            #{
+              test::tealotter3::data::SeedArchiveData
+            }#
+        ]
+      ]
+      tests:
+      [
+        oneFamilyRollsUpAcrossTwoVaults:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            familyCode = 'FM-CYP',
+            minSeeds = 200
+          ]
+          asserts:
+          [
+            totalsPerVaultAndTaxon:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Vault Name":"Dry Annex","Taxon Name":"Bristle Sedge","Total Seeds":300},{"Vault Name":"North Chill Room","Taxon Name":"Bristle Sedge","Total Seeds":2000}]';
+                  }#;
+              }#
+          ]
+        },
+        anUnknownFamilySelectsNothing:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            familyCode = 'FM-ZZZ',
+            minSeeds = 200
+          ]
+          asserts:
+          [
+            noRowsForTheUnknownFamily:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

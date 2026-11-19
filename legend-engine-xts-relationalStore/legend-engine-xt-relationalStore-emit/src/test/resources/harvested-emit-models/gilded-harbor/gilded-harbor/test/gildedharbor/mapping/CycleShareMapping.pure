@@ -1,0 +1,297 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedharbor::mapping::CycleShareMapping
+(
+  *test::gildedharbor::domain::CycleUnit[unit]: Relational
+  {
+    ~filter [test::gildedharbor::store::CycleShareDb]RoadworthyUnit
+    ~primaryKey
+    (
+      [test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.unit_code
+    )
+    ~mainTable [test::gildedharbor::store::CycleShareDb]fleet.cycle_unit
+    unitCode: [test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.unit_code,
+    wheelSizeMm: [test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.wheel_size_mm,
+    stationName: [test::gildedharbor::store::CycleShareDb]@Unit_Station | [test::gildedharbor::store::CycleShareDb]network.dock_station.station_name,
+    zoneName: [test::gildedharbor::store::CycleShareDb]@Unit_Station > @Station_Zone | [test::gildedharbor::store::CycleShareDb]network.service_zone.zone_name,
+    boroughName: [test::gildedharbor::store::CycleShareDb]@Unit_Station > @Station_Zone | [test::gildedharbor::store::CycleShareDb]network.service_zone.borough_name,
+    zoneStationCount: [test::gildedharbor::store::CycleShareDb]@Unit_Station > @Station_Zone > @Zone_Capacity | [test::gildedharbor::store::CycleShareDb]network.zone_capacity_vw.station_count,
+    modelLabel: case(
+                  isNotEmpty([test::gildedharbor::store::CycleShareDb]@Unit_Model > @Model_Label | [test::gildedharbor::store::CycleShareDb]fleet.model_label_vw.model_label),
+                  [test::gildedharbor::store::CycleShareDb]@Unit_Model > @Model_Label | [test::gildedharbor::store::CycleShareDb]fleet.model_label_vw.model_label,
+                  'MODEL-UNSPECIFIED'
+                ),
+    frameType: [test::gildedharbor::store::CycleShareDb]@Unit_Model | [test::gildedharbor::store::CycleShareDb]fleet.cycle_model.frame_type,
+    assistNote: case(
+                  equal([test::gildedharbor::store::CycleShareDb]@Unit_Model | [test::gildedharbor::store::CycleShareDb]fleet.cycle_model.assist_flag, 'Y'),
+                  'Pedal assist fitted',
+                  case(
+                    equal([test::gildedharbor::store::CycleShareDb]@Unit_Model | [test::gildedharbor::store::CycleShareDb]fleet.cycle_model.assist_flag, 'N'),
+                    'Mechanical drive',
+                    sqlNull()
+                  )
+                ),
+    conditionNote: case(
+                     isNotEmpty([test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.condition_note),
+                     toUpper(trim([test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.condition_note)),
+                     sqlNull()
+                   ),
+    rideBand: case(
+                greaterThan([test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.ride_count, 900),
+                concat('HEAVY-', [test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.unit_code),
+                case(
+                  greaterThan([test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.ride_count, 300),
+                  'Steady rotation',
+                  case(
+                    greaterThan([test::gildedharbor::store::CycleShareDb]fleet.cycle_unit.ride_count, 0),
+                    'Light rotation',
+                    'Awaiting first ride'
+                  )
+                )
+              )
+  }
+
+  *test::gildedharbor::domain::ZoneUsage[zoneUsage]: Relational
+  {
+    ~filter [test::gildedharbor::store::CycleShareDb]OpenStation
+    ~groupBy
+    (
+      [test::gildedharbor::store::CycleShareDb]network.dock_station.zone_code
+    )
+    ~primaryKey
+    (
+      [test::gildedharbor::store::CycleShareDb]network.dock_station.zone_code
+    )
+    ~mainTable [test::gildedharbor::store::CycleShareDb]network.dock_station
+    zoneCode: [test::gildedharbor::store::CycleShareDb]network.dock_station.zone_code,
+    stationCount: count([test::gildedharbor::store::CycleShareDb]network.dock_station.station_id),
+    totalDockCount: sum([test::gildedharbor::store::CycleShareDb]network.dock_station.dock_count)
+  }
+
+  *test::gildedharbor::domain::VisitLoad[visitLoad]: Relational
+  {
+    ~groupBy
+    (
+      [test::gildedharbor::store::CycleShareDb]fleet.service_visit.unit_code
+    )
+    ~primaryKey
+    (
+      [test::gildedharbor::store::CycleShareDb]fleet.service_visit.unit_code
+    )
+    ~mainTable [test::gildedharbor::store::CycleShareDb]fleet.service_visit
+    unitCode: [test::gildedharbor::store::CycleShareDb]fleet.service_visit.unit_code,
+    visitCount: count([test::gildedharbor::store::CycleShareDb]fleet.service_visit.visit_id),
+    totalDurationMin: sum([test::gildedharbor::store::CycleShareDb]fleet.service_visit.duration_min)
+  }
+
+  testSuites:
+  [
+    unitRegisterSuite:
+    {
+      function: |test::gildedharbor::domain::CycleUnit.all()->project(
+  [
+    x|$x.unitCode,
+    x|$x.stationName,
+    x|$x.zoneName,
+    x|$x.boroughName,
+    x|$x.zoneStationCount,
+    x|$x.modelLabel,
+    x|$x.frameType,
+    x|$x.assistNote,
+    x|$x.conditionNote,
+    x|$x.rideBand
+  ],
+  [
+    'UnitCode',
+    'StationName',
+    'ZoneName',
+    'BoroughName',
+    'ZoneStationCount',
+    'ModelLabel',
+    'FrameType',
+    'AssistNote',
+    'ConditionNote',
+    'RideBand'
+  ]
+)->sort(
+  [
+    asc('UnitCode')
+  ]
+);
+      tests:
+      [
+        everyDerivationArm:
+        {
+          doc: 'Every rotation band and assist arm is reached by its own unit, the label falls back when no model row exists, the retired unit is removed by the extent filter, and the zone station count is reached three joins away on the grouped inline view.';
+          data:
+          [
+            test::gildedharbor::store::CycleShareDb:
+              Relational
+              #{
+                network.dock_station:
+                  'station_id,station_code,station_name,zone_code,status_code,dock_count\n'+
+                  '1,DS-01,Quayside Green,Z-01,O,24\n'+
+                  '2,DS-02,Old Mill Lane,Z-01,O,18\n'+
+                  '3,DS-03,Beacon Park,Z-02,O,30\n'+
+                  '4,DS-04,Lantern Square,Z-02,O,12\n'+
+                  '5,DS-05,Cedar Wharf,Z-03,X,10\n';
+                network.service_zone:
+                  'zone_code,zone_name,borough_name\n'+
+                  'Z-01,Quayside,Northgate\n'+
+                  'Z-02,Beacon Fields,Eastvale\n'+
+                  'Z-03,Cedar Reach,Southbank\n';
+                fleet.cycle_model:
+                  'model_id,model_code,frame_type,assist_flag\n'+
+                  '1,MDL-A,Step Through,Y\n'+
+                  '2,MDL-B,Diamond,N\n'+
+                  '3,MDL-C,Cargo,U\n';
+                fleet.cycle_unit:
+                  'unit_id,unit_code,station_code,model_id,retired_flag,wheel_size_mm,ride_count,condition_note\n'+
+                  '1,CU-0001,DS-01,1,N,700,1450,brake pads glazed\n'+
+                  '2,CU-0002,DS-01,2,N,650,620,\n'+
+                  '3,CU-0003,DS-02,3,N,700,120,chain slack\n'+
+                  '4,CU-0004,DS-02,9,N,700,0,\n'+
+                  '5,CU-0005,DS-03,1,N,650,901,seat post seized\n'+
+                  '6,CU-0006,DS-03,2,N,700,301,\n'+
+                  '7,CU-0007,DS-04,3,N,650,1,tyre worn\n'+
+                  '8,CU-0008,DS-04,1,N,700,0,frame scratched\n'+
+                  '9,CU-0009,DS-05,2,N,700,455,gear cable frayed\n'+
+                  '10,CU-0010,DS-01,1,Y,700,2000,retired from service\n';
+              }#
+          ];
+          asserts:
+          [
+            allArmsResolved:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"UnitCode":"CU-0001","StationName":"Quayside Green","ZoneName":"Quayside","BoroughName":"Northgate","ZoneStationCount":2,"ModelLabel":"MODEL-MDL-A","FrameType":"Step Through","AssistNote":"Pedal assist fitted","ConditionNote":"BRAKE PADS GLAZED","RideBand":"HEAVY-CU-0001"},{"UnitCode":"CU-0002","StationName":"Quayside Green","ZoneName":"Quayside","BoroughName":"Northgate","ZoneStationCount":2,"ModelLabel":"MODEL-MDL-B","FrameType":"Diamond","AssistNote":"Mechanical drive","ConditionNote":null,"RideBand":"Steady rotation"},{"UnitCode":"CU-0003","StationName":"Old Mill Lane","ZoneName":"Quayside","BoroughName":"Northgate","ZoneStationCount":2,"ModelLabel":"MODEL-MDL-C","FrameType":"Cargo","AssistNote":null,"ConditionNote":"CHAIN SLACK","RideBand":"Light rotation"},{"UnitCode":"CU-0004","StationName":"Old Mill Lane","ZoneName":"Quayside","BoroughName":"Northgate","ZoneStationCount":2,"ModelLabel":"MODEL-UNSPECIFIED","FrameType":null,"AssistNote":null,"ConditionNote":null,"RideBand":"Awaiting first ride"},{"UnitCode":"CU-0005","StationName":"Beacon Park","ZoneName":"Beacon Fields","BoroughName":"Eastvale","ZoneStationCount":2,"ModelLabel":"MODEL-MDL-A","FrameType":"Step Through","AssistNote":"Pedal assist fitted","ConditionNote":"SEAT POST SEIZED","RideBand":"HEAVY-CU-0005"},{"UnitCode":"CU-0006","StationName":"Beacon Park","ZoneName":"Beacon Fields","BoroughName":"Eastvale","ZoneStationCount":2,"ModelLabel":"MODEL-MDL-B","FrameType":"Diamond","AssistNote":"Mechanical drive","ConditionNote":null,"RideBand":"Steady rotation"},{"UnitCode":"CU-0007","StationName":"Lantern Square","ZoneName":"Beacon Fields","BoroughName":"Eastvale","ZoneStationCount":2,"ModelLabel":"MODEL-MDL-C","FrameType":"Cargo","AssistNote":null,"ConditionNote":"TYRE WORN","RideBand":"Light rotation"},{"UnitCode":"CU-0008","StationName":"Lantern Square","ZoneName":"Beacon Fields","BoroughName":"Eastvale","ZoneStationCount":2,"ModelLabel":"MODEL-MDL-A","FrameType":"Step Through","AssistNote":"Pedal assist fitted","ConditionNote":"FRAME SCRATCHED","RideBand":"Awaiting first ride"},{"UnitCode":"CU-0009","StationName":"Cedar Wharf","ZoneName":"Cedar Reach","BoroughName":"Southbank","ZoneStationCount":1,"ModelLabel":"MODEL-MDL-B","FrameType":"Diamond","AssistNote":"Mechanical drive","ConditionNote":"GEAR CABLE FRAYED","RideBand":"Steady rotation"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    zoneUsageSuite:
+    {
+      function: |test::gildedharbor::domain::ZoneUsage.all()->project(
+  [
+    x|$x.zoneCode,
+    x|$x.stationCount,
+    x|$x.totalDockCount
+  ],
+  [
+    'ZoneCode',
+    'StationCount',
+    'TotalDockCount'
+  ]
+)->sort(
+  [
+    asc('ZoneCode')
+  ]
+);
+      tests:
+      [
+        openStationsOnly:
+        {
+          doc: 'The grouped class mapping collapses stations to one row per zone before the query runs, and the closed station leaves its zone out of the rollup entirely.';
+          data:
+          [
+            test::gildedharbor::store::CycleShareDb:
+              Relational
+              #{
+                network.dock_station:
+                  'station_id,station_code,station_name,zone_code,status_code,dock_count\n'+
+                  '1,DS-01,Quayside Green,Z-01,O,24\n'+
+                  '2,DS-02,Old Mill Lane,Z-01,O,18\n'+
+                  '3,DS-03,Beacon Park,Z-02,O,30\n'+
+                  '4,DS-04,Lantern Square,Z-02,O,12\n'+
+                  '5,DS-05,Cedar Wharf,Z-03,X,10\n';
+              }#
+          ];
+          asserts:
+          [
+            groupedZones:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ZoneCode":"Z-01","StationCount":2,"TotalDockCount":42},{"ZoneCode":"Z-02","StationCount":2,"TotalDockCount":42}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    visitLoadSuite:
+    {
+      function: |test::gildedharbor::domain::VisitLoad.all()->project(
+  [
+    x|$x.unitCode,
+    x|$x.visitCount,
+    x|$x.totalDurationMin
+  ],
+  [
+    'UnitCode',
+    'VisitCount',
+    'TotalDurationMin'
+  ]
+)->sort(
+  [
+    asc('UnitCode')
+  ]
+);
+      tests:
+      [
+        visitsPerUnit:
+        {
+          doc: 'Workshop visits are aggregated per unit by the grouped class mapping, including a unit with a single visit and a unit with three.';
+          data:
+          [
+            test::gildedharbor::store::CycleShareDb:
+              Relational
+              #{
+                fleet.service_visit:
+                  'visit_id,unit_code,visit_kind,duration_min\n'+
+                  '1,CU-0001,BRAKES,45\n'+
+                  '2,CU-0001,WHEEL,30\n'+
+                  '3,CU-0001,CLEAN,15\n'+
+                  '4,CU-0003,CHAIN,25\n';
+              }#
+          ];
+          asserts:
+          [
+            groupedVisits:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"UnitCode":"CU-0001","VisitCount":3,"TotalDurationMin":90},{"UnitCode":"CU-0003","VisitCount":1,"TotalDurationMin":25}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

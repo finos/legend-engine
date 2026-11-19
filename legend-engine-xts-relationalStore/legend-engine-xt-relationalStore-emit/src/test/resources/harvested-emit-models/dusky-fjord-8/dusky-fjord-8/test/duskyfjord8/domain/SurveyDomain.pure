@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::duskyfjord8::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'One plankton tow taken in the fjord, logged against the vessel that took it and the mooring station it was launched from.'} test::duskyfjord8::domain::PlanktonTow
+{
+  towCode: String[1];
+  vesselName: String[0..1];
+  vesselGrade: String[0..1];
+  stationName: String[0..1];
+  netCount: Integer[0..1];
+  depthMetres: Decimal[0..1];
+  towDate: StrictDate[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A research vessel available to the fjord survey; mapped by the included base mapping rather than by the mapping that maps the tow.'} test::duskyfjord8::domain::SurveyVessel
+{
+  vesselCode: String[1];
+  vesselName: String[1];
+  vesselGrade: String[0..1];
+  ratedHours: Float[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The catch of one tow totalled over its sorted taxa, banded by abundance and traced back through the tow, its mooring station and the station region to the monitoring programme that covers it.'} test::duskyfjord8::domain::TowCatchTotal
+{
+  towCode: String[0..1];
+  taxonCount: Integer[0..1];
+  totalIndividuals: Integer[0..1];
+  peakIndividuals: Integer[0..1];
+  lowIndividuals: Integer[0..1];
+  abundanceBand: String[0..1];
+  programmeName: String[0..1];
+}

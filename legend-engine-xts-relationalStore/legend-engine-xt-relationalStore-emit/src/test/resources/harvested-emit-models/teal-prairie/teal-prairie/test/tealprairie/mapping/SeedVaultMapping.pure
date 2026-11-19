@@ -1,0 +1,182 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::tealprairie::mapping::SeedVaultMapping
+(
+  test::tealprairie::domain::SeedCollection[seed_collection]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_collection.collection_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_collection
+    collectionRef: [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_collection.collection_ref,
+    feedName: [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_collection.feed_name,
+    eventDate: [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_collection.event_date,
+    seedWeightGrams: [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_collection.seed_weight_g,
+    taxon[taxon_name]: [test::tealprairie::store::SeedVaultDatabase]@Collection_Taxon,
+    habitat[habitat_patch]: [test::tealprairie::store::SeedVaultDatabase]@Collection_Patch,
+    storeRoom[store_room]: [test::tealprairie::store::SeedVaultDatabase]@Collection_Room,
+    programme[conservation_programme]: [test::tealprairie::store::SeedVaultDatabase]@Collection_Programme,
+    viability[viability_check]: [test::tealprairie::store::SeedVaultDatabase]@Collection_Check,
+    custodian[seed_custodian]: [test::tealprairie::store::SeedVaultDatabase]@Collection_Custodian
+  }
+
+  test::tealprairie::domain::TaxonName[taxon_name]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]taxonomy.taxon_name.taxon_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]taxonomy.taxon_name
+    taxonLabel: [test::tealprairie::store::SeedVaultDatabase]taxonomy.taxon_name.taxon_label,
+    genus[genus]: [test::tealprairie::store::SeedVaultDatabase]@Taxon_Genus
+  }
+
+  test::tealprairie::domain::Genus[genus]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]taxonomy.genus.genus_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]taxonomy.genus
+    genusLabel: [test::tealprairie::store::SeedVaultDatabase]taxonomy.genus.genus_label,
+    family[family]: [test::tealprairie::store::SeedVaultDatabase]@Genus_Family
+  }
+
+  test::tealprairie::domain::Family[family]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]taxonomy.family.family_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]taxonomy.family
+    familyLabel: [test::tealprairie::store::SeedVaultDatabase]taxonomy.family.family_label,
+    taxonOrder[taxon_order]: [test::tealprairie::store::SeedVaultDatabase]@Family_Order
+  }
+
+  test::tealprairie::domain::TaxonOrder[taxon_order]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]taxonomy.taxon_order.order_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]taxonomy.taxon_order
+    orderLabel: [test::tealprairie::store::SeedVaultDatabase]taxonomy.taxon_order.order_label
+  }
+
+  test::tealprairie::domain::HabitatPatch[habitat_patch]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]seedvault.habitat_patch.patch_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]seedvault.habitat_patch
+    patchName: [test::tealprairie::store::SeedVaultDatabase]seedvault.habitat_patch.patch_name,
+    patchZone: [test::tealprairie::store::SeedVaultDatabase]seedvault.habitat_patch.patch_zone
+  }
+
+  test::tealprairie::domain::StoreRoom[store_room]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]seedvault.store_room.room_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]seedvault.store_room
+    roomCode: [test::tealprairie::store::SeedVaultDatabase]seedvault.store_room.room_code,
+    roomWing: [test::tealprairie::store::SeedVaultDatabase]seedvault.store_room.room_wing
+  }
+
+  test::tealprairie::domain::ConservationProgramme[conservation_programme]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]seedvault.conservation_programme.programme_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]seedvault.conservation_programme
+    programmeName: [test::tealprairie::store::SeedVaultDatabase]seedvault.conservation_programme.programme_name,
+    programmeTier: [test::tealprairie::store::SeedVaultDatabase]seedvault.conservation_programme.programme_tier
+  }
+
+  test::tealprairie::domain::ViabilityCheck[viability_check]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]seedvault.viability_check.check_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]seedvault.viability_check
+    gradeCode: [test::tealprairie::store::SeedVaultDatabase]seedvault.viability_check.grade_code,
+    methodCode: [test::tealprairie::store::SeedVaultDatabase]seedvault.viability_check.method_code
+  }
+
+  test::tealprairie::domain::SeedCustodian[seed_custodian]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_custodian.custodian_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_custodian
+    custodianName: [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_custodian.custodian_name,
+    custodianDesk: [test::tealprairie::store::SeedVaultDatabase]seedvault.seed_custodian.custodian_desk
+  }
+
+  test::tealprairie::domain::StewardTransfer[steward_transfer]: Relational
+  {
+    ~primaryKey
+    (
+      [test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.transfer_id
+    )
+    ~mainTable [test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer
+    transferRef: [test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.transfer_id,
+    transferKind: [test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.transfer_kind,
+    crateCount: [test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.crate_count,
+    holdingTempC: [test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.holding_temp_c,
+    transferBand: case(
+                     equal([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.transfer_kind, 'FIELD'),
+                     'FIELD_INTAKE',
+                     case(
+                       equal([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.transfer_kind, 'VISIT'),
+                       'OUT_ON_VISIT',
+                       case(
+                         greaterThan([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.crate_count, 50),
+                         'BULK',
+                         case(
+                           greaterThan([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.crate_count, 20),
+                           'LARGE',
+                           case(
+                             lessThan([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.holding_temp_c, -15.0),
+                             'DEEP_FROZEN',
+                             case(
+                               lessThan([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.holding_temp_c, 0.0),
+                               'CHILLED',
+                               case(
+                                 isEmpty([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.crate_count),
+                                 'UNCOUNTED',
+                                 case(
+                                   equal([test::tealprairie::store::SeedVaultDatabase]steward.steward_transfer.transfer_kind, 'RETURN'),
+                                   'RETURNED',
+                                   sqlNull()
+                                 )
+                               )
+                             )
+                           )
+                         )
+                       )
+                     )
+                   ),
+    genusLabel: [test::tealprairie::store::SeedVaultDatabase]@Transfer_Collection > @Collection_Taxon > @Taxon_Genus | taxonomy.genus.genus_label,
+    familyLabel: [test::tealprairie::store::SeedVaultDatabase]@Transfer_Collection > @Collection_Taxon > @Taxon_Genus > @Genus_Family | taxonomy.family.family_label
+  }
+)

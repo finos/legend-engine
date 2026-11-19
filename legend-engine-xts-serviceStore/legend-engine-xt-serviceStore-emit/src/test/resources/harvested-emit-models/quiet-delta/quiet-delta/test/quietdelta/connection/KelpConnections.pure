@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection demo::quietdelta::connection::KelpWarehouseConnection
+{
+  store: demo::quietdelta::store::KelpDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'KELP_SURVEY_DB';
+    account: 'kelp_survey_account';
+    warehouse: 'KELP_WH';
+    region: 'eu-west-2';
+  };
+  auth: OAuth
+  {
+    oauthKey: 'KELP_OAUTH';
+    scopeName: 'SESSION:ROLE:KELP_SURVEY_READER';
+  };
+}
+
+###Connection
+RelationalDatabaseConnection demo::quietdelta::connection::KelpH2Connection
+{
+  store: demo::quietdelta::store::KelpDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists kelp;',
+      'create schema kelp;',
+      'create table kelp.survey_reef (reef_ref varchar(20) primary key, reef_label varchar(120) not null, coastal_zone varchar(40) not null, mean_depth_metres decimal(7,2) not null, warden_team varchar(80));',
+      'create table kelp.canopy_transect (transect_ref varchar(24) primary key, reef_ref varchar(20) not null, swum_on date not null, stipe_count integer not null, canopy_cover_pct decimal(6,2) not null, visibility_metres decimal(5,2));',
+      'create table kelp.holdfast_quadrat (quadrat_ref varchar(24) primary key, transect_ref varchar(24) not null, urchin_count integer not null, sediment_grade varchar(20) not null);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Connection
+ServiceStoreConnection demo::quietdelta::connection::TideFeedConnection
+{
+  store: demo::quietdelta::store::TideFeedApi;
+  baseUrl: 'https://tide-feed.reef-survey.example';
+}

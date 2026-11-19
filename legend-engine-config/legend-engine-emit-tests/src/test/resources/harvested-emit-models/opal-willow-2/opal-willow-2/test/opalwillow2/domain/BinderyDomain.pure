@@ -1,0 +1,287 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class {meta::pure::profiles::doc.doc = 'A conservation bindery workshop; the outermost hub of the register graph.'} test::opalwillow2::domain::BinderyWorkshop
+{
+  workshopCode: String[1];
+  workshopName: String[1];
+  buildingWing: String[1];
+  floorLevel: Integer[1];
+  benchPlaces: Integer[1];
+  humidityTargetPercent: Integer[0..1];
+  temperatureTargetCelsius: Integer[0..1];
+  openedOn: StrictDate[1];
+  refurbishedOn: StrictDate[0..1];
+  disciplineLabels: String[*];
+  stewardReference: String[1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A working bench inside a workshop; the intermediate hop from a workshop to the conservators standing at it.'} test::opalwillow2::domain::Bench
+{
+  benchCode: String[1];
+  benchLabel: String[1];
+  benchKind: String[1];
+  surfaceWidthMillimetres: Integer[1];
+  surfaceDepthMillimetres: Integer[1];
+  lightingLuxTarget: Integer[0..1];
+  extractionFitted: Boolean[1];
+  workshopReference: String[1];
+  installedOn: StrictDate[1];
+  inspectedOn: StrictDate[0..1];
+  permittedOperations: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A conservator working at a bench and leading treatment rounds; the second hop of the workshop chain.'} test::opalwillow2::domain::Conservator
+{
+  conservatorCode: String[1];
+  conservatorName: String[1];
+  gradeLabel: String[1];
+  accreditedOn: StrictDate[1];
+  reaccreditedOn: StrictDate[0..1];
+  weeklyBenchHours: Integer[1];
+  specialismLabels: String[*];
+  mentorReference: String[0..1];
+  benchReference: String[0..1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bound volume held for conservation; reached from a conservator through the treatment rounds worked on it.'} test::opalwillow2::domain::Volume
+{
+  volumeCode: String[1];
+  shelfMark: String[1];
+  titleLabel: String[1];
+  bindingStyle: String[1];
+  leafCount: Integer[1];
+  spineHeightMillimetres: Integer[1];
+  spineWidthMillimetres: Integer[1];
+  boundInCentury: Integer[0..1];
+  provenanceNote: String[0..1];
+  collectionLabels: String[*];
+  accessionedOn: StrictDate[1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'The sewn text block of a volume; the third hop reached from a volume and itself the owner of gatherings.'} test::opalwillow2::domain::TextBlock
+{
+  blockCode: String[1];
+  sewingStructure: String[1];
+  gatheringPlaces: Integer[1];
+  paperGrammage: Integer[1];
+  spineRounded: Boolean[1];
+  edgeTreatment: String[0..1];
+  volumeReference: String[1];
+  measuredOn: StrictDate[1];
+  degradationLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One folded gathering of a text block; the far end of the volume chain.'} test::opalwillow2::domain::Gathering
+{
+  gatheringCode: String[1];
+  gatheringNumber: Integer[1];
+  leafCount: Integer[1];
+  foldQualityLabel: String[1];
+  sewingStationCount: Integer[0..1];
+  guardApplied: Boolean[1];
+  blockReference: String[1];
+  collatedOn: StrictDate[1];
+  repairLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One round of conservation treatment carried out on a volume by a lead conservator.'} test::opalwillow2::domain::TreatmentRound
+{
+  roundCode: String[1];
+  roundNumber: Integer[1];
+  treatmentSummary: String[1];
+  startedOn: StrictDate[1];
+  completedOn: StrictDate[0..1];
+  benchHoursBooked: Integer[1];
+  reversibilityLabel: String[1];
+  conservatorReference: String[0..1];
+  volumeReference: String[1];
+  techniqueLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A condition assessment written against a treatment round.'} test::opalwillow2::domain::ConditionReport
+{
+  reportCode: String[1];
+  assessedOn: StrictDate[1];
+  damageSummary: String[1];
+  urgencyLabel: String[1];
+  brittlenessScore: Integer[0..1];
+  foxingScore: Integer[0..1];
+  roundReference: String[0..1];
+  assessorReference: String[1];
+  damageLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A cover board cut for a rebinding, held against a volume by shelf mark rather than by association.'} test::opalwillow2::domain::CoverBoard
+{
+  boardCode: String[1];
+  boardMaterial: String[1];
+  thicknessMicrons: Integer[1];
+  cornerStyle: String[1];
+  grainDirection: String[1];
+  lamination: Integer[0..1];
+  volumeReference: String[1];
+  cutOn: StrictDate[1];
+  finishLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A sheet of endpaper prepared for a rebinding.'} test::opalwillow2::domain::Endpaper
+{
+  endpaperCode: String[1];
+  paperPattern: String[1];
+  marblingStyle: String[0..1];
+  sheetGrammage: Integer[1];
+  toneLabel: String[1];
+  volumeReference: String[1];
+  preparedOn: StrictDate[1];
+  pigmentLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A lot of conservation material drawn from the workshop store.'} test::opalwillow2::domain::MaterialLot
+{
+  lotCode: String[1];
+  materialName: String[1];
+  batchLabel: String[1];
+  quantityUnits: Integer[1];
+  unitLabel: String[1];
+  shelfLifeMonths: Integer[0..1];
+  workshopReference: String[1];
+  receivedOn: StrictDate[1];
+  hazardLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A hand tool issued to a bench.'} test::opalwillow2::domain::HandTool
+{
+  toolCode: String[1];
+  toolName: String[1];
+  toolFamily: String[1];
+  bladeLengthMillimetres: Integer[0..1];
+  benchReference: String[1];
+  issuedOn: StrictDate[1];
+  lastSharpenedOn: StrictDate[0..1];
+  handlingLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A finishing press standing in a workshop.'} test::opalwillow2::domain::FinishingPress
+{
+  pressCode: String[1];
+  pressName: String[1];
+  platenWidthMillimetres: Integer[1];
+  platenDepthMillimetres: Integer[1];
+  screwCount: Integer[1];
+  heatedPlaten: Boolean[1];
+  workshopReference: String[1];
+  commissionedOn: StrictDate[1];
+  servicedOn: StrictDate[0..1];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A bespoke storage box made to house a treated volume.'} test::opalwillow2::domain::StorageBox
+{
+  boxCode: String[1];
+  boxKind: String[1];
+  internalHeightMillimetres: Integer[1];
+  internalWidthMillimetres: Integer[1];
+  internalDepthMillimetres: Integer[1];
+  liningLabel: String[0..1];
+  volumeReference: String[1];
+  madeOn: StrictDate[1];
+  fittingLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A tour of a treated volume to an exhibiting venue.'} test::opalwillow2::domain::ExhibitionTour
+{
+  tourCode: String[1];
+  venueName: String[1];
+  displayOpeningLabel: String[1];
+  dispatchedOn: StrictDate[1];
+  returnedOn: StrictDate[0..1];
+  cradleAngleDegrees: Integer[0..1];
+  luxLimit: Integer[1];
+  volumeReference: String[1];
+  courierReference: String[0..1];
+  conditionCheckLabels: String[*];
+  recordStatus: String[1];
+  recordVersion: Integer[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A workshop holds many benches; the first hop of the workshop chain.'} test::opalwillow2::domain::Workshop_Benches
+{
+  workshop: test::opalwillow2::domain::BinderyWorkshop[1];
+  benches: test::opalwillow2::domain::Bench[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A bench is worked by many conservators; chains onto the workshop association through the shared bench end.'} test::opalwillow2::domain::Bench_Conservators
+{
+  bench: test::opalwillow2::domain::Bench[0..1];
+  conservators: test::opalwillow2::domain::Conservator[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A conservator leads many treatment rounds; chains onto the bench association through the shared conservator end.'} test::opalwillow2::domain::Conservator_Rounds
+{
+  leadConservator: test::opalwillow2::domain::Conservator[0..1];
+  ledRounds: test::opalwillow2::domain::TreatmentRound[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A volume carries many treatment rounds; chains onto the conservator association through the shared round end, so a workshop reaches a volume in four hops.'} test::opalwillow2::domain::Volume_Rounds
+{
+  treatedVolume: test::opalwillow2::domain::Volume[1];
+  treatmentRounds: test::opalwillow2::domain::TreatmentRound[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A treatment round gathers many condition reports; the terminal hop of the workshop chain.'} test::opalwillow2::domain::Round_Reports
+{
+  reportedRound: test::opalwillow2::domain::TreatmentRound[0..1];
+  conditionReports: test::opalwillow2::domain::ConditionReport[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A volume owns the text blocks bound into it; chains onto the volume association through the shared volume end.'} test::opalwillow2::domain::Volume_TextBlocks
+{
+  blockVolume: test::opalwillow2::domain::Volume[0..1];
+  textBlocks: test::opalwillow2::domain::TextBlock[*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'A text block owns its folded gatherings; chains onto the text block association through the shared block end.'} test::opalwillow2::domain::TextBlock_Gatherings
+{
+  gatheringBlock: test::opalwillow2::domain::TextBlock[1];
+  gatherings: test::opalwillow2::domain::Gathering[*];
+}

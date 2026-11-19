@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::azurecanyon2::mapping::SkyMapping
+(
+  *test::azurecanyon2::domain::SkySurvey[survey]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurecanyon2::store::SkyDB]sky.survey.survey_id
+    )
+    ~mainTable [test::azurecanyon2::store::SkyDB]sky.survey
+    name: [test::azurecanyon2::store::SkyDB]sky.survey.survey_name,
+    targetBand: [test::azurecanyon2::store::SkyDB]sky.survey.target_band,
+    plateCount: [test::azurecanyon2::store::SkyDB]sky.survey.plate_count
+  }
+
+  *test::azurecanyon2::domain::InstrumentReading[reading]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurecanyon2::store::SkyDB]sky.reading.reading_id
+    )
+    ~mainTable [test::azurecanyon2::store::SkyDB]sky.reading
+    band: [test::azurecanyon2::store::SkyDB]sky.reading.band,
+    magnitude: [test::azurecanyon2::store::SkyDB]sky.reading.magnitude,
+    capturedOn: [test::azurecanyon2::store::SkyDB]sky.reading.captured_on
+  }
+
+  *test::azurecanyon2::domain::Station[station]: Relational
+  {
+    ~primaryKey
+    (
+      [test::azurecanyon2::store::SkyDB]sky.station.station_id
+    )
+    ~mainTable [test::azurecanyon2::store::SkyDB]sky.station
+    stationId: [test::azurecanyon2::store::SkyDB]sky.station.station_id,
+    stationName: [test::azurecanyon2::store::SkyDB]sky.station.station_name,
+    elevationM: [test::azurecanyon2::store::SkyDB]sky.station.elevation_m
+  }
+
+  test::azurecanyon2::domain::RidgeStation[ridgeStation] extends [station]: Relational
+  {
+    ~filter [test::azurecanyon2::store::SkyDB]RidgeOnly
+    ridgeName: [test::azurecanyon2::store::SkyDB]sky.station.ridge_name
+  }
+
+  testSuites:
+  [
+    surveyCoverageSuite:
+    {
+      function: |test::azurecanyon2::domain::SkySurvey.all(%2024-06-01, %2024-06-01)->filter(
+  s|$s.targetBand->in(['UV', 'IR'])
+)->project(
+  [
+    x|$x.name,
+    x|$x.coverageTier(),
+    x|$x.plateCount
+  ],
+  [
+    'Survey',
+    'Tier',
+    'Plates'
+  ]
+)->sort([asc('Survey')]);
+      tests:
+      [
+        surveysMidYear:
+        {
+          doc: 'Bitemporal point-in-time projection of surveys restricted to a band collection, asserting the derived coverage tier.';
+          data:
+          [
+            test::azurecanyon2::store::SkyDB:
+              Relational
+              #{
+                sky.survey:
+                  'survey_id,survey_name,target_band,plate_count,in_z,out_z,from_z,thru_z\n'+
+                  '1,Northern Arc Survey,UV,512,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                  '2,Southern Arc Survey,IR,180,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n'+
+                  '3,Zenith Patrol,VIS,60,2024-01-01,9999-12-31,2024-01-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            twoBandedSurveys:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Survey":"Northern Arc Survey","Tier":"DEEP-UV","Plates":512},{"Survey":"Southern Arc Survey","Tier":"MID-IR","Plates":180}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

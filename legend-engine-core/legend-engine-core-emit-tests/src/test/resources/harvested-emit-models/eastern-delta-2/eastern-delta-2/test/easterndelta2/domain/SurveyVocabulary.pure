@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Enum test::easterndelta2::domain::SeeingGrade
+{
+  EXCELLENT,
+  GOOD,
+  MODERATE,
+  POOR
+}
+
+Enum test::easterndelta2::domain::MoonPhase
+{
+  NEW,
+  WAXING_CRESCENT,
+  FIRST_QUARTER,
+  WAXING_GIBBOUS,
+  FULL,
+  WANING_GIBBOUS,
+  LAST_QUARTER,
+  WANING_CRESCENT
+}
+
+Enum test::easterndelta2::domain::FilterBand
+{
+  ULTRAVIOLET,
+  BLUE,
+  VISUAL,
+  RED,
+  NEAR_INFRARED,
+  CLEAR
+}
+
+Enum test::easterndelta2::domain::MountKind
+{
+  EQUATORIAL_FORK,
+  GERMAN_EQUATORIAL,
+  ALTAZIMUTH,
+  DOBSONIAN
+}
+
+Enum test::easterndelta2::domain::DetectorKind
+{
+  MONOCHROME_SENSOR,
+  COLOUR_SENSOR,
+  PHOTOMULTIPLIER,
+  BOLOMETER
+}
+
+Enum test::easterndelta2::domain::TargetKind
+{
+  GALAXY,
+  NEBULA,
+  OPEN_CLUSTER,
+  GLOBULAR_CLUSTER,
+  MINOR_PLANET,
+  COMET
+}
+
+Enum test::easterndelta2::domain::CatalogueOrigin
+{
+  WIDE_FIELD_ATLAS,
+  DEEP_FIELD_ATLAS,
+  MERIDIAN_LIST,
+  AMATEUR_SUBMISSION
+}
+
+Enum test::easterndelta2::domain::SkyCondition
+{
+  CLEAR,
+  THIN_CIRRUS,
+  HAZE,
+  PATCHY_CLOUD,
+  HIGH_HUMIDITY,
+  WINDHOLD
+}
+
+Enum test::easterndelta2::domain::CalibrationState
+{
+  CALIBRATED,
+  DRIFTING,
+  AWAITING_FLAT_FIELD,
+  WITHDRAWN
+}
+
+Enum test::easterndelta2::domain::DomeStatus
+{
+  OPEN,
+  PARTIALLY_OPEN,
+  CLOSED,
+  UNDER_MAINTENANCE
+}

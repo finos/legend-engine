@@ -1,0 +1,106 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum test::umberquarry5::domain::BlockGrade
+{
+  PREMIUM, STANDARD, RUBBLE, BLANK_GRADE, UNGRADED
+}
+
+Enum test::umberquarry5::domain::BlockShape
+{
+  CUBE, SLAB, IRREGULAR
+}
+
+Enum test::umberquarry5::domain::BenchLevel
+{
+  UPPER, MIDDLE, LOWER
+}
+
+Enum test::umberquarry5::domain::StoneFamily
+{
+  IGNEOUS, SEDIMENTARY, METAMORPHIC
+}
+
+Class {meta::pure::profiles::doc.doc = 'A quarrying district, listed only while it is open.'} test::umberquarry5::domain::District
+{
+  districtCode: String[1];
+  districtName: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stone type of the reference list with its rock family.'} test::umberquarry5::domain::StoneType
+{
+  typeCode: String[1];
+  typeName: String[0..1];
+  family: test::umberquarry5::domain::StoneFamily[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A working bench cut into the wall of a quarry pit.'} test::umberquarry5::domain::Bench
+{
+  pitCode: String[1];
+  benchNo: Integer[1];
+  faceCode: String[0..1];
+  level: test::umberquarry5::domain::BenchLevel[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A dimension-stone block lifted from a bench, with its assembled marking, grade, shape, saw state and reference lookups.'} test::umberquarry5::domain::Block
+{
+  blockRef: String[1];
+  pitCode: String[1];
+  benchNo: Integer[1];
+  blockSeq: Integer[1];
+  partsLabel: String[0..1];
+  grade: test::umberquarry5::domain::BlockGrade[0..1];
+  shape: test::umberquarry5::domain::BlockShape[0..1];
+  benchLevel: test::umberquarry5::domain::BenchLevel[0..1];
+  sawCut: Boolean[0..1];
+  openFace: Boolean[0..1];
+  stoneName: String[0..1];
+  stoneFamily: test::umberquarry5::domain::StoneFamily[0..1];
+  finishLabel: String[0..1];
+  pitName: String[0..1];
+  districtName: String[0..1];
+  colourTag: String[0..1];
+}
+
+Association test::umberquarry5::domain::BlockOnBench
+{
+  blocks: test::umberquarry5::domain::Block[*];
+  bench: test::umberquarry5::domain::Bench[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A stock lot in the stone yard, either sawn from a block or kept as an offcut.'} test::umberquarry5::domain::YardLot
+{
+  lotCode: String[1];
+  lotSource: String[1];
+  yardCode: String[0..1];
+  blockRef: String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One row per block of the pivoted stack tags.'} test::umberquarry5::domain::BlockTagSummary
+{
+  pitCode: String[1];
+  benchNo: Integer[1];
+  blockSeq: Integer[1];
+  colourTag: String[0..1];
+  gritTag: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A graded version of a block, valid over a business window.'} test::umberquarry5::domain::BlockVersion
+{
+  blockRef: String[1];
+  grade: test::umberquarry5::domain::BlockGrade[0..1];
+  dressingNote: String[0..1];
+  benchFace: String[0..1];
+}

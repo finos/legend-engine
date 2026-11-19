@@ -1,0 +1,32 @@
+name: fabled-summit-2
+title: "Fabled Summit — Seed Conservatory Hierarchy with Parameterised Derived Properties"
+description: |
+  A store-less Pure domain for a high-altitude seed conservatory. A collection-item
+  supertype carries the shared code, taxon and collection-year properties plus a
+  literal-defaulted holding name and a prefix-parameterised label; a seed-lot
+  subtype adds sample counts and germination figures with derived viability
+  arithmetic, one of it parameterised by an expected loss percentage; and a
+  heritage subtype extends that again with a steward note whose summary walks
+  two levels of inherited derivations. A storage-vault class supplies the
+  chamber banding the seed-lot storage label resolves through, so property
+  resolution has to walk the hierarchy and cross a class-typed optional
+  property. The group has no testable elements; it is validated by parse,
+  compile, generation and plan.
+modelSources:
+  model:
+    root: fabled-summit-2
+    files:
+      - test/fabledsummit2/domain/ConservatoryDomain.pure
+features:
+  - grammar:class-inheritance
+  - grammar:qualified-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - class-inheritance
+  - derived-property
+  - literal-default
+  - qualified-property
+  - seed-conservatory
+  - store-less

@@ -1,0 +1,42 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::crimsonglacier2::domain::*;
+
+Class {meta::pure::profiles::doc.doc = 'A rain gauge installed at a fixed point of the observation network.'} test::crimsonglacier2::domain::GaugeStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  regionCode: String[1];
+  altitudeMetres: Integer[1];
+  displayLabel() {$this.stationName + ' [' + $this.regionCode + ']'}: String[1];
+  altitudeBand() {if($this.altitudeMetres >= 800, | 'HIGHLAND', | if($this.altitudeMetres >= 300, | 'UPLAND', | 'LOWLAND'))}: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One daily rainfall total read off a gauge, with the operator quality flag left optional so an unreviewed reading can still be recorded.'} test::crimsonglacier2::domain::RainfallReading
+{
+  readingId: Integer[1];
+  readingDate: StrictDate[1];
+  millimetres: Float[1];
+  qualityFlag: String[0..1];
+  intensityGrade() {if($this.millimetres >= 25.0, | 'HEAVY', | if($this.millimetres >= 5.0, | 'MODERATE', | 'LIGHT'))}: String[1];
+  daysBeforeReview() {dateDiff($this.readingDate, %2026-07-01, meta::pure::functions::date::DurationUnit.DAYS)}: Integer[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Bidirectional pair joining a gauge to the readings taken from it; the traversal is planned as a relational join in either direction.'} test::crimsonglacier2::domain::Station_Reading
+{
+  gaugeStation: GaugeStation[1];
+  readings: RainfallReading[*];
+}

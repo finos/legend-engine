@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {meta::pure::profiles::doc.doc = 'A botanical garden that groups planting beds.'} test::silvermarsh::domain::Garden
+{
+  name: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A planting bed that belongs to a botanical garden.'} test::silvermarsh::domain::Bed
+{
+  code: String[1];
+  garden: test::silvermarsh::domain::Garden[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'An individual plant growing in a planting bed.'} test::silvermarsh::domain::Plant
+{
+  species: String[1];
+  heightCm: Integer[1];
+  bed: test::silvermarsh::domain::Bed[1];
+}

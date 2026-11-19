@@ -1,0 +1,73 @@
+name: lunar-harbor-3
+title: "Lunar Harbor 3 — Eight-armed lane decode, three-hop quay paths and expression-decided vocabularies over a processing-milestoned visitor register"
+description: |
+  An intermediate non-financial EMIT model over a harbour visitor-pontoon watch register. Watch
+  entries are processing-milestoned, so a read fixes one knowledge date and an entry whose window
+  has already closed does not surface. The lane a boat is sent to is decided by an eight-armed
+  conditional over keel depth, a parsed tide reading, the hull code, the line state, the lantern
+  brightness and the length of the normalised boat name, whose fall-through arm yields no value at
+  all. Three closed vocabularies are resolved from expressions rather than from bare columns: the
+  hull kind from a trimmed code that a code no member claims leaves undecided, the line state from
+  a nested conditional over the released flag and the keel depth, and the lantern grade from a
+  null-substituting conditional. The entry reaches its pontoon in one hop, its quay in two and the
+  watch station that keeps the quay in three, and a fourth derivation falls back to the pontoon
+  name when the quay hop finds nothing. A quay-to-pontoon association is implemented over the same
+  join the pontoon set uses. A second, model-to-model fold of the same watch feed resolves all three
+  vocabularies from lambda expressions over an optional code — a defaulted hull, a line state decided
+  by keel depth before the recorded code is consulted, and an unlit pontoon head — so the
+  enum-of-expression shape appears in both a relational and a model-store form. The mapping tests pin
+  every conditional arm, both null fallbacks, the unclaimed vocabulary code, the three-hop hit, the
+  closed-window entry and every folded digest.
+modelSources:
+  model:
+    root: lunar-harbor-3
+    files:
+      - test/lunarharbor3/domain/HarbourDomain.pure
+      - test/lunarharbor3/mapping/HarbourBaseMapping.pure
+      - test/lunarharbor3/mapping/HarbourDigestM2M.pure
+      - test/lunarharbor3/mapping/HarbourEnumMappings.pure
+      - test/lunarharbor3/mapping/HarbourMapping.pure
+      - test/lunarharbor3/store/HarbourStore.pure
+features:
+  - execution:mapping-test
+  - execution:test-data
+  - execution:test-data-branch-coverage
+  - grammar:association
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:m2m-conditional-transform
+  - mapping:m2m-transform
+  - mapping:mapping-include
+  - mapping:relational-association-implementation
+  - mapping:relational-conditional-transform
+  - mapping:relational-enum-of-expression
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-null-sentinel
+  - mapping:relational-primary-key
+  - mapping:relational-string-function-transform
+  - milestoning:processing-temporal
+  - query:project
+  - query:sort-limit
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-nested-join
+stores:
+  - model-store
+  - relational
+complexity: advanced
+tags:
+  - association-implementation
+  - eight-arm-conditional
+  - enum-of-expression
+  - h2
+  - harbour-watch
+  - m2m-transform
+  - mapping-test
+  - multi-hop-join-path
+  - null-sentinel
+  - processing-temporal

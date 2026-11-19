@@ -1,0 +1,40 @@
+name: ivory-thistle-2
+title: "Ivory Thistle 2 — nursery propagation registry"
+description: |
+  A relational plant-nursery propagation registry backed by a two-table
+  propagation schema. Tray rows carry labels, cutting counts, potting times,
+  hardening flags, and a required bench association; bench rows provide the
+  joined glasshouse context. The model includes two engine runtimes bound to
+  one invented H2 connection and a mapping test that projects tray and bench
+  values from a relational fixture through the inner join.
+modelSources:
+  model:
+    root: ivory-thistle-2
+    files:
+      - test/ivorythistle2/data/NurseryData.pure
+      - test/ivorythistle2/domain/NurseryDomain.pure
+      - test/ivorythistle2/mapping/NurseryMapping.pure
+      - test/ivorythistle2/runtime/NurseryRuntimes.pure
+      - test/ivorythistle2/store/NurseryDb.pure
+features:
+  - execution:data-element
+  - execution:mapping-test
+  - grammar:class-inheritance
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: advanced
+tags:
+  - inner-join
+  - nursery
+  - propagation
+  - relational

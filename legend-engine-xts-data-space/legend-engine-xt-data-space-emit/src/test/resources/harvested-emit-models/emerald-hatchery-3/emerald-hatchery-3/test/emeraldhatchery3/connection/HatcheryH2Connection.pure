@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::emeraldhatchery3::connection::HatcheryH2Connection
+{
+  store: test::emeraldhatchery3::store::HatcheryDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists rearing;',
+      'create schema rearing;',
+      'create table rearing.pond (pond_id integer primary key, pond_code varchar(24) not null, water_source varchar(24) not null, capacity_litres integer not null, grade_band varchar(16) not null, decommissioned_on date);',
+      'create table rearing.rearing_batch (batch_id integer primary key, batch_code varchar(24) not null, pond_code varchar(24) not null, species_group varchar(32) not null, fry_count integer not null, stocked_on date not null, released_on date);'
+      ];
+  };
+  auth: DefaultH2;
+}

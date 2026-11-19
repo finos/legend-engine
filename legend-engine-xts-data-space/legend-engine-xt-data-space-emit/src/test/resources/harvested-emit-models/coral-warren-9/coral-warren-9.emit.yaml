@@ -1,0 +1,56 @@
+name: coral-warren-9
+title: "Coral Warren 9 — a community seed library register read through views and published as data space executables"
+description: |
+  The register of a community seed library. One cloud warehouse database spans three schemas -
+  the variety catalogue, the lending branches with their shelved packets, and the donating
+  gardeners - and every class mapping reads a view laid over a base table rather than the table
+  itself, one view composing a branch tag from a literal prefix. Four equality joins between the
+  views back the four associations, so variety labels, family labels, branch tags and donor names
+  are reached through one hop. Five single-execution services under deployment-identifier
+  ownership share the mapping and a public-key authenticated warehouse runtime: they retrieve all
+  instances and project, some first filtering on an equality against a parameter, a literal
+  membership set, or both combined. A data space lists a curated subset of the services as titled
+  executables beside two diagrams of the classes and associations.
+modelSources:
+  model:
+    root: coral-warren-9
+    files:
+      - test/coralwarren9/connection/SeedLibraryConnection.pure
+      - test/coralwarren9/data/SeedLibraryFixture.pure
+      - test/coralwarren9/dataspace/SeedLibraryDataSpace.pure
+      - test/coralwarren9/diagram/SeedLibraryDiagrams.pure
+      - test/coralwarren9/domain/SeedLibraryDomain.pure
+      - test/coralwarren9/mapping/SeedLibraryMapping.pure
+      - test/coralwarren9/runtime/SeedLibraryRuntime.pure
+      - test/coralwarren9/service/AllotmentDonors.pure
+      - test/coralwarren9/service/BranchShelf.pure
+      - test/coralwarren9/service/FamilyVarieties.pure
+      - test/coralwarren9/service/SeasonalPackets.pure
+      - test/coralwarren9/service/VarietyCatalogue.pure
+      - test/coralwarren9/store/SeedLibraryDb.pure
+features:
+  - connection:snowflake
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - grammar:diagram
+  - query:filter
+  - query:membership-test
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - data-space
+  - diagram
+  - h2
+  - relational-view
+  - seed-library
+  - snowflake
+  - tabular-data-set

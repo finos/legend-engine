@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Connection
+RelationalDatabaseConnection test::duskygecko2::connection::HerpetariumH2Connection
+{
+  store: test::duskygecko2::store::HerpetariumDb;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'drop schema if exists husbandry;',
+      'drop schema if exists taxonomy;',
+      'create schema husbandry;',
+      'create schema taxonomy;',
+      'create table husbandry.enclosure (enclosure_id integer primary key, enclosure_code varchar(20) not null, zone_label varchar(40) not null, humidity_pct double not null, temp_setpoint decimal(5,2) not null, opened_on date not null);',
+      'create table husbandry.keeper_shift (shift_id integer primary key, enclosure_code varchar(20) not null, keeper_alias varchar(40) not null, started_at timestamp not null);',
+      'create table taxonomy.species_profile (profile_id integer primary key, species_alias varchar(60) not null, activity_pattern varchar(20) not null, adult_length_cm double not null);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Connection
+RelationalDatabaseConnection test::duskygecko2::connection::HerpetariumWarehouseConnection
+{
+  store: test::duskygecko2::store::HerpetariumDb;
+  type: Snowflake;
+  quoteIdentifiers: false;
+  specification: Snowflake
+  {
+    name: 'HERPETARIUM_DB';
+    account: 'herpetarium_account';
+    warehouse: 'HERPETARIUM_WH';
+    region: 'us-east-1';
+    cloudType: 'aws';
+    role: 'HERPETARIUM_READER';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'HERPETARIUM_USER';
+    privateKeyVaultReference: 'herpetarium-private-key';
+    passPhraseVaultReference: 'herpetarium-pass-phrase';
+  };
+}

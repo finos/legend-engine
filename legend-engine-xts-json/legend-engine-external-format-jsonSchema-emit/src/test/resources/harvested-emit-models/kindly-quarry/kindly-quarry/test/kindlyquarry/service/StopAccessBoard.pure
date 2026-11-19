@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::kindlyquarry::service::StopAccessBoard
+{
+  pattern: '/kindlyquarry/v1/stop-access-board/{shelterCodes}';
+  title: 'Kindly Quarry - Stop Access Board';
+  owners:
+  [
+    'transit-network-planning'
+  ];
+  documentation: 'Selects boarding points whose shelter fitment is in the requested set and which were opened before the reporting epoch, then projects the banded access surface as a relation, ordered by stop code and capped for publication.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {shelterCodes: String[*]|demo::kindlyquarry::domain::StopPoint.all()->filter(
+      s | $s.shelterCode->in($shelterCodes) && (dateDiff($s.openedOn, %2026-01-01, DurationUnit.DAYS) > 0)
+    )->project(
+      ~[
+        stopCode: s|$s.stopCode,
+        stopLabel: s|$s.stopLabel,
+        accessBand: s|$s.accessBand,
+        corridorName: s|$s.corridorName
+      ]
+    )->sort(~stopCode->ascending())->limit(20)};
+    key: 'register';
+    executions['published']:
+    {
+      mapping: demo::kindlyquarry::mapping::TransitMapping;
+      runtime: demo::kindlyquarry::runtime::TransitWarehouseRuntime;
+    }
+    executions['inProcess']:
+    {
+      mapping: demo::kindlyquarry::mapping::TransitMapping;
+      runtime: demo::kindlyquarry::runtime::TransitH2Runtime;
+    }
+  }
+}

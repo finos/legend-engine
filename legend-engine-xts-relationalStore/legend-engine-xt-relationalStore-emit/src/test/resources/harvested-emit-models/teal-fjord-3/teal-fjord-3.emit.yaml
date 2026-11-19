@@ -1,0 +1,53 @@
+name: teal-fjord-3
+title: "Fjord Shoreline Kelp Beds - Point-in-Time Extent, Rolling Date Horizon and Four-Column Projection"
+description: |
+  A shoreline kelp-monitoring model whose service opens the kelp-bed extent as
+  of the date carried in the URL path, narrows it against a rolling survey
+  horizon, then projects four aliased columns.
+
+    * `test::tealfjord3::domain::KelpBed` is business-temporal, so the service
+      retrieval is parameterised by the date path parameter and a bed version
+      whose window has already closed never reaches the predicate.
+    * The predicate compares the last survey date against a horizon built by
+      stepping today's date back by a day count and then handing the result to
+      a standalone function that steps it back one further month, so the window
+      moves with the clock rather than being pinned to a literal.
+    * The projection mixes a direct column, a programme label concatenated in the
+      mapping from a literal prefix and a column, a
+      column reached across the `Bed_Recorder` join that may be absent, and a
+      case-folded restatement of the bed code, then collapses duplicates and
+      orders the result.
+
+  The service `testSuite` invokes the pattern twice over an inline H2 fixture:
+  once with a date that selects the two beds walked inside the horizon - one of
+  them with no recorder attached - and once with a date standing before every
+  bed window, which selects none.
+
+modelSources:
+  model:
+    root: teal-fjord-3
+    files:
+      - test/tealfjord3/connection/KelpH2Connection.pure
+      - test/tealfjord3/domain/KelpDomain.pure
+      - test/tealfjord3/function/SurveyHorizon.pure
+      - test/tealfjord3/mapping/KelpMapping.pure
+      - test/tealfjord3/runtime/KelpRuntime.pure
+      - test/tealfjord3/service/KelpBedRosterService.pure
+      - test/tealfjord3/store/KelpDatabase.pure
+
+features:
+  - execution:service
+  - milestoning:business-temporal
+  - milestoning:point-in-time-query
+  - query:filter
+  - query:project
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - business-temporal
+  - h2
+  - kelp-monitoring
+  - point-in-time
+  - rolling-date-window
+  - service-test

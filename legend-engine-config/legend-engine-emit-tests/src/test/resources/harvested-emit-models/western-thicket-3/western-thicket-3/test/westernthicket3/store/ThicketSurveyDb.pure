@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database test::westernthicket3::store::ThicketSurveyDb
+(
+  Schema thref
+  (
+    Table grove_block
+    (
+      grove_id INTEGER PRIMARY KEY,
+      grove_code VARCHAR(24) NOT NULL,
+      grove_name VARCHAR(96),
+      warden_code VARCHAR(24)
+    )
+
+    Table coppice_stand
+    (
+      stand_id INTEGER PRIMARY KEY,
+      stand_code VARCHAR(24) NOT NULL,
+      stand_name VARCHAR(96),
+      grove_id INTEGER,
+      canopy_code VARCHAR(8),
+      stand_note VARCHAR(160)
+    )
+
+    Table warden_roster
+    (
+      warden_code VARCHAR(24) PRIMARY KEY,
+      warden_name VARCHAR(96),
+      roster_kind VARCHAR(16),
+      rota_code VARCHAR(16),
+      certified_until DATE,
+      supplier_org VARCHAR(96)
+    )
+
+    View grove_stand_tally
+    (
+      ~groupBy
+      (
+        thref.coppice_stand.grove_id
+      )
+      grove_id: thref.coppice_stand.grove_id PRIMARY KEY,
+      stand_tally: count(thref.coppice_stand.stand_id)
+    )
+  )
+
+  Schema thcore
+  (
+    Table cut_survey
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z)
+      )
+      survey_id INTEGER PRIMARY KEY,
+      survey_code VARCHAR(24) NOT NULL,
+      stand_id INTEGER,
+      warden_code VARCHAR(24),
+      cut_kind VARCHAR(24),
+      regrowth_code VARCHAR(8),
+      stem_count INTEGER,
+      stool_height_cm DOUBLE,
+      canopy_gap_pct DOUBLE,
+      surveyed_on DATE,
+      cycle_started_on DATE,
+      spare_label VARCHAR(48),
+      from_z DATE NOT NULL,
+      thru_z DATE NOT NULL
+    )
+  )
+
+  Schema thaudit
+  (
+    Table survey_check
+    (
+      survey_id INTEGER PRIMARY KEY,
+      checked_by VARCHAR(48),
+      check_note VARCHAR(160)
+    )
+  )
+
+  Filter StandInServiceFilter(thref.coppice_stand.canopy_code != 'X')
+  Filter GroveWardenFilter(thref.warden_roster.roster_kind = 'GROVE')
+  Filter ContractWardenFilter(thref.warden_roster.roster_kind = 'CONTRACT')
+
+  Join Stand_Grove(thref.coppice_stand.grove_id = thref.grove_block.grove_id)
+  Join Grove_StandTally(thref.grove_block.grove_id = thref.grove_stand_tally.grove_id)
+  Join Survey_Stand(thcore.cut_survey.stand_id = thref.coppice_stand.stand_id)
+  Join Survey_Warden(thcore.cut_survey.warden_code = thref.warden_roster.warden_code)
+  Join Survey_Check(thcore.cut_survey.survey_id = thaudit.survey_check.survey_id)
+)

@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::gildedprairie2::mapping::PrairieSurveyMapping
+(
+  include mapping test::gildedprairie2::mapping::PrairieHabitatMapping
+
+  *test::gildedprairie2::domain::Survey[survey_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedprairie2::store::PrairieAllDB]prairie_survey.survey.survey_code
+    )
+    ~mainTable [test::gildedprairie2::store::PrairieAllDB]prairie_survey.survey
+    surveyCode: [test::gildedprairie2::store::PrairieAllDB]prairie_survey.survey.survey_code,
+    surveyedOn: [test::gildedprairie2::store::PrairieAllDB]prairie_survey.survey.surveyed_on,
+    observerName: [test::gildedprairie2::store::PrairieAllDB]prairie_survey.survey.observer_name,
+    plotName: [test::gildedprairie2::store::PrairieAllDB]@Survey_Plot | [test::gildedprairie2::store::PrairieAllDB]prairie_plot.plot.plot_name
+  }
+
+  *test::gildedprairie2::domain::SpeciesCount[species_count_set]: Relational
+  {
+    ~primaryKey
+    (
+      [test::gildedprairie2::store::PrairieAllDB]prairie_survey.species_count.count_code
+    )
+    ~mainTable [test::gildedprairie2::store::PrairieAllDB]prairie_survey.species_count
+    countCode: [test::gildedprairie2::store::PrairieAllDB]prairie_survey.species_count.count_code,
+    speciesName: [test::gildedprairie2::store::PrairieAllDB]prairie_survey.species_count.species_name,
+    stemCount: [test::gildedprairie2::store::PrairieAllDB]prairie_survey.species_count.stem_count,
+    plotName: [test::gildedprairie2::store::PrairieAllDB]@SpeciesCount_Survey > @Survey_Plot | [test::gildedprairie2::store::PrairieAllDB]prairie_plot.plot.plot_name
+  }
+
+  test::gildedprairie2::domain::Plot_Surveys: Relational
+  {
+    AssociationMapping
+    (
+      surveys[plot_set, survey_set]: [test::gildedprairie2::store::PrairieAllDB]@Survey_Plot,
+      plot[survey_set, plot_set]: [test::gildedprairie2::store::PrairieAllDB]@Survey_Plot
+    )
+  }
+
+  test::gildedprairie2::domain::Survey_SpeciesCounts: Relational
+  {
+    AssociationMapping
+    (
+      speciesCounts[survey_set, species_count_set]: [test::gildedprairie2::store::PrairieAllDB]@SpeciesCount_Survey,
+      survey[species_count_set, survey_set]: [test::gildedprairie2::store::PrairieAllDB]@SpeciesCount_Survey
+    )
+  }
+)

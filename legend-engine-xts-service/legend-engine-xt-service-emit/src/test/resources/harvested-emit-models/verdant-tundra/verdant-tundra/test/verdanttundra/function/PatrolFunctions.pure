@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::verdanttundra::domain::*;
+
+function test::verdanttundra::function::patrolTag(prefix: String[1], value: String[1]): String[1]
+{
+  $prefix + '-' + $value->trim()->toUpper()
+}
+
+function test::verdanttundra::function::normalizeCode(code: String[1]): String[1]
+{
+  $code->trim()->toUpper()
+}
+
+function test::verdanttundra::function::parseCount(text: String[1]): Integer[1]
+{
+  if($text->trim() == '', | 0, | $text->trim()->parseInteger())
+}
+
+function test::verdanttundra::function::logYear(loggedOn: String[1]): Integer[1]
+{
+  $loggedOn->trim()->substring(0, 4)->parseInteger()
+}
+
+function test::verdanttundra::function::effortBand(distanceKm: Integer[1]): String[0..1]
+{
+  if($distanceKm >= 40,
+     | 'summit-push',
+     | if($distanceKm >= 32,
+          | 'long-haul',
+          | if($distanceKm >= 26,
+               | 'ridge-run',
+               | if($distanceKm >= 20,
+                    | 'steady-day',
+                    | if($distanceKm >= 14,
+                         | 'half-day',
+                         | if($distanceKm >= 9,
+                              | 'short-loop',
+                              | if($distanceKm >= 5,
+                                   | 'gate-check',
+                                   | if($distanceKm >= 1,
+                                        | 'yard-walk',
+                                        | []))))))))
+}
+
+function test::verdanttundra::function::sightingRate(sightings: Integer[1], distanceKm: Integer[1]): Integer[1]
+{
+  if($distanceKm <= 0, | 0, | (($sightings * 100) / $distanceKm)->round())
+}
+
+function test::verdanttundra::function::digestNote(effortBand: String[0..1]): String[1]
+{
+  if($effortBand->isEmpty(), | 'unbanded patrol', | 'banded as ' + $effortBand->toOne())
+}
+
+function test::verdanttundra::function::headline(rangerLabel: String[1], distanceKm: Integer[1]): String[1]
+{
+  $rangerLabel + ' covered ' + $distanceKm->toString() + 'km'
+}

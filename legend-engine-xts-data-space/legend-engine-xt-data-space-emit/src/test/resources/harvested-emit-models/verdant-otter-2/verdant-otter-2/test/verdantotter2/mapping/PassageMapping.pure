@@ -1,0 +1,81 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::verdantotter2::mapping::PassageMapping
+(
+  include demo::verdantotter2::mapping::WaterwayMapping
+
+  testSuites:
+  [
+    lockChamberAsOfSuite:
+    {
+      function: |demo::verdantotter2::domain::LockChamber.all(%2026-05-01)->project(
+        [
+          l|$l.lockCode,
+          l|$l.lockName,
+          l|$l.reachCode,
+          l|$l.reachName,
+          l|$l.riseMetres,
+          l|$l.commissionedOn
+        ],
+        [
+          'Lock',
+          'Name',
+          'Reach',
+          'ReachName',
+          'Rise',
+          'Commissioned'
+        ]
+      );
+      tests:
+      [
+        onlyTheVersionInForce:
+        {
+          doc: 'Reads the lock chambers whose processing window is in force at the requested instant, reaching the reach name across the declared join. The fixture holds two corrections of one chamber - the earlier one closed out before the instant - plus a chamber opened after it, so only the version in force survives the window predicate.';
+          data:
+          [
+            demo::verdantotter2::store::PassageDB:
+              Relational
+              #{
+                navigation.reach:
+                  'reach_code,reach_name,region_name,summit_metres\n'+
+                  'RE-01,Fenway Reach,Northern Levels,42.5\n'+
+                  'RE-02,Millpond Reach,Western Levels,18.25\n';
+
+                waterway.lock_chamber:
+                  'lock_id,lock_code,lock_name,reach_code,chamber_length_metres,rise_metres,commissioned_on,surveyed_at,in_z,out_z\n'+
+                  '1,LK-001,Fenway Bottom Lock,RE-01,21.50,2.75,1846-04-12,2026-02-11 09:15:00,2026-04-01,9999-12-31\n'+
+                  '1,LK-001,Fenway Bottom Chamber,RE-01,21.50,2.70,1846-04-12,2025-02-11 09:15:00,2025-01-01,2026-03-31\n'+
+                  '2,LK-002,Millpond Staircase,RE-02,19.00,3.10,1852-09-01,2026-06-02 11:00:00,2026-09-01,9999-12-31\n';
+              }#
+          ];
+          asserts:
+          [
+            oneChamberInForce:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Lock":"LK-001","Name":"Fenway Bottom Lock","Reach":"RE-01","ReachName":"Fenway Reach","Rise":2.75,"Commissioned":"1846-04-12"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

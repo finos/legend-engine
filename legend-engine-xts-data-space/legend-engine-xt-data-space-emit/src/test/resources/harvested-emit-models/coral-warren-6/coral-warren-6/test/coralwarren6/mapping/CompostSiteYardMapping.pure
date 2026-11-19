@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping test::coralwarren6::mapping::CompostSiteYardMapping
+(
+  include test::coralwarren6::mapping::CompostSiteMapping[test::coralwarren6::store::CompostCoreDb -> test::coralwarren6::store::CompostYardDb]
+
+  testSuites:
+  [
+    siteOnYardSuite:
+    {
+      function: |test::coralwarren6::domain::CompostSite.all()->filter(
+        s|$s.wardCode->in(['W-1', 'W-2', 'W-4'])
+      )->project(
+        [
+          s|$s.siteCode,
+          s|$s.siteName->toUpper(),
+          s|$s.wardCode
+        ],
+        [
+          'Site',
+          'Name',
+          'Ward'
+        ]
+      )->filter(
+        r|$r.getString('Site') != 'ST-4'
+      )->distinct()->sort([asc('Site')]);
+      tests:
+      [
+        sitesThroughYardStore:
+        {
+          doc: 'The core site mapping, included with its store substituted by the yard store that includes it, reads the operating sites from the yard store; a ward outside the membership set and a site removed by the post-projection filter both drop out.';
+          data:
+          [
+            test::coralwarren6::store::CompostYardDb:
+              Relational
+              #{
+                SITE.COMPOST_SITE:
+                  'SITE_CODE,SITE_NAME,WARD_CODE\n'+
+                  'ST-1,Willowbank Compost Yard,W-1\n'+
+                  'ST-2,Ferndale Compost Yard,W-2\n'+
+                  'ST-3,Marlpit Compost Yard,W-3\n'+
+                  'ST-4,Oldkiln Compost Yard,W-4\n';
+              }#
+          ];
+          asserts:
+          [
+            twoSubstitutedSites:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Site":"ST-1","Name":"WILLOWBANK COMPOST YARD","Ward":"W-1"},{"Site":"ST-2","Name":"FERNDALE COMPOST YARD","Ward":"W-2"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

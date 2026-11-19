@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::cobalttundra2::domain::*;
+import test::cobalttundra2::profile::*;
+
+Class <<CatalogueProfile.curated>> {CatalogueProfile.steward = 'catalogue-stewardship-desk'} test::cobalttundra2::domain::District
+{
+  districtCode: String[1];
+  districtName: String[1];
+  stewardHandle: String[1];
+}
+
+Class <<CatalogueProfile.curated>> {CatalogueProfile.reviewCadence = 'annual'} test::cobalttundra2::domain::Branch
+{
+  branchCode: String[1];
+  branchName: String[1];
+  branchLabel: String[1];
+  openedYear: Integer[1];
+}
+
+Class <<CatalogueProfile.provisional>> test::cobalttundra2::domain::ShelfSection
+{
+  sectionCode: String[1];
+  sectionLabel: String[1];
+  capacityCount: Integer[1];
+  spareShelves: Integer[1];
+  branchName: String[1];
+  districtName: String[1];
+}
+
+Class <<CatalogueProfile.curated>> {CatalogueProfile.reviewCadence = 'quarterly'} test::cobalttundra2::domain::CatalogueItem
+{
+  itemCode: String[1];
+  itemTitle: String[1];
+  titleTag: String[1];
+  titleLength: Integer[1];
+  pageCount: Integer[1];
+  editionYear: Integer[1];
+  languageCode: String[1];
+  conditionBand: String[0..1];
+  sectionLabel: String[1];
+  branchName: String[1];
+  districtName: String[1];
+}
+
+Class <<CatalogueProfile.provisional>> test::cobalttundra2::domain::ReadingSession
+{
+  sessionCode: String[1];
+  minutesSpent: Integer[1];
+  readerGroup: String[1];
+  engagementTier: String[1];
+  branchName: String[1];
+}
+
+Association test::cobalttundra2::domain::Item_Session
+{
+  readItem: CatalogueItem[1];
+  itemSessions: ReadingSession[*];
+}
+
+Association test::cobalttundra2::domain::Branch_District
+{
+  homeDistrict: District[1];
+  districtBranches: Branch[*];
+}

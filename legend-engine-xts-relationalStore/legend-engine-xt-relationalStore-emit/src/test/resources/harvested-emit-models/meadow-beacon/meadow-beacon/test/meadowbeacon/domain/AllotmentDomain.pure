@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class test::meadowbeacon::domain::PlotAllocation
+{
+  allocationCode: String[1];
+  plotCode: String[1];
+  siteCode: String[1];
+  seasonOn: StrictDate[1];
+  groupCode: String[0..1];
+  unitCode: String[0..1];
+  holderCode: String[1];
+  recordNumber: Integer[1];
+  bodyCode: String[1];
+  milestoneMarker: String[1];
+  bedQuantity: Float[1];
+  validFrom: StrictDate[1];
+  validThru: StrictDate[1];
+  cropCode: String[1];
+  statusLabel: String[1];
+  entryLabel: String[0..1];
+  entryRegisteredOn: StrictDate[0..1];
+  entryBedTally: Integer[0..1];
+  entryCropCode: String[0..1];
+  entryRecordNumber: Integer[0..1];
+  entryBodyCode: String[0..1];
+  holderLabel: String[0..1];
+  holderJoinedOn: StrictDate[0..1];
+  holderCropCode: String[0..1];
+}
+
+Class test::meadowbeacon::domain::PlotEntry
+{
+  plotCode: String[1];
+  siteCode: String[0..1];
+  seasonOn: StrictDate[0..1];
+  recordNumber: Integer[0..1];
+  bodyCode: String[0..1];
+  cropCode: String[0..1];
+  bedTally: Integer[0..1];
+  entryLabel: String[0..1];
+  registeredOn: StrictDate[0..1];
+  masterHolderLabel: String[0..1];
+  masterHolderCode: String[0..1];
+  masterJoinedOn: StrictDate[0..1];
+  primarySynonymText: String[0..1];
+  primarySynonymStartedOn: StrictDate[0..1];
+  primarySynonymKey: Integer[0..1];
+}
+
+Class test::meadowbeacon::domain::SiteEntry
+{
+  siteCode: String[1];
+  siteLabel: String[0..1];
+  zoneCategory: String[0..1];
+  zoneMarker: String[0..1];
+  openedOn: StrictDate[0..1];
+}
+
+Class test::meadowbeacon::domain::HolderMaster
+{
+  recordNumber: Integer[1];
+  bodyCode: String[0..1];
+  holderCode: String[0..1];
+  holderLabel: String[0..1];
+  cropCode: String[0..1];
+  joinedOn: StrictDate[0..1];
+  synonymText: String[0..1];
+  synonymType: String[0..1];
+  synonymStartedOn: StrictDate[0..1];
+}
+
+Class test::meadowbeacon::domain::HolderContact
+{
+  contactKey: Integer[1];
+  recordNumber: Integer[0..1];
+  contactLabel: String[0..1];
+  contactKind: String[0..1];
+}
+
+Class test::meadowbeacon::domain::CropSynonym
+{
+  synonymKey: Integer[1];
+  cropCode: String[0..1];
+  synonymType: String[0..1];
+  synonymText: String[0..1];
+  startedOn: StrictDate[0..1];
+  endedOn: StrictDate[0..1];
+}
+
+Class test::meadowbeacon::domain::CropCode
+{
+  cropCode: String[1];
+  cropLabel: String[0..1];
+  familyLabel: String[0..1];
+}
+
+Class test::meadowbeacon::domain::ZoneLookup
+{
+  zoneCategory: String[1];
+  zoneMarker: String[1];
+  zoneLabel: String[0..1];
+}

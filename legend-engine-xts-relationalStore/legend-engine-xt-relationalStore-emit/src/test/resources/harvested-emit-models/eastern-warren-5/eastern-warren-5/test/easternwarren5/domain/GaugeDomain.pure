@@ -1,0 +1,52 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::easternwarren5::domain::*;
+
+Profile test::easternwarren5::domain::GaugeGovernance
+{
+  stereotypes: [curated, provisional];
+  tags: [steward, cadence];
+}
+
+Class <<GaugeGovernance.curated>> {GaugeGovernance.steward = 'catchment-hydrometry-desk'} test::easternwarren5::domain::CatchmentZone
+{
+  zoneCode: String[1];
+  zoneName: String[1];
+  uplandFlag: String[1];
+}
+
+Class <<GaugeGovernance.provisional>> test::easternwarren5::domain::GaugeStation
+{
+  stationCode: String[1];
+  stationName: String[1];
+  sensorGrade: String[1];
+  zone: CatchmentZone[1];
+}
+
+Class <<GaugeGovernance.curated>> {GaugeGovernance.cadence = 'daily'} test::easternwarren5::domain::GaugeReading
+{
+  readingCode: String[1];
+  recordedOn: StrictDate[1];
+  reviewState: String[1];
+  stageMetres: Float[1];
+  dischargeCumecs: Float[1];
+  rainfallMm: Float[1];
+  flowBand: String[0..1];
+  advisoryNote: String[0..1];
+  stationName: String[1];
+  zoneName: String[1];
+  station: GaugeStation[1];
+}

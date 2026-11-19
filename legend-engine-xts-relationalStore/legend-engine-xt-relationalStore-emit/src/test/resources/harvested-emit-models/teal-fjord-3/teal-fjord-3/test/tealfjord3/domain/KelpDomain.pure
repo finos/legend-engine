@@ -1,0 +1,30 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::tealfjord3::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A kelp bed tracked along a fjord shoreline; its canopy extent, survey date and the recorder who walks it are restated over time.'} test::tealfjord3::domain::KelpBed
+{
+  bedCode: String[1];
+  canopyArea: Integer[1];
+  lastSurveyOn: StrictDate[1];
+  programCode: String[1];
+  recorder: SurveyRecorder[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'A field recorder who walks a set of kelp beds and may hold a diving permit tag.'} test::tealfjord3::domain::SurveyRecorder
+{
+  recorderCode: String[1];
+  permitTag: String[0..1];
+}

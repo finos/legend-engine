@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::meadowfjord8::service::PlotRegister
+{
+  pattern: '/meadowfjord/v1/plots/{minSlope}';
+  title: 'Alpine Meadow - Plot Register Above A Slope Floor';
+  documentation: 'Keeps the survey plots that sit at or above the slope the caller names and projects the plot with its name folded to upper case, the aspect it faces and the slope it sits on.';
+  autoActivateUpdates: true;
+  ownership: UserList { users: ['meadow-survey-desk', 'alpine-monitoring'] };
+  execution: Single
+  {
+    query: {minSlope: Float[1]|test::meadowfjord8::domain::SurveyPlot.all()->filter(
+      p|$p.slopePercent >= $minSlope
+    )->project(
+      [
+        p|$p.plotCode,
+        p|$p.plotName->toUpper(),
+        p|$p.aspectCode,
+        p|$p.slopePercent
+      ],
+      [
+        'PlotCode',
+        'PlotName',
+        'AspectCode',
+        'SlopePercent'
+      ]
+    )->sort(
+      [
+        asc('PlotCode')
+      ]
+    )};
+    mapping: test::meadowfjord8::mapping::MeadowMapping;
+    runtime: test::meadowfjord8::runtime::MeadowSurveyRuntime;
+  }
+  testSuites:
+  [
+    plotRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          meadowSurveyConnection: Reference
+            #{
+              test::meadowfjord8::data::MeadowTestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        shallowPlotsFallAwayBelowTheFloor:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            minSlope = 12.0
+          ]
+          asserts:
+          [
+            threePlotsClearTheSlopeFloor:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"PlotCode":"PL-01","PlotName":"LARCH BENCH","AspectCode":"AS-N","SlopePercent":12.5},{"PlotCode":"PL-02","PlotName":"SCREE TERRACE","AspectCode":"AS-E","SlopePercent":18.0},{"PlotCode":"PL-04","PlotName":"RIDGE SHOULDER","AspectCode":"AS-W","SlopePercent":22.0}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

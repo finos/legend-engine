@@ -1,0 +1,35 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::corallantern3::domain::*;
+
+Class <<temporal.businesstemporal>> {meta::pure::profiles::doc.doc = 'A display tank in a public aquarium hall as the curator register held it in business time, carrying the hall it stands in, its filled volume and the day it was last inspected.'} test::corallantern3::domain::ReefTank
+{
+  tankCode: String[1];
+  hallCode: String[1];
+  hallName: String[1];
+  waterLitres: Integer[1];
+  tankGrade: String[1];
+  inspectedOn: StrictDate[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'One lantern fitting installed above an aquarium hall, held without milestoning because the lighting inventory is restated in place rather than versioned.'} test::corallantern3::domain::LanternFitting
+{
+  fittingCode: String[1];
+  hallCode: String[1];
+  lumens: Integer[1];
+  fittingType: String[1];
+  installedOn: StrictDate[1];
+}

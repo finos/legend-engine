@@ -1,0 +1,113 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service test::opallantern3::service::LampUnitRegisterAsOf
+{
+  pattern: '/opallantern/v1/lamp-unit-register/{asOf}';
+  title: 'Harbour Lights Office - Lamp Unit Register As Of A Processing Instant';
+  documentation: 'Resolves the navigation lamp register at one processing instant, keeping the units that carry a focal height, whose lens grade is outside the excluded literal set, and whose grade is a member of the supplied grade list or whose station name mentions the mole, then projects the register rows together with the district keeper reached through the named join.';
+  autoActivateUpdates: true;
+  ownership: DID { identifier: '000000' };
+  execution: Single
+  {
+    query: {asOf: StrictDate[1], gradeCodes: String[*]|test::opallantern3::domain::LampUnit.all($asOf)->filter(
+      u|((!$u.focalHeightMetres->isEmpty()) && !$u.lensGrade->in(['DELTA', 'EPSILON'])) && (($u.lensGrade->in($gradeCodes)) || $u.stationName->contains('Mole'))
+    )->project(
+      [
+        u|$u.unitCode,
+        u|$u.stationName,
+        u|$u.lensGrade,
+        u|$u.focalHeightMetres,
+        u|$u.commissionedOn,
+        u|$u.keeper($asOf).keeperName,
+        u|$u.keeper($asOf).districtName,
+        u|$u.stationName->toUpper()->trim(),
+        u|$u.stationName->length()
+      ],
+      [
+        'Unit Code',
+        'Station Name',
+        'Lens Grade',
+        'Focal Height',
+        'Commissioned On',
+        'Keeper Name',
+        'District Name',
+        'Station Tag',
+        'Name Width'
+      ]
+    )->distinct()->sort(
+      [
+        asc('Unit Code'),
+        asc('Keeper Name')
+      ]
+    )};
+    mapping: test::opallantern3::mapping::LanternStructureMapping;
+    runtime: test::opallantern3::runtime::LanternStructureRuntime;
+  }
+  testSuites:
+  [
+    lampUnitRegisterSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          lanternStructureConnection:
+            Relational
+            #{
+              lantern.lamp_unit:
+                'unit_code,station_name,lens_grade,keeper_code,focal_height_m,rated_candela,commissioned_on,surveyed_at,in_z,out_z\n'+
+                'LU-01,Harbour Approach Light Draft,ALPHA,K-01,11.0,3900.00,2024-05-01,2026-01-02 07:00:00,2026-01-01,2026-02-01\n'+
+                'LU-01, Harbour Approach Light ,ALPHA,K-01,12.5,4500.00,2024-05-01,2026-02-10 08:15:00,2026-02-01,9999-12-31\n'+
+                'LU-02,Outer Mole Light,DELTA,K-02,8.0,,,,2026-02-01,9999-12-31\n'+
+                'LU-03,Retired Groyne Light,ALPHA,K-01,6.0,900.00,2019-04-01,2026-01-05 06:30:00,2026-01-01,2026-01-20\n'+
+                'LU-04,Unkeyed Jetty Light,GAMMA,,4.0,,2022-08-01,,2026-02-01,9999-12-31\n'+
+                'LU-05,Inner Mole Light,BETA,K-02,,,2023-03-01,,2026-02-01,9999-12-31\n';
+              lantern.lamp_keeper:
+                'keeper_code,keeper_name,district_name,in_z,out_z\n'+
+                'K-01,Iris Tidewell,North Harbour Watch,2026-01-01,2026-02-15\n'+
+                'K-01,Iris Tidewell,North Harbour District,2026-02-15,9999-12-31\n'+
+                'K-02,Bramble Quayle,South Harbour District,2026-01-01,9999-12-31\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        registerAtTheProcessingInstant:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            asOf = %2026-03-01,
+            gradeCodes = ['ALPHA', 'BETA']
+          ]
+          asserts:
+          [
+            onlyTheKeptGradedUnit:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Unit Code":"LU-01","Station Name":" Harbour Approach Light ","Lens Grade":"ALPHA","Focal Height":12.5,"Commissioned On":"2024-05-01","Keeper Name":"Iris Tidewell","District Name":"North Harbour District","Station Tag":"HARBOUR APPROACH LIGHT","Name Width":24}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

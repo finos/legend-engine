@@ -1,0 +1,53 @@
+name: olive-cove-4
+title: "Olive Cove 4 — Seabird Ledge Census With A Store Filter, A Derived Tally Relation And Joined Registers"
+description: |
+  A non-financial coastal seabird census. One relational store holds the counted visits to the
+  nesting ledges of a cove, the ledge register itself, and the teams that walk the coast path to
+  make the counts, and it additionally derives a grouped relation carrying the running visit and
+  adult tallies per ledge so the tally is defined once in the store rather than recomputed by
+  every reader. A named store filter keeps the census to the seasons after the baseline one, so
+  the row reduction is inherited by every binding that references it instead of being repeated.
+  Class properties mix required and optional scalars, so the projections have to publish absent
+  chick figures, an unnoted ledge aspect and a ledge that has never been counted rather than
+  assuming presence. The count mapping resolves readable ledge, cove and team values across
+  separate hops and composes a published label from a fixed census marker and the season key,
+  while the ledge mapping reaches its tallies through a hop that lands on the derived relation so
+  the plan nests a sub-select rather than flattening the grouping into the mapping. A warehouse
+  connection with a static datasource and delegated authentication, together with the runtimes
+  that pair each mapping with it, make both bindings plannable, and each mapping carries a test
+  suite that lands representative rows and asserts the published tabular result.
+modelSources:
+  model:
+    root: olive-cove-4
+    files:
+      - test/olivecove4/connection/LedgeConnections.pure
+      - test/olivecove4/domain/LedgeDomain.pure
+      - test/olivecove4/mapping/LedgeCensusMapping.pure
+      - test/olivecove4/mapping/LedgeTallyMapping.pure
+      - test/olivecove4/runtime/LedgeRuntimes.pure
+      - test/olivecove4/store/LedgeDb.pure
+features:
+  - execution:mapping-test
+  - mapping:relational-join-reached-property
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-filter
+  - store:relational-inline-view
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - inline-view
+  - join-property
+  - mapping-test
+  - relational
+  - store-filter
+  - tabular-data-set

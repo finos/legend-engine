@@ -1,0 +1,47 @@
+name: indigo-thistle
+title: "Indigo Thistle - data space over a join-reached relational binding of a bird-ringing fieldwork model"
+description: |
+  A bird-ringing fieldwork model in which sightings and observers are anchored to their own
+  main tables with explicit identity columns, and every attribute outside those anchors arrives
+  through declared inner equality joins, including a two-hop path from a sighting to its camp.
+  The association between the two classes is implemented over the same join layer, and a data
+  space publishes the mapping, its warehouse runtime and the element subset consumers should
+  start from, together with an email support target.
+modelSources:
+  model:
+    root: indigo-thistle
+    files:
+      - test/indigothistle/connection/HabitatWarehouseConnection.pure
+      - test/indigothistle/dataspace/HabitatDataSpace.pure
+      - test/indigothistle/domain/HabitatDomain.pure
+      - test/indigothistle/mapping/HabitatMapping.pure
+      - test/indigothistle/runtime/HabitatRuntime.pure
+      - test/indigothistle/store/HabitatDB.pure
+features:
+  - execution:data-space
+  - execution:mapping-test
+  - grammar:association
+  - mapping:relational-association-implementation
+  - mapping:relational-main-table-alias
+  - mapping:relational-multi-hop-join-path
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-implementation
+  - data-space
+  - h2
+  - inner-join
+  - main-table-alias
+  - mapping-test
+  - multi-hop-join-path
+  - primary-key
+  - snowflake

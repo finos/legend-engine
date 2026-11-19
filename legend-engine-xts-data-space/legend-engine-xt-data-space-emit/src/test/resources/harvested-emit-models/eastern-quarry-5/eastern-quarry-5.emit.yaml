@@ -1,0 +1,51 @@
+name: eastern-quarry-5
+title: "Highland Refuge Log — Five Processing-Temporal Logs Read at the Latest Version Through a Data Space"
+description: |
+  A chain of high-altitude mountain refuges files nightly bed counts, trail notes,
+  snowpack profiles, spring readings and supply-drop logs. Every log class is
+  processing-temporal and documented with doc tagged values; two backing tables keep
+  no version columns, so their mappings compile on the class stereotype alone. Five
+  parameterless DID-owned services project every property at the latest processing
+  version from a Snowflake store, and a data space lists them all as executables.
+
+modelSources:
+  model:
+    root: eastern-quarry-5
+    files:
+      - test/easternquarry5/connection/RefugeLogConnection.pure
+      - test/easternquarry5/dataspace/RefugeDataSpace.pure
+      - test/easternquarry5/domain/RefugeDomain.pure
+      - test/easternquarry5/mapping/RefugeLogMapping.pure
+      - test/easternquarry5/runtime/RefugeLogRuntime.pure
+      - test/easternquarry5/service/RefugeLogServices.pure
+      - test/easternquarry5/store/RefugeLogDb.pure
+
+features:
+  - execution:data-space
+  - execution:data-space-executable
+  - execution:service
+  - execution:service-ownership-did
+  - grammar:tagged-value
+  - mapping:relational-main-table-alias
+  - mapping:relational-primary-key
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - query:project
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: advanced
+tags:
+  - data-space
+  - h2
+  - latest-processing-date
+  - mapping-test
+  - mountain-refuge
+  - processing-temporal
+  - service-test
+  - snowflake
+  - snowpack
