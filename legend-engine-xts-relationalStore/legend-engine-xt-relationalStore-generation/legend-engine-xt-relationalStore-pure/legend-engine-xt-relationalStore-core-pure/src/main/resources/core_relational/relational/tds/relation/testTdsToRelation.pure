@@ -62,3 +62,171 @@ function <<test.Test>> meta::pure::tds::toRelation::testJoinFunc():Boolean[1]
     meta::relational::extension::relationalExtensions()
   )
 }
+
+function <<test.Test>> meta::pure::tds::toRelation::testLeftJoinFunc():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str1'),
+        col(x | $x.integer, 'int1')
+      ])->join(TestClass.all()->project([
+                col(x | $x.string, 'str2'),
+                col(x | $x.integer, 'int2')
+              ]), JoinType.LEFT_OUTER, {x, y | $x.getInteger('int1') == $y.getInteger('int2')}
+      )
+    },
+
+    {| TestClass.all()
+        ->project(~[str1: x | $x.string, int1: x | $x.integer])
+        ->join(TestClass.all()
+                ->project(~[str2: x | $x.string, int2: x | $x.integer]),
+              JoinKind.LEFT, {x, y | $x.int1 == $y.int2}
+      )
+    },
+    meta::relational::extension::relationalExtensions()
+  )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testRightJoinFunc():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str1'),
+        col(x | $x.integer, 'int1')
+      ])->join(TestClass.all()->project([
+                col(x | $x.string, 'str2'),
+                col(x | $x.integer, 'int2')
+              ]), JoinType.RIGHT_OUTER, {x, y | $x.getInteger('int1') == $y.getInteger('int2')}
+      )
+    },
+
+    {| TestClass.all()
+        ->project(~[str1: x | $x.string, int1: x | $x.integer])
+        ->join(TestClass.all()
+                ->project(~[str2: x | $x.string, int2: x | $x.integer]),
+              JoinKind.RIGHT, {x, y | $x.int1 == $y.int2}
+      )
+    },
+    meta::relational::extension::relationalExtensions()
+  )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testFullJoinFunc():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str1'),
+        col(x | $x.integer, 'int1')
+      ])->join(TestClass.all()->project([
+                col(x | $x.string, 'str2'),
+                col(x | $x.integer, 'int2')
+              ]), JoinType.FULL_OUTER, {x, y | $x.getInteger('int1') == $y.getInteger('int2')}
+      )
+    },
+
+    {| TestClass.all()
+        ->project(~[str1: x | $x.string, int1: x | $x.integer])
+        ->join(TestClass.all()
+                ->project(~[str2: x | $x.string, int2: x | $x.integer]),
+              JoinKind.FULL, {x, y | $x.int1 == $y.int2}
+      )
+    },
+    meta::relational::extension::relationalExtensions()
+  )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testRightJoinUsing():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str1'),
+        col(x | $x.integer, 'int1')
+      ])->join(TestClass.all()->project([
+                col(x | $x.string, 'str2'),
+                col(x | $x.integer, 'int2')
+              ]), JoinType.RIGHT_OUTER, ['int1', 'str1'], ['int2', 'str2']
+      )
+    },
+
+    {| TestClass.all()
+        ->project(~[str1: x | $x.string, int1: x | $x.integer])
+        ->join(TestClass.all()
+                ->project(~[str2: x | $x.string, int2: x | $x.integer]),
+              JoinKind.RIGHT, {x, y | ($x.int1 == $y.int2) && $x.str1 == $y.str2}
+      )
+    },
+    meta::relational::extension::relationalExtensions()
+  )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testFullJoinUsing():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str1'),
+        col(x | $x.integer, 'int1')
+      ])->join(TestClass.all()->project([
+                col(x | $x.string, 'str2'),
+                col(x | $x.integer, 'int2')
+              ]), JoinType.FULL_OUTER, ['int1', 'str1'], ['int2', 'str2']
+      )
+    },
+
+    {| TestClass.all()
+        ->project(~[str1: x | $x.string, int1: x | $x.integer])
+        ->join(TestClass.all()
+                ->project(~[str2: x | $x.string, int2: x | $x.integer]),
+              JoinKind.FULL, {x, y | ($x.int1 == $y.int2) && $x.str1 == $y.str2}
+      )
+    },
+    meta::relational::extension::relationalExtensions()
+  )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testJoinUsingSingleColumnListFails():Boolean[1]
+{
+  assertError(
+    | {| TestClass.all()->project([
+          col(x | $x.string, 'str1'),
+          col(x | $x.integer, 'int')
+        ])->join(TestClass.all()->project([
+                  col(x | $x.string, 'str2'),
+                  col(x | $x.integer, 'int')
+                ]), JoinType.INNER, ['int']
+        )
+      }->meta::pure::tds::toRelation::transform(meta::relational::extension::relationalExtensions());,
+    'conversion of join on a single column list [int] is currently not supported, rename the column(s) on one side and join on separate left and right column lists'
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testJoinUsingPartiallySharedColumnNamesFails():Boolean[1]
+{
+  assertError(
+    | {| TestClass.all()->project([
+          col(x | $x.string, 'str'),
+          col(x | $x.integer, 'int1')
+        ])->join(TestClass.all()->project([
+                  col(x | $x.string, 'str'),
+                  col(x | $x.integer, 'int2')
+                ]), JoinType.LEFT_OUTER, ['int1', 'str'], ['int2', 'str']
+        )
+      }->meta::pure::tds::toRelation::transform(meta::relational::extension::relationalExtensions());,
+    'conversion of join on column(s) [str] present on both sides is currently not supported, rename the column(s) on one side and join on separate left and right column lists'
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testJoinUsingCrossedColumnNamesFails():Boolean[1]
+{
+  assertError(
+    | {| TestClass.all()->project([
+          col(x | $x.string, 'str'),
+          col(x | $x.integer, 'int')
+        ])->join(TestClass.all()->project([
+                  col(x | $x.integer, 'int'),
+                  col(x | $x.string, 'str')
+                ]), JoinType.INNER, ['str', 'int'], ['int', 'str']
+        )
+      }->meta::pure::tds::toRelation::transform(meta::relational::extension::relationalExtensions());,
+    'conversion of join on column(s) [str, int] present on both sides is currently not supported, rename the column(s) on one side and join on separate left and right column lists'
+  );
+}
