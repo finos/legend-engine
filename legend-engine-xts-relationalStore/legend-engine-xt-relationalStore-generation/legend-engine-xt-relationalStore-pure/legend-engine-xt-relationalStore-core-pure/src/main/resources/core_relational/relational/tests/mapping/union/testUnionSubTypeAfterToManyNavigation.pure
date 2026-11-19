@@ -1,0 +1,213 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::tests::mapping::union::toManyNavigation::*;
+
+function <<test.Test>> meta::relational::tests::mapping::union::toManyNavigation::testSubTypeAfterToManyNavigationNarrowsToCastMember():Boolean[1]
+{
+   assertSameSQL(
+      'select "root".loanNumber as "loanNumber", "AmhubAcct_d#5_f_d_d_m2_r".accountName as "accountId" from WholeLoanTbl as "root" left outer join (select "root".loanId as loanId_0, null as loanId_1, null as loanId_2, "root".accountId as accountId_0, null as accountId_1, null as accountId_2 from FacilityTbl as "root" union all select null as loanId_0, "root".loanId as loanId_1, null as loanId_2, null as accountId_0, "root".accountId as accountId_1, null as accountId_2 from ContractTbl as "root" union all select null as loanId_0, null as loanId_1, "root".loanId as loanId_2, null as accountId_0, null as accountId_1, "root".accountId as accountId_2 from InventoryTbl as "root") as "unionAlias_d#7_d_m2" on ("root".id = "unionAlias_d#7_d_m2".loanId_0 or "root".id = "unionAlias_d#7_d_m2".loanId_1 or "root".id = "unionAlias_d#7_d_m2".loanId_2) left outer join AmhubAcct as "AmhubAcct_d#5_f_d_d_m2_r" on ("unionAlias_d#7_d_m2".accountId_0 = "AmhubAcct_d#5_f_d_d_m2_r".acctId or "unionAlias_d#7_d_m2".accountId_1 = "AmhubAcct_d#5_f_d_d_m2_r".acctId or "unionAlias_d#7_d_m2".accountId_2 = "AmhubAcct_d#5_f_d_d_m2_r".acctId)',
+      toSQLString(|WholeLoan.all()->project([x|$x.loanNumber, x|$x.pos.account->subType(@Account).id], ['loanNumber', 'accountId']), toManyNavigationMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions())
+   );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::toManyNavigation::testSubTypeAfterToManyNavigationNarrowsToSiblingCastMember():Boolean[1]
+{
+   assertSameSQL(
+      'select "root".loanNumber as "loanNumber", "TamsAcct_d#5_f_d_d_m2_r".accountNumber as "accountNumber" from WholeLoanTbl as "root" left outer join (select "root".loanId as loanId_0, null as loanId_1, null as loanId_2, "root".accountId as accountId_0, null as accountId_1, null as accountId_2 from FacilityTbl as "root" union all select null as loanId_0, "root".loanId as loanId_1, null as loanId_2, null as accountId_0, "root".accountId as accountId_1, null as accountId_2 from ContractTbl as "root" union all select null as loanId_0, null as loanId_1, "root".loanId as loanId_2, null as accountId_0, null as accountId_1, "root".accountId as accountId_2 from InventoryTbl as "root") as "unionAlias_d#7_d_m2" on ("root".id = "unionAlias_d#7_d_m2".loanId_0 or "root".id = "unionAlias_d#7_d_m2".loanId_1 or "root".id = "unionAlias_d#7_d_m2".loanId_2) left outer join TamsAcct as "TamsAcct_d#5_f_d_d_m2_r" on ("unionAlias_d#7_d_m2".accountId_0 = "TamsAcct_d#5_f_d_d_m2_r".acctId or "unionAlias_d#7_d_m2".accountId_1 = "TamsAcct_d#5_f_d_d_m2_r".acctId or "unionAlias_d#7_d_m2".accountId_2 = "TamsAcct_d#5_f_d_d_m2_r".acctId)',
+      toSQLString(|WholeLoan.all()->project([x|$x.loanNumber, x|$x.pos.account->subType(@FirmAccount).accountNumber], ['loanNumber', 'accountNumber']), toManyNavigationMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions())
+   );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::toManyNavigation::testToManyNavigationWithoutSubTypeKeepsEveryUnionMember():Boolean[1]
+{
+   let sql = toSQLString(|WholeLoan.all()->project([x|$x.loanNumber, x|$x.pos.account->isNotEmpty()], ['loanNumber', 'hasAccount']), toManyNavigationMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertSQLContains('from TamsAcct', $sql);
+   assertSQLContains('from AmhubAcct', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::toManyNavigation::testSubTypeInsideFilterPredicateIsNotNarrowedByOuterSubType():Boolean[1]
+{
+   let sql = toSQLString(|WholeLoan.all()->project([x|$x.loanNumber, x|$x.pos->filter(p|$p.account->subType(@FirmAccount).accountNumber == 'X').account->subType(@Account).id], ['loanNumber', 'accountId']), toManyNavigationMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertSQLContains('left outer join TamsAcct', $sql);
+   assertSQLContains('.accountNumber = \'X\'', $sql);
+   assertSQLContains('left outer join AmhubAcct', $sql);
+}
+
+
+###Pure
+import meta::relational::tests::mapping::union::toManyNavigation::*;
+
+Class meta::relational::tests::mapping::union::toManyNavigation::Holdable
+{
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::WholeLoan extends Holdable
+{
+   loanNumber : String[1];
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::Position
+{
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::FacilityPosition extends Position
+{
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::ContractPosition extends Position
+{
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::Inventory extends Position
+{
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::BaseAccount
+{
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::Account extends BaseAccount
+{
+   id : String[1];
+}
+
+Class meta::relational::tests::mapping::union::toManyNavigation::FirmAccount extends BaseAccount
+{
+   accountNumber : String[1];
+}
+
+Association meta::relational::tests::mapping::union::toManyNavigation::Holdable_Position
+{
+   pos : Position[1..*];
+   holdable : Holdable[1];
+}
+
+Association meta::relational::tests::mapping::union::toManyNavigation::Account_Position
+{
+   pos : Position[*];
+   account : BaseAccount[1];
+}
+
+
+###Relational
+Database meta::relational::tests::mapping::union::toManyNavigation::toManyNavigationDB
+(
+   Table WholeLoanTbl (id INTEGER PRIMARY KEY, loanNumber VARCHAR(20))
+   Table FacilityTbl (posId INTEGER PRIMARY KEY, loanId INTEGER, accountId INTEGER)
+   Table ContractTbl (posId INTEGER PRIMARY KEY, loanId INTEGER, accountId INTEGER)
+   Table InventoryTbl (posId INTEGER PRIMARY KEY, loanId INTEGER, accountId INTEGER)
+   Table TamsAcct (acctId INTEGER PRIMARY KEY, accountNumber VARCHAR(200))
+   Table AmhubAcct (acctId INTEGER PRIMARY KEY, accountName VARCHAR(200))
+
+   Join LoanFac (WholeLoanTbl.id = FacilityTbl.loanId)
+   Join LoanCon (WholeLoanTbl.id = ContractTbl.loanId)
+   Join LoanInv (WholeLoanTbl.id = InventoryTbl.loanId)
+   Join FacTams (FacilityTbl.accountId = TamsAcct.acctId)
+   Join FacAmhub (FacilityTbl.accountId = AmhubAcct.acctId)
+   Join ConTams (ContractTbl.accountId = TamsAcct.acctId)
+   Join ConAmhub (ContractTbl.accountId = AmhubAcct.acctId)
+   Join InvTams (InventoryTbl.accountId = TamsAcct.acctId)
+   Join InvAmhub (InventoryTbl.accountId = AmhubAcct.acctId)
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::union::toManyNavigation::*;
+
+Mapping meta::relational::tests::mapping::union::toManyNavigation::toManyNavigationMapping
+(
+   *WholeLoan[loan] : Relational
+   {
+      ~primaryKey ([toManyNavigationDB]WholeLoanTbl.id)
+      ~mainTable [toManyNavigationDB]WholeLoanTbl
+      loanNumber : [toManyNavigationDB]WholeLoanTbl.loanNumber
+   }
+
+   *Position : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(fac, con, inv)
+   }
+
+   *FacilityPosition[fac] : Relational
+   {
+      ~primaryKey ([toManyNavigationDB]FacilityTbl.posId)
+      ~mainTable [toManyNavigationDB]FacilityTbl
+   }
+
+   *ContractPosition[con] : Relational
+   {
+      ~primaryKey ([toManyNavigationDB]ContractTbl.posId)
+      ~mainTable [toManyNavigationDB]ContractTbl
+   }
+
+   *Inventory[inv] : Relational
+   {
+      ~primaryKey ([toManyNavigationDB]InventoryTbl.posId)
+      ~mainTable [toManyNavigationDB]InventoryTbl
+   }
+
+   *BaseAccount : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firmAccount, allAccount)
+   }
+
+   *FirmAccount[firmAccount] : Relational
+   {
+      ~primaryKey ([toManyNavigationDB]TamsAcct.acctId)
+      ~mainTable [toManyNavigationDB]TamsAcct
+      accountNumber : [toManyNavigationDB]TamsAcct.accountNumber
+   }
+
+   *Account[allAccount] : Relational
+   {
+      ~primaryKey ([toManyNavigationDB]AmhubAcct.acctId)
+      ~mainTable [toManyNavigationDB]AmhubAcct
+      id : [toManyNavigationDB]AmhubAcct.accountName
+   }
+
+   Holdable_Position : Relational
+   {
+      AssociationMapping
+      (
+         pos[loan, fac] : [toManyNavigationDB]@LoanFac,
+         pos[loan, con] : [toManyNavigationDB]@LoanCon,
+         pos[loan, inv] : [toManyNavigationDB]@LoanInv,
+         holdable[fac, loan] : [toManyNavigationDB]@LoanFac,
+         holdable[con, loan] : [toManyNavigationDB]@LoanCon,
+         holdable[inv, loan] : [toManyNavigationDB]@LoanInv
+      )
+   }
+
+   Account_Position : Relational
+   {
+      AssociationMapping
+      (
+         account[fac, firmAccount] : [toManyNavigationDB]@FacTams,
+         account[fac, allAccount] : [toManyNavigationDB]@FacAmhub,
+         account[con, firmAccount] : [toManyNavigationDB]@ConTams,
+         account[con, allAccount] : [toManyNavigationDB]@ConAmhub,
+         account[inv, firmAccount] : [toManyNavigationDB]@InvTams,
+         account[inv, allAccount] : [toManyNavigationDB]@InvAmhub,
+         pos[firmAccount, fac] : [toManyNavigationDB]@FacTams,
+         pos[allAccount, fac] : [toManyNavigationDB]@FacAmhub,
+         pos[firmAccount, con] : [toManyNavigationDB]@ConTams,
+         pos[allAccount, con] : [toManyNavigationDB]@ConAmhub,
+         pos[firmAccount, inv] : [toManyNavigationDB]@InvTams,
+         pos[allAccount, inv] : [toManyNavigationDB]@InvAmhub
+      )
+   }
+)
