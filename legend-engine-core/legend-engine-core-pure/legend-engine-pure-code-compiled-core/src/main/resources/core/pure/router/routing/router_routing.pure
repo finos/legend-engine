@@ -46,6 +46,13 @@ Class meta::pure::router::routing::RoutingState
    executionContext: meta::pure::runtime::ExecutionContext[1];
    graphFetchFlow  : Boolean[0..1];
    functionExpressionStack : FunctionExpression[*];
+   functionLookups : RoutingFunctionLookups[0..1];
+}
+
+Class meta::pure::router::routing::RoutingFunctionLookups
+{
+   stopFunctions : Map<Function<Any>, Boolean>[1];
+   specializedProcessors : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*];
 }
 
 Class meta::pure::router::routing::PropertyMap
@@ -62,7 +69,8 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Valu
 
 function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], initialState:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
-   let processedFunctions = processCollection($initialState,
+   let stateWithLookups = if($initialState.functionLookups->isEmpty(), |^$initialState(functionLookups = buildRoutingFunctionLookups($extensions)), |$initialState);
+   let processedFunctions = processCollection($stateWithLookups,
                                                $expressions,
                                                $executionContext,
                                                $initialVars,
@@ -263,7 +271,7 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
                                         $c->routeFunctionExpressionColumn($nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
                                     f:Function<Any>[1]       |
                                         print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->elementToPath()+'\n',|''));
-                                        let specializedFunctionProcessor = specializedFunctionExpressionRouterProcessor($extensions)->filter(e|$e.first->eval($nfe)).second;
+                                        let specializedFunctionProcessor = $state->specializedFunctionExpressionRouterProcessor($extensions)->filter(e|$e.first->eval($nfe)).second;
                                         if($specializedFunctionProcessor->isNotEmpty(),
                                               | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
                                                 $specializedFunctionProcessor->toOne()->evaluate([list($f), list($nfe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);,
@@ -323,7 +331,7 @@ function meta::pure::router::routing::prevalAggColSpec(a:AggColSpec<Any,Any,Any>
 function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
   if ($fe.parametersValues->isEmpty(),
-      | if ($f->instanceOf(NativeFunction) || $f->shouldStop($extensions),
+      | if ($f->instanceOf(NativeFunction) || $f->shouldStop($state, $extensions),
           | $state,
           | assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
             ^$state(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0))->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
@@ -543,7 +551,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                   ^$routedExprSeq(value=$qpVal, pathPrefix=$state.pathPrefix);
                                                                                                   ]);
                                                   ]);,
-            | if ($f->instanceOf(NativeFunction) || $f->shouldStop($extensions) || ($f->instanceOf(QualifiedProperty) && ($f->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate().expressionSequence->size() > 1)),
+            | if ($f->instanceOf(NativeFunction) || $f->shouldStop($state, $extensions) || ($f->instanceOf(QualifiedProperty) && ($f->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate().expressionSequence->size() > 1)),
                   | let possiblyWrapperd = if($routedValueSpecForReturnClass->isEmpty(),
                                               | $fullRes,
                                               | let first = $routedValueSpecForReturnClass->last()->toOne();
@@ -844,6 +852,30 @@ function meta::pure::router::routing::isGetAllFunction(f:Function<Any>[1]):Boole
 function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
   shouldStopFunctions($extensions)->contains($f);
+}
+
+function <<access.private>> meta::pure::router::routing::shouldStop(f:Function<Any>[1], state:RoutingState[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+{
+  if($state.functionLookups->isEmpty(),
+    | $f->shouldStop($extensions),
+    | $state.functionLookups.stopFunctions->toOne()->get($f)->isNotEmpty()
+  );
+}
+
+function <<access.private>> meta::pure::router::routing::specializedFunctionExpressionRouterProcessor(state:RoutingState[1], extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
+{
+  if($state.functionLookups->isEmpty(),
+    | specializedFunctionExpressionRouterProcessor($extensions),
+    | $state.functionLookups.specializedProcessors
+  );
+}
+
+function <<access.private>> meta::pure::router::routing::buildRoutingFunctionLookups(extensions:meta::pure::extension::Extension[*]):RoutingFunctionLookups[1]
+{
+  ^RoutingFunctionLookups(
+    stopFunctions = shouldStopFunctions($extensions)->map(f | pair($f, true))->newMap(),
+    specializedProcessors = specializedFunctionExpressionRouterProcessor($extensions)
+  );
 }
 
 function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure::extension::Extension[*]):Function<Any>[*]
