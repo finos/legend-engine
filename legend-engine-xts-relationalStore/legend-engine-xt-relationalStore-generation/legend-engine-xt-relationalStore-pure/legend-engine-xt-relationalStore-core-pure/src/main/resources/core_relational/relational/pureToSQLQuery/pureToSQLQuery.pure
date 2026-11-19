@@ -9489,45 +9489,51 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
 
 function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:RelationalOperationElement[*], alias:Boolean[1], selectColumns:Boolean[1], extensions:Extension[*]):String[1]
 {
+   $elements->buildUniqueName($alias, $selectColumns, ^Map<RelationalOperationElement, String>(), $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:RelationalOperationElement[*], alias:Boolean[1], selectColumns:Boolean[1], knownRelationNames:Map<RelationalOperationElement, String>[1], extensions:Extension[*]):String[1]
+{
    let uniqueName = $elements->map(e | $e->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).pureToSQL_buildUniqueName)->map(f | $f->eval($alias, $selectColumns, $extensions))->concatenate(
       [
-         n:RootJoinTreeNode[1]|$n->getAllNodes()->map(a|$a->match([j:RootJoinTreeNode[1]|if($alias,|$j.alias.name,|$j.alias.relationalElement->buildUniqueName($alias, $selectColumns, $extensions)),j:JoinTreeNode[1]|$j.joinName]))->makeString('_'),
-         s:SelectSQLQuery[1]|'s('+if($selectColumns,|$s.columns->buildUniqueName($alias, $selectColumns, $extensions)+',',|'')+$s.data->buildUniqueName($alias, $selectColumns, $extensions)+','+$s.filteringOperation->buildUniqueName($alias, $selectColumns, $extensions)+')',
-         u:UnaryOperation[1]| $u->type()->toOne().name->toOne() + $u.nested->buildUniqueName($alias, $selectColumns, $extensions),
-         i:BinaryOperation[1]|$i->type()->toOne().name->toOne() + '_' + $i.left->buildUniqueName($alias, $selectColumns, $extensions) + '_' + $i.right->buildUniqueName($alias, $selectColumns, $extensions),
-         a:Alias[1]|if($alias,|$a.name,|$a.relationalElement->buildUniqueName($alias, $selectColumns, $extensions)),
+         n:RootJoinTreeNode[1]|$n->getAllNodes()->map(a|$a->match([j:RootJoinTreeNode[1]|if($alias,|$j.alias.name,|$j.alias.relationalElement->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)),j:JoinTreeNode[1]|$j.joinName]))->makeString('_'),
+         s:SelectSQLQuery[1]|'s('+if($selectColumns,|$s.columns->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+',',|'')+$s.data->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+','+$s.filteringOperation->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+')',
+         u:UnaryOperation[1]| $u->type()->toOne().name->toOne() + $u.nested->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         i:BinaryOperation[1]|$i->type()->toOne().name->toOne() + '_' + $i.left->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions) + '_' + $i.right->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         a:Alias[1]|if($alias,|$a.name,|let knownName = $knownRelationNames->get($a.relationalElement);
+                                      if($knownName->isEmpty(), |$a.relationalElement->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions), |$knownName->toOne());),
          c:ColumnName[1]|$c.name,
          n:NamedRelation[1]|$n.name,
-         u:SetOperationQuery[1]|$u.queries->map(q|$q->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
-         c:TableAliasColumnName[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.columnName;,
-         c:TableAliasColumn[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.column.name;,
+         u:SetOperationQuery[1]|$u.queries->map(q|$q->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions))->joinStrings(),
+         c:TableAliasColumnName[1]|$c.alias->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+$c.columnName;,
+         c:TableAliasColumn[1]|$c.alias->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+$c.column.name;,
          sc:CommonTableExpressionReference[1]|$sc.name,
          l:Literal[1]|if($l.value->instanceOf(VarPlaceHolder),|$l.value->cast(@VarPlaceHolder).name,|$l.value->toString()),
-         l:LiteralList[1]|  $l.values->map(l|$l->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
-         v:VariableArityOperation[1]|$v->type()->toOne().name->toOne() + '_' + $v.args->buildUniqueName($alias, $selectColumns, $extensions),
-         d:DynaFunction[1]| $d.name +'_'+$d.parameters->buildUniqueName($alias, $selectColumns, $extensions),
-         f:FreeMarkerOperationHolder[1]| $f.name +'_'+$f.parameters->buildUniqueName($alias, $selectColumns, $extensions),
-         wc:WindowColumn[1]| $wc.columnName+'_'+ $wc.func->buildUniqueName($alias,$selectColumns, $extensions),
-         ac:AggregateFunctionCall[1]| 'agg('+$ac.func->buildUniqueName($alias, $selectColumns, $extensions)
-                                      +if($ac.sortBy->isEmpty(),|'',|'_order_'+$ac.sortBy.sortByElement->buildUniqueName($alias, $selectColumns, $extensions))
-                                      +if($ac.filter->isEmpty(),|'',|'_filter_'+$ac.filter->buildUniqueName($alias, $selectColumns, $extensions))+')',
-         j:JoinStrings[1]|'join_'+$j.strings->buildUniqueName($alias, $selectColumns, $extensions)+$j.prefix->buildUniqueName($alias, $selectColumns, $extensions)+$j.separator->buildUniqueName($alias, $selectColumns, $extensions)+$j.suffix->buildUniqueName($alias, $selectColumns, $extensions),
-         rj:RelationalOperationElementWithJoin[1]| $rj.joinTreeNode->toOne().joinName+ $rj.relationalOperationElement->buildUniqueName($alias, $selectColumns, $extensions),
-         ssp:SemiStructuredPropertyAccess[1]|'ssp('+$ssp.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssp.property->buildUniqueName($alias, $selectColumns, $extensions)+']'+if($ssp.index->isEmpty(),|'',|'['+$ssp.index->toOne()->buildUniqueName($alias, $selectColumns, $extensions)+']')+')',
-         ssa:SemiStructuredArrayElementAccess[1]|'ssa('+$ssa.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssa.index->buildUniqueName($alias, $selectColumns, $extensions)+'])',
-         ssf:SemiStructuredArrayFlatten[1]|'ss_flatten('+$ssf.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
-         ssfr:SemiStructuredArrayFlattenRelation[1]|'ss_flatten_relation('+$ssfr.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
-         g:GenerateSeriesRelation[1]|'generate_series('+[$g.start, $g.stop, $g.step]->map(e|$e->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(',')+')',
-         ssf:SemiStructuredArrayFlattenOutput[1]|'ss_flatten_output('+$ssf.tableAliasColumn->buildUniqueName($alias, $selectColumns, $extensions)+')',
+         l:LiteralList[1]|  $l.values->map(l|$l->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions))->joinStrings(),
+         v:VariableArityOperation[1]|$v->type()->toOne().name->toOne() + '_' + $v.args->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         d:DynaFunction[1]| $d.name +'_'+$d.parameters->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         f:FreeMarkerOperationHolder[1]| $f.name +'_'+$f.parameters->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         wc:WindowColumn[1]| $wc.columnName+'_'+ $wc.func->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         ac:AggregateFunctionCall[1]| 'agg('+$ac.func->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)
+                                      +if($ac.sortBy->isEmpty(),|'',|'_order_'+$ac.sortBy.sortByElement->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions))
+                                      +if($ac.filter->isEmpty(),|'',|'_filter_'+$ac.filter->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions))+')',
+         j:JoinStrings[1]|'join_'+$j.strings->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+$j.prefix->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+$j.separator->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+$j.suffix->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         rj:RelationalOperationElementWithJoin[1]| $rj.joinTreeNode->toOne().joinName+ $rj.relationalOperationElement->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions),
+         ssp:SemiStructuredPropertyAccess[1]|'ssp('+$ssp.operand->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+'['+$ssp.property->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+']'+if($ssp.index->isEmpty(),|'',|'['+$ssp.index->toOne()->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+']')+')',
+         ssa:SemiStructuredArrayElementAccess[1]|'ssa('+$ssa.operand->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+'['+$ssa.index->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+'])',
+         ssf:SemiStructuredArrayFlatten[1]|'ss_flatten('+$ssf.navigation->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+')',
+         ssfr:SemiStructuredArrayFlattenRelation[1]|'ss_flatten_relation('+$ssfr.navigation->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+')',
+         g:GenerateSeriesRelation[1]|'generate_series('+[$g.start, $g.stop, $g.step]->map(e|$e->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions))->joinStrings(',')+')',
+         ssf:SemiStructuredArrayFlattenOutput[1]|'ss_flatten_output('+$ssf.tableAliasColumn->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+')',
          t:TableFunctionParamPlaceHolder[1] | 'tablefunc_param_holder_(' + $t.var.name + ')',
          p:ProcedureVariablePlaceHolder[1] | 'procedure_variable_param_holder_(' + $p.var.name + ')',
-         bf:BatchFilterQueryIsolation[1]| 'bf('+ $bf.op->buildUniqueName($alias, $selectColumns, $extensions)+ ')',
+         bf:BatchFilterQueryIsolation[1]| 'bf('+ $bf.op->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions)+ ')',
          v:VarPlaceHolder[1]| $v.name,
          d:DataTypeInfo[1] | 'type(' + $d.dataType->type().name->toOne() + ')',
          d:RelationalLambdaParameter[1] | 'p(' + $d.name + ')',
-         d:FilterRelationalLambda[1] | 'filter(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $extensions) + ')',
-         d:FoldRelationalLambda[1] | 'fold(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $extensions) + ')',
-         d:MapRelationalLambda[1] | 'map(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $extensions) + ')',
+         d:FilterRelationalLambda[1] | 'filter(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions) + ')',
+         d:FoldRelationalLambda[1] | 'fold(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions) + ')',
+         d:MapRelationalLambda[1] | 'map(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $knownRelationNames, $extensions) + ')',
          rf:RelationFunction[1] | 'rf(' + $rf.owner.id + ')',
          a: Any[1]|fail($a->type()->elementToPath() + ' not supported'); '';
       ])->toOneMany()

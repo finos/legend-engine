@@ -632,6 +632,10 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
    let reprocessedSourceAlias = $reprocessedAliasesAndRelationalPropertyMappings.first.first;
    let reprocessedTargetAlias = $reprocessedAliasesAndRelationalPropertyMappings.first.second;
    let reprocessedRelationalPropertyMappings = $reprocessedAliasesAndRelationalPropertyMappings.second.values;
+   let unionRelationNames = [$reprocessedSourceAlias, $reprocessedTargetAlias].relationalElement
+                              ->filter(r | $r->isUnionOrNestedUnion())
+                              ->map(r | pair($r, $r->buildUniqueName(false, true, $extensions)))
+                              ->newMap();
 
    let updatedJoinTreeNodes = $reprocessedRelationalPropertyMappings->map(x | let joinTreeNode = $x->getJoinTreeNode()->toOne();
                                                                               let join = $joinTreeNode.join; 
@@ -664,7 +668,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
                                                                                                                                                              $processingSide)->cast(@Operation);
                                                                                              let sourceJoinAlias = if($processingSide.source,| $reprocessedSourceAlias,| $join->toOne()->otherSideAlias($targetRelation)->toOne());
                                                                                              let targetJoinAlias = if($processingSide.target,| $reprocessedTargetAlias,| $join->toOne()->otherSideAlias($sourceRelation)->toOne());
-                                                                                             ^$join(name = $newOperation->buildUniqueName(false, $extensions),
+                                                                                             ^$join(name = $newOperation->buildUniqueName(false, true, $unionRelationNames, $extensions),
                                                                                                     operation = $newOperation,
                                                                                                     target = $targetJoinAlias,
                                                                                                     aliases = [pair($sourceJoinAlias, $targetJoinAlias),pair($targetJoinAlias, $sourceJoinAlias)]);
