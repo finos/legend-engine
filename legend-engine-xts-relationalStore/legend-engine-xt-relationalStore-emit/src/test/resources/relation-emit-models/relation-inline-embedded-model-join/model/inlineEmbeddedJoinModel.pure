@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::relation::inlineembeddedjoin::Trade
+{
+  id: Integer[1];
+  details: demo::relation::inlineembeddedjoin::TradeDetails[0..1];
+}
+
+Class demo::relation::inlineembeddedjoin::TradeDetails
+{
+  desk: String[1];
+  counterpartyId: Integer[0..1];
+  counterparty: demo::relation::inlineembeddedjoin::Firm[0..1];
+}
+
+Class demo::relation::inlineembeddedjoin::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+Class <<temporal.processingtemporal>> demo::relation::inlineembeddedjoin::Position
+{
+  id: Integer[1];
+  holding: demo::relation::inlineembeddedjoin::Holding[0..1];
+}
+
+Class <<temporal.processingtemporal>> demo::relation::inlineembeddedjoin::Holding
+{
+  quantity: Integer[1];
+  issuerId: Integer[0..1];
+  issuer: demo::relation::inlineembeddedjoin::Issuer[0..1];
+}
+
+Class <<temporal.processingtemporal>> demo::relation::inlineembeddedjoin::Issuer
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+function demo::relation::inlineembeddedjoin::func::tradeRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], DESK:String[1], CPTY_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.TRADE}#
+}
+
+function demo::relation::inlineembeddedjoin::func::lowTradeRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], DESK:String[1], CPTY_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.TRADE}#->filter(r | $r.ID < 3)
+}
+
+function demo::relation::inlineembeddedjoin::func::highTradeRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], DESK:String[1], CPTY_ID:Integer[0..1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.TRADE}#->filter(r | $r.ID >= 3)
+}
+
+function demo::relation::inlineembeddedjoin::func::firmRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.FIRM}#
+}
+
+function demo::relation::inlineembeddedjoin::func::positionRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], QUANTITY:Integer[1], ISSUER_ID:Integer[0..1], IN_Z:DateTime[1], OUT_Z:DateTime[1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.POSITION}#
+}
+
+function demo::relation::inlineembeddedjoin::func::lowPositionRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], QUANTITY:Integer[1], ISSUER_ID:Integer[0..1], IN_Z:DateTime[1], OUT_Z:DateTime[1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.POSITION}#->filter(r | $r.ID < 3)
+}
+
+function demo::relation::inlineembeddedjoin::func::highPositionRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], QUANTITY:Integer[1], ISSUER_ID:Integer[0..1], IN_Z:DateTime[1], OUT_Z:DateTime[1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.POSITION}#->filter(r | $r.ID >= 3)
+}
+
+function demo::relation::inlineembeddedjoin::func::issuerRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], IN_Z:DateTime[1], OUT_Z:DateTime[1])>[1]
+{
+  #>{demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB.ISSUER}#
+}

@@ -1,0 +1,50 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-expression-rhs-to-many
+title: "Relation Function Mapping — Expression RHS on To-Many Primitive Properties"
+description: |
+  To-many String and StrictDate properties mapped with $row expressions that carry a literal or a type
+  argument: cast(@String), substring(0, 1), an if() over two string literals and datePart()->cast(@StrictDate),
+  fetched by graphFetch and projected. A ###Relational twin expects the same rows.
+
+modelSources:
+  model:
+    root: relation-expression-rhs-to-many
+    files:
+      - mapping/toManyExprMapping.pure   # ###Pure (EmployeeLabels class, employees func) + ###Mapping + testSuites
+      - mapping/relationalToManyExprMapping.pure   # ###Mapping twin over the same table + testSuites
+  dependencies:
+    - source: relation-shared-data.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-expression-rhs
+  - query:to-many-projection
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-mapping
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - expression-rhs
+  - graph-fetch

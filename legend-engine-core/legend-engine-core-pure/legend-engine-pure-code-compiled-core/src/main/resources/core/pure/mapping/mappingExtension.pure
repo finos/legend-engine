@@ -211,7 +211,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
                                    |  let sourceMappingOperationMap = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne()));
                                       let embeddedOperation = $sourceMappingOperationMap->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation));
                                       if (!$embeddedOperation->isEmpty(),
-                                          | let embeddedMappings = $embeddedOperation->cast(@EmbeddedSetImplementation);
+                                          | let embeddedMappings = $embeddedOperation->cast(@EmbeddedSetImplementation)->map(e | $e->potentiallyResolveInlineEmbeddedRelationFunction($mapping));
                                             let containers = $embeddedMappings->map(e | ^SetImplementationContainer(id=$e.id, setImplementation=$e));
                                             ^OperationSetImplementation(id='embedded_operation', root=true, class=$c->cast(@Class<Any>), parent=$mapping, parameters=$containers, operation=$sourceMappings->at(0)->cast(@OperationSetImplementation).operation);,
                                           | let targetSetIds = $sourceMappingOperationMap.targetSetImplementationId;
@@ -310,7 +310,15 @@ function meta::pure::router::routing::inlineEmbeddedRelationFunctionMapping(e:me
     let cm = $m->_classMappingByIdRecursive($inlineTargetId)->filter(c | !$c->instanceOf(EmbeddedSetImplementation));
     assertEquals(1, $cm->size(), | 'Found too many or not enough matches ['+$cm.id->makeString(',')+'] for inline relation function implementation Set Id [' + $inlineTargetId + ']');
     let pmaps = $cm->cast(@InstanceSetImplementation)->toOne()->allPropertyMappings()->map(pm | ^$pm(owner = $e.owner, sourceSetImplementationId = $e.sourceSetImplementationId));
-    ^$e(id = $inlineTargetId, propertyMappings = $pmaps);
+    ^$e(propertyMappings = $pmaps);
+}
+
+function meta::pure::router::routing::potentiallyResolveInlineEmbeddedRelationFunction(e:EmbeddedSetImplementation[1], m:Mapping[1]):EmbeddedSetImplementation[1]
+{
+    $e->match([
+      erf:meta::pure::mapping::relation::EmbeddedRelationFunctionSetImplementation[1] | if($erf.propertyMappings->isEmpty() && $erf.targetSetImplementationId->filter(t | $t != $erf.id)->isNotEmpty(), | $erf->inlineEmbeddedRelationFunctionMapping($m), | $erf),
+      other:EmbeddedSetImplementation[1] | $other
+    ]);
 }
 
 function meta::pure::router::routing::reprocessAggregationAwarePropertyMapping(pm: PropertyMapping[1]):PropertyMapping[1]

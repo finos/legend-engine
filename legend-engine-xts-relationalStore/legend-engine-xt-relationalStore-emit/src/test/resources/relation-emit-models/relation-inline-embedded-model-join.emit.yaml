@@ -1,0 +1,65 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-embedded-model-join
+title: "Relation Function Mapping — modelJoin Inside Inline and Embedded Sets, Under a Single and a Union Owner"
+description: |
+  Project, filter and graphFetch through a modelJoin declared inside an embedded set: the target class mapping
+  of an `Inline [...]` property owned by a single class mapping or by each branch of a union, and a directly
+  embedded set owned by each branch of a union; also an inline modelJoin to a processing-milestoned class at a
+  point in time. ###Relational twins expect the same rows.
+
+modelSources:
+  model:
+    root: relation-inline-embedded-model-join
+    files:
+      - store/inlineEmbeddedJoinDb.pure
+      - data/inlineEmbeddedJoinData.pure
+      - model/inlineEmbeddedJoinModel.pure
+      - mapping/inlineEmbeddedJoinMapping.pure
+      - mapping/relationalInlineEmbeddedJoinMapping.pure
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:test-data
+  - grammar:function
+  - mapping:operation-mapping
+  - mapping:relation-embedded
+  - mapping:relation-inline-embedded
+  - mapping:relation-inline-model-join
+  - mapping:relation-src
+  - mapping:relation-union
+  - mapping:relational-embedded
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+stores:
+  - relational
+complexity: advanced
+tags:
+  - duckdb
+  - h2
+  - mapping-test
+  - relation
+  - embedded
+  - inline
+  - union
+  - modeljoin
+  - milestoning

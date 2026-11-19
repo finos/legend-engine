@@ -1,0 +1,175 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::inlineReAlias::ReAliasDB
+(
+  Table RA_RULE
+  (
+    ID INTEGER PRIMARY KEY,
+    startDate DATE,
+    endDate DATE,
+    HAIRCUT DOUBLE
+  )
+)
+
+###Pure
+Class meta::relational::tests::mapping::relation::inlineReAlias::Rule
+{
+  startDate: StrictDate[0..1];
+  endDate: StrictDate[0..1];
+  haircut: Float[0..1];
+}
+
+function meta::relational::tests::mapping::relation::inlineReAlias::ruleFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::inlineReAlias::ReAliasDB.RA_RULE}#
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::inlineReAlias::*;
+
+Mapping meta::relational::tests::mapping::relation::inlineReAlias::ConstantMapping
+(
+  *Rule[constantRule]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineReAlias::ruleFunction():Relation<Any>[1]
+    ~primaryKey: [ID]
+    startDate: [],
+    endDate: endDate,
+    haircut: HAIRCUT
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineReAlias::ComputedMapping
+(
+  *Rule[computedRule]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineReAlias::ruleFunction():Relation<Any>[1]
+    ~primaryKey: [ID]
+    startDate: if($row.HAIRCUT > 100.0, | $row.endDate, | []),
+    endDate: endDate,
+    haircut: HAIRCUT
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineReAlias::PlainMapping
+(
+  *Rule[plainRule]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineReAlias::ruleFunction():Relation<Any>[1]
+    ~primaryKey: [ID]
+    startDate: startDate,
+    endDate: endDate,
+    haircut: HAIRCUT
+  }
+)
+
+###Pure
+import meta::relational::tests::mapping::relation::inlineReAlias::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::relation::inlineReAlias::setUp():Boolean[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime(ReAliasDB).connectionByElement(ReAliasDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+  executeInDb('Drop table if exists RA_RULE;', $connection);
+  executeInDb('Create Table RA_RULE(ID INT, startDate DATE, endDate DATE, HAIRCUT DOUBLE);', $connection);
+  executeInDb('insert into RA_RULE (ID, startDate, endDate, HAIRCUT) values (1, \'2020-01-01\', \'2021-01-01\', 150.0);', $connection);
+  executeInDb('insert into RA_RULE (ID, startDate, endDate, HAIRCUT) values (2, \'2020-02-02\', \'2021-02-02\', 50.0);', $connection);
+
+  true;
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::inlineReAlias::reAliasSql(mapping:Mapping[1], alias:String[1]):String[1]
+{
+  executionPlan({|Rule.all()->project([x | $x.startDate, x | $x.haircut], [$alias, 'haircut'])}, $mapping, meta::external::store::relational::tests::testRuntime(ReAliasDB), meta::relational::extension::relationalExtensions())
+    .rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::inlineReAlias::reAliasRows(mapping:Mapping[1], alias:String[1]):String[1]
+{
+  let result = execute({|Rule.all()->project([x | $x.startDate, x | $x.haircut], [$alias, 'haircut'])}, $mapping, meta::external::store::relational::tests::testRuntime(ReAliasDB), meta::relational::extension::relationalExtensions());
+  $result.values->at(0).rows->sortBy(r | $r.getFloat('haircut')->toOne())
+    ->map(r | $r.getFloat('haircut')->toOne()->toString() + ':' + if($r.isNull($alias), | 'null', | $r.getDate($alias)->toOne()->toString()))
+    ->joinStrings(',');
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testConstantPropertyProjectedUnderDifferentAlias():Boolean[1]
+{
+  assertSameSQL(
+    'select null as "sd", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    reAliasSql(ConstantMapping, 'sd')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testConstantPropertyProjectedUnderPhysicalColumnName():Boolean[1]
+{
+  assertSameSQL(
+    'select null as "startDate", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    reAliasSql(ConstantMapping, 'startDate')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testComputedPropertyProjectedUnderDifferentAlias():Boolean[1]
+{
+  assertSameSQL(
+    'select case when "ra_rule_0".HAIRCUT is not null and "ra_rule_0".HAIRCUT > cast(100.0 as float) then "ra_rule_0".endDate else null end as "sd", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    reAliasSql(ComputedMapping, 'sd')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testComputedPropertyProjectedUnderPhysicalColumnName():Boolean[1]
+{
+  assertSameSQL(
+    'select case when "ra_rule_0".HAIRCUT is not null and "ra_rule_0".HAIRCUT > cast(100.0 as float) then "ra_rule_0".endDate else null end as "startDate", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    reAliasSql(ComputedMapping, 'startDate')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testPlainPropertyProjectedUnderPhysicalColumnName():Boolean[1]
+{
+  assertSameSQL(
+    'select "ra_rule_0".startDate as "startDate", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    reAliasSql(PlainMapping, 'startDate')
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::inlineReAlias::testConstantPropertyRowsUnderDifferentAlias():Boolean[1]
+{
+  assertEquals('50.0:null,150.0:null', reAliasRows(ConstantMapping, 'sd'));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::inlineReAlias::testConstantPropertyRowsUnderPhysicalColumnName():Boolean[1]
+{
+  assertEquals('50.0:null,150.0:null', reAliasRows(ConstantMapping, 'startDate'));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::inlineReAlias::testComputedPropertyRowsUnderDifferentAlias():Boolean[1]
+{
+  assertEquals('50.0:null,150.0:2021-01-01', reAliasRows(ComputedMapping, 'sd'));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::inlineReAlias::testComputedPropertyRowsUnderPhysicalColumnName():Boolean[1]
+{
+  assertEquals('50.0:null,150.0:2021-01-01', reAliasRows(ComputedMapping, 'startDate'));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::inlineReAlias::testPlainPropertyRowsUnderPhysicalColumnName():Boolean[1]
+{
+  assertEquals('50.0:2020-02-02,150.0:2020-01-01', reAliasRows(PlainMapping, 'startDate'));
+}
