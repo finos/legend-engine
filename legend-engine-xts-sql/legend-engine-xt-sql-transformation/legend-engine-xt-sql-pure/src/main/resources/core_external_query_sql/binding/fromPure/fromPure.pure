@@ -4662,6 +4662,19 @@ function meta::external::query::sql::transformation::queryToPure::processRound(a
   nullOrSfe($func, $args);
 }
 
+function meta::external::query::sql::transformation::queryToPure::processTrunc(args:ValueSpecification[*]):ValueSpecification[1]
+{
+  assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for trunc');
+
+  if ($args->size() == 1 || ($args->at(0).genericType.rawType == Integer
+                             && $args->at(1)->match([i:InstanceValue[1] | $i.values == 0, v:ValueSpecification[1] | false])),
+    | nullOrSfe(trunc_Number_1__Integer_1_, $args->at(0)),
+    | if ($args->at(0).genericType.rawType == Float,
+        | nullOrSfe(trunc_Float_1__Integer_1__Float_1_, $args),
+        | nullOrSfe(trunc_Decimal_1__Integer_1__Decimal_1_, $args))
+  );
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNotExpression(n:NotExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processNotExpression', $context.debug);

@@ -299,6 +299,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformTrunc('cast(trunc(%s) as INTEGER)', 'trunc((%s)::numeric, %s)')})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='date_part(\'second\', %s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='encode(digest(%s, \'sha1\'), \'hex\')')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='encode(digest(%s, \'sha256\'), \'hex\')')),

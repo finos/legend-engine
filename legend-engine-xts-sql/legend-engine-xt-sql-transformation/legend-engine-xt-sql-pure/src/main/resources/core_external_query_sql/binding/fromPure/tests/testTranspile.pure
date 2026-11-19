@@ -3738,7 +3738,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", cosh(Integer) AS "COSH", cot(Integer) AS "COT", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", ' +
     'exp(Integer) AS "EXP", floor(Float) AS "FLOOR", log(Integer) AS "LOG", ln(Integer) AS "LN", mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", ' +
     'radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", round(Float, 1) as "ROUND_FLOAT", sign(Integer) AS "SIGN", ' +
-    'sin(Integer) AS "SIN", sinh(Integer) AS "SINH", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", tanh(Integer) AS "TANH", trunc(Integer) AS "TRUNC" FROM service."/service/service1"',
+    'sin(Integer) AS "SIN", sinh(Integer) AS "SINH", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", tanh(Integer) AS "TANH", trunc(Integer) AS "TRUNC", trunc(Decimal, 1) AS "TRUNC_DEC", trunc(Float, 1) AS "TRUNC_FLOAT" FROM service."/service/service1"',
 
     [
   {|
@@ -3776,7 +3776,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | sqrt($row.getInteger('Integer')), 'SQRT'),
                   col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN'),
                   col(row:TDSRow[1] | tanh($row.getInteger('Integer')), 'TANH'),
-                  col(row:TDSRow[1] | if ($row.getInteger('Integer') > 0, | floor($row.getInteger('Integer')), | ceiling($row.getInteger('Integer'))), 'TRUNC')
+                  col(row:TDSRow[1] | trunc($row.getInteger('Integer')), 'TRUNC'),
+                  col(row:TDSRow[1] | trunc($row.getDecimal('Decimal'), 1), 'TRUNC_DEC'),
+                  col(row:TDSRow[1] | trunc($row.getFloat('Float'), 1), 'TRUNC_FLOAT')
                 ])
         }
 
@@ -3815,7 +3817,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       //         SIN : x|$x.Integer->sin(),
       //         SQRT : x|$x.Integer->sqrt(),
       //         TAN : x|$x.Integer->tan(),
-      //         TRUNC : x|if($x.Integer > 0, |$x.Integer->floor(), |$x.Integer->ceiling())]
+      //         TRUNC : x|$x.Integer->trunc(),
+      //         TRUNC_DEC : x|$x.Decimal->trunc(1),
+      //         TRUNC_FLOAT : x|$x.Float->trunc(1)]
       // )}
     ]
   )

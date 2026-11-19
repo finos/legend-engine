@@ -296,6 +296,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('toOne',                  $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
     dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)')),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform=transformTruncFallback_String_MANY__String_1_)),
     dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|if ($p->last() == 'true', | 'var_samp', |'var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'})),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))})),
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))}))
@@ -835,6 +836,25 @@ function meta::relational::functions::sqlQueryToString::default::transformRound(
    if ($p->size() == 2,
        | [$p->at(0), $p->at(1)],
        | [$p->at(0), '0']);
+}
+
+function meta::relational::functions::sqlQueryToString::default::transformTrunc(p:String[*], oneArgFormat:String[1], twoArgFormat:String[1]):String[1]
+{
+   if ($p->size() == 1,
+       | format($oneArgFormat, $p),
+       | format($twoArgFormat, $p));
+}
+
+function meta::relational::functions::sqlQueryToString::default::transformTruncFallback(p:String[*]):String[1]
+{
+   if ($p->size() == 1,
+       | format('cast(case when %s > 0 then floor(%s) else ceiling(%s) end as INTEGER)', [$p->at(0), $p->at(0), $p->at(0)]),
+       | truncWithScaleFallback($p->at(0), 'power(10, ' + $p->at(1) + ')'));
+}
+
+function meta::relational::functions::sqlQueryToString::default::truncWithScaleFallback(value:String[1], shift:String[1]):String[1]
+{
+   format('case when %s > 0 then floor(%s * %s) / %s else ceiling(%s * %s) / %s end', [$value, $value, $shift, $shift, $value, $shift, $shift]);
 }
 
 function meta::relational::functions::sqlQueryToString::default::transformParseDecimal(params:String[*]):String[1]

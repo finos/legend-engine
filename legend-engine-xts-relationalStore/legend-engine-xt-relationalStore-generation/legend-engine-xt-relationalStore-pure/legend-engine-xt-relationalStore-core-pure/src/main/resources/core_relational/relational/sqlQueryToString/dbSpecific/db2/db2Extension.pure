@@ -185,6 +185,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='regexp_replace(%s)', transform={p:String[5]|$p->transformRegexpReplace()})),
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='trim(right(%s, %s))')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformTrunc('cast(trunc(%s, 0) as INTEGER)', 'trunc(%s, %s)')})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(hex(hash(%s, 1)))')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(hex(hash(%s, 2)))')),

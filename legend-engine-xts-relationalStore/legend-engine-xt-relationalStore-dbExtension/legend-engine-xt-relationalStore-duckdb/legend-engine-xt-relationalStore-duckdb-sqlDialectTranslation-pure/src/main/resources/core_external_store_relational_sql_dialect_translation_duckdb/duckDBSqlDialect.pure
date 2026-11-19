@@ -460,6 +460,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::setReturning::GenerateSeries, simpleFunctionProcessor('generate_series')),
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
+    pair(Trunc, customFunctionProcessor(processorForTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
     pair(Floor, simpleFunctionProcessor('floor')),
@@ -565,6 +566,22 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForContainsDuckDB(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   processorForContains($f, '\\', $sqlDialect, $state, $config);
+}
+
+// DuckDB has no two-argument trunc; shifting in DECIMAL keeps e.g. 0.29 * 100 from becoming 28.999999999999996
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForTrunc(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if($processedArgs->size() == 1,
+    | generateFunctionCallWithArgs($sqlDialect, 'trunc', $processedArgs, $state, $config),
+    | let value = $sqlDialect->generateCast($processedArgs->at(0), 'decimal(38, 9)', $state, $config);
+      let shift = $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'power', ['10', $processedArgs->at(1)], $state, $config), 'decimal(38, 9)', $state, $config);
+      let shiftedTowards = {roundingFunction:String[1] | generateFunctionCallWithArgs($sqlDialect, $roundingFunction, $value + ' * ' + $shift, $state, $config) + ' / ' + $shift};
+      $sqlDialect->keyword('case', $state, $config) + ' ' + $sqlDialect->keyword('when', $state, $config) + ' ' + $value + ' > 0 ' +
+      $sqlDialect->keyword('then', $state, $config) + ' ' + $shiftedTowards->eval('floor') + ' ' +
+      $sqlDialect->keyword('else', $state, $config) + ' ' + $shiftedTowards->eval('ceiling') + ' ' +
+      $sqlDialect->keyword('end', $state, $config);
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateTrunc(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
