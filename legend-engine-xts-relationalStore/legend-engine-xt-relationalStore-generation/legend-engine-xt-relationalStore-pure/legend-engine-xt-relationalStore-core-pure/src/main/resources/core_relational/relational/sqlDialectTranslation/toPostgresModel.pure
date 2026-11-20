@@ -55,6 +55,11 @@ function meta::relational::functions::toPostgresModel::newState(extensions: Exte
   );
 }
 
+function <<access.private>> meta::relational::functions::toPostgresModel::rootState(state:ModelConversionState[1]):ModelConversionState[1]
+{
+  ^$state(isRootSelect = true, processingSelect = false, processingFilter = false);
+}
+
 function meta::relational::functions::toPostgresModel::convertRelationalOperationElement(r:RelationalOperationElement[1], extensions:Extension[*]):Node[1]
 {
   let state = newState($extensions);
@@ -170,9 +175,9 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
           r: meta::relational::metamodel::relation::RecursiveCommonTableExpression[1] |
                 $r.sqlQuery.data.alias.relationalElement->toOne()
                   ->cast(@meta::relational::metamodel::relation::UnionAll)
-                  ->convertElement(newState($state.extensions))
+                  ->convertElement($state->rootState())
                   ->cast(@meta::external::query::sql::metamodel::TableSubquery).query,
-          c: CommonTableExpression[1] | $c.sqlQuery->convertSelectSqlQuery(newState($state.extensions))
+          c: CommonTableExpression[1] | $c.sqlQuery->convertSelectSqlQuery($state->rootState())
         ])
       ));
 
@@ -984,7 +989,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertSetOperation(u:meta::relational::metamodel::relation::SetOperationQuery[1], state:ModelConversionState[1], distinct:Boolean[1], build:Function<{meta::external::query::sql::metamodel::Relation[1], meta::external::query::sql::metamodel::Relation[1], Boolean[1]->meta::external::query::sql::metamodel::SetOperation[1]}>[1]):meta::external::query::sql::metamodel::Relation[1]
 {
-  let newQueries = $u.queries->map(q|$q->convertElement(newState($state.extensions)))->cast(@meta::external::query::sql::metamodel::Relation);
+  let newQueries = $u.queries->map(q|$q->convertElement($state->rootState()))->cast(@meta::external::query::sql::metamodel::Relation);
   ^TableSubquery(query = ^Query(queryBody = $newQueries->tail()->fold({q,a|$build->eval($a, $q, $distinct)->cast(@meta::external::query::sql::metamodel::Relation)}, $newQueries->first()->toOne())->cast(@meta::external::query::sql::metamodel::SetOperation)));
 }
 
