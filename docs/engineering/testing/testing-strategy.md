@@ -144,7 +144,7 @@ PCT targets, how to add a new one, and how PCT fits into the CI pipeline.
 | Java platform binding | `legend-engine-pure-runtime-java-extension-compiled-*` | Default (all PRs) |
 
 Snowflake's cloud tests do not run on master pushes or PRs: `build.yml` drops `pct-cloud-test` for the
-`snowflake` test group except on pushes to `legend-release-*` / `release-legend-release-*`, and
+`snowflake` test group except on pushes to `legend-release-*`, and
 `release.yml` always runs them. To check a Snowflake change before release, run the module locally with
 `-P pct-cloud-test` (see `docs/pct/cloud-resources/cloud-resources.md`).
 

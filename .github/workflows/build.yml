@@ -305,13 +305,13 @@ jobs:
         run: |
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
-      # NOTE: Snowflake is billed per warehouse-minute, so its cloud tests only run on release-branch pushes
+      # NOTE: Snowflake is billed per warehouse-minute, so its cloud tests only run on legend-release-* pushes
       # (release.yml covers release tags). Elsewhere the snowflake modules run without pct-cloud-test, as fork PRs do.
       - name: Test Profiles
         id: testProfiles
         env:
           PROFILES: ${{ needs.build.outputs.profiles }}
-          IS_RELEASE_BRANCH_PUSH: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/legend-release-') || startsWith(github.ref, 'refs/heads/release-legend-release-')) }}
+          IS_RELEASE_BRANCH_PUSH: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/legend-release-') }}
         run: |
           if [ "${{ matrix.name }}" = "snowflake" ] && [ "$IS_RELEASE_BRANCH_PUSH" != "true" ]; then
             echo "PROFILES=" >> $GITHUB_OUTPUT
