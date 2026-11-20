@@ -37,34 +37,68 @@ function meta::external::store::relational::sqlPlanning::utils::unchanged(result
 
 function meta::external::store::relational::sqlPlanning::utils::transformNodeRecursivelyWithChangeTracking(node: Node[1], transformFunction: Function<{Node[1]->NodeTransformationWithChangeTracking[1]}>[1]): NodeTransformationWithChangeTracking[1]
 {
+  $node->transformNodeRecursivelyWithChangeTracking($transformFunction, ^Map<Type, List<NodePropertyInfo>>()).results->toOne();
+}
+
+Class meta::external::store::relational::sqlPlanning::utils::NodePropertyInfo
+{
+  property: Property<Nil,Any|*>[1];
+  returnType: Type[1];
+  holdsNodes: Boolean[1];
+}
+
+Class meta::external::store::relational::sqlPlanning::utils::NodeTransformationWalk
+{
+  results: NodeTransformationWithChangeTracking[*];
+  keyValues: KeyValue[*];
+  propertiesByType: Map<Type, List<NodePropertyInfo>>[1];
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::utils::nodePropertyInfos(nodeType: Class<Any>[1]): NodePropertyInfo[*]
+{
+  $nodeType->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>)->map(p |
+    let returnType = $p->functionReturnType().rawType->toOne();
+    ^NodePropertyInfo(property = $p, returnType = $returnType, holdsNodes = $returnType->_subTypeOf(Node));
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::utils::transformNodeRecursivelyWithChangeTracking(node: Node[1], transformFunction: Function<{Node[1]->NodeTransformationWithChangeTracking[1]}>[1], propertiesByType: Map<Type, List<NodePropertyInfo>>[1]): NodeTransformationWalk[1]
+{
   let transformedNodeWithChangeTracking = $transformFunction->eval($node);
   let transformedNode = $transformedNodeWithChangeTracking.result;
   let nodeType = $transformedNode->type()->cast(@Class<Any>);
-  let allProperties = $nodeType->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+  let knownProperties = $propertiesByType->get($nodeType);
+  let allProperties = if($knownProperties->isEmpty(), | $nodeType->nodePropertyInfos(), | $knownProperties->toOne().values);
+  let initialWalk = ^NodeTransformationWalk(propertiesByType = if($knownProperties->isEmpty(), | $propertiesByType->put($nodeType, ^List<NodePropertyInfo>(values = $allProperties)), | $propertiesByType));
 
-  let transformedKeyValuesWithChangeTracking = $allProperties->map({p |
+  let childrenWalk = $allProperties->fold({info: NodePropertyInfo[1], walk: NodeTransformationWalk[1] |
+    let p = $info.property;
     let propValues = $p->eval($transformedNode);
-    let propReturnType = $p->functionReturnType().rawType->toOne();
-    let transformedValues = if ($propReturnType->_subTypeOf(Node),
-      | $propValues->cast(@Node)->map({v |
-          $v->transformNodeRecursivelyWithChangeTracking($transformFunction)->map({x |
-            assert(
-              $x.result->type()->_subTypeOf($propReturnType),
-              | 'Transform function sets incompatible value of type "' + $x->type()->elementToPath() + '" to property "' + $p.name->toOne() + 
-                '" in the class "' + $nodeType->elementToPath() + '". Expected type is "' + $propReturnType->elementToPath() + '"'
-            );
-            pair($x.hasChanged, $x.result);
-          })
-        }),
-      | $propValues->map(v | pair(false, $v))
+    if ($info.holdsNodes,
+      | let valuesWalk = $propValues->cast(@Node)->fold({v: Node[1], valueWalk: NodeTransformationWalk[1] |
+          let childWalk = $v->transformNodeRecursivelyWithChangeTracking($transformFunction, $valueWalk.propertiesByType);
+          let x = $childWalk.results->toOne();
+          assert(
+            $x.result->type()->_subTypeOf($info.returnType),
+            | 'Transform function sets incompatible value of type "' + $x->type()->elementToPath() + '" to property "' + $p.name->toOne() +
+              '" in the class "' + $nodeType->elementToPath() + '". Expected type is "' + $info.returnType->elementToPath() + '"'
+          );
+          ^$valueWalk(results = $valueWalk.results->concatenate($x), propertiesByType = $childWalk.propertiesByType);
+        }, ^NodeTransformationWalk(propertiesByType = $walk.propertiesByType));
+        ^$walk(
+          results = $walk.results->concatenate($valuesWalk.results),
+          keyValues = $walk.keyValues->concatenate(^KeyValue(key = $p.name->toOne(), value = $valuesWalk.results.result)),
+          propertiesByType = $valuesWalk.propertiesByType
+        );,
+      | ^$walk(keyValues = $walk.keyValues->concatenate(^KeyValue(key = $p.name->toOne(), value = $propValues)))
     );
-    pair($transformedValues.first->isNotEmpty() && $transformedValues.first->or(), ^KeyValue(key = $p.name->toOne(), value = $transformedValues.second));
-  });
-  
-  if ($transformedNodeWithChangeTracking.hasChanged->concatenate($transformedKeyValuesWithChangeTracking.first)->or(),
-      | changed($nodeType->dynamicNew($transformedKeyValuesWithChangeTracking.second)->cast(@Node)),
+  }, $initialWalk);
+
+  let result = if ($transformedNodeWithChangeTracking.hasChanged->concatenate($childrenWalk.results.hasChanged)->or(),
+      | changed($nodeType->dynamicNew($childrenWalk.keyValues)->cast(@Node)),
       | unchanged($node)
   );
+  ^NodeTransformationWalk(results = $result, propertiesByType = $childrenWalk.propertiesByType);
 }
 
 function meta::external::store::relational::sqlPlanning::utils::fetchAllSubNodesRecursively(node: Node[1]): Node[*]
