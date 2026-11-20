@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import com.zaxxer.hikari.HikariConfig;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
@@ -30,6 +31,8 @@ import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 
 public class LocalH2DataSourceSpecification extends StaticDataSourceSpecification
 {
@@ -39,6 +42,7 @@ public class LocalH2DataSourceSpecification extends StaticDataSourceSpecificatio
 
     private static final int MAX_POOL_SIZE = 100;
     private static final int MIN_POOL_SIZE = 0;
+    private static final long TEST_DATA_IDLE_TIMEOUT_MS = SECONDS.toMillis(10);
 
     public LocalH2DataSourceSpecification(List<String> setupSQLs, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
@@ -51,13 +55,30 @@ public class LocalH2DataSourceSpecification extends StaticDataSourceSpecificatio
     }
 
     @Override
+    protected void configurePool(HikariConfig poolConfig)
+    {
+        if (hasTestDataSetupSqls())
+        {
+            // Each pooled connection owns a private in-memory database that is reloaded on every checkout, so an idle connection
+            // only pins memory. 10s is HikariCP's minimum; anything lower is silently reset to its 10 minute default.
+            poolConfig.setIdleTimeout(TEST_DATA_IDLE_TIMEOUT_MS);
+        }
+    }
+
+    private boolean hasTestDataSetupSqls()
+    {
+        List<String> testDataSetupSqls = ((LocalH2DataSourceSpecificationKey) this.datasourceKey).getTestDataSetupSqls();
+        return testDataSetupSqls != null && !testDataSetupSqls.isEmpty();
+    }
+
+    @Override
     protected Connection getConnection(IdentityState identityState, Supplier<DataSource> dataSourceBuilder)
     {
         Connection connection = super.getConnection(identityState, dataSourceBuilder);
         LocalH2DataSourceSpecificationKey _key = (LocalH2DataSourceSpecificationKey) this.datasourceKey;
 
 
-        if (_key.getTestDataSetupSqls() != null && !_key.getTestDataSetupSqls().isEmpty())
+        if (hasTestDataSetupSqls())
         {
             try
             {
