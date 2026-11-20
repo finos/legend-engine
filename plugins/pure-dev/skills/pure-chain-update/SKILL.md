@@ -82,8 +82,9 @@ cd <path> && mvn -T <threads> clean install -DskipTests
 `clean install`, not plain `install`: these Pure-source modules fail with
 `IllegalStateException: The code repository <name> already exists!` against a stale `target/classes`.
 
-**JDK**: JDK 17 for both projects. Don't rely on ambient `$JAVA_HOME` being right; a non-login shell
-often has not run the JDK setup.
+**JDK**: JDK 17 for both projects. legend-engine's enforcer requires `[17,18)`; legend-pure accepts 11,
+17, 21 or 25. Don't rely on ambient `$JAVA_HOME` being right; a non-login shell often has not run the
+JDK setup.
 
 **Resources** (tuned for an 8-core/64GB box, one build at a time). Heap goes in the project's
 `.mvn/jvm.config` as `-Xmx<n>G`, or pass `MAVEN_OPTS` instead to avoid touching a tracked file:

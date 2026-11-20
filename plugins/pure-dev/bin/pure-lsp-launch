@@ -43,10 +43,10 @@
 # the old behavior of source-rooting the full transitive dependency chain. Only layers actually
 # being source-rooted need their checkout env var ($LEGEND_PURE_ROOT etc.) set.
 #
-# Defaults: --java "java" (plain JDK 17 java on PATH). The daemon runs a JVM against a precomputed
-# classpath - it never invokes a project's own Maven build/enforcer, so a project pinned to a newer
-# JDK for its BUILD does not need that JDK to RUN this daemon; override with --java if a project's
-# classpath needs a different runtime JVM than plain "java" on PATH.
+# Defaults: --java "$JAVA_HOME/bin/java" when JAVA_HOME is set, else "java" on PATH. The daemon loads
+# the project's compiled classes, so it needs a JVM at least as new as the one they were built with:
+# legend-engine master builds with JDK 17, and a JDK 11 daemon fails at boot with
+# UnsupportedClassVersionError. Pass --java <jdk17>/bin/java (or export JAVA_HOME) for such a project.
 #
 # The backend engine Server is brought up BY DEFAULT (via pure-backend-start, started automatically
 # if nothing's listening on the backend port yet) and wired in via the -Dlegend.test.server.*
@@ -86,7 +86,7 @@ fail() { echo "[$LABEL] $*" >&2; }
 
 PORT=""
 SOCKET_PORT=""
-JAVA_BIN="java"
+JAVA_BIN="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 BACKEND_HOST=""
 BACKEND_PORT=""
 NO_BACKEND=""

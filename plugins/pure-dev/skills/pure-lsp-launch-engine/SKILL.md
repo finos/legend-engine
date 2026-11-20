@@ -20,7 +20,12 @@ pure-lsp-launch-engine [--port N] [--socket-port N] [--java PATH]
 ```
 
 Defaults: `--port 8991`, `--socket-port 9100` (this shop's standing convention for `LegendLspServer`,
-shared with `pure-lsp-connect`/`pure-lsp-restart`'s default), `--java` = plain `java` on `PATH` (JDK 17).
+shared with `pure-lsp-connect`/`pure-lsp-restart`'s default), `--java` = `$JAVA_HOME/bin/java` if
+`JAVA_HOME` is set, else `java` on `PATH`. **legend-engine master builds with JDK 17**, and the daemon
+loads its compiled classes, so a JDK 11 `java` fails at boot with `UnsupportedClassVersionError`
+(state `failed`). Pass `--java <jdk17>/bin/java` (e.g. `~/.jdks/17/bin/java`) or export `JAVA_HOME`
+to JDK 17. A failed session keeps its port, so relaunching on that port is refused; restart it with
+`pure-lsp-restart --socket-port <n>` from a shell whose `PATH` has JDK 17 first.
 `$LEGEND_ENGINE_ROOT` defaults to the checkout containing the current directory.
 Only legend-engine is source-rooted; legend-pure comes from the classpath jar and needs no checkout
 or `$LEGEND_PURE_ROOT`. Add `--source legend-pure` to edit platform `.pure` live too (needs
