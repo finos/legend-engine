@@ -1155,22 +1155,53 @@ function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1],
 
 function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], subTypeRoutingStrategy:RoutingStrategy[0..1], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
 {
+    $vs->propogateSubType($subTypeId, $subTypeSets, $subTypeRoutingStrategy, false, $extensions);
+}
+
+function <<access.private>> meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], subTypeRoutingStrategy:RoutingStrategy[0..1], insideLambda:Boolean[1], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
+{
     $vs->evaluateAndDeactivate()->match([e: StoreMappingRoutedValueSpecification[1] | let castClass   = $subTypeSets->at(0).class;
                                                                                       let routedClass = $e.genericType.rawType->toOne();
-                                                                                      if($castClass->_subTypeOf($routedClass),
+                                                                                      if($castClass->_subTypeOf($routedClass) && (!$insideLambda || $e->isUnionContaining($subTypeSets)),
                                                                                          | let updatedStrategy = if($subTypeRoutingStrategy->isEmpty(), |$e.routingStrategy, |$subTypeRoutingStrategy->toOne());
-                                                                                           ^$e(sets=$subTypeSets, id=$subTypeId, routingStrategy=$updatedStrategy, value=$e.value->evaluateAndDeactivate()->propogateSubType($subTypeId, $subTypeSets, $subTypeRoutingStrategy, $extensions));,
+                                                                                           ^$e(sets=$subTypeSets, id=$subTypeId, routingStrategy=$updatedStrategy, value=$e.value->evaluateAndDeactivate()->propogateSubType($subTypeId, $subTypeSets, $subTypeRoutingStrategy, $insideLambda, $extensions));,
                                                                                          | $e);,
                                          f: SimpleFunctionExpression[1] |if(shouldStop($f.func, $extensions),
                                                                             |$f,
                                                                             |let func = $f.func;
                                                                              let newFunc = if($func->instanceOf(FunctionDefinition),
                                                                                               |let fd=$func->cast(@FunctionDefinition<Any>);
-                                                                                               let newEs=$fd.expressionSequence->map(e|$e->propogateSubType($subTypeId,$subTypeSets, $subTypeRoutingStrategy, $extensions));
+                                                                                               let newEs=$fd.expressionSequence->map(e|$e->propogateSubType($subTypeId,$subTypeSets, $subTypeRoutingStrategy, $insideLambda, $extensions));
                                                                                                ^$fd(expressionSequence=$newEs);,
                                                                                               |$func
                                                                                             );
-                                                                             ^$f(func=$newFunc, parametersValues=$f.parametersValues->map(p|$p->propogateSubType($subTypeId,$subTypeSets, $subTypeRoutingStrategy, $extensions))););,
+                                                                             ^$f(func=$newFunc, parametersValues=$f.parametersValues->map(p|$p->propogateSubType($subTypeId,$subTypeSets, $subTypeRoutingStrategy, $insideLambda, $extensions))););,
+                                         // A to-many navigation such as $x.pos.account is an automap, map($x.pos, v_automap | $v_automap.account):
+                                         // the property access being cast lives in the lambda's result. Predicate lambdas (filter, exists) do not
+                                         // return the cast's supertype, so they are left alone.
+                                         r: FunctionRoutedValueSpecification[1] | let castClass  = $subTypeSets->at(0).class;
+                                                                                  let returnType = $r.originalFunction->functionReturnType().rawType;
+                                                                                  if($returnType->isNotEmpty() && $returnType->toOne()->instanceOf(Class) && $castClass->_subTypeOf($returnType->toOne()),
+                                                                                     | ^$r(value=$r.value->evaluateAndDeactivate()->propogateSubTypeIntoLambdaResult($subTypeId, $subTypeSets, $subTypeRoutingStrategy, $extensions)),
+                                                                                     | $r);,
                                          vs: ValueSpecification[1] | $vs
                                        ])->cast(@ValueSpecification);
+}
+
+function <<access.private>> meta::pure::router::routing::propogateSubTypeIntoLambdaResult(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], subTypeRoutingStrategy:RoutingStrategy[0..1], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
+{
+    $vs->match([i: InstanceValue[1] | ^$i(values=$i.values->map(v|$v->match([l: LambdaFunction<Any>[1] | let expressions = $l.expressionSequence->evaluateAndDeactivate();
+                                                                                                          ^$l(expressionSequence=$expressions->init()->concatenate($expressions->last()->toOne()->propogateSubType($subTypeId, $subTypeSets, $subTypeRoutingStrategy, true, $extensions))->toOneMany());,
+                                                                             a: Any[1] | $a]))),
+                v: ValueSpecification[1] | $v
+               ]);
+}
+
+// Inside a lambda the navigated property can target a single set the cast class is not mapped through; narrowing
+// it to the cast's sets would leave the property with no mapping. Only a union that already includes them is safe.
+function <<access.private>> meta::pure::router::routing::isUnionContaining(e:StoreMappingRoutedValueSpecification[1], subTypeSets:SetImplementation[*]): Boolean[1]
+{
+    let unionMemberIds = $e.sets->filter(s|$s->instanceOf(OperationSetImplementation))->resolveOperation($e.mapping).id;
+    let castSetIds     = $subTypeSets->resolveOperation($e.mapping).id;
+    $unionMemberIds->isNotEmpty() && $castSetIds->isNotEmpty() && $castSetIds->forAll(id|$id->in($unionMemberIds));
 }
