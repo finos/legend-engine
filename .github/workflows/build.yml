@@ -305,6 +305,20 @@ jobs:
         run: |
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
+      # NOTE: Snowflake is billed per warehouse-minute, so its cloud tests only run on release-branch pushes
+      # (release.yml covers release tags). Elsewhere the snowflake modules run without pct-cloud-test, as fork PRs do.
+      - name: Test Profiles
+        id: testProfiles
+        env:
+          PROFILES: ${{ needs.build.outputs.profiles }}
+          IS_RELEASE_BRANCH_PUSH: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/legend-release-') || startsWith(github.ref, 'refs/heads/release-legend-release-')) }}
+        run: |
+          if [ "${{ matrix.name }}" = "snowflake" ] && [ "$IS_RELEASE_BRANCH_PUSH" != "true" ]; then
+            echo "PROFILES=" >> $GITHUB_OUTPUT
+          else
+            echo "PROFILES=$PROFILES" >> $GITHUB_OUTPUT
+          fi
+
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
@@ -312,7 +326,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
         run: |
-          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ steps.testProfiles.outputs.PROFILES }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7

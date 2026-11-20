@@ -136,12 +136,17 @@ PCT targets, how to add a new one, and how PCT fits into the CI pipeline.
 | H2 (in-memory relational) | `legend-engine-xt-relationalStore-h2-PCT` | Default (all PRs) |
 | DuckDB | `legend-engine-xt-relationalStore-duckdb-PCT` | Default (all PRs) |
 | Postgres | `legend-engine-xt-relationalStore-postgres-PCT` | `pct-cloud-test` |
-| Snowflake | `legend-engine-xt-relationalStore-snowflake-PCT` | `pct-cloud-test` |
+| Snowflake | `legend-engine-xt-relationalStore-snowflake-PCT` | `pct-cloud-test`, release branches and releases only |
 | BigQuery | `legend-engine-xt-relationalStore-bigquery-PCT` | `pct-cloud-test` |
 | Databricks | `legend-engine-xt-relationalStore-databricks-PCT` | `pct-cloud-test` |
 | Spanner | `legend-engine-xt-relationalStore-spanner-PCT` | `pct-cloud-test` |
 | MemSQL | `legend-engine-xt-relationalStore-memsql-PCT` | `pct-cloud-test` |
 | Java platform binding | `legend-engine-pure-runtime-java-extension-compiled-*` | Default (all PRs) |
+
+Snowflake's cloud tests do not run on master pushes or PRs: `build.yml` drops `pct-cloud-test` for the
+`snowflake` test group except on pushes to `legend-release-*` / `release-legend-release-*`, and
+`release.yml` always runs them. To check a Snowflake change before release, run the module locally with
+`-P pct-cloud-test` (see `docs/pct/cloud-resources/cloud-resources.md`).
 
 ### Adding a new store as a PCT target
 
