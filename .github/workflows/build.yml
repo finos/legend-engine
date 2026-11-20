@@ -222,9 +222,14 @@ jobs:
         if: always()
         run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
+      # NOTE: groups marked "runOn": "release" in modulesToTest.json (e.g. Snowflake, billed per warehouse-minute) only
+      # run on legend-release-* pushes; release.yml runs every group. Their modules stay excluded from Run Unit Tests,
+      # which would otherwise run them with pct-cloud-test.
       - name: Set Test Matrix
         id: testMatrix
-        run: echo "testMatrix=$(jq -c . < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
+        env:
+          IS_RELEASE_BRANCH_PUSH: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/legend-release-') }}
+        run: echo "testMatrix=$(jq -c --argjson isReleaseBranchPush "$IS_RELEASE_BRANCH_PUSH" '.include |= map(select(.runOn != "release" or $isReleaseBranchPush))' .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
 
       - name: Upload CI Event
         if: always()
@@ -305,20 +310,6 @@ jobs:
         run: |
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
-      # NOTE: Snowflake is billed per warehouse-minute, so its cloud tests only run on legend-release-* pushes
-      # (release.yml covers release tags). Elsewhere the snowflake modules run without pct-cloud-test, as fork PRs do.
-      - name: Test Profiles
-        id: testProfiles
-        env:
-          PROFILES: ${{ needs.build.outputs.profiles }}
-          IS_RELEASE_BRANCH_PUSH: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/legend-release-') }}
-        run: |
-          if [ "${{ matrix.name }}" = "snowflake" ] && [ "$IS_RELEASE_BRANCH_PUSH" != "true" ]; then
-            echo "PROFILES=" >> $GITHUB_OUTPUT
-          else
-            echo "PROFILES=$PROFILES" >> $GITHUB_OUTPUT
-          fi
-
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
@@ -326,7 +317,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
         run: |
-          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ steps.testProfiles.outputs.PROFILES }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
