@@ -14,13 +14,19 @@
 
 package org.finos.legend.engine.language.sql.grammar.to;
 
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.IntervalSet;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
+import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.sql.metamodel.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,7 +68,8 @@ public class SQLGrammarComposer
             Tuples.pair(JoinType.LEFT, "LEFT OUTER"),
             Tuples.pair(JoinType.RIGHT, "RIGHT OUTER"),
             Tuples.pair(JoinType.INNER, "INNER"),
-            Tuples.pair(JoinType.CROSS, "CROSS")
+            Tuples.pair(JoinType.CROSS, "CROSS"),
+            Tuples.pair(JoinType.FULL, "FULL OUTER")
     );
 
     private final MutableMap<CurrentTimeType, String> CURRENT_TIME = UnifiedMap.newMapWith(
@@ -128,7 +135,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(AllColumns val)
             {
-                return val.prefix != null ? val.prefix + ".*" : "*";
+                return val.prefix != null ? quoteQualifiedName(Arrays.asList(val.prefix.split("\\.", -1))) + ".*" : "*";
             }
 
             @Override
@@ -157,7 +164,7 @@ public class SQLGrammarComposer
                 String when = visit(val.whenClauses, " ");
                 String def = val.defaultValue == null ? "" : " ELSE " + val.defaultValue.accept(this);
 
-                return "CASE " + operand + when + def + " END";
+                return "CASE " + operand + " " + when + def + " END";
             }
 
             @Override
@@ -413,6 +420,10 @@ public class SQLGrammarComposer
             {
                 NodeVisitor<String> visitor = this;
                 String type = JOIN_KIND.get(val.type);
+                if (type == null)
+                {
+                    throw new IllegalArgumentException("Unknown join type: " + val.type);
+                }
                 String left = val.left.accept(this);
                 String right = val.right.accept(this);
                 String natural = val.criteria instanceof NaturalJoin ? "NATURAL " : "";
@@ -562,8 +573,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(QualifiedNameReference val)
             {
-                String value = String.join(".", val.name.parts);
-                return quoteIfNeeded(value);
+                return quoteQualifiedName(val.name.parts);
             }
 
             @Override
@@ -686,7 +696,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(Table val)
             {
-                return String.join(".", ListIterate.collect(val.name.parts, x -> x.contains("/") ? "\"" + x + "\"" : x));
+                return quoteQualifiedName(val.name.parts);
             }
 
             @Override
@@ -763,8 +773,53 @@ public class SQLGrammarComposer
 
             private String quoteIfNeeded(String value)
             {
-                return value.contains(" ") ? "\"" + value + "\"" : value;
+                return quoteIdentifier(value);
             }
         });
+    }
+
+    /**
+     * Keyword tokens the grammar accepts as unquoted identifiers: the FIRST set of the {@code nonReserved} rule,
+     * read once from the generated parser's ATN so it always tracks SqlBaseParser.g4.
+     */
+    private static final IntervalSet NON_RESERVED_TOKENS = SqlBaseParser._ATN.nextTokens(SqlBaseParser._ATN.ruleToStartState[SqlBaseParser.RULE_nonReserved]);
+
+    private static String quoteQualifiedName(List<String> parts)
+    {
+        return ListIterate.collect(parts, SQLGrammarComposer::quoteIdentifier).makeString(".");
+    }
+
+    /**
+     * Renders one identifier part, double-quoting it when the grammar would not read it back as the same unquoted
+     * identifier: reserved keywords (IN, end, GROUP, ...) and non-plain text (spaces, $, ., /, ...). Case is preserved.
+     */
+    public static String quoteIdentifier(String value)
+    {
+        if (value == null || isUnquotedIdentifier(value))
+        {
+            return value;
+        }
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
+    /**
+     * True when {@code value} lexes as exactly one token covering the whole text, and that token is either
+     * {@code IDENTIFIER} or a keyword from the {@code nonReserved} rule.
+     */
+    public static boolean isUnquotedIdentifier(String value)
+    {
+        if (value.isEmpty())
+        {
+            return false;
+        }
+        SqlBaseLexer lexer = new SqlBaseLexer(CharStreams.fromString(value));
+        lexer.removeErrorListeners();
+        Token token = lexer.nextToken();
+        if (token.getStartIndex() != 0 || token.getStopIndex() != value.length() - 1 || lexer.nextToken().getType() != Token.EOF)
+        {
+            return false;
+        }
+        int type = token.getType();
+        return type == SqlBaseLexer.IDENTIFIER || NON_RESERVED_TOKENS.contains(type);
     }
 }
