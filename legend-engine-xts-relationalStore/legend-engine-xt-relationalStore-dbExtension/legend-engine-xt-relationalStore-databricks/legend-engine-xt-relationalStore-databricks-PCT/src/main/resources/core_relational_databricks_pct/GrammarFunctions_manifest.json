@@ -5,7 +5,7 @@
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
@@ -20,7 +20,7 @@
     "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"

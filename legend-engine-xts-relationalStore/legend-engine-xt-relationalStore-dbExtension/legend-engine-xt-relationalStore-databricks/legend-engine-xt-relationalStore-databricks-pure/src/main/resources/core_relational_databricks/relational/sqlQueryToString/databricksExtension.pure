@@ -46,7 +46,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let baseDynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForDatabricks()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
    // VARIANT array operands need a `cast(... as array<variant>)`; typed arrays stay bare (Snowflake-matching).
-   let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] | $func->dynaFuncDispatchForDatabricks($sgc, $baseDynaFuncDispatch)};
+   let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] | $func->dynaFuncDispatchWithDateLiteralOverridesForDatabricks($sgc, $baseDynaFuncDispatch)};
 
    ^DbExtension(
       setOperationSupport = standardSetOperationSupport(),
@@ -89,10 +89,106 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       // the default processor quotes these; Spark would coerce the string back to a boolean, but
       // emitting the keyword keeps the column a real BOOLEAN over JDBC instead of a VARCHAR
       pair(Boolean,        ^LiteralProcessor(format = '%s',                   transform = toString_Any_1__String_1_->literalTransform())),
-      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringForDatabricks($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringForDatabricks($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringForDatabricks($dbTimeZone)}))
    ]);
+}
+
+// The shared convertDateToSqlString refuses Year and Year-Month dates, and writes its time only when the date
+// has seconds, so %2015-04-15T17:09 renders as '2015-04-15'. Nesting each optional section inside the
+// next-coarser one renders every precision.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertDateToSqlStringForDatabricks(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+   let timeZone = if($dbTimeZone->isEmpty(), | 'GMT', | $dbTimeZone->toOne());
+   format('%t{[' + $timeZone + ']yyyy?[-MM?[-dd?[ HH:mm?[:ss?[.S*]]]]]}', $date);
+}
+
+// A Date literal's precision is lost once it becomes a native TIMESTAMP, so toString() on a literal is
+// evaluated in Pure and embedded as a string.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isLiteralDateToStringForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'toString' && $func.parameters->size() == 1
+      && $func.parameters->at(0)->instanceOf(Literal)
+      && $func.parameters->at(0)->cast(@Literal).value->instanceOf(Date);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::renderLiteralDateToStringForDatabricks(func:DynaFunction[1]):String[1]
+{
+   let rendered = $func.parameters->at(0)->cast(@Literal).value->toString();
+   '\'' + $rendered->replace('\'', '\\\'') + '\'';
+}
+
+// convertDateToSqlStringForDatabricks pads missing fields, so without this %2017->hour() would return 0
+// instead of failing as the stdlib requires.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isDateFieldExtractionMissingForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name->in(['dayOfMonth', 'hour', 'minute', 'second'])
+      && $func.parameters->size() == 1
+      && $func.parameters->at(0)->instanceOf(Literal)
+      && $func.parameters->at(0)->cast(@Literal).value->instanceOf(Date)
+      && !$func->dateFieldExtractionOperandHasRequiredFieldForDatabricks();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateFieldExtractionOperandHasRequiredFieldForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   let date = $func.parameters->at(0)->cast(@Literal).value->cast(@Date);
+   if($func.name == 'dayOfMonth',
+      | $date->meta::pure::functions::date::hasDay(),
+      | if($func.name == 'hour',
+           | $date->meta::pure::functions::date::hasHour(),
+           | if($func.name == 'minute',
+                | $date->meta::pure::functions::date::hasMinute(),
+                | $date->meta::pure::functions::date::hasSecond()
+              )
+         )
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateFieldExtractionErrorMessageForDatabricks(func:DynaFunction[1]):String[1]
+{
+   let label = if($func.name == 'dayOfMonth', | 'day of month', | $func.name);
+   'Cannot get ' + $label + ' for ' + $func.parameters->at(0)->cast(@Literal).value->toString();
+}
+
+// Spark has no partial-precision date type, so datePart()/adjust() on a Year or Year-Month literal would
+// silently return a padded value. Fail instead, as H2/DuckDB/Postgres do.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isCoarseDatePrecisionOperandForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name->in(['datePart', 'adjust'])
+      && $func.parameters->isNotEmpty()
+      && $func.parameters->at(0)->instanceOf(Literal)
+      && $func.parameters->at(0)->cast(@Literal).value->instanceOf(Date)
+      && !$func.parameters->at(0)->cast(@Literal).value->cast(@Date)->meta::pure::functions::date::hasDay();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::coarseDatePrecisionErrorMessageForDatabricks(func:DynaFunction[1]):String[1]
+{
+   'Databricks cannot represent the Year or Year-Month precision of Date literal ' +
+      $func.parameters->at(0)->cast(@Literal).value->toString() +
+      ' in a native DATE/TIMESTAMP column; ' + $func.name + '() would silently lose that precision.';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateLiteralOverrideForDatabricks(func:DynaFunction[1]):DynaFunctionToSql[0..1]
+{
+   if($func->isDateFieldExtractionMissingForDatabricks(),
+      | fail($func->dateFieldExtractionErrorMessageForDatabricks()); [];,
+      | if($func->isCoarseDatePrecisionOperandForDatabricks(),
+           | fail($func->coarseDatePrecisionErrorMessageForDatabricks()); [];,
+           | if($func->isLiteralDateToStringForDatabricks(),
+                | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderLiteralDateToStringForDatabricks(), transform = {p:String[*] | []})),
+                | []
+             )
+        )
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchWithDateLiteralOverridesForDatabricks(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
+{
+   let dateLiteralOverride = $func->dateLiteralOverrideForDatabricks();
+   if($dateLiteralOverride->isNotEmpty(),
+      | $dateLiteralOverride->toOne(),
+      | $func->dynaFuncDispatchForDatabricks($sgc, $baseDispatch));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getDynaFunctionToSqlForDatabricks(): DynaFunctionToSql[*]
@@ -608,9 +704,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformFormatDateDatabricks(params:String[2]):String[1]
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  // Spark SQL reads '' inside a string literal as two adjacent literals rather than an escaped quote, so the
+  // quotes around T are backslash-escaped.
   let formatPairs = [
     pair('ISO8601', '\'yyyy-MM-dd\''),
-    pair('ISO8601_NanoSecondPrecision', '\'yyyy-MM-dd\'\'T\'\'HH:mm:ss.SSSSSSSSS\'')
+    pair('ISO8601_NanoSecondPrecision', '\'yyyy-MM-dd\\\'T\\\'HH:mm:ss.SSSSSSSSS\'')
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
@@ -1140,23 +1238,34 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateDiffDatabricks(p:String[2..3]):String[1]
 {
     // dateDiff(d1: Date[1], d2: Date[1], du: DurationUnit[1]): Integer[1]
-    // This returns an integer, hence a need to round results to int
     let interval = if($p->size() == 2, |'DAY', |$p->at(2)->replace('\'', '')->mapToDBUnitType());
+    // Pure counts calendar boundaries crossed for YEAR, MONTH and WEEK, but whole elapsed units, truncated
+    // toward zero, from HOUR down. months_between measures elapsed months, so Jan 31 to Feb 1 would be 0, not 1.
+    // unix_timestamp drops fractional seconds, so 13:00:00.9 to 14:00:00.1 would be 1 hour, not 0.
+    let elapsedMicros = '(unix_micros(' + $p->at(1) + ') - unix_micros(' + $p->at(0) + '))';
     let cmd = if ($interval == 'YEAR',
         | 'year('+ $p->at(1) +') - year('+ $p->at(0) +')',
         | if ($interval == 'MONTH',
-             | 'cast(round(months_between('+ $p->at(1) +', '+ $p->at(0) +')) AS INT)',
+             | '(year('+ $p->at(1) +') * 12 + month('+ $p->at(1) +')) - (year('+ $p->at(0) +') * 12 + month('+ $p->at(0) +'))',
              | if ($interval == 'DAY',
                   | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
-                  | if ($interval == 'HOUR',
-                       | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600) AS INT)',
-                       | if ($interval == 'MINUTE',
-                            | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 60) AS INT)',
-                            | if ($interval == 'SECOND',
-                                 | 'unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')',
-                                 | if ($interval == 'MILLISECOND',
-                                      | '(unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) * 1000',
-                                      | ''
+                  | if ($interval == 'WEEK',
+                       // Counts Sunday week-start boundaries crossed, not days / 7; the epoch fell on a Thursday, four
+                       // days (345600 seconds) after a Sunday. Going backwards uses ceil at both ends so a boundary reached
+                       // from the far side is not counted.
+                       | 'case when ' + $p->at(1) + ' >= ' + $p->at(0) +
+                         ' then cast(floor((unix_timestamp(' + $p->at(1) + ') + 345600) / 604800) - floor((unix_timestamp(' + $p->at(0) + ') + 345600) / 604800) as INT)' +
+                         ' else cast(ceil((unix_timestamp(' + $p->at(1) + ') + 345600) / 604800) - ceil((unix_timestamp(' + $p->at(0) + ') + 345600) / 604800) as INT) end',
+                       | if ($interval == 'HOUR',
+                            | 'cast(' + $elapsedMicros + ' div 3600000000 AS INT)',
+                            | if ($interval == 'MINUTE',
+                                 | 'cast(' + $elapsedMicros + ' div 60000000 AS INT)',
+                                 | if ($interval == 'SECOND',
+                                      | $elapsedMicros + ' div 1000000',
+                                      | if ($interval == 'MILLISECOND',
+                                           | $elapsedMicros + ' div 1000',
+                                           | ''
+                                      )
                                  )
                             )
                        )
