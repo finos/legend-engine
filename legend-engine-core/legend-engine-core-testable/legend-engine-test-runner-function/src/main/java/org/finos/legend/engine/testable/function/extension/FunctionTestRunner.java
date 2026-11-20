@@ -53,7 +53,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.S
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -110,13 +112,30 @@ public class FunctionTestRunner implements TestRunner
     }
 
     @Override
+    public TestDebug debugAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData data)
+    {
+        throw new UnsupportedOperationException("Function Test should be executed in context of Function Test Suite only");
+    }
+
+    @Override
     public TestSuiteSession<TestResult> openTestSuiteSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
     {
-        Assert.assertTrue(testSuite instanceof Root_meta_legend_function_metamodel_FunctionTestSuite, () -> "Function test suite expected in functions");
         String testablePath = HelperModelBuilder.getElementFullPath(this.functionDefinition, pureModel.getExecutionSupport());
+        return new FunctionTestSuiteSession(testSuite, protocolSuite(testSuite, data, testablePath), pureModel, data, testablePath);
+    }
+
+    @Override
+    public TestSuiteSession<TestDebug> openTestSuiteDebugSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
+    {
+        String testablePath = HelperModelBuilder.getElementFullPath(this.functionDefinition, pureModel.getExecutionSupport());
+        return new FunctionTestSuiteDebugSession(testSuite, protocolSuite(testSuite, data, testablePath), pureModel, data, testablePath);
+    }
+
+    private static FunctionTestSuite protocolSuite(Root_meta_pure_test_TestSuite testSuite, PureModelContextData data, String testablePath)
+    {
+        Assert.assertTrue(testSuite instanceof Root_meta_legend_function_metamodel_FunctionTestSuite, () -> "Function test suite expected in functions");
         Function protocolFunc = ListIterate.detect(data.getElementsOfType(Function.class), el -> el.getPath().equals(testablePath));
-        FunctionTestSuite protocolSuite = ListIterate.detect(protocolFunc.tests, t -> t.id.equals(testSuite._id()));
-        return new FunctionTestSuiteSession(testSuite, protocolSuite, pureModel, data, testablePath);
+        return ListIterate.detect(protocolFunc.tests, t -> t.id.equals(testSuite._id()));
     }
 
     private Store resolveStore(PureModelContextData pureModelContextData, String store)
@@ -146,18 +165,18 @@ public class FunctionTestRunner implements TestRunner
         }
     }
 
-    private class FunctionTestSuiteSession extends AbstractTestSuiteSessionWithResources<FunctionTestSuite, FunctionTest, TestResult>
+    private abstract class BaseFunctionTestSuiteSession<R> extends AbstractTestSuiteSessionWithResources<FunctionTestSuite, FunctionTest, R>
     {
-        private final String testablePath;
+        protected final String testablePath;
         private FunctionTestRunnerContext context;
         private FunctionDefinition<?> modifiedFunctionDefinition;
         private final TestConnectionBuildParameters hints;
         private final RelationAssertionColumnTypes relationAssertionColumnTypes;
         private final List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
 
-        FunctionTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, FunctionTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
+        BaseFunctionTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, FunctionTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
         {
-            super(pureSuite, protocolSuite, pureModel, pmcd, FunctionTestSuiteSession::getTestSuiteTests, FunctionTestSuiteSession::getAtomicTestId);
+            super(pureSuite, protocolSuite, pureModel, pmcd, BaseFunctionTestSuiteSession::getTestSuiteTests, BaseFunctionTestSuiteSession::getAtomicTestId);
             this.testablePath = testablePath;
             if (TestReturnTypeHelper.isRelationReturnType(FunctionTestRunner.this.functionDefinition, pureModel))
             {
@@ -185,27 +204,17 @@ public class FunctionTestRunner implements TestRunner
             setup();
         }
 
-        @Override
-        protected TestResult buildErrorResult(String atomicTestId, Throwable t)
+        protected SingleExecutionPlan generatePlan()
         {
-            return TestResultHelper.newTestError(this.testablePath, getTestSuiteId(), atomicTestId, t);
+            FunctionDefinition<?> effectiveFunction = this.modifiedFunctionDefinition != null ? this.modifiedFunctionDefinition : FunctionTestRunner.this.functionDefinition;
+            return PlanGenerator.generateExecutionPlan(effectiveFunction, null, null, TestExecutionContextHelper.executionContextFor(this.hints, this.context.getPureModel()), this.context.getPureModel(), FunctionTestRunner.this.pureVersion, PlanPlatform.JAVA, null, this.context.getRouterExtensions(), this.context.getExecutionPlanTransformers());
         }
 
-        @Override
-        protected TestResult runAtomicTest(FunctionTest atomicTest)
-        {
-            TestResult testResult = executeFunctionTest(atomicTest);
-            testResult.testable = this.testablePath;
-            testResult.testSuiteId = getTestSuiteId();
-            return testResult;
-        }
-
-        private TestResult executeFunctionTest(FunctionTest functionTest)
+        protected TestResult executeFunctionTest(FunctionTest functionTest)
         {
             try
             {
-                FunctionDefinition<?> effectiveFunction = this.modifiedFunctionDefinition != null ? this.modifiedFunctionDefinition : FunctionTestRunner.this.functionDefinition;
-                SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(effectiveFunction, null, null, TestExecutionContextHelper.executionContextFor(this.hints, this.context.getPureModel()), this.context.getPureModel(), FunctionTestRunner.this.pureVersion, PlanPlatform.JAVA, null, this.context.getRouterExtensions(), this.context.getExecutionPlanTransformers());
+                SingleExecutionPlan executionPlan = generatePlan();
                 TestAssertion assertion = functionTest.assertions.get(0);
                 PlanExecutor.ExecuteArgsBuilder executeArgs = this.context.getExecuteBuilder().withPlan(executionPlan);
                 MutableMap<String, Object> parameters = Maps.mutable.empty();
@@ -358,6 +367,54 @@ public class FunctionTestRunner implements TestRunner
                 }
             }
             throw new UnsupportedOperationException("Unsupported test data for function test suite: " + this.context.getTestSuite()._id());
+        }
+    }
+
+    private class FunctionTestSuiteSession extends BaseFunctionTestSuiteSession<TestResult>
+    {
+        FunctionTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, FunctionTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
+        {
+            super(pureSuite, protocolSuite, pureModel, pmcd, testablePath);
+        }
+
+        @Override
+        protected TestResult buildErrorResult(String atomicTestId, Throwable t)
+        {
+            return TestResultHelper.newTestError(this.testablePath, getTestSuiteId(), atomicTestId, t);
+        }
+
+        @Override
+        protected TestResult runAtomicTest(FunctionTest atomicTest)
+        {
+            TestResult testResult = executeFunctionTest(atomicTest);
+            testResult.testable = this.testablePath;
+            testResult.testSuiteId = getTestSuiteId();
+            return testResult;
+        }
+    }
+
+    private class FunctionTestSuiteDebugSession extends BaseFunctionTestSuiteSession<TestDebug>
+    {
+        FunctionTestSuiteDebugSession(Root_meta_pure_test_TestSuite pureSuite, FunctionTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
+        {
+            super(pureSuite, protocolSuite, pureModel, pmcd, testablePath);
+        }
+
+        @Override
+        protected TestDebug buildErrorResult(String atomicTestId, Throwable t)
+        {
+            return TestResultHelper.newTestExecutionPlanDebugError(this.testablePath, getTestSuiteId(), atomicTestId, t);
+        }
+
+        @Override
+        protected TestDebug runAtomicTest(FunctionTest atomicTest)
+        {
+            TestExecutionPlanDebug planDebug = new TestExecutionPlanDebug();
+            planDebug.testable = this.testablePath;
+            planDebug.testSuiteId = getTestSuiteId();
+            planDebug.atomicTestId = atomicTest.id;
+            planDebug.executionPlan = generatePlan();
+            return planDebug;
         }
     }
 }

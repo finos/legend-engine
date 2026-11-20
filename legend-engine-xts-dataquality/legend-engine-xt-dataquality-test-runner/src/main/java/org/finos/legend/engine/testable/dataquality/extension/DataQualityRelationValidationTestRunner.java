@@ -52,7 +52,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -107,29 +109,46 @@ public class DataQualityRelationValidationTestRunner implements TestRunner
     }
 
     @Override
+    public TestDebug debugAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData data)
+    {
+        throw new UnsupportedOperationException("DataQualityRelationValidation Test should be executed in the context of a Test Suite only");
+    }
+
+    @Override
     public TestSuiteSession<TestResult> openTestSuiteSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
+    {
+        String testablePath = HelperModelBuilder.getElementFullPath(this.pureElement, pureModel.getExecutionSupport());
+        return new DataQualityRelationValidationTestSuiteSession(testSuite, protocolSuite(testSuite, data, testablePath), pureModel, data, testablePath);
+    }
+
+    @Override
+    public TestSuiteSession<TestDebug> openTestSuiteDebugSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
+    {
+        String testablePath = HelperModelBuilder.getElementFullPath(this.pureElement, pureModel.getExecutionSupport());
+        return new DataQualityRelationValidationTestSuiteDebugSession(testSuite, protocolSuite(testSuite, data, testablePath), pureModel, data, testablePath);
+    }
+
+    private DataQualityRelationValidationTestSuite protocolSuite(Root_meta_pure_test_TestSuite testSuite, PureModelContextData data, String testablePath)
     {
         if (!(testSuite instanceof Root_meta_external_dataquality_DataQualityRelationValidationTestSuite))
         {
             throw new EngineException("Expected DataQualityRelationValidationTestSuite. Found: " + testSuite.getClass().getSimpleName());
         }
-        String testablePath = HelperModelBuilder.getElementFullPath(this.pureElement, pureModel.getExecutionSupport());
         DataqualityRelationValidation protocolElement = ListIterate.detect(data.getElementsOfType(DataqualityRelationValidation.class), e -> e.getPath().equals(testablePath));
         if (protocolElement == null)
         {
             throw new EngineException("Cannot find DataqualityRelationValidation '" + testablePath + "' in the model context");
         }
-        DataQualityRelationValidationTestSuite protocolSuite = ListIterate.detect(protocolElement.testSuites, s -> s.id.equals(testSuite._id()));
-        return new DataQualityRelationValidationTestSuiteSession(testSuite, protocolSuite, pureModel, data, testablePath);
+        return ListIterate.detect(protocolElement.testSuites, s -> s.id.equals(testSuite._id()));
     }
 
-    private class DataQualityRelationValidationTestSuiteSession
-            extends AbstractTestSuiteSessionWithResources<DataQualityRelationValidationTestSuite, DataQualityRelationValidationTest, TestResult>
+    private abstract class BaseDataQualityRelationValidationTestSuiteSession<R>
+            extends AbstractTestSuiteSessionWithResources<DataQualityRelationValidationTestSuite, DataQualityRelationValidationTest, R>
     {
-        private final String testablePath;
+        protected final String testablePath;
         private FunctionDefinition<?> effectiveLambda;
 
-        DataQualityRelationValidationTestSuiteSession(
+        BaseDataQualityRelationValidationTestSuiteSession(
                 Root_meta_pure_test_TestSuite pureSuite,
                 DataQualityRelationValidationTestSuite protocolSuite,
                 PureModel pureModel,
@@ -137,8 +156,8 @@ public class DataQualityRelationValidationTestRunner implements TestRunner
                 String testablePath)
         {
             super(pureSuite, protocolSuite, pureModel, pmcd,
-                    DataQualityRelationValidationTestSuiteSession::getTestSuiteTests,
-                    DataQualityRelationValidationTestSuiteSession::getAtomicTestId);
+                    BaseDataQualityRelationValidationTestSuiteSession::getTestSuiteTests,
+                    BaseDataQualityRelationValidationTestSuiteSession::getAtomicTestId);
             this.testablePath = testablePath;
         }
 
@@ -271,38 +290,27 @@ public class DataQualityRelationValidationTestRunner implements TestRunner
             return ListIterate.detect(pmcd.getElementsOfType(Store.class), s -> s.getPath().equals(path));
         }
 
-        @Override
-        protected TestResult buildErrorResult(String atomicTestId, Throwable t)
+        protected SingleExecutionPlan generatePlan()
         {
-            return TestResultHelper.newTestError(this.testablePath, getTestSuiteId(), atomicTestId, t);
+            LambdaFunction<?> breaksLambda = buildBreaksLambda();
+            return PlanGenerator.generateExecutionPlan(
+                    breaksLambda,
+                    null,
+                    null,
+                    null,
+                    this.pureModel,
+                    DataQualityRelationValidationTestRunner.this.pureVersion,
+                    PlanPlatform.JAVA,
+                    null,
+                    PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport())),
+                    DataQualityRelationValidationTestRunner.this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
         }
 
-        @Override
-        protected TestResult runAtomicTest(DataQualityRelationValidationTest atomicTest)
-        {
-            TestResult testResult = executeValidationTest(atomicTest);
-            testResult.testable = this.testablePath;
-            testResult.testSuiteId = getTestSuiteId();
-            return testResult;
-        }
-
-        private TestResult executeValidationTest(DataQualityRelationValidationTest atomicTest)
+        protected TestResult executeValidationTest(DataQualityRelationValidationTest atomicTest)
         {
             try
             {
-                LambdaFunction<?> breaksLambda = buildBreaksLambda();
-                SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(
-                        breaksLambda,
-                        null,
-                        null,
-                        null,
-                        this.pureModel,
-                        DataQualityRelationValidationTestRunner.this.pureVersion,
-                        PlanPlatform.JAVA,
-                        null,
-                        PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport())),
-                        DataQualityRelationValidationTestRunner.this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
-
+                SingleExecutionPlan plan = generatePlan();
                 Result result = DataQualityRelationValidationTestRunner.this.executor.execute(plan);
                 TestAssertion assertion = atomicTest.assertions.get(0);
                 AssertionStatus assertionStatus = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
@@ -392,5 +400,53 @@ public class DataQualityRelationValidationTestRunner implements TestRunner
             throw new EngineException("Multiple RelationAccessorTestConnectionFactory implementations rewrote the DataQualityRelationValidation lambda; expected exactly one match");
         }
         return rewritten.get(0);
+    }
+
+    private class DataQualityRelationValidationTestSuiteSession extends BaseDataQualityRelationValidationTestSuiteSession<TestResult>
+    {
+        DataQualityRelationValidationTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, DataQualityRelationValidationTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
+        {
+            super(pureSuite, protocolSuite, pureModel, pmcd, testablePath);
+        }
+
+        @Override
+        protected TestResult buildErrorResult(String atomicTestId, Throwable t)
+        {
+            return TestResultHelper.newTestError(this.testablePath, getTestSuiteId(), atomicTestId, t);
+        }
+
+        @Override
+        protected TestResult runAtomicTest(DataQualityRelationValidationTest atomicTest)
+        {
+            TestResult testResult = executeValidationTest(atomicTest);
+            testResult.testable = this.testablePath;
+            testResult.testSuiteId = getTestSuiteId();
+            return testResult;
+        }
+    }
+
+    private class DataQualityRelationValidationTestSuiteDebugSession extends BaseDataQualityRelationValidationTestSuiteSession<TestDebug>
+    {
+        DataQualityRelationValidationTestSuiteDebugSession(Root_meta_pure_test_TestSuite pureSuite, DataQualityRelationValidationTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
+        {
+            super(pureSuite, protocolSuite, pureModel, pmcd, testablePath);
+        }
+
+        @Override
+        protected TestDebug buildErrorResult(String atomicTestId, Throwable t)
+        {
+            return TestResultHelper.newTestExecutionPlanDebugError(this.testablePath, getTestSuiteId(), atomicTestId, t);
+        }
+
+        @Override
+        protected TestDebug runAtomicTest(DataQualityRelationValidationTest atomicTest)
+        {
+            TestExecutionPlanDebug planDebug = new TestExecutionPlanDebug();
+            planDebug.testable = this.testablePath;
+            planDebug.testSuiteId = getTestSuiteId();
+            planDebug.atomicTestId = atomicTest.id;
+            planDebug.executionPlan = generatePlan();
+            return planDebug;
+        }
     }
 }
