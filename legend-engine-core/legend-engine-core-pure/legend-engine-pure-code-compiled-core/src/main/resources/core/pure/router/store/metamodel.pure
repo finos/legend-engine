@@ -56,6 +56,9 @@ Class meta::pure::router::store::metamodel::StoreMappingRoutingStrategy extends 
    toChooseSet : SetImplementation[0..1];
 
    classMappingsByClass:Map<Class<Any>,List<SetImplementation>>[1];         //TODO: Move to mapping
+   classMappingsById:Map<String,List<SetImplementation>>[0..1];
+   associationPropertyMappingsBySourceId:Map<String,List<PropertyMapping>>[0..1];
+   storeContractsBySetImplementation:Map<SetImplementation,meta::pure::store::StoreContract>[0..1];
 
    classMappingsForClass(class:Class<Any>[1])
    {

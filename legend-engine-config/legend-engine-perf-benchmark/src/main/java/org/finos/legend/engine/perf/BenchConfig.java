@@ -27,6 +27,10 @@ public class BenchConfig
     public String csv = null;
     public boolean pause = false;
     public String dumpPlan = null;
+    public String comparePlan = null;
+    public boolean allExtensions = false;
+    public boolean routeOnly = false;
+    public boolean spans = true;
 
     public String nextMultiplicity = "0..1";
     public int unionSets = 0;
@@ -70,6 +74,10 @@ public class BenchConfig
         config.csv = opts.get("csv");
         config.pause = opts.containsKey("pause");
         config.dumpPlan = opts.get("dumpplan");
+        config.comparePlan = opts.get("compareplan");
+        config.allExtensions = opts.containsKey("allext");
+        config.routeOnly = opts.containsKey("routeonly");
+        config.spans = !opts.containsKey("nospans");
         config.nextMultiplicity = opts.getOrDefault("nextmult", "0..1");
         config.unionSets = Integer.parseInt(opts.getOrDefault("union", "0"));
         config.includes = Integer.parseInt(opts.getOrDefault("includes", "0"));
@@ -117,6 +125,14 @@ public class BenchConfig
         {
             b.append("+mult").append(this.nextMultiplicity);
         }
+        if (this.allExtensions)
+        {
+            b.append("+allext");
+        }
+        if (this.routeOnly)
+        {
+            b.append("+routeonly");
+        }
         b.append("/").append(this.dbType);
         return b.toString();
     }
@@ -135,6 +151,8 @@ public class BenchConfig
         map.put("modelToModel", this.modelToModel);
         map.put("nextMultiplicity", this.nextMultiplicity);
         map.put("execute", this.execute);
+        map.put("allExtensions", this.allExtensions);
+        map.put("routeOnly", this.routeOnly);
         return map;
     }
 
@@ -167,6 +185,14 @@ public class BenchConfig
             b.append(" m2m");
         }
         b.append(" nextMult=[").append(this.nextMultiplicity).append("]");
+        if (this.allExtensions)
+        {
+            b.append(" allext");
+        }
+        if (this.routeOnly)
+        {
+            b.append(" routeonly");
+        }
         b.append(" warmup=").append(this.warmup).append(" iters=").append(this.iterations);
         return b.toString();
     }

@@ -3495,4 +3495,40 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "}\n",
                 "COMPILATION error at [8:3-17]: Can't find property 'nmae' in class 'test::A'");
     }
+
+    @Test(timeout = 60_000)
+    public void testLongChainOfZeroOnePropertiesCompilesEachReceiverOnce()
+    {
+        int depth = 40;
+        StringBuilder chain = new StringBuilder("$n");
+        for (int i = 0; i < depth; i++)
+        {
+            chain.append(".next");
+        }
+        PureModel pureModel = test("Class test::Node\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  next: test::Node[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::walk(nodes: test::Node[*]): String[*]\n" +
+                "{\n" +
+                "  $nodes->map(n | " + chain + ".name)\n" +
+                "}\n").getTwo();
+
+        FunctionExpression walk = (FunctionExpression) pureModel.getConcreteFunctionDefinition("test::walk_Node_MANY__String_MANY_", null)._expressionSequence().getOnly();
+        LambdaFunction<?> lambda = (LambdaFunction<?>) ((InstanceValue) walk._parametersValues().toList().get(1))._values().getOnly();
+        FunctionExpression expression = (FunctionExpression) lambda._expressionSequence().getOnly();
+        Assert.assertEquals(0L, expression._multiplicity()._lowerBound()._value().longValue());
+        Assert.assertEquals(1L, expression._multiplicity()._upperBound()._value().longValue());
+        int automaps = 0;
+        while ("map".equals(expression._functionName()))
+        {
+            automaps++;
+            expression = (FunctionExpression) expression._parametersValues().getFirst();
+        }
+        Assert.assertEquals(depth, automaps);
+        Assert.assertEquals("next", expression._func()._name());
+        Assert.assertEquals("$n", describe(expression._parametersValues().getFirst()));
+    }
 }

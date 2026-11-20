@@ -149,17 +149,17 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], cluster
 
    // Enriching Function Expressions with relevant info (mapping / binding / platform)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with relevant info (mapping / binding / platform) and assigning routing strategy:\n',|''));
-   let enrichedExpressions = enrichFunctionExpressions($valueSpecifications, $initialState, $exeCtx, $initialVars, $openVariables, $extensions, $debug);   
+   let enrichedExpressions = meta::pure::functions::tracing::traceSpan(|enrichFunctionExpressions($valueSpecifications, $initialState, $exeCtx, $initialVars, $openVariables, $extensions, $debug), 'route: enrich');
 
    // Enriching Function Expressions with more information based on type of expression (subTypes of ExtendedRoutedValueSpecification)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));
-   let enrichedExpressionsAfterStrategyBasedEnrichment = $enrichedExpressions->map(exp | $exp->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug));
+   let enrichedExpressionsAfterStrategyBasedEnrichment = meta::pure::functions::tracing::traceSpan(|$enrichedExpressions->map(exp | $exp->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug)), 'route: strategy enrichment');
 
    let processedExpressions = if($cluster, 
     | 
       // Clustering Function Expressions into clusters
       print(if($debug.debug,|'\n'+$debug.space+'Clustering Function Expressions:',|''));
-      let clusters = $enrichedExpressionsAfterStrategyBasedEnrichment->map(exp| $exp->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space + '  ')));,
+      meta::pure::functions::tracing::traceSpan(|$enrichedExpressionsAfterStrategyBasedEnrichment->map(exp| $exp->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space + '  '))), 'route: cluster');,
     |
       print(if($debug.debug,|'\n'+$debug.space+'Clustering skipped',|''));   
       $enrichedExpressionsAfterStrategyBasedEnrichment;

@@ -66,7 +66,24 @@ function meta::external::store::relational::sqlDialectTranslation::sqlTyping::ty
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes_internal(node: Node[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): Node[1]
 {
   let nameKeyedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne()->toLower(), $sqlFunc))->newMap();
-  $node->inferTypes(typeInferenceTransformFunction($nameKeyedFunctionRegistry));
+  $node->inferTypes(typeInferenceTransformFunction($nameKeyedFunctionRegistry, typedExpressionShapes()));
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedExpressionShape
+{
+  untypedClass: Type[1];
+  properties: Property<Nil,Any|*>[*];
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedExpressionShapes(): Map<Type, TypedExpressionShape>[1]
+{
+  TypedSqlExpression.specializations.specific->map(t |
+    let untyped = $t->validGeneralizations()->filter(g | !$g->_subTypeOf(TypedSqlExpression))->cast(@Class<Any>);
+    if ($untyped->size() == 1,
+      | pair($t, ^TypedExpressionShape(untypedClass = $untyped->toOne(), properties = $untyped->toOne()->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>))),
+      | []
+    );
+  )->newMap();
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(node: Node[1], transformFunction: Function<{Node[1]->Node[1]}>[1]): Node[1]
@@ -83,31 +100,36 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typeInferenceTransformFunction(functionRegistry: Map<String, SqlFunction>[1]): Function<{Node[1]->Node[1]}>[1]
 {
+  typeInferenceTransformFunction($functionRegistry, ^Map<Type, TypedExpressionShape>())
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typeInferenceTransformFunction(functionRegistry: Map<String, SqlFunction>[1], shapes: Map<Type, TypedExpressionShape>[1]): Function<{Node[1]->Node[1]}>[1]
+{
   {node: Node[1] |
     $node->match([
-      e: ComparisonExpression[1] | $e->typedExpression(TypedComparisonExpression, BooleanSqlType),
-      e: LogicalBinaryExpression[1] | $e->typedExpression(TypedLogicalBinaryExpression, BooleanSqlType),
-      e: NotExpression[1] | $e->typedExpression(TypedNotExpression, BooleanSqlType),
-      e: IsNullPredicate[1] | $e->typedExpression(TypedIsNullPredicate, BooleanSqlType),
-      e: IsNotNullPredicate[1] | $e->typedExpression(TypedIsNotNullPredicate, BooleanSqlType),
-      e: NegativeExpression[1] | $e->typedExpression(TypedNegativeExpression, $e.value->match([t :TypedSqlExpression[1] | $t.sqlType, a: Any[1] | AbstractNumericSqlType])),
-      e: Cast[1] | $e->typedCast(),
-      l: IntegerLiteral[1] | $l->typedExpression(TypedIntegerLiteral, IntegerSqlType),
-      l: LongLiteral[1] | $l->typedExpression(TypedLongLiteral, BigIntSqlType),
-      l: DoubleLiteral[1] | $l->typedExpression(TypedDoubleLiteral, DoubleSqlType),
-      l: BooleanLiteral[1] | $l->typedExpression(TypedBooleanLiteral, BooleanSqlType),
-      l: StringLiteral[1] | $l->typedExpression(TypedStringLiteral, VarcharSqlType),
-      l: NullLiteral[1] | $l->typedExpression(TypedNullLiteral, SqlType),
-      l: DateLiteral[1] | $l->typedExpression(TypedDateLiteral, DateSqlType),
-      l: DecimalLiteral[1] | $l->typedExpression(TypedDecimalLiteral, NumericSqlType),
-      l: TimestampLiteral[1] | $l->typedExpression(TypedTimestampLiteral, TimestampSqlType),
-      f: FunctionCall[1] | $f->typedFunctionCall($functionRegistry),
+      e: ComparisonExpression[1] | $e->typedExpression(TypedComparisonExpression, BooleanSqlType, $shapes),
+      e: LogicalBinaryExpression[1] | $e->typedExpression(TypedLogicalBinaryExpression, BooleanSqlType, $shapes),
+      e: NotExpression[1] | $e->typedExpression(TypedNotExpression, BooleanSqlType, $shapes),
+      e: IsNullPredicate[1] | $e->typedExpression(TypedIsNullPredicate, BooleanSqlType, $shapes),
+      e: IsNotNullPredicate[1] | $e->typedExpression(TypedIsNotNullPredicate, BooleanSqlType, $shapes),
+      e: NegativeExpression[1] | $e->typedExpression(TypedNegativeExpression, $e.value->match([t :TypedSqlExpression[1] | $t.sqlType, a: Any[1] | AbstractNumericSqlType]), $shapes),
+      e: Cast[1] | $e->typedCast($shapes),
+      l: IntegerLiteral[1] | $l->typedExpression(TypedIntegerLiteral, IntegerSqlType, $shapes),
+      l: LongLiteral[1] | $l->typedExpression(TypedLongLiteral, BigIntSqlType, $shapes),
+      l: DoubleLiteral[1] | $l->typedExpression(TypedDoubleLiteral, DoubleSqlType, $shapes),
+      l: BooleanLiteral[1] | $l->typedExpression(TypedBooleanLiteral, BooleanSqlType, $shapes),
+      l: StringLiteral[1] | $l->typedExpression(TypedStringLiteral, VarcharSqlType, $shapes),
+      l: NullLiteral[1] | $l->typedExpression(TypedNullLiteral, SqlType, $shapes),
+      l: DateLiteral[1] | $l->typedExpression(TypedDateLiteral, DateSqlType, $shapes),
+      l: DecimalLiteral[1] | $l->typedExpression(TypedDecimalLiteral, NumericSqlType, $shapes),
+      l: TimestampLiteral[1] | $l->typedExpression(TypedTimestampLiteral, TimestampSqlType, $shapes),
+      f: FunctionCall[1] | $f->typedFunctionCall($functionRegistry, $shapes),
       n: Node[1] | $n 
     ])
   }
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedCast(c: Cast[1]): TypedSqlExpression[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedCast(c: Cast[1], shapes: Map<Type, TypedExpressionShape>[1]): TypedSqlExpression[1]
 {
   let targetType = $c.type.name;
   let sqlTypeMap = [
@@ -151,10 +173,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // TODO: More types
   ]->newMap();
   let targetTypeWithoutArgs = $targetType->toLower()->split('(')->at(0);
-  $c->typedExpression(TypedCastExpression, $sqlTypeMap->get($targetTypeWithoutArgs)->toOne('Failed to infer Postgres type while processing Cast expression to target type \'' + $targetType + '\'.'));
+  $c->typedExpression(TypedCastExpression, $sqlTypeMap->get($targetTypeWithoutArgs)->toOne('Failed to infer Postgres type while processing Cast expression to target type \'' + $targetType + '\'.'), $shapes);
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedFunctionCall(f: FunctionCall[1], functionRegistry: Map<String, SqlFunction>[1]): TypedSqlExpression[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedFunctionCall(f: FunctionCall[1], functionRegistry: Map<String, SqlFunction>[1], shapes: Map<Type, TypedExpressionShape>[1]): TypedSqlExpression[1]
 {
   let funcName = $f.name.parts->joinStrings('.')->toLower();
   let sqlFunction = $functionRegistry->get($funcName)->toOne('Function registry does not contain function - ' + $funcName);
@@ -182,7 +204,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
         | 'No matched function in function registry for - ' + $funcName + '(' + $funcArgsSqlTypes->map(x | $x.name)->joinStrings(', ') + ').\n' +
           'Available variations for that function - ' + $sqlFunction.variations->map(v | '  ' + $funcName + $v.identifier)->joinStrings('[\n', ',\n', '\n]')
       );
-      $f->typedExpression(TypedFunctionCall, $firstMatchedVariation->toOne().returnType, $sqlFunction);,
+      $f->typedExpression(TypedFunctionCall, $firstMatchedVariation->toOne().returnType, $sqlFunction, $shapes);,
       
     | // Not all args are typed. So, try to find out common return type. Assumes last function variation is most generic.
       let allReturnTypes = $sqlFunction.variations->filter(v|($v->instanceOf(VariadicSqlFunctionVariation) && ($v.parameterTypes->size() <= $funcArgs->size())) || $v.parameterTypes->size() == $funcArgs->size()).returnType;
@@ -193,20 +215,24 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       );
       let lastReturnType = $allReturnTypes->last()->toOne();
       assert($allReturnTypes->forAll(r | $r->_subTypeOf($lastReturnType)), | 'No common return type for variation of function - ' + $funcName);
-      $f->typedExpression(TypedFunctionCall, $lastReturnType, $sqlFunction);
+      $f->typedExpression(TypedFunctionCall, $lastReturnType, $sqlFunction, $shapes);
   );
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedExpression(expr: meta::external::query::sql::metamodel::Expression[1], cls: Class<TypedSqlExpression>[1], inferredType: Class<SqlType>[1]): TypedSqlExpression[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedExpression(expr: meta::external::query::sql::metamodel::Expression[1], cls: Class<TypedSqlExpression>[1], inferredType: Class<SqlType>[1], shapes: Map<Type, TypedExpressionShape>[1]): TypedSqlExpression[1]
 {
-  $expr->typedExpression($cls, $inferredType, [])
+  $expr->typedExpression($cls, $inferredType, [], $shapes)
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedExpression(expr: meta::external::query::sql::metamodel::Expression[1], cls: Class<TypedSqlExpression>[1], inferredType: Class<SqlType>[1], sqlFunction: SqlFunction[0..1]): TypedSqlExpression[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedExpression(expr: meta::external::query::sql::metamodel::Expression[1], cls: Class<TypedSqlExpression>[1], inferredType: Class<SqlType>[1], sqlFunction: SqlFunction[0..1], shapes: Map<Type, TypedExpressionShape>[1]): TypedSqlExpression[1]
 {
   let exprCls = $expr->type()->cast(@Class<Any>);
-  assert($cls->_subTypeOf($exprCls), | 'TypedExpression class ' + $cls->elementToPath() + ' is not a subtype of ' + $exprCls->elementToPath());
-  let allProperties = $exprCls->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+  let shape = $shapes->get($cls)->filter(s | $s.untypedClass == $exprCls);
+  let allProperties = if ($shape->isNotEmpty(),
+    | $shape->toOne().properties,
+    | assert($cls->_subTypeOf($exprCls), | 'TypedExpression class ' + $cls->elementToPath() + ' is not a subtype of ' + $exprCls->elementToPath());
+      $exprCls->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+  );
   let propKeyValues = $allProperties->map(p | ^KeyValue(key = $p.name->toOne(), value = $p->evaluate(list($expr))));
   let typeKeyValue = ^KeyValue(key = 'sqlType', value = $inferredType);
   let sqlFunctionKeyValue = if ($cls == TypedFunctionCall, | ^KeyValue(key = 'sqlFunction', value = $sqlFunction->toOne()), | []);

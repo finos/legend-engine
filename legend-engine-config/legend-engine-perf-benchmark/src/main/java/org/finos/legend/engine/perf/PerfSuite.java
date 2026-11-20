@@ -16,6 +16,8 @@ package org.finos.legend.engine.perf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +64,9 @@ public class PerfSuite
         double canaryMargin = Double.parseDouble(options.getOrDefault("canary-margin", "0.3"));
         long minDelta = Long.parseLong(options.getOrDefault("min-delta-ms", "25"));
         boolean allowImprovement = options.containsKey("allow-improvement");
+        boolean allExtensions = options.containsKey("allext");
+        String dumpPlans = options.get("dumpplans");
+        String comparePlans = options.get("compareplans");
 
         String record = options.get("record");
         if (record != null)
@@ -70,6 +75,16 @@ public class PerfSuite
         }
 
         List<BenchConfig> workloads = workloads(suiteName, iterations, warmup);
+        if (dumpPlans != null)
+        {
+            Files.createDirectories(Paths.get(dumpPlans));
+        }
+        for (BenchConfig config : workloads)
+        {
+            config.allExtensions = allExtensions;
+            config.dumpPlan = dumpPlans == null ? null : planFile(dumpPlans, config);
+            config.comparePlan = comparePlans == null ? null : planFile(comparePlans, config);
+        }
         System.out.println("suite '" + suiteName + "': " + workloads.size() + " workloads, "
                 + warmup + " warmup + " + iterations + " measured iterations each");
 
@@ -216,6 +231,38 @@ public class PerfSuite
             configs.add(workload("graph1", 30));
             configs.add(workload("graph4", 30));
         }
+        else if (suiteName.equals("router"))
+        {
+            sweep(configs, "proj", 30, 5, 10, 20, 40, 80);
+            sweep(configs, "projnav", 30, 5, 10, 20, 40, 80);
+            sweep(configs, "join", 30, 2, 4, 8, 16);
+            for (int depth : new int[]{2, 4, 8, 16})
+            {
+                BenchConfig config = workload("join" + depth, 30);
+                config.nextMultiplicity = "1";
+                configs.add(config);
+            }
+            sweep(configs, "graph", 30, 1, 2, 4, 8);
+            sweep(configs, "filter", 30, 2, 4, 8, 16, 32);
+            sweep(configs, "exists", 30, 1, 2, 4, 8);
+            sweep(configs, "let", 30, 2, 4, 8, 16, 32);
+            sweep(configs, "fn", 30, 1, 4, 16, 32);
+            sweep(configs, "if", 30, 2, 4, 8, 16, 32);
+            for (int includes : new int[]{1, 4, 16})
+            {
+                BenchConfig config = workload("join4", 30);
+                config.includes = includes;
+                configs.add(config);
+            }
+            for (int scale : new int[]{300, 3000})
+            {
+                configs.add(workload("join4", scale));
+            }
+            for (int sets : new int[]{2, 5, 10, 20})
+            {
+                configs.add(unionWorkload("join2", 10, sets));
+            }
+        }
         else
         {
             throw new IllegalArgumentException("Unknown suite: " + suiteName);
@@ -226,6 +273,19 @@ public class PerfSuite
             config.warmup = warmup;
         }
         return configs;
+    }
+
+    private static void sweep(List<BenchConfig> configs, String shape, int scale, int... sizes)
+    {
+        for (int size : sizes)
+        {
+            configs.add(workload(shape + size, scale));
+        }
+    }
+
+        private static String planFile(String directory, BenchConfig config)
+    {
+        return Paths.get(directory, config.workloadId().replaceAll("[^A-Za-z0-9.+@-]", "_") + ".json").toString();
     }
 
     private static BenchConfig workload(String query, int scale)
@@ -292,7 +352,7 @@ public class PerfSuite
     {
         for (Map<String, Object> workload : workloads)
         {
-            if (workloadId.equals(workload.get("workload")))
+            if (workloadId.equals(String.valueOf(workload.get("workload")).replace("+allext", "")))
             {
                 Object value = PipelineBench.asMap(workload.get("warmMedianMs")).get(phase);
                 return value == null ? null : ((Number) value).doubleValue();

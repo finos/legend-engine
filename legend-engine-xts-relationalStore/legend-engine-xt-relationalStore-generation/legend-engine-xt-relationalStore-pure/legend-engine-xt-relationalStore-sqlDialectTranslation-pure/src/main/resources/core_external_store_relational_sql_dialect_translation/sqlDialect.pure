@@ -151,16 +151,49 @@ function meta::external::store::relational::sqlDialectTranslation::isSelfDelimit
 
 function meta::external::store::relational::sqlDialectTranslation::getNodeProcessorForNode(node: Node[1], sqlDialect: SqlDialect[1], config: SqlDialectTranslationConfig[1]): NodeProcessor<Node>[1]
 {
-  let nodeProcessorsMap = if($config.extraNodeProcessors->isNotEmpty(),
+  let nodeClass = $node->class()->cast(@Class<Node>);
+  let cached = $config->lookupsFor($sqlDialect).nodeProcessorsByClass->map(m | $m->get($nodeClass));
+  if($cached->isEmpty(),
+    | let untypedNodeClass = if($nodeClass->_subTypeOf(TypedSqlExpression),
+        | $nodeClass->validGeneralizations()->filter(x | !$x->_subTypeOf(TypedSqlExpression))->toOne(),
+        | $nodeClass
+      )->cast(@Class<Node>);
+      $sqlDialect->allNodeProcessors($config)->get($untypedNodeClass)->toOne('Dialect translation for node of type "' + $untypedNodeClass->elementToPath() + '" not implemented in SqlDialect for database type "' + $config.dbConfig.dbType + '"');,
+    | $cached->toOne()
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::allNodeProcessors(sqlDialect: SqlDialect[1], config: SqlDialectTranslationConfig[1]): Map<Class<Node>, NodeProcessor<Node>>[1]
+{
+  if($config.extraNodeProcessors->isNotEmpty(),
     | $sqlDialect.nodeProcessors->putAll($config.extraNodeProcessors->toOne()),
     | $sqlDialect.nodeProcessors
   );
-  let nodeClass = $node->class();
-  let untypedNodeClass = if($nodeClass->_subTypeOf(TypedSqlExpression), 
-    | $nodeClass->validGeneralizations()->filter(x | !$x->_subTypeOf(TypedSqlExpression))->toOne(), 
-    | $nodeClass
-  )->cast(@Class<Node>);
-  $nodeProcessorsMap->get($untypedNodeClass)->toOne('Dialect translation for node of type "' + $untypedNodeClass->elementToPath() + '" not implemented in SqlDialect for database type "' + $config.dbConfig.dbType + '"');
+}
+
+function meta::external::store::relational::sqlDialectTranslation::lookupsFor(config: SqlDialectTranslationConfig[1], sqlDialect: SqlDialect[1]): SqlDialectLookups[0..1]
+{
+  if($config.lookups->isNotEmpty() && ($config.lookups->toOne().dbType == $sqlDialect.dbType), | $config.lookups, | []);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::withSqlDialectLookups(config: SqlDialectTranslationConfig[1], sqlDialect: SqlDialect[1]): SqlDialectTranslationConfig[1]
+{
+  if($config->lookupsFor($sqlDialect)->isNotEmpty(),
+    | $config,
+    | let allNodeProcessors = $sqlDialect->allNodeProcessors($config);
+      let untypedClasses = $allNodeProcessors->keys()->filter(c | !$c->_subTypeOf(TypedSqlExpression));
+      let typedClasses = $untypedClasses.specializations.specific->filter(s | $s->_subTypeOf(TypedSqlExpression))->cast(@Class<Node>)->removeDuplicates();
+      let typedEntries = $typedClasses->map(t |
+        let untyped = $t->validGeneralizations()->filter(x | !$x->_subTypeOf(TypedSqlExpression))->cast(@Class<Node>);
+        let processor = if($untyped->size() == 1, | $allNodeProcessors->get($untyped->toOne()), | []);
+        $processor->map(p | pair($t, $p));
+      );
+      ^$config(lookups = ^SqlDialectLookups(
+        dbType = $sqlDialect.dbType,
+        lowerCaseKeywords = $sqlDialect.keywords->map(k | pair($k->toLower(), true))->newMap(),
+        nodeProcessorsByClass = $untypedClasses->map(c | pair($c, $allNodeProcessors->get($c)->toOne()))->concatenate($typedEntries)->newMap()
+      ));
+  );
 }
 
 function meta::external::store::relational::sqlDialectTranslation::functionProcessor<T>(processFunction: Function<{SqlDialect[1], FunctionCall[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1], selfDelimiting: Function<{T[1] -> Boolean[1]}>[1]): FunctionProcessor[1]

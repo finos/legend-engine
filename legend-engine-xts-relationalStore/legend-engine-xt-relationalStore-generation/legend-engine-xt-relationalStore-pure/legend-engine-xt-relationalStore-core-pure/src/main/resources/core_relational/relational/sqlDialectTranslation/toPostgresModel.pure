@@ -35,6 +35,7 @@ Class meta::relational::functions::toPostgresModel::ModelConversionState
   processingFilter: Boolean[1];
   extensions: Extension[*];
   dynaFunctionConverterMap: Map<String, Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>>[1];
+  nodeConverters: Function<{ModelConversionState[1] -> Function<{Nil[1] -> Node[1]}>[*]}>[*];
 }
 
 function meta::relational::functions::toPostgresModel::newState():ModelConversionState[1]
@@ -44,7 +45,19 @@ function meta::relational::functions::toPostgresModel::newState():ModelConversio
 
 function meta::relational::functions::toPostgresModel::newState(extensions: Extension[*]):ModelConversionState[1]
 {
-  ^ModelConversionState(isRootSelect = true, processingSelect = false, processingFilter = false, extensions = $extensions, dynaFunctionConverterMap = getDynaFunctionConverterMap());
+  ^ModelConversionState(
+    isRootSelect = true,
+    processingSelect = false,
+    processingFilter = false,
+    extensions = $extensions,
+    dynaFunctionConverterMap = getDynaFunctionConverterMap(),
+    nodeConverters = $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeConverters)
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::rootState(state:ModelConversionState[1]):ModelConversionState[1]
+{
+  ^$state(isRootSelect = true, processingSelect = false, processingFilter = false);
 }
 
 function meta::relational::functions::toPostgresModel::convertRelationalOperationElement(r:RelationalOperationElement[1], extensions:Extension[*]):Node[1]
@@ -81,8 +94,15 @@ function meta::relational::functions::toPostgresModel::printDataType(d:meta::rel
 
 function meta::relational::functions::toPostgresModel::convertElement(r:RelationalOperationElement[1], state:ModelConversionState[1]):Node[1]
 {
+  if($state.nodeConverters->isEmpty(),
+    | $r->convertCoreElement($state),
+    | $r->match($state.nodeConverters->map(f | $f->eval($state))->concatenate({e:RelationalOperationElement[1] | $e->convertCoreElement($state)})->toOneMany())
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertCoreElement(r:RelationalOperationElement[1], state:ModelConversionState[1]):Node[1]
+{
   $r->match(
-    $state.extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeConverters)->map(f | $f->eval($state))->concatenate(
       [
         d:DynaFunction[1]|                    convertDynaFunction($d, $state);,
         d:DataTypeInfo[1]|                    ^ColumnType(name=$d.dataType->toOne()->printDataType()),
@@ -123,7 +143,6 @@ function meta::relational::functions::toPostgresModel::convertElement(r:Relation
         s:meta::relational::metamodel::operation::SemiStructuredObjectNavigation[1]|  convertSemiStructuredObjectNavigation($s, $state);,
         c:meta::relational::metamodel::relation::CommonTableExpressionReference[1]|   ^meta::external::query::sql::metamodel::Table(name = qualifiedName($c.name));
       ]
-    )->toOneMany()
   );
 }
 
@@ -156,9 +175,9 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
           r: meta::relational::metamodel::relation::RecursiveCommonTableExpression[1] |
                 $r.sqlQuery.data.alias.relationalElement->toOne()
                   ->cast(@meta::relational::metamodel::relation::UnionAll)
-                  ->convertElement(newState($state.extensions))
+                  ->convertElement($state->rootState())
                   ->cast(@meta::external::query::sql::metamodel::TableSubquery).query,
-          c: CommonTableExpression[1] | $c.sqlQuery->convertSelectSqlQuery(newState($state.extensions))
+          c: CommonTableExpression[1] | $c.sqlQuery->convertSelectSqlQuery($state->rootState())
         ])
       ));
 
@@ -970,7 +989,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertSetOperation(u:meta::relational::metamodel::relation::SetOperationQuery[1], state:ModelConversionState[1], distinct:Boolean[1], build:Function<{meta::external::query::sql::metamodel::Relation[1], meta::external::query::sql::metamodel::Relation[1], Boolean[1]->meta::external::query::sql::metamodel::SetOperation[1]}>[1]):meta::external::query::sql::metamodel::Relation[1]
 {
-  let newQueries = $u.queries->map(q|$q->convertElement(newState($state.extensions)))->cast(@meta::external::query::sql::metamodel::Relation);
+  let newQueries = $u.queries->map(q|$q->convertElement($state->rootState()))->cast(@meta::external::query::sql::metamodel::Relation);
   ^TableSubquery(query = ^Query(queryBody = $newQueries->tail()->fold({q,a|$build->eval($a, $q, $distinct)->cast(@meta::external::query::sql::metamodel::Relation)}, $newQueries->first()->toOne())->cast(@meta::external::query::sql::metamodel::SetOperation)));
 }
 

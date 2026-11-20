@@ -57,6 +57,14 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-core-extension</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
         <dependency>
@@ -95,6 +103,14 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-util</artifactId>
+        </dependency>
 
         <!-- grammar and store extensions discovered at runtime: dialects, and the external-format
              binding used by the semi-structured workloads -->
@@ -129,4 +145,19 @@
             <scope>runtime</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- the server's full generation extension set, for runs with allext; kept out of the default
+             classpath so the extra compiler and grammar extensions do not move the recorded baseline -->
+        <profile>
+            <id>all-extensions</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.finos.legend.engine</groupId>
+                    <artifactId>legend-engine-extensions-collection-generation</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

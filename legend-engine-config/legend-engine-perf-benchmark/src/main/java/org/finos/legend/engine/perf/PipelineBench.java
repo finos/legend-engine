@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
@@ -45,6 +46,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -53,6 +55,8 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_tools_DebugContext_Impl;
+import org.finos.legend.pure.generated.core_pure_router_deprecated_deprecated;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.h2.tools.Server;
@@ -70,6 +74,7 @@ import org.h2.tools.Server;
 public class PipelineBench
 {
     private static final String[] PHASES = {"parse", "compile", "lambda", "extensions", "planPure", "javaBind", "serialize", "deserialize", "execute"};
+    private static final String[] ALL_PHASES = {"parse", "compile", "lambda", "extensions", "route", "planPure", "javaBind", "serialize", "deserialize", "execute"};
     private static final String CLIENT_VERSION = "vX_X_X";
 
     private final BenchConfig config;
@@ -77,11 +82,16 @@ public class PipelineBench
     private PlanExecutor planExecutor;
     private List<Map<String, Object>> rows = new ArrayList<>();
     private boolean verbose = true;
+    private String firstPlanJson;
 
     public PipelineBench(BenchConfig config) throws Exception
     {
         this.config = config;
         this.grammar = config.fileList == null ? this.generateGrammar() : this.readGrammar();
+        if (config.spans)
+        {
+            SpanCollector.install();
+        }
     }
 
     public static void main(String[] args) throws Exception
@@ -185,6 +195,8 @@ public class PipelineBench
         result.put("warmup", this.config.warmup);
         result.put("coldMs", phaseValues(cold));
         result.put("warmMedianMs", medians(measured));
+        result.put("warmMedianSpansMs", spanMedians(measured));
+        result.put("spanCounts", cold == null ? null : spanCounts(cold));
         result.put("planJsonChars", cold == null ? null : cold.get("planJsonChars"));
         this.rows = measured;
         return result;
@@ -196,11 +208,21 @@ public class PipelineBench
         Map<String, Object> result = this.measure();
         System.out.println("--- medians in ms over " + this.rows.size() + " measured iterations ---");
         Map<String, Object> warm = asMap(result.get("warmMedianMs"));
-        for (String phase : PHASES)
+        for (String phase : ALL_PHASES)
         {
             if (warm.containsKey(phase))
             {
                 System.out.println(String.format("%-12s %7s", phase, warm.get(phase)));
+            }
+        }
+        Map<String, Object> spans = asMap(result.get("warmMedianSpansMs"));
+        if (!spans.isEmpty())
+        {
+            Map<String, Object> counts = asMap(result.get("spanCounts"));
+            System.out.println("--- span medians in ms (inclusive; calls per plan) ---");
+            for (Map.Entry<String, Object> span : spans.entrySet())
+            {
+                System.out.println(String.format("%-34s %9.3f %6s", span.getKey(), ((Number) span.getValue()).doubleValue(), counts.getOrDefault(span.getKey(), "")));
             }
         }
         if (this.config.csv != null)
@@ -209,12 +231,49 @@ public class PipelineBench
         }
     }
 
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> spanMedians(List<Map<String, Object>> rows)
+    {
+        Map<String, List<Double>> byName = new TreeMap<>();
+        for (Map<String, Object> row : rows)
+        {
+            Map<String, SpanCollector.SpanStats> spans = (Map<String, SpanCollector.SpanStats>) row.get("spans");
+            if (spans != null)
+            {
+                spans.forEach((name, stats) -> byName.computeIfAbsent(name, k -> new ArrayList<>()).add(stats.millis()));
+            }
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        byName.forEach((name, values) ->
+        {
+            values.sort(Double::compare);
+            result.put(name, Math.round(values.get(values.size() / 2) * 1000.0) / 1000.0);
+        });
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> spanCounts(Map<String, Object> row)
+    {
+        Map<String, Object> result = new LinkedHashMap<>();
+        Map<String, SpanCollector.SpanStats> spans = (Map<String, SpanCollector.SpanStats>) row.get("spans");
+        if (spans != null)
+        {
+            spans.forEach((name, stats) -> result.put(name, stats.count));
+        }
+        return result;
+    }
+
     static Map<String, Object> phaseValues(Map<String, Object> row)
     {
         Map<String, Object> values = new LinkedHashMap<>();
         if (row == null)
         {
             return values;
+        }
+        if (row.containsKey("route"))
+        {
+            values.put("route", row.get("route"));
         }
         for (String phase : PHASES)
         {
@@ -229,7 +288,7 @@ public class PipelineBench
     static Map<String, Object> medians(List<Map<String, Object>> rows)
     {
         Map<String, Object> result = new LinkedHashMap<>();
-        for (String phase : PHASES)
+        for (String phase : ALL_PHASES)
         {
             List<Long> values = new ArrayList<>();
             for (Map<String, Object> row : rows)
@@ -257,6 +316,7 @@ public class PipelineBench
     private Map<String, Object> runOnce()
     {
         Map<String, Object> row = new LinkedHashMap<>();
+        SpanCollector.reset();
 
         long t0 = System.nanoTime();
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(this.grammar);
@@ -278,10 +338,20 @@ public class PipelineBench
         long t3 = System.nanoTime();
         row.put("lambda", millis(t2, t3));
 
-        RichIterable<? extends Root_meta_pure_extension_Extension> extensions =
-                Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport());
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.config.allExtensions
+                ? PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()))
+                : Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport());
         long t4 = System.nanoTime();
         row.put("extensions", millis(t3, t4));
+
+        if (this.config.routeOnly)
+        {
+            core_pure_router_deprecated_deprecated.Root_meta_pure_router_routeFunction_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__DebugContext_1__FunctionDefinition_1_(
+                    definition, mapping, runtime, extensions, new Root_meta_pure_tools_DebugContext_Impl("")._debug(false)._space(""), pureModel.getExecutionSupport());
+            row.put("route", millis(t4, System.nanoTime()));
+            row.put("spans", SpanCollector.drain());
+            return row;
+        }
 
         Root_meta_pure_executionPlan_ExecutionPlan purePlan =
                 PlanGenerator.generateExecutionPlanAsPure(definition, mapping, runtime, null, pureModel, null, null, extensions);
@@ -301,10 +371,23 @@ public class PipelineBench
         long t8 = System.nanoTime();
         row.put("deserialize", millis(t7, t8));
 
-        if (this.config.dumpPlan != null)
+        if (this.firstPlanJson == null)
         {
-            writePlan(this.config.dumpPlan, json);
+            this.firstPlanJson = json;
+            if (this.config.dumpPlan != null)
+            {
+                writePlan(this.config.dumpPlan, json);
+            }
+            if (this.config.comparePlan != null)
+            {
+                PlanComparison.assertSameAsFile(this.config.comparePlan, json);
+            }
         }
+        else if (!this.firstPlanJson.equals(json))
+        {
+            System.out.println("WARNING: plan differs from the first iteration of this run - " + PlanComparison.describeDifference(this.firstPlanJson, json));
+        }
+        row.put("spans", SpanCollector.drain());
 
         if (this.config.execute && this.planExecutor != null)
         {
