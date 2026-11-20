@@ -1,0 +1,60 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::relation::classmappingextends::Product
+{
+  id: Integer[1];
+  name: String[0..1];
+  issuerName: String[0..1];
+  knownIssuerId: Integer[0..1];
+  listing: demo::relation::classmappingextends::Listing[0..1];
+  classification: demo::relation::classmappingextends::Classification[0..1];
+  sharesOutstanding: demo::relation::classmappingextends::Shares[*];
+}
+
+Class demo::relation::classmappingextends::Stock extends demo::relation::classmappingextends::Product
+{
+  stockClass: String[0..1];
+}
+
+Class demo::relation::classmappingextends::CommonStock extends demo::relation::classmappingextends::Stock
+{
+}
+
+Class demo::relation::classmappingextends::PreferredStock extends demo::relation::classmappingextends::Stock
+{
+}
+
+Class demo::relation::classmappingextends::Listing
+{
+  productType: String[0..1];
+}
+
+Class demo::relation::classmappingextends::Classification
+{
+  code: String[0..1];
+  issuer: demo::relation::classmappingextends::Issuer[0..1];
+}
+
+Class demo::relation::classmappingextends::Issuer
+{
+  id: Integer[1];
+  name: String[0..1];
+}
+
+Class demo::relation::classmappingextends::Shares
+{
+  amount: Integer[0..1];
+}

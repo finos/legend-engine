@@ -1,0 +1,56 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Widget has a listing that was replaced on 2024-01-01; Gadget's only listing ended on 2023-01-01.
+// A join target read without the query's milestoning sees both of Widget's listings (two rows for a
+// to-one property) and Gadget's ended one.
+
+###Data
+Data demo::relation::joinmilestoning::data::JoinMilestoningData
+{
+  Relation
+  #{
+    default.PROCESSING_PRODUCT:
+      ID,NAME,IN_Z,OUT_Z
+      1,Widget,2020-01-01 00:00:00,9999-12-31 00:00:00
+      2,Gadget,2020-01-01 00:00:00,9999-12-31 00:00:00;
+    default.PROCESSING_LISTING:
+      PRODUCT_ID,MARKET,EXCHANGE_ID,IN_Z,OUT_Z
+      1,Old Market,1,2020-01-01 00:00:00,2024-01-01 00:00:00
+      1,New Market,2,2024-01-01 00:00:00,9999-12-31 00:00:00
+      2,Gadget Market,1,2020-01-01 00:00:00,2023-01-01 00:00:00;
+    default.BUSINESS_PRODUCT:
+      ID,NAME,FROM_Z,THRU_Z
+      1,Widget,2020-01-01,9999-12-31
+      2,Gadget,2020-01-01,9999-12-31;
+    default.BUSINESS_LISTING:
+      PRODUCT_ID,MARKET,EXCHANGE_ID,FROM_Z,THRU_Z
+      1,Old Market,1,2020-01-01,2024-01-01
+      1,New Market,2,2024-01-01,9999-12-31
+      2,Gadget Market,1,2020-01-01,2023-01-01;
+    default.BITEMPORAL_PRODUCT:
+      ID,NAME,IN_Z,OUT_Z,FROM_Z,THRU_Z
+      1,Widget,2020-01-01 00:00:00,9999-12-31 00:00:00,2020-01-01,9999-12-31
+      2,Gadget,2020-01-01 00:00:00,9999-12-31 00:00:00,2020-01-01,9999-12-31;
+    default.BITEMPORAL_LISTING:
+      PRODUCT_ID,MARKET,IN_Z,OUT_Z,FROM_Z,THRU_Z
+      1,Original Market,2020-01-01 00:00:00,2024-01-01 00:00:00,2020-01-01,9999-12-31
+      1,Corrected Market,2024-01-01 00:00:00,9999-12-31 00:00:00,2020-01-01,9999-12-31
+      2,Gadget Market,2020-01-01 00:00:00,9999-12-31 00:00:00,2020-01-01,2023-01-01;
+    default.EXCHANGE:
+      ID,EXCHANGE_NAME
+      1,LSE
+      2,NYSE;
+  }#
+}

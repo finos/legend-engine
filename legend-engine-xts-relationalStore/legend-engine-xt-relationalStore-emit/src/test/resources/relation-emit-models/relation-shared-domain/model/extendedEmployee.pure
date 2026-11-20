@@ -17,5 +17,6 @@ Class demo::relation::domain::ExtendedEmployee extends demo::relation::domain::E
 {
   salaryDoubled: Float[0..1];
   fullGreeting: String[1];
+  staffCategory: String[1];
   address: demo::relation::domain::Address[0..1];
 }

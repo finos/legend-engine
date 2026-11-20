@@ -14,6 +14,7 @@
 
 import meta::core::runtime::*;
 import meta::pure::graphFetch::execution::*;
+import meta::relational::functions::asserts::*;
 
 function <<access.private>> meta::relational::tests::mapping::relation::graphFetch::plan::planString(query:FunctionDefinition<Any>[1], mapping:meta::pure::mapping::Mapping[1], runtime:Runtime[1]):String[1]
 {
@@ -211,5 +212,23 @@ function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::p
     '  )\n' +
     ')\n',
     $plan
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::plan::testRelationFunctionGraphFetchPlanToManyEnumChildSelectsTheStoreValue():Boolean[1]
+{
+  let tree = #{meta::relational::tests::mapping::relation::PersonWithEmployeeTypes {firstName, employeeTypes}}#;
+  let plan = meta::pure::executionPlan::executionPlan(
+    |meta::relational::tests::mapping::relation::PersonWithEmployeeTypes.all()->graphFetch($tree)->serialize($tree),
+    meta::relational::tests::mapping::relation::ToManyEnumerationGraphFetchMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  let employeeTypesNode = $plan.rootExecutionNode.executionNodes->at(0)->cast(@meta::pure::graphFetch::executionPlan::StoreMappingGlobalGraphFetchExecutionNode)
+                            .localGraphFetchExecutionNode->cast(@meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode).children->toOne();
+
+  assertSameSQL(
+    'select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "root"."EMPLOYEE_TYPE" as "node_2_result" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "persontable_1".ID as "ID", "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as "AGE", "persontable_1".EMPLOYEE_TYPE as "EMPLOYEE_TYPE" from (select "persontable_2".ID as ID, "persontable_2"."FIRST NAME" as "FIRST NAME", "persontable_2".AGE as AGE, "persontable_2".EMPLOYEE_TYPE as EMPLOYEE_TYPE from personTable as "persontable_2" where "persontable_2".AGE > 25) as "persontable_1") as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") where "root"."EMPLOYEE_TYPE" is not null',
+    $employeeTypesNode.executionNodes->toOne()->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
   );
 }

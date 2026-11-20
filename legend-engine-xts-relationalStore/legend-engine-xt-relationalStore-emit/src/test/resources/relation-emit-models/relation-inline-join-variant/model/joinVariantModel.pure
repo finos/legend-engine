@@ -1,0 +1,38 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::relation::joinvariant::Owner
+{
+  id: Integer[1];
+  longTagCount: Integer[0..1];
+  totalScore: Float[0..1];
+  withinLimitTagCount: Integer[0..1];
+  tagLengthCount: Integer[0..1];
+}
+
+function demo::relation::joinvariant::func::ownerRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1])>[1]
+{
+  #>{demo::relation::joinvariant::db::JoinVariantDB.OWNER}#
+}
+
+function demo::relation::joinvariant::func::docRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], OWNERID:Integer[0..1], PAYLOAD:meta::pure::metamodel::variant::Variant[0..1])>[1]
+{
+  #>{demo::relation::joinvariant::db::JoinVariantDB.DOC}#
+}
+
+function demo::relation::joinvariant::func::limitRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], MAXLEN:Integer[1])>[1]
+{
+  #>{demo::relation::joinvariant::db::JoinVariantDB.LIMITS}#
+}

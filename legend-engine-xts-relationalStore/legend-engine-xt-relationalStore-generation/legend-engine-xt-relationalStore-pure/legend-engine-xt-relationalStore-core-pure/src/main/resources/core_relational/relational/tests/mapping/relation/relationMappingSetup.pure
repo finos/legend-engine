@@ -270,6 +270,26 @@ Class meta::relational::tests::mapping::relation::PersonWithOptionalSalary exten
   salary: Float[0..1];
 }
 
+Class meta::relational::tests::mapping::relation::PersonWithAgeBand extends meta::relational::tests::mapping::relation::Person
+{
+  ageBand: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::PersonWithToManyStrings
+{
+  firstName: String[1];
+  castNames: String[1..*];
+  namePrefixes: String[1..*];
+  idLabels: String[1..*];
+}
+
+Class meta::relational::tests::mapping::relation::TradeWithToManyDates
+{
+  id: Integer[1];
+  castDates: StrictDate[1..*];
+  datePartDates: StrictDate[1..*];
+}
+
 // --- Classes for RFPM-lift variant tests ---------------------------------------
 // These exercise the processRelationFunctionPropertyMapping router, which evaluates
 // each PM's `valueFn` lambda body against the materialised RF cursor and synthesises
@@ -328,6 +348,11 @@ Class <<temporal.bitemporal>> meta::relational::tests::mapping::relation::BiTemp
 Class meta::relational::tests::mapping::relation::PersonWithEmployeeType extends meta::relational::tests::mapping::relation::Person
 {
    employeeType: meta::relational::tests::mapping::relation::EmployeeType[1];
+}
+
+Class meta::relational::tests::mapping::relation::PersonWithEmployeeTypes extends meta::relational::tests::mapping::relation::Person
+{
+   employeeTypes: meta::relational::tests::mapping::relation::EmployeeType[*];
 }
 
 Class meta::relational::tests::mapping::relation::Address
@@ -549,6 +574,23 @@ Mapping meta::relational::tests::mapping::relation::EnumerationGraphFetchMapping
    }
 )
 
+Mapping meta::relational::tests::mapping::relation::ToManyEnumerationGraphFetchMapping
+(
+   *PersonWithEmployeeTypes: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personFunctionWithEnumGraphFetch():Relation<Any>[1]
+      firstName: 'FIRST NAME',
+      age: AGE,
+      employeeTypes: EnumerationMapping employeeTypeMapping : EMPLOYEE_TYPE
+   }
+
+   EmployeeType: EnumerationMapping employeeTypeMapping
+   {
+     CONTRACT: 'CONTRACT',
+     FULL_TIME: ['SALARY', 'FULL_TIME']
+   }
+)
+
 Mapping meta::relational::tests::mapping::relation::filterJoinGraphFetchMapping
 (
    *Person: Relation
@@ -671,6 +713,37 @@ Mapping meta::relational::tests::mapping::relation::LiftedConcatMapping
   {
     ~src meta::relational::tests::mapping::relation::personFunctionTyped()
     greeting: 'Hello ' + $row.'FIRST NAME'
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::MultiIfMapping
+(
+  *PersonWithAgeBand[personWithAgeBand]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE,
+    ageBand: if([pair(|$row.AGE < 30, |'under 30'), pair(|$row.AGE < 50, |'under 50')], |'50 and over')
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::ToManyPrimitiveExpressionMapping
+(
+  *PersonWithToManyStrings[personWithToManyStrings]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
+    firstName: 'FIRST NAME',
+    castNames: $row.'FIRST NAME'->cast(@String),
+    namePrefixes: $row.'FIRST NAME'->substring(0, 2),
+    idLabels: if($row.ID == 1, |'first', |'other')
+  }
+
+  *TradeWithToManyDates[tradeWithToManyDates]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::tradeFunction__Relation_1_
+    id: ID,
+    castDates: $row.tradeDate->cast(@StrictDate),
+    datePartDates: $row.tradeDate->datePart()->cast(@StrictDate)
   }
 )
 

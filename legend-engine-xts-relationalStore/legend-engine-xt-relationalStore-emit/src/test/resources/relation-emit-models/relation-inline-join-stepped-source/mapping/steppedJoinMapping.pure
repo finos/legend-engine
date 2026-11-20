@@ -1,0 +1,393 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::relation::steppedjoin::Person
+{
+  id: Integer[1];
+  extendedFirm: String[0..1];
+  activeFirm: String[0..1];
+  selectedFirm: String[0..1];
+  renamedFirm: String[0..1];
+  sortedFirm: String[0..1];
+  firstOfFirmFirm: String[0..1];
+  gatedKey: Integer[0..1];
+  activeFirmCountry: String[0..1];
+  firm: demo::relation::steppedjoin::Firm[0..1];
+}
+
+Class demo::relation::steppedjoin::Firm
+{
+  id: Integer[1];
+  name: String[1];
+  memberNames: String[*];
+}
+
+function demo::relation::steppedjoin::func::personRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], FIRM_ID:Integer[0..1], OLD_FIRM_ID:Integer[0..1], ACTIVE:String[1])>[1]
+{
+  #>{demo::relation::steppedjoin::db::SteppedJoinDB.PERSON}#
+}
+
+function demo::relation::steppedjoin::func::firmRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1], COUNTRY_ID:Integer[0..1], LISTED:String[1])>[1]
+{
+  #>{demo::relation::steppedjoin::db::SteppedJoinDB.FIRM}#
+}
+
+function demo::relation::steppedjoin::func::countryRel(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], NAME:String[1])>[1]
+{
+  #>{demo::relation::steppedjoin::db::SteppedJoinDB.COUNTRY}#
+}
+
+###Mapping
+import demo::relation::steppedjoin::func::*;
+
+Mapping demo::relation::steppedjoin::mapping::SteppedJoinMapping
+(
+  *demo::relation::steppedjoin::Person[person]: Relation
+  {
+    ~func demo::relation::steppedjoin::func::personRel():Relation<Any>[1]
+    id: ID,
+    extendedFirm: $src->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).NAME,
+    activeFirm: $src->filter(x | $x.ACTIVE == 'Y')->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).NAME,
+    selectedFirm: $src->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->select(~[ID, FIRM_KEY])->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).NAME,
+    renamedFirm: $src->extend(~FIRM_ID_OR_FALLBACK: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->rename(~FIRM_ID_OR_FALLBACK, ~FIRM_KEY)->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).NAME,
+    sortedFirm: $src->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->sort(~NAME->ascending())->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).NAME,
+    firstOfFirmFirm: $src->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->extend(over(~FIRM_KEY, ~ID->ascending()), ~RN: {p, w, r | $p->rowNumber($r)})->filter(x | $x.RN == 1)->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).NAME,
+    gatedKey: $src->filter(x | $x.ACTIVE == 'Y')->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->filterJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID}).FIRM_KEY,
+    activeFirmCountry: $src->filter(x | $x.ACTIVE == 'Y')->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->navigationJoin(firmRel(), {p, f | $p.FIRM_KEY == $f.ID})->navigationJoin(countryRel(), {f, c | $f.COUNTRY_ID == $c.ID}).NAME,
+    +activeFirmKey: Integer[0..1]: $src->filter(x | $x.ACTIVE == 'Y')->extend(~FIRM_KEY: x | if($x.FIRM_ID->isEmpty(), | $x.OLD_FIRM_ID, | $x.FIRM_ID))->navigationJoin(firmRel(), meta::pure::functions::relation::JoinKind.INNER, {p, f | $p.FIRM_KEY == $f.ID}).ID,
+    firm: modelJoin({p, f | $p.activeFirmKey == $f.id})
+  }
+  *demo::relation::steppedjoin::Firm[firm]: Relation
+  {
+    ~func demo::relation::steppedjoin::func::firmRel():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    memberNames: $src->filter(x | $x.LISTED == 'Y')->navigationJoin(personRel(), {f, p | $f.ID == $p.FIRM_ID}).NAME
+  }
+
+  testSuites:
+  [
+    extendedKeySuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, firm: x | $x.extendedFirm])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheFirmOfTheExtendedKeyOrItsFallback:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":"Acme"},{"id":3,"firm":"Beta"},{"id":4,"firm":null},{"id":5,"firm":null},{"id":6,"firm":"Beta"},{"id":7,"firm":"Delta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filteredSourceSuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, firm: x | $x.activeFirm])->sort([~id->ascending()]);
+      tests:
+      [
+        filterOnlyGatesTheJoinAndNeverDropsAPerson:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":null},{"id":3,"firm":"Beta"},{"id":4,"firm":null},{"id":5,"firm":null},{"id":6,"firm":"Beta"},{"id":7,"firm":"Delta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    selectedSourceSuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, firm: x | $x.selectedFirm])->sort([~id->ascending()]);
+      tests:
+      [
+        selectNarrowsTheColumnsTheConditionSees:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":"Acme"},{"id":3,"firm":"Beta"},{"id":4,"firm":null},{"id":5,"firm":null},{"id":6,"firm":"Beta"},{"id":7,"firm":"Delta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    renamedSourceSuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, firm: x | $x.renamedFirm])->sort([~id->ascending()]);
+      tests:
+      [
+        conditionReadsTheRenamedColumn:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":"Acme"},{"id":3,"firm":"Beta"},{"id":4,"firm":null},{"id":5,"firm":null},{"id":6,"firm":"Beta"},{"id":7,"firm":"Delta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sortedSourceSuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, firm: x | $x.sortedFirm])->sort([~id->ascending()]);
+      tests:
+      [
+        sortKeepsEveryPersonOnce:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":"Acme"},{"id":3,"firm":"Beta"},{"id":4,"firm":null},{"id":5,"firm":null},{"id":6,"firm":"Beta"},{"id":7,"firm":"Delta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    gatedKeySuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, key: x | $x.gatedKey])->sort([~id->ascending()]);
+      tests:
+      [
+        filterJoinOverFilteredSourceKeepsTheKeyOfMatchedActivePeople:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"key":10},{"id":2,"key":null},{"id":3,"key":20},{"id":4,"key":null},{"id":5,"key":null},{"id":6,"key":20},{"id":7,"key":40}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    countrySuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, country: x | $x.activeFirmCountry])->sort([~id->ascending()]);
+      tests:
+      [
+        secondJoinReadsFromTheFirstJoinOfTheSteppedSource:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"country":"UK"},{"id":2,"country":null},{"id":3,"country":"France"},{"id":4,"country":null},{"id":5,"country":null},{"id":6,"country":"France"},{"id":7,"country":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    modelJoinSuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, firm: x | $x.firm.name])->sort([~id->ascending()]);
+      tests:
+      [
+        modelJoinKeyedOnASteppedNavigationJoinReadsTheFirm:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":null},{"id":3,"firm":"Beta"},{"id":4,"firm":null},{"id":5,"firm":null},{"id":6,"firm":"Beta"},{"id":7,"firm":"Delta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    firstPerFirmSuite:
+    {
+      function: |demo::relation::steppedjoin::Person.all()->project(~[id: x | $x.id, firm: x | $x.firstOfFirmFirm])->sort([~id->ascending()]);
+      tests:
+      [
+        windowExtendRunsBeforeTheFilterThatGatesTheJoin:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firm":"Acme"},{"id":2,"firm":null},{"id":3,"firm":"Beta"},{"id":4,"firm":null},{"id":5,"firm":null},{"id":6,"firm":null},{"id":7,"firm":"Delta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    listedFirmMembersSuite:
+    {
+      function: |demo::relation::steppedjoin::Firm.all()->project(~[id: x | $x.id, member: x | $x.memberNames])->sort([~id->ascending(), ~member->ascending()]);
+      tests:
+      [
+        toManyJoinFromAFilteredFirmSourceListsMembersOnlyOfListedFirms:
+        {
+          data:
+          [
+            demo::relation::steppedjoin::db::SteppedJoinDB:
+              Reference
+              #{
+                demo::relation::steppedjoin::data::SteppedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":10,"member":"Ann"},{"id":10,"member":"Bob"},{"id":20,"member":"Fay"},{"id":30,"member":null},{"id":40,"member":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

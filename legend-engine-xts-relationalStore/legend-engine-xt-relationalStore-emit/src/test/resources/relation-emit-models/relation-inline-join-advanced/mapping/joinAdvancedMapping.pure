@@ -41,6 +41,20 @@ Class demo::relation::joinadvanced::Person
   firmNamesViaHelper: String[*];
   firmsViaHelper: demo::relation::joinadvanced::Firm[*];
   firmNameViaThis: String[1];
+  firmCityInnerLastHop: String[0..1];
+  firmNameAtSameAddressInnerMiddleHop: String[0..1];
+  acmeFirmNameInner: String[0..1];
+  nameIfAtAcme: String[0..1];
+  worksAtAcme: Boolean[1];
+  hasFirm: Boolean[1];
+  employmentStatus: String[1];
+  contactPoint: String[0..1];
+  managerOrSelf: String[1];
+  firmNameOrName: String[1];
+  firmNameAndName: String[0..1];
+  nameAtFirm: String[0..1];
+  firmNameAndCity: String[0..1];
+  nameAndFirmName: String[0..1];
   firmNameUpper() {$this.firmName->toUpper()}: String[1];
   firmNameViaThisUpper() {$this.firmNameViaThis->toUpper()}: String[1];
 }
@@ -105,6 +119,20 @@ Mapping demo::relation::joinadvanced::mapping::JoinAdvancedMapping
     firmNamesViaHelper: $src->navigationJoin(firmRel(), {p, f | sameFirm($f.ID, $p.FIRM_ID)}).LEGAL_NAME,
     firmsViaHelper: modelJoin({p, f | sameFirm($f.id, $p.firmId)}),
     firmNameViaThis: $src->navigationJoin(firmRel(), {this, that | $this.FIRM_ID == $that.ID}).LEGAL_NAME,
+    firmCityInnerLastHop: $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID})->navigationJoin(addressRel(), meta::pure::functions::relation::JoinKind.INNER, {f, a | ($f.ADDRESS_ID == $a.ID) && ($a.CITY == 'London')}).CITY,
+    firmNameAtSameAddressInnerMiddleHop: $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID})->navigationJoin(addressRel(), meta::pure::functions::relation::JoinKind.INNER, {f, a | ($f.ADDRESS_ID == $a.ID) && ($a.CITY == 'London')})->navigationJoin(firmRel(), {a, f | $a.ID == $f.ADDRESS_ID}).LEGAL_NAME,
+    acmeFirmNameInner: $src->navigationJoin(firmRel(), meta::pure::functions::relation::JoinKind.INNER, {p, f | ($p.FIRM_ID == $f.ID) && ($f.LEGAL_NAME == 'Acme')}).LEGAL_NAME,
+    nameIfAtAcme: $src->filterJoin(firmRel(), {p, f | ($p.FIRM_ID == $f.ID) && ($f.LEGAL_NAME == 'Acme')}).NAME,
+    worksAtAcme: if($src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).LEGAL_NAME == 'Acme', | true, | false),
+    hasFirm: $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).ID->isNotEmpty(),
+    employmentStatus: if($src->filterJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).NAME->isEmpty(), | 'unemployed', | 'employed'),
+    contactPoint: if($row.FIRM_ID == 1, | $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID})->navigationJoin(addressRel(), {f, a | $f.ADDRESS_ID == $a.ID}).CITY, | if($row.MANAGER_ID->isNotEmpty(), | $src->navigationJoin(personRel(), {p, m | $p.MANAGER_ID == $m.ID}).NAME, | [])),
+    managerOrSelf: if($row.MANAGER_ID->isEmpty(), | $row.NAME, | $src->navigationJoin(personRel(), {p, m | $p.MANAGER_ID == $m.ID}).NAME->toOne()),
+    firmNameOrName: coalesce($src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).LEGAL_NAME, $row.NAME),
+    firmNameAndName: $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).LEGAL_NAME->toOne() + ' / ' + $row.NAME,
+    nameAtFirm: $row.NAME + ' at ' + $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).LEGAL_NAME->toOne(),
+    firmNameAndCity: $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).LEGAL_NAME->toOne() + ', ' + $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID})->navigationJoin(addressRel(), {f, a | $f.ADDRESS_ID == $a.ID}).CITY->toOne(),
+    nameAndFirmName: [$row.NAME, $src->navigationJoin(firmRel(), {p, f | $p.FIRM_ID == $f.ID}).LEGAL_NAME->toOne()]->joinStrings(' @ '),
     employment
     (
       firmId: FIRM_ID,
@@ -750,6 +778,440 @@ Mapping demo::relation::joinadvanced::mapping::JoinAdvancedMapping
                   #{
                     contentType: 'application/json';
                     data: '[{"name":"Alice","firm":"Acme","legalName":"Acme"},{"name":"Bob","firm":"Beta","legalName":"Beta"},{"name":"Carol","firm":"Acme","legalName":"Acme"},{"name":"Dave","firm":null,"legalName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    innerJoinOnLastHopSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, city: x | $x.firmCityInnerLastHop])->sort([~name->ascending()]);
+      tests:
+      [
+        keepsPeopleWhoseLastHopHasNoMatch:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","city":"London"},{"name":"Bob","city":null},{"name":"Carol","city":"London"},{"name":"Dave","city":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    innerJoinOnMiddleHopSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, firm: x | $x.firmNameAtSameAddressInnerMiddleHop])->sort([~name->ascending()]);
+      tests:
+      [
+        keepsPeopleWhoseMiddleHopHasNoMatch:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","firm":"Acme"},{"name":"Bob","firm":null},{"name":"Carol","firm":"Acme"},{"name":"Dave","firm":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterOnInnerMiddleHopPropertySuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->filter(x | $x.firmNameAtSameAddressInnerMiddleHop == 'Acme')->project(~[name: x | $x.name])->sort([~name->ascending()]);
+      tests:
+      [
+        filtersByValueReachedThroughInnerHop:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice"},{"name":"Carol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    isEmptyOnInnerLastHopPropertySuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->filter(x | $x.firmCityInnerLastHop->isEmpty())->project(~[name: x | $x.name])->sort([~name->ascending()]);
+      tests:
+      [
+        findsPeopleWhoseInnerHopHasNoMatch:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Bob"},{"name":"Dave"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    innerJoinWithTargetOnlyConditionTermSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, firm: x | $x.acmeFirmNameInner, gatedName: x | $x.nameIfAtAcme])->sort([~name->ascending()]);
+      tests:
+      [
+        keepsPeopleWhoseFirmFailsTheCondition:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","firm":"Acme","gatedName":"Alice"},{"name":"Bob","firm":null,"gatedName":null},{"name":"Carol","firm":"Acme","gatedName":"Carol"},{"name":"Dave","firm":null,"gatedName":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinInExpressionDefaultsWhenNoRowSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, worksAtAcme: x | $x.worksAtAcme, hasFirm: x | $x.hasFirm, employment: x | $x.employmentStatus])->sort([~name->ascending()]);
+      tests:
+      [
+        givesTheExpressionValueForPeopleWithNoFirm:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","worksAtAcme":true,"hasFirm":true,"employment":"employed"},{"name":"Bob","worksAtAcme":false,"hasFirm":true,"employment":"employed"},{"name":"Carol","worksAtAcme":true,"hasFirm":true,"employment":"employed"},{"name":"Dave","worksAtAcme":false,"hasFirm":false,"employment":"unemployed"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinInExpressionPicksAJoinPathPerRowSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, contact: x | $x.contactPoint])->sort([~name->ascending()]);
+      tests:
+      [
+        readsTheFirmCityOrTheManagerName:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","contact":"London"},{"name":"Bob","contact":"Alice"},{"name":"Carol","contact":"London"},{"name":"Dave","contact":"Alice"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinInExpressionMixesOwnColumnsSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, managerOrSelf: x | $x.managerOrSelf, firmNameOrName: x | $x.firmNameOrName])->sort([~name->ascending()]);
+      tests:
+      [
+        fallsBackBetweenOwnAndJoinedColumns:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","managerOrSelf":"Alice","firmNameOrName":"Acme"},{"name":"Bob","managerOrSelf":"Alice","firmNameOrName":"Beta"},{"name":"Carol","managerOrSelf":"Bob","firmNameOrName":"Acme"},{"name":"Dave","managerOrSelf":"Alice","firmNameOrName":"Dave"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterOnJoinInExpressionSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->filter(x | !$x.worksAtAcme)->project(~[name: x | $x.name])->sort([~name->ascending()]);
+      tests:
+      [
+        keepsPeopleWithNoFirm:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Bob"},{"name":"Dave"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinOnLeftOfStringPlusSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, label: x | $x.firmNameAndName])->sort([~name->ascending()]);
+      tests:
+      [
+        concatenatesTheJoinedColumnWithOwnColumn:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","label":"Acme / Alice"},{"name":"Bob","label":"Beta / Bob"},{"name":"Carol","label":"Acme / Carol"},{"name":"Dave","label":" / Dave"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinOnRightOfStringPlusSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, label: x | $x.nameAtFirm])->sort([~name->ascending()]);
+      tests:
+      [
+        concatenatesOwnColumnWithTheJoinedColumn:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","label":"Alice at Acme"},{"name":"Bob","label":"Bob at Beta"},{"name":"Carol","label":"Carol at Acme"},{"name":"Dave","label":"Dave at "}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinsOnTwoPathsInStringPlusSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, label: x | $x.firmNameAndCity])->sort([~name->ascending()]);
+      tests:
+      [
+        concatenatesColumnsReachedThroughTwoChains:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","label":"Acme, London"},{"name":"Bob","label":"Beta, "},{"name":"Carol","label":"Acme, London"},{"name":"Dave","label":", "}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    joinInJoinStringsSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->project(~[name: x | $x.name, label: x | $x.nameAndFirmName])->sort([~name->ascending()]);
+      tests:
+      [
+        joinsOwnAndJoinedColumnsWithASeparator:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","label":"Alice @ Acme"},{"name":"Bob","label":"Bob @ Beta"},{"name":"Carol","label":"Carol @ Acme"},{"name":"Dave","label":"Dave @ "}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterOnStringPlusWithJoinSuite:
+    {
+      function: |demo::relation::joinadvanced::Person.all()->filter(x | $x.nameAtFirm == 'Bob at Beta')->project(~[name: x | $x.name])->sort([~name->ascending()]);
+      tests:
+      [
+        filtersByTheConcatenatedValue:
+        {
+          data:
+          [
+            demo::relation::joinadvanced::db::JoinAdvancedDB:
+              Reference
+              #{
+                demo::relation::joinadvanced::data::JoinAdvancedData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Bob"}]';
                   }#;
               }#
           ];
