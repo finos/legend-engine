@@ -184,17 +184,45 @@ function meta::external::store::relational::sqlDialectTranslation::utils::window
 
 function meta::external::store::relational::sqlDialectTranslation::utils::postTraversalClassTransform(instance: Any[1], transformFunction: Function<{Any[1], KeyValue[*]->Any[*]}>[1]): Any[*]
 {
+  $instance->postTraversalClassTransform($transformFunction, ^Map<Type, List<TraversalPropertyInfo>>()).results;
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::utils::TraversalPropertyInfo
+{
+  property: Property<Nil,Any|*>[1];
+  isPrimitive: Boolean[1];
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::utils::ClassTransformTraversal
+{
+  results: Any[*];
+  keyValues: KeyValue[*];
+  propertiesByType: Map<Type, List<TraversalPropertyInfo>>[1];
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::utils::postTraversalClassTransform(instance: Any[1], transformFunction: Function<{Any[1], KeyValue[*]->Any[*]}>[1], propertiesByType: Map<Type, List<TraversalPropertyInfo>>[1]): ClassTransformTraversal[1]
+{
   let instanceClass = $instance->type()->cast(@Class<Any>);
-  let allProperties = $instanceClass->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
-  let transformedKeyValues = $allProperties->map({p |
-    let propValues = $p->eval($instance);
-    let transformedValues = if (!$p->isPrimitiveValueProperty(),
-      | $propValues->map(v | $v->postTraversalClassTransform($transformFunction)),
-      | $propValues
+  let knownProperties = $propertiesByType->get($instanceClass);
+  let allProperties = if($knownProperties->isEmpty(),
+    | $instanceClass->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>)->map(p | ^TraversalPropertyInfo(property = $p, isPrimitive = $p->isPrimitiveValueProperty())),
+    | $knownProperties->toOne().values
+  );
+  let initialTraversal = ^ClassTransformTraversal(propertiesByType = if($knownProperties->isEmpty(), | $propertiesByType->put($instanceClass, ^List<TraversalPropertyInfo>(values = $allProperties)), | $propertiesByType));
+
+  let traversal = $allProperties->fold({info: TraversalPropertyInfo[1], t: ClassTransformTraversal[1] |
+    let propValues = $info.property->eval($instance);
+    if (!$info.isPrimitive,
+      | let valuesTraversal = $propValues->fold({v: Any[1], vt: ClassTransformTraversal[1] |
+            let child = $v->postTraversalClassTransform($transformFunction, $vt.propertiesByType);
+            ^$vt(results = $vt.results->concatenate($child.results), propertiesByType = $child.propertiesByType);
+          }, ^ClassTransformTraversal(propertiesByType = $t.propertiesByType));
+        ^$t(keyValues = $t.keyValues->concatenate(^KeyValue(key = $info.property.name->toOne(), value = $valuesTraversal.results)), propertiesByType = $valuesTraversal.propertiesByType);,
+      | ^$t(keyValues = $t.keyValues->concatenate(^KeyValue(key = $info.property.name->toOne(), value = $propValues)))
     );
-    ^KeyValue(key = $p.name->toOne(), value = $transformedValues);
-  });
-  $transformFunction->eval($instance, $transformedKeyValues);
+  }, $initialTraversal);
+
+  ^ClassTransformTraversal(results = $transformFunction->eval($instance, $traversal.keyValues), propertiesByType = $traversal.propertiesByType);
 }
 
 function meta::external::store::relational::sqlDialectTranslation::utils::nodeCollector(node: Node[1]): Node[*]
