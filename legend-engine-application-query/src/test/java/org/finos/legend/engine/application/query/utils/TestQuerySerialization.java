@@ -77,6 +77,26 @@ public class TestQuerySerialization
             "  \"versionId\": \"0.0.0\"\n" +
             "}";
 
+    String DATA_SPACE_QUERY_WITH_RELATION_TYPE = "{\n" +
+            "  \"artifactId\": \"test-artifact\",\n" +
+            "  \"content\": \"content\",\n" +
+            "  \"groupId\": \"test.group\",\n" +
+            "  \"id\": \"1\",\n" +
+            "  \"name\": \"query1\",\n" +
+            "  \"executionContext\": {\"_type\": \"dataSpaceExecutionContext\", \"dataSpacePath\": \"my::dataSpace\"},\n" +
+            "  \"relationType\": {\n" +
+            "    \"columns\": [\n" +
+            "      {\n" +
+            "        \"name\": \"Company\",\n" +
+            "        \"genericType\": {\"rawType\": {\"_type\": \"packageableType\", \"fullPath\": \"meta::pure::precisePrimitives::Varchar\"}, \"typeArguments\": [], \"typeVariableValues\": [{\"_type\": \"integer\", \"value\": 40}]},\n" +
+            "        \"multiplicity\": {\"lowerBound\": 0, \"upperBound\": 1}\n" +
+            "      }\n" +
+            "    ],\n" +
+            "    \"versionId\": \"1.4.0\"\n" +
+            "  },\n" +
+            "  \"versionId\": \"latest\"\n" +
+            "}";
+
     String DATA_SPACE_QUERY_NO_KEY = "{\n" +
             "  \"artifactId\": \"test-artifact\",\n" +
             "  \"content\": \"content\",\n" +
@@ -204,6 +224,21 @@ public class TestQuerySerialization
         Assert.assertEquals(dataSpaceExecutionContext.executionKey, "myKey");
         Query dataSpaceQuery2 = objectMapper.readValue(DATA_SPACE_QUERY_NO_KEY, Query.class);
         Assert.assertNull(((QueryDataSpaceExecutionContext)dataSpaceQuery2.executionContext).executionKey);
+    }
+
+    @Test
+    public void testRelationTypeRoundTrip() throws Exception
+    {
+        Query query = objectMapper.readValue(DATA_SPACE_QUERY_WITH_RELATION_TYPE, Query.class);
+        Assert.assertEquals("1.4.0", query.relationType.versionId);
+        Assert.assertEquals(1, query.relationType.columns.size());
+        Assert.assertEquals("Company", query.relationType.columns.get(0).get("name"));
+        // the columns are kept as sent, type parameters included
+        Query reread = objectMapper.readValue(objectMapper.writeValueAsString(query), Query.class);
+        Assert.assertEquals(query.relationType, reread.relationType);
+        Assert.assertEquals(
+                objectMapper.readTree("{\"rawType\": {\"_type\": \"packageableType\", \"fullPath\": \"meta::pure::precisePrimitives::Varchar\"}, \"typeArguments\": [], \"typeVariableValues\": [{\"_type\": \"integer\", \"value\": 40}]}"),
+                objectMapper.valueToTree(reread.relationType.columns.get(0).get("genericType")));
     }
 
     @Test
