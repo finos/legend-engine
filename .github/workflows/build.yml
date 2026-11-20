@@ -222,9 +222,8 @@ jobs:
         if: always()
         run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
-      # NOTE: groups marked "runOn": "release" in modulesToTest.json (e.g. Snowflake, billed per warehouse-minute) only
-      # run on legend-release-* pushes; release.yml runs every group. Their modules stay excluded from Run Unit Tests,
-      # which would otherwise run them with pct-cloud-test.
+      # NOTE: groups marked "runOn": "release" in modulesToTest.json only run on legend-release-* pushes; release.yml runs every group.
+      # Their modules stay excluded from Run Unit Tests, which would otherwise run them with pct-cloud-test.
       - name: Set Test Matrix
         id: testMatrix
         env:
