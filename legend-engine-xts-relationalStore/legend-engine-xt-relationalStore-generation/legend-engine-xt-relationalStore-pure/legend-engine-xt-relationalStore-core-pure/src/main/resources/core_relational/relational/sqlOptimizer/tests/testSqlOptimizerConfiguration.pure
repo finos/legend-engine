@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::relational::sqlOptimizer::tree::*;
+import meta::relational::runtime::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+import meta::relational::tests::sqlOptimizer::*;
+
+function meta::relational::tests::sqlOptimizer::withGenerationFeatures(runtime:Runtime[1], enabled:String[*], disabled:String[*]):Runtime[1]
+{
+  ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@DatabaseConnection)->map(c | ^$c(queryGenerationConfigs = ^GenerationFeaturesConfig(enabled = $enabled, disabled = $disabled))))))
+}
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::optimizerContext(enabled:String[*], disabled:String[*], flags:Enum[*]):SqlOptimizerContext[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime()->withGenerationFeatures($enabled, $disabled).connectionStores.connection->toOne()->cast(@DatabaseConnection);
+  let exeCtx = if($flags->isEmpty(), | ^meta::pure::runtime::ExecutionContext(), | ^meta::pure::runtime::ExecutionContext()->addFlagToContext($flags));
+  ^SqlOptimizerContext(dbType = DatabaseType.H2, connection = $connection, exeCtx = $exeCtx, extensions = meta::relational::extension::relationalExtensions());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testEveryRuleButCTEExtractionIsEnabledByDefault():Boolean[1]
+{
+  let ctx = optimizerContext([], [], []);
+  assert(defaultSqlOptimizationRules()->filter(r | $r.name != 'ExtractSubQueriesAsCTEs')->forAll(r | $r->isEnabled($ctx)));
+  assertFalse(meta::relational::sqlOptimizer::rules::extractSubQueriesAsCTEsRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testConnectionLevelFeatureDisablesRule():Boolean[1]
+{
+  let ctx = optimizerContext([], 'SQL_OPTIMIZATION_JOIN_FILTER_PUSH_DOWN', []);
+  assertFalse(joinFilterPushDownRule()->isEnabled($ctx));
+  assert(subQueryFilterPushDownRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testRuleSpecificFeatureBeatsAllAtSameLevel():Boolean[1]
+{
+  let ctx = optimizerContext('SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING', 'SQL_OPTIMIZATION_ALL', []);
+  assert(unusedColumnTrimmingRule()->isEnabled($ctx));
+  assertFalse(joinFilterPushDownRule()->isEnabled($ctx));
+  assertFalse(subQueryFilterPushDownRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testQueryLevelFlagBeatsConnectionLevel():Boolean[1]
+{
+  let ctx = optimizerContext([], ['SQL_OPTIMIZATION_JOIN_FILTER_PUSH_DOWN', 'SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING'], [EnableSqlOptimization.JOIN_FILTER_PUSH_DOWN, DisableSqlOptimization.SUB_QUERY_FILTER_PUSH_DOWN]);
+  assert(joinFilterPushDownRule()->isEnabled($ctx));
+  assertFalse(subQueryFilterPushDownRule()->isEnabled($ctx));
+  assertFalse(unusedColumnTrimmingRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testQueryLevelDisableWinsOverEnableForSameRule():Boolean[1]
+{
+  let ctx = optimizerContext([], [], [EnableSqlOptimization.UNUSED_COLUMN_TRIMMING, DisableSqlOptimization.UNUSED_COLUMN_TRIMMING]);
+  assertFalse(unusedColumnTrimmingRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testRuleIsNeverEnabledOnUnsupportedDatabaseType():Boolean[1]
+{
+  let rule = unusedColumnTrimmingRule();
+  let snowflakeOnlyRule = ^$rule(databaseSupport = ^LimitedDatabaseSupport(supportedDatabaseTypes = 'Snowflake'));
+  let ctx = optimizerContext('SQL_OPTIMIZATION_ALL', [], EnableSqlOptimization.ALL);
+  assertFalse($snowflakeOnlyRule->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testAllFeatureEnablesTheJoinRules():Boolean[1]
+{
+  let ctx = optimizerContext('SQL_OPTIMIZATION_ALL', 'SQL_OPTIMIZATION_DUPLICATE_LEFT_JOIN_MERGE', []);
+  assert(unreadLeftJoinEliminationRule()->isEnabled($ctx));
+  assertFalse(duplicateLeftJoinMergeRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testCTEExtractionIsSwitchedByItsFeatureOrTheConnectionMarkerButNeverByAll():Boolean[1]
+{
+  let rule = meta::relational::sqlOptimizer::rules::extractSubQueriesAsCTEsRule();
+  assertFalse($rule->isEnabled(optimizerContext([], [], [])));
+  assertFalse($rule->isEnabled(optimizerContext('SQL_OPTIMIZATION_ALL', [], EnableSqlOptimization.ALL)));
+  assert($rule->isEnabled(optimizerContext('SQL_OPTIMIZATION_EXTRACT_SUB_QUERIES_AS_CTES', [], [])));
+  let connection = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy(),
+    postProcessors = ^meta::relational::sqlOptimizer::rules::ExtractSubQueriesAsCTEsPostProcessor()
+  );
+  let markedCtx = ^SqlOptimizerContext(dbType = DatabaseType.H2, connection = $connection, exeCtx = ^meta::pure::runtime::ExecutionContext(), extensions = meta::relational::extension::relationalExtensions());
+  assert($rule->isEnabled($markedCtx));
+  assertFalse($rule->isEnabled(^$markedCtx(exeCtx = ^meta::pure::runtime::ExecutionContext()->addFlagToContext(DisableSqlOptimization.EXTRACT_SUB_QUERIES_AS_CTES))));
+  assert($rule->isEnabled(^$markedCtx(exeCtx = ^meta::pure::runtime::ExecutionContext()->addFlagToContext(DisableSqlOptimization.ALL))));
+  assert($rule->isEnabled(^$markedCtx(connection = ^$connection(queryGenerationConfigs = ^GenerationFeaturesConfig(disabled = 'SQL_OPTIMIZATION_ALL')))));
+}
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::withPlatformOptions(ctx:SqlOptimizerContext[1], options:String[*]):SqlOptimizerContext[1]
+{
+  ^$ctx(platformOptionsOverride = ^List<String>(values = $options))
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testPlatformOptionDisablesARuleOverEveryOtherLevel():Boolean[1]
+{
+  let ctx = optimizerContext('SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING', [], EnableSqlOptimization.UNUSED_COLUMN_TRIMMING);
+  assert(unusedColumnTrimmingRule()->isEnabled($ctx));
+  assertFalse(unusedColumnTrimmingRule()->isEnabled($ctx->withPlatformOptions(platformOptionName(false, 'UNUSED_COLUMN_TRIMMING'))));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testPlatformOptionEnablesARuleOverEveryOtherLevel():Boolean[1]
+{
+  let ctx = optimizerContext([], 'SQL_OPTIMIZATION_JOIN_FILTER_PUSH_DOWN', DisableSqlOptimization.JOIN_FILTER_PUSH_DOWN);
+  assertFalse(joinFilterPushDownRule()->isEnabled($ctx));
+  assert(joinFilterPushDownRule()->isEnabled($ctx->withPlatformOptions(platformOptionName(true, 'JOIN_FILTER_PUSH_DOWN'))));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testPlatformOptionAllDisablesEveryRuleButCTEExtraction():Boolean[1]
+{
+  let ctx = optimizerContext('SQL_OPTIMIZATION_EXTRACT_SUB_QUERIES_AS_CTES', [], [])->withPlatformOptions(platformOptionName(false, 'ALL'));
+  assert(defaultSqlOptimizationRules()->filter(r | $r.name != 'ExtractSubQueriesAsCTEs')->forAll(r | !$r->isEnabled($ctx)));
+  assert(meta::relational::sqlOptimizer::rules::extractSubQueriesAsCTEsRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testPlatformOptionForARuleBeatsPlatformOptionAll():Boolean[1]
+{
+  let ctx = optimizerContext([], [], [])->withPlatformOptions([platformOptionName(false, 'ALL'), platformOptionName(true, 'UNUSED_COLUMN_TRIMMING')]);
+  assert(unusedColumnTrimmingRule()->isEnabled($ctx));
+  assertFalse(joinFilterPushDownRule()->isEnabled($ctx));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::testSqlOptimizationFeaturesAreKnownGenerationFeatures():Boolean[1]
+{
+  assert(['SQL_OPTIMIZATION_ALL', 'SQL_OPTIMIZATION_JOIN_FILTER_PUSH_DOWN', 'SQL_OPTIMIZATION_SUB_QUERY_FILTER_PUSH_DOWN', 'SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION', 'SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING', 'SQL_OPTIMIZATION_DUPLICATE_LEFT_JOIN_MERGE', 'SQL_OPTIMIZATION_UNREAD_LEFT_JOIN_ELIMINATION', 'SQL_OPTIMIZATION_EXTRACT_SUB_QUERIES_AS_CTES']
+           ->forAll(f | $f->in(knownGenerationFeatures())));
+}

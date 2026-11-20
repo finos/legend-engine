@@ -1,0 +1,360 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::pure::extension::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::sqlOptimizer::tree::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+
+function meta::relational::sqlOptimizer::rules::redundantSubSelectEliminationRule():SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'RedundantSubSelectElimination',
+    featureName = 'REDUNDANT_SUB_SELECT_ELIMINATION',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {query:SelectSQLQuery[1], ctx:SqlOptimizerContext[1] | $query->eliminateRedundantSubSelects($ctx.extensions)}
+  )
+}
+
+function meta::relational::sqlOptimizer::rules::eliminateRedundantSubSelects(query:SelectSQLQuery[1], extensions:Extension[*]):OptimizedQuery[1]
+{
+  let result = $query->transformIfChanged({r:RelationalOperationElement[1] |
+    $r->match([
+      s:SelectSQLQuery[1] | $s->collapseRootSubSelect($extensions),
+      a:RelationalOperationElement[1] | $a
+    ])
+  })->cast(@SelectSQLQuery);
+  $result->changedIf($result->selectCount() < $query->selectCount());
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::selectCount(query:SelectSQLQuery[1]):Integer[1]
+{
+  $query->extractRelationalElements(true).elements->filter(e | $e->instanceOf(SelectSQLQuery))->size()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::collapseRootSubSelect(outer:SelectSQLQuery[1], extensions:Extension[*]):SelectSQLQuery[1]
+{
+  if($outer.data->isEmpty() || $outer->isOpaqueSelect(),
+    | $outer,
+    | let root = $outer.data->toOne();
+      $root.alias.relationalElement->match([
+        inner:SelectSQLQuery[1] |
+          if($inner->isOpaqueSelect() || $inner.commonTableExpressions->isNotEmpty() || !$outer->extractRelationalElements(false).noUnknownElement || !$inner->extractRelationalElements(false).noUnknownElement
+               || $outer->hasCollidingOutputNames() || $inner->hasCollidingOutputNames(),
+            | $outer,
+            | let candidate = if($outer->isPassThroughOf($root, $inner),
+                                | $outer->collapsePassThrough($root, $inner),
+                                | if($outer->canMergeWith($root, $inner),
+                                    | $outer->mergeWith($root, $inner, $extensions),
+                                    | $outer
+                                  )
+                              );
+              if(is($candidate, $outer) || $candidate->stillReferences($root.alias.name), | $outer, | $candidate);
+          ),
+        a:Any[1] | $outer
+      ]);
+  )
+}
+
+// Databases disagree on whether "v" and "V" name one column (SQL Server, MemSQL, Databricks and DuckDB compare names
+// case-insensitively), and whether v and "v" do (it depends on how the database folds unquoted names), so a reference
+// into a select whose output names collide under either reading is left for the database to resolve rather than substituted.
+function <<access.private>> meta::relational::sqlOptimizer::rules::hasCollidingOutputNames(select:SelectSQLQuery[1]):Boolean[1]
+{
+  let names = $select.columns->map(c | $c->outputName());
+  $names->map(n | $n->keepKey())->removeDuplicates()->size() < $names->size();
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isOpaqueSelect(select:SelectSQLQuery[1]):Boolean[1]
+{
+  $select->instanceOf(VarSetPlaceHolder) || $select->instanceOf(RelationDataSelectSqlQuery) || $select.pivot->isNotEmpty() || $select.columns->isEmpty()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::innerColumn(inner:SelectSQLQuery[1], name:String[1]):RelationalOperationElement[0..1]
+{
+  $inner.columns->filter(c | $c->outputName()->map(n | $n->columnKey()) == $name->columnKey())->first()->map(c | $c->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::subSelectReference(column:RelationalOperationElement[1], subSelectAlias:TableAlias[1]):String[0..1]
+{
+  let expression = $column->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]);
+  $expression->match([
+    t:TableAliasColumn[1] | if($t.alias.name == $subSelectAlias.name, | $t.column.name, | []),
+    a:Any[1] | []
+  ]);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::ownClauseNames(select:SelectSQLQuery[1]):String[*]
+{
+  $select.filteringOperation->concatenate($select.groupBy)->concatenate($select.havingOperation)->concatenate($select.qualifyOperation)->concatenate($select.orderBy.column)
+    ->extractRelationalElements(false).elements
+    ->map(e | $e->match([c:ColumnName[1] | $c.name, a:Alias[1] | $a.name, a:Any[1] | []]))
+    ->map(n | $n->columnKey())
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::hasNoClauses(select:SelectSQLQuery[1]):Boolean[1]
+{
+  $select.filteringOperation->isEmpty() && $select.groupBy->isEmpty() && $select.havingOperation->isEmpty() && $select.qualifyOperation->isEmpty()
+    && $select.orderBy->isEmpty() && $select.fromRow->isEmpty() && $select.toRow->isEmpty() && ($select.distinct != true)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isPassThroughOf(outer:SelectSQLQuery[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1]):Boolean[1]
+{
+  let referenced = $outer.columns->map(c | $c->subSelectReference($root.alias))->map(n | $n->columnKey());
+  let mappings = $outer.columns->map(c | pair($c->outputName()->orElse('')->columnKey(), $c->subSelectReference($root.alias)->orElse('')->columnKey()));
+  let innerNames = $inner.columns->map(c | $c->outputName())->map(n | $n->columnKey());
+  $outer->hasNoClauses()
+    && !$inner->hasOrdinal()
+    && $root.childrenData->isEmpty()
+    && ($referenced->size() == $outer.columns->size())
+    && $referenced->forAll(r | $r->in($innerNames))
+    && $outer.columns->forAll(c | $c->hasRetypableSource($root, $inner))
+    && (($inner.distinct != true) || $innerNames->forAll(n | $n->in($referenced)))
+    && $inner->ownClauseNames()->forAll(n | $mappings->exists(m | ($m.first == $n) && ($m.second == $n)));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isTrivialExpression(expression:RelationalOperationElement[1]):Boolean[1]
+{
+  $expression->instanceOf(TableAliasColumn) || $expression->instanceOf(Literal)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::collapsePassThrough(outer:SelectSQLQuery[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  let columns = $outer.columns->map(c | $c->substitutedColumn($root, $inner, {r:RelationalOperationElement[1] | $r}));
+  ^$outer(
+    data = $inner.data,
+    columns = $columns,
+    filteringOperation = $inner.filteringOperation,
+    groupBy = $inner.groupBy,
+    havingOperation = $inner.havingOperation,
+    qualifyOperation = $inner.qualifyOperation,
+    orderBy = $inner.orderBy,
+    fromRow = $inner.fromRow,
+    toRow = $inner.toRow,
+    distinct = $inner.distinct,
+    leftSideOfFilter = $inner.leftSideOfFilter,
+    commonTableExpressions = $outer.commonTableExpressions->concatenate($inner.commonTableExpressions)
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::allAliasNames(node:RelationalTreeNode[1]):String[*]
+{
+  $node.alias.name->concatenate($node.childrenData->cast(@RelationalTreeNode)->map(c | $c->allAliasNames()))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::allJoinNodes(node:RelationalTreeNode[1]):JoinTreeNode[*]
+{
+  $node.childrenData->cast(@JoinTreeNode)->map(c | $c->concatenate($c->allJoinNodes()))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::canMergeWith(outer:SelectSQLQuery[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1]):Boolean[1]
+{
+  let subSelectName = $root.alias.name;
+  let outerElements = $outer->extractRelationalElements(false).elements;
+  let fromLevelRelations = $outer.data->toOne()->allJoinNodes().alias.relationalElement->concatenate($root.alias.relationalElement);
+  let subSelectColumnReferences = $outerElements->filter(e | $e->instanceOf(TableAliasColumn))->cast(@TableAliasColumn)->filter(t | $t.alias.name == $subSelectName);
+  let outerOutputNames = $outer.columns->map(c | $c->outputName())->map(n | $n->columnKey());
+
+  $inner.data->isNotEmpty()
+    && $inner->hasNoClausesExceptFilter()
+    && !$outer->hasOrdinal()
+    && ($inner.filteringOperation->isEmpty() || !$outer.filteringOperation->concatenate($root->allJoinNodes().join.operation)->mayRaiseError())
+    && !$outer.data->toOne()->allJoinNodes()->exists(j | $j.lateral == true)
+    && !$outer.groupBy->concatenate($outerElements->windowKeys())->exists(k | $k->substitutesNonColumn($root, $inner))
+    && $inner.columns->forAll(c | $c->instanceOf(Alias) && $c->cast(@Alias).relationalElement->isTrivialExpression())
+    && $inner.columns->forAll(c | !$c->cast(@Alias).relationalElement->match([t:TableAliasColumn[1] | $t.alias.name == $subSelectName, a:Any[1] | false]))
+    && !$root->allJoinNodes()->exists(j | $j.joinType->in([JoinType.RIGHT_OUTER, JoinType.FULL_OUTER]))
+    && $outer->aliasNamesDoNotCaptureEachOther($root, $inner)
+    && !$outerElements->exists(e | $e->instanceOf(SelectSQLQuery) && ($e != $outer) && !$e->in($fromLevelRelations))
+    && !$outerElements->exists(e | $e->instanceOf(TableAliasColumnName) && ($e->cast(@TableAliasColumnName).alias.name == $subSelectName))
+    && !$outerElements->exists(e | $e->instanceOf(ColumnName) && !($e->cast(@ColumnName).name->columnKey()->in($outerOutputNames) && $e->in($outer.orderBy.column)))
+    && $subSelectColumnReferences->forAll(t | $inner->innerColumn($t.column.name)->isNotEmpty())
+    && $outer.columns->forAll(c | $c->hasRetypableSource($root, $inner));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::directReference(column:RelationalOperationElement[1], root:RelationalTreeNode[1]):TableAliasColumn[0..1]
+{
+  $column->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r])->match([
+    t:TableAliasColumn[1] | if($t.alias.name == $root.alias.name, | $t, | []),
+    r:Any[1] | []
+  ])
+}
+
+// Only a column may replace a grouping or window key: a substituted integer becomes a position in GROUP BY, and SQL Server
+// rejects constants as window ORDER BY keys. NULL is excluded too: several dialects cannot print a literal GROUP BY key.
+function meta::relational::sqlOptimizer::rules::substitutesNonColumn(key:RelationalOperationElement[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1]):Boolean[1]
+{
+  $key->directReference($root)->exists(r | $inner->innerColumn($r.column.name)->match([t:TableAliasColumn[1] | false, a:Any[*] | true]))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::windowKeys(elements:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  $elements->filter(e | $e->instanceOf(meta::relational::metamodel::Window))->cast(@meta::relational::metamodel::Window)->map(w | $w.partition->concatenate($w.sortBy.sortByElement))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::hasRetypableSource(outerColumn:RelationalOperationElement[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1]):Boolean[1]
+{
+  $outerColumn->directReference($root)->map(ref | $inner->innerColumn($ref.column.name)->match([i:TableAliasColumn[1] | true, a:Any[*] | false]))->orElse(true)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::substitutedColumn(outerColumn:RelationalOperationElement[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1], substitute:Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1]):RelationalOperationElement[1]
+{
+  let ref = $outerColumn->directReference($root);
+  if($ref->isEmpty(),
+    | $outerColumn->substituteExpression($substitute),
+    | let source = $inner->innerColumn($ref->toOne().column.name)->cast(@TableAliasColumn)->toOne();
+      let sourceColumn = $source.column;
+      let retyped = ^$source(column = ^$sourceColumn(type = $ref->toOne().column.type));
+      ^Alias(name = $outerColumn->outputName()->toOne(), relationalElement = $retyped);
+  );
+}
+
+// The merge removed an alias; keeping the result is only safe if nothing, anywhere (laterals, correlated subqueries, window functions, flattens), still names it.
+function <<access.private>> meta::relational::sqlOptimizer::rules::stillReferences(query:SelectSQLQuery[1], aliasName:String[1]):Boolean[1]
+{
+  let all = $query->extractRelationalElements(true);
+  !$all.noUnknownElement || $all.elements->exists(e | $e->match([t:TableAliasColumn[1] | $t.alias.name == $aliasName, t:TableAliasColumnName[1] | $t.alias.name == $aliasName, a:Any[1] | false]));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::substituteExpression(element:RelationalOperationElement[1], substitute:Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1]):RelationalOperationElement[1]
+{
+  $element->match([
+    a:Alias[1] | ^$a(relationalElement = $a.relationalElement->substituteExpression($substitute)),
+    w:WindowColumn[1] | $w->substituteInWindow($substitute),
+    r:RelationalOperationElement[1] | $r->transformNonCached($substitute)
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::substituteInWindow(windowColumn:WindowColumn[1], substitute:Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1]):WindowColumn[1]
+{
+  let window = $windowColumn.window;
+  ^$windowColumn(
+    func = $windowColumn.func->transformNonCached($substitute)->cast(@DynaFunction),
+    window = ^$window(
+      partition = $window.partition->map(p | $p->transformNonCached($substitute)),
+      sortBy = $window.sortBy->map(s | ^$s(sortByElement = $s.sortByElement->transformNonCached($substitute)))
+    )
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::referencedAliasNames(elements:RelationalOperationElement[*]):String[*]
+{
+  $elements->filter(e | $e->instanceOf(TableAliasColumn))->cast(@TableAliasColumn).alias.name
+    ->concatenate($elements->filter(e | $e->instanceOf(TableAliasColumnName))->cast(@TableAliasColumnName).alias.name)
+    ->removeDuplicates()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::aliasNamesDoNotCaptureEachOther(outer:SelectSQLQuery[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1]):Boolean[1]
+{
+  let subSelectName = $root.alias.name;
+  let outerDefined = $outer.data->toOne()->allAliasNames()->filter(n | $n != $subSelectName);
+  let outerNames = $outerDefined->concatenate($outer->extractRelationalElements(false).elements->referencedAliasNames()->filter(n | $n != $subSelectName));
+  let innerDefined = $inner.data->toOne()->allAliasNames();
+  let innerFree = $inner->extractRelationalElements(false).elements->referencedAliasNames()->filter(n | !$n->in($innerDefined));
+  $innerDefined->forAll(n | !$n->in($outerNames)) && $innerFree->forAll(n | !$n->in($outerDefined));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::hasNoClausesExceptFilter(select:SelectSQLQuery[1]):Boolean[1]
+{
+  ^$select(filteringOperation = [])->hasNoClauses()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::mergeWith(outer:SelectSQLQuery[1], root:RelationalTreeNode[1], inner:SelectSQLQuery[1], extensions:Extension[*]):SelectSQLQuery[1]
+{
+  let subSelectName = $root.alias.name;
+  let substitute = {r:RelationalOperationElement[1] |
+    $r->match([
+      t:TableAliasColumn[1] | if($t.alias.name == $subSelectName, | $inner->innerColumn($t.column.name)->toOne(), | $t),
+      a:RelationalOperationElement[1] | $a
+    ])
+  };
+  let innerRoot = $inner.data->toOne();
+  let outerJoins = $root.childrenData->cast(@JoinTreeNode)->map(j |
+    let join = $j.join;
+    ^$j(
+      join = ^$join(
+        operation = $join.operation->transformNonCached($substitute)->cast(@meta::relational::metamodel::operation::Operation),
+        aliases = [pair($innerRoot.alias, $j.alias), pair($j.alias, $innerRoot.alias)],
+        target = $join.target->map(t | if($t == $j.alias, | $t, | $innerRoot.alias))
+      ),
+      childrenData = $j.childrenData->cast(@JoinTreeNode)->map(c | $c->substituteInJoinOperations($substitute))
+    );
+  );
+  let outerFilter = $outer.filteringOperation->map(f | $f->transformNonCached($substitute));
+  let filters = $outerFilter->andConjuncts()->fold({c, agg | if($agg->contains($c), | $agg, | $agg->concatenate($c))}, $inner.filteringOperation->andConjuncts());
+
+  ^$outer(
+    data = ^$innerRoot(childrenData = $innerRoot.childrenData->concatenate($outerJoins)),
+    columns = $outer.columns->map(c | $c->substitutedColumn($root, $inner, $substitute)),
+    filteringOperation = if($filters->isEmpty(), | [], | if($inner.filteringOperation->isEmpty(), | $outerFilter, | $filters->andInOrder($extensions))),
+    groupBy = $outer.groupBy->map(g | $g->transformNonCached($substitute)),
+    havingOperation = $outer.havingOperation->map(h | $h->substituteExpression($substitute)),
+    qualifyOperation = $outer.qualifyOperation->map(q | $q->substituteExpression($substitute)),
+    orderBy = $outer.orderBy->filter(o | !$o.column->substitutesNonColumn($root, $inner))->map(o | ^$o(column = $o.column->transformNonCached($substitute))),
+    leftSideOfFilter = []
+  );
+}
+
+// Not andFilters: it reverses its input, because the generator builds filter lists newest first. The merged list puts the
+// inner filter, which ran first, ahead of the outer one, and must keep that order.
+function <<access.private>> meta::relational::sqlOptimizer::rules::andInOrder(conjuncts:RelationalOperationElement[*], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  let unique = $conjuncts->removeDuplicatesBy(c | $c->meta::relational::functions::pureToSqlQuery::buildUniqueName(true, $extensions));
+  if($unique->size() == 1, | $unique->toOne(), | meta::relational::functions::pureToSqlQuery::newAndOrDynaFunctionRelaxedBrackets('and', $unique));
+}
+
+// The inner filter ran before the outer one; merging them keeps that order only if the outer predicate cannot fail on rows the inner one would have removed.
+function meta::relational::sqlOptimizer::rules::mayRaiseError(operations:RelationalOperationElement[*]):Boolean[1]
+{
+  let elements = $operations->extractRelationalElements(true);
+  !$elements.noUnknownElement || $elements.elements->exists(e | ($e->instanceOf(SelectSQLQuery) && !$e->isParameterValueSet()) || ($e->instanceOf(DynaFunction) && $e->cast(@DynaFunction)->isRowDependentAndMayRaise()));
+}
+
+// A failing function over constants fails the same on every row (most databases fold it while planning), so only functions reading a column matter.
+function <<access.private>> meta::relational::sqlOptimizer::rules::isRowDependentAndMayRaise(f:DynaFunction[1]):Boolean[1]
+{
+  $f.name->in(potentiallyThrowingFunctionNames())
+    && $f.parameters->extractRelationalElements(true).elements->exists(e | $e->instanceOf(TableAliasColumn) || $e->instanceOf(ColumnName) || $e->instanceOf(TableAliasColumnName));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::potentiallyThrowingFunctionNames():String[*]
+{
+  ['cast', 'convert', 'toNumber', 'toInteger', 'toFloat', 'toDecimal', 'parseInteger', 'parseFloat', 'parseDecimal', 'parseDate', 'parseBoolean', 'toDate', 'toTimestamp',
+   'plus', 'minus', 'times', 'abs', 'divide', 'divideRound', 'mod', 'rem', 'pow', 'exp', 'sqrt', 'log', 'log10', 'acos', 'asin', 'cot', 'adjust', 'dateDiff',
+   'substring', 'left', 'right', 'repeatString', 'jsonExtract', 'castToSemiStructured']
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::andConjuncts(operations:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  $operations->map(o | $o->match([
+    d:DynaFunction[1] | if($d.name == 'and', | $d.parameters->andConjuncts(), | $d),
+    r:RelationalOperationElement[1] | $r
+  ]))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::substituteInJoinOperations(node:JoinTreeNode[1], substitute:Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1]):JoinTreeNode[1]
+{
+  let join = $node.join;
+  ^$node(
+    join = ^$join(operation = $join.operation->transformNonCached($substitute)->cast(@meta::relational::metamodel::operation::Operation)),
+    childrenData = $node.childrenData->cast(@JoinTreeNode)->map(c | $c->substituteInJoinOperations($substitute))
+  );
+}

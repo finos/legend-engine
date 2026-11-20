@@ -289,12 +289,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::loadValuesToDbTableForTrino(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
-    'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+  if($loadTableSQL.parsedData.values->isEmpty(),
+    | [],
+    | 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
         + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
         + ') values '
         + $loadTableSQL.parsedData.values->map(row | '('
             + $row.values->meta::relational::functions::sqlQueryToString::trino::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
-            + ')')->makeString(',') ;
+            + ')')->makeString(',')
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::convertValuesToCsv(str : String[*], types : Any[*]):String[1]

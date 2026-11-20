@@ -215,6 +215,14 @@ public class PerfSuite
             configs.add(relationWorkload("simple", 200));
             configs.add(workload("graph1", 30));
             configs.add(workload("graph4", 30));
+            configs.add(aggregateViewWorkload("conj4", 30, 10));
+            configs.add(aggregateViewWorkload("conj10", 30, 10));
+            configs.add(starWorkload("dup10", 41, 40));
+            configs.add(starWorkload("dup40", 41, 40));
+            configs.add(starWorkload("star10", 41, 40));
+            configs.add(starWorkload("star40", 41, 40));
+            configs.add(hopWorkload("uhop", 41, 10));
+            configs.add(hopWorkload("uhop", 41, 40));
         }
         else
         {
@@ -240,6 +248,27 @@ public class PerfSuite
     {
         BenchConfig config = workload(query, scale);
         config.unionSets = unionSets;
+        return config;
+    }
+
+    private static BenchConfig aggregateViewWorkload(String query, int scale, int views)
+    {
+        BenchConfig config = workload(query, scale);
+        config.aggregateViews = views;
+        return config;
+    }
+
+    private static BenchConfig starWorkload(String query, int scale, int starJoins)
+    {
+        BenchConfig config = workload(query, scale);
+        config.starJoins = starJoins;
+        return config;
+    }
+
+    private static BenchConfig hopWorkload(String query, int scale, int hops)
+    {
+        BenchConfig config = workload(query, scale);
+        config.hops = hops;
         return config;
     }
 
@@ -269,6 +298,14 @@ public class PerfSuite
                 "per-column lambda compilation in Relation mappings"));
         canaries.add(ratio(workloads, "javaBindGraphDepth", "javaBind", "graph4@scale30/H2", "graph1@scale30/H2",
                 "platform binder growth in graph-fetch tree size"));
+        canaries.add(ratio(workloads, "planPureFilterConjuncts", "planPure", "conj10@scale30+aggviews10/H2", "conj4@scale30+aggviews10/H2",
+                "SQL optimization superlinearity in the number of filter conjuncts pushed into subqueries"));
+        canaries.add(ratio(workloads, "planPureRepeatedLeftJoins", "planPure", "dup40@scale41+star40/H2", "dup10@scale41+star40/H2",
+                "SQL optimization superlinearity in the number of repeated left joins merged"));
+        canaries.add(ratio(workloads, "planPureLeftJoinFanOut", "planPure", "star40@scale41+star40/H2", "star10@scale41+star40/H2",
+                "SQL optimization superlinearity in the number of read left joins checked for elimination"));
+        canaries.add(ratio(workloads, "planPureUnreadJoinChain", "planPure", "uhop@scale41+hops40/H2", "uhop@scale41+hops10/H2",
+                "SQL optimization superlinearity in the depth of an unread left-join chain"));
         canaries.removeIf(canary -> canary.get("value") == null);
         return canaries;
     }

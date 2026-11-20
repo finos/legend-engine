@@ -35,6 +35,10 @@ public class BenchConfig
     public boolean relationFunction = false;
     public boolean modelToModel = false;
     public int semiDepth = 0;
+    public int aggregateViews = 0;
+    public int starJoins = 0;
+    public int hops = 0;
+    public String sqlOptimizer = "all";
     public String dbType = "H2";
 
     public String fileList = null;
@@ -77,6 +81,10 @@ public class BenchConfig
         config.relationFunction = opts.containsKey("relfunc");
         config.modelToModel = opts.containsKey("m2m");
         config.semiDepth = Integer.parseInt(opts.getOrDefault("semi", "0"));
+        config.aggregateViews = Integer.parseInt(opts.getOrDefault("aggviews", "0"));
+        config.starJoins = Integer.parseInt(opts.getOrDefault("star", "0"));
+        config.hops = Integer.parseInt(opts.getOrDefault("hops", "0"));
+        config.sqlOptimizer = opts.getOrDefault("sqlopt", "all");
         config.dbType = opts.getOrDefault("dbtype", "H2");
         config.fileList = opts.get("filelist");
         config.queryFile = opts.get("queryfile");
@@ -100,6 +108,22 @@ public class BenchConfig
         if (this.semiDepth > 0)
         {
             b.append("+semi").append(this.semiDepth);
+        }
+        if (this.aggregateViews > 0)
+        {
+            b.append("+aggviews").append(this.aggregateViews);
+        }
+        if (this.starJoins > 0)
+        {
+            b.append("+star").append(this.starJoins);
+        }
+        if (this.hops > 0)
+        {
+            b.append("+hops").append(this.hops);
+        }
+        if (!"all".equals(this.sqlOptimizer))
+        {
+            b.append("+sqlopt-").append(this.sqlOptimizer);
         }
         if (this.milestoned)
         {
@@ -130,6 +154,10 @@ public class BenchConfig
         map.put("unionSets", this.unionSets);
         map.put("includes", this.includes);
         map.put("semiDepth", this.semiDepth);
+        map.put("aggregateViews", this.aggregateViews);
+        map.put("starJoins", this.starJoins);
+        map.put("hops", this.hops);
+        map.put("sqlOptimizer", this.sqlOptimizer);
         map.put("milestoned", this.milestoned);
         map.put("relationFunction", this.relationFunction);
         map.put("modelToModel", this.modelToModel);
@@ -153,6 +181,22 @@ public class BenchConfig
         if (this.semiDepth > 0)
         {
             b.append(" semi=").append(this.semiDepth);
+        }
+        if (this.aggregateViews > 0)
+        {
+            b.append(" aggviews=").append(this.aggregateViews);
+        }
+        if (this.starJoins > 0)
+        {
+            b.append(" star=").append(this.starJoins);
+        }
+        if (this.hops > 0)
+        {
+            b.append(" hops=").append(this.hops);
+        }
+        if (!"all".equals(this.sqlOptimizer))
+        {
+            b.append(" sqlopt=").append(this.sqlOptimizer);
         }
         if (this.milestoned)
         {

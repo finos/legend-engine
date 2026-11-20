@@ -51,7 +51,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::p
     '              (\n' +
     '                type = meta::pure::metamodel::type::Any\n' +
     '                resultColumns = [("pk_0", INT), ("firstName", VARCHAR(1024)), ("age", INT)]\n' +
-    '                sql = select "root"."ID" as "pk_0", "root"."FIRST NAME" as "firstName", "root"."AGE" as "age" from (select "persontable_1".ID as "ID", "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as "AGE", "persontable_1".FIRMID as "FIRMID", "persontable_1".EMPLOYEE_TYPE as "EMPLOYEE_TYPE", "persontable_1".IS_MALE as "IS_MALE", "persontable_1".SALARY as "SALARY" from (select top 5 "persontable_2".ID as ID, "persontable_2"."FIRST NAME" as "FIRST NAME", "persontable_2".AGE as AGE, "persontable_2".FIRMID as FIRMID, "persontable_2".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_2".IS_MALE as IS_MALE, "persontable_2".SALARY as SALARY from personTable as "persontable_2" where "persontable_2".AGE > 25) as "persontable_1") as "root"\n' +
+    '                sql = select top 5 "persontable_2".ID as "pk_0", "persontable_2"."FIRST NAME" as "firstName", "persontable_2".AGE as "age" from personTable as "persontable_2" where "persontable_2".AGE > 25\n' +
     '                connection = TestDatabaseConnection(type = "H2")\n' +
     '              )\n' +
     '           children = [\n' +
@@ -100,7 +100,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::p
     '              (\n' +
     '                type = meta::pure::metamodel::type::Any\n' +
     '                resultColumns = [("pk_0", INT), ("firstName", VARCHAR(1024))]\n' +
-    '                sql = select "root"."ID" as "pk_0", "root"."FIRST NAME" as "firstName" from (select "persontable_1".ID as "ID", "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as "AGE", "persontable_1".FIRMID as "FIRMID", "persontable_1".EMPLOYEE_TYPE as "EMPLOYEE_TYPE", "persontable_1".IS_MALE as "IS_MALE", "persontable_1".SALARY as "SALARY" from (select top 5 "persontable_2".ID as ID, "persontable_2"."FIRST NAME" as "FIRST NAME", "persontable_2".AGE as AGE, "persontable_2".FIRMID as FIRMID, "persontable_2".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_2".IS_MALE as IS_MALE, "persontable_2".SALARY as SALARY from personTable as "persontable_2" where "persontable_2".AGE > 25) as "persontable_1") as "root"\n' +
+    '                sql = select top 5 "persontable_2".ID as "pk_0", "persontable_2"."FIRST NAME" as "firstName" from personTable as "persontable_2" where "persontable_2".AGE > 25\n' +
     '                connection = TestDatabaseConnection(type = "H2")\n' +
     '              )\n' +
     '           children = [\n' +
@@ -113,7 +113,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::p
     '                   (\n' +
     '                     type = meta::pure::metamodel::type::Any\n' +
     '                     resultColumns = [("parent_key_gen_0", INT), ("pk_0", INT), ("legalName", VARCHAR(1024))]\n' +
-    '                     sql = select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "firmtable_0"."ID" as "pk_0", "firmtable_0"."legalName" as "legalName" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "persontable_1".ID as "ID", "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as "AGE", "persontable_1".FIRMID as "FIRMID", "persontable_1".EMPLOYEE_TYPE as "EMPLOYEE_TYPE", "persontable_1".IS_MALE as "IS_MALE", "persontable_1".SALARY as "SALARY" from (select top 5 "persontable_2".ID as ID, "persontable_2"."FIRST NAME" as "FIRST NAME", "persontable_2".AGE as AGE, "persontable_2".FIRMID as FIRMID, "persontable_2".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_2".IS_MALE as IS_MALE, "persontable_2".SALARY as SALARY from personTable as "persontable_2" where "persontable_2".AGE > 25) as "persontable_1") as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select "subselect"."ID" as "ID", "subselect"."legalName" as "legalName" from (select "firmtable_2"."ID" as "ID", "firmtable_2"."legalName" as "legalName" from (select top 10 "firmtable_3".ID as "ID", "firmtable_3".legalName as "legalName" from firmTable as "firmtable_3") as "firmtable_2") as "subselect") as "firmtable_0" on ("root"."FIRMID" = "firmtable_0"."ID") where "firmtable_0"."ID" is not null\n' +
+    '                     sql = select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "firmtable_0"."ID" as "pk_0", "firmtable_0"."legalName" as "legalName" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select top 5 "persontable_2".ID as "ID", "persontable_2".FIRMID as "FIRMID" from personTable as "persontable_2" where "persontable_2".AGE > 25) as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select top 10 "firmtable_3".ID as "ID", "firmtable_3".legalName as "legalName" from firmTable as "firmtable_3") as "firmtable_0" on ("root"."FIRMID" = "firmtable_0"."ID") where "firmtable_0"."ID" is not null\n' +
     '                     connection = TestDatabaseConnection(type = "H2")\n' +
     '                   )\n' +
     '                children = [\n' +
@@ -166,7 +166,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::p
     '              (\n' +
     '                type = meta::pure::metamodel::type::Any\n' +
     '                resultColumns = [("pk_0", INT), ("ceoId", INT), ("legalName", VARCHAR(1024))]\n' +
-    '                sql = select "root"."id" as "pk_0", "root"."ceoIdentifier" as "ceoId", "root"."legalName" as "legalName" from (select "firm_1".id as "id", "firm_1".legalName as "legalName", "firm_1".ceoIdentifier as "ceoIdentifier" from (select "firm_2".id as id, "firm_2".legalName as legalName, "firm_2".ceoIdentifier as ceoIdentifier from firm as "firm_2") as "firm_1") as "root"\n' +
+    '                sql = select "firm_2".id as "pk_0", "firm_2".ceoIdentifier as "ceoId", "firm_2".legalName as "legalName" from firm as "firm_2"\n' +
     '                connection = TestDatabaseConnection(type = "H2")\n' +
     '              )\n' +
     '           children = [\n' +
@@ -188,7 +188,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::p
     '                   (\n' +
     '                     type = meta::pure::metamodel::type::Any\n' +
     '                     resultColumns = [("cross_join_op$", BIT), ("pk_0", VARCHAR(1024)), ("ceoId", INT), ("name", VARCHAR(1024)), ("parent_cross_key_0", INT)]\n' +
-    '                     sql = select distinct "cross_temp_table_node_0_0".ceoId = "root"."identifier" as "cross_join_op$", "root"."name" as "pk_0", "root"."identifier" as "ceoId", "root"."name" as "name", "cross_temp_table_node_0_0".ceoId as "parent_cross_key_0" from (select * from (${cross_temp_table_node_0}) as "root") as "cross_temp_table_node_0_0" inner join (select "ceo_1".name as "name", "ceo_1".identifier as "identifier" from (select "ceo_2".name as name, "ceo_2".identifier as identifier from ceo as "ceo_2") as "ceo_1") as "root" on (1 = 1) where "cross_temp_table_node_0_0".ceoId = "root"."identifier"\n' +
+    '                     sql = select distinct "cross_temp_table_node_0_0".ceoId = "root"."identifier" as "cross_join_op$", "root"."name" as "pk_0", "root"."identifier" as "ceoId", "root"."name" as "name", "cross_temp_table_node_0_0".ceoId as "parent_cross_key_0" from (select * from (${cross_temp_table_node_0}) as "root") as "cross_temp_table_node_0_0" inner join (select "ceo_2".name as "name", "ceo_2".identifier as "identifier" from ceo as "ceo_2") as "root" on (1 = 1) where "cross_temp_table_node_0_0".ceoId = "root"."identifier"\n' +
     '                     connection = TestDatabaseConnection(type = "H2")\n' +
     '                   )\n' +
     '                children = [\n' +

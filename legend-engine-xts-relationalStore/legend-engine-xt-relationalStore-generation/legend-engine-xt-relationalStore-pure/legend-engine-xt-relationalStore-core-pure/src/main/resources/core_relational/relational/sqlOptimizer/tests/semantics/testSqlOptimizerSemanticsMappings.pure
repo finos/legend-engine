@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::functions::relation::*;
+import meta::pure::mapping::*;
+import meta::pure::tds::*;
+import meta::pure::test::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+import meta::relational::tests::sqlOptimizer::semantics::mappings::*;
+
+function meta::relational::tests::sqlOptimizer::semantics::mappings::assertSameRowsWithEveryFeatureOnUnionData(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], ordered:Boolean[1]):Boolean[1]
+{
+  meta::relational::tests::mapping::union::createTablesAndFillDb();
+  let runtime = meta::external::store::relational::tests::testRuntime();
+  let connection = $runtime.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+  let before = planNode($query, $mapping, $runtime, [], 'SQL_OPTIMIZATION_ALL').sqlQuery;
+  let expected = $before->legacyH2ResultRows($connection);
+  featureSets()->map({fs |
+    let after = planNode($query, $mapping, $runtime, $fs.second.values, []).sqlQuery;
+    let actual = $after->legacyH2ResultRows($connection);
+    assertEquals(if($ordered, | $expected, | $expected->sort()), if($ordered, | $actual, | $actual->sort()), | $fs.first + ' changed the result on the union test data\n  before: ' + $before + '\n  after:  ' + $after);
+  });
+  true;
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::mappings::resultColumnTypes(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], connection:DatabaseConnection[1], enabled:String[*], disabled:String[*]):String[*]
+{
+  planNode($query, $mapping, semanticsRuntime($connection), $enabled, $disabled).resultColumns->map(c | $c.label + ':' + $c.dataType->toOne()->type()->elementToPath())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::mappings::assertSameResultColumnTypesWithEveryFeature(query:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], conn:Connection[1]):Boolean[1]
+{
+  let connection = $conn->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+  let unoptimized = resultColumnTypes($query, $mapping, $connection, [], 'SQL_OPTIMIZATION_ALL');
+  featureSets()->map(fs | assertEquals($unoptimized, resultColumnTypes($query, $mapping, $connection, $fs.second.values, []), | $fs.first + ' changed the plan result columns on ' + $connection.type->toString()));
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testUnionAllPruningOfAConcatenatedRelationKeepsItsRows(conn:Connection[1]):Boolean[1]
+{
+  let query = {|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->select(~[ID, G])->concatenate(#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->select(~[ID, G]))->select(~G)};
+  assertNotEquals(unoptimizedPlanSql($query, SemanticsMapping, h2Connection()), planSql($query, SemanticsMapping, h2Connection(), 'SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING', []));
+  assertSameRowsWithEveryFeature($query, SemanticsMapping, $conn, false, dataVariants());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testConcatenationWithAnOrderedLimitedArmKeepsItsRows(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->select(~[ID, G])->concatenate(#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->select(~[ID, G])->sort(~ID->descending())->limit(2))->select(~[ID, G])}, SemanticsMapping, $conn);
+  assertUnchangedWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->select(~[ID, G])->sort(~ID->descending())->limit(2)->concatenate(#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->select(~[ID, G]))->select(~[ID, G])}, SemanticsMapping, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testWindowOverARenamedRelationStaysResolvable(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->rename(~V, ~vv)->extend(over(~G, ~ID->ascending()), ~[RK: {p, w, r | $p->rank($w, $r)}])->select(~[ID, G, RK])}, SemanticsMapping, $conn, false, ['nullsAndDuplicates', 'ties']);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testUngroupedAggregateFollowedByAConstantKeepsOneRow(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->aggregate(~cnt: x | $x.ID : y | $y->count())->extend(~k: x | 'k')->select(~k)}, SemanticsMapping, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testRelationSortedByALiteralColumnKeepsItsOrder(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->extend(~one: x | 1)->sort([~one->ascending(), ~ID->descending()])->select(~[G, ID])}, SemanticsMapping, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testClassSortedByALiteralMappedPropertyIsNotSortedByAnOrdinal(conn:Connection[1]):Boolean[1]
+{
+  let query = itemsSortedByTheIntegerLiteralProperty();
+  assertEmpty(featureSets()->map(fs | planSql($query, ItemMapping, h2Connection(), $fs.second.values, []))->filter(sql | $sql->contains('order by 5')));
+  assertSameRowsWithEveryFeature($query, ItemMapping, $conn, false, ['nullsAndDuplicates', 'empty']);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testClassSortedByALiteralThenAKeyKeepsItsOrder(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithEveryFeature({|Item.all()->sortBy(i | $i.one)->project([col(i | $i.grp, 'g'), col(i | $i.id, 'id')])->sort(desc('id'))}, ItemMapping, $conn, true, ['nullsAndDuplicates', 'ties']);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testClassGroupedByLiteralMappedPropertiesKeepsItsGroups(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithEveryFeature({|Item.all()->groupBy([i | $i.one], [agg(i | $i.v, y | $y->max())], ['one', 'm'])->restrict('m')}, ItemMapping, $conn, false, ['nullsAndDuplicates', 'empty']);
+  assertSameRowsWithEveryFeature({|Item.all()->groupBy([i | $i.k], [agg(i | $i.v, y | $y->max())], ['k', 'm'])->restrict('m')}, ItemMapping, $conn, false, ['nullsAndDuplicates', 'empty']);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testPlanResultColumnTypesAreTheSameWithEveryFeature(conn:Connection[1]):Boolean[1]
+{
+  assertSameResultColumnTypesWithEveryFeature({|Item.all()->filter(i | $i.v > 1)->project([col(i | $i.grp, 'g'), col(i | $i.k, 'k'), col(i | $i.five, 'five')])}, ItemMapping, $conn);
+  assertSameResultColumnTypesWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->rename(~G, ~grp)->filter(r | $r.grp == 'a')->select(~[ID, grp])}, SemanticsMapping, $conn);
+  assertSameResultColumnTypesWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->select(~[ID, G])->concatenate(#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->select(~[ID, G]))->select(~G)}, SemanticsMapping, $conn);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testUnionMappingProjectionsKeepTheirRows():Boolean[1]
+{
+  assertSameRowsWithEveryFeatureOnUnionData({|meta::relational::tests::model::simple::Person.all()->project([p | $p.lastName], ['name'])}, meta::relational::tests::mapping::union::unionMapping, false);
+  assertSameRowsWithEveryFeatureOnUnionData({|meta::relational::tests::model::simple::Person.all()->project([p | $p.lastName, p | $p.firm.legalName], ['l', 'f'])->restrict('l')}, meta::relational::tests::mapping::union::unionMapping, false);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testUnionMappingSortedTakeKeepsItsRowsAndOrder():Boolean[1]
+{
+  assertSameRowsWithEveryFeatureOnUnionData({|meta::relational::tests::model::simple::Person.all()->project([p | $p.lastName, p | $p.firm.legalName], ['l', 'f'])->sort([asc('l'), asc('f')])->take(3)->restrict('l')}, meta::relational::tests::mapping::union::unionMapping, true);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testFilterThroughAUnionMappedAssociationKeepsItsRows():Boolean[1]
+{
+  assertSameRowsWithEveryFeatureOnUnionData({|meta::relational::tests::model::simple::Person.all()->filter(p | $p.firm.legalName == 'Firm X')->project([p | $p.lastName], ['n'])}, meta::relational::tests::mapping::union::unionMapping, false);
+  assertSameRowsWithEveryFeatureOnUnionData({|meta::relational::tests::model::simple::Firm.all()->project([f | $f.legalName, f | $f.employees.lastName], ['legalName', 'name'])}, meta::relational::tests::mapping::union::unionToUnionMapping, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testEveryFeatureKeepsLateralRelationQueriesRunnable(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithEveryFeature(lateralOverALimitedRelation(), SemanticsMapping, $conn, false, ['nullsAndDuplicates', 'empty']);
+  assertSameRowsWithEveryFeature(lateralOverARenamedRelation(), SemanticsMapping, $conn, false, ['nullsAndDuplicates', 'empty']);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::mappings::testEveryFeatureKeepsClassSortsByLiteralMappedPropertiesRunnable(conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithEveryFeature(itemsSortedByTheStringLiteralProperty(), ItemMapping, $conn, false, ['nullsAndDuplicates', 'empty']);
+  assertSameRowsWithEveryFeature(itemsSortedByTheIntegerLiteralProperty(), ItemMapping, $conn, false, ['nullsAndDuplicates', 'empty']);
+}

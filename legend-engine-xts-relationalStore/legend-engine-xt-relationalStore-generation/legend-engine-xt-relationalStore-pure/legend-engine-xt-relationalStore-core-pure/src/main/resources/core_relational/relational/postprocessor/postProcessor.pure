@@ -30,7 +30,7 @@ import meta::relational::metamodel::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::postProcessor::*;
-import meta::relational::postProcessor::filterPushDown::*;
+import meta::relational::sqlOptimizer::tree::*;
 
 Class meta::relational::mapping::PostProcessorResult
 {
@@ -51,7 +51,8 @@ function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], stor
                                    ->contextBasedPostProcessors($runtime,$ext,$m,$store,$exeCtx)
                                    ->userPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx);
 
-      $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, $ext, $m, $store, $exeCtx)}, $postProcessorResult);
+      $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, $ext, $m, $store, $exeCtx)}, $postProcessorResult)
+                 ->meta::relational::sqlOptimizer::optimizePostProcessedQuery($runtime->connectionByElement($store), $exeCtx, $extensions);
   )
 }
 
@@ -79,7 +80,8 @@ function meta::relational::mapping::postProcessQuery(exeCtx:meta::pure::runtime:
                                           | $newQuery);,
                                    | $newQuery);
 
-   $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_execution_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, [], [], $store, $exeCtx)}, ^PostProcessorResult(query = $newQueryAfterTrimColumnNameProcessing));
+   $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_execution_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, [], [], $store, $exeCtx)}, ^PostProcessorResult(query = $newQueryAfterTrimColumnNameProcessing))
+              ->meta::relational::sqlOptimizer::optimizePostProcessedQuery($c, $exeCtx, $extensions);
 }
 
 //Helper Functions

@@ -60,7 +60,6 @@ function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::
 {
    [
       meta::relational::postProcessor::cte::collectCommonTableExpressionReferences_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
-      meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
       meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoins_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
       meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
       meta::relational::postProcessor::comments::prependSQLComments_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_

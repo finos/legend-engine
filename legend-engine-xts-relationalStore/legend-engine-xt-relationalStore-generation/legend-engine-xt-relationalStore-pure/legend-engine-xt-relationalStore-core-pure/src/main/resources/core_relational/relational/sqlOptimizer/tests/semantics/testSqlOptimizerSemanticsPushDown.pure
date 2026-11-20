@@ -1,0 +1,205 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::core::runtime::*;
+import meta::pure::functions::math::olap::*;
+import meta::pure::functions::relation::*;
+import meta::pure::tds::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+import meta::relational::tests::sqlOptimizer::semantics::pushDown::*;
+
+function meta::relational::tests::sqlOptimizer::semantics::pushDown::joinVariants():String[*]
+{
+  ['nullsAndDuplicates', 'allNull', 'empty']
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::pushDown::assertSameRowsWithEveryFeature(query:FunctionDefinition<{->Any[*]}>[1], conn:Connection[1]):Boolean[1]
+{
+  assertSameRowsWithEveryFeature($query, SemanticsMapping, $conn, false, joinVariants())
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::pushDown::assertUnchangedWithEveryFeature(query:FunctionDefinition<{->Any[*]}>[1], conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature($query, SemanticsMapping, $conn)
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testJoinFilterPushDownKeepsNullExtendedRowsAcrossATypeCoercingEquality(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature(startsWithAcrossAVarcharToIntegerJoin(), SemanticsMapping, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testJoinFilterPushDownCopiesAPredicateAcrossASameTypeEquality(conn:Connection[1]):Boolean[1]
+{
+  let query = {|T.all()->filter(t | $t.g == 'a')->project([t | $t.g, t | $t.usByG.x], ['g', 'x'])};
+  assertPushesDown($query, SemanticsMapping, $conn);
+  assertSQLContains('"sqlopt_u_0".G = \'a\'', planSql($query, SemanticsMapping, h2Connection(), [], []));
+  assertSameRowsWithEveryFeature($query, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testPushDownKeepsNullExtendedRowsForAnIsEmptyFilterOnThePreservedSide(conn:Connection[1]):Boolean[1]
+{
+  assertPushesDown({|T.all()->filter(t | $t.id->isEmpty())->project([t | $t.id, t | $t.us.x], ['id', 'x'])}, SemanticsMapping, $conn);
+  assertSameRowsWithEveryFeature({|T.all()->filter(t | $t.id->isEmpty())->project([t | $t.id, t | $t.us.x], ['id', 'x'])}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testPushDownKeepsNullExtendedRowsWhenFilteringOnTheNullableJoinKey(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|T.all()->project([t | $t.id, t | $t.us.tid, t | $t.us.x], ['id', 'tid', 'x'])->filter(r | $r.isNull('tid'))}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testPushDownKeepsATdsLeftJoinFilterOnEitherKeyOutsideTheJoin(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|T.all()->project([t | $t.id, t | $t.g], ['id', 'g'])->join(U.all()->project([u | $u.tid, u | $u.x], ['tid', 'x']), JoinType.LEFT_OUTER, {a, b | $a.getInteger('id') == $b.getInteger('tid')})->filter(r | $r.isNull('tid'))}, $conn);
+  assertUnchangedWithEveryFeature({|T.all()->project([t | $t.id, t | $t.g], ['id', 'g'])->join(U.all()->project([u | $u.tid, u | $u.x], ['tid', 'x']), JoinType.LEFT_OUTER, {a, b | $a.getInteger('id') == $b.getInteger('tid')})->filter(r | $r.getInteger('id') == 1)}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testPushDownLeavesARightOuterJoinAlone(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|T.all()->project([t | $t.id, t | $t.g], ['id', 'g'])->join(U.all()->project([u | $u.tid, u | $u.x], ['tid', 'x']), JoinType.RIGHT_OUTER, {a, b | $a.getInteger('id') == $b.getInteger('tid')})->filter(r | $r.getInteger('tid') == 1)}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testPushDownKeepsRelationLeftJoinNullSemantics(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->join(#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->select(~[TID, X]), JoinKind.LEFT, {a, b | $a.ID == $b.TID})->filter(r | $r.TID->isEmpty())->select(~[ID, G, X])}, $conn);
+  assertUnchangedWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->join(#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_U}#->select(~[TID, X]), JoinKind.LEFT, {a, b | $a.ID == $b.TID})->filter(r | $r.ID->isEmpty())->select(~[ID, G, X])}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownStopsAtALimit(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|T.all()->project([t | $t.g, t | $t.v, t | $t.id], ['g', 'v', 'id'])->sort([asc('id'), asc('v')])->limit(3)->filter(r | $r.getString('g') == 'a')}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownStopsAtAWindowPartitionedByAnotherColumn(conn:Connection[1]):Boolean[1]
+{
+  assertDoesNotPushDown({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->extend(over(~G, ~ID->ascending()), ~rn: {p, w, r | $p->rowNumber($r)})->filter(r | $r.V->isEmpty())->select(~[ID, rn])}, SemanticsMapping, $conn);
+  assertSameRowsWithEveryFeature({|#>{meta::relational::tests::sqlOptimizer::semantics::SemanticsDb.SQLOPT.SQLOPT_T}#->extend(over(~G, ~ID->ascending()), ~rn: {p, w, r | $p->rowNumber($r)})->filter(r | $r.V->isEmpty())->select(~[ID, rn])}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownDoesNotPushAFilterOnAnAggregate(conn:Connection[1]):Boolean[1]
+{
+  assertUnchangedWithEveryFeature({|T.all()->project([t | $t.g, t | $t.v], ['g', 'v'])->groupBy('g', agg('s', r | $r.getInteger('v'), y | $y->sum()))->filter(r | $r.getInteger('s') > 1)}, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownOfAFilterOnTheGroupingKey(conn:Connection[1]):Boolean[1]
+{
+  let query = {|T.all()->filter(t | $t.id == 1)->project([t | $t.id, t | $t.maxX], ['id', 'maxX'])};
+  assertPushesDown($query, SemanticsMapping, $conn);
+  assertSameRowsWithEveryFeature($query, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownIntoADistinctSubSelect(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('push_distinct', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(distinct = true, columns = [named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"')], data = root($t)));
+  let query = ^SelectSQLQuery(columns = [named(ref($s, '"g"'), '"g"'), named(ref($s, '"v"'), '"v"')], data = root($s), filteringOperation = sqlEquals(ref($s, '"g"'), lit('a')));
+  assertSQLContains('"t".G = \'a\'', $query->optimizedSql(pushDown()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownKeepsFiltersOnAnUngroupedAggregateOutside(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('push_ungroupedaggregate', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(lit('k'), '"k"'), named(fn('count', ref($t, 'ID')), '"c"'), named(fn('max', ref($t, 'V')), '"m"')], root($t)));
+  [sqlEquals(ref($s, '"k"'), lit('z')), fn('lessThan', [ref($s, '"m"'), lit(2)])]->map({filter |
+    let query = ^SelectSQLQuery(columns = [named(ref($s, '"k"'), '"k"'), named(ref($s, '"c"'), '"c"')], data = root($s), filteringOperation = $filter);
+    assertEquals($query->printed(), $query->optimizedSql(pushDown()));
+    assertUnchanged($f, $query);
+  });
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testJoinFilterPushDownKeepsAnIsNullFilterOnTheNullableSideInWhere(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('push_nullableisnull', $conn);
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let query = ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($u, 'X'), '"x"')], data = root($t, joined($t, $u, sqlEquals(ref($u, 'TID'), ref($t, 'ID')), JoinType.LEFT_OUTER)), filteringOperation = fn('isNull', ref($u, 'X')));
+  assertEquals($query->printed(), $query->optimizedSql(pushDown()));
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testJoinFilterPushDownCopiesAPreservedSideFilterThroughTheJoinEquality(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('push_preserved', $conn);
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let query = ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($u, 'X'), '"x"')], data = root($t, joined($t, $u, sqlEquals(ref($u, 'TID'), ref($t, 'ID')), JoinType.LEFT_OUTER)), filteringOperation = sqlEquals(ref($t, 'ID'), lit(1)));
+  assertSQLContains('"u".TID = 1', $query->optimizedSql(pushDown()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testPushDownLeavesAPreservedSideOnConditionInsideTheJoin(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('push_oncondition', $conn);
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let query = ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($u, 'X'), '"x"')], data = root($t, joined($t, $u, fn('and', [sqlEquals(ref($u, 'TID'), ref($t, 'ID')), fn('greaterThan', [ref($t, 'V'), lit(1)])]), JoinType.LEFT_OUTER)), filteringOperation = sqlEquals(ref($t, 'G'), lit('a')));
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testJoinFilterPushDownCopiesEachValuePredicateKindAcrossTheJoinEquality(conn:Connection[1]):Boolean[1]
+{
+  [
+    {|T.all()->filter(t | $t.id == 1)->project([t | $t.id, t | $t.us.x], ['id', 'x'])},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | $r.getInteger('id') == 1)},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | $r.getInteger('id') > 1)},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | $r.getInteger('id') > (1 + 2))},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | $r.getInteger('id')->isNotEmpty())},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | $r.getInteger('id')->in([1, 2, 3]))},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | ($r.getInteger('id') > 0) && ($r.getInteger('id') <= 3))},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | !(($r.getInteger('id') <= 0) || ($r.getInteger('id') > 3)))},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | $r.getInteger('id')->isNotEmpty() && $r.getInteger('id')->in([1, 2]))},
+    {|T.all()->project([t | $t.id, t | $t.us.x], ['id', 'x'])->filter(r | $r.getInteger('id')->isNotEmpty() && !(($r.getInteger('id') <= 0) || ($r.getInteger('id') > 3)))}
+  ]->map(query | assertPushesDown($query, SemanticsMapping, $conn) && assertSameRowsWithEveryFeature($query, $conn));
+  true;
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::pushDown::pushDownFiltersU(query:FunctionDefinition<{->Any[*]}>[1]):Boolean[1]
+{
+  pushDownSql($query, SemanticsMapping, h2Connection()).second->contains('from SQLOPT.SQLOPT_U as "root" where')
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownReachesTheOtherSideOfATdsJoinThroughItsKey(conn:Connection[1]):Boolean[1]
+{
+  let query = {|T.all()->project([t | $t.id, t | $t.g], ['id', 'g'])->join(U.all()->project([u | $u.tid, u | $u.x], ['id', 'x']), JoinType.INNER, ['id'])->filter(r | $r.getInteger('id') == 1)};
+  assert($query->pushDownFiltersU(), | pushDownSql($query, SemanticsMapping, h2Connection()).second);
+  assertSameRowsWithEveryFeature($query, $conn);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testSubQueryPushDownKeepsAFilterOnAnotherColumnOutOfTheOtherSideOfATdsJoin(conn:Connection[1]):Boolean[1]
+{
+  let query = {|T.all()->project([t | $t.id, t | $t.g], ['id', 'g'])->join(U.all()->project([u | $u.g, u | $u.x], ['g', 'x']), JoinType.INNER, ['g'])->filter(r | $r.getInteger('id') == 1)};
+  assertFalse($query->pushDownFiltersU(), | pushDownSql($query, SemanticsMapping, h2Connection()).second);
+  assertSameRowsWithEveryFeature($query, $conn);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::pushDown::testJoinFilterPushDownLeavesAnAsOfJoinConditionAlone():Boolean[1]
+{
+  let t = tableAlias('t', semanticsTable('SQLOPT_T'));
+  let u = tableAlias('u', semanticsTable('SQLOPT_U'));
+  let condition = fn('and', [fn('greaterThan', [ref($t, 'V'), ref($u, 'X')]), sqlEquals(ref($t, 'ID'), ref($u, 'TID'))]);
+  let leftJoin = joined($t, $u, $condition, JoinType.LEFT_OUTER);
+  let asOfJoin = ^$leftJoin(join = ^AsOfJoin(name = $leftJoin.join.name, target = $u, aliases = $leftJoin.join.aliases, operation = $leftJoin.join.operation));
+  let queryOver = {node:JoinTreeNode[1] | ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($u, 'X'), '"x"')], data = root($t, $node), filteringOperation = sqlEquals(ref($t, 'ID'), lit(1)))};
+  let joinCondition = {query:SelectSQLQuery[1] | $query.data->toOne().childrenData->cast(@JoinTreeNode)->toOne().join.operation};
+  assertNotEquals($condition, $joinCondition->eval($queryOver->eval($leftJoin)->optimized(pushDown())));
+  assertEquals($condition, $joinCondition->eval($queryOver->eval($asOfJoin)->optimized(pushDown())));
+}

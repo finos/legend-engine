@@ -57,7 +57,28 @@ public class ModelGenerator
             {
                 b.append("  next: test::domain::C").append(i + 1).append("[").append(this.config.nextMultiplicity).append("];\n");
             }
+            if (i == 0)
+            {
+                for (int v = 0; v < this.config.aggregateViews; v++)
+                {
+                    b.append("  g").append(v).append(": test::agg::G").append(v).append("[0..1];\n");
+                }
+                if (this.config.hops > 0)
+                {
+                    b.append("  hop: test::domain::C").append(this.config.hops).append("[0..1];\n");
+                }
+                for (int s = 1; s <= this.config.starJoins; s++)
+                {
+                    b.append("  s").append(s).append(": test::domain::C").append(s).append("[0..1];\n");
+                    b.append("  d").append(s).append(": test::domain::C").append(s).append("[0..1];\n");
+                }
+            }
             b.append("}\n");
+        }
+
+        for (int v = 0; v < this.config.aggregateViews; v++)
+        {
+            b.append("Class test::agg::G").append(v).append("\n{\n  tid: Integer[1];\n  total: Integer[0..1];\n}\n");
         }
 
         for (int j = 0; j < this.config.semiDepth; j++)
@@ -111,6 +132,18 @@ public class ModelGenerator
         {
             b.append("  Join J").append(i).append("(T").append(i).append(".fk = T").append(i + 1).append(".id)\n");
         }
+        for (int s = 1; s <= this.config.starJoins; s++)
+        {
+            b.append("  Join JS").append(s).append("(T0.fk = T").append(s).append(".id)\n");
+            b.append("  Join JD").append(s).append("(T0.fk = T").append(s).append(".id)\n");
+        }
+        for (int v = 0; v < this.config.aggregateViews; v++)
+        {
+            String source = "T" + (1 + v % (n - 1));
+            b.append("  View AV").append(v).append(" (\n    ~groupBy(").append(source).append(".fk)\n");
+            b.append("    tid: ").append(source).append(".fk PRIMARY KEY,\n    total: sum(").append(source).append(".p3)\n  )\n");
+            b.append("  Join JA").append(v).append("(T0.id = AV").append(v).append(".tid)\n");
+        }
         b.append(")\n");
     }
 
@@ -130,6 +163,18 @@ public class ModelGenerator
 
     private void appendMapping(StringBuilder b, int n)
     {
+        if (this.config.aggregateViews > 0 && (this.config.relationFunction || this.config.unionSets > 0 || n < 2))
+        {
+            throw new IllegalArgumentException("--aggviews needs the plain table mapping and --scale of at least 2");
+        }
+        if (this.config.starJoins > 0 && (this.config.relationFunction || this.config.unionSets > 0 || n <= this.config.starJoins))
+        {
+            throw new IllegalArgumentException("--star K needs the plain table mapping and --scale above K");
+        }
+        if (this.config.hops > 0 && (this.config.relationFunction || this.config.unionSets > 0 || n <= this.config.hops))
+        {
+            throw new IllegalArgumentException("--hops K needs the plain table mapping and --scale above K");
+        }
         if (this.config.relationFunction)
         {
             this.appendRelationFunctionMapping(b, n);
@@ -154,7 +199,17 @@ public class ModelGenerator
         {
             b.append("  test::view::V0: Pure\n  {\n    ~src test::domain::C0\n    q0: $src.p0,\n    q1: $src.p1,\n    q2: $src.p2\n  }\n");
         }
+        this.appendAggregateViewMappings(b);
         b.append(")\n");
+    }
+
+    private void appendAggregateViewMappings(StringBuilder b)
+    {
+        for (int v = 0; v < this.config.aggregateViews; v++)
+        {
+            b.append("  test::agg::G").append(v).append(": Relational\n  {\n    ~mainTable [test::DB]AV").append(v).append("\n");
+            b.append("    tid: [test::DB]AV").append(v).append(".tid,\n    total: [test::DB]AV").append(v).append(".total\n  }\n");
+        }
     }
 
     private void appendIncludeChainMapping(StringBuilder b, int n)
@@ -220,6 +275,26 @@ public class ModelGenerator
         if (this.config.semiDepth > 0 && i == 0)
         {
             b.append(",\n    det: Binding test::SB : [test::DB]T0.sdet");
+        }
+        if (i == 0)
+        {
+            for (int v = 0; v < this.config.aggregateViews; v++)
+            {
+                b.append(",\n    g").append(v).append(": [test::DB]@JA").append(v);
+            }
+            if (this.config.hops > 0)
+            {
+                b.append(",\n    hop: [test::DB]@J0");
+                for (int h = 1; h < this.config.hops; h++)
+                {
+                    b.append(" > @J").append(h);
+                }
+            }
+            for (int s = 1; s <= this.config.starJoins; s++)
+            {
+                b.append(",\n    s").append(s).append(": [test::DB]@JS").append(s);
+                b.append(",\n    d").append(s).append(": [test::DB]@JD").append(s);
+            }
         }
         if (i < n - 1)
         {

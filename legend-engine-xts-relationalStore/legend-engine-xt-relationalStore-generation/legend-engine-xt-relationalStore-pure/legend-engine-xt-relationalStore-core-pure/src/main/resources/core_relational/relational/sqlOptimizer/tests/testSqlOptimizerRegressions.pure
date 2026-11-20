@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::external::store::relational::tests::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::relational::sqlOptimizer::*;
+import meta::pure::mapping::*;
+import meta::relational::sqlOptimizer::rules::*;
+import meta::relational::tests::csv::*;
+import meta::relational::tests::sqlOptimizer::*;
+import meta::relational::tests::sqlOptimizer::regressions::*;
+import meta::relational::validation::*;
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::regressions::allRulesEnabled():String[*]
+{
+  ['SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING', 'SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION']
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testTrimmingKeepsColumnsReferencedOnlyByTheParentColumnList():Boolean[1]
+{
+  meta::relational::tests::mapping::union::createTablesAndFillDb();
+  let query = {|meta::relational::tests::model::simple::Firm.all()->project([p | $p.employeesWithAddressNameSorted('New York')], ['New York Employees'])};
+  let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
+  let unoptimized = execute($query, $mapping, testRuntime(), meta::relational::extension::relationalExtensions());
+  let optimized = execute($query, $mapping, testRuntime()->withGenerationFeatures(allRulesEnabled(), []), meta::relational::extension::relationalExtensions());
+  assertEquals($unoptimized.values->at(0).rows->map(r | $r.values->makeString(', ')), $optimized.values->at(0).rows->map(r | $r.values->makeString(', ')));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testEliminationDoesNotLetMergedAliasCaptureACorrelatedReference():Boolean[1]
+{
+  meta::relational::validation::complex::createTablesInDb();
+  let validate = {features:String[*] | validate({|meta::relational::validation::complex::Firm.all()}, meta::relational::validation::complex::validationComplexMappingWithInnerJoins, meta::relational::validation::complex::getRuntime()->withGenerationFeatures($features, []), ['constraint3'], meta::relational::extension::relationalExtensions()).values->toCSV()};
+  assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\nconstraint3,Error,,4\n', $validate->eval([]));
+  assertEquals($validate->eval([]), $validate->eval(allRulesEnabled()));
+}
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::regressions::planSqlAndResultColumns(query:FunctionDefinition<{->Any[*]}>[1], enabled:String[*], disabled:String[*]):String[*]
+{
+  let plan = meta::pure::executionPlan::executionPlan($query, meta::relational::tests::simpleRelationalMapping, testRuntime()->withGenerationFeatures($enabled, $disabled), meta::relational::extension::relationalExtensions());
+  let nodes = $plan.rootExecutionNode->meta::pure::executionPlan::allNodes(meta::relational::extension::relationalExtensions())->filter(n | $n->instanceOf(meta::relational::mapping::SQLExecutionNode))->cast(@meta::relational::mapping::SQLExecutionNode);
+  $nodes->map(n | $n.resultColumns->map(c | $c.label + ':' + $c.dataType->toOne()->type()->elementToPath()))->concatenate($nodes.sqlQuery);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testEliminationKeepsThePlansDeclaredResultColumnTypes():Boolean[1]
+{
+  let query = {|meta::relational::tests::model::simple::Person.all()->project([col(p | $p.firstName, 'first'), col(p | $p.lastName, 'last')])->renameColumns(^Pair<String,String>(first = 'first', second = 'f'))->filter(r | $r.getString('f') == 'John')};
+  let without = planSqlAndResultColumns($query, [], 'SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION');
+  let with = planSqlAndResultColumns($query, 'SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION', []);
+  assertEquals($without->filter(x | !$x->startsWith('select')), $with->filter(x | !$x->startsWith('select')));
+  assertNotEquals($without->filter(x | $x->startsWith('select')), $with->filter(x | $x->startsWith('select')));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testTrimmingKeepsAQuotedInnerColumnThatTheOuterQueryReadsUnquoted():Boolean[1]
+{
+  let query = {|meta::relational::tests::mapping::relation::inlineJoin::Person.all()->project([p | $p.gatedFirstName], ['gatedFirstName'])};
+  let mapping = meta::relational::tests::mapping::relation::inlineJoin::NavigationFilterJoinMapping;
+  let runtime = testRuntime(meta::relational::tests::mapping::relation::inlineJoin::JoinDB);
+  let plan = meta::pure::executionPlan::executionPlan($query, $mapping, $runtime->withGenerationFeatures(allRulesEnabled(), []), meta::relational::extension::relationalExtensions());
+  assertSameSQL('select "persontable_2".FIRSTNAME as "gatedFirstName" from PersonTable as "persontable_1" left outer join (select "persontable_4".ID as relJoinKey_ID, "persontable_4".FIRSTNAME as "FIRSTNAME" from PersonTable as "persontable_4" inner join (select "firmtable_1".ID as ID from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_4".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_1".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    $plan.rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery);
+
+  let connection = $runtime.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+  meta::relational::tests::createPersonTableAndFillDb($connection);
+  meta::relational::tests::createFirmTableAndFillDb($connection);
+  meta::relational::metamodel::execute::executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (100, \'Nora\', \'Firmless\', 40, 1, 99, null);', $connection);
+  let names = {features:String[*] | execute($query, $mapping, $runtime->withGenerationFeatures($features, []), meta::relational::extension::relationalExtensions()).values->at(0).rows->map(r | if($r.isNull('gatedFirstName'), | 'NULL', | $r.getString('gatedFirstName')))->sort()};
+  let unoptimized = $names->eval([]);
+  let optimized = $names->eval(allRulesEnabled());
+  meta::relational::tests::createPersonTableAndFillDb($connection);
+  assertEquals(['Anthony', 'David', 'Fabrice', 'John', 'John', 'NULL', 'Oliver', 'Peter'], $unoptimized);
+  assertEquals($unoptimized, $optimized);
+}
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::regressions::printed(query:SelectSQLQuery[1]):String[1]
+{
+  $query->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.H2, [], [], meta::relational::extension::relationalExtensions())
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testOptimizerDiscardsARuleResultThatLeavesADanglingColumnReference():Boolean[1]
+{
+  let query = meta::relational::functions::sqlstring::toSQL({|meta::relational::tests::model::simple::Person.all()->project([col(p | $p.firstName, 'first'), col(p | $p.lastName, 'last')])->limit(5)->restrict('first')}, meta::relational::tests::simpleRelationalMapping, testRuntime()->withGenerationFeatures([], 'SQL_OPTIMIZATION_ALL'), meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery);
+  let breakingRule = ^SqlOptimizationRule(
+    name = 'Breaking',
+    featureName = 'BREAKING',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {q:SelectSQLQuery[1], c:SqlOptimizerContext[1] |
+      let root = $q.data->toOne();
+      let rootAlias = $root.alias;
+      let inner = $rootAlias.relationalElement->cast(@SelectSQLQuery);
+      let brokenInner = ^$inner(columns = $inner.columns->tail());
+      let brokenAlias = ^$rootAlias(relationalElement = $brokenInner);
+      let brokenRoot = ^$root(alias = $brokenAlias);
+      ^OptimizedQuery(hasChanged = true, query = ^$q(data = $brokenRoot));
+    }
+  );
+  let context = sqlOptimizerContext(DatabaseType.H2, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+  assertFalse($query->hasDanglingSubSelectReference());
+  assert($breakingRule.transform->eval($query, $context).query->hasDanglingSubSelectReference());
+  let optimized = applySqlOptimizationRules($query, $breakingRule, $context);
+  assertEquals($query->printed(), $optimized->printed());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testMergingFiltersRefusesAnOuterPredicateThatCanFailOnRowsTheInnerFilterRemoves():Boolean[1]
+{
+  let column = ^meta::relational::metamodel::TableAliasColumn(alias = ^meta::relational::metamodel::TableAlias(name = 't', relationalElement = ^SelectSQLQuery()), column = ^meta::relational::metamodel::Column(name = 'v', type = ^meta::relational::metamodel::datatype::Varchar(size = 10)));
+  let comparison = ^meta::relational::metamodel::DynaFunction(name = 'greaterThan', parameters = [^meta::relational::metamodel::DynaFunction(name = 'cast', parameters = $column), ^meta::relational::metamodel::Literal(value = 0)]);
+  let plain = ^meta::relational::metamodel::DynaFunction(name = 'equal', parameters = [$column, ^meta::relational::metamodel::Literal(value = 'a')]);
+  assert([$comparison]->mayRaiseError());
+  assertFalse([$plain]->mayRaiseError());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testPushDownReachesASubSelectThatComparesWithABatchFilterSubQuery():Boolean[1]
+{
+  let f = meta::relational::tests::sqlOptimizer::semantics::fixture('batchFilter');
+  let t = meta::relational::tests::sqlOptimizer::semantics::tableAlias('t', $f.t);
+  let u = meta::relational::tests::sqlOptimizer::semantics::tableAlias('u', $f.u);
+  let batchId = ^meta::relational::functions::pureToSqlQuery::metamodel::BatchFilterQueryIsolation(op = meta::relational::tests::sqlOptimizer::semantics::sel(meta::relational::tests::sqlOptimizer::semantics::named(meta::relational::tests::sqlOptimizer::semantics::ref($u, 'X'), 'x'), meta::relational::tests::sqlOptimizer::semantics::root($u)));
+  let innerSelect = meta::relational::tests::sqlOptimizer::semantics::sel([meta::relational::tests::sqlOptimizer::semantics::named(meta::relational::tests::sqlOptimizer::semantics::ref($t, 'ID'), 'id'), meta::relational::tests::sqlOptimizer::semantics::named(meta::relational::tests::sqlOptimizer::semantics::ref($t, 'G'), 'g')], meta::relational::tests::sqlOptimizer::semantics::root($t));
+  let s = meta::relational::tests::sqlOptimizer::semantics::tableAlias('s', ^$innerSelect(filteringOperation = ^meta::relational::metamodel::DynaFunction(name = 'lessThanEqual', parameters = [meta::relational::tests::sqlOptimizer::semantics::ref($t, 'W'), $batchId])));
+  let outerSelect = meta::relational::tests::sqlOptimizer::semantics::sel(meta::relational::tests::sqlOptimizer::semantics::named(meta::relational::tests::sqlOptimizer::semantics::ref($s, 'g'), 'g'), meta::relational::tests::sqlOptimizer::semantics::root($s));
+  let query = ^$outerSelect(filteringOperation = ^meta::relational::metamodel::DynaFunction(name = 'equal', parameters = [meta::relational::tests::sqlOptimizer::semantics::ref($s, 'id'), ^meta::relational::metamodel::Literal(value = 1)]));
+  let pushDown = [meta::relational::sqlOptimizer::rules::joinFilterPushDownRule(), meta::relational::sqlOptimizer::rules::subQueryFilterPushDownRule()];
+  assertSameSQL('select "s".g as g from (select "t".ID as id, "t".G as g from SQLOPT.SQLOPT_T_batchFilter as "t" where "t".W <= ( select "u".X as x from SQLOPT.SQLOPT_U_batchFilter as "u" ) and "t".ID = 1) as "s" where "s".id = 1', applySqlOptimizationRules($query, $pushDown, meta::relational::tests::sqlOptimizer::semantics::h2Context())->meta::relational::tests::sqlOptimizer::semantics::printedFor(DatabaseType.DB2));
+}
+
+// Twenty conjuncts because each pushed copy nests one more level of the subselect's and chain, and reading that chain used to cost
+// twice as much per level.
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testPushDownCopiesTwentyConjunctsIntoASubSelect():Boolean[1]
+{
+  let f = meta::relational::tests::sqlOptimizer::semantics::fixture('manyConjuncts');
+  let t = meta::relational::tests::sqlOptimizer::semantics::tableAlias('t', $f.t);
+  let s = meta::relational::tests::sqlOptimizer::semantics::tableAlias('s', meta::relational::tests::sqlOptimizer::semantics::sel([meta::relational::tests::sqlOptimizer::semantics::named(meta::relational::tests::sqlOptimizer::semantics::ref($t, 'ID'), 'id'), meta::relational::tests::sqlOptimizer::semantics::named(meta::relational::tests::sqlOptimizer::semantics::ref($t, 'G'), 'g')], meta::relational::tests::sqlOptimizer::semantics::root($t)));
+  let conjuncts = range(1, 21, 1)->map(i | meta::relational::tests::sqlOptimizer::semantics::fn('notEqual', [meta::relational::tests::sqlOptimizer::semantics::ref($s, 'id'), meta::relational::tests::sqlOptimizer::semantics::lit($i)]));
+  let query = ^SelectSQLQuery(columns = meta::relational::tests::sqlOptimizer::semantics::named(meta::relational::tests::sqlOptimizer::semantics::ref($s, 'g'), 'g'), data = meta::relational::tests::sqlOptimizer::semantics::root($s),
+                              filteringOperation = $conjuncts->tail()->fold({c, acc | meta::relational::tests::sqlOptimizer::semantics::fn('and', [$acc, $c])}, $conjuncts->at(0)));
+  let pushDown = [meta::relational::sqlOptimizer::rules::joinFilterPushDownRule(), meta::relational::sqlOptimizer::rules::subQueryFilterPushDownRule()];
+  assertSameSQL('select "s".g as g from (select "t".ID as id, "t".G as g from SQLOPT.SQLOPT_T_manyConjuncts as "t" where "t".ID <> 1 and "t".ID <> 2 and "t".ID <> 3 and "t".ID <> 4 and "t".ID <> 5 and "t".ID <> 6 and "t".ID <> 7 and "t".ID <> 8 and "t".ID <> 9 and "t".ID <> 10 and "t".ID <> 11 and "t".ID <> 12 and "t".ID <> 13 and "t".ID <> 14 and "t".ID <> 15 and "t".ID <> 16 and "t".ID <> 17 and "t".ID <> 18 and "t".ID <> 19 and "t".ID <> 20) as "s" where "s".id <> 1 and "s".id <> 2 and "s".id <> 3 and "s".id <> 4 and "s".id <> 5 and "s".id <> 6 and "s".id <> 7 and "s".id <> 8 and "s".id <> 9 and "s".id <> 10 and "s".id <> 11 and "s".id <> 12 and "s".id <> 13 and "s".id <> 14 and "s".id <> 15 and "s".id <> 16 and "s".id <> 17 and "s".id <> 18 and "s".id <> 19 and "s".id <> 20', applySqlOptimizationRules($query, $pushDown, meta::relational::tests::sqlOptimizer::semantics::h2Context())->meta::relational::tests::sqlOptimizer::semantics::printedFor(DatabaseType.H2));
+}

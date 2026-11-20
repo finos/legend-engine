@@ -1,0 +1,184 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::sqlOptimizer::tree::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+
+// Each problem is a stable string, so a rule result is judged by the problems it ADDS to the query it received
+// and a problem already present in the input never switches the check off.
+function meta::relational::sqlOptimizer::danglingReferences(query:SelectSQLQuery[1]):String[*]
+{
+  $query->extractRelationalElements(true)->danglingReferences()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::danglingReferences(all:RelationalElementCollection[1]):String[*]
+{
+  $all->unexposedColumnReferences()
+    ->concatenate($all->undefinedAliasReferences())
+    ->concatenate($all->setOperationWidthMismatches())
+    ->concatenate($all->outerReferencesFromDerivedTables())
+    ->removeDuplicates()
+}
+
+function meta::relational::sqlOptimizer::hasDanglingSubSelectReference(query:SelectSQLQuery[1]):Boolean[1]
+{
+  $query->danglingReferences()->isNotEmpty()
+}
+
+function meta::relational::sqlOptimizer::introducesProblems(result:OptimizedQuery[1], previous:SelectSQLQuery[1]):Boolean[1]
+{
+  $result.query->validated()->introducesProblemsOver($previous->validated())
+}
+
+function meta::relational::sqlOptimizer::validated(query:SelectSQLQuery[1]):ValidatedQuery[1]
+{
+  let all = $query->extractRelationalElements(true);
+  ^ValidatedQuery(query = $query, problems = $all->danglingReferences(), orderedSetOperands = $all->orderedSetOperandCount());
+}
+
+function meta::relational::sqlOptimizer::introducesProblemsOver(candidate:ValidatedQuery[1], previous:ValidatedQuery[1]):Boolean[1]
+{
+  let known = $previous.problems->nameSet();
+  $candidate.problems->exists(x | !$known->containsName($x)) || ($candidate.orderedSetOperands > $previous.orderedSetOperands);
+}
+
+// ORDER BY / LIMIT / OFFSET on an arm of a set operation binds to the whole operation unless the arm is isolated in a subselect.
+function meta::relational::sqlOptimizer::orderedSetOperandCount(query:SelectSQLQuery[1]):Integer[1]
+{
+  $query->extractRelationalElements(true)->orderedSetOperandCount()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::orderedSetOperandCount(all:RelationalElementCollection[1]):Integer[1]
+{
+  $all.elements
+    ->filter(e | $e->instanceOf(SetOperationQuery))->cast(@SetOperationQuery).queries
+    ->filter(b | $b.orderBy->isNotEmpty() || $b.fromRow->isNotEmpty() || $b.toRow->isNotEmpty())
+    ->size()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::unexposedColumnReferences(all:RelationalElementCollection[1]):String[*]
+{
+  $all.elements
+    ->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)
+    ->map(s | $s->unexposedColumnReferencesOfSelect())
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::unexposedColumnReferencesOfSelect(select:SelectSQLQuery[1]):String[*]
+{
+  if($select.data->isEmpty(),
+    | [],
+    | let references = $select->ownReferences();
+      $select.data->toOne()->treeAliases()->map(a | $a.relationalElement->match([
+        inner:SelectSQLQuery[1] | $a->unexposedBy($inner.columns, $references),
+        u:SetOperationQuery[1] | let first = $u.queries->first();
+                                 if($first->isEmpty(), | [], | $a->unexposedBy($first->toOne().columns, $references));,
+        o:Any[1] | []
+      ]));
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::unexposedBy(alias:TableAlias[1], columns:RelationalOperationElement[*], references:RelationalOperationElement[*]):String[*]
+{
+  let namesKnown = $columns->isNotEmpty() && $columns->forAll(c | $c->outputNames()->isNotEmpty());
+  if(!$namesKnown,
+    | [],
+    | let exposed = $columns->map(c | $c->outputNames())->map(n | $n->keepKey())->nameSet();
+      $references->map(r | $r->referencedColumnOf($alias.name))->map(n | $n->keepKey())->filter(n | !$exposed->containsName($n))->map(n | 'unexposed:' + $alias.name + '.' + $n);
+  );
+}
+
+// A reference to an alias that is defined nowhere in the query (the alias was merged or removed but something still names it).
+function <<access.private>> meta::relational::sqlOptimizer::undefinedAliasReferences(all:RelationalElementCollection[1]):String[*]
+{
+  if(!$all.noUnknownElement,
+    | [],
+    | let selects = $all.elements->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery);
+      let defined = $selects->map(s | $s.data->map(d | $d->treeAliases()))->map(a | $a.name)->nameSet();
+      $all.elements->map(e | $e->referencedAliasNamesOf())->removeDuplicates()->filter(n | !$defined->containsName($n))->map(n | 'undefined-alias:' + $n);
+  );
+}
+
+// A subselect in FROM (other than a lateral join's) cannot read an alias of the query around it.
+function <<access.private>> meta::relational::sqlOptimizer::outerReferencesFromDerivedTables(all:RelationalElementCollection[1]):String[*]
+{
+  $all.elements
+    ->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)
+    ->map(s | $s.data->map(d | $d->derivedTableNodes()))
+    ->map(n | $n.alias.relationalElement->cast(@SelectSQLQuery)->aliasesReadFromOutside()->map(a | 'outer-reference:' + $n.alias.name + '>' + $a))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::derivedTableNodes(node:RelationalTreeNode[1]):RelationalTreeNode[*]
+{
+  let own = if($node.alias.relationalElement->instanceOf(SelectSQLQuery) && !$node->match([j:JoinTreeNode[1] | $j.lateral == true, a:Any[1] | false]), | $node, | []);
+  $own->concatenate($node.childrenData->cast(@RelationalTreeNode)->map(c | $c->derivedTableNodes()));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::aliasesReadFromOutside(select:SelectSQLQuery[1]):String[*]
+{
+  let all = $select->extractRelationalElements(true);
+  let defined = $all.elements->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)->concatenate($select)
+    ->map(s | $s.data->map(d | $d->treeAliases()))->map(a | $a.name)->nameSet();
+  $all.elements->map(e | $e->referencedAliasNamesOf())->removeDuplicates()->filter(n | !$defined->containsName($n));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::referencedAliasNamesOf(element:RelationalOperationElement[1]):String[*]
+{
+  $element->match([
+    t:TableAliasColumn[1] | $t.alias.name,
+    t:TableAliasColumnName[1] | $t.alias.name,
+    a:Any[1] | []
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::setOperationWidthMismatches(all:RelationalElementCollection[1]):String[*]
+{
+  $all.elements
+    ->filter(e | $e->instanceOf(SetOperationQuery))->cast(@SetOperationQuery)
+    ->filter(u | $u.queries.columns->isNotEmpty() && ($u.queries->map(b | $b.columns->size())->removeDuplicates()->size() > 1))
+    ->map(u | 'set-operation-width:' + $u.queries->map(b | $b.columns->size()->toString())->joinStrings(','))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::ownReferences(select:SelectSQLQuery[1]):RelationalOperationElement[*]
+{
+  $select->ownElements()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::nameSet(names:String[*]):Map<String, Boolean>[1]
+{
+  $names->map(n | pair($n, true))->newMap()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::containsName(names:Map<String, Boolean>[1], name:String[1]):Boolean[1]
+{
+  $names->get($name)->isNotEmpty()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::treeAliases(node:RelationalTreeNode[1]):TableAlias[*]
+{
+  $node.alias->concatenate($node.childrenData->cast(@RelationalTreeNode)->map(c | $c->treeAliases()))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::referencedColumnOf(element:RelationalOperationElement[1], aliasName:String[1]):String[*]
+{
+  $element->match([
+    t:TableAliasColumn[1] | if($t.alias.name == $aliasName, | $t.column.name, | []),
+    t:TableAliasColumnName[1] | if($t.alias.name == $aliasName, | $t.columnName, | []),
+    a:Any[1] | []
+  ])
+}

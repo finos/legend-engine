@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::pure::extension::*;
+import meta::pure::test::*;
+import meta::relational::extension::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+import meta::relational::tests::sqlOptimizer::semantics::ruleSupport::*;
+
+function meta::relational::tests::sqlOptimizer::semantics::ruleSupport::declaredSupport(rule:SqlOptimizationRule[1]):String[1]
+{
+  $rule.databaseSupport->match([
+    a:AllDatabaseSupport[1] | 'every database',
+    l:LimitedDatabaseSupport[1] | $l.supportedDatabaseTypes->sort()->joinStrings(', ')
+  ])
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testEveryRuleDeclaresTheDatabasesItSupports():Boolean[1]
+{
+  assertEquals(
+    [
+      'DuplicateLeftJoinMerge: every database',
+      'ExtractSubQueriesAsCTEs: every database',
+      'JoinFilterPushDown: every database',
+      'RedundantSubSelectElimination: every database',
+      'SubQueryFilterPushDown: every database',
+      'UnreadLeftJoinElimination: every database',
+      'UnusedColumnTrimming: every database'
+    ],
+    allSqlOptimizationRules(relationalExtensions())->map(r | $r.name + ': ' + $r->declaredSupport())->sort()
+  );
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::ruleSupport::distinctEverywhere(supportedDatabaseTypes:String[*]):SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'DistinctEverywhere',
+    featureName = 'DISTINCT_EVERYWHERE',
+    enabledByDefault = true,
+    databaseSupport = ^LimitedDatabaseSupport(supportedDatabaseTypes = $supportedDatabaseTypes),
+    transform = {q:SelectSQLQuery[1], c:SqlOptimizerContext[1] | ^OptimizedQuery(hasChanged = !$q.distinct->isTrue(), query = ^$q(distinct = true))}
+  )
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::ruleSupport::extensionContributing(rule:SqlOptimizationRule[1]):Extension[1]
+{
+  ^Extension(type = 'sqlOptimizerTest', moduleExtensions = ^RelationalExtension(module = 'relational', relational_sqlOptimizationRules = $rule))
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testARuleOnlyRunsOnTheDatabasesItSupports():Boolean[1]
+{
+  let t = tableAlias('t', fixture('rule_support').t);
+  let query = sel(named(ref($t, 'G'), 'G'), root($t));
+  let h2 = ^SqlOptimizerContext(dbType = DatabaseType.H2, exeCtx = ^meta::pure::runtime::ExecutionContext()->addFlagToContext(EnableSqlOptimization.ALL), extensions = extensionContributing(distinctEverywhere('Snowflake')));
+  assertEquals($query->printed(), $query->optimizeSqlQuery($h2)->cast(@SelectSQLQuery)->printed());
+  assert($query->optimizeSqlQuery(^$h2(dbType = DatabaseType.Snowflake))->cast(@SelectSQLQuery).distinct->isTrue());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testCTEExtractionLeavesALateralSubSelectInline():Boolean[1]
+{
+  let f = fixture('cte_lateral');
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let s = tableAlias('s', sel(named(ref($t, 'V'), '"v"'), root($t)));
+  let l = tableAlias('l', ^SelectSQLQuery(columns = named(ref($u, 'X'), '"x"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"'))));
+  let query = sel(named(ref($l, '"x"'), '"x"'), root($s, lateral($s, $l)));
+  let extracted = $query->optimized(meta::relational::sqlOptimizer::rules::extractSubQueriesAsCTEsRule());
+  assertEquals(['subquery_cte_1_1'], $extracted.commonTableExpressions.name);
+  assert($extracted.data.childrenData->cast(@JoinTreeNode).alias.relationalElement->toOne()->instanceOf(SelectSQLQuery));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::ruleSupport::keyHonouringVariants():String[*]
+{
+  ['ties', 'allNull', 'empty']
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::ruleSupport::queryThatFires(ruleName:String[1], f:Fixture[1]):SelectSQLQuery[0..1]
+{
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"')], root($t)));
+  if($ruleName == 'RedundantSubSelectElimination',
+    | sel([named(ref($s, '"id"'), '"id"'), named(ref($s, '"g"'), '"g"')], root($s)),
+    | if($ruleName == 'UnusedColumnTrimming',
+        | sel(named(ref($s, '"g"'), '"g"'), root($s)),
+        | if($ruleName == 'JoinFilterPushDown',
+            | ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($u, 'X'), '"x"')], data = root($t, joined($t, $u, sqlEquals(ref($u, 'TID'), ref($t, 'ID')), JoinType.LEFT_OUTER)), filteringOperation = sqlEquals(ref($t, 'ID'), lit(1))),
+            | if($ruleName == 'SubQueryFilterPushDown',
+                | ^SelectSQLQuery(columns = [named(ref($s, '"id"'), '"id"'), named(ref($s, '"g"'), '"g"')], data = root($s), filteringOperation = sqlEquals(ref($s, '"g"'), lit('a'))),
+                | if($ruleName == 'UnreadLeftJoinElimination',
+                    | sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"')], root($t, joined($t, $u, sqlEquals(ref($u, 'ID'), ref($t, 'V')), JoinType.LEFT_OUTER))),
+                    | if($ruleName == 'DuplicateLeftJoinMerge',
+                        | let u2 = tableAlias('u2', $f.u);
+                          sel([named(ref($t, 'ID'), '"id"'), named(ref($u, 'X'), '"x"'), named(ref($u2, 'G'), '"ug"')],
+                              root($t, [joined($t, $u, sqlEquals(ref($u, 'ID'), ref($t, 'V')), JoinType.LEFT_OUTER), joined($t, $u2, sqlEquals(ref($t, 'V'), ref($u2, 'ID')), JoinType.LEFT_OUTER)]));,
+                        | if($ruleName == 'ExtractSubQueriesAsCTEs',
+                            | sel(named(ref($s, '"g"'), '"g"'), root($s)),
+                            | []
+                          )
+                      )
+                  )
+              )
+          )
+      )
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testEverySupportedRuleRewritesAQueryWithoutChangingItsRows(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('rule_fires', $conn);
+  let dbType = $f.connection.type;
+  let supported = supportedRules($dbType);
+  assertEquals([], $supported->filter(r | queryThatFires($r.name, $f)->isEmpty()).name, | 'rules supported on ' + $dbType->toString() + ' without a query that exercises them');
+  $supported->map({rule |
+    let query = queryThatFires($rule.name, $f)->toOne();
+    let onlyThisRule = [DisableSqlOptimization.ALL->cast(@Enum), EnableSqlOptimization->enumValues()->filter(e | $e->toString() == $rule.featureName)->toOne()->cast(@Enum)];
+    let ctx = sqlOptimizerContext($dbType, $f.connection, ^meta::pure::runtime::ExecutionContext()->addFlagToContext($onlyThisRule), relationalExtensions());
+    let before = $query->printedFor($dbType);
+    let after = $query->optimizeSqlQuery($ctx)->cast(@SelectSQLQuery)->printedFor($dbType);
+    assertNotEquals($before, $after, | $rule.name + ' did not rewrite its query on ' + $dbType->toString());
+    assertSameRows($f, $before, pair($rule.name, $after), false, keyHonouringVariants());
+  });
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testUnsupportedRulesLeaveTheQueryAloneEvenWhenEnabled(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('rule_unsupported', $conn);
+  let dbType = $f.connection.type;
+  allSqlOptimizationRules(relationalExtensions())->filter(r | !$r->isSupportedOn($dbType))->map({rule |
+    let query = queryThatFires($rule.name, $f)->toOne();
+    let ctx = sqlOptimizerContext($dbType, $f.connection, ^meta::pure::runtime::ExecutionContext()->addFlagToContext(EnableSqlOptimization.ALL), relationalExtensions());
+    assertEquals($query->printedFor($dbType), $query->optimizeSqlQuery($ctx)->cast(@SelectSQLQuery)->printedFor($dbType), | $rule.name + ' rewrote a query on ' + $dbType->toString() + ', which it does not support');
+  });
+  true;
+}

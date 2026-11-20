@@ -50,7 +50,7 @@ flowchart TD
     Pure["Pure query (lambda)"]
     Router["Router + pureToSQLQuery"]
     RelAST["Relational metamodel AST\n(SelectSQLQuery, JoinTreeNode, DynaFunction)"]
-    Post["Relational post-processors\n(pushFiltersDownToJoins, removeUnionOrJoins, reAlias, ...)"]
+    Post["Relational post-processors\n(removeUnionOrJoins, reAlias, ...)\nthen the relational SQL optimizer\n(filter push-down, trimming, ...)"]
     Convert["toPostgresModel\nconvertSqlQuery / convertRelationalOperationElement"]
     PgAST["Postgres SQL metamodel AST\n(Query, QuerySpecification, Join, ...)"]
     Plan["planSqlStatement\nRULE-BASED SQL OPTIMIZER"]
@@ -470,15 +470,15 @@ predicate, none of which any single rule produces alone.
 
 Filter push-down exists **twice** in this codebase, at two different layers:
 
-| | `postProcessor::filterPushDown::pushFiltersDownToJoins` | `sqlPlanning` rules |
+| | `sqlOptimizer::rules::joinFilterPushDownRule` / `subQueryFilterPushDownRule` | `sqlPlanning` rules |
 |---|---|---|
 | AST | Relational metamodel (`SelectSQLQuery`, `JoinTreeNode`) | Postgres SQL metamodel (`Query`, `Join`) |
-| Runs | Always, for every dialect, in `sqlQueryDefaultPostProcessors()` | Only on the dialect-translation path (H2) |
-| Registration | Hardcoded list in `defaultPostProcessor.pure` | Default list + extension-contributed rules |
-| Scope | Also handles `tryPushFiltersIntoSubQuery` | Same two transformations, re-expressed |
+| Runs | Every dialect, as SQL optimizer rules after the post-processors | No longer run: `shouldOptimize` is kept for compatibility only |
+| Registration | `defaultSqlOptimizationRules()` + the `relational_sqlOptimizationRules` extension slot | Default list + extension-contributed rules |
+| Scope | Join `ON` clauses and `FROM` subselects | Same two transformations, re-expressed |
 
-They are independent implementations of overlapping ideas, and on the H2 path **both** run — the
-post-processor on the relational AST before conversion, the rules on the SQL AST after. This is the
+They are independent implementations of overlapping ideas. Only the relational-AST rules run now; the
+SQL-AST planner rules stay in the codebase but `shouldOptimize` no longer invokes them. This is the
 same "two frameworks, one concept" hazard called out in the dialect-translation doc: when a filter
 appears somewhere unexpected in generated SQL, establish *which layer* put it there before changing
 anything.
@@ -486,7 +486,8 @@ anything.
 Other members of the legacy family worth knowing, because §11.3 proposes SQL-AST equivalents:
 `removeUnionOrJoinsPostProcessor` (prunes unions/joins not contributing to the result — and, notably,
 already implements the dbType + connection-feature gating that the SQL planner still has as a TODO),
-`cteExtractionPostProcessor`, `reAliasQuery`, `trimColumnNamePostProcessor`.
+`reAliasQuery`, `trimColumnNamePostProcessor`. CTE extraction, once a member, is now the last SQL optimizer rule
+(`sqlOptimizer::rules::extractSubQueriesAsCTEsRule`); its connection post-processor only enables it.
 
 ---
 

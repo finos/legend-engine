@@ -1,0 +1,757 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::sqlOptimizer::duckDbRefusals::RefusalDb
+(
+  Schema SQLOPT
+  (
+    Table DDR_L (ID INT, K INT, BK BIGINT, S VARCHAR(10), F DOUBLE, D DECIMAL(10,2), G VARCHAR(10), V INT)
+    Table DDR_R (ID INT PRIMARY KEY, NAME VARCHAR(10), S VARCHAR(20), F DOUBLE, D DECIMAL(10,2), D4 DECIMAL(12,4))
+    Table DDR_LC (ID INT, C CHAR(5))
+    Table DDR_RC (ID INT PRIMARY KEY, NAME VARCHAR(10), S VARCHAR(20), C CHAR(5))
+    Table DDR_R2 (ID INT PRIMARY KEY, NAME VARCHAR(10))
+    Table DDR_RK (A INT PRIMARY KEY, B INT PRIMARY KEY, NAME VARCHAR(10))
+    Table DDR_RN (ID INT, NAME VARCHAR(10))
+    Table DDR_RF (F DOUBLE PRIMARY KEY, NAME VARCHAR(10))
+    Table DDR_RM
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INT PRIMARY KEY,
+      NAME VARCHAR(10),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+  )
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::sqlOptimizer::tree::*;
+import meta::relational::runtime::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+import meta::relational::tests::sqlOptimizer::duckDbRefusals::*;
+
+// ---------- data ----------
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::variants():String[*]
+{
+  ['nullsDups', 'empty', 'ties', 'allNull', 'issue1172']
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::rowsOf(variant:String[1]):Pair<String,String>[*]
+{
+  if($variant == 'nullsDups',
+    | [pair('DDR_L', '1,1,1,a,0.0,1.00,g1,10\n2,1,1,a,0.0,1.00,g1,10\n3,2,2,01,-0.0,2.50,g2,\n4,,,,,,,\n5,9,9,A,1.5,9.99,g2,5\n6,3,3,001,2.0,3.00,g1,7'),
+       pair('DDR_LC', '1,a\n2,a\n3,b\n4,\n5,A\n6,c'),
+       pair('DDR_R', '1,one,a,0.0,1.00,1.0000\n2,two,01,-0.0,2.50,2.5000\n3,,A,2.0,3.00,3.0000\n10,ten,,,,'),
+       pair('DDR_RC', '1,one,a,a\n2,two,01,b\n3,,A,c\n10,ten,,'),
+       pair('DDR_R2', '1,uno\n3,tres'),
+       pair('DDR_RK', '1,1,k11\n1,2,k12\n2,1,k21'),
+       pair('DDR_RN', '1,n1\n1,n1b\n2,n2\n,nnull'),
+       pair('DDR_RF', '0.0,zero\n1.5,onehalf'),
+       pair('DDR_RM', '1,m1v1,2020-01-01,2021-01-01\n1,m1v2,2021-01-01,9999-12-31\n2,m2,2020-01-01,9999-12-31')],
+    | if($variant == 'ties',
+        | [pair('DDR_L', '1,1,1,a,1.0,1.00,g,1\n2,1,1,a,1.0,1.00,g,1\n3,1,1,a,1.0,1.00,g,1'),
+           pair('DDR_LC', '1,a\n2,a\n3,a'),
+           pair('DDR_R', '1,one,a,1.0,1.00,1.0000'),
+           pair('DDR_RC', '1,one,a,a'),
+           pair('DDR_R2', '1,uno'),
+           pair('DDR_RK', '1,1,k'),
+           pair('DDR_RN', '1,x\n1,y'),
+           pair('DDR_RF', '1.0,one'),
+           pair('DDR_RM', '1,m,2020-01-01,9999-12-31')],
+        | if($variant == 'allNull',
+            | [pair('DDR_L', ',,,,,,,'),
+               pair('DDR_LC', ','),
+               pair('DDR_R', ',,,,,'),
+               pair('DDR_RC', ',,,'),
+               pair('DDR_R2', ','),
+               pair('DDR_RK', ',,'),
+               pair('DDR_RN', ','),
+               pair('DDR_RF', ','),
+               pair('DDR_RM', ',,,')],
+            | if($variant == 'numericText',
+                | [pair('DDR_L', '1,1,1,01,1.0,1.00,g,1\n2,1,1,001,1.0,1.00,g,1\n3,1,1,1,1.0,1.00,g,1\n4,2,2,2,2.0,2.00,g,2\n5,,,,,,,'),
+                   pair('DDR_LC', '1,a\n2,a\n3,a\n4,b\n5,'),
+                   pair('DDR_R', '1,one,1,1.0,1.00,1.0000\n2,two,2,2.0,2.00,2.0000'),
+                   pair('DDR_RC', '1,one,1,a\n2,two,2,b')],
+            | if($variant == 'issue1172',
+                | [pair('DDR_L', '1,1,1,1,1.0,1.00,g,1\n2,1,1,1,1.0,1.00,g,1\n3,,,,,,g,'),
+                   pair('DDR_LC', '1,1\n2,1\n3,'),
+                   pair('DDR_RN', '1,a\n1,b\n1,c\n1,d\n1,e\n1,f')],
+                | []
+              )
+            )
+          )
+      )
+  )
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::tableData(variant:String[1], sql:String[1]):Pair<Table,String>[*]
+{
+  let rows = rowsOf($variant);
+  RefusalDb->schema('SQLOPT')->toOne().tables
+    ->filter(t | [' ', '.']->exists(before | $sql->contains($before + $t.name + ' ') || $sql->endsWith($before + $t.name)))
+    ->map(t | pair($t, $rows->filter(r | $r.first == $t.name).second->joinStrings('')));
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::resultRows(conn:Connection[1], query:SelectSQLQuery[1], variant:String[1]):String[*]
+{
+  let connection = $conn->cast(@DatabaseConnection);
+  let sql = $query->meta::relational::tests::sqlOptimizer::semantics::printedFor($connection.type);
+  meta::relational::tests::sqlOptimizer::semantics::queryResult($sql, $connection, tableData($variant, $sql));
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::rows(conn:Connection[1], query:SelectSQLQuery[1], variant:String[1]):String[*]
+{
+  resultRows($conn, $query, $variant)->tail()->sort()
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::assertSameRowsOnEveryVariant(conn:Connection[1], before:SelectSQLQuery[1], after:SelectSQLQuery[1], ordered:Boolean[1]):Boolean[1]
+{
+  assertSameRows($conn, $before, $after, $ordered, variants());
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::assertSameRows(conn:Connection[1], before:SelectSQLQuery[1], after:SelectSQLQuery[1], ordered:Boolean[1], dataVariants:String[*]):Boolean[1]
+{
+  let dbType = $conn->cast(@DatabaseConnection).type;
+  $dataVariants->forAll(v |
+    let expected = resultRows($conn, $before, $v);
+    let actual = if($after->printed() == $before->printed(), | $expected, | resultRows($conn, $after, $v));
+    assertEquals($expected->meta::relational::tests::sqlOptimizer::semantics::sameRowsForm($ordered), $actual->meta::relational::tests::sqlOptimizer::semantics::sameRowsForm($ordered),
+      'variant %s on %s: %s\nvs\n%s', [$v, $dbType->toString(), $before->meta::relational::tests::sqlOptimizer::semantics::printedFor($dbType), $after->meta::relational::tests::sqlOptimizer::semantics::printedFor($dbType)]);
+  );
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::rowCount(conn:Connection[1], query:SelectSQLQuery[1], variant:String[1]):Integer[1]
+{
+  resultRows($conn, $query, $variant)->tail()->size()
+}
+
+// ---------- optimizer plumbing ----------
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::printed(query:SelectSQLQuery[1]):String[1]
+{
+  $query->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.H2, [], [], meta::relational::extension::relationalExtensions())
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::optimized(query:SelectSQLQuery[1], rules:SqlOptimizationRule[*]):SelectSQLQuery[1]
+{
+  applySqlOptimizationRules($query, $rules, sqlOptimizerContext(DatabaseType.H2, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions()))
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::assertRewrites(conn:Connection[1], query:SelectSQLQuery[1], rules:SqlOptimizationRule[*], expectedSql:String[1], ordered:Boolean[1]):Boolean[1]
+{
+  let after = $query->optimized($rules);
+  assertEquals($expectedSql, $after->printed());
+  assertSameRowsOnEveryVariant($conn, $query, $after, $ordered);
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::assertUnchanged(conn:Connection[1], query:SelectSQLQuery[1], rules:SqlOptimizationRule[*]):Boolean[1]
+{
+  assertUnchanged($conn, $query, $rules, variants());
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::assertUnchanged(conn:Connection[1], query:SelectSQLQuery[1], rules:SqlOptimizationRule[*], dataVariants:String[*]):Boolean[1]
+{
+  let after = $query->optimized($rules);
+  assertEquals($query->printed(), $after->printed());
+  assertSameRows($conn, $query, $after, false, $dataVariants);
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::joinRules():SqlOptimizationRule[*]
+{
+  [duplicateLeftJoinMergeRule(), unreadLeftJoinEliminationRule()]
+}
+
+// ---------- AST builders ----------
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::tbl(name:String[1]):Table[1]
+{
+  RefusalDb->schema('SQLOPT')->toOne()->table($name)->toOne()
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::ta(name:String[1], relation:RelationalOperationElement[1]):TableAlias[1]
+{
+  ^TableAlias(name = $name, relationalElement = $relation)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::tt(name:String[1], table:String[1]):TableAlias[1]
+{
+  ta($name, tbl($table))
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::tac(alias:TableAlias[1], name:String[1]):TableAliasColumn[1]
+{
+  let column = $alias.relationalElement->match([
+    t:Table[1] | $t->column($name)->toOne(),
+    s:SelectSQLQuery[1] | let source = $s.columns->filter(c | $c->outputName() == $name)->map(c | $c->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]))->first();
+                          ^Column(name = $name, type = $source->map(x | $x->match([t:TableAliasColumn[1] | $t.column.type, a:Any[1] | tbl('DDR_L')->column('V')->toOne().type]))->first()->orElse(tbl('DDR_L')->column('V')->toOne().type));,
+    a:Any[1] | ^Column(name = $name, type = tbl('DDR_L')->column('V')->toOne().type)
+  ]);
+  ^TableAliasColumn(alias = $alias, column = $column);
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::as(element:RelationalOperationElement[1], name:String[1]):Alias[1]
+{
+  ^Alias(name = $name, relationalElement = $element)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::lit(value:Any[1]):Literal[1]
+{
+  ^Literal(value = $value)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::sqlNull():Literal[1]
+{
+  ^Literal(value = ^SQLNull())
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::fn(name:String[1], parameters:RelationalOperationElement[*]):DynaFunction[1]
+{
+  ^DynaFunction(name = $name, parameters = $parameters)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::sqlEq(a:RelationalOperationElement[1], b:RelationalOperationElement[1]):DynaFunction[1]
+{
+  fn('equal', [$a, $b])
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::allOf(a:RelationalOperationElement[1], b:RelationalOperationElement[1]):DynaFunction[1]
+{
+  fn('and', [$a, $b])
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::root(alias:TableAlias[1]):RootJoinTreeNode[1]
+{
+  ^RootJoinTreeNode(alias = $alias)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::root(alias:TableAlias[1], joins:JoinTreeNode[*]):RootJoinTreeNode[1]
+{
+  ^RootJoinTreeNode(alias = $alias, childrenData = $joins)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::jn(parent:TableAlias[1], alias:TableAlias[1], operation:RelationalOperationElement[1], joinType:JoinType[1]):JoinTreeNode[1]
+{
+  jn($parent, $alias, $operation, $joinType, [])
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::jn(parent:TableAlias[1], alias:TableAlias[1], operation:RelationalOperationElement[1], joinType:JoinType[1], children:JoinTreeNode[*]):JoinTreeNode[1]
+{
+  ^JoinTreeNode(alias = $alias, database = RefusalDb, joinName = 'j_' + $alias.name, joinType = $joinType, childrenData = $children,
+                join = ^Join(name = 'j_' + $alias.name, target = $alias, aliases = [pair($parent, $alias), pair($alias, $parent)], operation = $operation->cast(@meta::relational::metamodel::operation::Operation)))
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::leftJoin(parent:TableAlias[1], alias:TableAlias[1], operation:RelationalOperationElement[1]):JoinTreeNode[1]
+{
+  jn($parent, $alias, $operation, JoinType.LEFT_OUTER)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::sel(columns:RelationalOperationElement[*], data:RootJoinTreeNode[1]):SelectSQLQuery[1]
+{
+  ^SelectSQLQuery(columns = $columns, data = $data)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::ascending(element:RelationalOperationElement[1]):OrderBy[1]
+{
+  ^OrderBy(column = $element, direction = meta::relational::metamodel::SortDirection.ASC)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::rowNumberOver(partition:RelationalOperationElement[*], sortBy:RelationalOperationElement[*]):WindowColumn[1]
+{
+  ^WindowColumn(columnName = 'RN', func = fn('rowNumber', []), window = ^meta::relational::metamodel::Window(partition = $partition, sortBy = $sortBy->map(s | ^SortByInfo(sortByElement = $s, sortDirection = meta::relational::metamodel::SortDirection.ASC))))
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::onConditionOf(query:SelectSQLQuery[1]):String[1]
+{
+  let sql = $query->printed();
+  $sql->substring($sql->indexOf(' on ('));
+}
+
+// ---------- 1. typed equality transfer in JoinFilterPushDown ----------
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::declaredType(table:String[1], column:String[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+  tbl($table)->column($column)->toOne().type
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testTransferNeedsAnEqualityThatIdentifiesValues():Boolean[1]
+{
+  let greater = fn('greaterThan', [tac(tt('l', 'DDR_L'), 'K'), lit(1)]);
+  let int = declaredType('DDR_L', 'K');
+  assert($greater->isImpliedThroughEquality($int, declaredType('DDR_R', 'ID')));
+  assert($greater->isImpliedThroughEquality(declaredType('DDR_L', 'BK'), $int));
+  assert($greater->isImpliedThroughEquality(declaredType('DDR_L', 'D'), declaredType('DDR_R', 'D4')));
+  assert($greater->isImpliedThroughEquality(declaredType('DDR_L', 'S'), declaredType('DDR_R', 'S')));
+  assert($greater->isImpliedThroughEquality(declaredType('DDR_RM', 'FROM_Z'), declaredType('DDR_RM', 'THRU_Z')));
+  assertFalse($greater->isImpliedThroughEquality(declaredType('DDR_L', 'S'), $int));
+  assertFalse($greater->isImpliedThroughEquality(declaredType('DDR_L', 'F'), declaredType('DDR_R', 'F')));
+  assertFalse($greater->isImpliedThroughEquality(^meta::relational::metamodel::datatype::Float(), ^meta::relational::metamodel::datatype::Float()));
+  assertFalse($greater->isImpliedThroughEquality(^meta::relational::metamodel::datatype::Real(), ^meta::relational::metamodel::datatype::Real()));
+  assertFalse($greater->isImpliedThroughEquality(declaredType('DDR_LC', 'C'), declaredType('DDR_RC', 'C')));
+  assertFalse($greater->isImpliedThroughEquality(declaredType('DDR_LC', 'C'), declaredType('DDR_RC', 'S')));
+  assertFalse($greater->isImpliedThroughEquality(^meta::relational::metamodel::datatype::Date(), ^meta::relational::metamodel::datatype::Timestamp()));
+  assertFalse($greater->isImpliedThroughEquality(^meta::relational::metamodel::datatype::SemiStructured(), ^meta::relational::metamodel::datatype::SemiStructured()));
+  assertFalse($greater->isImpliedThroughEquality(^meta::relational::metamodel::datatype::Other(), ^meta::relational::metamodel::datatype::Other()));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testPatternPredicatesCrossOnlyIdenticalNonCharacterTypes():Boolean[1]
+{
+  let startsWith = fn('startsWith', [tac(tt('l', 'DDR_L'), 'S'), lit('a')]);
+  assertFalse($startsWith->isImpliedThroughEquality(declaredType('DDR_L', 'S'), declaredType('DDR_L', 'S')));
+  assertFalse($startsWith->isImpliedThroughEquality(declaredType('DDR_L', 'S'), declaredType('DDR_R', 'S')));
+  assertFalse(fn('endsWith', [tac(tt('l', 'DDR_L'), 'S'), lit('a')])->isImpliedThroughEquality(declaredType('DDR_L', 'S'), declaredType('DDR_R', 'S')));
+  assertFalse(fn('contains', [tac(tt('l', 'DDR_L'), 'S'), lit('a')])->isImpliedThroughEquality(declaredType('DDR_L', 'S'), declaredType('DDR_R', 'S')));
+  assert($startsWith->isImpliedThroughEquality(declaredType('DDR_L', 'K'), declaredType('DDR_R', 'ID')));
+  assertFalse($startsWith->isImpliedThroughEquality(declaredType('DDR_L', 'BK'), declaredType('DDR_R', 'ID')));
+  assertFalse($startsWith->isImpliedThroughEquality(declaredType('DDR_L', 'D'), declaredType('DDR_R', 'D4')));
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::pushdownQuery(leftColumn:String[1], rightColumn:String[1], predicate:Function<{TableAliasColumn[1]->RelationalOperationElement[1]}>[1]):SelectSQLQuery[1]
+{
+  pushdownQuery('DDR_L', 'DDR_R', $leftColumn, $rightColumn, $predicate)
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::pushdownQuery(leftTable:String[1], rightTable:String[1], leftColumn:String[1], rightColumn:String[1], predicate:Function<{TableAliasColumn[1]->RelationalOperationElement[1]}>[1]):SelectSQLQuery[1]
+{
+  let l = tt('l', $leftTable);
+  let r = tt('r', $rightTable);
+  ^SelectSQLQuery(
+    columns = [as(tac($l, 'ID'), 'ID'), as(tac($r, 'NAME'), 'NAME')],
+    data = root($l, leftJoin($l, $r, sqlEq(tac($l, $leftColumn), tac($r, $rightColumn)))),
+    filteringOperation = $predicate->eval(tac($l, $leftColumn))
+  );
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::withThePredicateCopiedOntoTheRightKey(query:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  let join = $query.data.childrenData->cast(@JoinTreeNode)->toOne();
+  let equality = $join.join.operation->cast(@DynaFunction);
+  let rightKey = $equality.parameters->at(1);
+  let predicate = $query.filteringOperation->toOne()->cast(@DynaFunction);
+  let copied = ^$predicate(parameters = $rightKey->concatenate($predicate.parameters->tail()));
+  let joinOperation = $join.join;
+  ^$query(data = ^RootJoinTreeNode(alias = $query.data.alias->toOne(), childrenData = ^$join(join = ^$joinOperation(operation = allOf($equality, $copied)->cast(@meta::relational::metamodel::operation::Operation)))));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testIntegerKeyTransfersAComparison(conn:Connection[1]):Boolean[1]
+{
+  let query = pushdownQuery('K', 'ID', {c | fn('greaterThan', [$c, lit(1)])});
+  let after = $query->optimized(joinFilterPushDownRule());
+  assertEquals(' on ("l".K = "r".ID and "r".ID > 1) where "l".K > 1', $after->onConditionOf());
+  assertSameRowsOnEveryVariant($conn, $query, $after, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testExactNumericKeysOfDifferentWidthTransferAComparison(conn:Connection[1]):Boolean[1]
+{
+  let query = pushdownQuery('BK', 'ID', {c | fn('lessThanEqual', [$c, lit(2)])});
+  let after = $query->optimized(joinFilterPushDownRule());
+  assertEquals(' on ("l".BK = "r".ID and "r".ID <= 2) where "l".BK <= 2', $after->onConditionOf());
+  assertSameRowsOnEveryVariant($conn, $query, $after, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testVarcharKeysTransferAComparisonButNotAPattern(conn:Connection[1]):Boolean[1]
+{
+  let comparison = pushdownQuery('S', 'S', {c | sqlEq($c, lit('a'))});
+  let comparisonAfter = $comparison->optimized(joinFilterPushDownRule());
+  assertEquals(' on ("l".S = "r".S and "r".S = \'a\') where "l".S = \'a\'', $comparisonAfter->onConditionOf());
+  assertSameRowsOnEveryVariant($conn, $comparison, $comparisonAfter, false);
+  assertUnchanged($conn, pushdownQuery('S', 'S', {c | fn('startsWith', [$c, lit('a')])}), joinFilterPushDownRule());
+  assertUnchanged($conn, pushdownQuery('S', 'S', {c | fn('endsWith', [$c, lit('a')])}), joinFilterPushDownRule());
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::comparisonOnACoercingKey():SelectSQLQuery[1]
+{
+  pushdownQuery('S', 'ID', {c | fn('lessThan', [$c, lit('1')])})
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::patternOnACoercingKey():SelectSQLQuery[1]
+{
+  pushdownQuery('S', 'ID', {c | fn('startsWith', [$c, lit('0')])})
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testCoercingKeyDoesNotTransfer(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, comparisonOnACoercingKey(), joinFilterPushDownRule(), 'numericText');
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testCopyingAComparisonAcrossACoercingKeyWouldChangeRows(conn:Connection[1]):Boolean[1]
+{
+  let query = comparisonOnACoercingKey();
+  assertNotEquals(rows($conn, $query, 'numericText'), rows($conn, $query->withThePredicateCopiedOntoTheRightKey(), 'numericText'));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testCoercingKeyDoesNotTransferAPattern(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, patternOnACoercingKey(), joinFilterPushDownRule(), 'numericText');
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testCopyingAPatternAcrossACoercingKeyWouldChangeRows(conn:Connection[1]):Boolean[1]
+{
+  let query = patternOnACoercingKey();
+  assertNotEquals(rows($conn, $query, 'numericText'), rows($conn, $query->withThePredicateCopiedOntoTheRightKey(), 'numericText'));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testFloatKeyDoesNotTransfer(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, pushdownQuery('F', 'F', {c | fn('greaterThanEqual', [$c, lit(0)])}), joinFilterPushDownRule());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testCharKeysDoNotTransfer(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, pushdownQuery('DDR_LC', 'DDR_RC', 'C', 'C', {c | sqlEq($c, lit('a'))}), joinFilterPushDownRule());
+  assertUnchanged($conn, pushdownQuery('DDR_LC', 'DDR_RC', 'C', 'S', {c | sqlEq($c, lit('a'))}), joinFilterPushDownRule());
+}
+
+// ---------- 2. leaf discipline in RedundantSubSelectElimination ----------
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::literalSubSelect(constant:Literal[1]):TableAlias[1]
+{
+  let t = tt('t', 'DDR_L');
+  ta('s', sel([as(tac($t, 'ID'), 'ID'), as(tac($t, 'G'), 'G'), as(tac($t, 'V'), 'V'), as($constant, 'K')], root($t)));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testConstantOrderByKeyIsDroppedWhenMerging(conn:Connection[1]):Boolean[1]
+{
+  let s = literalSubSelect(lit('k'));
+  let query = ^SelectSQLQuery(columns = [as(tac($s, 'ID'), 'ID'), as(tac($s, 'G'), 'G')], data = root($s), orderBy = [ascending(tac($s, 'K')), ascending(tac($s, 'ID')), ascending(tac($s, 'G'))]);
+  assertRewrites($conn, $query, redundantSubSelectEliminationRule(), 'select "t".ID as ID, "t".G as G from SQLOPT.DDR_L as "t" order by "t".ID asc, "t".G asc', true);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testIntegerAndNullOrderByKeysAreDroppedNotTurnedIntoOrdinals(conn:Connection[1]):Boolean[1]
+{
+  let s = literalSubSelect(lit(2));
+  let query = ^SelectSQLQuery(columns = [as(tac($s, 'ID'), 'ID'), as(tac($s, 'V'), 'V')], data = root($s), orderBy = [ascending(tac($s, 'K')), ascending(tac($s, 'ID')), ascending(tac($s, 'V'))]);
+  assertRewrites($conn, $query, redundantSubSelectEliminationRule(), 'select "t".ID as ID, "t".V as V from SQLOPT.DDR_L as "t" order by "t".ID asc, "t".V asc', true);
+  let n = literalSubSelect(sqlNull());
+  let nullKeyed = ^SelectSQLQuery(columns = [as(tac($n, 'ID'), 'ID'), as(tac($n, 'V'), 'V')], data = root($n), orderBy = [ascending(tac($n, 'ID')), ascending(tac($n, 'K')), ascending(tac($n, 'V'))]);
+  assertRewrites($conn, $nullKeyed, redundantSubSelectEliminationRule(), 'select "t".ID as ID, "t".V as V from SQLOPT.DDR_L as "t" order by "t".ID asc, "t".V asc', true);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testLiteralGroupByKeyRefusesTheMerge(conn:Connection[1]):Boolean[1]
+{
+  let s = literalSubSelect(lit(1));
+  assertUnchanged($conn, ^SelectSQLQuery(columns = [as(fn('count', tac($s, 'ID')), 'N')], data = root($s), groupBy = tac($s, 'K')), redundantSubSelectEliminationRule());
+  let n = literalSubSelect(sqlNull());
+  assertUnchanged($conn, ^SelectSQLQuery(columns = [as(fn('count', tac($n, 'ID')), 'N')], data = root($n), groupBy = tac($n, 'K')), redundantSubSelectEliminationRule());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testLiteralWindowKeyRefusesTheMerge(conn:Connection[1]):Boolean[1]
+{
+  let s = literalSubSelect(lit(1));
+  assertUnchanged($conn, sel([as(tac($s, 'ID'), 'ID'), as(rowNumberOver(tac($s, 'K'), tac($s, 'ID')), 'RN')], root($s)), redundantSubSelectEliminationRule());
+  assertUnchanged($conn, sel([as(tac($s, 'ID'), 'ID'), as(rowNumberOver(tac($s, 'G'), [tac($s, 'K'), tac($s, 'ID')]), 'RN')], root($s)), redundantSubSelectEliminationRule());
+  let n = literalSubSelect(sqlNull());
+  assertUnchanged($conn, sel([as(tac($n, 'ID'), 'ID'), as(rowNumberOver(tac($n, 'K'), tac($n, 'ID')), 'RN')], root($n)), redundantSubSelectEliminationRule());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testColumnWindowKeysStillMerge(conn:Connection[1]):Boolean[1]
+{
+  let s = literalSubSelect(lit(1));
+  let query = sel([as(tac($s, 'ID'), 'ID'), as(rowNumberOver(tac($s, 'G'), [tac($s, 'ID'), tac($s, 'V')]), 'RN')], root($s));
+  let after = $query->optimized(redundantSubSelectEliminationRule());
+  assertSameSQL('select "t".ID as ID, row_number() over (partition by "t".G order by "t".ID asc, "t".V asc) as RN from SQLOPT.DDR_L as "t"', $after->printed());
+  assertSameRowsOnEveryVariant($conn, $query, $after, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testComputedInnerColumnIsNeverSubstituted(conn:Connection[1]):Boolean[1]
+{
+  let t = tt('t', 'DDR_L');
+  let s = ta('s', sel([as(tac($t, 'ID'), 'ID'), as(fn('plus', [tac($t, 'V'), lit(1)]), 'X')], root($t)));
+  assertUnchanged($conn, ^SelectSQLQuery(columns = [as(tac($s, 'ID'), 'ID')], data = root($s), groupBy = [tac($s, 'ID'), tac($s, 'X')], orderBy = ascending(tac($s, 'X'))), redundantSubSelectEliminationRule());
+}
+
+// ---------- 3. key-based LEFT join elimination and duplicate merge ----------
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::unreadJoin(rightTable:String[1], on:Function<{TableAlias[1], TableAlias[1]->RelationalOperationElement[1]}>[1], joinType:JoinType[1]):SelectSQLQuery[1]
+{
+  let l = tt('l', 'DDR_L');
+  let r = tt('r', $rightTable);
+  sel([as(tac($l, 'ID'), 'ID'), as(tac($l, 'G'), 'G')], root($l, jn($l, $r, $on->eval($l, $r), $joinType)));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testUnreadLeftJoinOnThePrimaryKeyIsDropped(conn:Connection[1]):Boolean[1]
+{
+  assertRewrites($conn, unreadJoin('DDR_R', {l, r | sqlEq(tac($r, 'ID'), tac($l, 'K'))}, JoinType.LEFT_OUTER), joinRules(), 'select "l".ID as ID, "l".G as G from SQLOPT.DDR_L as "l"', false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testUnreadLeftJoinOnTheWholeCompositeKeyIsDropped(conn:Connection[1]):Boolean[1]
+{
+  assertRewrites($conn, unreadJoin('DDR_RK', {l, r | allOf(sqlEq(tac($r, 'A'), tac($l, 'K')), sqlEq(tac($l, 'V'), tac($r, 'B')))}, JoinType.LEFT_OUTER), joinRules(), 'select "l".ID as ID, "l".G as G from SQLOPT.DDR_L as "l"', false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testUnreadLeftJoinToAGroupedSubSelectKeepsCountStar(conn:Connection[1]):Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let n = tt('n', 'DDR_RN');
+  let grouped = ta('g', ^SelectSQLQuery(columns = [as(tac($n, 'ID'), 'ID'), as(fn('count', []), 'C')], data = root($n), groupBy = tac($n, 'ID')));
+  let query = ^SelectSQLQuery(columns = [as(tac($l, 'G'), 'G'), as(fn('count', []), 'N')], data = root($l, leftJoin($l, $grouped, sqlEq(tac($l, 'K'), tac($grouped, 'ID')))), groupBy = tac($l, 'G'));
+  assertRewrites($conn, $query, joinRules(), 'select "l".G as G, count(*) as N from SQLOPT.DDR_L as "l" group by "l".G', false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testUnreadLeftJoinToADistinctSubSelectCoveredByTheOnIsDropped(conn:Connection[1]):Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let n = tt('n', 'DDR_RN');
+  let distinct = ta('d', ^SelectSQLQuery(distinct = true, columns = [as(tac($n, 'ID'), 'ID'), as(tac($n, 'NAME'), 'NAME')], data = root($n)));
+  let query = sel([as(tac($l, 'ID'), 'ID')], root($l, leftJoin($l, $distinct, allOf(sqlEq(tac($distinct, 'ID'), tac($l, 'K')), sqlEq(tac($distinct, 'NAME'), tac($l, 'G'))))));
+  assertRewrites($conn, $query, joinRules(), 'select "l".ID as ID from SQLOPT.DDR_L as "l"', false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testUnreadLeftJoinUnderDistinctIsDroppedWithoutAKey(conn:Connection[1]):Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let n = tt('n', 'DDR_RN');
+  let query = ^SelectSQLQuery(distinct = true, columns = [as(tac($l, 'G'), 'G')], data = root($l, leftJoin($l, $n, fn('greaterThan', [tac($n, 'ID'), tac($l, 'K')]))));
+  assertRewrites($conn, $query, joinRules(), 'select distinct "l".G as G from SQLOPT.DDR_L as "l"', false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testChainOfUnreadLeftJoinsIsDroppedLeafFirst(conn:Connection[1]):Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let r = tt('r', 'DDR_R');
+  let r2 = tt('r2', 'DDR_R2');
+  let query = sel([as(tac($l, 'ID'), 'ID')], root($l, jn($l, $r, sqlEq(tac($r, 'ID'), tac($l, 'K')), JoinType.LEFT_OUTER, jn($r, $r2, sqlEq(tac($r2, 'ID'), tac($r, 'ID')), JoinType.LEFT_OUTER))));
+  assertRewrites($conn, $query, joinRules(), 'select "l".ID as ID from SQLOPT.DDR_L as "l"', false);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testGeneratedUnreadJoinIsDroppedAfterTrimming():Boolean[1]
+{
+  meta::relational::tests::createTablesAndFillDb();
+  let query = {|meta::relational::tests::model::simple::Person.all()->project([col(p | $p.firstName, 'firstName'), col(p | $p.firm.legalName, 'firmName')])->take(1000)->restrictDistinct(['firstName'])};
+  let features = ['SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING', 'SQL_OPTIMIZATION_UNREAD_LEFT_JOIN_ELIMINATION'];
+  let unoptimized = execute($query, meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  let optimized = execute($query, meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime()->meta::relational::tests::sqlOptimizer::withGenerationFeatures($features, []), meta::relational::extension::relationalExtensions());
+  meta::relational::functions::asserts::assertSameSQL('select distinct "subselect"."firstName" as "firstName" from (select top 1000 "root".FIRSTNAME as "firstName" from personTable as "root") as "subselect"', $optimized);
+  assertEquals($unoptimized.values->cast(@meta::pure::tds::TabularDataSet).rows->map(r | $r.values->makeString('|'))->sort(), $optimized.values->cast(@meta::pure::tds::TabularDataSet).rows->map(r | $r.values->makeString('|'))->sort());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testInnerRightAndFullJoinsAreNeverDropped(conn:Connection[1]):Boolean[1]
+{
+  [JoinType.INNER, JoinType.RIGHT_OUTER]->forAll(t | assertUnchanged($conn, unreadJoin('DDR_R', {l, r | sqlEq(tac($r, 'ID'), tac($l, 'K'))}, $t), joinRules()));
+  let full = unreadJoin('DDR_R', {l, r | sqlEq(tac($r, 'ID'), tac($l, 'K'))}, JoinType.FULL_OUTER);
+  assertEquals(1, $full->optimized(joinRules())->joinCount());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testANonEqualityOnKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, unreadJoin('DDR_R', {l, r | fn('greaterThan', [tac($r, 'ID'), tac($l, 'K')])}, JoinType.LEFT_OUTER), joinRules());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testOnThatIsNotAConjunctionOfColumnEqualitiesKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, unreadJoin('DDR_R', {l, r | allOf(sqlEq(tac($r, 'ID'), tac($l, 'K')), sqlEq(tac($r, 'NAME'), lit('one')))}, JoinType.LEFT_OUTER), joinRules());
+  assertUnchanged($conn, unreadJoin('DDR_R', {l, r | fn('or', [sqlEq(tac($r, 'ID'), tac($l, 'K')), sqlEq(tac($r, 'ID'), tac($l, 'V'))])}, JoinType.LEFT_OUTER), joinRules());
+  assertUnchanged($conn, unreadJoin('DDR_R', {l, r | sqlEq(tac($r, 'ID'), fn('plus', [tac($l, 'K'), lit(1)]))}, JoinType.LEFT_OUTER), joinRules());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testPartOfACompositeKeyKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, unreadJoin('DDR_RK', {l, r | sqlEq(tac($r, 'A'), tac($l, 'K'))}, JoinType.LEFT_OUTER), joinRules());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testNonUniqueKeyKeepsTheJoinThatMultipliesRows(conn:Connection[1]):Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let n = tt('n', 'DDR_RN');
+  let query = sel([as(tac($l, 'ID'), 'ID')], root($l, leftJoin($l, $n, sqlEq(tac($n, 'ID'), tac($l, 'K')))));
+  assertUnchanged($conn, $query, joinRules());
+  assertEquals(13, rowCount($conn, $query, 'issue1172'));
+  assertEquals(3, rowCount($conn, sel([as(tac($l, 'ID'), 'ID')], root($l)), 'issue1172'));
+  let counted = ^SelectSQLQuery(columns = as(fn('count', []), 'N'), data = root($l, leftJoin($l, $n, sqlEq(tac($n, 'ID'), tac($l, 'K')))));
+  assertUnchanged($conn, $counted, joinRules());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testMilestonedTableKeepsTheJoinDespiteItsDeclaredKey(conn:Connection[1]):Boolean[1]
+{
+  let query = unreadJoin('DDR_RM', {l, r | sqlEq(tac($r, 'ID'), tac($l, 'K'))}, JoinType.LEFT_OUTER);
+  assertUnchanged($conn, $query, joinRules());
+  let l = tt('l', 'DDR_L');
+  assertNotEquals(rowCount($conn, $query, 'nullsDups'), rowCount($conn, sel([as(tac($l, 'ID'), 'ID'), as(tac($l, 'G'), 'G')], root($l)), 'nullsDups'));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testCoercingKeyKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, unreadJoin('DDR_R', {l, r | sqlEq(tac($r, 'ID'), tac($l, 'S'))}, JoinType.LEFT_OUTER), joinRules(), 'numericText');
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testFloatKeyKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, unreadJoin('DDR_RF', {l, r | sqlEq(tac($r, 'F'), tac($l, 'F'))}, JoinType.LEFT_OUTER), joinRules());
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::readingTheRightSide(read:Function<{TableAlias[1], TableAlias[1], SelectSQLQuery[1]->SelectSQLQuery[1]}>[1]):SelectSQLQuery[1]
+{
+  let l = tt('l', 'DDR_L');
+  let r = tt('r', 'DDR_R');
+  $read->eval($l, $r, sel([as(tac($l, 'ID'), 'ID'), as(tac($l, 'G'), 'G')], root($l, leftJoin($l, $r, sqlEq(tac($r, 'ID'), tac($l, 'K'))))));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testRightSideReadAnywhereKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  let r2 = tt('r2', 'DDR_R2');
+  [
+    readingTheRightSide({l, r, q | ^$q(columns = $q.columns->concatenate(as(tac($r, 'NAME'), 'NAME')))}),
+    readingTheRightSide({l, r, q | ^$q(filteringOperation = fn('isNotNull', tac($r, 'NAME')))}),
+    readingTheRightSide({l, r, q | ^$q(columns = [as(tac($l, 'G'), 'G'), as(fn('count', []), 'N')], groupBy = [tac($l, 'G'), tac($r, 'NAME')])}),
+    readingTheRightSide({l, r, q | ^$q(columns = [as(tac($l, 'G'), 'G')], groupBy = tac($l, 'G'), havingOperation = fn('greaterThan', [fn('count', tac($r, 'NAME')), lit(0)]))}),
+    readingTheRightSide({l, r, q | ^$q(orderBy = [ascending(tac($r, 'NAME')), ascending(tac($l, 'ID'))])}),
+    readingTheRightSide({l, r, q | ^$q(columns = $q.columns->concatenate(as(tac($r2, 'NAME'), 'R2_NAME')), data = ^RootJoinTreeNode(alias = $l, childrenData = $q.data.childrenData->concatenate(leftJoin($l, $r2, sqlEq(tac($r2, 'ID'), tac($r, 'ID'))))))}),
+    readingTheRightSide({l, r, q | ^$q(columns = $q.columns->concatenate(as(rowNumberOver(tac($r, 'NAME'), tac($l, 'ID')), 'RN')))}),
+    readingTheRightSide({l, r, q | ^$q(orderBy = ascending(^ColumnName(name = 'NAME')))})
+  ]->forAll(q | assertUnchanged($conn, $q, joinRules()));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testRightSideReadByACorrelatedExistsKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  let n = tt('n', 'DDR_RN');
+  assertUnchanged($conn, readingTheRightSide({l, r, q | ^$q(filteringOperation = fn('exists', ^SelectSQLQuery(columns = as(lit(1), 'ONE'), data = root($n), filteringOperation = sqlEq(tac($n, 'ID'), tac($r, 'ID')))))}), joinRules());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testSelectStarKeepsTheJoin():Boolean[1]
+{
+  let query = readingTheRightSide({l, r, q | ^$q(columns = [])});
+  assertEquals($query->printed(), $query->optimized(joinRules())->printed());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testLateralJoinIsNeverDropped():Boolean[1]
+{
+  let query = readingTheRightSide({l, r, q | ^$q(data = ^RootJoinTreeNode(alias = $l, childrenData = $q.data.childrenData->cast(@JoinTreeNode)->map(j | ^$j(lateral = true))))});
+  assertEquals($query->joinCount(), $query->optimized(joinRules())->joinCount());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testRightSubSelectWithoutAUniquenessProofKeepsTheJoin(conn:Connection[1]):Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let n = tt('n', 'DDR_RN');
+  let joinTo = {sub:SelectSQLQuery[1] | let g = ta('g', $sub); sel([as(tac($l, 'ID'), 'ID')], root($l, leftJoin($l, $g, sqlEq(tac($g, 'ID'), tac($l, 'K')))));};
+  let grouped = ^SelectSQLQuery(columns = [as(tac($n, 'ID'), 'ID'), as(tac($n, 'NAME'), 'NAME')], data = root($n), groupBy = [tac($n, 'ID'), tac($n, 'NAME')]);
+  [
+    $grouped,
+    ^SelectSQLQuery(columns = [as(tac($n, 'ID'), 'ID')], data = root($n), groupBy = tac($n, 'ID'), toRow = lit(2)),
+    ^SelectSQLQuery(columns = [as(tac($n, 'ID'), 'ID'), as(rowNumberOver(tac($n, 'ID'), tac($n, 'ID')), 'RN')], data = root($n), groupBy = tac($n, 'ID')),
+    ^SelectSQLQuery(distinct = true, columns = [as(tac($n, 'ID'), 'ID'), as(tac($n, 'NAME'), 'NAME')], data = root($n)),
+    ^SelectSQLQuery(columns = [as(tac($n, 'ID'), 'ID')], data = root($n))
+  ]->forAll(s | assertUnchanged($conn, $joinTo->eval($s), joinRules()));
+  let unionOfKeys = ta('u', ^UnionAll(queries = [sel(as(tac($n, 'ID'), 'ID'), root($n)), sel(as(tac($n, 'ID'), 'ID'), root($n))]));
+  assertUnchanged($conn, sel([as(tac($l, 'ID'), 'ID')], root($l, leftJoin($l, $unionOfKeys, sqlEq(tac($unionOfKeys, 'ID'), tac($l, 'K'))))), joinRules());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testDistinctThatCountsOrNumbersRowsKeepsANonUniqueJoin(conn:Connection[1]):Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let n = tt('n', 'DDR_RN');
+  let data = root($l, leftJoin($l, $n, sqlEq(tac($n, 'ID'), tac($l, 'K'))));
+  assertUnchanged($conn, ^SelectSQLQuery(distinct = true, columns = [as(fn('count', []), 'N')], data = $data), joinRules());
+  assertUnchanged($conn, ^SelectSQLQuery(distinct = true, columns = [as(tac($l, 'G'), 'G'), as(rowNumberOver(tac($l, 'G'), tac($l, 'ID')), 'RN')], data = $data), joinRules());
+  assertUnchanged($conn, ^SelectSQLQuery(distinct = true, columns = [as(tac($l, 'G'), 'G'), as(fn('count', []), 'N')], data = $data, groupBy = tac($l, 'G')), joinRules());
+}
+
+function meta::relational::tests::sqlOptimizer::duckDbRefusals::twoJoins(firstTable:String[1], secondTable:String[1], firstOn:Function<{TableAlias[1], TableAlias[1]->RelationalOperationElement[1]}>[1], secondOn:Function<{TableAlias[1], TableAlias[1]->RelationalOperationElement[1]}>[1], secondType:JoinType[1]):SelectSQLQuery[1]
+{
+  let l = tt('l', 'DDR_L');
+  let a = tt('a', $firstTable);
+  let b = tt('b', $secondTable);
+  sel([as(tac($l, 'ID'), 'ID'), as(tac($a, 'NAME'), 'A_NAME'), as(tac($b, 'NAME'), 'B_NAME')], root($l, [leftJoin($l, $a, $firstOn->eval($l, $a)), jn($l, $b, $secondOn->eval($l, $b), $secondType)]));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testRepeatedLeftJoinOnTheKeyIsMerged(conn:Connection[1]):Boolean[1]
+{
+  let query = twoJoins('DDR_R', 'DDR_R', {l, a | sqlEq(tac($a, 'ID'), tac($l, 'K'))}, {l, b | sqlEq(tac($l, 'K'), tac($b, 'ID'))}, JoinType.LEFT_OUTER);
+  assertRewrites($conn, $query, joinRules(), 'select "l".ID as ID, "a".NAME as A_NAME, "a".NAME as B_NAME from SQLOPT.DDR_L as "l" left outer join SQLOPT.DDR_R as "a" on ("a".ID = "l".K)', false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testRepeatedLeftJoinRefusals(conn:Connection[1]):Boolean[1]
+{
+  let onKey = {l:TableAlias[1], x:TableAlias[1] | sqlEq(tac($x, 'ID'), tac($l, 'K'))};
+  [
+    twoJoins('DDR_RN', 'DDR_RN', $onKey, $onKey, JoinType.LEFT_OUTER),
+    twoJoins('DDR_RM', 'DDR_RM', $onKey, $onKey, JoinType.LEFT_OUTER),
+    twoJoins('DDR_R', 'DDR_R2', $onKey, $onKey, JoinType.LEFT_OUTER),
+    twoJoins('DDR_R', 'DDR_R', $onKey, $onKey, JoinType.INNER),
+    twoJoins('DDR_R', 'DDR_R', $onKey, {l, b | sqlEq(tac($b, 'ID'), tac($l, 'V'))}, JoinType.LEFT_OUTER),
+    twoJoins('DDR_R', 'DDR_R', $onKey, {l, b | allOf(sqlEq(tac($b, 'ID'), tac($l, 'K')), sqlEq(tac($b, 'NAME'), lit('one')))}, JoinType.LEFT_OUTER)
+  ]->forAll(q | assertUnchanged($conn, $q, duplicateLeftJoinMergeRule()));
+  let floatKeyed = {l:TableAlias[1], x:TableAlias[1] | sqlEq(tac($x, 'F'), tac($l, 'F'))};
+  let fl = tt('l', 'DDR_L');
+  let fa = tt('a', 'DDR_RF');
+  let fb = tt('b', 'DDR_RF');
+  assertUnchanged($conn, sel([as(tac($fa, 'NAME'), 'A_NAME'), as(tac($fb, 'NAME'), 'B_NAME')], root($fl, [leftJoin($fl, $fa, $floatKeyed->eval($fl, $fa)), leftJoin($fl, $fb, $floatKeyed->eval($fl, $fb))])), duplicateLeftJoinMergeRule());
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testRepeatedLeftJoinOnACoercingKeyIsNotMerged(conn:Connection[1]):Boolean[1]
+{
+  assertUnchanged($conn, twoJoins('DDR_R', 'DDR_R', {l, a | sqlEq(tac($a, 'ID'), tac($l, 'S'))}, {l, b | sqlEq(tac($b, 'ID'), tac($l, 'S'))}, JoinType.LEFT_OUTER), duplicateLeftJoinMergeRule(), 'numericText');
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testRepeatedLeftJoinToANonUniqueKeyMultipliesRows(conn:Connection[1]):Boolean[1]
+{
+  let query = twoJoins('DDR_RN', 'DDR_RN', {l, a | sqlEq(tac($a, 'ID'), tac($l, 'K'))}, {l, b | sqlEq(tac($b, 'ID'), tac($l, 'K'))}, JoinType.LEFT_OUTER);
+  assertUnchanged($conn, $query, joinRules());
+  assertEquals(73, rowCount($conn, $query, 'issue1172'));
+  let l = tt('l', 'DDR_L');
+  let a = tt('a', 'DDR_RN');
+  assertEquals(13, rowCount($conn, sel([as(tac($l, 'ID'), 'ID'), as(tac($a, 'NAME'), 'A_NAME'), as(tac($a, 'NAME'), 'B_NAME')], root($l, leftJoin($l, $a, sqlEq(tac($a, 'ID'), tac($l, 'K'))))), 'issue1172'));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testThirtyRepeatedLeftJoinsMergeIntoTheFirst():Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let aliases = range(30)->map(i | tt('a' + $i->toString(), 'DDR_R'));
+  let query = sel($aliases->map(a | as(tac($a, 'NAME'), $a.name + '_NAME')), root($l, $aliases->map(a | leftJoin($l, $a, sqlEq(tac($a, 'ID'), tac($l, 'K'))))));
+  let merged = $query->mergeDuplicateLeftJoins().query;
+  assertEquals(1, $merged->joinCount());
+  assertEquals('a0', $merged.columns->cast(@Alias).relationalElement->cast(@TableAliasColumn).alias.name->removeDuplicates());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testThirtyUnreadLeftJoinsAreAllDropped():Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let aliases = range(30)->map(i | tt('a' + $i->toString(), 'DDR_R'));
+  let query = sel(as(tac($l, 'ID'), 'ID'), root($l, $aliases->map(a | leftJoin($l, $a, sqlEq(tac($a, 'ID'), tac($l, 'K'))))));
+  assertEquals(0, $query->eliminateUnreadLeftJoins().query->joinCount());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testATwentyDeepChainOfUnreadLeftJoinsIsDropped():Boolean[1]
+{
+  let l = tt('l', 'DDR_L');
+  let aliases = range(20)->map(i | tt('c' + $i->toString(), 'DDR_R'));
+  let chain = range(20)->reverse()->fold({i, below |
+    let parent = if($i == 0, | $l, | $aliases->at($i - 1));
+    jn($parent, $aliases->at($i), sqlEq(tac($aliases->at($i), 'ID'), tac($parent, if($i == 0, | 'K', | 'ID'))), JoinType.LEFT_OUTER, $below);
+  }, []->cast(@JoinTreeNode));
+  assertEquals(20, sel(as(tac($l, 'ID'), 'ID'), root($l, $chain))->joinCount());
+  assertEquals(0, sel(as(tac($l, 'ID'), 'ID'), root($l, $chain))->eliminateUnreadLeftJoins().query->joinCount());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::duckDbRefusals::testJoinRulesReportAChangeOnlyWhenTheyRemoveAJoin():Boolean[1]
+{
+  let kept = unreadJoin('DDR_RN', {l, r | sqlEq(tac($r, 'ID'), tac($l, 'K'))}, JoinType.LEFT_OUTER);
+  assertFalse($kept->eliminateUnreadLeftJoins().hasChanged);
+  assertFalse($kept->mergeDuplicateLeftJoins().hasChanged);
+  assert(unreadJoin('DDR_R', {l, r | sqlEq(tac($r, 'ID'), tac($l, 'K'))}, JoinType.LEFT_OUTER)->eliminateUnreadLeftJoins().hasChanged);
+  assert(twoJoins('DDR_R', 'DDR_R', {l, a | sqlEq(tac($a, 'ID'), tac($l, 'K'))}, {l, b | sqlEq(tac($b, 'ID'), tac($l, 'K'))}, JoinType.LEFT_OUTER)->mergeDuplicateLeftJoins().hasChanged);
+}

@@ -18,7 +18,8 @@ package org.finos.legend.engine.perf;
  * Builds the query function for a named shape. Shapes vary one dimension each so that a sweep
  * isolates how a phase reacts to it: navigation depth (joinK), projection width (projW),
  * aggregate count (aggK), graph-fetch tree depth (graphK), semi-structured path depth (semiK) and
- * access width (semiwK), and alias length (longprojW).
+ * access width (semiwK), alias length (longprojW), and the number of root filter conjuncts copied into
+ * aggregating view subqueries (conjK, with --aggviews).
  */
 public class QueryGenerator
 {
@@ -31,7 +32,23 @@ public class QueryGenerator
 
     public String generate()
     {
-        return "###Pure\nfunction test::fetch(): Any[1]\n{\n  {|" + this.body() + "}\n}\n";
+        return "###Pure\nfunction test::fetch(): Any[1]\n{\n  {|" + this.body() + this.sqlOptimizerFlags() + "}\n}\n";
+    }
+
+    private String sqlOptimizerFlags()
+    {
+        String flag = "meta::relational::sqlOptimizer::DisableSqlOptimization.";
+        switch (this.config.sqlOptimizer)
+        {
+            case "all":
+                return "";
+            case "none":
+                return "->meta::pure::executionPlan::featureFlag::withFeatureFlags([" + flag + "ALL])";
+            case "nojoinrules":
+                return "->meta::pure::executionPlan::featureFlag::withFeatureFlags([" + flag + "UNREAD_LEFT_JOIN_ELIMINATION, " + flag + "DUPLICATE_LEFT_JOIN_MERGE])";
+            default:
+                throw new IllegalArgumentException("Unknown --sqlopt value (all, nojoinrules, none): " + this.config.sqlOptimizer);
+        }
     }
 
     private String body()
@@ -69,9 +86,38 @@ public class QueryGenerator
         {
             return this.semiDeep(Integer.parseInt(query.substring(4)), all);
         }
+        if (query.startsWith("conj"))
+        {
+            return this.conjunctsOverSubQuery(Integer.parseInt(query.substring(4)), all);
+        }
         if (query.startsWith("join"))
         {
             return this.joinChain(Integer.parseInt(query.substring(4)), all);
+        }
+        if (query.equals("hop") || query.equals("uhop"))
+        {
+            if (this.config.hops <= 0)
+            {
+                throw new IllegalArgumentException("The hop and uhop query shapes require --hops <count>");
+            }
+            String projection = all + "->project([x|$x.p0, x|$x.hop.p0], ['c0', 'h'])";
+            return query.equals("hop") ? projection : projection + "->restrict(['c0'])";
+        }
+        if (query.startsWith("ujoin"))
+        {
+            return this.joinChain(Integer.parseInt(query.substring(5)), all) + "->restrict(['c0'])";
+        }
+        if (query.startsWith("ustar"))
+        {
+            return this.starJoins(Integer.parseInt(query.substring(5)), all, false) + "->restrict(['c0'])";
+        }
+        if (query.startsWith("star"))
+        {
+            return this.starJoins(Integer.parseInt(query.substring(4)), all, false);
+        }
+        if (query.startsWith("dup"))
+        {
+            return this.starJoins(Integer.parseInt(query.substring(3)), all, true);
         }
         if (query.startsWith("longproj"))
         {
@@ -104,6 +150,48 @@ public class QueryGenerator
             names.append(", 'c").append(i).append("'");
         }
         return all + "->filter(x|$x.p0 == 'abc')->project([" + columns + "], [" + names + "])";
+    }
+
+    private String starJoins(int count, String all, boolean duplicates)
+    {
+        if (this.config.starJoins < count)
+        {
+            throw new IllegalArgumentException("The starK, ustarK and dupK query shapes require --star of at least K");
+        }
+        StringBuilder columns = new StringBuilder("x|$x.p0");
+        StringBuilder names = new StringBuilder("'c0'");
+        for (int s = 1; s <= count; s++)
+        {
+            columns.append(", x|$x.s").append(s).append(".p0");
+            names.append(", 's").append(s).append("'");
+            if (duplicates)
+            {
+                columns.append(", x|$x.d").append(s).append(".p1");
+                names.append(", 'd").append(s).append("'");
+            }
+        }
+        return all + "->project([" + columns + "], [" + names + "])";
+    }
+
+    private String conjunctsOverSubQuery(int count, String all)
+    {
+        if (this.config.aggregateViews <= 0)
+        {
+            throw new IllegalArgumentException("The conjK query shape requires --aggviews <count>");
+        }
+        StringBuilder conjuncts = new StringBuilder();
+        for (int i = 0; i < count; i++)
+        {
+            conjuncts.append(i > 0 ? " && " : "").append("$x.id != ").append(i);
+        }
+        StringBuilder columns = new StringBuilder("x|$x.p0");
+        StringBuilder names = new StringBuilder("'c0'");
+        for (int v = 0; v < this.config.aggregateViews; v++)
+        {
+            columns.append(", x|$x.g").append(v).append(".total");
+            names.append(", 't").append(v).append("'");
+        }
+        return all + "->filter(x|" + conjuncts + ")->project([" + columns + "], [" + names + "])";
     }
 
     private String projection(int width, String all, boolean longAliases)

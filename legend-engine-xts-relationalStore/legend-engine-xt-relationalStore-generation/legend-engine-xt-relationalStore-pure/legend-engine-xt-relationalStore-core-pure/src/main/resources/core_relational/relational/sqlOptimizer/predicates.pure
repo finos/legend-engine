@@ -1,0 +1,69 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::sqlOptimizer::tree::*;
+
+// P(l) may be copied as P(r) across `l = r` only if the equality implies P(l) <=> P(r).
+// Value comparisons need `=` to identify values: not across coercing types (VARCHAR = INTEGER), not for floats (+0.0 = -0.0, NaN),
+// not for blank-padded CHAR. Pattern predicates (LIKE) additionally see the text itself: under PAD SPACE collations
+// (SQL Server, Sybase, DB2, Redshift, MySQL PAD SPACE) 'a' = 'a ' while 'a ' LIKE '%a' is false, and a cast to text
+// of DECIMAL(10,2) 1.50 differs from DECIMAL(12,4) 1.5000, so they are only copied between identical non-character types.
+// The relational metamodel carries no collation, so two VARCHAR columns are assumed to compare under the same one.
+function meta::relational::sqlOptimizer::tree::isImpliedThroughEquality(predicate:RelationalOperationElement[1], left:meta::relational::metamodel::datatype::DataType[1], right:meta::relational::metamodel::datatype::DataType[1]):Boolean[1]
+{
+  $left->equalityIdentifiesValues($right)
+    && if($predicate->isPatternPredicate(),
+          | $left->isSameDeclaredType($right) && !$left->instanceOf(meta::relational::metamodel::datatype::Varchar),
+          | true)
+}
+
+function meta::relational::sqlOptimizer::tree::equalityIdentifiesValues(a:meta::relational::metamodel::datatype::DataType[1], b:meta::relational::metamodel::datatype::DataType[1]):Boolean[1]
+{
+  let exactNumeric = [meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::TinyInt, meta::relational::metamodel::datatype::UnsignedBigInt, meta::relational::metamodel::datatype::UnsignedInt, meta::relational::metamodel::datatype::UnsignedTinyInt, meta::relational::metamodel::datatype::Decimal, meta::relational::metamodel::datatype::Numeric];
+  let identityByClass = [meta::relational::metamodel::datatype::Varchar, meta::relational::metamodel::datatype::Date, meta::relational::metamodel::datatype::Timestamp, meta::relational::metamodel::datatype::Boolean, meta::relational::metamodel::datatype::Bit];
+  ($exactNumeric->contains($a->type()) && $exactNumeric->contains($b->type()))
+    || ($identityByClass->contains($a->type()) && ($a->type() == $b->type()));
+}
+
+// A view column's declared type is not its value type: the Legend compiler declares every view column VARCHAR.
+function meta::relational::sqlOptimizer::tree::comparedType(column:TableAliasColumn[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+  $column->meta::relational::functions::typeInference::inferRelationalType(false)->defaultIfEmpty($column.column.type)->toOne();
+}
+
+function meta::relational::sqlOptimizer::tree::isSameDeclaredType(a:meta::relational::metamodel::datatype::DataType[1], b:meta::relational::metamodel::datatype::DataType[1]):Boolean[1]
+{
+  ($a->type() == $b->type()) && $a->match([
+    v:meta::relational::metamodel::datatype::Varchar[1] | $v.size == $b->cast(@meta::relational::metamodel::datatype::Varchar).size,
+    c:meta::relational::metamodel::datatype::Char[1] | $c.size == $b->cast(@meta::relational::metamodel::datatype::Char).size,
+    d:meta::relational::metamodel::datatype::Decimal[1] | ($d.precision == $b->cast(@meta::relational::metamodel::datatype::Decimal).precision) && ($d.scale == $b->cast(@meta::relational::metamodel::datatype::Decimal).scale),
+    n:meta::relational::metamodel::datatype::Numeric[1] | ($n.precision == $b->cast(@meta::relational::metamodel::datatype::Numeric).precision) && ($n.scale == $b->cast(@meta::relational::metamodel::datatype::Numeric).scale),
+    o:meta::relational::metamodel::datatype::CoreDataType[1] | true,
+    a:Any[1] | false
+  ]);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::tree::isPatternPredicate(predicate:RelationalOperationElement[1]):Boolean[1]
+{
+  $predicate->match([
+    d:DynaFunction[1] | $d.name->in(['startsWith', 'endsWith', 'contains']) || $d.parameters->exists(p | $p->isPatternPredicate()),
+    a:Any[1] | false
+  ])
+}

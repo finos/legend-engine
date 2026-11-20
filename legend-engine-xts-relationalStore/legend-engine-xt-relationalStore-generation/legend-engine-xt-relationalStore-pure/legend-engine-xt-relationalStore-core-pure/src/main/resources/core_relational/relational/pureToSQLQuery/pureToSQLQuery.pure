@@ -459,7 +459,9 @@ function meta::relational::functions::pureToSqlQuery::combineFilters(s:Relationa
          |if ($ns->size() == 1,
             | $ns->toOne(),
             | let dynaName = if($and,| 'and',| 'or');
-              newAndOrDynaFunctionRelaxedBrackets($dynaName, $ns->reverse());
+              // Not reverse(): in compiled mode it returns a lazy view, which the new node would keep as its parameters, so every
+              // later read of them (and of every node rewritten from them) re-runs the functions mapped over it.
+              newAndOrDynaFunctionRelaxedBrackets($dynaName, range($ns->size() - 1, -1, -1)->map(i | $ns->at($i)));
          )
    );
 }
@@ -7539,6 +7541,17 @@ function meta::relational::functions::pureToSqlQuery::processDynamicPivot(expres
   );
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::reducesToOneValue(f:meta::pure::metamodel::function::Function<Any>[1]):Boolean[1]
+{
+  let type = $f->functionType();
+  $type.parameters->isNotEmpty() && $type.parameters->evaluateAndDeactivate()->at(0).multiplicity->isToMany() && $type.returnMultiplicity->hasToOneUpperBound();
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::newAggregate(name:String[1], params:RelationalOperationElement[*]):DynaFunction[1]
+{
+  ^meta::relational::functions::pureToSqlQuery::metamodel::AggregateDynaFunction(name = $name, parameters = $params->unwrapAlias())
+}
+
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isAggFn(f:FunctionExpression[1]):Boolean[1]
 {
   $f.func->cast(@ElementWithStereotypes)->hasStereotype('ReducerFunction',meta::pure::profiles::functionType) || $f.func == size_Any_MANY__Integer_1_;
@@ -7571,12 +7584,11 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
                     | let parameters = $f.parametersValues->map(p|$p->processAggFn($params, $state));
                       if ($parameters->size() == 1 && $parameters->toOne()->instanceOf(DynaFunction) && $parameters->cast(@DynaFunction).parameters->size()== 2 && ($parameters->cast(@DynaFunction).name == 'wavgRowMapper' || $parameters->cast(@DynaFunction).name == 'rowMapper'),
                           | let mapperParameters = $parameters->cast(@DynaFunction).parameters;
-                            newDynaFunction('divide',[newDynaFunction('sum', newDynaFunction('times', [$mapperParameters->at(0), $mapperParameters->at(1)])),newDynaFunction('sum', $mapperParameters->at(1))]);,
-                          | newDynaFunction('divide',[newDynaFunction('sum', newDynaFunction('times', [$parameters->at(0), $parameters->at(1)])),newDynaFunction('sum', $parameters->at(1))]););,
-                    | newDynaFunction(
-                          $name,
-                          $f.parametersValues->map(p|$p->processAggFn($params, $state))
-                    ););
+                            newDynaFunction('divide',[newAggregate('sum', newDynaFunction('times', [$mapperParameters->at(0), $mapperParameters->at(1)])),newAggregate('sum', $mapperParameters->at(1))]);,
+                          | newDynaFunction('divide',[newAggregate('sum', newDynaFunction('times', [$parameters->at(0), $parameters->at(1)])),newAggregate('sum', $parameters->at(1))]););,
+                    | let parameters = $f.parametersValues->map(p|$p->processAggFn($params, $state));
+                      if($f.func->reducesToOneValue() && !$name->in(['and', 'or']), | newAggregate($name, $parameters), | newDynaFunction($name, $parameters));
+                    );
                     if ($state.currentWindow->isEmpty() || !isAggFn($f),
                       |$aggFunc,
                       |let win = $state.currentWindow->toOne();
@@ -9995,7 +10007,7 @@ function meta::relational::functions::pureToSqlQuery::processRowCount(expression
    if ($state.inAgg,
        | let aggAliases = $state.aliases->filter(c | !$c->instanceOf(meta::relational::metamodel::WindowColumn));
          let filter = $expression.parametersValues->at(0)->processGroupFilter($currentPropertyMapping, $operation, $aggAliases, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-         let countFn = newDynaFunction('count', ^Literal(value=1));
+         let countFn = newAggregate('count', ^Literal(value=1));
          let count = if($filter->isEmpty(), | $countFn, | ^AggregateFunctionCall(func = $countFn, filter = $filter));
          let select = $operation.select;
          ^$operation(select = ^$select(columns = $count));,
@@ -10009,7 +10021,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    let query = $nested->extractSelectWithCursor($operation);
    let mergedQuery = if($query.select.groupBy->isNotEmpty() || $query.select.distinct->isTrue() || $query.select.fromRow->isNotEmpty() || $query.select.toRow->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
    let mergedSelect = $mergedQuery.select;
-   ^$mergedQuery(select=^$mergedSelect(columns = newDynaFunction('count', if ($mergedSelect.columns->size() == 1, | $mergedSelect.columns->at(0), | []))));
+   ^$mergedQuery(select=^$mergedSelect(columns = newAggregate('count', if ($mergedSelect.columns->size() == 1, | $mergedSelect.columns->at(0), | []))));
 }
 
 function meta::relational::functions::pureToSqlQuery::processUnary(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]

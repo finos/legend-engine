@@ -48,22 +48,31 @@ model size. Query shapes vary one dimension each:
 | Shape | Varies |
 |---|---|
 | `simple` | filter plus three projected columns |
-| `joinK` | navigation depth: projects across a K-deep property chain |
+| `joinK` | navigation depth: projects across a K-deep property chain (compile and lambda build grow about 1.9x per level, so keep K small; use `hop` for deep join trees) |
+| `ujoinK` | `joinK` then `restrict` to the first column, so every join is unread |
 | `projW` / `longprojW` | projection width; `longproj` uses 390-character aliases to exercise dialect alias limits |
 | `aggK` | number of aggregates in a `groupBy` |
 | `graphK` | graph-fetch tree depth (the shape services use) |
 | `semiK` / `semiwK` / `semijoinK` | semi-structured path depth, access width, and width combined with join navigation |
 | `variantrel` | Variant functions through the relation path |
 | `m2mview` | a model-to-model view over the relational mapping |
+| `conjK` | number of root filter conjuncts, each copied through a join into every aggregating view subquery (needs `--aggviews`) |
+| `starK` / `ustarK` | K sibling left joins from the root, all read / all unread after a `restrict` (needs `--star`) |
+| `dupK` | K pairs of left joins that repeat each other: same table, same condition, two join names (needs `--star`) |
+| `hop` / `uhop` | one property mapped through a `--hops`-long join chain, read / unread after a `restrict` |
 
 Mapping shape flags: `--nextmult 1|0..1` (chain multiplicity), `--union K` (Operation union over K
 set implementations), `--includes K` (K-deep mapping include chain), `--milestoning`
 (business-temporal), `--relfunc` (Relation `~func` mappings plus ModelJoin associations), `--m2m`
 (model-to-model view via `ModelChainConnection`), `--semi D` (SEMISTRUCTURED column with a JSON
-binding over a D-level model).
+binding over a D-level model), `--aggviews V` (V `~groupBy` views joined to the root table, each
+reachable from `C0` through a to-one property), `--star K` (K pairs of to-one properties on `C0`, each
+pair mapped through two differently named joins with the same condition `T0.fk = Ti.id`), `--hops K`
+(a property `hop` on `C0` mapped through the K-join chain `@J0 > ... > @J(K-1)`).
 
 Other flags: `--dbtype H2|DuckDB|Snowflake` (plan generation works for any dialect without a
-connection), `--iters`, `--warmup`, `--execute`, `--csv <path>`, `--dumpplan <path>`, `--pause`
+connection), `--sqlopt all|nojoinrules|none` (query-level SQL optimizer flags: every rule, every rule but
+the two left-join rules, or no optimization), `--iters`, `--warmup`, `--execute`, `--csv <path>`, `--dumpplan <path>`, `--pause`
 (waits for a profiler to attach before measuring).
 
 To run a model that already exists rather than a generated one:
@@ -248,6 +257,10 @@ Suggested canaries, with the shape each one guards:
 | `planPure(join10) / planPure(join2)` | pure-to-SQL superlinearity in navigation depth |
 | `compile(relfunc 200) / compile(relfunc 50)` | per-column lambda compilation in Relation mappings |
 | `javaBind(graph4) / javaBind(graph1)` | platform binder growth in graph-fetch tree size |
+| `planPure(conj10) / planPure(conj4)` with `--aggviews 10` | SQL optimization superlinearity in the number of filter conjuncts pushed into subqueries |
+| `planPure(dup40) / planPure(dup10)` with `--star 40` | SQL optimization superlinearity in the number of repeated left joins merged |
+| `planPure(star40) / planPure(star10)` with `--star 40` | SQL optimization superlinearity in the number of read left joins checked for elimination |
+| `planPure(uhop)` with `--hops 40` / with `--hops 10` | SQL optimization superlinearity in the depth of an unread left-join chain |
 
 Baselines belong in a checked-in file updated by pull request, so an intentional performance change
 is reviewed alongside the code that causes it.
