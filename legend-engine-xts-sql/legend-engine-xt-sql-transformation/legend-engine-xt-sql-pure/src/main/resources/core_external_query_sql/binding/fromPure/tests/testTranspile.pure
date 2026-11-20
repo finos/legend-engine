@@ -2986,8 +2986,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | now(), 'LOCALTIMESTAMP'),
                   col(row:TDSRow[1] | %2023-01-02, 'MAKEDATE'),
                   col(row:TDSRow[1] | %2023-01-02T12:11:10.5, 'MAKETIMESTAMP'),
-                  col(row:TDSRow[1] | datePart(%2023-01-01), 'DATE'),
-                  col(row:TDSRow[1] | datePart($row.getDateTime('DateTime')), 'DATE2')
+                  col(row:TDSRow[1] | datePart(%2023-01-01)->cast(@StrictDate), 'DATE'),
+                  col(row:TDSRow[1] | datePart($row.getDateTime('DateTime'))->cast(@StrictDate), 'DATE2')
                 ])
       },
       {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
@@ -2996,8 +2996,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LOCALTIMESTAMP : x|now(),
             MAKEDATE : x|%2023-01-02,
             MAKETIMESTAMP : x|%2023-01-02T12:11:10.5+0000,
-            DATE : x|%2023-01-01->datePart(),
-            DATE2 : x|$x.DateTime->datePart()
+            DATE : x|%2023-01-01->datePart()->cast(@StrictDate),
+            DATE2 : x|$x.DateTime->datePart()->cast(@StrictDate)
           ])
       }
     ]
@@ -3132,7 +3132,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | []->cast(@StrictDate), 'INTERVAL_ADD_NULL'),
                   col(row:TDSRow[1] | %2023-01-01->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS), 'INTERVAL_MIX'),
                   col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(year($row.getStrictDate('StrictDate')) * 2, DurationUnit.YEARS)->adjust(year($row.getStrictDate('StrictDate')) * 3, DurationUnit.DAYS), 'INTERVAL_MIX2'),
-                  col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->firstHourOfDay()->adjust(($row.getStrictDate('StrictDate')->dayOfWeekNumber() * 1), DurationUnit.DAYS), 'INTERVAL_MIX3'),
+                  col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->firstHourOfDay()->adjust(($row.getStrictDate('StrictDate')->dayOfWeekNumber() * 1), DurationUnit.DAYS)->datePart()->cast(@StrictDate), 'INTERVAL_MIX3'),
                   col(row:TDSRow[1] | dateDiff($row.getDateTime('DateTime'), $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'DATE_SUBTRACT'),
                   col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), -1, DurationUnit.DAYS), 'INTERVAL_SUBTRACT'),
                   col(row:TDSRow[1] | dateDiff(%2023-01-01, $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT'),
@@ -3152,7 +3152,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                     INTERVAL_ADD_NULL : x|[]->cast(@StrictDate),
                     INTERVAL_MIX : x|%2023-01-01->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS),
                     INTERVAL_MIX2 : x|$x.StrictDate->adjust($x.StrictDate->year() * 2, DurationUnit.YEARS)->adjust($x.StrictDate->year() * 3, DurationUnit.DAYS),
-                    INTERVAL_MIX3 : x|$x.StrictDate->firstHourOfDay()->adjust($x.StrictDate->dayOfWeekNumber() * 1, DurationUnit.DAYS),
+                    INTERVAL_MIX3 : x|$x.StrictDate->firstHourOfDay()->adjust($x.StrictDate->dayOfWeekNumber() * 1, DurationUnit.DAYS)->datePart()->cast(@StrictDate),
                     DATE_SUBTRACT : x|$x.DateTime->dateDiff($x.StrictDate, DurationUnit.DAYS),
                     INTERVAL_SUBTRACT : x|$x.StrictDate->adjust(-1, DurationUnit.DAYS),
                     STRING_SUBSTRACT : x|%2023-01-01->dateDiff($x.StrictDate, DurationUnit.DAYS),

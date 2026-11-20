@@ -69,14 +69,14 @@ function meta::external::query::sql::transformation::utils::unsupported(message:
   fail('Unsupported: ' + $message)->toOne();
 }
 
-function meta::external::query::sql::transformation::utils::trace<V|m>(func:Function<{->V[m]}>[1], name:String[1]):V[m]
+function meta::external::query::sql::transformation::utils::trace<V|m>(func:Function<{->V[m]}>[1], name:String[1], doTrace:Boolean[1]):V[m]
 {
-  meta::pure::functions::tracing::traceSpan($func, 'Legend SQL: ' + $name);
+  if ($doTrace, | meta::pure::functions::tracing::traceSpan($func, 'Legend SQL: ' + $name), | $func->eval());
 }
 
-function meta::external::query::sql::transformation::utils::trace<V|m>(func:Function<{->V[m]}>[1], name:String[1], tagsFunc:Function<{->Map<String, String>[1]}>[1]):V[m]
+function meta::external::query::sql::transformation::utils::trace<V|m>(func:Function<{->V[m]}>[1], name:String[1], tagsFunc:Function<{->Map<String, String>[1]}>[1], doTrace:Boolean[1]):V[m]
 {
-  meta::pure::functions::tracing::traceSpan($func, 'Legend SQL: ' + $name, $tagsFunc);
+  if ($doTrace, | meta::pure::functions::tracing::traceSpan($func, 'Legend SQL: ' + $name, $tagsFunc), | $func->eval());
 }
 
 

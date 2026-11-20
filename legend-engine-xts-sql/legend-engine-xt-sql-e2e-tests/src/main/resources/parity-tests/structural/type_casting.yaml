@@ -94,3 +94,28 @@ tests:
     category: "type_casting"
     expected_tds_status: PASS
     expected_rel_status: PASS
+  # CAST timestamp to date truncates the time part
+  - id: cast_timestamp_col_to_date_eq_date_literal
+    sql: "SELECT id FROM dates WHERE CAST(ts AS DATE) = CAST('2023-01-15' AS DATE) ORDER BY 1"
+    feature: "CAST timestamp column to date compared with date literal"
+    category: "type_casting"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_timestamp_col_to_date_eq_timestamp_literal
+    sql: "SELECT id FROM dates WHERE CAST(ts AS DATE) = CAST('2024-06-15 17:45:00' AS DATE) ORDER BY 1"
+    feature: "CAST timestamp column to date compared with timestamp literal cast to date"
+    category: "type_casting"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_date_col_eq_timestamp_literal_cast_to_date
+    sql: "SELECT id FROM dates WHERE CAST(d AS DATE) = CAST('2000-01-01 12:00:00' AS DATE) ORDER BY 1"
+    feature: "CAST timestamp literal to date compared with date column"
+    category: "type_casting"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_timestamp_col_to_date_projection
+    sql: "SELECT id, CAST(ts AS DATE) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "CAST timestamp column to date in projection"
+    category: "type_casting"
+    expected_tds_status: PASS
+    expected_rel_status: PASS

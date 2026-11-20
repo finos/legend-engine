@@ -219,12 +219,12 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):Function<Any>[1]
 {
-  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)});
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true, false, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)});
 }
 
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<Any>[1]
 {
-  sqlToPure($query, $sources, $extraPackages, $scopeVariables, false, getLambdaCompiler($compiler));
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, false, false, getLambdaCompiler($compiler));
 }
 
 function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
@@ -240,19 +240,19 @@ function meta::external::query::sql::transformation::queryToPure::printLambdaDef
   $l->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
 }
 
-function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], preval:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]):Function<Any>[1]
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], preval:Boolean[1], trace:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]):Function<Any>[1]
 {
   trace({|
     let extensions = meta::relational::extension::relationalExtensions();
     let _context = rootContext($sources, $compiler, $extensions);
-    let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
+    let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true, trace = $trace);
     let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true));
     let lambda = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue());
     let pureFunc = if ($preval, | $lambda->meta::pure::router::preeval::preval($extensions), | $lambda);
   //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
     // SQL to Pure ---
     $pureFunc;
-  }, 'sql to pure');
+  }, 'sql to pure', $trace);
 }
 
 function meta::external::query::sql::transformation::queryToPure::getPlanResultFromSQL(
@@ -325,7 +325,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
                             executionOptions = ^meta::pure::executionPlan::featureFlag::FeatureFlagOption(
                                                   flags = meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS));
 
-  trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $executionContext, $extensions), 'generating plan');
+  trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $executionContext, $extensions), 'generating plan', $context.trace);
 }
 
 //A query's mapping and runtime are derived from its sources in four places: plan generation, the
@@ -451,7 +451,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
     let variables = $processed.lambda(false, false)->extractPositionals($positionals.index->map(i | positionalName($i)));
 
     ^$processed(positionals = $processed.positionals->concatenate($variables)->removeDuplicatesBy(v | $v.name));
-  }, 'converting query', | newMap(pair('relation', $_context.relation->isTrue()->toString())));
+  }, 'converting query', | newMap(pair('relation', $_context.relation->isTrue()->toString())), $_context.trace);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -4055,7 +4055,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let type = getCastType($c.type.name);
   let genericType = ^GenericType(rawType = $type);
 
-  createNormalizedCast($v, $type);
+  if ($type == StrictDate && $v->evaluateAndDeactivate().multiplicity != PureZero,
+    | truncateToStrictDate($v),
+    | createNormalizedCast($v, $type));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::truncateToStrictDate(vs:ValueSpecification[1]):ValueSpecification[1]
+{
+  let v = $vs->evaluateAndDeactivate();
+  let type = $v.genericType.rawType->toOne();
+
+  if ($type->subTypeOfExNil(StrictDate),
+    | $v,
+    | if ($v->instanceOf(InstanceValue) && $v.multiplicity == PureOne && $v->cast(@InstanceValue).values->toOne()->instanceOf(Date),
+        | iv($v->cast(@InstanceValue).values->toOne()->cast(@Date)->datePart()->cast(@StrictDate)),
+        | if ($type->subTypeOfExNil(Date),
+            | doCreateCast(nullOrSfe(datePart_Date_1__Date_1_, $v), StrictDate),
+            | createNormalizedCast($v, StrictDate))));
 }
 
 
@@ -5623,6 +5639,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   name: String[0..1];
   scopeWithFrom: Boolean[0..1];
   debug: DebugContext[1];
+  trace: Boolean[1] = true;
   relation:Boolean[0..1];
   columns:QueryColumn[*];
   extraPackageableElements:PackageableElement[*];

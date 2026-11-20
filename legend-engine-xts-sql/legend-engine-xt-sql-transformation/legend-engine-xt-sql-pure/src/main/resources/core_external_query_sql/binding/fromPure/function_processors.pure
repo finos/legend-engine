@@ -326,10 +326,10 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       string('substring', String, {args, fc, expCtx, ctx | processSubstring($args)}),
       string('upper', toUpper_String_1__String_1_),
       //DATE
-      date('date', Date, {args, fc, expCtx, ctx |
+      date('date', StrictDate, {args, fc, expCtx, ctx |
         let date = possiblyProcessParseDate($args->at(0));
 
-        nullOrSfe(datePart_Date_1__Date_1_, $date);
+        createCast(nullOrSfe(datePart_Date_1__Date_1_, $date), StrictDate);
       }),
       date('date_part', Integer, {args, fc, expCtx, ctx |
         assertEquals(2, $args->size(), 'incorrect number of args for date_part');
