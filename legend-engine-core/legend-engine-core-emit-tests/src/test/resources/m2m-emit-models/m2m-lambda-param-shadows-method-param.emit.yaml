@@ -1,0 +1,15 @@
+name: m2m-lambda-param-shadows-method-param
+title: "M2M plan generation renames a lambda parameter that has the same name as a function parameter"
+description: |
+  A user function with parameter t calls map(t | ...); the generated Java must not declare t twice.
+modelSources:
+  model:
+    root: m2m-lambda-param-shadows-method-param
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
