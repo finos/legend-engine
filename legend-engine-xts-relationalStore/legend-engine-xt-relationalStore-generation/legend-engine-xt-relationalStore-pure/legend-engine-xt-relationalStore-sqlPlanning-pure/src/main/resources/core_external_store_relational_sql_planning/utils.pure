@@ -79,7 +79,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::util
           let childWalk = $v->transformNodeRecursivelyWithChangeTracking($transformFunction, $valueWalk.propertiesByType);
           let x = $childWalk.results->toOne();
           assert(
-            $x.result->type()->_subTypeOf($info.returnType),
+            !$x.hasChanged || $x.result->type()->_subTypeOf($info.returnType),
             | 'Transform function sets incompatible value of type "' + $x->type()->elementToPath() + '" to property "' + $p.name->toOne() +
               '" in the class "' + $nodeType->elementToPath() + '". Expected type is "' + $info.returnType->elementToPath() + '"'
           );
