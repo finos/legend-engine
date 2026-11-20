@@ -136,12 +136,18 @@ PCT targets, how to add a new one, and how PCT fits into the CI pipeline.
 | H2 (in-memory relational) | `legend-engine-xt-relationalStore-h2-PCT` | Default (all PRs) |
 | DuckDB | `legend-engine-xt-relationalStore-duckdb-PCT` | Default (all PRs) |
 | Postgres | `legend-engine-xt-relationalStore-postgres-PCT` | `pct-cloud-test` |
-| Snowflake | `legend-engine-xt-relationalStore-snowflake-PCT` | `pct-cloud-test` |
+| Snowflake | `legend-engine-xt-relationalStore-snowflake-PCT` | `pct-cloud-test`, release branches and releases only |
 | BigQuery | `legend-engine-xt-relationalStore-bigquery-PCT` | `pct-cloud-test` |
 | Databricks | `legend-engine-xt-relationalStore-databricks-PCT` | `pct-cloud-test` |
 | Spanner | `legend-engine-xt-relationalStore-spanner-PCT` | `pct-cloud-test` |
 | MemSQL | `legend-engine-xt-relationalStore-memsql-PCT` | `pct-cloud-test` |
 | Java platform binding | `legend-engine-pure-runtime-java-extension-compiled-*` | Default (all PRs) |
+
+A test group marked `"runOn": "release"` in `.github/workflows/resources/modulesToTest.json` is left out
+of the `build.yml` test matrix except on pushes to `legend-release-*`; `release.yml` always runs every
+group. Snowflake is marked this way, so its modules do not run on master pushes or PRs. To check a
+Snowflake change before release, run the module locally with `-P pct-cloud-test` (see
+`docs/pct/cloud-resources/cloud-resources.md`).
 
 ### Adding a new store as a PCT target
 
@@ -152,7 +158,7 @@ PCT targets, how to add a new one, and how PCT fits into the CI pipeline.
    and add a `pct-cloud-test` profile there that re-enables it. The profile is declared per module —
    there is no aggregate definition in the root `pom.xml`.
 4. Add the new module to `.github/workflows/resources/modulesToTest.json` under the appropriate
-   CI group.
+   CI group. For a store whose cloud runs are costly, add `"runOn": "release"` to its group.
 
 ### Writing a new PCT test function
 
