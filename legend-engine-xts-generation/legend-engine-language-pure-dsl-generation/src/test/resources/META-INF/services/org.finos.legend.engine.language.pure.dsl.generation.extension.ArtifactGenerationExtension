@@ -1,0 +1,4 @@
+org.finos.legend.engine.language.pure.dsl.generation.project.TestEnumArtifactGenerationExtension
+org.finos.legend.engine.language.pure.dsl.generation.project.TestFunctionArtifactGenerationExtension
+org.finos.legend.engine.language.pure.dsl.generation.project.TestClassArtifactGenerationExtension
+org.finos.legend.engine.language.pure.dsl.generation.project.TestSdlcInfoArtifactGenerationExtension
