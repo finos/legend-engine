@@ -53,6 +53,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_pure_router_preeval_preeval;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.h2.tools.Server;
@@ -69,7 +70,7 @@ import org.h2.tools.Server;
  */
 public class PipelineBench
 {
-    private static final String[] PHASES = {"parse", "compile", "lambda", "extensions", "planPure", "javaBind", "serialize", "deserialize", "execute"};
+    private static final String[] PHASES = {"parse", "compile", "lambda", "extensions", "preval", "planPure", "javaBind", "serialize", "deserialize", "execute"};
     private static final String CLIENT_VERSION = "vX_X_X";
 
     private final BenchConfig config;
@@ -88,6 +89,10 @@ public class PipelineBench
     {
         for (String arg : args)
         {
+            if (arg.equals("--preeval"))
+            {
+                System.exit(PreevalComparison.run(args));
+            }
             if (arg.equals("--suite"))
             {
                 System.exit(PerfSuite.run(args));
@@ -254,7 +259,7 @@ public class PipelineBench
         return value == null ? new LinkedHashMap<>() : (Map<String, Object>) value;
     }
 
-    private Map<String, Object> runOnce()
+    Map<String, Object> runOnce()
     {
         Map<String, Object> row = new LinkedHashMap<>();
 
@@ -282,6 +287,14 @@ public class PipelineBench
                 Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport());
         long t4 = System.nanoTime();
         row.put("extensions", millis(t3, t4));
+
+        if (this.config.directPreval)
+        {
+            core_pure_router_preeval_preeval.Root_meta_pure_router_preeval_preval_FunctionDefinition_1__Extension_MANY__FunctionDefinition_1_(definition, extensions, pureModel.getExecutionSupport());
+            long prevalEnd = System.nanoTime();
+            row.put("preval", millis(t4, prevalEnd));
+            t4 = prevalEnd;
+        }
 
         Root_meta_pure_executionPlan_ExecutionPlan purePlan =
                 PlanGenerator.generateExecutionPlanAsPure(definition, mapping, runtime, null, pureModel, null, null, extensions);

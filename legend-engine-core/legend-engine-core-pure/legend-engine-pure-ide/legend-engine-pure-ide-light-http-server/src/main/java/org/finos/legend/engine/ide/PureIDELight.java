@@ -64,6 +64,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-data-space/legend-engine-xt-data-space-pure-metamodel", "data_space_metamodel"))
                 .with(this.buildCore("legend-engine-xts-diagram/legend-engine-xt-diagram-pure-metamodel", "diagram-metamodel"))
                 .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-unclassified/legend-engine-pure-functions-unclassified-pure", "functions_unclassified"))
+                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-preeval/legend-engine-pure-functions-preeval-pure", "functions_preeval"))
                 .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-variant/legend-engine-pure-functions-variant-pure", "functions_variant"))
                 .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-json/legend-engine-pure-functions-json-pure", "functions_json"))
                 .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure", "functions_relation"))

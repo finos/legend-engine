@@ -38,6 +38,19 @@ that the router, plan generator, and SQL pipeline can work with more easily.
 | Relational stop hook | `…/core_relational/relational/contract/storeContract.pure` — `shouldStopPreeval` |
 | Elasticsearch stop hook | `…/core_elasticsearch_seven_metamodel/extensions/store_contract.pure` — `shouldStopPreeval` |
 | Java entry point (SQL) | `legend-engine-xts-sql/…/SQLExecutor.java` — calls `core_pure_router_preeval_preeval.Root_meta_pure_router_preeval_preval_…` |
+| Java implementation | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-preeval` — shared core (`Preevaluator`, rules) plus compiled and interpreted adapters behind the `prevalNative` native |
+
+### Implementation switch
+
+Preeval runs in Java by default. The system property `legend.engine.preeval.implementation` selects the implementation:
+
+| Value | Behaviour |
+|---|---|
+| unset, or `JAVA` | The Java implementation (`prevalNative`). |
+| `PURE` | The original Pure implementation (`prevalInternal` in `preeval.pure`). Kept for one release as a rollback path. |
+| `SHADOW` | Runs both and fails on any difference in their results. For diagnosis, not production. |
+
+`-Dlegend.engine.preeval.statistics=true` records how often each rewrite rule fires, and how often and for how long each Pure hook is called back. The counts are read through `org.finos.legend.engine.pure.preeval.PreevalStatistics`.
 
 ---
 
