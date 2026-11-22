@@ -22,6 +22,26 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::SrcRoot
   next : SrcRoot[0..1];
 }
 
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::Party
+{
+  name : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::LegalParty extends Party
+{
+  legalName : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::PartySrc
+{
+  party : Party[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::PartyHolder
+{
+  party : Party[1];
+}
+
 Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::Foreign
 {
   y : String[1];
@@ -169,6 +189,29 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructe
   assertEquals($expected->sortTree()->treeToString(), $actual->sortTree()->treeToString());
 }
 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructed::testMatchOnReadThroughConstructedInstance():Boolean[1]
+{
+  let actual = calculateSourceTree(#{Tgt {z}}#, matchOnReadThroughMapping, meta::pure::extension::defaultExtensions());
+  let expected = #{
+    PartySrc {
+      party {
+        name
+      },
+      party->subType(@LegalParty) {
+        legalName,
+        name
+      }
+    }
+  }#;
+  assertEquals($expected->sortTree()->treeToString(), $actual->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructed::testMatchOnConstructedInstance():Boolean[1]
+{
+  let actual = calculateSourceTree(#{Tgt {z}}#, matchOnConstructedMapping, meta::pure::extension::defaultExtensions());
+  assertEquals(#{SrcRoot {x}}#->sortTree()->treeToString(), $actual->sortTree()->treeToString());
+}
+
 ###Mapping
 import meta::pure::graphFetch::tests::sourceTreeCalc::constructed::*;
 import meta::pure::lineage::scanProperties::test::constructedSourceTree::*;
@@ -250,5 +293,23 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::matchArmMapp
     ~src MBox
     id: $src.common.id,
     leg: $src.bLeg.value
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::matchOnReadThroughMapping
+(
+  *Tgt: Pure
+  {
+    ~src PartySrc
+    z: ^PartyHolder(party=$src.party).party->match([l:LegalParty[1] | $l.legalName, p:Party[1] | $p.name])
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::matchOnConstructedMapping
+(
+  *Tgt: Pure
+  {
+    ~src SrcRoot
+    z: ^Holder(src=$src)->match([h:Holder[1] | $h.src.x])
   }
 )
