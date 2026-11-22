@@ -155,6 +155,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='datepart(qq, %s)')),
     dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='replicate(%s, %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, 0)')),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformTrunc('cast(round(%s, 0, 1) as INTEGER)', 'round(%s, %s, 1)')})),
     dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='%s', transform={p:String[2..3] | $p->at(0) + ' + replicate(' + if ($p->size() == 2, | '\' \'', | $p->at(2)) + ', ' + $p->at(1) + ' - len(' + $p->at(0) + '))'})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='datepart(ss, %s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(convert(varchar(40), hashbytes(\'SHA1\', %s), 2))')),

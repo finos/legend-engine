@@ -251,6 +251,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='extract(quarter from %s)')),
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='substr(%s,-least(length(%s),%s),%s)', transform={p:String[2] | [$p->at(0),$p->at(0),$p->at(1),$p->at(1)]})),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('trunc',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformTrunc('cast(trunc(%s) as INTEGER)', 'trunc(%s, %s)')})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract(second from %s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='standard_hash(%s, \'SHA1\')')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='standard_hash(%s, \'SHA256\')')),

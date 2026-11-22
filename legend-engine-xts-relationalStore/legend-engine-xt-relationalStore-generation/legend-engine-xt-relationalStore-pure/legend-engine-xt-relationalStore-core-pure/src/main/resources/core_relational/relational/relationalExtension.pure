@@ -1882,6 +1882,24 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'trunc',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | $params->size() == 1 && $params->at(0)->inferRelationalType()->toOne()->instanceOf(meta::relational::metamodel::datatype::Numeric)},
+               {params: RelationalOperationElement[*] | let type = $params->at(0)->inferRelationalType()->toOne()->cast(@meta::relational::metamodel::datatype::Numeric); ^$type(scale = 0);}
+            ),
+            pair(
+               {params: RelationalOperationElement[*] | $params->size() == 1 && $params->at(0)->inferRelationalType()->toOne()->instanceOf(meta::relational::metamodel::datatype::Decimal)},
+               {params: RelationalOperationElement[*] | let type = $params->at(0)->inferRelationalType()->toOne()->cast(@meta::relational::metamodel::datatype::Decimal); ^$type(scale = 0);}
+            ),
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
+            )
+         ])
+      ),
+
+      pair(
          'variancePopulation',
          list([
             pair(

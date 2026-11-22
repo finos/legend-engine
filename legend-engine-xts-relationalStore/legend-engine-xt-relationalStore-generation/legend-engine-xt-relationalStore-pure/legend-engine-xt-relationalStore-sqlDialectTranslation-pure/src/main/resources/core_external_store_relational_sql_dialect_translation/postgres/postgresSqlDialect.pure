@@ -504,6 +504,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Mod->nativeFunctionMapEntry(),
     Round->nativeFunctionMapEntry(),
     Floor->nativeFunctionMapEntry(),
+    Trunc->nativeFunctionMapEntry(),
     Sum->nativeFunctionMapEntry(),
     Average->nativeFunctionMapEntry(),
     Count->nativeFunctionMapEntry(),
@@ -734,4 +735,4 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair('Boolean',     pair('', '')),
     pair('Enum',        pair('', ''))
   ]->newMap();
-}
+}

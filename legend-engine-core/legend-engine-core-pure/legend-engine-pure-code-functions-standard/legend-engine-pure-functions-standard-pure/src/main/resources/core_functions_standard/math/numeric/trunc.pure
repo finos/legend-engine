@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+'''
+Truncates a number towards zero, returning an `Integer`.
+
+Unlike `round(Number[1]):Integer[1]` the fractional part is discarded rather than rounded, so positive
+numbers behave like `floor(Number[1]):Integer[1]` and negative numbers like `ceiling(Number[1]):Integer[1]`.
+Equivalent to PostgreSQL `trunc(x)`.
+
+**Parameters**
+- `number` — the value to truncate.
+
+**Returns** the integer part of `number`.
+
+**Examples**
+```pure
+trunc(17.9)    // 17
+trunc(-17.9)   // -17
+```
+
+**See also** `trunc(Decimal[1], Integer[1]):Decimal[1]`,
+`trunc(Float[1], Integer[1]):Float[1]`,
+`floor(Number[1]):Integer[1]`,
+`ceiling(Number[1]):Integer[1]`
+'''
+function <<PCT.function>> meta::pure::functions::math::trunc(number:Number[1]):Integer[1]
+{
+    if($number > 0, |$number->floor(), |$number->ceiling());
+}
+
+'''
+Truncates a `Decimal` towards zero to a given number of decimal places, returning a `Decimal`.
+
+A negative `scale` truncates digits to the left of the decimal point. Equivalent to PostgreSQL
+`trunc(x, scale)`.
+
+**Parameters**
+- `decimal` — the value to truncate.
+- `scale` — the number of decimal places to keep.
+
+**Returns** `decimal` with all digits beyond `scale` discarded.
+
+**Examples**
+```pure
+trunc(-3.14159d, 2)    // -3.14d
+trunc(1234.567d, -2)   // 1200d
+```
+
+**See also** `trunc(Number[1]):Integer[1]`,
+`round(Decimal[1], Integer[1]):Decimal[1]`
+'''
+function <<PCT.function>> meta::pure::functions::math::trunc(decimal:Decimal[1], scale:Integer[1]):Decimal[1]
+{
+    ($decimal * powerOfTen($scale))->trunc()->toDecimal() * powerOfTen(0 - $scale);
+}
+
+'''
+Truncates a `Float` towards zero to a given number of decimal places, returning a `Float`.
+
+As `trunc(Decimal[1], Integer[1]):Decimal[1]` but for binary floating point.
+
+**Parameters**
+- `float` — the value to truncate.
+- `scale` — the number of decimal places to keep.
+
+**Returns** `float` with all digits beyond `scale` discarded.
+
+**Examples**
+```pure
+trunc(17.36, 1)     // 17.3
+trunc(-17.36, 1)    // -17.3
+```
+
+**See also** `trunc(Number[1]):Integer[1]`,
+`round(Float[1], Integer[1]):Float[1]`
+'''
+function <<PCT.function>> meta::pure::functions::math::trunc(float:Float[1], scale:Integer[1]):Float[1]
+{
+    // via Decimal so the shift is exact: 0.29 * 100 in binary floating point is 28.999999999999996
+    $float->toDecimal()->trunc($scale)->toFloat();
+}
+
+function <<access.private>> meta::pure::functions::math::powerOfTen(exponent:Integer[1]):Decimal[1]
+{
+    if($exponent >= 0,
+       |range($exponent)->fold({i:Integer[1], acc:Decimal[1] | $acc * 10d}, 1d),
+       |range(0 - $exponent)->fold({i:Integer[1], acc:Decimal[1] | $acc * 0.1d}, 1d)
+    );
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncPositiveFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(17, $f->eval(|trunc(17.9)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncNegativeFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(-17, $f->eval(|trunc(-17.9)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncZero<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(0, $f->eval(|trunc(0.0)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncInteger<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(-17, $f->eval(|trunc(-17)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncDecimal<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(-3, $f->eval(|trunc(-3.99d)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncFloatWithScale<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(17.3, $f->eval(|trunc(17.36, 1)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncNegativeFloatWithScale<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(-17.3, $f->eval(|trunc(-17.36, 1)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncFloatWithZeroScale<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(17.0, $f->eval(|trunc(17.36, 0)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncFloatWithScaleBeyondDigits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(17.36, $f->eval(|trunc(17.36, 5)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncFloatWithScaleIsExact<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(0.29, $f->eval(|trunc(0.29, 2)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncFloatWithNegativeScale<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEq(1200.0, $f->eval(|trunc(1234.567, -2)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncDecimalWithScale<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(-3.14d, $f->eval(|trunc(-3.14159d, 2)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::trunc::testTruncDecimalWithNegativeScale<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1200d, $f->eval(|trunc(1234.567d, -2)));
+}

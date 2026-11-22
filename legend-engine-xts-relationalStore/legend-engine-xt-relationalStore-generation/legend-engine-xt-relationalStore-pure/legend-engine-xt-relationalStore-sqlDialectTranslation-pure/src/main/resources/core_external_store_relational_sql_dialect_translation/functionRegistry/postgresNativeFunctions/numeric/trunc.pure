@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class {sqlFunctionInfo.initializer = 'trunc'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Trunc extends PostgresNativeSqlFunction
+[
+  $this.name == 'trunc'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::trunc(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Trunc
+  (
+    name = 'trunc',
+    documentation = 'Truncates 1st arg towards zero to 2nd arg decimal places.',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = DoubleSqlType,
+        documentation = 'Truncates towards zero to an integer.',
+        returnType = DoubleSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = AbstractNumericSqlType,
+        documentation = 'Truncates towards zero to an integer.',
+        returnType = AbstractNumericSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractNumericSqlType, AbstractIntegerSqlType],
+        returnType = AbstractNumericSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('trunc', literal(42.8)),
+        42.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('trunc', literal(-42.8)),
+        -42.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('trunc', [literal(42.4382), literal(2)]),
+        42.43
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('trunc', [literal(-42.4382), literal(2)]),
+        -42.43
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('trunc', [literal(1234.567), literal(-2)]),
+        1200.0
+      )
+    ]
+  )
+}
