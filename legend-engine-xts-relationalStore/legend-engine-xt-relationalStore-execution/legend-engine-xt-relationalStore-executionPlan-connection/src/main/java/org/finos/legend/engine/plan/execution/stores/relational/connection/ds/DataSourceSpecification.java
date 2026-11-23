@@ -242,11 +242,34 @@ public abstract class DataSourceSpecification
             }
 
             jdbcConfig.setDataSourceProperties(properties);
+            configurePool(jdbcConfig);
 
-            HikariDataSource ds = new HikariDataSource(jdbcConfig);
+            HikariDataSource ds = newHikariDataSource(jdbcConfig);
             scope.span().setTag("Pool", ds.getPoolName());
             LOGGER.info("New Connection Pool created {}", ds);
             return ds;
+        }
+    }
+
+    protected void configurePool(HikariConfig poolConfig)
+    {
+    }
+
+    private static HikariDataSource newHikariDataSource(HikariConfig jdbcConfig)
+    {
+        // The pool's housekeeper thread is started here, inherits this thread's context class loader and lives as long as the pool.
+        // Pools are often first built during plan execution, where that loader is the plan's compiled-code MemoryClassLoader,
+        // which would then stay reachable (with its javac classpath index) until the pool is evicted.
+        Thread currentThread = Thread.currentThread();
+        ClassLoader callerContextClassLoader = currentThread.getContextClassLoader();
+        currentThread.setContextClassLoader(DataSourceSpecification.class.getClassLoader());
+        try
+        {
+            return new HikariDataSource(jdbcConfig);
+        }
+        finally
+        {
+            currentThread.setContextClassLoader(callerContextClassLoader);
         }
     }
 
