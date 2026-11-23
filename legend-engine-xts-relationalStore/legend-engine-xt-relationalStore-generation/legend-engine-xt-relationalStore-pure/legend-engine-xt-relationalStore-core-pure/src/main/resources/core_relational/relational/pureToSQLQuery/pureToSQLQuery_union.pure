@@ -519,6 +519,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
          let union = $currentTableAlias.relationalElement->resolveUnion();
 
          let missingFks = $sourceCols->map(c|list($c.second.values->map(z|pair($z.name+'_'+$sourceCols->indexOf($c)->toString(), $z))));
+         let missingFkIndexes = $missingFks->map(l|$missingFks->indexOf($l));
          let mappedFkPropertyNames = $sourceCols.first.values.first->removeDuplicates();
 
          let sourceSetImpls = $sourceSetImplementationIds->map(id| $state->getClassMappingById($id)->toOne());
@@ -535,7 +536,8 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
                                                                                                            |^Alias(name=$name, relationalElement = $y.alias->fkColumnOnAlias($col->toOne().second))
                                                                                                         );
                                                                                               );
-                                                     let col = $missingFks->map(l|let z = $missingFks->indexOf($l);
+                                                     let col = $missingFks->size()->range()->map(k|let l = $missingFks->at($k);
+                                                                                          let z = $missingFkIndexes->at($k);
                                                                                           if ($z == $i,
                                                                                               |$l.values->map(v|^Alias(name=$v.first, relationalElement = $y.alias->fkColumnOnAlias($v.second))),
                                                                                               |$l.values->map(v|^Alias(name=$v.first, relationalElement = $sqlNull))
@@ -543,11 +545,11 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
                                                                                    );
 
 
-                                                      let names = $q.columns->map(m|$m->cast(@Alias).name);
+                                                      let names = $q.columns->map(m|pair($m->cast(@Alias).name, true))->newMap();
                                                       let allFks = $mappedOnes->concatenate($col);
                                                       // Filter FK columns that duplicate milestoning aliases already in the union (same logic as buildUnion)
                                                       let nonMilestoningFks = $allFks->filter(fk|!$srcMilestoningNames->contains($fk.name->stripMatchingQuotes()));
-                                                      let partitionedFks = $nonMilestoningFks->partition({c|$names->contains($c.name)});
+                                                      let partitionedFks = $nonMilestoningFks->partition({c|$names->get($c.name)->isNotEmpty()});
                                                       $partitionedFks.first.values->map(f|let col = $q.columns->cast(@Alias)->filter(c|$c.name == $f.name)->toOne(); assert($col.relationalElement->sameColumnReference($f.relationalElement),| 'FK column addition failed for column alias: ' + $f.name+ '  , column with same name but different RelationalElement exists in Union'););
                                                        
                                                       ^$q(columns+=$partitionedFks.second.values);
@@ -632,6 +634,10 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
    let reprocessedSourceAlias = $reprocessedAliasesAndRelationalPropertyMappings.first.first;
    let reprocessedTargetAlias = $reprocessedAliasesAndRelationalPropertyMappings.first.second;
    let reprocessedRelationalPropertyMappings = $reprocessedAliasesAndRelationalPropertyMappings.second.values;
+   let unionRelationNames = [$reprocessedSourceAlias, $reprocessedTargetAlias].relationalElement
+                              ->filter(r | $r->isUnionOrNestedUnion())
+                              ->map(r | pair($r, $r->buildUniqueName(false, true, $extensions)))
+                              ->newMap();
 
    let updatedJoinTreeNodes = $reprocessedRelationalPropertyMappings->map(x | let joinTreeNode = $x->getJoinTreeNode()->toOne();
                                                                               let join = $joinTreeNode.join; 
@@ -664,7 +670,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
                                                                                                                                                              $processingSide)->cast(@Operation);
                                                                                              let sourceJoinAlias = if($processingSide.source,| $reprocessedSourceAlias,| $join->toOne()->otherSideAlias($targetRelation)->toOne());
                                                                                              let targetJoinAlias = if($processingSide.target,| $reprocessedTargetAlias,| $join->toOne()->otherSideAlias($sourceRelation)->toOne());
-                                                                                             ^$join(name = $newOperation->buildUniqueName(false, $extensions),
+                                                                                             ^$join(name = $newOperation->buildUniqueName(false, true, $unionRelationNames, $extensions),
                                                                                                     operation = $newOperation,
                                                                                                     target = $targetJoinAlias,
                                                                                                     aliases = [pair($sourceJoinAlias, $targetJoinAlias),pair($targetJoinAlias, $sourceJoinAlias)]);
@@ -684,7 +690,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
     if($j->isEmpty(),
        |[],
        |let plists = $j->map(o|pair($o.first, $o.second->extractLine()->list()))->sort({a,b|$b.second.values->size() - $a.second.values->size()});
-        let lists = $plists->removeDuplicates({a,b|$a.second.values->size() == $b.second.values->size() && $a.second.values->buildUniqueName(true, $extensions) == $b.second.values->buildUniqueName(true, $extensions) && ($a.first.sourceSetImplementationId == $b.first.sourceSetImplementationId) && ($a.first.targetSetImplementationId == $b.first.targetSetImplementationId)});
+        let lists = $plists->map(p | pair($p, $p.second.values->buildUniqueName(true, $extensions)))
+                           ->removeDuplicates({a,b|$a.first.second.values->size() == $b.first.second.values->size() && $a.second == $b.second && ($a.first.first.sourceSetImplementationId == $b.first.first.sourceSetImplementationId) && ($a.first.first.targetSetImplementationId == $b.first.first.targetSetImplementationId)})
+                           .first;
         let orderedJoinLine = $lists->head().second.values;
         let joinsAcrossListsPerJoinInJoinLine = $orderedJoinLine->map({j |
           $lists->map({l |

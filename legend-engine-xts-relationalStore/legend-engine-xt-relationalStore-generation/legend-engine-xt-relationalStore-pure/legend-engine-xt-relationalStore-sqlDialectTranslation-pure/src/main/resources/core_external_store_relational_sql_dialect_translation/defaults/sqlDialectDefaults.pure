@@ -144,7 +144,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ide
   (
     {sqlDialect, identifier, shouldQuote, state, config |
       let isQuoted = $identifier->isQuoted();
-      if ($shouldQuote || $identifier->isKeyword($sqlDialect) || $isQuoted,
+      if ($shouldQuote || $identifier->isKeyword($sqlDialect, $config) || $isQuoted,
         | if ($sqlDialect.identifierQuoteConfig->isEmpty(),
           | // Quoting configuration unknown. Hence returning the identifier as is
             $identifier,

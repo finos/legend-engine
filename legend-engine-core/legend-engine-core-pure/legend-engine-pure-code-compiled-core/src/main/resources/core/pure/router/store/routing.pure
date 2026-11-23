@@ -55,7 +55,7 @@ function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRun
     if($currentStoreMappingRoutingStrategy->isEmpty(),
       | getRoutingStrategy($modifiedMapping, $modifiedRuntime),
       | let newStoreMappingRoutingStrategy = $currentStoreMappingRoutingStrategy->toOne();
-        ^$newStoreMappingRoutingStrategy(mapping = $modifiedMapping, runtime = $modifiedRuntime, classMappingsByClass = $modifiedMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());
+        ^$newStoreMappingRoutingStrategy(mapping = $modifiedMapping, runtime = $modifiedRuntime, classMappingsByClass = $modifiedMapping->buildClassMappingsByClassMap(), classMappingsById = $modifiedMapping->buildUnresolvedClassMappingsById(), associationPropertyMappingsBySourceId = $modifiedMapping->buildAssociationPropertyMappingsBySourceId(), storeContractsBySetImplementation = ^Map<SetImplementation, StoreContract>(), setsByDepth = ^Map<String, PermutationSet>());
     );
 }
 
@@ -337,6 +337,9 @@ function <<access.private>> meta::pure::router::store::routing::getRoutingStrate
     runtime = $runtime,
     setsByDepth = ^Map<String, PermutationSet>(),
     classMappingsByClass = $mapping->buildClassMappingsByClassMap(),
+    classMappingsById = $mapping->buildUnresolvedClassMappingsById(),
+    associationPropertyMappingsBySourceId = $mapping->buildAssociationPropertyMappingsBySourceId(),
+    storeContractsBySetImplementation = ^Map<SetImplementation, StoreContract>(),
     processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__Extension_MANY__DebugContext_1__RoutingState_1_,
     processRelationStoreAccessor = processRelationStoreAccessor_RelationStoreAccessor_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
     processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
@@ -561,10 +564,11 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                   let runtime = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
                 
                   let srcSets   = $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[*]|[]->cast(@SetImplementation)]);
-                  let isPropertyAutoMapped = $srcSets->isPropertyAutoMapped($p, $extensions, $mapping);
-                  if (!$preLast.shouldBeRouted || $isPropertyAutoMapped,
-                      | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();,
-                      | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
+                  let isPropertyAutoMappedAndStrategy = $srcSets->isPropertyAutoMappedWithStoreContractCache($p, $extensions, $mapping, $preLast.routingStrategy);
+                  let preLastWithStoreContracts = ^$preLast(routingStrategy = $isPropertyAutoMappedAndStrategy.second);
+                  if (!$preLast.shouldBeRouted || $isPropertyAutoMappedAndStrategy.first,
+                      | ^$preLastWithStoreContracts(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();,
+                      | let last = ^$preLastWithStoreContracts(depth = $preLast.depth + $p.name->toOne());
 
                         print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
                         let targetType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
@@ -1100,6 +1104,33 @@ function meta::pure::router::store::routing::processProperty(p:AbstractProperty<
    );
 }
 
+function <<access.private>> meta::pure::router::store::routing::autoMapsProperty(storeContract:StoreContract[1], p:AbstractProperty<Any>[1], set:InstanceSetImplementation[1]):Boolean[1]
+{
+  $storeContract.isPropertyAutoMapped->isNotEmpty() && $storeContract.isPropertyAutoMapped->toOne()->eval($p, $set)
+}
+
+function <<access.private>> meta::pure::router::store::routing::isPropertyAutoMappedWithStoreContractCache(srcSets:SetImplementation[*], p:AbstractProperty<Any>[1], extensions:meta::pure::extension::Extension[*], mapping:Mapping[1], routingStrategy:RoutingStrategy[1]):Pair<Boolean,RoutingStrategy>[1]
+{
+  let strategy = $routingStrategy->match([
+    s:StoreMappingRoutingStrategy[1] | if($s.storeContractsBySetImplementation->isEmpty(), |[], |$s),
+    a:Any[1] | []
+  ])->cast(@StoreMappingRoutingStrategy);
+  if($strategy->isEmpty()
+       || $srcSets->size() != 1
+       || isAutoMappedRelationFunctionPropertyMapping($srcSets, $p)
+       || !$srcSets->toOne()->instanceOf(InstanceSetImplementation)
+       || $srcSets->toOne()->instanceOf(RelationFunctionInstanceSetImplementation),
+     | pair($srcSets->isPropertyAutoMapped($p, $extensions, $mapping), $routingStrategy),
+     | let set = $srcSets->toOne();
+       let storeMappingStrategy = $strategy->toOne();
+       let storeContracts = $storeMappingStrategy.storeContractsBySetImplementation->toOne();
+       let cached = $storeContracts->get($set);
+       let storeContract = if($cached->isEmpty(), |$extensions->meta::pure::extension::_storeContractForSetImplementation($set), |$cached->toOne());
+       let updatedStrategy = if($cached->isEmpty(), |^$storeMappingStrategy(storeContractsBySetImplementation = $storeContracts->put($set, $storeContract)), |$storeMappingStrategy);
+       pair($storeContract->autoMapsProperty($p, $set->cast(@InstanceSetImplementation)), $updatedStrategy->cast(@RoutingStrategy));
+  );
+}
+
 function meta::pure::router::store::routing::isPropertyAutoMapped(srcSets:SetImplementation[*], p:AbstractProperty<Any>[1], extensions:meta::pure::extension::Extension[*], mapping: Mapping[1]): Boolean[1]
 {
   $srcSets->size() == 1 
@@ -1109,8 +1140,7 @@ function meta::pure::router::store::routing::isPropertyAutoMapped(srcSets:SetImp
       // We only support pass through mapping when source set is InstanceSetImpls and not OperationSetImpls
       $srcSets->toOne()->instanceOf(InstanceSetImplementation)
       && !$srcSets->toOne()->instanceOf(RelationFunctionInstanceSetImplementation)
-      && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->isNotEmpty()
-      && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->toOne()->eval($p, $srcSets->toOne()->cast(@InstanceSetImplementation))
+      && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne())->autoMapsProperty($p, $srcSets->toOne()->cast(@InstanceSetImplementation))
     )
     || $srcSets->toOne()->instanceOf(OperationSetImplementation) && $srcSets->toOne()->cast(@OperationSetImplementation)->meta::pure::router::routing::resolveOperation($mapping)->forAll(s | $s->isPropertyAutoMapped($p,$extensions, $mapping))
   );

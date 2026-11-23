@@ -87,7 +87,7 @@ function meta::external::store::relational::sqlDialectTranslation::generateSqlDi
     s: Statement[1] | $s,
     n: Node[1] | fail('SQL Dialect generation only supported for Statements and Expressions. Can\'t generate dialect for node of type ' + $n->type().name->toOne()); ^NullLiteral();
   ]);
-  $sqlDialect->executeNodeProcessor($typeInferredNode, ^SqlDialectTranslationState(), $config);
+  $sqlDialect->executeNodeProcessor($typeInferredNode, ^SqlDialectTranslationState(), $config->withSqlDialectLookups($sqlDialect));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -100,6 +100,14 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTransl
   formatConfig: FormatConfig[1];
   functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1];
   extraNodeProcessors: Map<Class<Node>, NodeProcessor<Node>>[0..1];
+  lookups: SqlDialectLookups[0..1];
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::SqlDialectLookups
+{
+  dbType: String[1];
+  lowerCaseKeywords: Map<String, Boolean>[1];
+  nodeProcessorsByClass: Map<Class<Node>, NodeProcessor<Node>>[1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::DbConfig

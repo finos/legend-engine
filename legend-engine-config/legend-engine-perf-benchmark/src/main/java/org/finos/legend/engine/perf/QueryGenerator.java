@@ -31,7 +31,23 @@ public class QueryGenerator
 
     public String generate()
     {
-        return "###Pure\nfunction test::fetch(): Any[1]\n{\n  {|" + this.body() + "}\n}\n";
+        return "###Pure\n" + this.helperFunctions() + "function test::fetch(): Any[1]\n{\n  {|" + this.body() + "}\n}\n";
+    }
+
+    private String helperFunctions()
+    {
+        if (!this.config.query.startsWith("fn"))
+        {
+            return "";
+        }
+        int depth = Integer.parseInt(this.config.query.substring(2));
+        StringBuilder b = new StringBuilder("function test::f0(x: test::domain::C0[1]): Boolean[1]\n{\n  $x.p0 == 'abc'\n}\n");
+        for (int i = 1; i <= depth; i++)
+        {
+            b.append("function test::f").append(i).append("(x: test::domain::C0[1]): Boolean[1]\n{\n  test::f").append(i - 1)
+                    .append("($x) && ($x.p").append(i % 3).append("->isNotEmpty())\n}\n");
+        }
+        return b.toString();
     }
 
     private String body()
@@ -69,6 +85,30 @@ public class QueryGenerator
         {
             return this.semiDeep(Integer.parseInt(query.substring(4)), all);
         }
+        if (query.startsWith("projnav"))
+        {
+            return this.navigationProjection(Integer.parseInt(query.substring(7)), all);
+        }
+        if (query.startsWith("filter"))
+        {
+            return this.filterWidth(Integer.parseInt(query.substring(6)), all);
+        }
+        if (query.startsWith("exists"))
+        {
+            return this.nestedExists(Integer.parseInt(query.substring(6)), all);
+        }
+        if (query.startsWith("let"))
+        {
+            return this.letChain(Integer.parseInt(query.substring(3)), all);
+        }
+        if (query.startsWith("fn"))
+        {
+            return all + "->filter(x|test::f" + Integer.parseInt(query.substring(2)) + "($x))->project([x|$x.p0, x|$x.p1], ['c0','c1'])";
+        }
+        if (query.startsWith("if"))
+        {
+            return this.conditionalColumns(Integer.parseInt(query.substring(2)), all);
+        }
         if (query.startsWith("join"))
         {
             return this.joinChain(Integer.parseInt(query.substring(4)), all);
@@ -104,6 +144,81 @@ public class QueryGenerator
             names.append(", 'c").append(i).append("'");
         }
         return all + "->filter(x|$x.p0 == 'abc')->project([" + columns + "], [" + names + "])";
+    }
+
+    private String navigationProjection(int width, String all)
+    {
+        StringBuilder columns = new StringBuilder();
+        StringBuilder names = new StringBuilder();
+        for (int i = 0; i < width; i++)
+        {
+            if (i > 0)
+            {
+                columns.append(", ");
+                names.append(", ");
+            }
+            columns.append("x|$x").append(i % 2 == 0 ? ".next" : ".next.next").append(".p").append(i % 4);
+            names.append("'c").append(i).append("'");
+        }
+        return all + "->project([" + columns + "], [" + names + "])";
+    }
+
+    private String filterWidth(int count, String all)
+    {
+        StringBuilder predicate = new StringBuilder();
+        for (int i = 0; i < count; i++)
+        {
+            if (i > 0)
+            {
+                predicate.append(" && ");
+            }
+            predicate.append("$x").append(i % 2 == 0 ? "" : ".next").append(".p").append(i % 3).append(" == 'v").append(i).append("'");
+        }
+        return all + "->filter(x|" + predicate + ")->project([x|$x.p0, x|$x.p1], ['c0','c1'])";
+    }
+
+    private String nestedExists(int depth, String all)
+    {
+        StringBuilder predicate = new StringBuilder("$n" + depth + ".p0 == 'abc'");
+        for (int d = depth; d >= 1; d--)
+        {
+            String parent = d == 1 ? "$x" : "$n" + (d - 1);
+            predicate.insert(0, parent + ".next->exists(n" + d + "|").append(")");
+        }
+        return all + "->filter(x|" + predicate + ")->project([x|$x.p0, x|$x.p1], ['c0','c1'])";
+    }
+
+    private String letChain(int count, String all)
+    {
+        StringBuilder lets = new StringBuilder();
+        StringBuilder predicate = new StringBuilder();
+        for (int i = 0; i < count; i++)
+        {
+            lets.append("let v").append(i).append(" = ").append(i == 0 ? "'abc'" : "$v" + (i - 1) + " + 'x'").append("; ");
+            if (i > 0)
+            {
+                predicate.append(" || ");
+            }
+            predicate.append("$x.p").append(i % 3).append(" == $v").append(i);
+        }
+        return lets + all + "->filter(x|" + predicate + ")->project([x|$x.p0, x|$x.p1], ['c0','c1']);";
+    }
+
+    private String conditionalColumns(int count, String all)
+    {
+        StringBuilder columns = new StringBuilder();
+        StringBuilder names = new StringBuilder();
+        for (int i = 0; i < count; i++)
+        {
+            if (i > 0)
+            {
+                columns.append(", ");
+                names.append(", ");
+            }
+            columns.append("x|if($x.p3 > ").append(i).append(", |$x.p").append(i % 3).append(", |$x.next.p").append((i + 1) % 3).append(")");
+            names.append("'c").append(i).append("'");
+        }
+        return all + "->project([" + columns + "], [" + names + "])";
     }
 
     private String projection(int width, String all, boolean longAliases)

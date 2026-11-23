@@ -55,6 +55,12 @@ model size. Query shapes vary one dimension each:
 | `semiK` / `semiwK` / `semijoinK` | semi-structured path depth, access width, and width combined with join navigation |
 | `variantrel` | Variant functions through the relation path |
 | `m2mview` | a model-to-model view over the relational mapping |
+| `projnavW` | projection width with every column reached through one or two navigations |
+| `filterK` | number of `&&`-ed predicates in one filter, half of them across a navigation |
+| `existsK` | nesting depth of `exists` over the navigation chain |
+| `letK` | number of chained `let` bindings feeding the filter |
+| `fnK` | depth of a chain of user functions inlined into the filter |
+| `ifK` | number of projected columns computed with `if` |
 
 Mapping shape flags: `--nextmult 1|0..1` (chain multiplicity), `--union K` (Operation union over K
 set implementations), `--includes K` (K-deep mapping include chain), `--milestoning`
@@ -66,6 +72,18 @@ Other flags: `--dbtype H2|DuckDB|Snowflake` (plan generation works for any diale
 connection), `--iters`, `--warmup`, `--execute`, `--csv <path>`, `--dumpplan <path>`, `--pause`
 (waits for a profiler to attach before measuring).
 
+Plan-generation flags:
+
+| Flag | Effect |
+|---|---|
+| `--allext` | Builds the extension list the way the server does (`PureCoreExtensionLoader`, every extension on the classpath) instead of the relational-only list. Needs the `all-extensions` Maven profile on the classpath, see below. |
+| `--routeonly` | Stops after `extensions` and times `routeFunction` alone as `route`, to profile the router without SQL generation and binding in the samples. |
+| `--compareplan <path>` | Fails the run if the generated plan JSON is not byte-identical to one written earlier with `--dumpplan`. |
+| `--nospans` | Does not register the span collector (see below). |
+
+Every iteration's plan is also checked against the first one of the run, and a warning is printed
+if plan generation is not deterministic.
+
 To run a model that already exists rather than a generated one:
 
 ```bash
@@ -73,6 +91,62 @@ To run a model that already exists rather than a generated one:
 ```
 
 where `files.txt` lists `.pure` files one per line and `query.txt` holds the query body.
+
+## Sub-phases of plan generation
+
+`planPure` covers routing, clustering, per-store plan generation and plan assembly. To split it,
+the harness registers an OpenTracing tracer and collects the spans plan generation emits: the Java
+`Generate Plan` span and the Pure `traceSpan` calls below. Each run prints the median inclusive
+time per span name and the number of calls in one plan; suite results carry them as
+`warmMedianSpansMs` and `spanCounts`, recorded but not compared against the baseline.
+
+| Span | Covers |
+|---|---|
+| `plan: route` | `routeFunction` for the whole query, preeval included |
+| `route: enrich` | `enrichFunctionExpressions`: assigning mappings, stores and routing strategies |
+| `route: strategy enrichment` | per-strategy enrichment of routed expressions |
+| `route: cluster` | grouping routed expressions into store clusters |
+| `plan: cluster nodes` | building execution nodes for every cluster (store plan generation) |
+| `plan: assemble` | the `ExecutionPlan` instance, including the walks over all nodes |
+| `relational: toSQLQuery` | Pure-to-SQL for one relational query (`toSQLQuery` and graph fetch's `toSelectWithCursor`) |
+| `relational: postProcess` | relational plan post-processors |
+| `relational: toSqlString` | rendering the SQL of one SQL execution node |
+| `relational: convertSqlQuery` | dialect-translation path (H2): converting the relational model to the SQL AST |
+| `relational: planSqlStatement` | dialect-translation path: the SQL optimizer |
+| `relational: toSqlDialect` | dialect-translation path: printing the SQL AST in the dialect |
+| `relational: sqlQueryToString` | the legacy printer, for dialects without dialect translation and for graph-fetch queries |
+
+Routing recurses, so a span can contain another of the same name; only the outermost one adds to
+that name's time. Spans of different names nest, so they do not sum to `planPure`.
+
+## Router sweeps
+
+`--suite router` runs sweeps that each vary one size: projection width (`proj`, `projnav`), join
+depth on `[0..1]` and `[1]` chains, graph-fetch depth, filter width, `exists` nesting, `let` and
+inlined-function chains, `if` columns, mapping include depth, model size and Operation unions. It is
+not part of the baseline check; it is for finding where a phase grows faster than its input:
+
+```bash
+java ... org.finos.legend.engine.perf.PipelineBench --suite router --allext --out router.json
+scripts/sweep_slopes.py router.json
+```
+
+`sweep_slopes.py` prints every sweep's phase and span medians and the growth slope between its two
+largest sizes (about 1 linear, about 2 quadratic).
+
+## Full extension set
+
+Build and resolve the classpath with the `all-extensions` profile, then pass `--allext`:
+
+```bash
+mvn install -DskipTests -Pall-extensions -pl legend-engine-config/legend-engine-perf-benchmark -am
+mvn -q -Pall-extensions -pl legend-engine-config/legend-engine-perf-benchmark dependency:build-classpath -Dmdep.outputFile=/tmp/cp-all.txt
+java -Xmx8g -Xss8m -cp "legend-engine-config/legend-engine-perf-benchmark/target/classes:$(cat /tmp/cp-all.txt)" \
+    org.finos.legend.engine.perf.PipelineBench --allext --scale 100 --query graph4 --iters 20
+```
+
+The profile is opt-in because the extra grammar and compiler extensions also change `parse` and
+`compile` timings, which would move the stored baseline.
 
 ## Profiling
 
@@ -89,6 +163,22 @@ scripts/demangle_pure_frames.py main.collapsed demangled.collapsed report.txt
 
 Wall-clock mode matters: a CPU sampler under-reports class loading, lock and IO waits, which
 dominate the cold path. On CI runners where `perf_events` is restricted, use `ctimer`.
+
+Without async-profiler, record with JFR and convert the samples with `scripts/JfrToCollapsed.java`.
+`--root` keeps one phase, cut at its outermost frame; `--routeonly` keeps the run on routing:
+
+```bash
+java -Xss16m -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints \
+     -XX:FlightRecorderOptions:stackdepth=2048 \
+     -XX:StartFlightRecording:method-profiling=max,filename=route.jfr \
+     ... org.finos.legend.engine.perf.PipelineBench --routeonly --nospans --query if32 --iters 1500
+java -Xmx2g scripts/JfrToCollapsed.java route.jfr main.collapsed \
+     --root core_pure_router_deprecated_deprecated.Root_meta_pure_router_routeFunction
+scripts/demangle_pure_frames.py main.collapsed demangled.collapsed report.txt
+```
+
+The converter streams the recording, so its memory stays bounded by the number of distinct stacks;
+`jfr print --json` at full stack depth needs several gigabytes for a recording of this size.
 
 ## Suite runs, baselines and regression checks
 
@@ -111,7 +201,9 @@ Flags: `--baseline <path>` (default `perf-baseline.json`), `--out <path>`, `--re
 re-running the suite),
 `--margin 0.5` (allowed deviation for absolute phase medians), `--canary-margin 0.3` (allowed
 deviation for ratios), `--min-delta-ms 25` (absolute deltas smaller than this are treated as noise),
-`--allow-improvement` (only enforce the slower side), `--iters`, `--warmup`.
+`--allow-improvement` (only enforce the slower side), `--iters`, `--warmup`, `--allext`,
+`--dumpplans <dir>` (write every workload's plan there) and `--compareplans <dir>` (fail if any
+workload's plan differs from the one in that directory).
 
 The results file records the environment, every workload's cold and warm phase timings, and the
 computed canary ratios:

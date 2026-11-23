@@ -35,7 +35,6 @@ import meta::pure::graphFetch::executionPlan::*;
 function meta::pure::extension::storeContractForSetImplementation(extensions: Extension[*], s:InstanceSetImplementation[1]):StoreContract[1]
 {
   $extensions.availableStores
-    ->removeDuplicatesBy(x|$x.id)
     ->filter(sc|$sc.supportsSetImplementation->eval($s))
     ->unique(|'for the setImplementation ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
 }
@@ -60,7 +59,6 @@ function meta::pure::extension::_storeContractForSetImplementation(extensions: E
 function meta::pure::extension::storeContractFromStore(extensions: Extension[*], s: Store[1]):StoreContract[1]
 {
   $extensions.availableStores
-    ->removeDuplicatesBy(x|$x.id)
     ->filter(sc|$sc.supportsStore->eval($s))
     ->unique(|'for the store ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
 }
