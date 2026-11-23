@@ -1,0 +1,59 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-join-filtered-target
+title: "Relation Function Mapping — modelJoin onto a Filtered ###Relational Class Mapping"
+description: |
+  A Relation class mapping whose modelJoin property targets a ###Relational class mapping with a ~filter, non-temporal
+  and processing-temporal: project, filter on the target, isEmpty, and graphFetch of a to-one target, a nested target
+  and a to-many target, over a NULL key, a key with no match, a filtered-out target row and an expired target version.
+  A ###Relational twin expects the same rows.
+
+modelSources:
+  model:
+    root: relation-inline-join-filtered-target
+    files:
+      - store/filteredTargetDb.pure
+      - data/filteredTargetData.pure
+      - mapping/filteredTargetMapping.pure
+      - mapping/relationalFilteredTargetMapping.pure
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-inline-model-join
+  - mapping:relation-local-property
+  - mapping:relation-src
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+stores:
+  - relational
+complexity: advanced
+tags:
+  - h2
+  - duckdb
+  - mapping-test
+  - relation
+  - graph-fetch
+  - modeljoin
+  - filter
+  - milestoning

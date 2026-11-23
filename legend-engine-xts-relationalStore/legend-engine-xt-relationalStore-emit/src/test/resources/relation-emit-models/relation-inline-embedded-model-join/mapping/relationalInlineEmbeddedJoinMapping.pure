@@ -1,0 +1,609 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::relation::inlineembeddedjoin::mapping::RelationalInlineEmbeddedJoinMapping
+(
+  *demo::relation::inlineembeddedjoin::Trade[trade]: Relational
+  {
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.ID,
+    details () Inline [details]
+  }
+
+  demo::relation::inlineembeddedjoin::TradeDetails[details]: Relational
+  {
+    desk: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.DESK,
+    counterpartyId: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.CPTY_ID,
+    counterparty[firm]: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]@Trade_Firm
+  }
+
+  *demo::relation::inlineembeddedjoin::Firm[firm]: Relational
+  {
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM.ID,
+    name: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM.NAME
+  }
+
+  testSuites:
+  [
+    projectSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->project(~[id: t | $t.id, desk: t | $t.details.desk, counterparty: t | $t.details.counterparty.name])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheCounterpartyOfEachTrade:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"desk":"Rates","counterparty":"Acme"},{"id":2,"desk":"Credit","counterparty":null},{"id":3,"desk":"Rates","counterparty":null},{"id":4,"desk":"FX","counterparty":"Globex"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->filter(t | $t.details.counterparty.name->in(['Acme', 'Globex']))->project(~[id: t | $t.id])->sort([~id->ascending()]);
+      tests:
+      [
+        keepsTradesWithAKnownCounterparty:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1},{"id":4}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->graphFetch(#{demo::relation::inlineembeddedjoin::Trade{id, details{desk, counterparty{id, name}}}}#)->serialize(#{demo::relation::inlineembeddedjoin::Trade{id, details{desk, counterparty{id, name}}}}#);
+      tests:
+      [
+        fetchesTheCounterpartyOfEachTrade:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"details":{"desk":"Rates","counterparty":{"id":10,"name":"Acme"}}},{"id":2,"details":{"desk":"Credit","counterparty":null}},{"id":3,"details":{"desk":"Rates","counterparty":null}},{"id":4,"details":{"desk":"FX","counterparty":{"id":11,"name":"Globex"}}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+
+###Mapping
+Mapping demo::relation::inlineembeddedjoin::mapping::RelationalUnionInlineEmbeddedJoinMapping
+(
+  *demo::relation::inlineembeddedjoin::Trade: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(lowTrade, highTrade)
+  }
+
+  demo::relation::inlineembeddedjoin::Trade[lowTrade]: Relational
+  {
+    ~filter [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]LowTradeFilter
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.ID,
+    details () Inline [details]
+  }
+
+  demo::relation::inlineembeddedjoin::Trade[highTrade]: Relational
+  {
+    ~filter [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]HighTradeFilter
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.ID,
+    details () Inline [details]
+  }
+
+  demo::relation::inlineembeddedjoin::TradeDetails[details]: Relational
+  {
+    desk: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.DESK,
+    counterpartyId: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.CPTY_ID,
+    counterparty[firm]: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]@Trade_Firm
+  }
+
+  *demo::relation::inlineembeddedjoin::Firm[firm]: Relational
+  {
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM.ID,
+    name: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM.NAME
+  }
+
+  testSuites:
+  [
+    projectWithoutJoinSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->project(~[id: t | $t.id, desk: t | $t.details.desk, counterpartyId: t | $t.details.counterpartyId])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheDetailsOfBothBranches:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"desk":"Rates","counterpartyId":10},{"id":2,"desk":"Credit","counterpartyId":null},{"id":3,"desk":"Rates","counterpartyId":99},{"id":4,"desk":"FX","counterpartyId":11}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterWithoutJoinSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->filter(t | $t.details.desk == 'Rates')->project(~[id: t | $t.id])->sort([~id->ascending()]);
+      tests:
+      [
+        keepsTheRatesTradesOfBothBranches:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1},{"id":3}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    projectSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->project(~[id: t | $t.id, desk: t | $t.details.desk, counterparty: t | $t.details.counterparty.name])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheCounterpartyOfEachTrade:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"desk":"Rates","counterparty":"Acme"},{"id":2,"desk":"Credit","counterparty":null},{"id":3,"desk":"Rates","counterparty":null},{"id":4,"desk":"FX","counterparty":"Globex"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->filter(t | $t.details.counterparty.name->in(['Acme', 'Globex']))->project(~[id: t | $t.id])->sort([~id->ascending()]);
+      tests:
+      [
+        keepsTradesWithAKnownCounterparty:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1},{"id":4}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->graphFetch(#{demo::relation::inlineembeddedjoin::Trade{id, details{desk, counterparty{id, name}}}}#)->serialize(#{demo::relation::inlineembeddedjoin::Trade{id, details{desk, counterparty{id, name}}}}#);
+      tests:
+      [
+        fetchesTheCounterpartyOfEachTrade:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"details":{"desk":"Rates","counterparty":{"id":10,"name":"Acme"}}},{"id":2,"details":{"desk":"Credit","counterparty":null}},{"id":3,"details":{"desk":"Rates","counterparty":null}},{"id":4,"details":{"desk":"FX","counterparty":{"id":11,"name":"Globex"}}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+
+###Mapping
+Mapping demo::relation::inlineembeddedjoin::mapping::RelationalUnionEmbeddedJoinMapping
+(
+  *demo::relation::inlineembeddedjoin::Trade: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(lowTrade, highTrade)
+  }
+
+  demo::relation::inlineembeddedjoin::Trade[lowTrade]: Relational
+  {
+    ~filter [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]LowTradeFilter
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.ID,
+    details (
+      desk: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.DESK,
+      counterpartyId: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.CPTY_ID,
+      counterparty[firm]: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]@Trade_Firm
+    )
+  }
+
+  demo::relation::inlineembeddedjoin::Trade[highTrade]: Relational
+  {
+    ~filter [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]HighTradeFilter
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.ID,
+    details (
+      desk: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.DESK,
+      counterpartyId: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]TRADE.CPTY_ID,
+      counterparty[firm]: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]@Trade_Firm
+    )
+  }
+
+  *demo::relation::inlineembeddedjoin::Firm[firm]: Relational
+  {
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM.ID,
+    name: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]FIRM.NAME
+  }
+
+  testSuites:
+  [
+    projectSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->project(~[id: t | $t.id, desk: t | $t.details.desk, counterparty: t | $t.details.counterparty.name])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheCounterpartyOfEachTrade:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"desk":"Rates","counterparty":"Acme"},{"id":2,"desk":"Credit","counterparty":null},{"id":3,"desk":"Rates","counterparty":null},{"id":4,"desk":"FX","counterparty":"Globex"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->filter(t | $t.details.counterparty.name->in(['Acme', 'Globex']))->project(~[id: t | $t.id])->sort([~id->ascending()]);
+      tests:
+      [
+        keepsTradesWithAKnownCounterparty:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1},{"id":4}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Trade.all()->graphFetch(#{demo::relation::inlineembeddedjoin::Trade{id, details{desk, counterparty{id, name}}}}#)->serialize(#{demo::relation::inlineembeddedjoin::Trade{id, details{desk, counterparty{id, name}}}}#);
+      tests:
+      [
+        fetchesTheCounterpartyOfEachTrade:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"details":{"desk":"Rates","counterparty":{"id":10,"name":"Acme"}}},{"id":2,"details":{"desk":"Credit","counterparty":null}},{"id":3,"details":{"desk":"Rates","counterparty":null}},{"id":4,"details":{"desk":"FX","counterparty":{"id":11,"name":"Globex"}}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+
+###Mapping
+Mapping demo::relation::inlineembeddedjoin::mapping::RelationalUnionInlineEmbeddedMilestonedJoinMapping
+(
+  *demo::relation::inlineembeddedjoin::Position: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(lowPosition, highPosition)
+  }
+
+  demo::relation::inlineembeddedjoin::Position[lowPosition]: Relational
+  {
+    ~filter [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]LowPositionFilter
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]POSITION
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]POSITION.ID,
+    holding () Inline [holding]
+  }
+
+  demo::relation::inlineembeddedjoin::Position[highPosition]: Relational
+  {
+    ~filter [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]HighPositionFilter
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]POSITION
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]POSITION.ID,
+    holding () Inline [holding]
+  }
+
+  demo::relation::inlineembeddedjoin::Holding[holding]: Relational
+  {
+    quantity: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]POSITION.QUANTITY,
+    issuerId: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]POSITION.ISSUER_ID,
+    issuer[issuer]: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]@Position_Issuer
+  }
+
+  *demo::relation::inlineembeddedjoin::Issuer[issuer]: Relational
+  {
+    ~mainTable [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]ISSUER
+    id: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]ISSUER.ID,
+    name: [demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB]ISSUER.NAME
+  }
+
+  testSuites:
+  [
+    projectSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Position.all(%2023-01-01T00:00:00)->project(~[id: p | $p.id, quantity: p | $p.holding.quantity, issuer: p | $p.holding.issuer.name])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheIssuerCurrentAtTheQueryDate:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"quantity":100,"issuer":"Acme"},{"id":2,"quantity":200,"issuer":null},{"id":3,"quantity":350,"issuer":"Globex"},{"id":4,"quantity":400,"issuer":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    filterSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Position.all(%2023-01-01T00:00:00)->filter(p | $p.holding.issuer.name == 'Acme')->project(~[id: p | $p.id])->sort([~id->ascending()]);
+      tests:
+      [
+        matchesTheIssuerNameCurrentAtTheQueryDate:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    graphFetchSuite:
+    {
+      function: |demo::relation::inlineembeddedjoin::Position.all(%2023-01-01T00:00:00)->graphFetch(#{demo::relation::inlineembeddedjoin::Position{id, holding{quantity, issuer{id, name}}}}#)->serialize(#{demo::relation::inlineembeddedjoin::Position{id, holding{quantity, issuer{id, name}}}}#);
+      tests:
+      [
+        fetchesTheIssuerCurrentAtTheQueryDate:
+        {
+          data:
+          [
+            demo::relation::inlineembeddedjoin::db::InlineEmbeddedJoinDB:
+              Reference
+              #{
+                demo::relation::inlineembeddedjoin::data::InlineEmbeddedJoinData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"holding(2023-01-01T00:00:00+0000)":{"quantity":100,"issuer(2023-01-01T00:00:00+0000)":{"id":10,"name":"Acme"}}},{"id":2,"holding(2023-01-01T00:00:00+0000)":{"quantity":200,"issuer(2023-01-01T00:00:00+0000)":null}},{"id":3,"holding(2023-01-01T00:00:00+0000)":{"quantity":350,"issuer(2023-01-01T00:00:00+0000)":{"id":11,"name":"Globex"}}},{"id":4,"holding(2023-01-01T00:00:00+0000)":{"quantity":400,"issuer(2023-01-01T00:00:00+0000)":null}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database demo::relation::joinmilestoning::db::JoinMilestoningDB
+(
+  Table PROCESSING_PRODUCT
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL
+  )
+  Table PROCESSING_LISTING
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    PRODUCT_ID INTEGER PRIMARY KEY,
+    MARKET VARCHAR(100) NOT NULL,
+    EXCHANGE_ID INTEGER NOT NULL,
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL
+  )
+  Table BUSINESS_PRODUCT
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+  Table BUSINESS_LISTING
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    PRODUCT_ID INTEGER PRIMARY KEY,
+    MARKET VARCHAR(100) NOT NULL,
+    EXCHANGE_ID INTEGER NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+  Table BITEMPORAL_PRODUCT
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000),
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+  Table BITEMPORAL_LISTING
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000),
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    PRODUCT_ID INTEGER PRIMARY KEY,
+    MARKET VARCHAR(100) NOT NULL,
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+  Table EXCHANGE
+  (
+    ID INTEGER PRIMARY KEY,
+    EXCHANGE_NAME VARCHAR(100) NOT NULL
+  )
+
+  Join ProcessingProduct_Listing(PROCESSING_PRODUCT.ID = PROCESSING_LISTING.PRODUCT_ID)
+  Join ProcessingListing_Exchange(PROCESSING_LISTING.EXCHANGE_ID = EXCHANGE.ID)
+  Join BusinessProduct_Listing(BUSINESS_PRODUCT.ID = BUSINESS_LISTING.PRODUCT_ID)
+  Join BusinessListing_Exchange(BUSINESS_LISTING.EXCHANGE_ID = EXCHANGE.ID)
+  Join BiTemporalProduct_Listing(BITEMPORAL_PRODUCT.ID = BITEMPORAL_LISTING.PRODUCT_ID)
+)

@@ -284,9 +284,9 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
    let propertyIndexVar    = j_variable(javaInt(), 'propertyIndex');
    let propertyGetterVar   = j_variable(javaSupplier(javaObject()), 'propertyGetter');
 
-   let enumPropertyGetterCodes = {property:AbstractProperty<Any>[1], propertyType: meta::pure::metamodel::type::Enumeration<Any>[1], currentPropertyMapping: RelationalPropertyMapping[1] |
+   let enumPropertyGetterCodes = {property:AbstractProperty<Any>[1], propertyType: meta::pure::metamodel::type::Enumeration<Any>[1], transformer: ValueTransformer<Any>[0..1] |
       let javaEnumeration       =  $conventions->className($propertyType);
-      let enumValueMappings     = $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).enumValueMappings;
+      let enumValueMappings     = $transformer->cast(@EnumerationMapping<Any>).enumValueMappings;
       let enumReverseMapVar     = j_variable(javaMap(javaObject(), javaString()), 'enumReverseMap');
       let enumResVar            = j_variable($javaEnumeration, 'res');
       let transformedR          = j_variable(javaString(), 'transformedR');
@@ -324,7 +324,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                            j_throw(j_new(javaRuntimeException(), [
                               j_string('Enumeration mapping failure. Cannot find transformation for source value \'')
                               ->j_plus($r)
-                              ->j_plus(j_string('\' for enumeration property \'' + $property.name->toOne() + '\' of type ' + $propertyType->elementToPath() + ' in enumeration mapping ' + $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).name->concatenate('{missing enum mapping}')->first()->toOne() + '.'))
+                              ->j_plus(j_string('\' for enumeration property \'' + $property.name->toOne() + '\' of type ' + $propertyType->elementToPath() + ' in enumeration mapping ' + $transformer->cast(@EnumerationMapping<Any>).name->concatenate('{missing enum mapping}')->first()->toOne() + '.'))
                            ]))
                         ),
                         $enumResVar->j_assign($javaEnumeration->j_invoke('getEnumFromPureName', $transformedR, $javaEnumeration))
@@ -458,8 +458,8 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                                           {|
                                              if ($propertyType->instanceOf(meta::pure::metamodel::type::Enumeration),
                                                 {|
-                                                   let currentPropertyMapping = meta::relational::graphFetch::executionPlan::enumPropertyMappingForSet($sets->at($s), $prop);
-                                                   $enumPropertyGetterCodes->eval($prop, $propertyType, $currentPropertyMapping);
+                                                   let transformer = meta::relational::graphFetch::executionPlan::enumPropertyMappingForSet($sets->at($s), $prop).transformer;
+                                                   $enumPropertyGetterCodes->eval($prop, $propertyType, $transformer);
                                                 },
                                                 {|
                                                    [
@@ -507,8 +507,11 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                               {|
                                  if ($propertyType->instanceOf(meta::pure::metamodel::type::Enumeration),
                                     {|
-                                       let currentPropertyMapping = $node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->at(0)->cast(@RelationalPropertyMapping);
-                                       $enumPropertyGetterCodes->eval($property, $propertyType, $currentPropertyMapping);
+                                       let transformer = $node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->at(0)->match([
+                                          rpm: RelationalPropertyMapping[1] | $rpm.transformer,
+                                          rfpm: meta::pure::mapping::relation::RelationFunctionPropertyMapping[1] | $rfpm.transformer
+                                       ]);
+                                       $enumPropertyGetterCodes->eval($property, $propertyType, $transformer);
                                     },
                                     {|
                                        [

@@ -911,6 +911,7 @@ infrastructure rather than the feature under test:
 | Feature | Description |
 |---|---|
 | `mapping:aggregation-aware-mapping` | Aggregation-aware mapping |
+| `mapping:class-mapping-extends` | Class mapping declared `extends [parentId]`, inheriting the parent set's property mappings (relational and relation-function forms) |
 | `mapping:cross-store` | Cross-store mapping (M2M ↔ relational) |
 | `mapping:enum-of-expression` | Enumeration mapping whose source values come from a computed expression rather than from a column |
 | `mapping:enumeration-mapping` | Enumeration value mapping / transform |
@@ -1009,6 +1010,7 @@ so live in the `mapping:` domain alongside their relational counterparts:
 | `mapping:relation-group-by` | `->groupBy` aggregation in the source relation, mapped as the class shape |
 | `mapping:relation-inline-embedded` | Inline embedded property mapping — `prop () Inline [setId]` |
 | `mapping:relation-inline-model-join` | Inline `modelJoin({..})` class-navigation property with a model-level condition (no association; target resolved from the property's declared type) |
+| `mapping:relation-join-source-steps` | Relation steps legend-pure accepts on `$src` (`extend`/`filter`/`select`/`rename`/`sort`) ahead of the first `navigationJoin`/`filterJoin` of a chain (a filter gates the join and never drops the mapped instance) |
 | `mapping:relation-local-property` | Local property — `+prop: Type[mult]: <rhs>` |
 | `mapping:relation-model-join` | ModelJoin association between relation-mapped classes |
 | `mapping:relation-navigation-join` | Inline `$src->navigationJoin(rel(), {..}).COL` property (joined-side column, chainable) |

@@ -1,0 +1,285 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class meta::relational::tests::mapping::relation::inlineJoin::stepped::SteppedPerson
+{
+  firstName: String[1];
+  extendedKeyFirmName: String[0..1];
+  extendedKeyFirmNameDup: String[0..1];
+  otherExtendedKeyFirmName: String[0..1];
+  filteredFirmName: String[0..1];
+  renamedKeyFirmName: String[0..1];
+  filteredFirmNameDup: String[0..1];
+  selectedFirmName: String[0..1];
+  renamedFirmName: String[0..1];
+  sortedFirmName: String[0..1];
+  allStepsFirmName: String[0..1];
+  firstOfFirmFirmName: String[0..1];
+  gatedFirstName: String[0..1];
+  firmRef: meta::relational::tests::mapping::relation::inlineJoin::Firm[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::inlineJoin::stepped::SteppedChainedPerson
+{
+  firstName: String[1];
+  filteredCountryName: String[0..1];
+  gatedCountryName: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::relation::inlineJoin::stepped::SteppedProcessingProduct
+{
+  name: String[1];
+  market: String[0..1];
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::inlineJoin::*;
+import meta::relational::tests::mapping::relation::inlineJoin::stepped::*;
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::stepped::SteppedSourceJoinMapping
+(
+  *SteppedPerson[steppedPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::personRel():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    extendedKeyFirmName: $src->extend(~K: x | $x.FIRMID + 1)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.K == $f.ID}).LEGALNAME,
+    extendedKeyFirmNameDup: $src->extend(~K: x | $x.FIRMID + 1)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.K == $f.ID}).LEGALNAME,
+    otherExtendedKeyFirmName: $src->extend(~K: x | $x.FIRMID + 2)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.K == $f.ID}).LEGALNAME,
+    filteredFirmName: $src->filter(x | $x.FIRMID > 1)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    filteredFirmNameDup: $src->filter(x | $x.FIRMID > 1)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    selectedFirmName: $src->select(~[ID, FIRMID])->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    renamedFirmName: $src->rename(~FIRMID, ~FID)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FID == $f.ID}).LEGALNAME,
+    sortedFirmName: $src->sort(~FIRMID->ascending())->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    allStepsFirmName: $src->extend(~K: x | $x.FIRMID + 1)->filter(x | $x.K > 1)->select(~[ID, K])->rename(~K, ~FIRMKEY)->sort(~FIRMKEY->ascending())->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMKEY == $f.ID}).LEGALNAME,
+    firstOfFirmFirmName: $src->extend(meta::pure::functions::relation::over(~FIRMID, ~ID->meta::pure::functions::relation::ascending()), ~RN: {p, w, r | $p->meta::pure::functions::relation::rowNumber($r)})->filter(x | $x.RN == 1)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    gatedFirstName: $src->filter(x | $x.FIRMID > 1)->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).FIRSTNAME,
+    +steppedFirmKey: Integer[0..1]: $src->extend(~K: x | $x.FIRMID + 1)->filter(x | $x.K > 1)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), meta::pure::functions::relation::JoinKind.INNER, {p, f | $p.K == $f.ID}).ID,
+    firmRef: modelJoin({p, f | $p.steppedFirmKey == $f.id})
+  }
+  *Firm[steppedFirm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::firmRel():Relation<Any>[1]
+    id: ID,
+    legalName: LEGALNAME
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::stepped::SteppedChainedJoinMapping
+(
+  *SteppedChainedPerson[steppedChainedPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::chainPersonRel():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    filteredCountryName: $src->filter(x | $x.FIRMID > 1)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::chainFirmRel(), {p, f | $p.FIRMID == $f.ID})->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::countryRel(), {f, c | $f.COUNTRYID == $c.ID}).COUNTRYNAME,
+    gatedCountryName: $src->filter(x | $x.FIRMID > 1)->filterJoin(meta::relational::tests::mapping::relation::inlineJoin::chainFirmRel(), {p, f | $p.FIRMID == $f.ID})->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::countryRel(), {p, c | $p.COUNTRYID == $c.ID}).COUNTRYNAME
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::stepped::SteppedMilestonedJoinMapping
+(
+  *SteppedProcessingProduct[steppedProcessingProduct]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::processingProductRel():Relation<Any>[1]
+    name: NAME,
+    market: $src->filter(x | $x.ID > 0)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::processingListingRel(), {p, l | $p.ID == $l.PRODUCTID}).MARKET
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::inlineJoin::stepped::SteppedSourceLosingPrimaryKeyMapping
+(
+  *SteppedPerson[steppedPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::inlineJoin::personRel():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    filteredFirmName: $src->select(~[FIRSTNAME, FIRMID])->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME,
+    renamedKeyFirmName: $src->rename(~ID, ~PERSONID)->navigationJoin(meta::relational::tests::mapping::relation::inlineJoin::firmRel(), {p, f | $p.FIRMID == $f.ID}).LEGALNAME
+  }
+)
+
+###Pure
+import meta::relational::tests::mapping::relation::inlineJoin::*;
+import meta::relational::tests::mapping::relation::inlineJoin::stepped::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
+
+function <<access.private>> meta::relational::tests::mapping::relation::inlineJoin::stepped::steppedSql(query:FunctionDefinition<Any>[1], mapping:meta::pure::mapping::Mapping[1]):String[1]
+{
+  executionPlan($query, $mapping, meta::external::store::relational::tests::testRuntime(JoinDB), meta::relational::extension::relationalExtensions())
+    .rootExecutionNode.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testExtendedSourceColumnFeedsTheJoinCondition():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID, "persontable_4".FIRMID + 1 as "K" from PersonTable as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."K" = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.extendedKeyFirmName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testFilteredSourceGatesTheJoinInsteadOfFilteringTheOwners():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_0".FIRSTNAME as "firstName", "persontable_2".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4" where "persontable_4".FIRMID > 1) as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.firstName, p | $p.filteredFirmName], ['firstName', 'v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testSelectedSourceNarrowsTheColumnsTheJoinConditionSees():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.selectedFirmName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testRenamedSourceColumnIsTheNameTheJoinConditionSees():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4"."ID" as "ID", "persontable_4"."FIRSTNAME" as "FIRSTNAME", "persontable_4"."FIRMID" as "FID" from (select "persontable_5"."ID" as "ID", "persontable_5"."FIRSTNAME" as "FIRSTNAME", "persontable_5"."FIRMID" as "FIRMID" from (select "persontable_6".ID as "ID", "persontable_6".FIRSTNAME as "FIRSTNAME", "persontable_6".FIRMID as "FIRMID" from PersonTable as "persontable_6") as "persontable_5") as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."FID" = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.renamedFirmName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testSortedSourceBeforeJoinGivesTheSamePlanAsTheUnsortedSource():Boolean[1]
+{
+  assertSameSQL(
+    'select "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.sortedFirmName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testEveryStepBeforeJoinAppliesInTheOrderWritten():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4"."ID" as "ID", "persontable_4"."K" as "FIRMKEY" from (select "persontable_5"."ID" as "ID", "persontable_5"."K" as "K" from (select "persontable_6".ID as "ID", "persontable_6".FIRMID + 1 as "K" from PersonTable as "persontable_6" where "persontable_6".FIRMID + 1 > 1) as "persontable_5") as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."FIRMKEY" = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.allStepsFirmName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testWindowExtendRunsBeforeALaterFilterAndGatesTheJoin():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4"."ID" as "ID", "persontable_4"."FIRSTNAME" as "FIRSTNAME", "persontable_4"."FIRMID" as "FIRMID", "persontable_4"."RN" as "RN" from (select "persontable_5".ID as "ID", "persontable_5".FIRSTNAME as "FIRSTNAME", "persontable_5".FIRMID as "FIRMID", row_number() over (partition by "persontable_5".FIRMID order by "persontable_5".ID asc) as "RN" from PersonTable as "persontable_5") as "persontable_4" where "persontable_4"."RN" = 1) as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."FIRMID" = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.firstOfFirmFirmName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testFilterJoinAfterStepsKeepsTheSourceColumnsOfTheSteppedRows():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".FIRSTNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "persontable_3".ID as "ID", "persontable_3".FIRSTNAME as "FIRSTNAME", "persontable_3".FIRMID as "FIRMID" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4" where "persontable_4".FIRMID > 1) as "persontable_3" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.gatedFirstName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testIdenticalStepsAndJoinOnTwoPropertiesShareOneJoin():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "a", "persontable_2".LEGALNAME as "b" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID, "persontable_4".FIRMID + 1 as "K" from PersonTable as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."K" = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.extendedKeyFirmName, p | $p.extendedKeyFirmNameDup], ['a', 'b'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testDifferentStepsWithTheSameJoinGetTwoJoins():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "a", "persontable_5".LEGALNAME as "b" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID, "persontable_4".FIRMID + 1 as "K" from PersonTable as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."K" = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID) left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID, "persontable_4".FIRMID + 2 as "K" from PersonTable as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."K" = "firmtable_0".ID)) as "persontable_5" on ("persontable_0".ID is not distinct from "persontable_5".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.extendedKeyFirmName, p | $p.otherExtendedKeyFirmName], ['a', 'b'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testSameFilterOnTwoPropertiesSharesOneJoin():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "a", "persontable_2".LEGALNAME as "b" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4" where "persontable_4".FIRMID > 1) as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.filteredFirmName, p | $p.filteredFirmNameDup], ['a', 'b'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testSteppedSourceAndPlainSourceJoinsToTheSameTargetAreNotMerged():Boolean[1]
+{
+  assertSameSQL(
+    'select "persontable_2".LEGALNAME as "a", "persontable_5".LEGALNAME as "b" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4" where "persontable_4".FIRMID > 1) as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID) left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".ID)) as "persontable_5" on ("persontable_0".ID is not distinct from "persontable_5".relJoinKey_ID)',
+    steppedSql({|SteppedPerson.all()->project([p | $p.filteredFirmName, p | $p.selectedFirmName], ['a', 'b'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testSteppedSourceFeedsASecondJoin():Boolean[1]
+{
+  assertSameSQL(
+    'select "chainpersontable_2".COUNTRYNAME as "v" from (select "chainpersontable_1".ID as ID, "chainpersontable_1".FIRSTNAME as FIRSTNAME, "chainpersontable_1".FIRMID as FIRMID, "chainpersontable_1".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_1") as "chainpersontable_0" left outer join (select "chainpersontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from (select "chainpersontable_4".ID as ID, "chainpersontable_4".FIRSTNAME as FIRSTNAME, "chainpersontable_4".FIRMID as FIRMID, "chainpersontable_4".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_4" where "chainpersontable_4".FIRMID > 1) as "chainpersontable_3" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("chainpersontable_3".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".ID)) as "chainpersontable_2" on ("chainpersontable_0".ID is not distinct from "chainpersontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedChainedPerson.all()->project([p | $p.filteredCountryName], ['v'])}, SteppedChainedJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testFilterJoinAfterStepsFeedsANavigationJoin():Boolean[1]
+{
+  assertSameSQL(
+    'select "chainpersontable_2".COUNTRYNAME as "v" from (select "chainpersontable_1".ID as ID, "chainpersontable_1".FIRSTNAME as FIRSTNAME, "chainpersontable_1".FIRMID as FIRMID, "chainpersontable_1".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_1") as "chainpersontable_0" left outer join (select "chainpersontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from (select "chainpersontable_4".ID as ID, "chainpersontable_4".FIRSTNAME as FIRSTNAME, "chainpersontable_4".FIRMID as FIRMID, "chainpersontable_4".COUNTRYID as COUNTRYID from ChainPersonTable as "chainpersontable_4" where "chainpersontable_4".FIRMID > 1) as "chainpersontable_3" inner join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("chainpersontable_3".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainpersontable_3".COUNTRYID = "countrytable_0".ID)) as "chainpersontable_2" on ("chainpersontable_0".ID is not distinct from "chainpersontable_2".relJoinKey_ID)',
+    steppedSql({|SteppedChainedPerson.all()->project([p | $p.gatedCountryName], ['v'])}, SteppedChainedJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testModelJoinKeyedOnASteppedNavigationJoinReadsTheTargetColumns():Boolean[1]
+{
+  assertSameSQL(
+    'select "firmtable_2"."LEGALNAME" as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID, "persontable_4".FIRMID + 1 as "K" from PersonTable as "persontable_4" where "persontable_4".FIRMID + 1 > 1) as "persontable_3" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3"."K" = "firmtable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID) left outer join (select "firmtable_3".ID as "ID", "firmtable_3".LEGALNAME as "LEGALNAME" from (select "firmtable_4".ID as ID, "firmtable_4".LEGALNAME as LEGALNAME from FirmTable as "firmtable_4") as "firmtable_3") as "firmtable_2" on ("persontable_2".ID = "firmtable_2"."ID")',
+    steppedSql({|SteppedPerson.all()->project([p | $p.firmRef.legalName], ['v'])}, SteppedSourceJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testSteppedSourceOverAProcessingTemporalSourceAndTargetAtLatest():Boolean[1]
+{
+  assertSameSQL(
+    'select "processingproducttable_2".MARKET as "v" from (select "processingproducttable_1".ID as ID, "processingproducttable_1".NAME as NAME, "processingproducttable_1".IN_Z as IN_Z, "processingproducttable_1".OUT_Z as OUT_Z, \'9999-12-31T00:00:00.0000+0000\' as "k_processingDate" from ProcessingProductTable as "processingproducttable_1" where "processingproducttable_1".OUT_Z = TIMESTAMP\'9999-12-31 00:00:00.0000\') as "processingproducttable_0" left outer join (select "processingproducttable_3".ID as relJoinKey_ID, "processingproducttable_3".IN_Z as relJoinKey_IN_Z, "processinglistingtable_0".PRODUCTID as "PRODUCTID", "processinglistingtable_0".MARKET as "MARKET", "processinglistingtable_0".EXCHANGEID as "EXCHANGEID", "processinglistingtable_0".IN_Z as "IN_Z", "processinglistingtable_0".OUT_Z as "OUT_Z" from (select "processingproducttable_4".ID as ID, "processingproducttable_4".NAME as NAME, "processingproducttable_4".IN_Z as IN_Z, "processingproducttable_4".OUT_Z as OUT_Z, \'9999-12-31T00:00:00.0000+0000\' as "k_processingDate" from ProcessingProductTable as "processingproducttable_4" where "processingproducttable_4".OUT_Z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "processingproducttable_4".ID > 0) as "processingproducttable_3" left outer join (select "processinglistingtable_1".PRODUCTID as PRODUCTID, "processinglistingtable_1".MARKET as MARKET, "processinglistingtable_1".EXCHANGEID as EXCHANGEID, "processinglistingtable_1".IN_Z as IN_Z, "processinglistingtable_1".OUT_Z as OUT_Z, \'9999-12-31T00:00:00.0000+0000\' as "k_processingDate" from ProcessingListingTable as "processinglistingtable_1" where "processinglistingtable_1".OUT_Z = TIMESTAMP\'9999-12-31 00:00:00.0000\') as "processinglistingtable_0" on ("processingproducttable_3".ID = "processinglistingtable_0".PRODUCTID)) as "processingproducttable_2" on ("processingproducttable_0".IN_Z is not distinct from "processingproducttable_2".relJoinKey_IN_Z and "processingproducttable_0".ID is not distinct from "processingproducttable_2".relJoinKey_ID)',
+    steppedSql({|SteppedProcessingProduct.all(%latest)->project([p | $p.market], ['v'])}, SteppedMilestonedJoinMapping)
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testGraphFetchThroughModelJoinKeyedOnASteppedNavigationJoin():Boolean[1]
+{
+  let tree = #{SteppedPerson {firstName, firmRef {id, legalName}}}#;
+  let result = executionPlan(
+    {|SteppedPerson.all()->graphFetch($tree)->serialize($tree)},
+    SteppedSourceJoinMapping,
+    meta::external::store::relational::tests::testRuntime(JoinDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  let firmNode = $result.rootExecutionNode.executionNodes->at(0)->cast(@meta::pure::graphFetch::executionPlan::StoreMappingGlobalGraphFetchExecutionNode)
+                   .localGraphFetchExecutionNode->cast(@meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode).children->toOne();
+  assertSameSQL(
+    'select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "firmtable_2"."ID" as "pk_0", "firmtable_2"."ID" as "id", "firmtable_2"."LEGALNAME" as "legalName" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "persontable_1".ID as "ID", "persontable_1".FIRSTNAME as "FIRSTNAME", "persontable_1".FIRMID as "FIRMID" from (select "persontable_2".ID as ID, "persontable_2".FIRSTNAME as FIRSTNAME, "persontable_2".FIRMID as FIRMID from PersonTable as "persontable_2") as "persontable_1") as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select "persontable_4".ID as relJoinKey_ID, "firmtable_0".ID as "ID", "firmtable_0".LEGALNAME as "LEGALNAME" from (select "persontable_5".ID as ID, "persontable_5".FIRSTNAME as FIRSTNAME, "persontable_5".FIRMID as FIRMID, "persontable_5".FIRMID + 1 as "K" from PersonTable as "persontable_5" where "persontable_5".FIRMID + 1 > 1) as "persontable_4" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_4"."K" = "firmtable_0".ID)) as "persontable_3" on ("root".ID is not distinct from "persontable_3".relJoinKey_ID) left outer join (select "firmtable_3".ID as "ID", "firmtable_3".LEGALNAME as "LEGALNAME" from (select "firmtable_4".ID as ID, "firmtable_4".LEGALNAME as LEGALNAME from FirmTable as "firmtable_4") as "firmtable_3") as "firmtable_2" on ("persontable_3".ID = "firmtable_2"."ID") where "firmtable_2"."ID" is not null',
+    $firmNode.executionNodes->toOne()->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testSteppedSourceThatLosesAPrimaryKeyColumnFailsNamingIt():Boolean[1]
+{
+  assertError(
+    | steppedSql({|SteppedPerson.all()->project([p | $p.filteredFirmName], ['v'])}, SteppedSourceLosingPrimaryKeyMapping),
+    'Property \'filteredFirmName\' joins from a transformed $src whose result has no primary key column \'ID\' of class mapping \'steppedPerson\' (its columns: FIRSTNAME, FIRMID). The join result is matched back to the mapped row by the primary key, so the transformation must keep every primary key column.'
+  );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::stepped::testRenamedPrimaryKeyColumnFailsNamingTheKeyAndTheRemainingColumns():Boolean[1]
+{
+  assertError(
+    | steppedSql({|SteppedPerson.all()->project([p | $p.renamedKeyFirmName], ['v'])}, SteppedSourceLosingPrimaryKeyMapping),
+    'Property \'renamedKeyFirmName\' joins from a transformed $src whose result has no primary key column \'ID\' of class mapping \'steppedPerson\' (its columns: FIRSTNAME, FIRMID, PERSONID). The join result is matched back to the mapped row by the primary key, so the transformation must keep every primary key column.'
+  );
+}

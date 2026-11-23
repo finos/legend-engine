@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+
+Mapping demo::relation::joinvariant::mapping::JoinVariantMapping
+(
+  *demo::relation::joinvariant::Owner[owner]: Relation
+  {
+    ~src demo::relation::joinvariant::func::ownerRel()
+    id: ID,
+    longTagCount: $src->navigationJoin(demo::relation::joinvariant::func::docRel(), {o, d | $o.ID == $d.OWNERID}).PAYLOAD->get('tags')->toMany(@String)->filter(t | $t->length() > 3)->size(),
+    totalScore: $src->navigationJoin(demo::relation::joinvariant::func::docRel(), {o, d | $o.ID == $d.OWNERID}).PAYLOAD->get('scores')->toMany(@Float)->fold({e, acc | $acc + $e}, 0.0),
+    withinLimitTagCount: $src->navigationJoin(demo::relation::joinvariant::func::docRel(), {o, d | $o.ID == $d.OWNERID}).PAYLOAD->get('tags')->toMany(@String)->filter(t | $t->length() <= $src->navigationJoin(demo::relation::joinvariant::func::limitRel(), {o, l | $o.ID == $l.ID}).MAXLEN)->size(),
+    tagLengthCount: $src->navigationJoin(demo::relation::joinvariant::func::docRel(), {o, d | $o.ID == $d.OWNERID}).PAYLOAD->get('tags')->toMany(@String)->map(t | $t->length())->size()
+  }
+
+  testSuites:
+  [
+    variantOverJoinSuite:
+    {
+      function: |demo::relation::joinvariant::Owner.all()->project(~[id: o | $o.id, longTagCount: o | $o.longTagCount, totalScore: o | $o.totalScore, withinLimitTagCount: o | $o.withinLimitTagCount, tagLengthCount: o | $o.tagLengthCount])->sort([~id->ascending()]);
+      tests:
+      [
+        readsTheVariantColumnOfTheJoinedRelation:
+        {
+          data:
+          [
+            demo::relation::joinvariant::db::JoinVariantDB:
+              Reference
+              #{
+                demo::relation::joinvariant::data::JoinVariantData
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"longTagCount":2,"totalScore":4.0,"withinLimitTagCount":2,"tagLengthCount":3},{"id":2,"longTagCount":1,"totalScore":4.0,"withinLimitTagCount":0,"tagLengthCount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
