@@ -5,6 +5,7 @@ tests:
     signature: "any_value(anyelement) → anyelement"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: array_agg__anyarray__no_generator
     sql: "SELECT ARRAY_AGG(ARRAY[id]) AS result FROM persons WHERE id IS NOT NULL"
@@ -12,6 +13,7 @@ tests:
     signature: "array_agg(anyarray) → anyarray"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: array_agg__anynonarray__from_table
     sql: "SELECT ARRAY_AGG(name ORDER BY name) AS result FROM persons WHERE name IS NOT NULL"
@@ -19,6 +21,7 @@ tests:
     signature: "array_agg(anynonarray) → anyarray"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: avg__big__from_table
     sql: "SELECT AVG(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -26,6 +29,7 @@ tests:
     signature: "avg(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: avg__dp__from_table
     sql: "SELECT AVG(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -33,6 +37,7 @@ tests:
     signature: "avg(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: avg__int__from_table
     sql: "SELECT AVG(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -40,6 +45,7 @@ tests:
     signature: "avg(integer) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: avg__intv__from_table
     sql: "SELECT AVG(INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 3"
@@ -47,6 +53,7 @@ tests:
     signature: "avg(interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: avg__num__from_table
     sql: "SELECT AVG(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -54,6 +61,7 @@ tests:
     signature: "avg(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: avg__real__from_table
     sql: "SELECT AVG(float_val::real) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -61,6 +69,7 @@ tests:
     signature: "avg(real) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: avg__small__from_table
     sql: "SELECT AVG(small_val::smallint) AS result FROM numbers WHERE small_val IS NOT NULL"
@@ -68,6 +77,7 @@ tests:
     signature: "avg(smallint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: bit_and__big__from_table
     sql: "SELECT BIT_AND(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -75,6 +85,7 @@ tests:
     signature: "bit_and(bigint) → bigint"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_and__bit__no_generator
     sql: "SELECT BIT_AND(int_val::bit(32)) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -82,6 +93,7 @@ tests:
     signature: "bit_and(bit) → bit"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_and__int__from_table
     sql: "SELECT BIT_AND(int_val) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -89,6 +101,7 @@ tests:
     signature: "bit_and(integer) → integer"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_and__small__from_table
     sql: "SELECT BIT_AND(small_val::smallint) AS result FROM numbers WHERE small_val IS NOT NULL"
@@ -96,6 +109,7 @@ tests:
     signature: "bit_and(smallint) → smallint"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_or__big__from_table
     sql: "SELECT BIT_OR(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -103,6 +117,7 @@ tests:
     signature: "bit_or(bigint) → bigint"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_or__bit__no_generator
     sql: "SELECT BIT_OR(int_val::bit(32)) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -110,6 +125,7 @@ tests:
     signature: "bit_or(bit) → bit"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_or__int__from_table
     sql: "SELECT BIT_OR(int_val) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -117,6 +133,7 @@ tests:
     signature: "bit_or(integer) → integer"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_or__small__from_table
     sql: "SELECT BIT_OR(small_val::smallint) AS result FROM numbers WHERE small_val IS NOT NULL"
@@ -124,6 +141,7 @@ tests:
     signature: "bit_or(smallint) → smallint"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_xor__big__from_table
     sql: "SELECT BIT_XOR(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -131,6 +149,7 @@ tests:
     signature: "bit_xor(bigint) → bigint"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_xor__bit__no_generator
     sql: "SELECT BIT_XOR(int_val::bit(32)) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -138,6 +157,7 @@ tests:
     signature: "bit_xor(bit) → bit"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_xor__int__from_table
     sql: "SELECT BIT_XOR(int_val) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -145,6 +165,7 @@ tests:
     signature: "bit_xor(integer) → integer"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bit_xor__small__from_table
     sql: "SELECT BIT_XOR(small_val::smallint) AS result FROM numbers WHERE small_val IS NOT NULL"
@@ -152,6 +173,7 @@ tests:
     signature: "bit_xor(smallint) → smallint"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bool_and__bool__from_table
     sql: "SELECT BOOL_AND(active) AS result FROM persons WHERE active IS NOT NULL"
@@ -159,6 +181,7 @@ tests:
     signature: "bool_and(boolean) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: bool_or__bool__from_table
     sql: "SELECT BOOL_OR(active) AS result FROM persons WHERE active IS NOT NULL"
@@ -166,6 +189,7 @@ tests:
     signature: "bool_or(boolean) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: corr__dp_dp__from_table
     sql: "SELECT CORR(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -173,6 +197,7 @@ tests:
     signature: "corr(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: count__from_table
     sql: "SELECT COUNT(*) AS result FROM persons"
@@ -180,6 +205,7 @@ tests:
     signature: "count() → bigint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: count__with_col
     sql: "SELECT COUNT(age) AS result FROM persons"
@@ -187,6 +213,7 @@ tests:
     signature: "count() → bigint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: count__any__from_table
     sql: "SELECT COUNT(*) AS result FROM persons"
@@ -194,6 +221,7 @@ tests:
     signature: 'count("any") → bigint'
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: count__any__with_col
     sql: "SELECT COUNT(age) AS result FROM persons"
@@ -201,6 +229,7 @@ tests:
     signature: 'count("any") → bigint'
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: covar_pop__dp_dp__from_table
     sql: "SELECT COVAR_POP(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -208,6 +237,7 @@ tests:
     signature: "covar_pop(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: covar_samp__dp_dp__from_table
     sql: "SELECT COVAR_SAMP(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -215,6 +245,7 @@ tests:
     signature: "covar_samp(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: cume_dist__variadicORDERBYvariadic__no_generator
     sql: "SELECT CUME_DIST(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
@@ -222,6 +253,7 @@ tests:
     signature: 'cume_dist(VARIADIC "any" ORDER BY VARIADIC "any") → double precision'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: dense_rank__variadicORDERBYvariadic__no_generator
     sql: "SELECT DENSE_RANK(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
@@ -229,6 +261,7 @@ tests:
     signature: 'dense_rank(VARIADIC "any" ORDER BY VARIADIC "any") → bigint'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: every__bool__from_table
     sql: "SELECT EVERY(active) AS result FROM persons WHERE active IS NOT NULL"
@@ -236,6 +269,7 @@ tests:
     signature: "every(boolean) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: json_agg__anyelement__from_table
     sql: "SELECT JSON_AGG(val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -243,6 +277,7 @@ tests:
     signature: "json_agg(anyelement) → json"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_agg_strict__anyelement__from_table
     sql: "SELECT JSON_AGG_STRICT(val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -250,6 +285,7 @@ tests:
     signature: "json_agg_strict(anyelement) → json"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object_agg__any_any__from_table
     sql: "SELECT JSON_OBJECT_AGG(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -257,6 +293,7 @@ tests:
     signature: 'json_object_agg("any", "any") → json'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object_agg_strict__any_any__from_table
     sql: "SELECT JSON_OBJECT_AGG_STRICT(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -264,6 +301,7 @@ tests:
     signature: 'json_object_agg_strict("any", "any") → json'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object_agg_unique__any_any__from_table
     sql: "SELECT JSON_OBJECT_AGG_UNIQUE(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -271,6 +309,7 @@ tests:
     signature: 'json_object_agg_unique("any", "any") → json'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object_agg_unique_strict__any_any__from_table
     sql: "SELECT JSON_OBJECT_AGG_UNIQUE_STRICT(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -278,6 +317,7 @@ tests:
     signature: 'json_object_agg_unique_strict("any", "any") → json'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_agg__anyelement__from_table
     sql: "SELECT JSONB_AGG(val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -285,6 +325,7 @@ tests:
     signature: "jsonb_agg(anyelement) → jsonb"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_agg_strict__anyelement__from_table
     sql: "SELECT JSONB_AGG_STRICT(val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -292,6 +333,7 @@ tests:
     signature: "jsonb_agg_strict(anyelement) → jsonb"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object_agg__any_any__from_table
     sql: "SELECT JSONB_OBJECT_AGG(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -299,6 +341,7 @@ tests:
     signature: 'jsonb_object_agg("any", "any") → jsonb'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object_agg_strict__any_any__from_table
     sql: "SELECT JSONB_OBJECT_AGG_STRICT(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -306,6 +349,7 @@ tests:
     signature: 'jsonb_object_agg_strict("any", "any") → jsonb'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object_agg_unique__any_any__from_table
     sql: "SELECT JSONB_OBJECT_AGG_UNIQUE(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -313,6 +357,7 @@ tests:
     signature: 'jsonb_object_agg_unique("any", "any") → jsonb'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object_agg_unique_strict__any_any__from_table
     sql: "SELECT JSONB_OBJECT_AGG_UNIQUE_STRICT(id::text, val) AS result FROM strings WHERE val IS NOT NULL AND id <= 3"
@@ -320,6 +365,7 @@ tests:
     signature: 'jsonb_object_agg_unique_strict("any", "any") → jsonb'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: max__anyarray__no_generator
     sql: "SELECT MAX(ARRAY[id]) AS result FROM persons WHERE id IS NOT NULL"
@@ -327,6 +373,7 @@ tests:
     signature: "max(anyarray) → anyarray"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL
 
   - id: max__anyenum__no_generator
     sql: "SELECT MAX(name::mood) AS result FROM persons WHERE name IS NOT NULL"
@@ -334,6 +381,7 @@ tests:
     signature: "max(anyenum) → anyenum"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: max__big__from_table
     sql: "SELECT MAX(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -341,6 +389,7 @@ tests:
     signature: "max(bigint) → bigint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__char__no_generator
     sql: "SELECT MAX(name::char(10)) AS result FROM persons WHERE name IS NOT NULL"
@@ -348,6 +397,7 @@ tests:
     signature: "max(character) → character"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: max__date__from_table
     sql: "SELECT MAX(d) AS result FROM dates WHERE d IS NOT NULL"
@@ -355,6 +405,7 @@ tests:
     signature: "max(date) → date"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__dp__from_table
     sql: "SELECT MAX(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -362,6 +413,7 @@ tests:
     signature: "max(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__inet__no_generator
     sql: "SELECT MAX(name::inet) AS result FROM persons WHERE name IS NOT NULL"
@@ -369,6 +421,7 @@ tests:
     signature: "max(inet) → inet"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: max__int__from_table
     sql: "SELECT MAX(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -376,6 +429,7 @@ tests:
     signature: "max(integer) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__intv__from_table
     sql: "SELECT MAX(INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 5"
@@ -383,6 +437,7 @@ tests:
     signature: "max(interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: max__money__no_generator
     sql: "SELECT MAX(salary::money) AS result FROM persons WHERE salary IS NOT NULL"
@@ -390,6 +445,7 @@ tests:
     signature: "max(money) → money"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: max__num__from_table
     sql: "SELECT MAX(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -397,6 +453,7 @@ tests:
     signature: "max(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__oid__no_generator
     sql: "SELECT MAX(id::oid) AS result FROM persons WHERE id IS NOT NULL"
@@ -404,6 +461,7 @@ tests:
     signature: "max(oid) → oid"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: max__pg_lsn__no_generator
     sql: "SELECT MAX(name::pg_lsn) AS result FROM persons WHERE name IS NOT NULL"
@@ -411,6 +469,7 @@ tests:
     signature: "max(pg_lsn) → pg_lsn"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: max__real__from_table
     sql: "SELECT MAX(float_val::real) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -418,6 +477,7 @@ tests:
     signature: "max(real) → real"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: max__small__from_table
     sql: "SELECT MAX(small_val::smallint) AS result FROM numbers WHERE small_val IS NOT NULL"
@@ -425,6 +485,7 @@ tests:
     signature: "max(smallint) → smallint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__txt__from_table
     sql: "SELECT MAX(name) AS result FROM persons WHERE name IS NOT NULL"
@@ -432,6 +493,7 @@ tests:
     signature: "max(text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__tid__no_generator
     sql: "SELECT MAX(name::tid) AS result FROM persons WHERE name IS NOT NULL"
@@ -439,6 +501,7 @@ tests:
     signature: "max(tid) → tid"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: max__timetz__no_generator
     sql: "SELECT MAX(ts::timetz) AS result FROM dates WHERE ts IS NOT NULL"
@@ -446,6 +509,7 @@ tests:
     signature: "max(time with time zone) → time with time zone"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: max__time__no_generator
     sql: "SELECT MAX(ts::time) AS result FROM dates WHERE ts IS NOT NULL"
@@ -453,6 +517,7 @@ tests:
     signature: "max(time without time zone) → time without time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: max__tstz__from_table
     sql: "SELECT MAX(tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL"
@@ -460,6 +525,7 @@ tests:
     signature: "max(timestamp with time zone) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: max__ts__from_table
     sql: "SELECT MAX(ts) AS result FROM dates WHERE ts IS NOT NULL"
@@ -467,6 +533,7 @@ tests:
     signature: "max(timestamp without time zone) → timestamp without time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max__xid8__no_generator
     sql: "SELECT MAX(id::xid8) AS result FROM persons WHERE id IS NOT NULL"
@@ -474,6 +541,7 @@ tests:
     signature: "max(xid8) → xid8"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: min__anyarray__no_generator
     sql: "SELECT MIN(ARRAY[id]) AS result FROM persons WHERE id IS NOT NULL"
@@ -481,6 +549,7 @@ tests:
     signature: "min(anyarray) → anyarray"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL
 
   - id: min__anyenum__no_generator
     sql: "SELECT MIN(name::mood) AS result FROM persons WHERE name IS NOT NULL"
@@ -488,6 +557,7 @@ tests:
     signature: "min(anyenum) → anyenum"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: min__big__from_table
     sql: "SELECT MIN(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -495,6 +565,7 @@ tests:
     signature: "min(bigint) → bigint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__char__no_generator
     sql: "SELECT MIN(name::char(10)) AS result FROM persons WHERE name IS NOT NULL"
@@ -502,6 +573,7 @@ tests:
     signature: "min(character) → character"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: min__date__from_table
     sql: "SELECT MIN(d) AS result FROM dates WHERE d IS NOT NULL"
@@ -509,6 +581,7 @@ tests:
     signature: "min(date) → date"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__dp__from_table
     sql: "SELECT MIN(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -516,6 +589,7 @@ tests:
     signature: "min(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__inet__no_generator
     sql: "SELECT MIN(name::inet) AS result FROM persons WHERE name IS NOT NULL"
@@ -523,6 +597,7 @@ tests:
     signature: "min(inet) → inet"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: min__int__from_table
     sql: "SELECT MIN(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -530,6 +605,7 @@ tests:
     signature: "min(integer) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__intv__from_table
     sql: "SELECT MIN(INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 5"
@@ -537,6 +613,7 @@ tests:
     signature: "min(interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: min__money__no_generator
     sql: "SELECT MIN(salary::money) AS result FROM persons WHERE salary IS NOT NULL"
@@ -544,6 +621,7 @@ tests:
     signature: "min(money) → money"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: min__num__from_table
     sql: "SELECT MIN(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -551,6 +629,7 @@ tests:
     signature: "min(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__oid__no_generator
     sql: "SELECT MIN(id::oid) AS result FROM persons WHERE id IS NOT NULL"
@@ -558,6 +637,7 @@ tests:
     signature: "min(oid) → oid"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: min__pg_lsn__no_generator
     sql: "SELECT MIN(name::pg_lsn) AS result FROM persons WHERE name IS NOT NULL"
@@ -565,6 +645,7 @@ tests:
     signature: "min(pg_lsn) → pg_lsn"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: min__real__from_table
     sql: "SELECT MIN(float_val::real) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -572,6 +653,7 @@ tests:
     signature: "min(real) → real"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: min__small__from_table
     sql: "SELECT MIN(small_val::smallint) AS result FROM numbers WHERE small_val IS NOT NULL"
@@ -579,6 +661,7 @@ tests:
     signature: "min(smallint) → smallint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__txt__from_table
     sql: "SELECT MIN(name) AS result FROM persons WHERE name IS NOT NULL"
@@ -586,6 +669,7 @@ tests:
     signature: "min(text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__tid__no_generator
     sql: "SELECT MIN(name::tid) AS result FROM persons WHERE name IS NOT NULL"
@@ -593,6 +677,7 @@ tests:
     signature: "min(tid) → tid"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: min__timetz__no_generator
     sql: "SELECT MIN(ts::timetz) AS result FROM dates WHERE ts IS NOT NULL"
@@ -600,6 +685,7 @@ tests:
     signature: "min(time with time zone) → time with time zone"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: min__time__no_generator
     sql: "SELECT MIN(ts::time) AS result FROM dates WHERE ts IS NOT NULL"
@@ -607,6 +693,7 @@ tests:
     signature: "min(time without time zone) → time without time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: min__tstz__from_table
     sql: "SELECT MIN(tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL"
@@ -614,6 +701,7 @@ tests:
     signature: "min(timestamp with time zone) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: min__ts__from_table
     sql: "SELECT MIN(ts) AS result FROM dates WHERE ts IS NOT NULL"
@@ -621,6 +709,7 @@ tests:
     signature: "min(timestamp without time zone) → timestamp without time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min__xid8__no_generator
     sql: "SELECT MIN(id::xid8) AS result FROM persons WHERE id IS NOT NULL"
@@ -628,6 +717,7 @@ tests:
     signature: "min(xid8) → xid8"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: mode__ORDERBYanyelement__from_table
     sql: "SELECT MODE() WITHIN GROUP (ORDER BY dept_id) AS result FROM persons WHERE dept_id IS NOT NULL"
@@ -635,6 +725,7 @@ tests:
     signature: "mode(ORDER BY anyelement) → anyelement"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: percent_rank__variadicORDERBYvariadic__no_generator
     sql: "SELECT PERCENT_RANK(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
@@ -642,6 +733,7 @@ tests:
     signature: 'percent_rank(VARIADIC "any" ORDER BY VARIADIC "any") → double precision'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: percentile_cont__dpORDERBYdp__no_generator
     sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -649,6 +741,7 @@ tests:
     signature: "percentile_cont(double precision ORDER BY double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: percentile_cont__dpORDERBYintv__no_generator
     sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 5"
@@ -656,6 +749,7 @@ tests:
     signature: "percentile_cont(double precision ORDER BY interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: percentile_cont__dp[]ORDERBYdp__no_generator
     sql: "SELECT PERCENTILE_CONT(ARRAY[0.25, 0.5, 0.75]) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -663,6 +757,7 @@ tests:
     signature: "percentile_cont(double precision[] ORDER BY double precision) → double precision[]"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: percentile_cont__dp[]ORDERBYintv__no_generator
     sql: "SELECT PERCENTILE_CONT(ARRAY[0.25, 0.5, 0.75]) WITHIN GROUP (ORDER BY INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 5"
@@ -670,6 +765,7 @@ tests:
     signature: "percentile_cont(double precision[] ORDER BY interval) → interval[]"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: percentile_disc__dpORDERBYanyelement__no_generator
     sql: "SELECT PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -677,6 +773,7 @@ tests:
     signature: "percentile_disc(double precision ORDER BY anyelement) → anyelement"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: percentile_disc__dp[]ORDERBYanyelement__no_generator
     sql: "SELECT PERCENTILE_DISC(ARRAY[0.25, 0.5, 0.75]) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -684,6 +781,7 @@ tests:
     signature: "percentile_disc(double precision[] ORDER BY anyelement) → anyarray"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: range_agg__anymultirange__no_generator
     sql: "SELECT RANGE_AGG(int4multirange(int4range(id, id + 10))) AS result FROM persons WHERE id IS NOT NULL"
@@ -691,6 +789,7 @@ tests:
     signature: "range_agg(anymultirange) → anymultirange"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: range_agg__anyrange__no_generator
     sql: "SELECT RANGE_AGG(int4range(id, id + 10)) AS result FROM persons WHERE id IS NOT NULL"
@@ -698,6 +797,7 @@ tests:
     signature: "range_agg(anyrange) → anymultirange"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: range_intersect_agg__anymultirange__no_generator
     sql: "SELECT RANGE_INTERSECT_AGG(int4multirange(int4range(id, id + 10))) AS result FROM persons WHERE id IS NOT NULL"
@@ -705,6 +805,7 @@ tests:
     signature: "range_intersect_agg(anymultirange) → anymultirange"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: range_intersect_agg__anyrange__no_generator
     sql: "SELECT RANGE_INTERSECT_AGG(int4range(id, id + 10)) AS result FROM persons WHERE id IS NOT NULL"
@@ -712,6 +813,7 @@ tests:
     signature: "range_intersect_agg(anyrange) → anyrange"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: rank__variadicORDERBYvariadic__no_generator
     sql: "SELECT RANK(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
@@ -719,6 +821,7 @@ tests:
     signature: 'rank(VARIADIC "any" ORDER BY VARIADIC "any") → bigint'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_avgx__dp_dp__from_table
     sql: "SELECT REGR_AVGX(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -726,6 +829,7 @@ tests:
     signature: "regr_avgx(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_avgy__dp_dp__from_table
     sql: "SELECT REGR_AVGY(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -733,6 +837,7 @@ tests:
     signature: "regr_avgy(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_count__dp_dp__from_table
     sql: "SELECT REGR_COUNT(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -740,6 +845,7 @@ tests:
     signature: "regr_count(double precision, double precision) → bigint"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_intercept__dp_dp__from_table
     sql: "SELECT REGR_INTERCEPT(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -747,6 +853,7 @@ tests:
     signature: "regr_intercept(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_r2__dp_dp__from_table
     sql: "SELECT REGR_R2(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -754,6 +861,7 @@ tests:
     signature: "regr_r2(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_slope__dp_dp__from_table
     sql: "SELECT REGR_SLOPE(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -761,6 +869,7 @@ tests:
     signature: "regr_slope(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_sxx__dp_dp__from_table
     sql: "SELECT REGR_SXX(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -768,6 +877,7 @@ tests:
     signature: "regr_sxx(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_sxy__dp_dp__from_table
     sql: "SELECT REGR_SXY(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -775,6 +885,7 @@ tests:
     signature: "regr_sxy(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: regr_syy__dp_dp__from_table
     sql: "SELECT REGR_SYY(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -782,6 +893,7 @@ tests:
     signature: "regr_syy(double precision, double precision) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: stddev__big__from_table
     sql: "SELECT STDDEV(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -789,6 +901,7 @@ tests:
     signature: "stddev(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev__dp__from_table
     sql: "SELECT STDDEV(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -796,6 +909,7 @@ tests:
     signature: "stddev(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev__int__from_table
     sql: "SELECT STDDEV(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -803,6 +917,7 @@ tests:
     signature: "stddev(integer) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev__num__from_table
     sql: "SELECT STDDEV(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -810,6 +925,7 @@ tests:
     signature: "stddev(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev__real__from_table
     sql: "SELECT STDDEV(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -817,6 +933,7 @@ tests:
     signature: "stddev(real) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev__small__from_table
     sql: "SELECT STDDEV(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -824,6 +941,7 @@ tests:
     signature: "stddev(smallint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_pop__big__from_table
     sql: "SELECT STDDEV_POP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -831,6 +949,7 @@ tests:
     signature: "stddev_pop(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_pop__dp__from_table
     sql: "SELECT STDDEV_POP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -838,6 +957,7 @@ tests:
     signature: "stddev_pop(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_pop__int__from_table
     sql: "SELECT STDDEV_POP(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -845,6 +965,7 @@ tests:
     signature: "stddev_pop(integer) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_pop__num__from_table
     sql: "SELECT STDDEV_POP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -852,6 +973,7 @@ tests:
     signature: "stddev_pop(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_pop__real__from_table
     sql: "SELECT STDDEV_POP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -859,6 +981,7 @@ tests:
     signature: "stddev_pop(real) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_pop__small__from_table
     sql: "SELECT STDDEV_POP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -866,6 +989,7 @@ tests:
     signature: "stddev_pop(smallint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_samp__big__from_table
     sql: "SELECT STDDEV_SAMP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -873,6 +997,7 @@ tests:
     signature: "stddev_samp(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_samp__dp__from_table
     sql: "SELECT STDDEV_SAMP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -880,6 +1005,7 @@ tests:
     signature: "stddev_samp(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_samp__int__from_table
     sql: "SELECT STDDEV_SAMP(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -887,6 +1013,7 @@ tests:
     signature: "stddev_samp(integer) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_samp__num__from_table
     sql: "SELECT STDDEV_SAMP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -894,6 +1021,7 @@ tests:
     signature: "stddev_samp(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_samp__real__from_table
     sql: "SELECT STDDEV_SAMP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -901,6 +1029,7 @@ tests:
     signature: "stddev_samp(real) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: stddev_samp__small__from_table
     sql: "SELECT STDDEV_SAMP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -908,6 +1037,7 @@ tests:
     signature: "stddev_samp(smallint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: string_agg__bytea_bytea__no_generator
     sql: "SELECT STRING_AGG(name::bytea, ','::bytea) AS result FROM persons WHERE name IS NOT NULL"
@@ -915,6 +1045,7 @@ tests:
     signature: "string_agg(bytea, bytea) → bytea"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: string_agg__txt_txt__from_table
     sql: "SELECT STRING_AGG(name, ', ' ORDER BY name) AS result FROM persons WHERE name IS NOT NULL"
@@ -922,6 +1053,7 @@ tests:
     signature: "string_agg(text, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: string_agg__txt_txt__group_by_ordered
     sql: "SELECT dept_id, STRING_AGG(name, ',' ORDER BY id DESC) AS result FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -929,6 +1061,7 @@ tests:
     signature: "string_agg(text, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: string_agg__txt_txt__group_by_ordered_multiple_keys
     sql: "SELECT active, STRING_AGG(name, ',' ORDER BY dept_id ASC, id DESC) AS result FROM persons WHERE dept_id IS NOT NULL AND active IS NOT NULL GROUP BY active ORDER BY 1"
@@ -936,6 +1069,7 @@ tests:
     signature: "string_agg(text, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: string_agg__txt_txt__group_by_ordered_mixed
     sql: "SELECT dept_id, STRING_AGG(name, ',' ORDER BY id DESC) AS result, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -943,6 +1077,7 @@ tests:
     signature: "string_agg(text, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: string_agg__txt_txt__group_by_filtered
     sql: "SELECT dept_id, STRING_AGG(name, ',' ORDER BY id DESC) FILTER (WHERE salary > 50000) AS result FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -950,6 +1085,7 @@ tests:
     signature: "string_agg(text, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: sum__big__group_by_filtered
     sql: "SELECT dept_id, SUM(salary) FILTER (WHERE active) AS result FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -957,6 +1093,7 @@ tests:
     signature: "sum(bigint) → numeric"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: sum__big__group_by_filtered_alongside_unfiltered
     sql: "SELECT dept_id, SUM(salary) FILTER (WHERE active) AS filtered, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -964,6 +1101,7 @@ tests:
     signature: "sum(bigint) → numeric"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: count__any__group_by_filtered
     sql: "SELECT dept_id, COUNT(*) FILTER (WHERE active) AS result FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -971,6 +1109,7 @@ tests:
     signature: "count(*) → bigint"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: sum__big__from_table
     sql: "SELECT SUM(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -978,6 +1117,7 @@ tests:
     signature: "sum(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: sum__dp__from_table
     sql: "SELECT SUM(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -985,6 +1125,7 @@ tests:
     signature: "sum(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: sum__int__from_table
     sql: "SELECT SUM(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -992,6 +1133,7 @@ tests:
     signature: "sum(integer) → bigint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: sum__intv__from_table
     sql: "SELECT SUM(INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 3"
@@ -999,6 +1141,7 @@ tests:
     signature: "sum(interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: sum__money__no_generator
     sql: "SELECT SUM(salary::money) AS result FROM persons WHERE salary IS NOT NULL"
@@ -1006,6 +1149,7 @@ tests:
     signature: "sum(money) → money"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: sum__num__from_table
     sql: "SELECT SUM(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1013,6 +1157,7 @@ tests:
     signature: "sum(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: sum__real__from_table
     sql: "SELECT SUM(float_val::real) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -1020,6 +1165,7 @@ tests:
     signature: "sum(real) → real"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: sum__small__from_table
     sql: "SELECT SUM(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -1027,6 +1173,7 @@ tests:
     signature: "sum(smallint) → bigint"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_pop__big__from_table
     sql: "SELECT VAR_POP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1034,6 +1181,7 @@ tests:
     signature: "var_pop(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_pop__dp__from_table
     sql: "SELECT VAR_POP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -1041,6 +1189,7 @@ tests:
     signature: "var_pop(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_pop__int__from_table
     sql: "SELECT VAR_POP(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -1048,6 +1197,7 @@ tests:
     signature: "var_pop(integer) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_pop__num__from_table
     sql: "SELECT VAR_POP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1055,6 +1205,7 @@ tests:
     signature: "var_pop(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_pop__real__from_table
     sql: "SELECT VAR_POP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -1062,6 +1213,7 @@ tests:
     signature: "var_pop(real) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_pop__small__from_table
     sql: "SELECT VAR_POP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1069,6 +1221,7 @@ tests:
     signature: "var_pop(smallint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_samp__big__from_table
     sql: "SELECT VAR_SAMP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1076,6 +1229,7 @@ tests:
     signature: "var_samp(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_samp__dp__from_table
     sql: "SELECT VAR_SAMP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -1083,6 +1237,7 @@ tests:
     signature: "var_samp(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_samp__int__from_table
     sql: "SELECT VAR_SAMP(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -1090,6 +1245,7 @@ tests:
     signature: "var_samp(integer) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_samp__num__from_table
     sql: "SELECT VAR_SAMP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1097,6 +1253,7 @@ tests:
     signature: "var_samp(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_samp__real__from_table
     sql: "SELECT VAR_SAMP(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -1104,6 +1261,7 @@ tests:
     signature: "var_samp(real) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: var_samp__small__from_table
     sql: "SELECT VAR_SAMP(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1111,6 +1269,7 @@ tests:
     signature: "var_samp(smallint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: variance__big__from_table
     sql: "SELECT VARIANCE(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1118,6 +1277,7 @@ tests:
     signature: "variance(bigint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: variance__dp__from_table
     sql: "SELECT VARIANCE(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -1125,6 +1285,7 @@ tests:
     signature: "variance(double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: variance__int__from_table
     sql: "SELECT VARIANCE(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -1132,6 +1293,7 @@ tests:
     signature: "variance(integer) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: variance__num__from_table
     sql: "SELECT VARIANCE(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1139,6 +1301,7 @@ tests:
     signature: "variance(numeric) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: variance__real__from_table
     sql: "SELECT VARIANCE(float_val) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -1146,6 +1309,7 @@ tests:
     signature: "variance(real) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: variance__small__from_table
     sql: "SELECT VARIANCE(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1153,6 +1317,7 @@ tests:
     signature: "variance(smallint) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: xmlagg__xml__no_generator
     sql: "SELECT XMLAGG(name::xml) AS result FROM persons WHERE name IS NOT NULL"
@@ -1160,6 +1325,7 @@ tests:
     signature: "xmlagg(xml) → xml"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # === Auto-generated tests for previously UNTESTED signatures ===
   - id: array_agg_anyarray_cov
@@ -1168,6 +1334,7 @@ tests:
     signature: "array_agg(anyarray) → anyarray"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: bit_and_bit_cov
     sql: "SELECT BIT_AND(NULL) AS result FROM persons WHERE id = 1"
@@ -1175,6 +1342,7 @@ tests:
     signature: "bit_and(bit) → bit"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: bit_or_bit_cov
     sql: "SELECT BIT_OR(NULL) AS result FROM persons WHERE id = 1"
@@ -1182,6 +1350,7 @@ tests:
     signature: "bit_or(bit) → bit"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: bit_xor_bit_cov
     sql: "SELECT BIT_XOR(NULL) AS result FROM persons WHERE id = 1"
@@ -1189,6 +1358,7 @@ tests:
     signature: "bit_xor(bit) → bit"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: cume_dist_VARIADIC_any_ORDER_BY_VARIAD_cov
     sql: "SELECT CUME_DIST(NULL) AS result FROM persons WHERE id = 1"
@@ -1196,6 +1366,7 @@ tests:
     signature: 'cume_dist(VARIADIC "any" ORDER BY VARIADIC "any") → double precision'
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: dense_rank_VARIADIC_any_ORDER_BY_VARIAD_cov
     sql: "SELECT DENSE_RANK(NULL) AS result FROM persons WHERE id = 1"
@@ -1203,6 +1374,7 @@ tests:
     signature: 'dense_rank(VARIADIC "any" ORDER BY VARIADIC "any") → bigint'
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: max_anyarray_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1210,6 +1382,7 @@ tests:
     signature: "max(anyarray) → anyarray"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: max_anyenum_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1217,6 +1390,7 @@ tests:
     signature: "max(anyenum) → anyenum"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: max_character_cov
     sql: "SELECT MAX(name) AS result FROM persons WHERE id = 1"
@@ -1224,6 +1398,7 @@ tests:
     signature: "max(character) → character"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max_inet_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1231,6 +1406,7 @@ tests:
     signature: "max(inet) → inet"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: max_money_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1238,6 +1414,7 @@ tests:
     signature: "max(money) → money"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: max_oid_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1245,6 +1422,7 @@ tests:
     signature: "max(oid) → oid"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: max_pg_lsn_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1252,6 +1430,7 @@ tests:
     signature: "max(pg_lsn) → pg_lsn"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: max_tid_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1259,6 +1438,7 @@ tests:
     signature: "max(tid) → tid"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: max_time_with_time_zone_cov
     sql: "SELECT MAX(name) AS result FROM persons WHERE id = 1"
@@ -1266,6 +1446,7 @@ tests:
     signature: "max(time with time zone) → time with time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max_time_without_time_zone_cov
     sql: "SELECT MAX(name) AS result FROM persons WHERE id = 1"
@@ -1273,6 +1454,7 @@ tests:
     signature: "max(time without time zone) → time without time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: max_xid8_cov
     sql: "SELECT MAX(NULL) AS result FROM persons WHERE id = 1"
@@ -1280,6 +1462,7 @@ tests:
     signature: "max(xid8) → xid8"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_anyarray_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1287,6 +1470,7 @@ tests:
     signature: "min(anyarray) → anyarray"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_anyenum_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1294,6 +1478,7 @@ tests:
     signature: "min(anyenum) → anyenum"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_character_cov
     sql: "SELECT MIN(name) AS result FROM persons WHERE id = 1"
@@ -1301,6 +1486,7 @@ tests:
     signature: "min(character) → character"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min_inet_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1308,6 +1494,7 @@ tests:
     signature: "min(inet) → inet"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_money_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1315,6 +1502,7 @@ tests:
     signature: "min(money) → money"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_oid_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1322,6 +1510,7 @@ tests:
     signature: "min(oid) → oid"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_pg_lsn_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1329,6 +1518,7 @@ tests:
     signature: "min(pg_lsn) → pg_lsn"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_tid_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1336,6 +1526,7 @@ tests:
     signature: "min(tid) → tid"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: min_time_with_time_zone_cov
     sql: "SELECT MIN(name) AS result FROM persons WHERE id = 1"
@@ -1343,6 +1534,7 @@ tests:
     signature: "min(time with time zone) → time with time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min_time_without_time_zone_cov
     sql: "SELECT MIN(name) AS result FROM persons WHERE id = 1"
@@ -1350,6 +1542,7 @@ tests:
     signature: "min(time without time zone) → time without time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: min_xid8_cov
     sql: "SELECT MIN(NULL) AS result FROM persons WHERE id = 1"
@@ -1357,6 +1550,7 @@ tests:
     signature: "min(xid8) → xid8"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: percent_rank_VARIADIC_any_ORDER_BY_VARIAD_cov
     sql: "SELECT PERCENT_RANK(NULL) AS result FROM persons WHERE id = 1"
@@ -1364,6 +1558,7 @@ tests:
     signature: 'percent_rank(VARIADIC "any" ORDER BY VARIADIC "any") → double precision'
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: percentile_cont_double_precision_ORDER_BY_doub_cov
     sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -1371,6 +1566,7 @@ tests:
     signature: "percentile_cont(double precision ORDER BY double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: percentile_cont_double_precision_ORDER_BY_inte_cov
     sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -1378,6 +1574,7 @@ tests:
     signature: "percentile_cont(double precision ORDER BY interval) → interval"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: percentile_cont_double_precision_ORDER_BY_do_cov
     sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -1385,6 +1582,7 @@ tests:
     signature: "percentile_cont(double precision[] ORDER BY double precision) → double precision[]"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: percentile_cont_double_precision_ORDER_BY_in_cov
     sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
@@ -1392,6 +1590,7 @@ tests:
     signature: "percentile_cont(double precision[] ORDER BY interval) → interval[]"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: percentile_disc_double_precision_ORDER_BY_anye_cov
     sql: "SELECT PERCENTILE_DISC(NULL) AS result FROM persons WHERE id = 1"
@@ -1399,6 +1598,7 @@ tests:
     signature: "percentile_disc(double precision ORDER BY anyelement) → anyelement"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: percentile_disc_double_precision_ORDER_BY_an_cov
     sql: "SELECT PERCENTILE_DISC(NULL) AS result FROM persons WHERE id = 1"
@@ -1406,6 +1606,7 @@ tests:
     signature: "percentile_disc(double precision[] ORDER BY anyelement) → anyarray"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: range_agg_anymultirange_cov
     sql: "SELECT RANGE_AGG(NULL) AS result FROM persons WHERE id = 1"
@@ -1413,6 +1614,7 @@ tests:
     signature: "range_agg(anymultirange) → anymultirange"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: range_agg_anyrange_cov
     sql: "SELECT RANGE_AGG(NULL) AS result FROM persons WHERE id = 1"
@@ -1420,6 +1622,7 @@ tests:
     signature: "range_agg(anyrange) → anymultirange"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: range_intersect_agg_anymultirange_cov
     sql: "SELECT RANGE_INTERSECT_AGG(NULL) AS result FROM persons WHERE id = 1"
@@ -1427,6 +1630,7 @@ tests:
     signature: "range_intersect_agg(anymultirange) → anymultirange"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: range_intersect_agg_anyrange_cov
     sql: "SELECT RANGE_INTERSECT_AGG(NULL) AS result FROM persons WHERE id = 1"
@@ -1434,6 +1638,7 @@ tests:
     signature: "range_intersect_agg(anyrange) → anyrange"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: rank_VARIADIC_any_ORDER_BY_VARIAD_cov
     sql: "SELECT RANK(NULL) AS result FROM persons WHERE id = 1"
@@ -1441,6 +1646,7 @@ tests:
     signature: 'rank(VARIADIC "any" ORDER BY VARIADIC "any") → bigint'
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: string_agg_bytea_bytea_cov
     sql: "SELECT STRING_AGG(NULL) AS result FROM persons WHERE id = 1"
@@ -1448,6 +1654,7 @@ tests:
     signature: "string_agg(bytea, bytea) → bytea"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: sum_money_cov
     sql: "SELECT SUM(NULL) AS result FROM persons WHERE id = 1"
@@ -1455,6 +1662,7 @@ tests:
     signature: "sum(money) → money"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: xmlagg_xml_cov
     sql: "SELECT XMLAGG(NULL) AS result FROM persons WHERE id = 1"
@@ -1462,3 +1670,4 @@ tests:
     signature: "xmlagg(xml) → xml"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

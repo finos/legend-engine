@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 /**
  * AST-based FROM rewriter that uses the Legend SQL parser to parse the query,
- * then visits the tree and replaces table references with func('e2e::prefix_tableName') calls.
+ * then visits the tree and replaces table references with func('e2e::...') calls for the given parity path.
  * <p>
  * This correctly handles:
  * - Subqueries (doesn't rewrite subquery aliases)
@@ -39,13 +39,13 @@ public class AstFromRewriter extends SQLSerializer
     private static final Pattern FROM_TABLE_PATTERN = Pattern.compile(
             "(?i)\\b(FROM|JOIN)\\s+([a-zA-Z_][a-zA-Z0-9_]*)");
 
-    private final String functionPrefix;
+    private final ParityPath parityPath;
     private final Set<String> knownTables;
     private final ThreadLocal<Set<String>> cteNames = ThreadLocal.withInitial(HashSet::new);
 
-    public AstFromRewriter(String functionPrefix, Set<String> knownTables)
+    public AstFromRewriter(ParityPath parityPath, Set<String> knownTables)
     {
-        this.functionPrefix = functionPrefix;
+        this.parityPath = parityPath;
         this.knownTables = knownTables;
     }
 
@@ -108,7 +108,7 @@ public class AstFromRewriter extends SQLSerializer
 
         if (knownTables.contains(simpleName))
         {
-            return "func('e2e::" + functionPrefix + "_" + simpleName + "')";
+            return parityPath.tableFunctionCall(simpleName);
         }
 
         return tableName;

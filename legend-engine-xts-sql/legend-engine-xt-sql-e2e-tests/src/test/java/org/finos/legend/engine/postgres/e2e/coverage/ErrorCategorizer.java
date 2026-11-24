@@ -35,6 +35,9 @@ public class ErrorCategorizer
     public static final String UNSUPPORTED = "UNSUPPORTED";
     public static final String MISC = "MISC";
 
+    private static final Pattern ENGINE_CALL_PREFIX =
+            Pattern.compile("^(?:ERROR: )?(?:java\\.lang\\.RuntimeException: )*Error calling the engine \\(url=\\S+, status=\\d+\\): ");
+
     private static final LinkedHashMap<Pattern, String> PATTERNS = new LinkedHashMap<>();
 
     static
@@ -68,9 +71,10 @@ public class ErrorCategorizer
         {
             return MISC;
         }
+        String engineMessage = ENGINE_CALL_PREFIX.matcher(error).replaceFirst("");
         for (Map.Entry<Pattern, String> entry : PATTERNS.entrySet())
         {
-            if (entry.getKey().matcher(error).find())
+            if (entry.getKey().matcher(engineMessage).find())
             {
                 return entry.getValue();
             }

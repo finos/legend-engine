@@ -6,6 +6,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: group_by_single_sum
     sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY multiple columns
   - id: group_by_multi
@@ -21,6 +23,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: group_by_multi_agg2
     sql: "SELECT dept_id, active, AVG(salary) AS avg_sal FROM persons WHERE dept_id IS NOT NULL AND active IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id, active ORDER BY 1, 2"
@@ -28,6 +31,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY with HAVING
   - id: group_by_having
@@ -36,6 +40,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: group_by_having_sum
     sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000 ORDER BY 1"
@@ -43,6 +48,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY with multiple aggregates
   - id: group_by_multi_agg
@@ -51,6 +57,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY with expression
   - id: group_by_expression
@@ -59,6 +66,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: group_by_expression_calc
     sql: "SELECT CAST(salary / 10000 AS INTEGER) * 10000 AS bracket, COUNT(*) AS cnt FROM persons WHERE salary IS NOT NULL GROUP BY CAST(salary / 10000 AS INTEGER) * 10000 ORDER BY 1"
@@ -66,6 +74,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY aggregate
   - id: group_by_order_agg
@@ -74,6 +83,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: group_by_order_count
     sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY COUNT(*) DESC, dept_id"
@@ -81,6 +91,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Conditional aggregation
   - id: group_by_cond_agg
@@ -89,6 +100,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY with alias reference (positional)
   - id: group_by_positional
@@ -97,6 +109,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY with COALESCE
   - id: group_by_coalesce
@@ -105,6 +118,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY + DISTINCT aggregate
   - id: group_by_distinct_agg
@@ -113,6 +127,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # GROUP BY with MIN/MAX on strings
   - id: group_by_min_max_string
@@ -121,6 +136,7 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # HAVING with multiple conditions
   - id: group_by_having_multi
@@ -129,3 +145,4 @@ tests:
     category: "group_by"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

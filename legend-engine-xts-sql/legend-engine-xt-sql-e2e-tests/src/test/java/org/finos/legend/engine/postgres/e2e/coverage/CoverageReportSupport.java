@@ -17,13 +17,17 @@ package org.finos.legend.engine.postgres.e2e.coverage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.finos.legend.engine.postgres.e2e.ParityPath;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Shared building blocks for the catalog-driven coverage reports (function-coverage.md,
@@ -114,36 +118,68 @@ public final class CoverageReportSupport
         return map;
     }
 
-    public static String rowColour(String tdsStatus, String relStatus)
+    public static String rowColour(String tdsStatus, String relStatus, String grammarStatus)
     {
-        boolean bothPass = "PASS".equals(tdsStatus) && "PASS".equals(relStatus);
-        boolean bothUnsupported = "NOT_APPLICABLE".equals(tdsStatus) && "NOT_APPLICABLE".equals(relStatus);
-        boolean bothError = ("ERROR".equals(tdsStatus) || "FAIL".equals(tdsStatus) || "NOT_APPLICABLE".equals(tdsStatus))
-                && ("ERROR".equals(relStatus) || "FAIL".equals(relStatus) || "NOT_APPLICABLE".equals(relStatus))
-                && !bothUnsupported;
-        if (bothPass)
+        List<String> statuses = new ArrayList<>();
+        for (String status : new String[] {tdsStatus, relStatus, grammarStatus})
         {
-            return "\uD83D\uDFE2";
+            if (isRecorded(status))
+            {
+                statuses.add(status);
+            }
         }
-        if (bothUnsupported)
+        if (statuses.isEmpty())
         {
             return "\u26AA";
         }
-        if (bothError)
+        boolean allPass = statuses.stream().allMatch("PASS"::equals);
+        boolean allUnsupported = statuses.stream().allMatch("NOT_APPLICABLE"::equals);
+        boolean allError = statuses.stream().allMatch(st -> "ERROR".equals(st) || "FAIL".equals(st) || "NOT_APPLICABLE".equals(st))
+                && !allUnsupported;
+        if (allPass)
+        {
+            return "\uD83D\uDFE2";
+        }
+        if (allUnsupported)
+        {
+            return "\u26AA";
+        }
+        if (allError)
         {
             return "\uD83D\uDD34";
         }
-        if ("PASS".equals(tdsStatus) || "PASS".equals(relStatus)
-                || "PARTIAL".equals(tdsStatus) || "PARTIAL".equals(relStatus))
+        if (statuses.stream().anyMatch(st -> "PASS".equals(st) || "PARTIAL".equals(st)))
         {
             return "\uD83D\uDFE1";
         }
-        if ("ERROR".equals(tdsStatus) || "ERROR".equals(relStatus)
-                || "FAIL".equals(tdsStatus) || "FAIL".equals(relStatus))
+        if (statuses.stream().anyMatch(st -> "ERROR".equals(st) || "FAIL".equals(st)))
         {
             return "\uD83D\uDD34";
         }
         return "\u26AA";
+    }
+
+    public static boolean isRecorded(String status)
+    {
+        return status != null && !"UNTESTED".equals(status);
+    }
+
+    public static String failureKey(String testId, ParityPath path)
+    {
+        return testId + "|" + path.label();
+    }
+
+    public static String pathEmoji(ParityPath path)
+    {
+        switch (path)
+        {
+            case TDS:
+                return "\uD83D\uDCD8";
+            case RELATION:
+                return "\uD83D\uDCD7";
+            default:
+                return "\uD83D\uDCD9";
+        }
     }
 
     public static String statusToLabel(String status, int pass, int total)
@@ -165,20 +201,23 @@ public final class CoverageReportSupport
 
     public static LinkedHashSet<String> categoriesFor(List<FunctionCoverageMapper.TestResultEntry> testDetails, Map<String, FailureInfo> failureMap)
     {
+        return categoriesFor(testDetails, failureMap, EnumSet.allOf(ParityPath.class));
+    }
+
+    public static LinkedHashSet<String> categoriesFor(List<FunctionCoverageMapper.TestResultEntry> testDetails, Map<String, FailureInfo> failureMap, Set<ParityPath> paths)
+    {
         LinkedHashSet<String> categories = new LinkedHashSet<>();
         if (testDetails != null)
         {
             for (FunctionCoverageMapper.TestResultEntry te : testDetails)
             {
-                FailureInfo fi = failureMap.get(te.testId + "|TDS");
-                if (fi != null)
+                for (ParityPath path : paths)
                 {
-                    categories.add(fi.category);
-                }
-                fi = failureMap.get(te.testId + "|Relation");
-                if (fi != null)
-                {
-                    categories.add(fi.category);
+                    FailureInfo fi = failureMap.get(failureKey(te.testId, path));
+                    if (fi != null)
+                    {
+                        categories.add(fi.category);
+                    }
                 }
             }
         }
@@ -219,15 +258,13 @@ public final class CoverageReportSupport
         }
         for (FunctionCoverageMapper.TestResultEntry te : testDetails)
         {
-            FailureInfo fi = failureMap.get(te.testId + "|TDS");
-            if (fi != null && category.equals(fi.category))
+            for (ParityPath path : ParityPath.values())
             {
-                return "fail-" + te.testId + "-TDS";
-            }
-            fi = failureMap.get(te.testId + "|Relation");
-            if (fi != null && category.equals(fi.category))
-            {
-                return "fail-" + te.testId + "-Relation";
+                FailureInfo fi = failureMap.get(failureKey(te.testId, path));
+                if (fi != null && category.equals(fi.category))
+                {
+                    return "fail-" + te.testId + "-" + path.label();
+                }
             }
         }
         return null;
@@ -241,15 +278,13 @@ public final class CoverageReportSupport
         }
         for (FunctionCoverageMapper.TestResultEntry te : testDetails)
         {
-            FailureInfo tdsFailure = failureMap.get(te.testId + "|TDS");
-            if (tdsFailure != null)
+            for (ParityPath path : ParityPath.values())
             {
-                allErrors.add(new ErrorDetailEntry(te.testId, "TDS", tdsFailure.sql, tdsFailure.rewrittenSql, tdsFailure.error, tdsFailure.category));
-            }
-            FailureInfo relFailure = failureMap.get(te.testId + "|Relation");
-            if (relFailure != null)
-            {
-                allErrors.add(new ErrorDetailEntry(te.testId, "Relation", relFailure.sql, relFailure.rewrittenSql, relFailure.error, relFailure.category));
+                FailureInfo failure = failureMap.get(failureKey(te.testId, path));
+                if (failure != null)
+                {
+                    allErrors.add(new ErrorDetailEntry(te.testId, path.label(), failure.sql, failure.rewrittenSql, failure.error, failure.category));
+                }
             }
         }
     }
@@ -261,14 +296,14 @@ public final class CoverageReportSupport
             return;
         }
         md.append("## Error Categories\n\n");
-        md.append("| Category | Description | TDS | Relation |\n");
-        md.append("|----------|-------------|-----|----------|\n");
+        md.append("| Category | Description | TDS | Relation | Grammar |\n");
+        md.append("|----------|-------------|-----|----------|---------|\n");
         for (Map.Entry<String, int[]> entry : errorCategoryCounts.entrySet())
         {
             String catAnchor = entry.getKey().toLowerCase().replace("_", "-");
-            md.append(String.format("| [%s](#%s) | %s | %d | %d |\n",
+            md.append(String.format("| [%s](#%s) | %s | %d | %d | %d |\n",
                     entry.getKey(), catAnchor, ErrorCategorizer.description(entry.getKey()),
-                    entry.getValue()[0], entry.getValue()[1]));
+                    entry.getValue()[0], entry.getValue()[1], entry.getValue()[2]));
         }
         md.append("\n---\n\n");
     }
@@ -318,43 +353,20 @@ public final class CoverageReportSupport
 
                 md.append("#### ").append(anchors).append("`").append(testId).append("`\n\n");
 
-                if (entries.size() == 2)
+                if (entries.size() >= 2 && failedIdentically(entries))
                 {
-                    ErrorDetailEntry e1 = entries.get(0);
-                    ErrorDetailEntry e2 = entries.get(1);
-                    boolean sameError = (e1.error == null ? "" : e1.error).equals(e2.error == null ? "" : e2.error);
-                    boolean sameCategory = e1.category.equals(e2.category);
-
-                    if (sameError && sameCategory)
-                    {
-                        md.append("\uD83D\uDD34 **Failed in both TDS and Relation**\n\n");
-                        md.append("**Input SQL:**\n```sql\n").append(e1.sql != null ? e1.sql : "").append("\n```\n\n");
-                        String legendSql1 = e1.rewrittenSql != null && !e1.rewrittenSql.isEmpty() ? e1.rewrittenSql : "";
-                        String legendSql2 = e2.rewrittenSql != null && !e2.rewrittenSql.isEmpty() ? e2.rewrittenSql : "";
-                        if (!legendSql1.isEmpty() || !legendSql2.isEmpty())
-                        {
-                            if (legendSql1.equals(legendSql2) || legendSql2.isEmpty())
-                            {
-                                md.append("**Legend SQL:**\n```sql\n").append(legendSql1).append("\n```\n\n");
-                            }
-                            else if (legendSql1.isEmpty())
-                            {
-                                md.append("**Legend SQL:**\n```sql\n").append(legendSql2).append("\n```\n\n");
-                            }
-                            else
-                            {
-                                md.append("**Legend SQL (TDS):**\n```sql\n").append(legendSql1).append("\n```\n\n");
-                                md.append("**Legend SQL (Relation):**\n```sql\n").append(legendSql2).append("\n```\n\n");
-                            }
-                        }
-                        md.append("**Error:**\n> ").append(e1.error != null ? e1.error.replace("\n", "\n> ") : "").append("\n\n");
-                        continue;
-                    }
+                    ErrorDetailEntry first = entries.get(0);
+                    md.append("\uD83D\uDD34 **Failed in ").append(entries.size() == 2 ? "both " : "all of ")
+                            .append(joinLabels(entries)).append("**\n\n");
+                    md.append("**Input SQL:**\n```sql\n").append(first.sql != null ? first.sql : "").append("\n```\n\n");
+                    appendLegendSql(md, entries);
+                    md.append("**Error:**\n> ").append(first.error != null ? first.error.replace("\n", "\n> ") : "").append("\n\n");
+                    continue;
                 }
 
                 for (ErrorDetailEntry e : entries)
                 {
-                    String pathEmoji = "TDS".equals(e.path) ? "\uD83D\uDCD8" : "\uD83D\uDCD7";
+                    String pathEmoji = pathEmoji(ParityPath.fromLabel(e.path));
                     md.append(String.format("%s **%s Path**\n\n", pathEmoji, e.path));
                     md.append("**Input SQL:**\n```sql\n").append(e.sql != null ? e.sql : "").append("\n```\n\n");
                     if (e.rewrittenSql != null && !e.rewrittenSql.isEmpty())
@@ -367,5 +379,51 @@ public final class CoverageReportSupport
             md.append("\n");
         }
     }
-}
 
+    private static boolean failedIdentically(List<ErrorDetailEntry> entries)
+    {
+        ErrorDetailEntry first = entries.get(0);
+        String firstError = first.error == null ? "" : first.error;
+        return entries.stream().allMatch(e -> firstError.equals(e.error == null ? "" : e.error) && first.category.equals(e.category));
+    }
+
+    private static String joinLabels(List<ErrorDetailEntry> entries)
+    {
+        StringBuilder labels = new StringBuilder();
+        for (int i = 0; i < entries.size(); i++)
+        {
+            if (i > 0)
+            {
+                labels.append(i == entries.size() - 1 ? " and " : ", ");
+            }
+            labels.append(entries.get(i).path);
+        }
+        return labels.toString();
+    }
+
+    private static void appendLegendSql(StringBuilder md, List<ErrorDetailEntry> entries)
+    {
+        Set<String> distinctLegendSql = new LinkedHashSet<>();
+        for (ErrorDetailEntry e : entries)
+        {
+            if (e.rewrittenSql != null && !e.rewrittenSql.isEmpty())
+            {
+                distinctLegendSql.add(e.rewrittenSql);
+            }
+        }
+        if (distinctLegendSql.size() == 1)
+        {
+            md.append("**Legend SQL:**\n```sql\n").append(distinctLegendSql.iterator().next()).append("\n```\n\n");
+        }
+        else if (distinctLegendSql.size() > 1)
+        {
+            for (ErrorDetailEntry e : entries)
+            {
+                if (e.rewrittenSql != null && !e.rewrittenSql.isEmpty())
+                {
+                    md.append("**Legend SQL (").append(e.path).append("):**\n```sql\n").append(e.rewrittenSql).append("\n```\n\n");
+                }
+            }
+        }
+    }
+}

@@ -78,6 +78,7 @@
                                 <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlParser-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-pure</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-pure</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure</dependency>
@@ -207,6 +208,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
         </dependency>
         <dependency>
@@ -234,6 +239,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
         </dependency>
     </dependencies>
 </project>

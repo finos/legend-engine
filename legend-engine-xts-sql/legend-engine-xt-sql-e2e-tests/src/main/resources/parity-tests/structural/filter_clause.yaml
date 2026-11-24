@@ -10,6 +10,7 @@ tests:
     category: "filter_clause"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: filter_clause_sum
     sql: "SELECT dept_id, SUM(salary) FILTER (WHERE active) AS active_salary FROM persons GROUP BY dept_id ORDER BY 1"
@@ -17,6 +18,7 @@ tests:
     category: "filter_clause"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: filter_clause_multiple_aggs
     sql: "SELECT dept_id, COUNT(*) FILTER (WHERE age > 30) AS older, COUNT(*) FILTER (WHERE age <= 30) AS younger FROM persons GROUP BY dept_id ORDER BY 1"
@@ -24,4 +26,5 @@ tests:
     category: "filter_clause"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 

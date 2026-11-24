@@ -6,6 +6,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: nested_corr_dept_avg
     sql: "SELECT p.name, p.salary, (SELECT AVG(salary) FROM persons p2 WHERE p2.dept_id = p.dept_id AND p2.salary IS NOT NULL) AS dept_avg FROM persons p WHERE p.salary IS NOT NULL AND p.dept_id IS NOT NULL ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Multi-level nesting
   - id: nested_two_levels
@@ -21,6 +23,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: nested_derived_in_derived
     sql: "SELECT sub2.dept_id, sub2.high_cnt FROM (SELECT dept_id, COUNT(*) AS high_cnt FROM (SELECT dept_id, salary FROM persons WHERE salary > 60000 AND dept_id IS NOT NULL) sub1 GROUP BY dept_id) sub2 ORDER BY 1"
@@ -28,6 +31,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery + JOIN
   - id: nested_subquery_join
@@ -36,6 +40,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # EXISTS + aggregate
   # Not an aliasing problem, so de-shadowing the subquery does not reach it. The GROUP BY stops the WHERE
@@ -51,6 +56,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Subquery as filter + derived table
   - id: nested_filter_derived
@@ -59,6 +65,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Scalar subquery with arithmetic
   - id: nested_scalar_arithmetic
@@ -67,6 +74,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # IN subquery with JOIN
   - id: nested_in_with_join
@@ -75,6 +83,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Derived table with window
   - id: nested_derived_window
@@ -83,6 +92,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # NOT EXISTS + derived table
   - id: nested_not_exists_derived
@@ -91,6 +101,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery in SELECT with COALESCE
   - id: nested_scalar_coalesce
@@ -99,3 +110,4 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

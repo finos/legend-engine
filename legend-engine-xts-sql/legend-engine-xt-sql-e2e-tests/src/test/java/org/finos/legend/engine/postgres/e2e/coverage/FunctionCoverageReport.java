@@ -20,10 +20,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.finos.legend.engine.postgres.e2e.ParityPath;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,13 +38,15 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Generates function coverage reports in JSON and Markdown format.
- * Reports both TDS and Relation path status independently per signature.
+ * Reports TDS, Relation and Grammar path status independently per signature.
  * Distinguishes between ERROR (server exception) and FAIL (result mismatch).
  */
 public class FunctionCoverageReport
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(FunctionCoverageReport.class);
     private static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private static final Set<ParityPath> LEGACY_PATHS = EnumSet.of(ParityPath.TDS, ParityPath.RELATION);
+    private static final Set<ParityPath> GRAMMAR_ONLY = EnumSet.of(ParityPath.GRAMMAR);
 
     /**
      * Generates both JSON and Markdown reports.
@@ -66,13 +71,13 @@ public class FunctionCoverageReport
         printConsoleSummary(catalog);
     }
 
-    private static int[] countStatuses(Iterable<FunctionCatalogExtractor.PgFunction> fns, boolean tds)
+    private static int[] countStatuses(Iterable<FunctionCatalogExtractor.PgFunction> fns, ParityPath path)
     {
         // [pass, partial, fail, error, untested]
         int[] c = new int[5];
         for (FunctionCatalogExtractor.PgFunction fn : fns)
         {
-            String s = tds ? fn.tdsStatus : fn.relStatus;
+            String s = statusOf(fn, path);
             switch (s)
             {
                 case "PASS":
@@ -97,6 +102,76 @@ public class FunctionCoverageReport
         return c;
     }
 
+    private static void markUnsupported(FunctionCatalogExtractor.PgFunction fn)
+    {
+        fn.tdsStatus = "NOT_APPLICABLE";
+        fn.relStatus = "NOT_APPLICABLE";
+    }
+
+    private static String statusOf(FunctionCatalogExtractor.PgFunction fn, ParityPath path)
+    {
+        switch (path)
+        {
+            case TDS:
+                return fn.tdsStatus;
+            case RELATION:
+                return fn.relStatus;
+            default:
+                return fn.grammarStatus;
+        }
+    }
+
+    private static int[] passFailError(FunctionCoverageMapper.SignatureCoverage coverage, ParityPath path)
+    {
+        switch (path)
+        {
+            case TDS:
+                return new int[] {coverage.tdsPass, coverage.tdsFail, coverage.tdsError};
+            case RELATION:
+                return new int[] {coverage.relPass, coverage.relFail, coverage.relError};
+            default:
+                return new int[] {coverage.grammarPass, coverage.grammarFail, coverage.grammarError};
+        }
+    }
+
+    private static String stateOf(FunctionCoverageMapper.TestResultEntry entry, ParityPath path)
+    {
+        switch (path)
+        {
+            case TDS:
+                return entry.tdsState;
+            case RELATION:
+                return entry.relationState;
+            default:
+                return entry.grammarState;
+        }
+    }
+
+    private static int supportedFunctionCount(Map<String, List<FunctionCatalogExtractor.PgFunction>> catalog, ParityPath path)
+    {
+        java.util.Map<String, String> bestStatusByName = new java.util.HashMap<>();
+        for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
+        {
+            for (FunctionCatalogExtractor.PgFunction fn : fns)
+            {
+                String existing = bestStatusByName.get(fn.name);
+                if (existing == null || isStatusBetter(statusOf(fn, path), existing))
+                {
+                    bestStatusByName.put(fn.name, statusOf(fn, path));
+                }
+            }
+        }
+        int supported = 0;
+        for (String status : bestStatusByName.values())
+        {
+            if ("PASS".equals(status) || "PARTIAL".equals(status))
+            {
+                supported++;
+            }
+        }
+        return supported;
+    }
+
     private void generateJson(Map<String, List<FunctionCatalogExtractor.PgFunction>> catalog, String path) throws IOException
     {
         ObjectNode root = MAPPER.createObjectNode();
@@ -105,17 +180,20 @@ public class FunctionCoverageReport
         int total = 0;
         int[] tds = new int[5];
         int[] rel = new int[5];
+        int[] grammar = new int[5];
         int totalTests = 0;
         java.util.Map<String, String> functionNameStatus = new java.util.HashMap<>();
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
         {
             total += fns.size();
-            int[] t = countStatuses(fns, true);
-            int[] r = countStatuses(fns, false);
+            int[] t = countStatuses(fns, ParityPath.TDS);
+            int[] r = countStatuses(fns, ParityPath.RELATION);
+            int[] g = countStatuses(fns, ParityPath.GRAMMAR);
             for (int i = 0; i < 5; i++)
             {
                 tds[i] += t[i];
                 rel[i] += r[i];
+                grammar[i] += g[i];
             }
 
             // Track best status for each unique function name
@@ -127,7 +205,7 @@ public class FunctionCoverageReport
                 }
 
                 String existingStatus = functionNameStatus.get(fn.name);
-                String currentStatus = getBestStatus(fn.tdsStatus, fn.relStatus);
+                String currentStatus = getBestStatus(fn.tdsStatus, fn.relStatus, fn.grammarStatus);
 
                 if (existingStatus == null || isStatusBetter(currentStatus, existingStatus))
                 {
@@ -138,53 +216,20 @@ public class FunctionCoverageReport
 
         int uniqueFunctionCount = functionNameStatus.size();
         
-        // Count TDS and Relation supported separately (PASS or PARTIAL)
-        java.util.Map<String, String> tdsFunctionStatus = new java.util.HashMap<>();
-        java.util.Map<String, String> relFunctionStatus = new java.util.HashMap<>();
-        for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
-        {
-            for (FunctionCatalogExtractor.PgFunction fn : fns)
-            {
-                // TDS
-                String existingTds = tdsFunctionStatus.get(fn.name);
-                if (existingTds == null || isStatusBetter(fn.tdsStatus, existingTds))
-                {
-                    tdsFunctionStatus.put(fn.name, fn.tdsStatus);
-                }
-                // Relation
-                String existingRel = relFunctionStatus.get(fn.name);
-                if (existingRel == null || isStatusBetter(fn.relStatus, existingRel))
-                {
-                    relFunctionStatus.put(fn.name, fn.relStatus);
-                }
-            }
-        }
-        
-        int tdsSupported = 0;
-        int relSupported = 0;
-        for (String status : tdsFunctionStatus.values())
-        {
-            if ("PASS".equals(status) || "PARTIAL".equals(status))
-            {
-                tdsSupported++;
-            }
-        }
-        for (String status : relFunctionStatus.values())
-        {
-            if ("PASS".equals(status) || "PARTIAL".equals(status))
-            {
-                relSupported++;
-            }
-        }
+        int tdsSupported = supportedFunctionCount(catalog, ParityPath.TDS);
+        int relSupported = supportedFunctionCount(catalog, ParityPath.RELATION);
+        int grammarSupported = supportedFunctionCount(catalog, ParityPath.GRAMMAR);
 
         ObjectNode summary = root.putObject("summary");
         summary.put("total", total);
         summary.put("unique_function_names", uniqueFunctionCount);
         summary.put("tds_supported_functions", tdsSupported);
         summary.put("relation_supported_functions", relSupported);
+        summary.put("grammar_supported_functions", grammarSupported);
         summary.put("total_tests", totalTests);
         putPathSummary(summary.putObject("tds"), tds, total);
         putPathSummary(summary.putObject("relation"), rel, total);
+        putPathSummary(summary.putObject("grammar"), grammar, total);
 
         // Categories
         ArrayNode categories = root.putArray("categories");
@@ -204,26 +249,18 @@ public class FunctionCoverageReport
                 fnNode.put("name", fn.name);
                 fnNode.put("signature", fn.signature);
 
-                // TDS status
-                ObjectNode tdsNode = fnNode.putObject("tds");
-                tdsNode.put("status", fn.tdsStatus);
-                if (fn.coverage != null)
+                for (ParityPath parityPath : ParityPath.values())
                 {
-                    tdsNode.put("pass", fn.coverage.tdsPass);
-                    tdsNode.put("fail", fn.coverage.tdsFail);
-                    tdsNode.put("error", fn.coverage.tdsError);
-                    tdsNode.put("total", fn.coverage.total);
-                }
-
-                // Relation status
-                ObjectNode relNode = fnNode.putObject("relation");
-                relNode.put("status", fn.relStatus);
-                if (fn.coverage != null)
-                {
-                    relNode.put("pass", fn.coverage.relPass);
-                    relNode.put("fail", fn.coverage.relFail);
-                    relNode.put("error", fn.coverage.relError);
-                    relNode.put("total", fn.coverage.total);
+                    ObjectNode pathNode = fnNode.putObject(parityPath.reportKey());
+                    pathNode.put("status", statusOf(fn, parityPath));
+                    if (fn.coverage != null)
+                    {
+                        int[] passFailError = passFailError(fn.coverage, parityPath);
+                        pathNode.put("pass", passFailError[0]);
+                        pathNode.put("fail", passFailError[1]);
+                        pathNode.put("error", passFailError[2]);
+                        pathNode.put("total", fn.coverage.total);
+                    }
                 }
 
                 // Test details
@@ -234,8 +271,11 @@ public class FunctionCoverageReport
                     {
                         ObjectNode d = details.addObject();
                         d.put("id", te.testId);
-                        d.put("tds", te.tdsState != null ? te.tdsState : "UNKNOWN");
-                        d.put("relation", te.relationState != null ? te.relationState : "UNKNOWN");
+                        for (ParityPath parityPath : ParityPath.values())
+                        {
+                            String state = stateOf(te, parityPath);
+                            d.put(parityPath.reportKey(), state != null ? state : "UNKNOWN");
+                        }
                     }
                 }
 
@@ -250,19 +290,19 @@ public class FunctionCoverageReport
     }
 
     /**
-     * Get the best status between TDS and Relation paths.
+     * Get the best status across the TDS, Relation and Grammar paths.
      * PASS > PARTIAL > UNTESTED > FAIL > ERROR > NOT_APPLICABLE
      */
-    private static String getBestStatus(String tdsStatus, String relStatus)
+    private static String getBestStatus(String tdsStatus, String relStatus, String grammarStatus)
     {
-        if ("PASS".equals(tdsStatus) && "PASS".equals(relStatus))
-        {
-            return "PASS";
-        }
         String best = tdsStatus;
         if (isStatusBetter(relStatus, best))
         {
             best = relStatus;
+        }
+        if (isStatusBetter(grammarStatus, best))
+        {
+            best = grammarStatus;
         }
         return best;
     }
@@ -310,11 +350,10 @@ public class FunctionCoverageReport
         {
             for (FunctionCatalogExtractor.PgFunction fn : fns)
             {
-                String errCat = getErrorCategory(fn, failureMap);
+                String errCat = getErrorCategory(fn, failureMap, LEGACY_PATHS);
                 if (errCat.contains(ErrorCategorizer.FUNCTION_NOT_SUPPORTED))
                 {
-                    fn.tdsStatus = "NOT_APPLICABLE";
-                    fn.relStatus = "NOT_APPLICABLE";
+                    markUnsupported(fn);
                     if (fn.notes.isEmpty())
                     {
                         fn.notes = "Function not supported";
@@ -322,11 +361,23 @@ public class FunctionCoverageReport
                 }
                 else if (errCat.contains(ErrorCategorizer.UNSUPPORTED_SYNTAX))
                 {
-                    fn.tdsStatus = "NOT_APPLICABLE";
-                    fn.relStatus = "NOT_APPLICABLE";
+                    markUnsupported(fn);
                     if (fn.notes.isEmpty())
                     {
                         fn.notes = "Unsupported feature";
+                    }
+                }
+
+                String grammarCat = getErrorCategory(fn, failureMap, GRAMMAR_ONLY);
+                if (grammarCat.contains(ErrorCategorizer.FUNCTION_NOT_SUPPORTED)
+                        || grammarCat.contains(ErrorCategorizer.UNSUPPORTED_SYNTAX))
+                {
+                    fn.grammarStatus = "NOT_APPLICABLE";
+                    if (fn.notes.isEmpty())
+                    {
+                        fn.notes = grammarCat.contains(ErrorCategorizer.FUNCTION_NOT_SUPPORTED)
+                                ? "Grammar: function not supported"
+                                : "Grammar: unsupported feature";
                     }
                 }
             }
@@ -337,18 +388,9 @@ public class FunctionCoverageReport
 
         // === 1. Summary ===
         int total = 0;
-        int[] tds = new int[5];
-        int[] rel = new int[5];
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
         {
             total += fns.size();
-            int[] t = countStatuses(fns, true);
-            int[] r = countStatuses(fns, false);
-            for (int i = 0; i < 5; i++)
-            {
-                tds[i] += t[i];
-                rel[i] += r[i];
-            }
         }
 
         // Count total tests ran from coverage details
@@ -360,8 +402,14 @@ public class FunctionCoverageReport
         int totalRelFail = 0;
         int totalRelError = 0;
         int totalRelSkip = 0;
+        int totalGrammarPass = 0;
+        int totalGrammarFail = 0;
+        int totalGrammarError = 0;
+        int totalGrammarSkip = 0;
         int totalTests = 0;
         int totalUnsupported = 0;
+        int totalRelUnsupported = 0;
+        int totalGrammarUnsupported = 0;
         Set<String> uniqueNames = new HashSet<>();
         java.util.Map<String, String> functionNameStatus = new java.util.HashMap<>();
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
@@ -373,6 +421,14 @@ public class FunctionCoverageReport
                 {
                     totalUnsupported++;
                 }
+                if ("NOT_APPLICABLE".equals(fn.relStatus))
+                {
+                    totalRelUnsupported++;
+                }
+                if ("NOT_APPLICABLE".equals(fn.grammarStatus))
+                {
+                    totalGrammarUnsupported++;
+                }
                 if (fn.coverage != null)
                 {
                     totalTests += fn.coverage.total;
@@ -382,16 +438,26 @@ public class FunctionCoverageReport
                         totalTdsFail += fn.coverage.tdsFail;
                         totalTdsError += fn.coverage.tdsError;
                         totalTdsSkip += fn.coverage.tdsSkip;
+                    }
+                    if (!"NOT_APPLICABLE".equals(fn.relStatus))
+                    {
                         totalRelPass += fn.coverage.relPass;
                         totalRelFail += fn.coverage.relFail;
                         totalRelError += fn.coverage.relError;
                         totalRelSkip += fn.coverage.relSkip;
                     }
+                    if (!"NOT_APPLICABLE".equals(fn.grammarStatus))
+                    {
+                        totalGrammarPass += fn.coverage.grammarPass;
+                        totalGrammarFail += fn.coverage.grammarFail;
+                        totalGrammarError += fn.coverage.grammarError;
+                        totalGrammarSkip += fn.coverage.grammarSkip;
+                    }
                 }
                 
                 // Track best status for each unique function name
                 String existingStatus = functionNameStatus.get(fn.name);
-                String currentStatus = getBestStatus(fn.tdsStatus, fn.relStatus);
+                String currentStatus = getBestStatus(fn.tdsStatus, fn.relStatus, fn.grammarStatus);
                 if (existingStatus == null || isStatusBetter(currentStatus, existingStatus))
                 {
                     functionNameStatus.put(fn.name, currentStatus);
@@ -399,59 +465,25 @@ public class FunctionCoverageReport
             }
         }
         
-        // Count TDS and Relation supported separately (PASS or PARTIAL)
-        java.util.Map<String, String> tdsFunctionStatus = new java.util.HashMap<>();
-        java.util.Map<String, String> relFunctionStatus = new java.util.HashMap<>();
-        for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
-        {
-            for (FunctionCatalogExtractor.PgFunction fn : fns)
-            {
-                // TDS
-                String existingTds = tdsFunctionStatus.get(fn.name);
-                if (existingTds == null || isStatusBetter(fn.tdsStatus, existingTds))
-                {
-                    tdsFunctionStatus.put(fn.name, fn.tdsStatus);
-                }
-                // Relation
-                String existingRel = relFunctionStatus.get(fn.name);
-                if (existingRel == null || isStatusBetter(fn.relStatus, existingRel))
-                {
-                    relFunctionStatus.put(fn.name, fn.relStatus);
-                }
-            }
-        }
-        
-        int tdsSupported = 0;
-        int relSupported = 0;
-        for (String status : tdsFunctionStatus.values())
-        {
-            if ("PASS".equals(status) || "PARTIAL".equals(status))
-            {
-                tdsSupported++;
-            }
-        }
-        for (String status : relFunctionStatus.values())
-        {
-            if ("PASS".equals(status) || "PARTIAL".equals(status))
-            {
-                relSupported++;
-            }
-        }
+        int tdsSupported = supportedFunctionCount(catalog, ParityPath.TDS);
+        int relSupported = supportedFunctionCount(catalog, ParityPath.RELATION);
+        int grammarSupported = supportedFunctionCount(catalog, ParityPath.GRAMMAR);
         double tdsSupportedPct = uniqueNames.size() > 0 ? (100.0 * tdsSupported / uniqueNames.size()) : 0;
         double relSupportedPct = uniqueNames.size() > 0 ? (100.0 * relSupported / uniqueNames.size()) : 0;
+        double grammarSupportedPct = uniqueNames.size() > 0 ? (100.0 * grammarSupported / uniqueNames.size()) : 0;
 
         md.append("## Summary\n\n");
-        md.append("| Metric | TDS | Relation |\n|--------|-----|----------|\n");
-        md.append(String.format("| Total signatures | %d | %d |\n", total, total));
-        md.append(String.format("| Unique function names | %d | %d |\n", uniqueNames.size(), uniqueNames.size()));
-        md.append(String.format("| **Supported functions (PASS/PARTIAL)** | **%d (%.1f%%)** | **%d (%.1f%%)** |\n", 
-                tdsSupported, tdsSupportedPct, relSupported, relSupportedPct));
-        md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
-        md.append(String.format("| PASS | %d | %d |\n", totalTdsPass, totalRelPass));
-        md.append(String.format("| FAIL | %d | %d |\n", totalTdsFail, totalRelFail));
-        md.append(String.format("| ERROR | %d | %d |\n", totalTdsError, totalRelError));
-        md.append(String.format("| SKIP | %d | %d |\n", totalTdsSkip, totalRelSkip));
-        md.append(String.format("| UNSUPPORTED | %d | %d |\n", totalUnsupported, totalUnsupported));
+        md.append("| Metric | TDS | Relation | Grammar |\n|--------|-----|----------|---------|\n");
+        md.append(String.format("| Total signatures | %d | %d | %d |\n", total, total, total));
+        md.append(String.format("| Unique function names | %d | %d | %d |\n", uniqueNames.size(), uniqueNames.size(), uniqueNames.size()));
+        md.append(String.format("| **Supported functions (PASS/PARTIAL)** | **%d (%.1f%%)** | **%d (%.1f%%)** | **%d (%.1f%%)** |\n",
+                tdsSupported, tdsSupportedPct, relSupported, relSupportedPct, grammarSupported, grammarSupportedPct));
+        md.append(String.format("| Total tests | %d | %d | %d |\n", totalTests, totalTests, totalTests));
+        md.append(String.format("| PASS | %d | %d | %d |\n", totalTdsPass, totalRelPass, totalGrammarPass));
+        md.append(String.format("| FAIL | %d | %d | %d |\n", totalTdsFail, totalRelFail, totalGrammarFail));
+        md.append(String.format("| ERROR | %d | %d | %d |\n", totalTdsError, totalRelError, totalGrammarError));
+        md.append(String.format("| SKIP | %d | %d | %d |\n", totalTdsSkip, totalRelSkip, totalGrammarSkip));
+        md.append(String.format("| UNSUPPORTED | %d | %d | %d |\n", totalUnsupported, totalRelUnsupported, totalGrammarUnsupported));
         md.append("\n---\n\n");
 
         // === 2. Error Categories ===
@@ -468,8 +500,8 @@ public class FunctionCoverageReport
 
         // === 3. Category Summary ===
         md.append("## Category Summary\n\n");
-        md.append("| Category | Total | TDS PASS | TDS PARTIAL | TDS FAIL | TDS ERROR | TDS UNTESTED | Rel PASS | Rel PARTIAL | Rel FAIL | Rel ERROR | Rel UNTESTED |\n");
-        md.append("|----------|-------|----------|-------------|----------|-----------|--------------|----------|-------------|----------|-----------|-------------|\n");
+        md.append("| Category | Total | TDS PASS | TDS PARTIAL | TDS FAIL | TDS ERROR | TDS UNTESTED | Rel PASS | Rel PARTIAL | Rel FAIL | Rel ERROR | Rel UNTESTED | Grammar PASS | Grammar PARTIAL | Grammar FAIL | Grammar ERROR | Grammar UNTESTED |\n");
+        md.append("|----------|-------|----------|-------------|----------|-----------|--------------|----------|-------------|----------|-----------|-------------|--------------|-----------------|--------------|---------------|------------------|\n");
 
         for (Map.Entry<String, List<FunctionCatalogExtractor.PgFunction>> entry : catalog.entrySet())
         {
@@ -478,16 +510,18 @@ public class FunctionCoverageReport
                 continue;
             }
             int ct = entry.getValue().size();
-            int[] ct_ = countStatuses(entry.getValue(), true);
-            int[] cr_ = countStatuses(entry.getValue(), false);
+            int[] ct_ = countStatuses(entry.getValue(), ParityPath.TDS);
+            int[] cr_ = countStatuses(entry.getValue(), ParityPath.RELATION);
+            int[] cg_ = countStatuses(entry.getValue(), ParityPath.GRAMMAR);
             String catAnchor = entry.getKey().toLowerCase().replace(" ", "-");
             String docUrl = DocLinks.urlFor(entry.getKey());
             String label = docUrl != null ? String.format("[%s](%s) / [details](#%s)", entry.getKey(), docUrl, catAnchor)
                     : String.format("[%s](#%s)", entry.getKey(), catAnchor);
-            md.append(String.format("| %s | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
+            md.append(String.format("| %s | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
                     label, ct,
                     ct_[0], ct_[1], ct_[2], ct_[3], ct_[4],
-                    cr_[0], cr_[1], cr_[2], cr_[3], cr_[4]));
+                    cr_[0], cr_[1], cr_[2], cr_[3], cr_[4],
+                    cg_[0], cg_[1], cg_[2], cg_[3], cg_[4]));
         }
         md.append("\n---\n\n");
 
@@ -509,20 +543,21 @@ public class FunctionCoverageReport
                 md.append("Reference: [PostgreSQL ").append(DocLinks.PG_DOCS_VERSION)
                         .append(" docs](").append(docUrl).append(")\n\n");
             }
-            md.append("| | Function | Signature | TDS | Relation | Error Category | Notes |\n");
-            md.append("|--|----------|-----------|-----|----------|----------------|-------|\n");
+            md.append("| | Function | Signature | TDS | Relation | Grammar | Error Category | Notes |\n");
+            md.append("|--|----------|-----------|-----|----------|---------|----------------|-------|\n");
 
             for (FunctionCatalogExtractor.PgFunction fn : entry.getValue())
             {
-                String tdsLabel = statusToLabel(fn.tdsStatus, fn.coverage, true);
-                String relLabel = statusToLabel(fn.relStatus, fn.coverage, false);
-                String rowEmoji = rowColour(fn.tdsStatus, fn.relStatus);
+                String tdsLabel = statusToLabel(fn.tdsStatus, fn.coverage, ParityPath.TDS);
+                String relLabel = statusToLabel(fn.relStatus, fn.coverage, ParityPath.RELATION);
+                String grammarLabel = statusToLabel(fn.grammarStatus, fn.coverage, ParityPath.GRAMMAR);
+                String rowEmoji = rowColour(fn.tdsStatus, fn.relStatus, fn.grammarStatus);
                 String sig = fn.signature.replace("|", "\\|");
                 String errCat = getErrorCategory(fn, failureMap);
                 String errLink = getErrorLink(fn, failureMap);
 
-                md.append(String.format("| %s | `%s` | `%s` | %s | %s | %s | %s |\n",
-                        rowEmoji, fn.name, sig, tdsLabel, relLabel,
+                md.append(String.format("| %s | `%s` | `%s` | %s | %s | %s | %s | %s |\n",
+                        rowEmoji, fn.name, sig, tdsLabel, relLabel, grammarLabel,
                         errCat.isEmpty() ? "" : errLink,
                         fn.notes));
 
@@ -662,41 +697,50 @@ public class FunctionCoverageReport
         return value.replace("|", "\\|");
     }
 
-    private static String rowColour(String tdsStatus, String relStatus)
+    private static String rowColour(String tdsStatus, String relStatus, String grammarStatus)
     {
-        boolean bothPass = "PASS".equals(tdsStatus) && "PASS".equals(relStatus);
-        boolean bothUnsupported = "NOT_APPLICABLE".equals(tdsStatus) && "NOT_APPLICABLE".equals(relStatus);
-        boolean bothError = ("ERROR".equals(tdsStatus) || "NOT_APPLICABLE".equals(tdsStatus))
-                && ("ERROR".equals(relStatus) || "NOT_APPLICABLE".equals(relStatus))
-                && !bothUnsupported;
-        if (bothPass)
+        List<String> statuses = new ArrayList<>();
+        for (String status : new String[] {tdsStatus, relStatus, grammarStatus})
+        {
+            if (CoverageReportSupport.isRecorded(status))
+            {
+                statuses.add(status);
+            }
+        }
+        if (statuses.isEmpty())
+        {
+            return "⚪";
+        }
+        boolean allPass = statuses.stream().allMatch("PASS"::equals);
+        boolean allUnsupported = statuses.stream().allMatch("NOT_APPLICABLE"::equals);
+        boolean allError = statuses.stream().allMatch(st -> "ERROR".equals(st) || "NOT_APPLICABLE".equals(st))
+                && !allUnsupported;
+        if (allPass)
         {
             return "\uD83D\uDFE2"; // 🟢
         }
-        if (bothUnsupported)
+        if (allUnsupported)
         {
             return "⚪"; // grey — unsupported
         }
-        if (bothError)
+        if (allError)
         {
             return "\uD83D\uDD34"; // 🔴
         }
-        if ("PASS".equals(tdsStatus) || "PASS".equals(relStatus)
-                || "PARTIAL".equals(tdsStatus) || "PARTIAL".equals(relStatus))
+        if (statuses.stream().anyMatch(st -> "PASS".equals(st) || "PARTIAL".equals(st)))
         {
             return "\uD83D\uDFE1"; // 🟡
         }
-        if ("ERROR".equals(tdsStatus) || "ERROR".equals(relStatus)
-                || "FAIL".equals(tdsStatus) || "FAIL".equals(relStatus))
+        if (statuses.stream().anyMatch(st -> "ERROR".equals(st) || "FAIL".equals(st)))
         {
             return "\uD83D\uDD34"; // 🔴
         }
         return "⚪"; // untested/unknown
     }
 
-    private static String statusToLabel(String status, FunctionCoverageMapper.SignatureCoverage cov, boolean isTds)
+    private static String statusToLabel(String status, FunctionCoverageMapper.SignatureCoverage cov, ParityPath path)
     {
-        int pass = cov != null ? (isTds ? cov.tdsPass : cov.relPass) : 0;
+        int pass = cov != null ? passFailError(cov, path)[0] : 0;
         int tot = cov != null ? cov.total : 0;
         switch (status)
         {
@@ -717,46 +761,53 @@ public class FunctionCoverageReport
 
     private static String getErrorCategory(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap)
     {
-        if ("PASS".equals(fn.tdsStatus) && "PASS".equals(fn.relStatus))
+        return getErrorCategory(fn, failureMap, EnumSet.allOf(ParityPath.class));
+    }
+
+    private static String getErrorCategory(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap, Set<ParityPath> paths)
+    {
+        if (paths.stream().allMatch(path -> "PASS".equals(statusOf(fn, path))))
         {
             return "";
         }
-        if ("UNTESTED".equals(fn.tdsStatus) && "UNTESTED".equals(fn.relStatus))
+        if (paths.stream().allMatch(path -> "UNTESTED".equals(statusOf(fn, path))))
         {
             return "";
         }
-        // Collect all distinct categories
+        java.util.Set<String> categories = failureCategories(fn, failureMap, paths);
+        if (!categories.isEmpty())
+        {
+            return String.join(", ", categories);
+        }
+        if (paths.stream().anyMatch(path -> "ERROR".equals(statusOf(fn, path))))
+        {
+            return ErrorCategorizer.MISC;
+        }
+        if (paths.stream().anyMatch(path -> "FAIL".equals(statusOf(fn, path))))
+        {
+            return ErrorCategorizer.RESULT_MISMATCH;
+        }
+        return "";
+    }
+
+    private static java.util.Set<String> failureCategories(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap, Set<ParityPath> paths)
+    {
         java.util.Set<String> categories = new java.util.LinkedHashSet<>();
         if (fn.coverage != null && !fn.coverage.testDetails.isEmpty())
         {
             for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
             {
-                CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
-                if (fi != null)
+                for (ParityPath path : ParityPath.values())
                 {
-                    categories.add(fi.category);
-                }
-                fi = failureMap.get(te.testId + "|Relation");
-                if (fi != null)
-                {
-                    categories.add(fi.category);
+                    CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, path));
+                    if (fi != null && paths.contains(path))
+                    {
+                        categories.add(fi.category);
+                    }
                 }
             }
         }
-        if (!categories.isEmpty())
-        {
-            return String.join(", ", categories);
-        }
-        // Infer from status
-        if ("ERROR".equals(fn.tdsStatus) || "ERROR".equals(fn.relStatus))
-        {
-            return ErrorCategorizer.MISC;
-        }
-        if ("FAIL".equals(fn.tdsStatus) || "FAIL".equals(fn.relStatus))
-        {
-            return ErrorCategorizer.RESULT_MISMATCH;
-        }
-        return "";
+        return categories;
     }
 
     private static String getErrorLink(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap)
@@ -766,24 +817,7 @@ public class FunctionCoverageReport
         {
             return "";
         }
-        // Collect all distinct categories and link each to the first matching error anchor
-        java.util.Set<String> categories = new java.util.LinkedHashSet<>();
-        if (fn.coverage != null && !fn.coverage.testDetails.isEmpty())
-        {
-            for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
-            {
-                CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
-                if (fi != null)
-                {
-                    categories.add(fi.category);
-                }
-                fi = failureMap.get(te.testId + "|Relation");
-                if (fi != null)
-                {
-                    categories.add(fi.category);
-                }
-            }
-        }
+        java.util.Set<String> categories = failureCategories(fn, failureMap, EnumSet.allOf(ParityPath.class));
         if (categories.isEmpty())
         {
             return cat;
@@ -819,15 +853,13 @@ public class FunctionCoverageReport
         }
         for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
         {
-            CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
-            if (fi != null && category.equals(fi.category))
+            for (ParityPath path : ParityPath.values())
             {
-                return "fail-" + te.testId + "-TDS";
-            }
-            fi = failureMap.get(te.testId + "|Relation");
-            if (fi != null && category.equals(fi.category))
-            {
-                return "fail-" + te.testId + "-Relation";
+                CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, path));
+                if (fi != null && category.equals(fi.category))
+                {
+                    return "fail-" + te.testId + "-" + path.label();
+                }
             }
         }
         return null;
@@ -844,39 +876,21 @@ public class FunctionCoverageReport
 
     private static void categorizeFunction(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap, Map<String, int[]> counts)
     {
-        String tdsCategory = null;
-        String relCategory = null;
-
-        if (fn.coverage != null)
+        if (fn.coverage == null)
+        {
+            return;
+        }
+        for (ParityPath path : ParityPath.values())
         {
             for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
             {
-                if (tdsCategory == null)
+                CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, path));
+                if (fi != null)
                 {
-                    CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
-                    if (fi != null)
-                    {
-                        tdsCategory = fi.category;
-                    }
-                }
-                if (relCategory == null)
-                {
-                    CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|Relation");
-                    if (fi != null)
-                    {
-                        relCategory = fi.category;
-                    }
+                    counts.computeIfAbsent(fi.category, k -> new int[ParityPath.values().length])[path.ordinal()]++;
+                    break;
                 }
             }
-        }
-
-        if (tdsCategory != null)
-        {
-            counts.computeIfAbsent(tdsCategory, k -> new int[2])[0]++;
-        }
-        if (relCategory != null)
-        {
-            counts.computeIfAbsent(relCategory, k -> new int[2])[1]++;
         }
     }
 
@@ -884,42 +898,13 @@ public class FunctionCoverageReport
     public void printConsoleSummary(Map<String, List<FunctionCatalogExtractor.PgFunction>> catalog)
     {
         int total = 0;
-        int[] tds = new int[5];
-        int[] rel = new int[5];
-        for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
-        {
-            total += fns.size();
-            int[] t = countStatuses(fns, true);
-            int[] r = countStatuses(fns, false);
-            for (int i = 0; i < 5; i++)
-            {
-                tds[i] += t[i];
-                rel[i] += r[i];
-            }
-        }
-
-        // Count total tests
-        int totalTdsPass = 0;
-        int totalTdsFail = 0;
-        int totalTdsError = 0;
-        int totalRelPass = 0;
-        int totalRelFail = 0;
-        int totalRelError = 0;
         Set<String> uniqueNames = new HashSet<>();
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
         {
+            total += fns.size();
             for (FunctionCatalogExtractor.PgFunction fn : fns)
             {
                 uniqueNames.add(fn.name);
-                if (fn.coverage != null && !"NOT_APPLICABLE".equals(fn.tdsStatus))
-                {
-                    totalTdsPass += fn.coverage.tdsPass;
-                    totalTdsFail += fn.coverage.tdsFail;
-                    totalTdsError += fn.coverage.tdsError;
-                    totalRelPass += fn.coverage.relPass;
-                    totalRelFail += fn.coverage.relFail;
-                    totalRelError += fn.coverage.relError;
-                }
             }
         }
 
@@ -929,26 +914,53 @@ public class FunctionCoverageReport
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════");
         LOGGER.info(String.format("  Total signatures: %d", total));
         LOGGER.info(String.format("  Unique function names: %d", uniqueNames.size()));
-        LOGGER.info(String.format("  Total tests ran (TDS): %d  (pass: %d, fail: %d, error: %d)",
-                totalTdsPass + totalTdsFail + totalTdsError, totalTdsPass, totalTdsFail, totalTdsError));
-        LOGGER.info(String.format("  Total tests ran (Rel): %d  (pass: %d, fail: %d, error: %d)",
-                totalRelPass + totalRelFail + totalRelError, totalRelPass, totalRelFail, totalRelError));
-        LOGGER.info("");
-        LOGGER.info("  TDS Path:");
-        LOGGER.info(String.format("    ✅ PASS:      %d", tds[0]));
-        LOGGER.info(String.format("    ⚠️  PARTIAL:   %d", tds[1]));
-        LOGGER.info(String.format("    ❌ FAIL:      %d  (result mismatch)", tds[2]));
-        LOGGER.info(String.format("    💥 ERROR:     %d  (server exception)", tds[3]));
-        LOGGER.info(String.format("    ❓ UNTESTED:  %d", tds[4]));
-        LOGGER.info("");
-        LOGGER.info("  Relation Path:");
-        LOGGER.info(String.format("    ✅ PASS:      %d", rel[0]));
-        LOGGER.info(String.format("    ⚠️  PARTIAL:   %d", rel[1]));
-        LOGGER.info(String.format("    ❌ FAIL:      %d  (result mismatch)", rel[2]));
-        LOGGER.info(String.format("    💥 ERROR:     %d  (server exception)", rel[3]));
-        LOGGER.info(String.format("    ❓ UNTESTED:  %d", rel[4]));
+        for (ParityPath path : ParityPath.values())
+        {
+            int pass = 0;
+            int fail = 0;
+            int error = 0;
+            for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
+            {
+                for (FunctionCatalogExtractor.PgFunction fn : fns)
+                {
+                    if (fn.coverage != null && !"NOT_APPLICABLE".equals(statusOf(fn, path)))
+                    {
+                        int[] passFailError = passFailError(fn.coverage, path);
+                        pass += passFailError[0];
+                        fail += passFailError[1];
+                        error += passFailError[2];
+                    }
+                }
+            }
+            LOGGER.info(String.format("  Total tests ran (%s): %d  (pass: %d, fail: %d, error: %d)",
+                    consoleTestLabel(path), pass + fail + error, pass, fail, error));
+        }
+        for (ParityPath path : ParityPath.values())
+        {
+            int[] counts = new int[5];
+            for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
+            {
+                int[] c = countStatuses(fns, path);
+                for (int i = 0; i < 5; i++)
+                {
+                    counts[i] += c[i];
+                }
+            }
+            LOGGER.info("");
+            LOGGER.info("  " + path.label() + " Path:");
+            LOGGER.info(String.format("    ✅ PASS:      %d", counts[0]));
+            LOGGER.info(String.format("    ⚠️  PARTIAL:   %d", counts[1]));
+            LOGGER.info(String.format("    ❌ FAIL:      %d  (result mismatch)", counts[2]));
+            LOGGER.info(String.format("    💥 ERROR:     %d  (server exception)", counts[3]));
+            LOGGER.info(String.format("    ❓ UNTESTED:  %d", counts[4]));
+        }
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════");
         LOGGER.info("");
+    }
+
+    private static String consoleTestLabel(ParityPath path)
+    {
+        return path == ParityPath.RELATION ? "Rel" : path.label();
     }
 
 }

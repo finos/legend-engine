@@ -6,6 +6,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: window_over_agg_dense_rank
     sql: "SELECT dept_id, COUNT(*) AS cnt, DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) AS cnt_rank FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Cumulative percentage across groups
   - id: window_over_agg_cum_pct
@@ -21,6 +23,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Running total over grouped data
   - id: window_over_agg_running
@@ -29,6 +32,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # LAG/LEAD over aggregated result
   - id: window_over_agg_lag
@@ -37,6 +41,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: window_over_agg_lead
     sql: "SELECT dept_id, COUNT(*) AS cnt, LEAD(COUNT(*)) OVER (ORDER BY dept_id) AS next_cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
@@ -44,6 +49,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ROW_NUMBER over aggregation for top-N groups
   - id: window_over_agg_topn
@@ -52,6 +58,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # NTILE over groups
   - id: window_over_agg_ntile
@@ -60,6 +67,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # MIN/MAX over grouped counts
   - id: window_over_agg_minmax
@@ -68,6 +76,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # AVG over grouped sums
   - id: window_over_agg_avg
@@ -76,6 +85,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # FIRST_VALUE over groups
   - id: window_over_agg_first_value
@@ -84,6 +94,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # LAST_VALUE over groups
   - id: window_over_agg_last_value
@@ -92,3 +103,4 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

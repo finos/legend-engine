@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.generic;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -52,11 +53,14 @@ import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class GenericLegendExecution implements LegendExecution
 {
     private static final ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final Pattern ELEMENT_PATH = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(::[A-Za-z_][A-Za-z0-9_]*)*");
 
     private final String protocol;
     private final String host;
@@ -117,10 +121,20 @@ public class GenericLegendExecution implements LegendExecution
         try
         {
             // Execute Input --------------------------
+            ComputeState computeState = parseOptions(options);
             ExecuteInput input = new ExecuteInput();
-            input.model = buildComposite(Lists.mutable.with(buildPointer(database), buildRuntimeModel(options)));
             input.context = new BaseExecutionContext();
-            input.function = parseLambda("#SQL{" + query + "}#->from(sqlServer::dynamically::added::runtime::Runtime)");
+            if (computeState.runtime != null)
+            {
+                input.model = buildPointer(database);
+                String fromArguments = computeState.mapping == null ? computeState.runtime : computeState.mapping + ", " + computeState.runtime;
+                input.function = parseLambda("#SQL{" + query + "}#->from(" + fromArguments + ")");
+            }
+            else
+            {
+                input.model = buildComposite(Lists.mutable.with(buildPointer(database), buildRuntimeModel(computeState)));
+                input.function = parseLambda("#SQL{" + query + "}#->from(sqlServer::dynamically::added::runtime::Runtime)");
+            }
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
             // Execute Input --------------------------
@@ -181,7 +195,7 @@ public class GenericLegendExecution implements LegendExecution
         return combination;
     }
 
-    private PureModelContextData buildRuntimeModel(String options) throws Exception
+    private static ComputeState parseOptions(String options)
     {
         options = options.trim();
         if (options.startsWith("'") && options.endsWith("'"))
@@ -197,6 +211,19 @@ public class GenericLegendExecution implements LegendExecution
             process(parameters[i], computeState);
         }
 
+        if (computeState.runtime != null && computeState.compute != null)
+        {
+            throw new RuntimeException("The options --runtime and --compute can't be combined: --runtime executes on a runtime defined in the project, --compute on a runtime built for the connection");
+        }
+        if (computeState.mapping != null && computeState.runtime == null)
+        {
+            throw new RuntimeException("The option --mapping requires --runtime");
+        }
+        return computeState;
+    }
+
+    private PureModelContextData buildRuntimeModel(ComputeState computeState) throws Exception
+    {
         if (computeState.compute == Compute.TEST)
         {
             return parseModel(
@@ -311,10 +338,28 @@ public class GenericLegendExecution implements LegendExecution
         {
             state.workspace = parameter.substring("--workspace=".length());
         }
+        else if (parameter.startsWith("--runtime="))
+        {
+            state.runtime = elementPath("runtime", parameter.substring("--runtime=".length()));
+        }
+        else if (parameter.startsWith("--mapping="))
+        {
+            state.mapping = elementPath("mapping", parameter.substring("--mapping=".length()));
+        }
         else
         {
             throw new RuntimeException(String.format("Unknown parameter: %s", parameter));
         }
+    }
+
+    private static String elementPath(String option, String path)
+    {
+        // The path is spliced into the executed lambda, so nothing but a qualified element path may pass
+        if (!ELEMENT_PATH.matcher(path).matches())
+        {
+            throw new RuntimeException(String.format("Invalid %s path: '%s'. Expected a qualified element path, e.g. my::package::MyElement", option, path));
+        }
+        return path;
     }
 
     private LambdaFunction parseLambda(String lambda) throws Exception
@@ -331,13 +376,15 @@ public class GenericLegendExecution implements LegendExecution
     {
         return callServer(bodyEntity, url, x ->
         {
+            String body = null;
             try
             {
-                return MAPPER.readValue(x, c);
+                body = new String(x.readAllBytes(), StandardCharsets.UTF_8);
+                return MAPPER.readValue(body, c);
             }
             catch (Exception e)
             {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Unexpected response body: " + body, e);
             }
         });
     }
@@ -346,18 +393,33 @@ public class GenericLegendExecution implements LegendExecution
     {
         HttpPost request = new HttpPost(protocol + "://" + host + ":" + port + "/api/" + url);
         request.setEntity(bodyEntity);
+        HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
+        HttpResponse response = httpClient.execute(request);
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode < 200 || statusCode >= 300)
+        {
+            throw new RuntimeException("Error calling the engine (url=" + url + ", status=" + statusCode + "): " + engineErrorMessage(EntityUtils.toString(response.getEntity())));
+        }
         try
         {
-            HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
-            HttpResponse response = httpClient.execute(request);
             return transformer.apply(response.getEntity().getContent());
         }
         catch (Exception e)
         {
-            HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
-            HttpResponse response = httpClient.execute(request);
-            String content = EntityUtils.toString(response.getEntity());
-            throw new RuntimeException("Error parsing (url=" + url + "): " + content, e);
+            throw new RuntimeException("Error parsing (url=" + url + ")", e);
+        }
+    }
+
+    private static String engineErrorMessage(String responseBody)
+    {
+        try
+        {
+            JsonNode message = MAPPER.readTree(responseBody).get("message");
+            return message == null ? responseBody : message.asText();
+        }
+        catch (Exception e)
+        {
+            return responseBody;
         }
     }
 

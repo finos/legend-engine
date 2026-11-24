@@ -6,6 +6,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_asc_explicit
     sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary ASC"
@@ -13,6 +14,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY DESC
   - id: order_desc
@@ -21,6 +23,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_desc_name
     sql: "SELECT name FROM persons WHERE name IS NOT NULL ORDER BY name DESC"
@@ -28,6 +31,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY multiple columns
   - id: order_multi_col
@@ -36,6 +40,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_multi_col_mixed
     sql: "SELECT name, dept_id, age FROM persons WHERE dept_id IS NOT NULL AND age IS NOT NULL ORDER BY dept_id ASC, age DESC"
@@ -43,6 +48,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Positional ORDER BY
   - id: order_positional
@@ -51,6 +57,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_positional_multi
     sql: "SELECT dept_id, name FROM persons WHERE dept_id IS NOT NULL ORDER BY 1, 2"
@@ -58,6 +65,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY expression
   - id: order_expression
@@ -66,6 +74,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LIMIT
   - id: limit_basic
@@ -74,6 +83,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: limit_one
     sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary DESC LIMIT 1"
@@ -81,6 +91,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LIMIT + OFFSET
   - id: offset_basic
@@ -89,6 +100,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: ERROR
 
   - id: offset_pagination
     sql: "SELECT name FROM persons ORDER BY 1 LIMIT 2 OFFSET 4"
@@ -96,6 +108,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: ERROR
 
   # NULLS FIRST / LAST
   - id: order_nulls_first
@@ -104,6 +117,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_nulls_last
     sql: "SELECT name, age FROM persons ORDER BY age NULLS LAST"
@@ -111,6 +125,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_asc_nulls_first
     sql: "SELECT name, age FROM persons ORDER BY age ASC NULLS FIRST"
@@ -118,6 +133,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_asc_nulls_last
     sql: "SELECT name, age FROM persons ORDER BY age ASC NULLS LAST"
@@ -125,6 +141,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_desc_nulls_first
     sql: "SELECT name, age FROM persons ORDER BY age DESC NULLS FIRST"
@@ -132,6 +149,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_desc_nulls_last
     sql: "SELECT name, age FROM persons ORDER BY age DESC NULLS LAST"
@@ -139,6 +157,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_multi_col_nulls_first_first
     sql: "SELECT name, dept_id, age FROM persons ORDER BY dept_id NULLS FIRST, age NULLS FIRST"
@@ -146,6 +165,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_multi_col_nulls_last_last
     sql: "SELECT name, dept_id, age FROM persons ORDER BY dept_id NULLS LAST, age NULLS LAST"
@@ -153,6 +173,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_multi_col_nulls_mixed
     sql: "SELECT name, dept_id, age FROM persons ORDER BY dept_id NULLS FIRST, age DESC NULLS LAST"
@@ -160,6 +181,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_multi_col_nulls_and_no_nulls
     sql: "SELECT name, dept_id, salary FROM persons ORDER BY dept_id NULLS LAST, salary DESC"
@@ -167,6 +189,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: order_nulls_first_with_limit
     sql: "SELECT name, age FROM persons ORDER BY age NULLS FIRST LIMIT 5"
@@ -174,6 +197,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # FETCH FIRST
   - id: fetch_first
@@ -182,6 +206,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LIMIT 0
   - id: limit_zero
@@ -190,6 +215,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # OFFSET without LIMIT
   - id: offset_without_limit
@@ -198,6 +224,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY CASE expression
   - id: order_case
@@ -206,6 +233,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY alias
   - id: order_by_alias
@@ -214,6 +242,7 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LIMIT with large OFFSET
   - id: limit_large_offset
@@ -222,3 +251,4 @@ tests:
     category: "order_limit_offset"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: ERROR

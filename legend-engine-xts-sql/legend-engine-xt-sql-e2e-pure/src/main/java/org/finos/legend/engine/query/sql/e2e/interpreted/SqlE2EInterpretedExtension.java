@@ -41,8 +41,6 @@ import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationConte
 import org.finos.legend.pure.runtime.java.interpreted.natives.NativeFunction;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
@@ -219,7 +217,7 @@ public class SqlE2EInterpretedExtension extends BaseInterpretedExtension
         }
     }
 
-    /** Runs sql against Legend for each requested path (Both means TDS and Relation both run). */
+    /** Runs sql against Legend for each requested path (Both and All expand via SqlE2ENativeHelper.adhocPaths). */
     public static class ExecuteAdhocSQL extends NativeFunction
     {
         private final FunctionExecutionInterpreted functionExecution;
@@ -237,7 +235,7 @@ public class SqlE2EInterpretedExtension extends BaseInterpretedExtension
             String sql = PrimitiveUtilities.getStringValue(Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport));
             CoreInstance pathEnum = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
             String pathName = pathEnum.getName();
-            List<String> paths = "Both".equals(pathName) ? Arrays.asList("TDS", "Relation") : Collections.singletonList(pathName);
+            List<String> paths = SqlE2ENativeHelper.adhocPaths(pathName);
 
             CoreInstance runOneAdhocLegendFn = processorSupport.package_getByUserPath(SqlE2ENativeHelper.RUN_ONE_ADHOC_LEGEND);
             if (runOneAdhocLegendFn == null)
@@ -262,7 +260,7 @@ public class SqlE2EInterpretedExtension extends BaseInterpretedExtension
                     {
                         MutableList<CoreInstance> fnParams = Lists.mutable.with(
                                 ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newStringCoreInstance(prep.rewrittenSql), true, processorSupport),
-                                ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newStringCoreInstance(prep.prefix), true, processorSupport),
+                                ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newStringCoreInstance(prep.path), true, processorSupport),
                                 ValueSpecificationBootstrap.wrapValueSpecification(connInstance, true, processorSupport));
 
                         CoreInstance raw = this.functionExecution.executeFunction(

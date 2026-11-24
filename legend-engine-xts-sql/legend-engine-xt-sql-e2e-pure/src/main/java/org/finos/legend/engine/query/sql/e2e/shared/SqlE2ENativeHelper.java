@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.query.sql.e2e.shared;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.finos.legend.engine.postgres.e2e.ResultComparator;
@@ -58,6 +60,20 @@ public class SqlE2ENativeHelper
     /** Mangled path of meta::external::query::sql::e2e::runOneAdhocLegend. */
     public static final String RUN_ONE_ADHOC_LEGEND = "meta::external::query::sql::e2e::"
             + "runOneAdhocLegend_String_1__String_1__SqlE2EConnection_1__String_1_";
+
+    /** The single paths an ad hoc SqlE2EPath value runs: Both is TDS and Relation, All adds Grammar. */
+    public static List<String> adhocPaths(String pathName)
+    {
+        switch (pathName)
+        {
+            case "Both":
+                return Arrays.asList("TDS", "Relation");
+            case "All":
+                return Arrays.asList("TDS", "Relation", "Grammar");
+            default:
+                return Collections.singletonList(pathName);
+        }
+    }
 
     public static List<SqlE2ERunner.CaseRef> resolveCaseRefs(String filter)
     {

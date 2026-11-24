@@ -6,6 +6,7 @@ tests:
     category: "window_frames"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: named_window_partition
     sql: "SELECT name, dept_id, salary, RANK() OVER w AS dept_rank, SUM(salary) OVER w AS dept_running FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL WINDOW w AS (PARTITION BY dept_id ORDER BY salary DESC) ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "window_frames"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Multiple named windows
   - id: named_window_multiple
@@ -21,6 +23,7 @@ tests:
     category: "window_frames"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Named window with frame clause
   - id: named_window_with_frame
@@ -29,6 +32,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Named window with partition
   - id: named_window_partition_frame
@@ -37,6 +41,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Named window reused with different aggregates
   - id: named_window_multi_agg
@@ -45,6 +50,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Named window with LAG/LEAD
   - id: named_window_lag_lead
@@ -53,3 +59,4 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS

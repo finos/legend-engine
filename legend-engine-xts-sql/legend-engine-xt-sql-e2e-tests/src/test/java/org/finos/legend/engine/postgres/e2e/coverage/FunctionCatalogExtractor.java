@@ -394,6 +394,7 @@ public class FunctionCatalogExtractor
         public String status = "UNTESTED";
         public String tdsStatus = "UNTESTED";
         public String relStatus = "UNTESTED";
+        public String grammarStatus = "UNTESTED";
         public FunctionCoverageMapper.SignatureCoverage coverage;
         public String notes = "";
 

@@ -6,6 +6,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: cte_basic_filter
     sql: "WITH high_earners AS (SELECT name, salary FROM persons WHERE salary > 70000) SELECT name, salary FROM high_earners ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Multiple CTEs
   - id: cte_multiple
@@ -21,6 +23,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CTE referencing another CTE
   - id: cte_chained
@@ -29,6 +32,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CTE with aggregation
   - id: cte_with_agg
@@ -37,6 +41,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: cte_with_agg_having
     sql: "WITH dept_counts AS (SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 2) SELECT dept_id, cnt FROM dept_counts ORDER BY 1"
@@ -44,6 +49,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CTE used in JOIN
   - id: cte_in_join
@@ -52,6 +58,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: cte_in_join_dept
     sql: "WITH dept_avg AS (SELECT dept_id, AVG(salary) AS avg_sal FROM persons WHERE salary IS NOT NULL GROUP BY dept_id) SELECT d.name, COALESCE(da.avg_sal, 0) AS avg_salary FROM departments d LEFT JOIN dept_avg da ON d.id = da.dept_id ORDER BY 1"
@@ -59,6 +66,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   # CTE used multiple times
   - id: cte_used_twice
@@ -67,6 +75,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # CTE with window function
   - id: cte_with_window
@@ -75,6 +84,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CTE with UNION
   - id: cte_with_union
@@ -83,6 +93,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # CTE with filtering on aggregated result
   - id: cte_filter_agg
@@ -91,6 +102,7 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CTE with CASE expression
   - id: cte_with_case
@@ -99,3 +111,4 @@ tests:
     category: "ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS

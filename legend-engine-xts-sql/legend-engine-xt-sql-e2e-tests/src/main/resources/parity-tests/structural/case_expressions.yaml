@@ -6,6 +6,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_simple_no_else
     sql: "SELECT name, CASE dept_id WHEN 1 THEN 'Engineering' WHEN 2 THEN 'Sales' END AS dept_name FROM persons ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_simple_multiple_whens
     sql: "SELECT name, CASE dept_id WHEN 1 THEN 'A' WHEN 2 THEN 'B' WHEN 3 THEN 'C' WHEN 4 THEN 'D' ELSE 'Z' END AS label FROM persons ORDER BY 1"
@@ -20,6 +22,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Searched CASE (CASE WHEN <condition> THEN ...)
   - id: case_searched_basic
@@ -28,6 +31,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_searched_no_else
     sql: "SELECT name, CASE WHEN age < 30 THEN 'young' WHEN age < 50 THEN 'middle' END AS age_group FROM persons ORDER BY 1"
@@ -35,6 +39,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_searched_single_when
     sql: "SELECT name, CASE WHEN salary > 50000 THEN 'high' ELSE 'low' END AS salary_tier FROM persons ORDER BY 1"
@@ -42,6 +47,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CASE with NULL
   - id: case_null_in_then
@@ -50,6 +56,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_null_in_condition
     sql: "SELECT name, CASE WHEN age IS NULL THEN 'unknown' ELSE 'known' END AS age_status FROM persons ORDER BY 1"
@@ -57,6 +64,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_simple_null_compare
     sql: "SELECT name, CASE age WHEN NULL THEN 'null' ELSE 'not null' END AS result FROM persons ORDER BY 1"
@@ -64,6 +72,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: FAIL
 
   # CASE in different clauses
   - id: case_in_where
@@ -72,6 +81,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_in_order_by
     sql: "SELECT name, dept_id FROM persons ORDER BY CASE WHEN dept_id = 1 THEN 0 ELSE 1 END, name"
@@ -79,6 +89,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_in_group_by
     sql: "SELECT CASE WHEN age < 30 THEN 'young' ELSE 'older' END AS age_group, COUNT(*) AS cnt FROM persons GROUP BY CASE WHEN age < 30 THEN 'young' ELSE 'older' END ORDER BY 1"
@@ -86,6 +97,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Nested CASE
   - id: case_nested
@@ -94,6 +106,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CASE with expressions/aggregates
   - id: case_with_aggregate
@@ -102,6 +115,7 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: case_with_arithmetic
     sql: "SELECT name, CASE WHEN dept_id = 1 THEN salary * 1.1 ELSE salary * 1.05 END AS adjusted_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
@@ -109,3 +123,4 @@ tests:
     category: "case_expressions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

@@ -6,6 +6,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: having_sum
     sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000 ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: having_avg
     sql: "SELECT dept_id, AVG(age) AS avg_age FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING AVG(age) > 30 ORDER BY 1"
@@ -20,6 +22,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: having_min_max
     sql: "SELECT dept_id, MAX(salary) AS max_sal FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING MAX(salary) > 60000 ORDER BY 1"
@@ -27,6 +30,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Compound HAVING
   - id: having_multiple_conditions
@@ -35,6 +39,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: having_or
     sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 3 OR COUNT(*) = 1 ORDER BY 1"
@@ -42,6 +47,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # HAVING with expressions
   - id: having_expression
@@ -50,6 +56,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: having_case
     sql: "SELECT dept_id, SUM(CASE WHEN salary > 50000 THEN 1 ELSE 0 END) AS high_earners FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING SUM(CASE WHEN salary > 50000 THEN 1 ELSE 0 END) > 0 ORDER BY 1"
@@ -57,6 +64,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # HAVING without GROUP BY (whole table is one group)
   - id: having_no_group_by
@@ -65,6 +73,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: having_no_group_by_false
     sql: "SELECT COUNT(*) AS total FROM persons HAVING COUNT(*) > 9999"
@@ -72,6 +81,7 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # HAVING referencing non-selected aggregate
   - id: having_non_selected_agg
@@ -80,3 +90,4 @@ tests:
     category: "having"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

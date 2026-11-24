@@ -20,8 +20,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 /**
- * Covers the harness that backs the interpreted Pure dev loop: corpus load, FROM rewrite for both
- * paths, and reference execution against the seeded Postgres.
+ * Covers the harness that backs the interpreted Pure dev loop: corpus load, FROM rewrite for every
+ * path, and reference execution against the seeded Postgres.
  */
 public class TestSqlE2ERunner
 {
@@ -57,6 +57,10 @@ public class TestSqlE2ERunner
         SqlE2ERunner.CaseRef rel = runner.resolveCaseRef("smoke_select_column", "Relation");
         Assertions.assertTrue(rel.sql.contains("func('e2e::rel_persons')"),
                 "Relation rewrite should target the rel_ accessor, got: " + rel.sql);
+
+        SqlE2ERunner.CaseRef grammar = runner.resolveCaseRef("smoke_select_column", "Grammar");
+        Assertions.assertTrue(grammar.sql.contains("func('e2e::rel_persons__Relation_1_')"),
+                "Grammar rewrite should target the mangled rel_ accessor, got: " + grammar.sql);
     }
 
     @Test
@@ -81,16 +85,18 @@ public class TestSqlE2ERunner
     }
 
     @Test
-    public void resolveCaseRefsCrossesBothPaths()
+    public void resolveCaseRefsCrossesEveryPath()
     {
         SqlE2ERunner runner = SqlE2ERunner.get();
         List<SqlE2ERunner.CaseRef> refs = runner.resolveCaseRefs("smoke_select_literal");
-        Assertions.assertEquals(2, refs.size());
+        Assertions.assertEquals(3, refs.size());
         Assertions.assertEquals("smoke_select_literal", refs.get(0).corpusId);
         Assertions.assertEquals("TDS", refs.get(0).path);
         Assertions.assertNotNull(refs.get(0).sql, "a non-skipped, non-bug case must have rewritten sql");
         Assertions.assertEquals("smoke_select_literal", refs.get(1).corpusId);
         Assertions.assertEquals("Relation", refs.get(1).path);
+        Assertions.assertEquals("smoke_select_literal", refs.get(2).corpusId);
+        Assertions.assertEquals("Grammar", refs.get(2).path);
     }
 
     @Test
@@ -110,8 +116,10 @@ public class TestSqlE2ERunner
     {
         SqlE2ERunner.CaseRef tds = SqlE2ERunner.get().resolveCaseRef("smoke_select_column", "TDS");
         SqlE2ERunner.CaseRef rel = SqlE2ERunner.get().resolveCaseRef("smoke_select_column", "Relation");
+        SqlE2ERunner.CaseRef grammar = SqlE2ERunner.get().resolveCaseRef("smoke_select_column", "Grammar");
         Assertions.assertEquals("PASS", tds.expectedStatus);
         Assertions.assertEquals("PASS", rel.expectedStatus);
+        Assertions.assertEquals("PASS", grammar.expectedStatus);
     }
 
     @Test

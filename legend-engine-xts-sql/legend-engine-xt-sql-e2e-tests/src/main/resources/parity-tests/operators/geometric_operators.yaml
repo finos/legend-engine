@@ -14,6 +14,7 @@ tests:
   signature: "#(-, path) → int4"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hash__polygon_npoints
   sql: "SELECT # polygon '((0,0),(0,1),(1,1),(1,0))' AS result FROM persons WHERE id = 1"
@@ -21,6 +22,7 @@ tests:
   signature: "#(-, polygon) → int4"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hash__box_intersection
   sql: "SELECT box '(3,3),(1,1)' # box '(4,4),(2,2)' AS result FROM persons WHERE id = 1"
@@ -28,6 +30,7 @@ tests:
   signature: "#(box, box) → box"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hash__line_intersection
   sql: "SELECT line '{1,0,0}' # line '{0,1,0}' AS result FROM persons WHERE id = 1"
@@ -35,6 +38,7 @@ tests:
   signature: "#(line, line) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hash__lseg_intersection
   sql: "SELECT lseg '[(0,0),(2,2)]' # lseg '[(0,2),(2,0)]' AS result FROM persons WHERE id = 1"
@@ -42,6 +46,7 @@ tests:
   signature: "#(lseg, lseg) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # ## (point of closest proximity)
 - id: geo_hashhash__line_lseg
@@ -50,6 +55,7 @@ tests:
   signature: "##(line, lseg) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hashhash__lseg_box
   sql: "SELECT lseg '[(0,0),(5,5)]' ## box '(3,3),(1,1)' AS result FROM persons WHERE id = 1"
@@ -57,6 +63,7 @@ tests:
   signature: "##(lseg, box) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hashhash__lseg_lseg
   sql: "SELECT lseg '[(0,0),(2,2)]' ## lseg '[(0,2),(2,0)]' AS result FROM persons WHERE id = 1"
@@ -64,6 +71,7 @@ tests:
   signature: "##(lseg, lseg) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hashhash__point_box
   sql: "SELECT point '(0,0)' ## box '(3,3),(1,1)' AS result FROM persons WHERE id = 1"
@@ -71,6 +79,7 @@ tests:
   signature: "##(point, box) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hashhash__point_line
   sql: "SELECT point '(0,0)' ## line '{1,0,-5}' AS result FROM persons WHERE id = 1"
@@ -78,6 +87,7 @@ tests:
   signature: "##(point, line) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_hashhash__point_lseg
   sql: "SELECT point '(0,0)' ## lseg '[(1,1),(1,5)]' AS result FROM persons WHERE id = 1"
@@ -85,6 +95,7 @@ tests:
   signature: "##(point, lseg) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # && (overlaps)
 - id: geo_overlap__box_box
@@ -93,6 +104,7 @@ tests:
   signature: "&&(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_overlap__circle_circle
   sql: SELECT circle '<(0,0),5>' && circle '<(3,3),5>' AS result FROM persons WHERE id = 1
@@ -100,6 +112,7 @@ tests:
   signature: "&&(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_overlap__polygon_polygon
   sql: SELECT polygon '((0,0),(0,2),(2,2),(2,0))' && polygon '((1,1),(1,3),(3,3),(3,1))' AS result FROM persons WHERE id = 1
@@ -107,6 +120,7 @@ tests:
   signature: "&&(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # &< (does not extend to the right of)
 - id: geo_notright__box_box
@@ -115,6 +129,7 @@ tests:
   signature: "&<(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notright__circle_circle
   sql: SELECT circle '<(0,0),5>' &< circle '<(3,3),5>' AS result FROM persons WHERE id = 1
@@ -122,6 +137,7 @@ tests:
   signature: "&<(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notright__polygon_polygon
   sql: SELECT polygon '((0,0),(0,2),(2,2),(2,0))' &< polygon '((1,1),(1,3),(3,3),(3,1))' AS result FROM persons WHERE id = 1
@@ -129,6 +145,7 @@ tests:
   signature: "&<(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # &<| (does not extend above)
 - id: geo_notabove__box_box
@@ -137,6 +154,7 @@ tests:
   signature: "&<|(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notabove__circle_circle
   sql: SELECT circle '<(0,0),5>' &<| circle '<(3,3),5>' AS result FROM persons WHERE id = 1
@@ -144,6 +162,7 @@ tests:
   signature: "&<|(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notabove__polygon_polygon
   sql: SELECT polygon '((0,0),(0,2),(2,2),(2,0))' &<| polygon '((1,1),(1,3),(3,3),(3,1))' AS result FROM persons WHERE id = 1
@@ -151,6 +170,7 @@ tests:
   signature: "&<|(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # &> (does not extend to the left of)
 - id: geo_notleft__box_box
@@ -159,6 +179,7 @@ tests:
   signature: "&>(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notleft__circle_circle
   sql: SELECT circle '<(3,3),5>' &> circle '<(0,0),5>' AS result FROM persons WHERE id = 1
@@ -166,6 +187,7 @@ tests:
   signature: "&>(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notleft__polygon_polygon
   sql: SELECT polygon '((1,1),(1,3),(3,3),(3,1))' &> polygon '((0,0),(0,2),(2,2),(2,0))' AS result FROM persons WHERE id = 1
@@ -173,6 +195,7 @@ tests:
   signature: "&>(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # * (scale/rotate)
 - id: geo_mul__box_point
@@ -181,6 +204,7 @@ tests:
   signature: "*(box, point) → box"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_mul__circle_point
   sql: SELECT circle '<(0,0),5>' * point '(2,0)' AS result FROM persons WHERE id = 1
@@ -188,6 +212,7 @@ tests:
   signature: "*(circle, point) → circle"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_mul__path_point
   sql: SELECT path '((1,1),(2,2),(3,1))' * point '(2,0)' AS result FROM persons WHERE id = 1
@@ -195,6 +220,7 @@ tests:
   signature: "*(path, point) → path"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_mul__point_point
   sql: SELECT point '(1,1)' * point '(2,0)' AS result FROM persons WHERE id = 1
@@ -202,6 +228,7 @@ tests:
   signature: "*(point, point) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # + (translate/concat)
 - id: geo_add__box_point
@@ -210,6 +237,7 @@ tests:
   signature: "+(box, point) → box"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_add__circle_point
   sql: SELECT circle '<(0,0),5>' + point '(1,1)' AS result FROM persons WHERE id = 1
@@ -217,6 +245,7 @@ tests:
   signature: "+(circle, point) → circle"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_add__path_path
   sql: SELECT path '((1,1),(2,2))' + path '((3,3),(4,4))' AS result FROM persons WHERE id = 1
@@ -224,6 +253,7 @@ tests:
   signature: "+(path, path) → path"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_add__path_point
   sql: SELECT path '((1,1),(2,2),(3,1))' + point '(1,1)' AS result FROM persons WHERE id = 1
@@ -231,6 +261,7 @@ tests:
   signature: "+(path, point) → path"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_add__point_point
   sql: SELECT point '(1,1)' + point '(2,2)' AS result FROM persons WHERE id = 1
@@ -238,6 +269,7 @@ tests:
   signature: "+(point, point) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # - (translate)
 - id: geo_sub__box_point
@@ -246,6 +278,7 @@ tests:
   signature: "-(box, point) → box"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_sub__circle_point
   sql: SELECT circle '<(3,3),5>' - point '(1,1)' AS result FROM persons WHERE id = 1
@@ -253,6 +286,7 @@ tests:
   signature: "-(circle, point) → circle"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_sub__path_point
   sql: SELECT path '((1,1),(2,2),(3,1))' - point '(1,1)' AS result FROM persons WHERE id = 1
@@ -260,6 +294,7 @@ tests:
   signature: "-(path, point) → path"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_sub__point_point
   sql: SELECT point '(2,2)' - point '(1,1)' AS result FROM persons WHERE id = 1
@@ -267,6 +302,7 @@ tests:
   signature: "-(point, point) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # / (scale down)
 - id: geo_div__box_point
@@ -275,6 +311,7 @@ tests:
   signature: "/(box, point) → box"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_div__circle_point
   sql: SELECT circle '<(0,0),10>' / point '(2,1)' AS result FROM persons WHERE id = 1
@@ -282,6 +319,7 @@ tests:
   signature: "/(circle, point) → circle"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_div__path_point
   sql: SELECT path '((2,2),(4,4))' / point '(2,1)' AS result FROM persons WHERE id = 1
@@ -289,6 +327,7 @@ tests:
   signature: "/(path, point) → path"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_div__point_point
   sql: SELECT point '(4,4)' / point '(2,1)' AS result FROM persons WHERE id = 1
@@ -296,6 +335,7 @@ tests:
   signature: "/(point, point) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # < (area/lexicographic less-than)
 - id: geo_lt__box_box
@@ -304,6 +344,7 @@ tests:
   signature: "<(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_lt__circle_circle
   sql: SELECT circle '<(0,0),1>' < circle '<(0,0),5>' AS result FROM persons WHERE id = 1
@@ -311,6 +352,7 @@ tests:
   signature: "<(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_lt__lseg_lseg
   sql: SELECT lseg '[(0,0),(1,1)]' < lseg '[(0,0),(5,5)]' AS result FROM persons WHERE id = 1
@@ -318,6 +360,7 @@ tests:
   signature: "<(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_lt__path_path
   sql: SELECT path '((0,0),(1,1))' < path '((0,0),(5,5))' AS result FROM persons WHERE id = 1
@@ -325,6 +368,7 @@ tests:
   signature: "<(path, path) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # <-> (distance)
 - id: geo_dist__box_box
@@ -333,6 +377,7 @@ tests:
   signature: "<->(box, box) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__box_lseg
   sql: SELECT box '(1,1),(0,0)' <-> lseg '[(4,4),(5,5)]' AS result FROM persons WHERE id = 1
@@ -340,6 +385,7 @@ tests:
   signature: "<->(box, lseg) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__box_point
   sql: SELECT box '(1,1),(0,0)' <-> point '(5,5)' AS result FROM persons WHERE id = 1
@@ -347,6 +393,7 @@ tests:
   signature: "<->(box, point) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__circle_circle
   sql: SELECT circle '<(0,0),1>' <-> circle '<(5,5),1>' AS result FROM persons WHERE id = 1
@@ -354,6 +401,7 @@ tests:
   signature: "<->(circle, circle) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__circle_point
   sql: SELECT circle '<(0,0),1>' <-> point '(5,5)' AS result FROM persons WHERE id = 1
@@ -361,6 +409,7 @@ tests:
   signature: "<->(circle, point) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__circle_polygon
   sql: SELECT circle '<(0,0),1>' <-> polygon '((5,5),(5,6),(6,6),(6,5))' AS result FROM persons WHERE id = 1
@@ -368,6 +417,7 @@ tests:
   signature: "<->(circle, polygon) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__line_line
   sql: SELECT line '{1,0,0}' <-> line '{0,1,0}' AS result FROM persons WHERE id = 1
@@ -375,6 +425,7 @@ tests:
   signature: "<->(line, line) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__line_lseg
   sql: SELECT line '{1,0,0}' <-> lseg '[(5,5),(6,6)]' AS result FROM persons WHERE id = 1
@@ -382,6 +433,7 @@ tests:
   signature: "<->(line, lseg) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__line_point
   sql: SELECT line '{1,0,0}' <-> point '(5,5)' AS result FROM persons WHERE id = 1
@@ -389,6 +441,7 @@ tests:
   signature: "<->(line, point) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__lseg_box
   sql: SELECT lseg '[(4,4),(5,5)]' <-> box '(1,1),(0,0)' AS result FROM persons WHERE id = 1
@@ -396,6 +449,7 @@ tests:
   signature: "<->(lseg, box) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__lseg_line
   sql: SELECT lseg '[(5,5),(6,6)]' <-> line '{1,0,0}' AS result FROM persons WHERE id = 1
@@ -403,6 +457,7 @@ tests:
   signature: "<->(lseg, line) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__lseg_lseg
   sql: SELECT lseg '[(0,0),(1,1)]' <-> lseg '[(5,5),(6,6)]' AS result FROM persons WHERE id = 1
@@ -410,6 +465,7 @@ tests:
   signature: "<->(lseg, lseg) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__lseg_point
   sql: SELECT lseg '[(0,0),(1,1)]' <-> point '(5,5)' AS result FROM persons WHERE id = 1
@@ -417,6 +473,7 @@ tests:
   signature: "<->(lseg, point) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__path_path
   sql: SELECT path '((0,0),(1,1))' <-> path '((5,5),(6,6))' AS result FROM persons WHERE id = 1
@@ -424,6 +481,7 @@ tests:
   signature: "<->(path, path) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__path_point
   sql: SELECT path '((0,0),(1,1))' <-> point '(5,5)' AS result FROM persons WHERE id = 1
@@ -431,6 +489,7 @@ tests:
   signature: "<->(path, point) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__point_box
   sql: SELECT point '(5,5)' <-> box '(1,1),(0,0)' AS result FROM persons WHERE id = 1
@@ -438,6 +497,7 @@ tests:
   signature: "<->(point, box) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__point_circle
   sql: SELECT point '(5,5)' <-> circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -445,6 +505,7 @@ tests:
   signature: "<->(point, circle) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__point_line
   sql: SELECT point '(5,5)' <-> line '{1,0,0}' AS result FROM persons WHERE id = 1
@@ -452,6 +513,7 @@ tests:
   signature: "<->(point, line) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__point_lseg
   sql: SELECT point '(5,5)' <-> lseg '[(0,0),(1,1)]' AS result FROM persons WHERE id = 1
@@ -459,6 +521,7 @@ tests:
   signature: "<->(point, lseg) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__point_path
   sql: SELECT point '(5,5)' <-> path '((0,0),(1,1))' AS result FROM persons WHERE id = 1
@@ -466,6 +529,7 @@ tests:
   signature: "<->(point, path) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__point_point
   sql: SELECT point '(0,0)' <-> point '(3,4)' AS result FROM persons WHERE id = 1
@@ -473,6 +537,7 @@ tests:
   signature: "<->(point, point) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__point_polygon
   sql: SELECT point '(5,5)' <-> polygon '((0,0),(0,1),(1,1),(1,0))' AS result FROM persons WHERE id = 1
@@ -480,6 +545,7 @@ tests:
   signature: "<->(point, polygon) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__polygon_circle
   sql: SELECT polygon '((0,0),(0,1),(1,1),(1,0))' <-> circle '<(5,5),1>' AS result FROM persons WHERE id = 1
@@ -487,6 +553,7 @@ tests:
   signature: "<->(polygon, circle) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__polygon_point
   sql: SELECT polygon '((0,0),(0,1),(1,1),(1,0))' <-> point '(5,5)' AS result FROM persons WHERE id = 1
@@ -494,6 +561,7 @@ tests:
   signature: "<->(polygon, point) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_dist__polygon_polygon
   sql: SELECT polygon '((0,0),(0,1),(1,1),(1,0))' <-> polygon '((5,5),(5,6),(6,6),(6,5))' AS result FROM persons WHERE id = 1
@@ -501,6 +569,7 @@ tests:
   signature: "<->(polygon, polygon) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # << (strictly left of) / <<| (strictly below)
 - id: geo_strictly_left__box_box
@@ -509,6 +578,7 @@ tests:
   signature: "<<(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_left__circle_circle
   sql: SELECT circle '<(0,0),1>' << circle '<(9,9),1>' AS result FROM persons WHERE id = 1
@@ -516,6 +586,7 @@ tests:
   signature: "<<(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_left__point_point
   sql: SELECT point '(0,0)' << point '(9,9)' AS result FROM persons WHERE id = 1
@@ -523,6 +594,7 @@ tests:
   signature: "<<(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_left__polygon_polygon
   sql: SELECT polygon '((0,0),(0,1),(1,1),(1,0))' << polygon '((9,9),(9,10),(10,10),(10,9))' AS result FROM persons WHERE id = 1
@@ -530,6 +602,7 @@ tests:
   signature: "<<(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_below__box_box
   sql: SELECT box '(1,1),(0,0)' <<| box '(9,9),(8,8)' AS result FROM persons WHERE id = 1
@@ -537,6 +610,7 @@ tests:
   signature: "<<|(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_below__circle_circle
   sql: SELECT circle '<(0,0),1>' <<| circle '<(9,9),1>' AS result FROM persons WHERE id = 1
@@ -544,6 +618,7 @@ tests:
   signature: "<<|(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_below__point_point
   sql: SELECT point '(0,0)' <<| point '(0,9)' AS result FROM persons WHERE id = 1
@@ -551,6 +626,7 @@ tests:
   signature: "<<|(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_below__polygon_polygon
   sql: SELECT polygon '((0,0),(0,1),(1,1),(1,0))' <<| polygon '((0,9),(0,10),(1,10),(1,9))' AS result FROM persons WHERE id = 1
@@ -558,6 +634,7 @@ tests:
   signature: "<<|(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # <= / <> / = / > / >=
 - id: geo_lte__box_box
@@ -566,6 +643,7 @@ tests:
   signature: "<=(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_lte__circle_circle
   sql: SELECT circle '<(0,0),1>' <= circle '<(0,0),5>' AS result FROM persons WHERE id = 1
@@ -573,6 +651,7 @@ tests:
   signature: "<=(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_lte__lseg_lseg
   sql: SELECT lseg '[(0,0),(1,1)]' <= lseg '[(0,0),(5,5)]' AS result FROM persons WHERE id = 1
@@ -580,6 +659,7 @@ tests:
   signature: "<=(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_lte__path_path
   sql: SELECT path '((0,0),(1,1))' <= path '((0,0),(5,5))' AS result FROM persons WHERE id = 1
@@ -587,6 +667,7 @@ tests:
   signature: "<=(path, path) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_neq__circle_circle
   sql: SELECT circle '<(0,0),1>' <> circle '<(0,0),5>' AS result FROM persons WHERE id = 1
@@ -594,6 +675,7 @@ tests:
   signature: "<>(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_neq__lseg_lseg
   sql: SELECT lseg '[(0,0),(1,1)]' <> lseg '[(0,0),(5,5)]' AS result FROM persons WHERE id = 1
@@ -601,6 +683,7 @@ tests:
   signature: "<>(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_neq__point_point
   sql: SELECT point '(0,0)' <> point '(1,1)' AS result FROM persons WHERE id = 1
@@ -608,6 +691,7 @@ tests:
   signature: "<>(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # <@ (contained by)
 - id: geo_contained_by__box_box
@@ -616,6 +700,7 @@ tests:
   signature: "<@(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__circle_circle
   sql: SELECT circle '<(0,0),1>' <@ circle '<(0,0),5>' AS result FROM persons WHERE id = 1
@@ -623,6 +708,7 @@ tests:
   signature: "<@(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__lseg_box
   sql: SELECT lseg '[(1,1),(2,2)]' <@ box '(9,9),(0,0)' AS result FROM persons WHERE id = 1
@@ -630,6 +716,7 @@ tests:
   signature: "<@(lseg, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__lseg_line
   sql: SELECT lseg '[(1,1),(2,2)]' <@ line '{1,-1,0}' AS result FROM persons WHERE id = 1
@@ -637,6 +724,7 @@ tests:
   signature: "<@(lseg, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__point_box
   sql: SELECT point '(1,1)' <@ box '(9,9),(0,0)' AS result FROM persons WHERE id = 1
@@ -644,6 +732,7 @@ tests:
   signature: "<@(point, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__point_circle
   sql: SELECT point '(1,1)' <@ circle '<(0,0),5>' AS result FROM persons WHERE id = 1
@@ -651,6 +740,7 @@ tests:
   signature: "<@(point, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__point_line
   sql: SELECT point '(1,1)' <@ line '{1,-1,0}' AS result FROM persons WHERE id = 1
@@ -658,6 +748,7 @@ tests:
   signature: "<@(point, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__point_lseg
   sql: SELECT point '(1,1)' <@ lseg '[(0,0),(2,2)]' AS result FROM persons WHERE id = 1
@@ -665,6 +756,7 @@ tests:
   signature: "<@(point, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__point_path
   sql: SELECT point '(1,1)' <@ path '((0,0),(2,2),(4,0))' AS result FROM persons WHERE id = 1
@@ -672,6 +764,7 @@ tests:
   signature: "<@(point, path) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__point_polygon
   sql: SELECT point '(1,1)' <@ polygon '((0,0),(0,9),(9,9),(9,0))' AS result FROM persons WHERE id = 1
@@ -679,6 +772,7 @@ tests:
   signature: "<@(point, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contained_by__polygon_polygon
   sql: SELECT polygon '((1,1),(1,2),(2,2),(2,1))' <@ polygon '((0,0),(0,9),(9,9),(9,0))' AS result FROM persons WHERE id = 1
@@ -686,6 +780,7 @@ tests:
   signature: "<@(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # <^ (below or left of, aligned)
 - id: geo_below_or_left__box_box
@@ -694,6 +789,7 @@ tests:
   signature: "<^(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_below_or_left__point_point
   sql: SELECT point '(0,0)' <^ point '(0,9)' AS result FROM persons WHERE id = 1
@@ -701,6 +797,7 @@ tests:
   signature: "<^(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # = (equal)
 - id: geo_eq__box_box
@@ -709,6 +806,7 @@ tests:
   signature: "=(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_eq__circle_circle
   sql: SELECT circle '<(0,0),1>' = circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -716,6 +814,7 @@ tests:
   signature: "=(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_eq__line_line
   sql: SELECT line '{1,0,0}' = line '{1,0,0}' AS result FROM persons WHERE id = 1
@@ -723,6 +822,7 @@ tests:
   signature: "=(line, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_eq__lseg_lseg
   sql: SELECT lseg '[(0,0),(1,1)]' = lseg '[(0,0),(1,1)]' AS result FROM persons WHERE id = 1
@@ -730,6 +830,7 @@ tests:
   signature: "=(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_eq__path_path
   sql: SELECT path '((0,0),(1,1))' = path '((0,0),(1,1))' AS result FROM persons WHERE id = 1
@@ -737,6 +838,7 @@ tests:
   signature: "=(path, path) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # > / >=
 - id: geo_gt__box_box
@@ -745,6 +847,7 @@ tests:
   signature: ">(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_gt__circle_circle
   sql: SELECT circle '<(0,0),5>' > circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -752,6 +855,7 @@ tests:
   signature: ">(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_gt__lseg_lseg
   sql: SELECT lseg '[(0,0),(5,5)]' > lseg '[(0,0),(1,1)]' AS result FROM persons WHERE id = 1
@@ -759,6 +863,7 @@ tests:
   signature: ">(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_gt__path_path
   sql: SELECT path '((0,0),(5,5))' > path '((0,0),(1,1))' AS result FROM persons WHERE id = 1
@@ -766,6 +871,7 @@ tests:
   signature: ">(path, path) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_gte__box_box
   sql: SELECT box '(4,4),(0,0)' >= box '(1,1),(0,0)' AS result FROM persons WHERE id = 1
@@ -773,6 +879,7 @@ tests:
   signature: ">=(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_gte__circle_circle
   sql: SELECT circle '<(0,0),5>' >= circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -780,6 +887,7 @@ tests:
   signature: ">=(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_gte__lseg_lseg
   sql: SELECT lseg '[(0,0),(5,5)]' >= lseg '[(0,0),(1,1)]' AS result FROM persons WHERE id = 1
@@ -787,6 +895,7 @@ tests:
   signature: ">=(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_gte__path_path
   sql: SELECT path '((0,0),(5,5))' >= path '((0,0),(1,1))' AS result FROM persons WHERE id = 1
@@ -794,6 +903,7 @@ tests:
   signature: ">=(path, path) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # >> (strictly right of) / >^ (above or right of, aligned)
 - id: geo_strictly_right__box_box
@@ -802,6 +912,7 @@ tests:
   signature: ">>(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_right__circle_circle
   sql: SELECT circle '<(9,9),1>' >> circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -809,6 +920,7 @@ tests:
   signature: ">>(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_right__point_point
   sql: SELECT point '(9,9)' >> point '(0,0)' AS result FROM persons WHERE id = 1
@@ -816,6 +928,7 @@ tests:
   signature: ">>(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_right__polygon_polygon
   sql: SELECT polygon '((9,9),(9,10),(10,10),(10,9))' >> polygon '((0,0),(0,1),(1,1),(1,0))' AS result FROM persons WHERE id = 1
@@ -823,6 +936,7 @@ tests:
   signature: ">>(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_above_or_right__box_box
   sql: SELECT box '(9,9),(8,8)' >^ box '(1,1),(0,0)' AS result FROM persons WHERE id = 1
@@ -830,6 +944,7 @@ tests:
   signature: ">^(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_above_or_right__point_point
   sql: SELECT point '(0,9)' >^ point '(0,0)' AS result FROM persons WHERE id = 1
@@ -837,6 +952,7 @@ tests:
   signature: ">^(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # ?# (intersects/overlaps)
 - id: geo_intersects__box_box
@@ -845,6 +961,7 @@ tests:
   signature: "?#(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_intersects__line_box
   sql: SELECT line '{1,0,0}' ?# box '(3,3),(1,1)' AS result FROM persons WHERE id = 1
@@ -852,6 +969,7 @@ tests:
   signature: "?#(line, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_intersects__line_line
   sql: SELECT line '{1,0,0}' ?# line '{0,1,0}' AS result FROM persons WHERE id = 1
@@ -859,6 +977,7 @@ tests:
   signature: "?#(line, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_intersects__lseg_box
   sql: SELECT lseg '[(0,0),(5,5)]' ?# box '(3,3),(1,1)' AS result FROM persons WHERE id = 1
@@ -866,6 +985,7 @@ tests:
   signature: "?#(lseg, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_intersects__lseg_line
   sql: SELECT lseg '[(0,0),(5,5)]' ?# line '{1,-1,0}' AS result FROM persons WHERE id = 1
@@ -873,6 +993,7 @@ tests:
   signature: "?#(lseg, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_intersects__lseg_lseg
   sql: SELECT lseg '[(0,0),(2,2)]' ?# lseg '[(0,2),(2,0)]' AS result FROM persons WHERE id = 1
@@ -880,6 +1001,7 @@ tests:
   signature: "?#(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_intersects__path_path
   sql: SELECT path '((0,0),(2,2))' ?# path '((0,2),(2,0))' AS result FROM persons WHERE id = 1
@@ -887,6 +1009,7 @@ tests:
   signature: "?#(path, path) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # ?- (horizontal) / ?-| (perpendicular)
 - id: geo_horizontal__line
@@ -895,6 +1018,7 @@ tests:
   signature: "?-(-, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_horizontal__lseg
   sql: SELECT ?- lseg '[(0,0),(5,0)]' AS result FROM persons WHERE id = 1
@@ -902,6 +1026,7 @@ tests:
   signature: "?-(-, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_horizontal__point_point
   sql: SELECT point '(0,0)' ?- point '(5,0)' AS result FROM persons WHERE id = 1
@@ -909,6 +1034,7 @@ tests:
   signature: "?-(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_perpendicular__line_line
   sql: SELECT line '{1,0,0}' ?-| line '{0,1,0}' AS result FROM persons WHERE id = 1
@@ -916,6 +1042,7 @@ tests:
   signature: "?-|(line, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_perpendicular__lseg_lseg
   sql: SELECT lseg '[(0,0),(1,0)]' ?-| lseg '[(0,0),(0,1)]' AS result FROM persons WHERE id = 1
@@ -923,6 +1050,7 @@ tests:
   signature: "?-|(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # ?| (vertical) / ?|| (parallel)
 - id: geo_vertical__line
@@ -931,6 +1059,7 @@ tests:
   signature: "?|(-, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_vertical__lseg
   sql: SELECT ?| lseg '[(0,0),(0,5)]' AS result FROM persons WHERE id = 1
@@ -938,6 +1067,7 @@ tests:
   signature: "?|(-, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_vertical__point_point
   sql: SELECT point '(0,0)' ?| point '(0,5)' AS result FROM persons WHERE id = 1
@@ -945,6 +1075,7 @@ tests:
   signature: "?|(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_parallel__line_line
   sql: SELECT line '{1,0,0}' ?|| line '{1,0,5}' AS result FROM persons WHERE id = 1
@@ -952,6 +1083,7 @@ tests:
   signature: "?||(line, line) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_parallel__lseg_lseg
   sql: SELECT lseg '[(0,0),(1,1)]' ?|| lseg '[(0,1),(1,2)]' AS result FROM persons WHERE id = 1
@@ -959,6 +1091,7 @@ tests:
   signature: "?||(lseg, lseg) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # @-@ (length)
 - id: geo_length__lseg
@@ -967,6 +1100,7 @@ tests:
   signature: "@-@(-, lseg) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_length__path
   sql: SELECT @-@ path '((0,0),(3,4))' AS result FROM persons WHERE id = 1
@@ -974,6 +1108,7 @@ tests:
   signature: "@-@(-, path) → float8"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # @> (contains)
 - id: geo_contains__box_box
@@ -982,6 +1117,7 @@ tests:
   signature: "@>(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contains__box_point
   sql: SELECT box '(9,9),(0,0)' @> point '(1,1)' AS result FROM persons WHERE id = 1
@@ -989,6 +1125,7 @@ tests:
   signature: "@>(box, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contains__circle_circle
   sql: SELECT circle '<(0,0),5>' @> circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -996,6 +1133,7 @@ tests:
   signature: "@>(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contains__circle_point
   sql: SELECT circle '<(0,0),5>' @> point '(1,1)' AS result FROM persons WHERE id = 1
@@ -1003,6 +1141,7 @@ tests:
   signature: "@>(circle, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contains__path_point
   sql: SELECT path '((0,0),(2,2),(4,0))' @> point '(2,1)' AS result FROM persons WHERE id = 1
@@ -1010,6 +1149,7 @@ tests:
   signature: "@>(path, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contains__polygon_point
   sql: SELECT polygon '((0,0),(0,9),(9,9),(9,0))' @> point '(1,1)' AS result FROM persons WHERE id = 1
@@ -1017,6 +1157,7 @@ tests:
   signature: "@>(polygon, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_contains__polygon_polygon
   sql: SELECT polygon '((0,0),(0,9),(9,9),(9,0))' @> polygon '((1,1),(1,2),(2,2),(2,1))' AS result FROM persons WHERE id = 1
@@ -1024,6 +1165,7 @@ tests:
   signature: "@>(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # @@ (center)
 - id: geo_center__box
@@ -1032,6 +1174,7 @@ tests:
   signature: "@@(-, box) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_center__circle
   sql: SELECT @@ circle '<(2,2),5>' AS result FROM persons WHERE id = 1
@@ -1039,6 +1182,7 @@ tests:
   signature: "@@(-, circle) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_center__lseg
   sql: SELECT @@ lseg '[(0,0),(4,4)]' AS result FROM persons WHERE id = 1
@@ -1046,6 +1190,7 @@ tests:
   signature: "@@(-, lseg) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_center__polygon
   sql: SELECT @@ polygon '((0,0),(0,4),(4,4),(4,0))' AS result FROM persons WHERE id = 1
@@ -1053,6 +1198,7 @@ tests:
   signature: "@@(-, polygon) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # |&> (does not extend above) / |>> (strictly above)
 - id: geo_notabove2__box_box
@@ -1061,6 +1207,7 @@ tests:
   signature: "|&>(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notabove2__circle_circle
   sql: SELECT circle '<(0,0),1>' |&> circle '<(9,9),1>' AS result FROM persons WHERE id = 1
@@ -1068,6 +1215,7 @@ tests:
   signature: "|&>(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_notabove2__polygon_polygon
   sql: SELECT polygon '((0,0),(0,1),(1,1),(1,0))' |&> polygon '((9,9),(9,10),(10,10),(10,9))' AS result FROM persons WHERE id = 1
@@ -1075,6 +1223,7 @@ tests:
   signature: "|&>(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_above__box_box
   sql: SELECT box '(9,9),(8,8)' |>> box '(1,1),(0,0)' AS result FROM persons WHERE id = 1
@@ -1082,6 +1231,7 @@ tests:
   signature: "|>>(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_above__circle_circle
   sql: SELECT circle '<(9,9),1>' |>> circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -1089,6 +1239,7 @@ tests:
   signature: "|>>(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_above__point_point
   sql: SELECT point '(0,9)' |>> point '(0,0)' AS result FROM persons WHERE id = 1
@@ -1096,6 +1247,7 @@ tests:
   signature: "|>>(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_strictly_above__polygon_polygon
   sql: SELECT polygon '((9,9),(9,10),(10,10),(10,9))' |>> polygon '((0,0),(0,1),(1,1),(1,0))' AS result FROM persons WHERE id = 1
@@ -1103,6 +1255,7 @@ tests:
   signature: "|>>(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 # ~= (same as / congruent)
 - id: geo_same_as__box_box
@@ -1111,6 +1264,7 @@ tests:
   signature: "~=(box, box) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_same_as__circle_circle
   sql: SELECT circle '<(0,0),1>' ~= circle '<(0,0),1>' AS result FROM persons WHERE id = 1
@@ -1118,6 +1272,7 @@ tests:
   signature: "~=(circle, circle) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_same_as__point_point
   sql: SELECT point '(1,1)' ~= point '(1,1)' AS result FROM persons WHERE id = 1
@@ -1125,6 +1280,7 @@ tests:
   signature: "~=(point, point) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: geo_same_as__polygon_polygon
   sql: SELECT polygon '((0,0),(0,1),(1,1),(1,0))' ~= polygon '((0,0),(0,1),(1,1),(1,0))' AS result FROM persons WHERE id = 1
@@ -1132,4 +1288,5 @@ tests:
   signature: "~=(polygon, polygon) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 

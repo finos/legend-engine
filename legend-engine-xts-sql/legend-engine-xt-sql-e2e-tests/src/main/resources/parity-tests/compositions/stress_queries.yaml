@@ -6,6 +6,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Z-score calculation
   - id: stress_zscore
@@ -14,6 +15,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Top-N per group
   - id: stress_top_n_per_group
@@ -22,6 +24,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Running total with CASE
   - id: stress_running_case
@@ -30,6 +33,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Multiple aggregates with COALESCE across joins
   - id: stress_multi_agg_join
@@ -38,6 +42,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Percentile simulation via ROW_NUMBER
   - id: stress_percentile_sim
@@ -46,6 +51,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Cumulative distribution
   - id: stress_cume_dist
@@ -54,6 +60,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Year-over-year style comparison via LAG
   - id: stress_lag_comparison
@@ -62,6 +69,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Nested CASE with window
   - id: stress_nested_case_window
@@ -70,6 +78,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # COALESCE chain with window
   - id: stress_coalesce_window
@@ -78,3 +87,4 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS

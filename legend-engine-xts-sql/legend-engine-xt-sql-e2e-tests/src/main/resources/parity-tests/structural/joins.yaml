@@ -6,6 +6,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_inner_multi_condition
     sql: "SELECT p.name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id AND d.budget > 500000 ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_inner_with_where
     sql: "SELECT p.name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary > 60000 ORDER BY 1"
@@ -20,6 +22,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_inner_implicit
     sql: "SELECT p.name, d.name AS dept_name FROM persons p JOIN departments d ON p.dept_id = d.id ORDER BY 1"
@@ -27,6 +30,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LEFT JOIN
   - id: join_left_basic
@@ -35,6 +39,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_left_null_fk
     sql: "SELECT p.name, COALESCE(d.name, 'No Dept') AS dept_name FROM persons p LEFT JOIN departments d ON p.dept_id = d.id WHERE d.id IS NULL ORDER BY 1"
@@ -42,6 +47,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_left_with_agg
     sql: "SELECT d.name AS dept_name, COUNT(p.id) AS cnt FROM departments d LEFT JOIN persons p ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
@@ -49,6 +55,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # RIGHT JOIN
   - id: join_right_basic
@@ -57,6 +64,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: FAIL
 
   - id: join_right_unmatched
     sql: "SELECT COALESCE(p.name, 'N/A') AS person, d.name AS dept_name FROM persons p RIGHT JOIN departments d ON p.dept_id = d.id ORDER BY 2"
@@ -64,6 +72,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: FAIL
 
   # FULL OUTER JOIN
   - id: join_full_outer
@@ -72,6 +81,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: ERROR
 
   - id: join_full_outer_count
     sql: "SELECT COUNT(*) AS total FROM persons p FULL OUTER JOIN departments d ON p.dept_id = d.id"
@@ -79,6 +89,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: ERROR
 
   # CROSS JOIN
   - id: join_cross_basic
@@ -87,6 +98,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_cross_count
     sql: "SELECT COUNT(*) AS total FROM persons p CROSS JOIN departments d WHERE p.id <= 3"
@@ -94,6 +106,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Self-join
   - id: join_self
@@ -102,6 +115,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_self_salary_compare
     sql: "SELECT a.name AS higher, b.name AS lower FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.salary > b.salary WHERE a.dept_id IS NOT NULL AND a.salary IS NOT NULL AND b.salary IS NOT NULL ORDER BY 1, 2"
@@ -109,6 +123,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Multi-table JOIN (3 tables)
   - id: join_three_tables
@@ -117,6 +132,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_three_tables_mixed
     sql: "SELECT p.name, d.name AS dept_name, COALESCE(o.amount, 0) AS amount FROM persons p INNER JOIN departments d ON p.dept_id = d.id LEFT JOIN orders o ON o.person_id = p.id WHERE p.salary IS NOT NULL ORDER BY 1, 3"
@@ -124,6 +140,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_three_tables_agg
     sql: "SELECT d.name AS dept, COUNT(DISTINCT p.id) AS emps, COUNT(o.id) AS orders FROM departments d LEFT JOIN persons p ON p.dept_id = d.id LEFT JOIN orders o ON o.person_id = p.id GROUP BY d.name ORDER BY 1"
@@ -131,6 +148,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # JOIN with aggregation
   - id: join_with_agg
@@ -139,6 +157,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_with_agg_having
     sql: "SELECT d.name AS dept_name, COUNT(*) AS emp_count FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name HAVING COUNT(*) > 2 ORDER BY 1"
@@ -146,6 +165,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: join_with_agg_avg
     sql: "SELECT d.name AS dept_name, AVG(p.salary) AS avg_salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY d.name ORDER BY 1"
@@ -153,6 +173,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # A FROM-clause subquery that re-binds an alias the enclosing query already holds. The subquery
   # has to join internally for this to bite: a single-table derived table publishes no child scopes
@@ -163,6 +184,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # The latest-row shape the corpus actually hits: MAX(...) GROUP BY in the derived table, joined
   # back to the same table the derived table reads, under the same alias inside and out.
@@ -172,6 +194,7 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Regression guard for the derived-table alias-shadowing fix in processStandardJoin.
   #
@@ -188,3 +211,4 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

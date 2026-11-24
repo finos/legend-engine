@@ -6,6 +6,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: subquery_scalar_max
     sql: "SELECT name, salary, (SELECT MAX(salary) FROM persons) AS max_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Subquery in WHERE with IN
   - id: subquery_in_where
@@ -21,6 +23,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_in_dept
     sql: "SELECT name FROM persons WHERE dept_id IN (SELECT id FROM departments WHERE budget > 500000) ORDER BY 1"
@@ -28,6 +31,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery with NOT IN
   - id: subquery_not_in
@@ -36,6 +40,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_not_in_dept
     sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE budget < 600000) AND dept_id IS NOT NULL ORDER BY 1"
@@ -43,6 +48,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery in WHERE with EXISTS
   - id: subquery_exists
@@ -51,6 +57,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_exists_dept
     sql: "SELECT d.name FROM departments d WHERE EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id AND p.salary > 70000) ORDER BY 1"
@@ -58,6 +65,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery with NOT EXISTS
   - id: subquery_not_exists
@@ -66,6 +74,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Derived table (subquery in FROM)
   - id: subquery_derived_table
@@ -74,6 +83,7 @@ tests:
     category: "subqueries"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_derived_join
     sql: "SELECT p.name, sub.avg_salary FROM persons p INNER JOIN (SELECT dept_id, AVG(salary) AS avg_salary FROM persons WHERE salary IS NOT NULL GROUP BY dept_id) sub ON p.dept_id = sub.dept_id ORDER BY 1"
@@ -81,6 +91,7 @@ tests:
     category: "subqueries"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: FAIL
 
   # Correlated subquery
   - id: subquery_correlated
@@ -89,6 +100,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: subquery_correlated_count
     sql: "SELECT p.name, (SELECT COUNT(*) FROM orders o WHERE o.person_id = p.id) AS order_count FROM persons p ORDER BY 1"
@@ -96,6 +108,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: subquery_exists_correlated_into_nested_derived_table
     sql: "SELECT abt.nm FROM (SELECT name AS nm, dept_id AS dk FROM persons GROUP BY name, dept_id) AS abt WHERE EXISTS (SELECT hist.b FROM (SELECT d.id AS b FROM departments d INNER JOIN persons q ON q.dept_id = d.id WHERE d.id = abt.dk) AS hist) ORDER BY 1"
@@ -103,6 +116,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery with aggregate comparison - a subquery in value position under a comparison is a scalar subquery
   - id: subquery_agg_comparison
@@ -111,6 +125,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_agg_min
     sql: "SELECT name, salary FROM persons WHERE salary = (SELECT MIN(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
@@ -118,6 +133,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery in HAVING
   - id: subquery_in_having
@@ -126,6 +142,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Subquery with UNION
   - id: subquery_union
@@ -134,6 +151,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # IN (subquery) where the outer relation is a UNION
   - id: subquery_in_over_union
@@ -142,6 +160,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Lateral-style derived table with aggregation
   - id: subquery_derived_agg_filter
@@ -150,6 +169,7 @@ tests:
     category: "subqueries"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery returning single row in arithmetic
   - id: subquery_scalar_arithmetic
@@ -158,6 +178,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXISTS with multiple conditions
   - id: subquery_exists_multi_cond
@@ -166,6 +187,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery in CASE
   - id: subquery_in_case
@@ -174,6 +196,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Uncorrelated EXISTS
   - id: subquery_exists_uncorrelated
@@ -182,6 +205,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Uncorrelated EXISTS with no matching row
   - id: subquery_exists_uncorrelated_empty
@@ -190,6 +214,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # EXISTS selecting a real column rather than a literal
   - id: subquery_exists_select_column
@@ -198,6 +223,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # EXISTS over a grouped subquery - the predicate cannot be hoisted past the grouping
   - id: subquery_exists_grouped
@@ -206,6 +232,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Uncorrelated IN (subquery) against a filtered relation
   - id: subquery_in_uncorrelated_filtered
@@ -214,6 +241,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Correlated IN (subquery)
   - id: subquery_in_correlated
@@ -222,6 +250,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # IN (subquery) where no row matches
   - id: subquery_in_empty
@@ -230,6 +259,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Quantified comparison - <op> ANY / <op> ALL against a subquery
   - id: subquery_quant_gt_any
@@ -238,6 +268,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_quant_gt_all
     sql: "SELECT p.name FROM persons p WHERE p.age > ALL (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2) ORDER BY 1"
@@ -245,6 +276,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # SOME is a synonym for ANY
   - id: subquery_quant_ge_some
@@ -253,6 +285,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_quant_eq_any
     sql: "SELECT p.name FROM persons p WHERE p.dept_id = ANY (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
@@ -260,6 +293,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # != has no relation function of its own - it is the negation of the opposite quantifier
   - id: subquery_quant_neq_any
@@ -268,6 +302,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_quant_neq_all
     sql: "SELECT p.name FROM persons p WHERE p.dept_id <> ALL (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
@@ -275,6 +310,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # a null in the subquery makes ALL unknown, which the relation function alone would answer true - dept 1
   # holds Hank's null salary, so Postgres returns nothing. This is what the null guard is for: without it
@@ -285,6 +321,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # correlated, and vacuously true for the persons with no orders. ERROR for the same reason
   # subquery_in_correlated is: a correlated column cannot be resolved when the outer and inner relations
@@ -295,6 +332,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: subquery_quant_all_empty
     sql: "SELECT p.name FROM persons p WHERE p.id > ALL (SELECT p2.id FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
@@ -302,6 +340,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_quant_any_empty
     sql: "SELECT p.name FROM persons p WHERE p.id > ANY (SELECT p2.id FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
@@ -309,6 +348,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # known divergence: over an empty subquery SQL performs no comparison at all, so ALL is true even for a
   # null value, where relation::greaterThanAll answers false for an absent value by definition. Closing it
@@ -319,6 +359,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL
 
   # negation has to reproduce when SQL is false rather than true, which moves the null guard from ALL onto ANY
   - id: subquery_quant_not_gt_any
@@ -327,6 +368,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: subquery_quant_not_gt_all_null_in_subquery
     sql: "SELECT p.name FROM persons p WHERE NOT (p.salary > ALL (SELECT p2.salary FROM persons p2 WHERE p2.dept_id = 1)) ORDER BY 1"
@@ -334,6 +376,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Correlated EXISTS reading an UNQUALIFIED outer column. 'salary' only exists on
   # the outer relation (persons), so Postgres resolves the bare name against the
@@ -344,6 +387,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Same shape as above with a different outer-only column ('dept_id'). orders has
   # no dept_id, so the bare name is unambiguously outer.
@@ -353,6 +397,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Control: bare column ('amount') is present on the INNER relation, so it must
   # resolve locally rather than being routed to the outer p. Guards the fix from
@@ -363,6 +408,7 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Outer subquery alias reuses an alias used inside the subquery ('root' appears
   # both as the inner FROM alias and as the outer derived-table alias).
@@ -372,6 +418,7 @@ tests:
     category: "subqueries"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Control for the case above - same shape with all distinct aliases; must keep passing.
   - id: subquery_alias_collision_different_names_control
@@ -380,6 +427,7 @@ tests:
     category: "subqueries"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Outer alias 'b' matches the inner LEFT JOIN RHS alias 'b'.
   - id: subquery_alias_collision_outer_matches_inner_join_side
@@ -388,3 +436,4 @@ tests:
     category: "subqueries"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

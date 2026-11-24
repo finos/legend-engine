@@ -6,6 +6,7 @@ tests:
     signature: "regexp_count(text, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_count__constant__start_pos
     sql: "SELECT REGEXP_COUNT('hello world', '[a-z]', 1) AS matches, REGEXP_COUNT('123', '[a-z]', 1) AS noMatch FROM strings WHERE id = 1"
@@ -13,6 +14,7 @@ tests:
     signature: "regexp_count(text, text, integer) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_count__constant__flag_i
     sql: "SELECT REGEXP_COUNT('Hello World', '[a-z]', 1, 'i') AS matches, REGEXP_COUNT('123', '[a-z]', 1, 'i') AS noMatch FROM strings WHERE id = 1"
@@ -20,6 +22,7 @@ tests:
     signature: "regexp_count(text, text, integer, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_count__constant__flag_c
     sql: "SELECT REGEXP_COUNT('Hello', '[a-z]', 1, 'c') AS matches, REGEXP_COUNT('HELLO', '[a-z]', 1, 'c') AS noMatch FROM strings WHERE id = 1"
@@ -27,6 +30,7 @@ tests:
     signature: "regexp_count(text, text, integer, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_count__constant__flag_s
     sql: "SELECT REGEXP_COUNT('hello\nworld', '.', 1, 's') AS matches, REGEXP_COUNT('', '.', 1, 's') AS noMatch FROM strings WHERE id = 1"
@@ -34,6 +38,7 @@ tests:
     signature: "regexp_count(text, text, integer, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_count__constant__flag_n
     sql: "SELECT REGEXP_COUNT('hello\nworld', '^[a-z]+$', 1, 'n') AS matches, REGEXP_COUNT('123', '^[a-z]+$', 1, 'n') AS noMatch FROM strings WHERE id = 1"
@@ -41,6 +46,7 @@ tests:
     signature: "regexp_count(text, text, integer, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_count__constant__flag_m
     sql: "SELECT REGEXP_COUNT('hello\nworld', '^[a-z]+$', 1, 'm') AS matches, REGEXP_COUNT('123', '^[a-z]+$', 1, 'm') AS noMatch FROM strings WHERE id = 1"
@@ -48,6 +54,7 @@ tests:
     signature: "regexp_count(text, text, integer, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # === regexp_instr ===
 
@@ -57,6 +64,7 @@ tests:
     signature: "regexp_instr(text, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_instr__constant__extra_args_error
     sql: "SELECT REGEXP_INSTR('abc123', '[0-9]', 1) AS result FROM strings WHERE id = 1"
@@ -64,6 +72,7 @@ tests:
     signature: "regexp_instr(text, text, integer) → integer"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # === regexp_like ===
 
@@ -73,6 +82,7 @@ tests:
     signature: "regexp_like(text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_like__constant__flag_i
     sql: "SELECT REGEXP_LIKE('HELLO', '^[a-z]+$', 'i') AS matches, REGEXP_LIKE('123', '^[a-z]+$', 'i') AS noMatch FROM strings WHERE id = 1"
@@ -80,6 +90,7 @@ tests:
     signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_like__constant__flag_c
     sql: "SELECT REGEXP_LIKE('hello', '^[a-z]+$', 'c') AS matches, REGEXP_LIKE('HELLO', '^[a-z]+$', 'c') AS noMatch FROM strings WHERE id = 1"
@@ -87,6 +98,7 @@ tests:
     signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_like__constant__flag_s
     sql: "SELECT REGEXP_LIKE('hello\nworld', '.*', 's') AS matches, REGEXP_LIKE('', 'a+', 's') AS noMatch FROM strings WHERE id = 1"
@@ -94,6 +106,7 @@ tests:
     signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_like__constant__flag_n
     sql: "SELECT REGEXP_LIKE('hello\nworld', '^world$', 'n') AS matches, REGEXP_LIKE('hello\nworld', '^nothere$', 'n') AS noMatch FROM strings WHERE id = 1"
@@ -101,6 +114,7 @@ tests:
     signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_like__constant__flag_m
     sql: "SELECT REGEXP_LIKE('hello\nworld', '^world$', 'm') AS matches, REGEXP_LIKE('hello\nworld', '^nothere$', 'm') AS noMatch FROM strings WHERE id = 1"
@@ -108,6 +122,7 @@ tests:
     signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # === regexp_replace ===
 
@@ -117,6 +132,7 @@ tests:
     signature: "regexp_replace(text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_g
     sql: "SELECT REGEXP_REPLACE('hello world', '[aeiou]', 'X', 'g') AS matches, REGEXP_REPLACE('xyz', '[aeiou]', 'X', 'g') AS noMatch FROM strings WHERE id = 1"
@@ -124,6 +140,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_i
     sql: "SELECT REGEXP_REPLACE('Hello World', '[a-z]', 'X', 'i') AS matches, REGEXP_REPLACE('123', '[a-z]', 'X', 'i') AS noMatch FROM strings WHERE id = 1"
@@ -131,6 +148,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_gi
     sql: "SELECT REGEXP_REPLACE('Hello World', '[a-z]', 'X', 'gi') AS matches, REGEXP_REPLACE('123', '[a-z]', 'X', 'gi') AS noMatch FROM strings WHERE id = 1"
@@ -138,6 +156,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_c
     sql: "SELECT REGEXP_REPLACE('Hello', '[a-z]', 'X', 'c') AS matches, REGEXP_REPLACE('HELLO', '[a-z]', 'X', 'c') AS noMatch FROM strings WHERE id = 1"
@@ -145,6 +164,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_s
     sql: "SELECT REGEXP_REPLACE('hello\nworld', '.+', 'X', 's') AS matches, REGEXP_REPLACE('', '.+', 'X', 's') AS noMatch FROM strings WHERE id = 1"
@@ -152,6 +172,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_n
     sql: "SELECT REGEXP_REPLACE('hello\nworld', '^world$', 'X', 'n') AS matches, REGEXP_REPLACE('hello', '^nothere$', 'X', 'n') AS noMatch FROM strings WHERE id = 1"
@@ -159,6 +180,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_gs
     sql: "SELECT REGEXP_REPLACE('hello\nworld', '.', 'X', 'gs') AS matches, REGEXP_REPLACE('', '.', 'X', 'gs') AS noMatch FROM strings WHERE id = 1"
@@ -166,6 +188,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # === multi-flag combinations ===
 
@@ -175,6 +198,7 @@ tests:
     signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_count__constant__flag_in
     sql: "SELECT REGEXP_COUNT('Hello\nWorld', '^[a-z]+$', 1, 'in') AS matches, REGEXP_COUNT('123\n456', '^[a-z]+$', 1, 'in') AS noMatch FROM strings WHERE id = 1"
@@ -182,6 +206,7 @@ tests:
     signature: "regexp_count(text, text, integer, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_replace__constant__flag_gin
     sql: "SELECT REGEXP_REPLACE('Hello\nWorld', '^[a-z]+$', 'X', 'gin') AS matches, REGEXP_REPLACE('123\n456', '^[a-z]+$', 'X', 'gin') AS noMatch FROM strings WHERE id = 1"
@@ -189,6 +214,7 @@ tests:
     signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__flag_in
     sql: "SELECT REGEXP_SUBSTR('HELLO\nworld', '^[a-z]+$', 1, 1, 'in') AS matches, REGEXP_SUBSTR('123\n456', '^[a-z]+$', 1, 1, 'in') AS noMatch FROM strings WHERE id = 1"
@@ -196,6 +222,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # === regexp_substr ===
 
@@ -205,6 +232,7 @@ tests:
     signature: "regexp_substr(text, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__start_pos
     sql: "SELECT REGEXP_SUBSTR('abc123def', '[a-z]+', 1) AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1) AS noMatch FROM strings WHERE id = 1"
@@ -212,6 +240,7 @@ tests:
     signature: "regexp_substr(text, text, integer) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__start_pos_occurrence
     sql: "SELECT REGEXP_SUBSTR('abc123def', '[a-z]+', 1, 1) AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1, 1) AS noMatch FROM strings WHERE id = 1"
@@ -219,6 +248,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__flag_i
     sql: "SELECT REGEXP_SUBSTR('ABC123', '[a-z]+', 1, 1, 'i') AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1, 1, 'i') AS noMatch FROM strings WHERE id = 1"
@@ -226,6 +256,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__flag_c
     sql: "SELECT REGEXP_SUBSTR('abc123', '[a-z]+', 1, 1, 'c') AS matches, REGEXP_SUBSTR('ABC123', '[a-z]+', 1, 1, 'c') AS noMatch FROM strings WHERE id = 1"
@@ -233,6 +264,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__flag_s
     sql: "SELECT REGEXP_SUBSTR('hello\nworld', '.+', 1, 1, 's') AS matches, REGEXP_SUBSTR('', '.+', 1, 1, 's') AS noMatch FROM strings WHERE id = 1"
@@ -240,6 +272,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__flag_n
     sql: "SELECT REGEXP_SUBSTR('hello\nworld', '^world$', 1, 1, 'n') AS matches, REGEXP_SUBSTR('hello\nworld', '^nothere$', 1, 1, 'n') AS noMatch FROM strings WHERE id = 1"
@@ -247,6 +280,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__flag_m
     sql: "SELECT REGEXP_SUBSTR('hello\nworld', '^world$', 1, 1, 'm') AS matches, REGEXP_SUBSTR('hello\nworld', '^nothere$', 1, 1, 'm') AS noMatch FROM strings WHERE id = 1"
@@ -254,6 +288,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer, text) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: regexp_substr__constant__subexpr
     sql: "SELECT REGEXP_SUBSTR('abc123def', '([a-z]+)([0-9]+)', 1, 1, 'i', 0) AS matches, REGEXP_SUBSTR('!!!', '([a-z]+)', 1, 1, 'i', 0) AS noMatch FROM strings WHERE id = 1"
@@ -261,6 +296,7 @@ tests:
     signature: "regexp_substr(text, text, integer, integer, text, integer) → text"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # === Regex match operators (~, !~, ~*, !~*) ===
   # createRegexMatch (fromPure.pure) routes rather than rejects: a literal, fully ^...$-anchored
@@ -274,6 +310,7 @@ tests:
     signature: "regexp_like(text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # SIMILAR TO is absent from SqlBaseLexer.g4/SqlBaseParser.g4, so it fails while parsing rather
   # than at function resolution — an earlier tier than the regexp_* misses above. The expected-

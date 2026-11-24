@@ -16,12 +16,16 @@ package org.finos.legend.engine.postgres.e2e.coverage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.postgres.e2e.ParityPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Generates a combined summary report (summary.md) pulling together the
@@ -49,11 +53,12 @@ public class SummaryReport
         StringBuilder md = new StringBuilder();
         md.append("# Legend SQL — Coverage Summary\n\n");
 
-        int combinedTdsPass = 0;
-        int combinedRelPass = 0;
-        int combinedTdsTotal = 0;
-        int combinedRelTotal = 0;
-        // Tracked separately from combinedTdsTotal/combinedRelTotal because format-token
+        Map<ParityPath, int[]> combinedByPath = new EnumMap<>(ParityPath.class);
+        for (ParityPath path : ParityPath.values())
+        {
+            combinedByPath.put(path, new int[2]);
+        }
+        // Tracked separately from the per-path combined totals because format-token
         // coverage only has a single shared denominator (totalTokens) rather than
         // independent per-axis denominators, so it must only contribute once to the
         // overall/combined pool instead of once per axis.
@@ -67,55 +72,33 @@ public class SummaryReport
             JsonNode summary = root.get("summary");
             int total = summary.get("total").asInt();
             int uniqueFunctionNames = summary.has("unique_function_names") ? summary.get("unique_function_names").asInt() : 0;
-            int tdsSupported = summary.has("tds_supported_functions") ? summary.get("tds_supported_functions").asInt() : 0;
-            int relSupported = summary.has("relation_supported_functions") ? summary.get("relation_supported_functions").asInt() : 0;
             int totalTests = summary.has("total_tests") ? summary.get("total_tests").asInt() : 0;
-            double tdsSupportedPct = uniqueFunctionNames > 0 ? (100.0 * tdsSupported / uniqueFunctionNames) : 0;
-            double relSupportedPct = uniqueFunctionNames > 0 ? (100.0 * relSupported / uniqueFunctionNames) : 0;
-            
-            JsonNode tds = summary.get("tds");
-            JsonNode rel = summary.get("relation");
-
-            int tdsPass = tds.get("pass").asInt();
-            int tdsPartial = tds.get("partial").asInt();
-            int tdsFail = tds.get("fail").asInt();
-            int tdsError = tds.get("error").asInt();
-            int tdsUntested = tds.get("untested").asInt();
-            int tdsUnsupported = tds.has("unsupported") ? tds.get("unsupported").asInt() : 0;
-            int tdsExpected = tdsPass + tdsPartial + tdsFail + tdsError + tdsUntested;
-
-            int relPass = rel.get("pass").asInt();
-            int relPartial = rel.get("partial").asInt();
-            int relFail = rel.get("fail").asInt();
-            int relError = rel.get("error").asInt();
-            int relUntested = rel.get("untested").asInt();
-            int relUnsupported = rel.has("unsupported") ? rel.get("unsupported").asInt() : 0;
-            int relExpected = relPass + relPartial + relFail + relError + relUntested;
-
-            double tdsPct = tdsExpected > 0 ? (100.0 * tdsPass / tdsExpected) : 0;
-            double relPct = relExpected > 0 ? (100.0 * relPass / relExpected) : 0;
-            double tdsPartialPct = tdsExpected > 0 ? (100.0 * (tdsPass + tdsPartial) / tdsExpected) : 0;
-            double relPartialPct = relExpected > 0 ? (100.0 * (relPass + relPartial) / relExpected) : 0;
+            Map<ParityPath, PathSummary> byPath = pathSummaries(summary);
+            Map<ParityPath, Integer> supported = new EnumMap<>(ParityPath.class);
+            for (ParityPath path : ParityPath.values())
+            {
+                String key = path.reportKey() + "_supported_functions";
+                supported.put(path, summary.has(key) ? summary.get(key).asInt() : 0);
+            }
 
             md.append("## Function Coverage\n\n");
             md.append("Coverage of Postgres built-in functions in Legend SQL.\n");
             md.append("See [full details](function-coverage.md) for per-function results.\n\n");
 
-            md.append("| Metric | TDS | Relation |\n");
-            md.append("|--------|-----|----------|\n");
-            md.append(String.format("| Total signatures | %d | %d |\n", total, total));
-            md.append(String.format("| Unique function names | %d | %d |\n", uniqueFunctionNames, uniqueFunctionNames));
-            md.append(String.format("| **Supported functions (PASS/PARTIAL)** | **%d (%.1f%%)** | **%d (%.1f%%)** |\n", 
-                    tdsSupported, tdsSupportedPct, relSupported, relSupportedPct));
-            md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
-            md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", tdsUnsupported, relUnsupported));
-            md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
-            md.append(String.format("| ⚠️ PARTIAL | %d | %d |\n", tdsPartial, relPartial));
-            md.append(String.format("| ❌ FAIL | %d | %d |\n", tdsFail, relFail));
-            md.append(String.format("| 💥 ERROR | %d | %d |\n", tdsError, relError));
-            md.append(String.format("| ❓ UNTESTED | %d | %d |\n", tdsUntested, relUntested));
-            md.append(String.format("| **Full pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
-            md.append(String.format("| **Pass + partial rate** | **%.1f%%** | **%.1f%%** |\n", tdsPartialPct, relPartialPct));
+            appendMetricsHeader(md);
+            appendRow(md, "Total signatures", path -> String.valueOf(total));
+            appendRow(md, "Unique function names", path -> String.valueOf(uniqueFunctionNames));
+            appendRow(md, "**Supported functions (PASS/PARTIAL)**", path -> String.format("**%d (%.1f%%)**", supported.get(path),
+                    uniqueFunctionNames > 0 ? (100.0 * supported.get(path) / uniqueFunctionNames) : 0));
+            appendRow(md, "Total tests", path -> String.valueOf(totalTests));
+            appendRow(md, "⚪ UNSUPPORTED", path -> String.valueOf(byPath.get(path).unsupported));
+            appendRow(md, "✅ PASS", path -> String.valueOf(byPath.get(path).pass));
+            appendRow(md, "⚠️ PARTIAL", path -> String.valueOf(byPath.get(path).partial));
+            appendRow(md, "❌ FAIL", path -> String.valueOf(byPath.get(path).fail));
+            appendRow(md, "💥 ERROR", path -> String.valueOf(byPath.get(path).error));
+            appendRow(md, "❓ UNTESTED", path -> String.valueOf(byPath.get(path).untested));
+            appendRow(md, "**Full pass rate**", path -> String.format("**%.1f%%**", byPath.get(path).passPct()));
+            appendRow(md, "**Pass + partial rate**", path -> String.format("**%.1f%%**", byPath.get(path).passPartialPct()));
             md.append("\n_Percentages exclude unsupported functions from the denominator._\n");
 
             // List FAIL test links
@@ -123,12 +106,13 @@ public class SummaryReport
 
             md.append("\n---\n\n");
 
-            combinedTdsPass += tdsPass;
-            combinedRelPass += relPass;
-            combinedTdsTotal += tdsExpected;
-            combinedRelTotal += relExpected;
-            combinedOverallPass += tdsPass + relPass;
-            combinedOverallTotal += tdsExpected + relExpected;
+            for (ParityPath path : ParityPath.values())
+            {
+                combinedByPath.get(path)[0] += byPath.get(path).pass;
+                combinedByPath.get(path)[1] += byPath.get(path).expected();
+                combinedOverallPass += byPath.get(path).pass;
+                combinedOverallTotal += byPath.get(path).expected();
+            }
         }
 
         // === Operator Coverage ===
@@ -137,54 +121,34 @@ public class SummaryReport
             JsonNode root = MAPPER.readTree(opJson);
             JsonNode summary = root.get("summary");
             int total = summary.get("total").asInt();
-            JsonNode tds = summary.get("tds");
-            JsonNode rel = summary.get("relation");
-
-            int tdsPass = tds.get("pass").asInt();
-            int tdsPartial = tds.get("partial").asInt();
-            int tdsFail = tds.get("fail").asInt();
-            int tdsError = tds.get("error").asInt();
-            int tdsUntested = tds.get("untested").asInt();
-            int tdsUnsupported = tds.has("unsupported") ? tds.get("unsupported").asInt() : 0;
-            int tdsExpected = tdsPass + tdsPartial + tdsFail + tdsError + tdsUntested;
-
-            int relPass = rel.get("pass").asInt();
-            int relPartial = rel.get("partial").asInt();
-            int relFail = rel.get("fail").asInt();
-            int relError = rel.get("error").asInt();
-            int relUntested = rel.get("untested").asInt();
-            int relUnsupported = rel.has("unsupported") ? rel.get("unsupported").asInt() : 0;
-            int relExpected = relPass + relPartial + relFail + relError + relUntested;
-
-            double tdsPct = tdsExpected > 0 ? (100.0 * tdsPass / tdsExpected) : 0;
-            double relPct = relExpected > 0 ? (100.0 * relPass / relExpected) : 0;
+            Map<ParityPath, PathSummary> byPath = pathSummaries(summary);
 
             md.append("## Operator Coverage\n\n");
             md.append("Coverage of Postgres built-in operators in Legend SQL.\n");
             md.append("See [full details](operator-coverage.md) for per-operator results.\n\n");
 
-            md.append("| Metric | TDS | Relation |\n");
-            md.append("|--------|-----|----------|\n");
-            md.append(String.format("| Total operators | %d | %d |\n", total, total));
-            md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", tdsUnsupported, relUnsupported));
-            md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
-            md.append(String.format("| ⚠️ PARTIAL | %d | %d |\n", tdsPartial, relPartial));
-            md.append(String.format("| ❌ FAIL | %d | %d |\n", tdsFail, relFail));
-            md.append(String.format("| 💥 ERROR | %d | %d |\n", tdsError, relError));
-            md.append(String.format("| ❓ UNTESTED | %d | %d |\n", tdsUntested, relUntested));
-            md.append(String.format("| **Full pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
+            appendMetricsHeader(md);
+            appendRow(md, "Total operators", path -> String.valueOf(total));
+            appendRow(md, "⚪ UNSUPPORTED", path -> String.valueOf(byPath.get(path).unsupported));
+            appendRow(md, "✅ PASS", path -> String.valueOf(byPath.get(path).pass));
+            appendRow(md, "⚠️ PARTIAL", path -> String.valueOf(byPath.get(path).partial));
+            appendRow(md, "❌ FAIL", path -> String.valueOf(byPath.get(path).fail));
+            appendRow(md, "💥 ERROR", path -> String.valueOf(byPath.get(path).error));
+            appendRow(md, "❓ UNTESTED", path -> String.valueOf(byPath.get(path).untested));
+            appendRow(md, "**Full pass rate**", path -> String.format("**%.1f%%**", byPath.get(path).passPct()));
 
             // List FAIL test links
             appendFailLinks(md, root, "operator");
 
             md.append("\n---\n\n");
 
-            combinedTdsPass += tdsPass;
-            combinedRelPass += relPass;
-            combinedTdsTotal += tdsExpected;
-            combinedRelTotal += relExpected;
-            combinedOverallPass += tdsPass + relPass;
-            combinedOverallTotal += tdsExpected + relExpected;
+            for (ParityPath path : ParityPath.values())
+            {
+                combinedByPath.get(path)[0] += byPath.get(path).pass;
+                combinedByPath.get(path)[1] += byPath.get(path).expected();
+                combinedOverallPass += byPath.get(path).pass;
+                combinedOverallTotal += byPath.get(path).expected();
+            }
         }
 
         // === Structural Parity ===
@@ -194,46 +158,23 @@ public class SummaryReport
             JsonNode summary = root.get("summary");
             int totalFeatures = summary.get("total_features").asInt();
             int totalTests = summary.get("total_tests").asInt();
-            JsonNode tds = summary.get("tds");
-            JsonNode rel = summary.get("relation");
-
-            int tdsPass = tds.get("pass").asInt();
-            int tdsPartial = tds.get("partial").asInt();
-            int tdsFail = tds.get("fail").asInt();
-            int tdsError = tds.get("error").asInt();
-            int tdsUntested = tds.get("untested").asInt();
-            int tdsUnsupported = tds.has("unsupported") ? tds.get("unsupported").asInt() : 0;
-            int tdsExpected = tdsPass + tdsPartial + tdsFail + tdsError + tdsUntested;
-
-            int relPass = rel.get("pass").asInt();
-            int relPartial = rel.get("partial").asInt();
-            int relFail = rel.get("fail").asInt();
-            int relError = rel.get("error").asInt();
-            int relUntested = rel.get("untested").asInt();
-            int relUnsupported = rel.has("unsupported") ? rel.get("unsupported").asInt() : 0;
-            int relExpected = relPass + relPartial + relFail + relError + relUntested;
-
-            double tdsPct = tdsExpected > 0 ? (100.0 * tdsPass / tdsExpected) : 0;
-            double relPct = relExpected > 0 ? (100.0 * relPass / relExpected) : 0;
-            double tdsPartialPct = tdsExpected > 0 ? (100.0 * (tdsPass + tdsPartial) / tdsExpected) : 0;
-            double relPartialPct = relExpected > 0 ? (100.0 * (relPass + relPartial) / relExpected) : 0;
+            Map<ParityPath, PathSummary> byPath = pathSummaries(summary);
 
             md.append("## Structural Parity\n\n");
             md.append("Coverage of SQL structural features (joins, subqueries, aggregations, etc.).\n");
             md.append("See [full details](structural-parity.md) for per-feature results.\n\n");
 
-            md.append("| Metric | TDS | Relation |\n");
-            md.append("|--------|-----|----------|\n");
-            md.append(String.format("| Total features | %d | %d |\n", totalFeatures, totalFeatures));
-            md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
-            md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", tdsUnsupported, relUnsupported));
-            md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
-            md.append(String.format("| ⚠️ PARTIAL | %d | %d |\n", tdsPartial, relPartial));
-            md.append(String.format("| ❌ FAIL | %d | %d |\n", tdsFail, relFail));
-            md.append(String.format("| 💥 ERROR | %d | %d |\n", tdsError, relError));
-            md.append(String.format("| ❓ UNTESTED | %d | %d |\n", tdsUntested, relUntested));
-            md.append(String.format("| **Full pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
-            md.append(String.format("| **Pass + partial rate** | **%.1f%%** | **%.1f%%** |\n", tdsPartialPct, relPartialPct));
+            appendMetricsHeader(md);
+            appendRow(md, "Total features", path -> String.valueOf(totalFeatures));
+            appendRow(md, "Total tests", path -> String.valueOf(totalTests));
+            appendRow(md, "⚪ UNSUPPORTED", path -> String.valueOf(byPath.get(path).unsupported));
+            appendRow(md, "✅ PASS", path -> String.valueOf(byPath.get(path).pass));
+            appendRow(md, "⚠️ PARTIAL", path -> String.valueOf(byPath.get(path).partial));
+            appendRow(md, "❌ FAIL", path -> String.valueOf(byPath.get(path).fail));
+            appendRow(md, "💥 ERROR", path -> String.valueOf(byPath.get(path).error));
+            appendRow(md, "❓ UNTESTED", path -> String.valueOf(byPath.get(path).untested));
+            appendRow(md, "**Full pass rate**", path -> String.format("**%.1f%%**", byPath.get(path).passPct()));
+            appendRow(md, "**Pass + partial rate**", path -> String.format("**%.1f%%**", byPath.get(path).passPartialPct()));
             md.append("\n_Percentages exclude unsupported features from the denominator._\n");
 
             // List FAIL test links
@@ -241,12 +182,13 @@ public class SummaryReport
 
             md.append("\n---\n\n");
 
-            combinedTdsPass += tdsPass;
-            combinedRelPass += relPass;
-            combinedTdsTotal += tdsExpected;
-            combinedRelTotal += relExpected;
-            combinedOverallPass += tdsPass + relPass;
-            combinedOverallTotal += tdsExpected + relExpected;
+            for (ParityPath path : ParityPath.values())
+            {
+                combinedByPath.get(path)[0] += byPath.get(path).pass;
+                combinedByPath.get(path)[1] += byPath.get(path).expected();
+                combinedOverallPass += byPath.get(path).pass;
+                combinedOverallTotal += byPath.get(path).expected();
+            }
         }
 
         // === Format Token Coverage ===
@@ -255,33 +197,34 @@ public class SummaryReport
             JsonNode root = MAPPER.readTree(formatTokenJson);
             JsonNode summary = root.get("summary");
             int totalTokens = summary.get("total_tokens").asInt();
-            int tdsPass = summary.get("tds_pass").asInt();
-            int relPass = summary.get("relation_pass").asInt();
-            double tdsPct = totalTokens > 0 ? (100.0 * tdsPass / totalTokens) : 0;
-            double relPct = totalTokens > 0 ? (100.0 * relPass / totalTokens) : 0;
+            Map<ParityPath, Integer> passByPath = new EnumMap<>(ParityPath.class);
+            for (ParityPath path : ParityPath.values())
+            {
+                String key = path.reportKey() + "_pass";
+                passByPath.put(path, summary.has(key) ? summary.get(key).asInt() : 0);
+            }
 
             md.append("## Format Token Coverage\n\n");
             md.append("Coverage of `to_char` template patterns and `EXTRACT`/`date_part` field keywords.\n");
             md.append("See [full details](format-token-coverage.md) for per-token results.\n\n");
 
-            md.append("| Metric | TDS | Relation |\n");
-            md.append("|--------|-----|----------|\n");
-            md.append(String.format("| Total tokens | %d | %d |\n", totalTokens, totalTokens));
-            md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
-            md.append(String.format("| **Pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
+            appendMetricsHeader(md);
+            appendRow(md, "Total tokens", path -> String.valueOf(totalTokens));
+            appendRow(md, "✅ PASS", path -> String.valueOf(passByPath.get(path)));
+            appendRow(md, "**Pass rate**", path -> String.format("**%.1f%%**",
+                    totalTokens > 0 ? (100.0 * passByPath.get(path) / totalTokens) : 0));
             md.append("\n---\n\n");
 
-            combinedTdsPass += tdsPass;
-            combinedRelPass += relPass;
-            combinedTdsTotal += totalTokens;
-            combinedRelTotal += totalTokens;
-            combinedOverallPass += tdsPass + relPass;
+            for (ParityPath path : ParityPath.values())
+            {
+                combinedByPath.get(path)[0] += passByPath.get(path);
+                combinedByPath.get(path)[1] += totalTokens;
+                combinedOverallPass += passByPath.get(path);
+            }
             combinedOverallTotal += totalTokens;
         }
 
         // === Overall ===
-        double overallTdsPct = combinedTdsTotal > 0 ? (100.0 * combinedTdsPass / combinedTdsTotal) : 0;
-        double overallRelPct = combinedRelTotal > 0 ? (100.0 * combinedRelPass / combinedRelTotal) : 0;
         double overallPct = combinedOverallTotal > 0
                 ? (100.0 * combinedOverallPass / combinedOverallTotal) : 0;
 
@@ -291,8 +234,12 @@ public class SummaryReport
         md.append("Combined pass rate across function coverage and structural parity.\n\n");
         md.append("| Path | Pass | Tested | Pass Rate |\n");
         md.append("|------|------|--------|-----------|\n");
-        md.append(String.format("| TDS | %d | %d | **%.1f%%** |\n", combinedTdsPass, combinedTdsTotal, overallTdsPct));
-        md.append(String.format("| Relation | %d | %d | **%.1f%%** |\n", combinedRelPass, combinedRelTotal, overallRelPct));
+        for (ParityPath path : ParityPath.values())
+        {
+            int[] combined = combinedByPath.get(path);
+            double pct = combined[1] > 0 ? (100.0 * combined[0] / combined[1]) : 0;
+            md.append(String.format("| %s | %d | %d | **%.1f%%** |\n", path.label(), combined[0], combined[1], pct));
+        }
         md.append(String.format("| **Combined** | **%d** | **%d** | **%.1f%%** |\n",
                 combinedOverallPass, combinedOverallTotal, overallPct));
         md.append("\n");
@@ -343,9 +290,15 @@ public class SummaryReport
                 for (JsonNode item : items)
                 {
                     counts[1]++;
-                    String tdsStatus = item.path("tds").path("status").asText("UNTESTED");
-                    String relStatus = item.path("relation").path("status").asText("UNTESTED");
-                    if (!"UNTESTED".equals(tdsStatus) || !"UNTESTED".equals(relStatus))
+                    boolean anyPathTested = false;
+                    for (ParityPath path : ParityPath.values())
+                    {
+                        if (!"UNTESTED".equals(item.path(path.reportKey()).path("status").asText("UNTESTED")))
+                        {
+                            anyPathTested = true;
+                        }
+                    }
+                    if (anyPathTested)
                     {
                         counts[0]++;
                     }
@@ -412,20 +365,15 @@ public class SummaryReport
                 for (JsonNode te : details)
                 {
                     String testId = te.get("id").asText();
-                    String tdsState = te.has("tds") ? te.get("tds").asText() : "";
-                    String relState = te.has("relation") ? te.get("relation").asText() : "";
-
-                    if ("FAIL".equals(tdsState))
+                    for (ParityPath path : ParityPath.values())
                     {
-                        String anchor = "fail-" + testId + "-TDS";
-                        String link = String.format("- [%s \\[TDS\\]](failure-details.md#%s)\n", testId, anchor);
-                        seen.add(link);
-                    }
-                    if ("FAIL".equals(relState))
-                    {
-                        String anchor = "fail-" + testId + "-Relation";
-                        String link = String.format("- [%s \\[Relation\\]](failure-details.md#%s)\n", testId, anchor);
-                        seen.add(link);
+                        String state = te.has(path.reportKey()) ? te.get(path.reportKey()).asText() : "";
+                        if ("FAIL".equals(state))
+                        {
+                            String anchor = "fail-" + testId + "-" + path.label();
+                            String link = String.format("- [%s \\[%s\\]](failure-details.md#%s)\n", testId, path.label(), anchor);
+                            seen.add(link);
+                        }
                     }
                 }
             }
@@ -440,10 +388,65 @@ public class SummaryReport
             }
         }
     }
+
+    private static void appendMetricsHeader(StringBuilder md)
+    {
+        md.append("| Metric | TDS | Relation | Grammar |\n");
+        md.append("|--------|-----|----------|---------|\n");
+    }
+
+    private static void appendRow(StringBuilder md, String label, Function<ParityPath, String> cell)
+    {
+        md.append("| ").append(label);
+        for (ParityPath path : ParityPath.values())
+        {
+            md.append(" | ").append(cell.apply(path));
+        }
+        md.append(" |\n");
+    }
+
+    private static Map<ParityPath, PathSummary> pathSummaries(JsonNode summary)
+    {
+        Map<ParityPath, PathSummary> byPath = new EnumMap<>(ParityPath.class);
+        for (ParityPath path : ParityPath.values())
+        {
+            byPath.put(path, new PathSummary(summary.path(path.reportKey())));
+        }
+        return byPath;
+    }
+
+    private static final class PathSummary
+    {
+        private final int pass;
+        private final int partial;
+        private final int fail;
+        private final int error;
+        private final int untested;
+        private final int unsupported;
+
+        private PathSummary(JsonNode node)
+        {
+            this.pass = node.path("pass").asInt();
+            this.partial = node.path("partial").asInt();
+            this.fail = node.path("fail").asInt();
+            this.error = node.path("error").asInt();
+            this.untested = node.path("untested").asInt();
+            this.unsupported = node.path("unsupported").asInt();
+        }
+
+        private int expected()
+        {
+            return pass + partial + fail + error + untested;
+        }
+
+        private double passPct()
+        {
+            return expected() > 0 ? (100.0 * pass / expected()) : 0;
+        }
+
+        private double passPartialPct()
+        {
+            return expected() > 0 ? (100.0 * (pass + partial) / expected()) : 0;
+        }
+    }
 }
-
-
-
-
-
-

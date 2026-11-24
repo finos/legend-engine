@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Cross-references test results with the Postgres function catalog using
@@ -44,7 +46,7 @@ public class FunctionCoverageMapper
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
-     * Holds per-test results for both TDS and Relation paths.
+     * Holds per-test results for TDS, Relation and Grammar paths.
      */
     public static class TestResultEntry
     {
@@ -52,6 +54,7 @@ public class FunctionCoverageMapper
         public final String signature;
         public String tdsState;
         public String relationState;
+        public String grammarState;
 
         public TestResultEntry(String testId, String signature)
         {
@@ -73,57 +76,52 @@ public class FunctionCoverageMapper
         public int relFail;
         public int relError;
         public int relSkip;
+        public int grammarPass;
+        public int grammarFail;
+        public int grammarError;
+        public int grammarSkip;
         public int total;
+        public boolean tdsRecorded = true;
+        public boolean relRecorded = true;
+        public boolean grammarRecorded = true;
         public final List<TestResultEntry> testDetails = new ArrayList<>();
 
         public String tdsStatus()
         {
-            if (total == 0)
-            {
-                return "UNTESTED";
-            }
-            int effective = total - tdsSkip;
-            if (effective == 0)
-            {
-                return "NOT_APPLICABLE";
-            }
-            if (tdsPass == effective)
-            {
-                return "PASS";
-            }
-            if (tdsPass > 0)
-            {
-                return "PARTIAL";
-            }
-            // None pass: a result mismatch is a FAIL; all-errors means the function is unsupported
-            if (tdsFail > 0)
-            {
-                return "FAIL";
-            }
-            return "UNSUPPORTED";
+            return status(tdsPass, tdsFail, tdsSkip, tdsRecorded);
         }
 
         public String relStatus()
         {
-            if (total == 0)
+            return status(relPass, relFail, relSkip, relRecorded);
+        }
+
+        public String grammarStatus()
+        {
+            return status(grammarPass, grammarFail, grammarSkip, grammarRecorded);
+        }
+
+        private String status(int pass, int fail, int skip, boolean recorded)
+        {
+            if (total == 0 || !recorded)
             {
                 return "UNTESTED";
             }
-            int effective = total - relSkip;
+            int effective = total - skip;
             if (effective == 0)
             {
                 return "NOT_APPLICABLE";
             }
-            if (relPass == effective)
+            if (pass == effective)
             {
                 return "PASS";
             }
-            if (relPass > 0)
+            if (pass > 0)
             {
                 return "PARTIAL";
             }
             // None pass: a result mismatch is a FAIL; all-errors means the function is unsupported
-            if (relFail > 0)
+            if (fail > 0)
             {
                 return "FAIL";
             }
@@ -165,13 +163,16 @@ public class FunctionCoverageMapper
                 {
                     entry.tdsState = "SKIP";
                     entry.relationState = "SKIP";
+                    entry.grammarState = "SKIP";
                     cov.tdsSkip++;
                     cov.relSkip++;
+                    cov.grammarSkip++;
                 }
             }
         }
 
         // Step 2: Read actual test results from parity-report.json
+        Set<String> recordedPaths = new HashSet<>();
         if (reportFile.exists())
         {
             JsonNode report = MAPPER.readTree(reportFile);
@@ -183,6 +184,7 @@ public class FunctionCoverageMapper
                     String id = result.has("id") ? result.get("id").asText() : "";
                     String state = result.has("state") ? result.get("state").asText() : "";
                     String path = result.has("path") ? result.get("path").asText() : "";
+                    recordedPaths.add(path);
 
                     TestResultEntry entry = linkedTests.get(id);
                     if (entry != null)
@@ -194,6 +196,10 @@ public class FunctionCoverageMapper
                         else if ("Relation".equals(path) && entry.relationState == null)
                         {
                             entry.relationState = state;
+                        }
+                        else if ("Grammar".equals(path) && entry.grammarState == null)
+                        {
+                            entry.grammarState = state;
                         }
                     }
                 }
@@ -209,8 +215,12 @@ public class FunctionCoverageMapper
             cov.relPass = 0;
             cov.relFail = 0;
             cov.relError = 0;
+            cov.grammarPass = 0;
+            cov.grammarFail = 0;
+            cov.grammarError = 0;
             int skipTds = 0;
             int skipRel = 0;
+            int skipGrammar = 0;
 
             for (TestResultEntry entry : cov.testDetails)
             {
@@ -249,9 +259,31 @@ public class FunctionCoverageMapper
                 {
                     skipRel++;
                 }
+
+                // Grammar
+                if ("PASS".equals(entry.grammarState))
+                {
+                    cov.grammarPass++;
+                }
+                else if ("FAIL".equals(entry.grammarState))
+                {
+                    cov.grammarFail++;
+                }
+                else if ("ERROR".equals(entry.grammarState) || "BUG".equals(entry.grammarState))
+                {
+                    cov.grammarError++;
+                }
+                else
+                {
+                    skipGrammar++;
+                }
             }
             cov.tdsSkip = skipTds;
             cov.relSkip = skipRel;
+            cov.grammarSkip = skipGrammar;
+            cov.tdsRecorded = recordedPaths.contains("TDS");
+            cov.relRecorded = recordedPaths.contains("Relation");
+            cov.grammarRecorded = recordedPaths.contains("Grammar");
         }
 
         // Step 4: Inject synthetic catalog entries for extension functions that have test coverage
@@ -294,6 +326,7 @@ public class FunctionCoverageMapper
                 SignatureCoverage cov = entry.getValue();
                 syntheticFn.tdsStatus = cov.tdsStatus();
                 syntheticFn.relStatus = cov.relStatus();
+                syntheticFn.grammarStatus = cov.grammarStatus();
                 syntheticFn.coverage = cov;
                 catalog.computeIfAbsent(category, k -> new ArrayList<>()).add(syntheticFn);
             }
@@ -316,12 +349,14 @@ public class FunctionCoverageMapper
                 {
                     fn.tdsStatus = cov.tdsStatus();
                     fn.relStatus = cov.relStatus();
+                    fn.grammarStatus = cov.grammarStatus();
                     fn.coverage = cov;
                 }
                 else if (isUnsupported)
                 {
                     fn.tdsStatus = "NOT_APPLICABLE";
                     fn.relStatus = "NOT_APPLICABLE";
+                    fn.grammarStatus = "NOT_APPLICABLE";
                     fn.notes = "Unsupported category (system/network/binary)";
                 }
                 // else stays UNTESTED (default)

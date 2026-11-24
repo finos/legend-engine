@@ -25,14 +25,17 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::profiles::*;
+import meta::pure::metamodel::serialization::grammar::*;
 
-// Both is only meaningful for ad hoc SQL execution (executeAdhocSQL): run against both paths at once.
-// executeSQLE2ETest and runOneCase always take a single TDS or Relation path.
+// Both (TDS + Relation) and All (every path) are only meaningful for ad hoc SQL execution
+// (executeAdhocSQL). executeSQLE2ETest and runOneCase always take a single path.
 Enum meta::external::query::sql::e2e::SqlE2EPath
 {
   TDS,
   Relation,
-  Both
+  Grammar,
+  Both,
+  All
 }
 
 // A corpus case crossed with one execution path, resolved down to what runOneCase needs to run it.
@@ -112,14 +115,14 @@ Class meta::external::query::sql::e2e::SqlE2EAdhocResult
   matched: Boolean[0..1];
 }
 
-// Every corpus case matching filter, crossed with both execution paths and resolved for each.
+// Every corpus case matching filter, crossed with every execution path and resolved for each.
 native function meta::external::query::sql::e2e::resolveCaseRefs(filter:String[1]):SqlE2ECaseRef[*];
 
 // Runs and classifies one (case id, path) pair. Pure has no try/catch, so trapping and timing the
 // run happens here rather than in Pure - a single failing case must not abort a whole category run.
 native function meta::external::query::sql::e2e::executeSQLE2ETest(caseId:String[1], path:SqlE2EPath[1]):SqlE2ETestResult[1];
 
-// Runs sql against Postgres and against Legend (path Both runs both paths), trapping each side
+// Runs sql against Postgres and against Legend (Both and All expand to several paths), trapping each side
 // independently so a failure on one does not hide whether the other executed.
 native function meta::external::query::sql::e2e::executeAdhocSQL(sql:String[1], path:SqlE2EPath[1]):SqlE2EAdhocResult[*];
 
@@ -181,27 +184,88 @@ function meta::external::query::sql::e2e::executeLegend(sql:String[1], prefix:St
                    noDebug()
                  )
              );
+  meta::external::query::sql::e2e::executePlanAsJSON($plan, $ext);
+}
+
+// Mirrors SQLCompilerExtension's #SQL compile: default table sources only, no preval, and the mapping
+// and runtime supplied from outside as --mapping/--runtime do. ModifiedTranslator, the SQLExpression
+// wrapper and pg-wire are not exercised.
+function meta::external::query::sql::e2e::executeGrammar(sql:String[1], conn:SqlE2EConnection[1], ext:Extension[*]):String[1]
+{
+  let query = meta::external::store::relational::postgresSql::parser::parseSqlStatement($sql)->cast(@Query);
+  let lambda = $query->sqlToPure(getSources(), [], ^Map<String, meta::pure::metamodel::valuespecification::ValueSpecification>(), false, false,
+                                 meta::external::query::sql::e2e::compileWithE2eFunctions_LambdaFunction_1__LambdaFunction_1_);
+  let plan = meta::pure::executionPlan::executionPlan(
+               $lambda->cast(@FunctionDefinition<Any>),
+               e2e::TestMapping,
+               meta::external::query::sql::e2e::runtimeFor($conn),
+               ^meta::pure::runtime::ExecutionContext(),
+               $ext,
+               noDebug()
+             );
+  meta::external::query::sql::e2e::executePlanAsJSON($plan, $ext);
+}
+
+// compileViaGrammar would fail here: the interpreted meta::legend::compile cannot resolve a call to a
+// model function, so the called e2e:: functions are printed into the compile unit.
+function meta::external::query::sql::e2e::compileWithE2eFunctions(l:LambdaFunction<Any>[1]):LambdaFunction<Any>[1]
+{
+  let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
+  let lambda = $l->meta::external::query::sql::transformation::compile::utils::removeFrom();
+  let functions = $lambda->meta::external::query::sql::e2e::calledE2eFunctions()->removeDuplicates();
+  let code = $functions->map(f | $f->printPackageableElements($config))->joinStrings('\n')
+           + '\n###Pure\n'
+           + 'function test::container():Any[*]{\n'
+           + '  ' + $lambda->printFunctionDefinition($config, ^GContext(space='')) + '\n'
+           + '}';
+  meta::legend::compile($code)->filter(x | $x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->evaluateAndDeactivate()
+    ->cast(@InstanceValue).values->toOne()->cast(@LambdaFunction<Any>);
+}
+
+function meta::external::query::sql::e2e::calledE2eFunctions(v:Any[1]):ConcreteFunctionDefinition<Any>[*]
+{
+  $v->match([
+    f:SimpleFunctionExpression[1] |
+      let called = $f.func->match([
+        c:ConcreteFunctionDefinition<Any>[1] | if($c->elementToPath()->startsWith('e2e::'), | $c, | []),
+        a:Any[1] | []
+      ]);
+      $called->concatenate($f.parametersValues->evaluateAndDeactivate()->map(p | $p->meta::external::query::sql::e2e::calledE2eFunctions()));,
+    i:InstanceValue[1] | $i.values->map(x | $x->meta::external::query::sql::e2e::calledE2eFunctions()),
+    l:LambdaFunction<Any>[1] | $l.expressionSequence->evaluateAndDeactivate()->map(e | $e->meta::external::query::sql::e2e::calledE2eFunctions()),
+    a:Any[1] | []
+  ])
+}
+
+function meta::external::query::sql::e2e::executePlanAsJSON(plan:meta::pure::executionPlan::ExecutionPlan[1], ext:Extension[*]):String[1]
+{
   let bound = $plan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava');
   let protocolPlan = $bound->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($ext);
   let planAsJson = $protocolPlan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
   meta::legend::executePlanAsJSON($planAsJson, []);
 }
 
+function meta::external::query::sql::e2e::executeOnPath(sql:String[1], path:SqlE2EPath[1], conn:SqlE2EConnection[1]):String[1]
+{
+  assert([SqlE2EPath.TDS, SqlE2EPath.Relation, SqlE2EPath.Grammar]->contains($path), | 'expected a single path (TDS, Relation or Grammar), got ' + $path.name);
+  let ext = meta::relational::extension::relationalExtensions();
+  if($path == SqlE2EPath.Grammar,
+     | meta::external::query::sql::e2e::executeGrammar($sql, $conn, $ext),
+     | meta::external::query::sql::e2e::executeLegend($sql, if($path == SqlE2EPath.TDS, | 'tds_', | 'rel_'), $conn, $ext));
+}
+
 // Invoked by executeAdhocSQL with SQL already FROM-rewritten (the rewrite itself is plain text
 // manipulation, done in Java rather than here).
-function meta::external::query::sql::e2e::runOneAdhocLegend(rewrittenSql:String[1], prefix:String[1], conn:SqlE2EConnection[1]):String[1]
+function meta::external::query::sql::e2e::runOneAdhocLegend(rewrittenSql:String[1], path:String[1], conn:SqlE2EConnection[1]):String[1]
 {
-  meta::external::query::sql::e2e::executeLegend($rewrittenSql, $prefix, $conn, meta::relational::extension::relationalExtensions())
+  meta::external::query::sql::e2e::executeOnPath($rewrittenSql, meta::external::query::sql::e2e::pathFromName($path), $conn)
 }
 
 // Invoked by executeSQLE2ETest only when ref has real SQL to run (skip/bug/rewrite-error cases are
 // classified in Java without reaching here).
 function meta::external::query::sql::e2e::runOneCase(ref:SqlE2ECaseRef[1], conn:SqlE2EConnection[1]):String[1]
 {
-  assert($ref.path != SqlE2EPath.Both, | 'runOneCase requires a single path (TDS or Relation), got Both');
-  let prefix = if($ref.path == SqlE2EPath.TDS, | 'tds_', | 'rel_');
-  let ext = meta::relational::extension::relationalExtensions();
-  meta::external::query::sql::e2e::executeLegend($ref.sql->toOne(), $prefix, $conn, $ext);
+  meta::external::query::sql::e2e::executeOnPath($ref.sql->toOne(), $ref.path, $conn)
 }
 
 function meta::external::query::sql::e2e::runOutcomeFor(ref:SqlE2ECaseRef[1]):SqlE2EOutcome[1]
@@ -334,7 +398,7 @@ function meta::external::query::sql::e2e::diagCase(caseId:String[1], mode:String
   $rep;
 }
 
-// Ad hoc SQL diagnostic - no corpus entry required. path is 'TDS', 'Relation', or 'Both'.
+// Ad hoc SQL diagnostic - no corpus entry required. path is a SqlE2EPath name: 'TDS', 'Relation', 'Grammar', 'Both' or 'All'.
 function meta::external::query::sql::e2e::diagAdhoc(sql:String[1], path:SqlE2EPath[1]):String[1]
 {
   let results = meta::external::query::sql::e2e::executeAdhocSQL($sql, $path);

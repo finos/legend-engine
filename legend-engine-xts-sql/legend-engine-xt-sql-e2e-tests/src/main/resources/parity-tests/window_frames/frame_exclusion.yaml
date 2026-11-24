@@ -6,6 +6,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: frame_exclude_current_row_avg
     sql: "SELECT name, salary, AVG(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE CURRENT ROW) AS avg_others FROM persons WHERE salary IS NOT NULL ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCLUDE GROUP
   - id: frame_exclude_group
@@ -21,6 +23,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCLUDE TIES
   - id: frame_exclude_ties
@@ -29,6 +32,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCLUDE NO OTHERS (default)
   - id: frame_exclude_no_others
@@ -37,6 +41,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCLUDE CURRENT ROW with COUNT
   - id: frame_exclude_current_count
@@ -45,6 +50,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCLUDE CURRENT ROW with MIN/MAX
   - id: frame_exclude_current_minmax
@@ -53,6 +59,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCLUDE GROUP with partition
   - id: frame_exclude_group_partition
@@ -61,6 +68,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCLUDE TIES with partition
   - id: frame_exclude_ties_partition
@@ -69,3 +77,4 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

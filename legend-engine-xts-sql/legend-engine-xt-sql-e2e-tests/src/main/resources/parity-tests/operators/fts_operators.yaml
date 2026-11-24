@@ -12,6 +12,7 @@ tests:
   signature: "!!(-, tsquery) → tsquery"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_and
   sql: SELECT to_tsquery('english', 'fox') && to_tsquery('english', 'dog') AS result FROM persons WHERE id = 1
@@ -19,6 +20,7 @@ tests:
   signature: "&&(tsquery, tsquery) → tsquery"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_lt
   sql: SELECT to_tsquery('english', 'dog') < to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -26,6 +28,7 @@ tests:
   signature: "<(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsvector_lt
   sql: SELECT to_tsvector('english', 'dog') < to_tsvector('english', 'fox') AS result FROM persons WHERE id = 1
@@ -33,6 +36,7 @@ tests:
   signature: "<(tsvector, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_phrase
   sql: SELECT to_tsquery('english', 'fox') <-> to_tsquery('english', 'jumps') AS result FROM persons WHERE id = 1
@@ -40,6 +44,7 @@ tests:
   signature: "<->(tsquery, tsquery) → tsquery"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_lte
   sql: SELECT to_tsquery('english', 'dog') <= to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -47,6 +52,7 @@ tests:
   signature: "<=(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsvector_lte
   sql: SELECT to_tsvector('english', 'dog') <= to_tsvector('english', 'fox') AS result FROM persons WHERE id = 1
@@ -54,6 +60,7 @@ tests:
   signature: "<=(tsvector, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_neq
   sql: SELECT to_tsquery('english', 'dog') <> to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -61,6 +68,7 @@ tests:
   signature: "<>(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsvector_neq
   sql: SELECT to_tsvector('english', 'dog') <> to_tsvector('english', 'fox') AS result FROM persons WHERE id = 1
@@ -68,6 +76,7 @@ tests:
   signature: "<>(tsvector, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_contained_by
   sql: SELECT to_tsquery('english', 'fox') <@ to_tsquery('english', 'fox & dog') AS result FROM persons WHERE id = 1
@@ -75,6 +84,7 @@ tests:
   signature: "<@(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_eq
   sql: SELECT to_tsquery('english', 'fox') = to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -82,6 +92,7 @@ tests:
   signature: "=(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsvector_eq
   sql: SELECT to_tsvector('english', 'fox') = to_tsvector('english', 'fox') AS result FROM persons WHERE id = 1
@@ -89,6 +100,7 @@ tests:
   signature: "=(tsvector, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_gt
   sql: SELECT to_tsquery('english', 'fox') > to_tsquery('english', 'dog') AS result FROM persons WHERE id = 1
@@ -96,6 +108,7 @@ tests:
   signature: ">(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsvector_gt
   sql: SELECT to_tsvector('english', 'fox') > to_tsvector('english', 'dog') AS result FROM persons WHERE id = 1
@@ -103,6 +116,7 @@ tests:
   signature: ">(tsvector, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_gte
   sql: SELECT to_tsquery('english', 'fox') >= to_tsquery('english', 'dog') AS result FROM persons WHERE id = 1
@@ -110,6 +124,7 @@ tests:
   signature: ">=(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsvector_gte
   sql: SELECT to_tsvector('english', 'fox') >= to_tsvector('english', 'dog') AS result FROM persons WHERE id = 1
@@ -117,6 +132,7 @@ tests:
   signature: ">=(tsvector, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_contains
   sql: SELECT to_tsquery('english', 'fox & dog') @> to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -124,6 +140,7 @@ tests:
   signature: "@>(tsquery, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: fts_match_text_tsquery
   sql: SELECT 'the quick brown fox' @@ to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -131,6 +148,7 @@ tests:
   signature: "@@(text, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: fts_match_tsquery_tsvector
   sql: SELECT to_tsquery('english', 'fox') @@ to_tsvector('english', 'the quick brown fox') AS result FROM persons WHERE id = 1
@@ -138,6 +156,7 @@ tests:
   signature: "@@(tsquery, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: fts_match_tsvector_tsquery
   sql: SELECT to_tsvector('english', 'the quick brown fox') @@ to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -145,6 +164,7 @@ tests:
   signature: "@@(tsvector, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: fts_match3_tsquery_tsvector
   sql: SELECT to_tsquery('english', 'fox') @@@ to_tsvector('english', 'the quick brown fox') AS result FROM persons WHERE id = 1
@@ -152,6 +172,7 @@ tests:
   signature: "@@@(tsquery, tsvector) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: fts_match3_tsvector_tsquery
   sql: SELECT to_tsvector('english', 'the quick brown fox') @@@ to_tsquery('english', 'fox') AS result FROM persons WHERE id = 1
@@ -159,6 +180,7 @@ tests:
   signature: "@@@(tsvector, tsquery) → bool"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsquery_or
   sql: SELECT to_tsquery('english', 'fox') || to_tsquery('english', 'dog') AS result FROM persons WHERE id = 1
@@ -166,6 +188,7 @@ tests:
   signature: "||(tsquery, tsquery) → tsquery"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
 - id: tsvector_concat
   sql: SELECT to_tsvector('english', 'fox') || to_tsvector('english', 'dog') AS result FROM persons WHERE id = 1
@@ -173,4 +196,5 @@ tests:
   signature: "||(tsvector, tsvector) → tsvector"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
+  expected_grammar_status: ERROR
 
