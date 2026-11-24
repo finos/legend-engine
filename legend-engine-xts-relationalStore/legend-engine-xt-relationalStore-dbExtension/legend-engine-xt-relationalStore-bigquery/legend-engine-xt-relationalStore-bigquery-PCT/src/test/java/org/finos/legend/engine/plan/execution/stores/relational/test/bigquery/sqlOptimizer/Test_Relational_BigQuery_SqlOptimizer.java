@@ -39,7 +39,41 @@ public class Test_Relational_BigQuery_SqlOptimizer
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
         // Fully-qualified Pure test -> a substring that must appear in its failure.
-        MutableMap<String, String> pathToReason = Maps.mutable.empty();
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
+                // The dialect's SQL printer has no lateral join, so the query under test cannot be printed.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByALateralSibling_Connection_1__Boolean_1_",
+                        "Lateral operation not supported")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::mappings::testEveryFeatureKeepsLateralRelationQueriesRunnable_Connection_1__Boolean_1_",
+                        "Lateral operation not supported")
+                // The query under test filters on its own SELECT alias, which standard SQL does not resolve in WHERE.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByTheSubSelectsOwnWhereClause_Connection_1__Boolean_1_",
+                        "Unrecognized name: Q")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByAUnionBranchsOwnWhereClause_Connection_1__Boolean_1_",
+                        "Unrecognized name: Q")
+                // BigQuery compares column names case-insensitively, so the input's "v" and "V" are the same column name.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationLeavesASubSelectWhoseNamesDifferOnlyInCase_Connection_1__Boolean_1_",
+                        "is ambiguous")
+                // BigQuery rejects an aggregate in HAVING when neither GROUP BY nor the SELECT list aggregates.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAHavingClauseThatMakesTheSubSelectAnAggregate_Connection_1__Boolean_1_",
+                        "The HAVING clause only allows aggregation")
+                // BigQuery plans a correlated EXISTS as a semi join, which cannot take the IS NOT DISTINCT FROM correlation.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAColumnReadByACorrelatedExistsFilter_Connection_1__Boolean_1_",
+                        "LEFT SEMI JOIN cannot be used")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadFromAFromSubSelectNestedInExists_Connection_1__Boolean_1_",
+                        "LEFT SEMI JOIN cannot be used")
+                // No implicit STRING/INT64 comparison here, so the query under test cannot run.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::duckDbRefusals::testCoercingKeyDoesNotTransfer_Connection_1__Boolean_1_",
+                        "No matching signature for operator =")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::duckDbRefusals::testCoercingKeyDoesNotTransferAPattern_Connection_1__Boolean_1_",
+                        "No matching signature for operator =")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::duckDbRefusals::testCoercingKeyKeepsTheJoin_Connection_1__Boolean_1_",
+                        "No matching signature for operator =")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::duckDbRefusals::testCopyingAComparisonAcrossACoercingKeyWouldChangeRows_Connection_1__Boolean_1_",
+                        "No matching signature for operator =")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::duckDbRefusals::testCopyingAPatternAcrossACoercingKeyWouldChangeRows_Connection_1__Boolean_1_",
+                        "No matching signature for operator =")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::duckDbRefusals::testRepeatedLeftJoinOnACoercingKeyIsNotMerged_Connection_1__Boolean_1_",
+                        "No matching signature for operator =");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
