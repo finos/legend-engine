@@ -198,7 +198,7 @@ jobs:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: "-Xmx8g"
-        run: mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} -P docker-snapshot ${{ steps.cloudTests.outputs.PROFILES }}
+        run: mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} -P docker-snapshot
 
       - name: Upload build output
         uses: actions/upload-artifact@v7
