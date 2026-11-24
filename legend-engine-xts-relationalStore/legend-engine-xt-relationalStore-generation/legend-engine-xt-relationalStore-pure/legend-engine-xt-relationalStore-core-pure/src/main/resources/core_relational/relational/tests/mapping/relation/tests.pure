@@ -13,6 +13,7 @@
 // limitations under the License.
 
 ###Pure
+import meta::relational::functions::asserts::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
 import meta::pure::executionPlan::toString::*;
@@ -1007,7 +1008,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::testMultiIfMa
   );
   assertEquals(['David:50 and over', 'Fabrice:under 50', 'John:under 50', 'Oliver:under 30'], $result.values->at(0).rows->map(r | $r.getString('name') + ':' + $r.getString('ageBand'))->sort());
   assertSameSQL(
-    'select "persontable_0"."FIRST NAME" as "name", case when "persontable_0".AGE < 30 then \'under 30\' when "persontable_0".AGE < 50 then \'under 50\' else \'50 and over\' end as "ageBand" from (select top 5 "persontable_1".ID as ID, "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as AGE, "persontable_1".FIRMID as FIRMID, "persontable_1".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_1".IS_MALE as IS_MALE, "persontable_1".SALARY as SALARY from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0"',
+    'select "persontable_0"."FIRST NAME" as "name", case when "persontable_0".AGE < 30 then \'under 30\' when "persontable_0".AGE < 50 then \'under 50\' else \'50 and over\' end as "ageBand" from (select top 5 "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as AGE from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0"',
     $result
   );
 }
@@ -1022,7 +1023,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::testMultiIfMa
   );
   assertEquals(['Fabrice', 'John'], $result.values->at(0).rows->map(r | $r.getString('name'))->sort());
   assertSameSQL(
-    'select "persontable_0"."FIRST NAME" as "name" from (select top 5 "persontable_1".ID as ID, "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as AGE, "persontable_1".FIRMID as FIRMID, "persontable_1".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_1".IS_MALE as IS_MALE, "persontable_1".SALARY as SALARY from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0" where case when "persontable_0".AGE < 30 then \'under 30\' when "persontable_0".AGE < 50 then \'under 50\' else \'50 and over\' end = \'under 50\'',
+    'select "persontable_0"."FIRST NAME" as "name" from (select top 5 "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as AGE from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0" where case when "persontable_0".AGE < 30 then \'under 30\' when "persontable_0".AGE < 50 then \'under 50\' else \'50 and over\' end = \'under 50\'',
     $result
   );
 }
@@ -1053,7 +1054,7 @@ function meta::relational::tests::mapping::relation::toManyPrimitiveExpressionSq
 function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStringMappedWithCastIsNotFlattened():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0"."FIRST NAME" as "name", "persontable_0"."FIRST NAME" as "castName" from (select top 5 "persontable_1".ID as ID, "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as AGE, "persontable_1".FIRMID as FIRMID, "persontable_1".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_1".IS_MALE as IS_MALE, "persontable_1".SALARY as SALARY from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0"',
+    'select top 5 "persontable_1"."FIRST NAME" as "name", "persontable_1"."FIRST NAME" as "castName" from personTable as "persontable_1" where "persontable_1".AGE > 25',
     toManyPrimitiveExpressionSql(|PersonWithToManyStrings.all()->project([x|$x.firstName, x|$x.castNames], ['name', 'castName']))
   );
 }
@@ -1061,7 +1062,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStr
 function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStringMappedWithSubstringIsNotFlattened():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0"."FIRST NAME" as "name", substring("persontable_0"."FIRST NAME", 0, 2) as "prefix" from (select top 5 "persontable_1".ID as ID, "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as AGE, "persontable_1".FIRMID as FIRMID, "persontable_1".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_1".IS_MALE as IS_MALE, "persontable_1".SALARY as SALARY from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0"',
+    'select "persontable_0"."FIRST NAME" as "name", substring("persontable_0"."FIRST NAME", 0, 2) as "prefix" from (select top 5 "persontable_1"."FIRST NAME" as "FIRST NAME" from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0"',
     toManyPrimitiveExpressionSql(|PersonWithToManyStrings.all()->project([x|$x.firstName, x|$x.namePrefixes], ['name', 'prefix']))
   );
 }
@@ -1069,7 +1070,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStr
 function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStringMappedWithIfOverLiteralsIsNotFlattened():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0"."FIRST NAME" as "name", case when "persontable_0".ID = 1 then \'first\' else \'other\' end as "label" from (select top 5 "persontable_1".ID as ID, "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as AGE, "persontable_1".FIRMID as FIRMID, "persontable_1".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_1".IS_MALE as IS_MALE, "persontable_1".SALARY as SALARY from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0"',
+    'select "persontable_0"."FIRST NAME" as "name", case when "persontable_0".ID = 1 then \'first\' else \'other\' end as "label" from (select top 5 "persontable_1".ID as ID, "persontable_1"."FIRST NAME" as "FIRST NAME" from personTable as "persontable_1" where "persontable_1".AGE > 25) as "persontable_0"',
     toManyPrimitiveExpressionSql(|PersonWithToManyStrings.all()->project([x|$x.firstName, x|$x.idLabels], ['name', 'label']))
   );
 }
@@ -1077,7 +1078,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStr
 function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStrictDateMappedWithCastIsNotFlattened():Boolean[1]
 {
   assertSameSQL(
-    'select "tradetable_0".ID as "id", "tradetable_0".tradeDate as "date" from (select "tradetable_1".ID as ID, "tradetable_1".tradeDate as tradeDate, "tradetable_1".quantity as quantity, "tradetable_1".settlementDateTime as settlementDateTime from tradeTable as "tradetable_1") as "tradetable_0"',
+    'select "tradetable_1".ID as "id", "tradetable_1".tradeDate as "date" from tradeTable as "tradetable_1"',
     toManyPrimitiveExpressionSql(|TradeWithToManyDates.all()->project([x|$x.id, x|$x.castDates], ['id', 'date']))
   );
 }
@@ -1085,7 +1086,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStr
 function <<test.Test>> meta::relational::tests::mapping::relation::testToManyStrictDateMappedWithDatePartAndCastIsNotFlattened():Boolean[1]
 {
   assertSameSQL(
-    'select "tradetable_0".ID as "id", cast(truncate("tradetable_0".tradeDate) as date) as "date" from (select "tradetable_1".ID as ID, "tradetable_1".tradeDate as tradeDate, "tradetable_1".quantity as quantity, "tradetable_1".settlementDateTime as settlementDateTime from tradeTable as "tradetable_1") as "tradetable_0"',
+    'select "tradetable_1".ID as "id", cast(truncate("tradetable_1".tradeDate) as date) as "date" from tradeTable as "tradetable_1"',
     toManyPrimitiveExpressionSql(|TradeWithToManyDates.all()->project([x|$x.id, x|$x.datePartDates], ['id', 'date']))
   );
 }
@@ -1437,7 +1438,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 
   let result = meta::legend::executeLegendQuery($func, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
 
-  assert($result->contains('"sql":"select \\"personview_0\\".ID as \\"ID\\", \\"personview_0\\".age as \\"age\\", \\"personview_0\\".name as \\"name\\" from (select \\"root\\".ID as ID, \\"root\\".AGE as age, \\"root\\".\\"FIRST NAME\\" as name from personTable as \\"root\\") as \\"personview_0\\""'));
+  assertSQLContains('"sql":"select \\"root\\".ID as \\"ID\\", \\"root\\".AGE as \\"age\\", \\"root\\".\\"FIRST NAME\\" as \\"name\\" from personTable as \\"root\\""', $result);
   assert($result->contains('"result" : {"columns" : ["ID","age","name"], "rows" : [{"values": [1,23,"Peter"]},{"values": [2,30,"John"]},{"values": [3,23,"Jane"]},{"values": [4,19,"Anthony"]},{"values": [5,45,"Fabrice"]},{"values": [6,26,"Oliver"]},{"values": [7,52,"David"]}]'));
 }
 

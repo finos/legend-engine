@@ -99,7 +99,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::inlineJo
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testExtendedTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".KEY)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".KEY)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.extendedTargetKey], ['firstName', 'v'])})
   );
 }
@@ -107,7 +107,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testConditionalTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, case when "firmtable_1".ID > 0 then "firmtable_1".ID else "firmtable_1".ID * 2 end as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".KEY)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".LEGALNAME as LEGALNAME, case when "firmtable_1".ID > 0 then "firmtable_1".ID else "firmtable_1".ID * 2 end as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".KEY)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.conditionalTargetKey], ['firstName', 'v'])})
   );
 }
@@ -115,7 +115,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testEmptyBranchTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, case when "firmtable_1".ID > 0 then "firmtable_1".ID else null end as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".KEY)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".LEGALNAME as LEGALNAME, case when "firmtable_1".ID > 0 then "firmtable_1".ID else null end as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".KEY)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.emptyBranchTargetKey], ['firstName', 'v'])})
   );
 }
@@ -123,7 +123,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testTextTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, concat("firmtable_1".LEGALNAME, \'x\') as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRSTNAME = "firmtable_0".KEY)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, concat("firmtable_1".LEGALNAME, \'x\') as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRSTNAME = "firmtable_0".KEY)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.textTargetKey], ['firstName', 'v'])})
   );
 }
@@ -131,7 +131,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testMixedCaseTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "firmKey" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0"."firmKey")',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "firmKey" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0"."firmKey")',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.mixedCaseTargetKey], ['firstName', 'v'])})
   );
 }
@@ -139,7 +139,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testStackedExtendTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "KEY", "firmtable_1".ID + 1 + 1 as "KEY2" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".KEY2)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 + 1 as "KEY2" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".KEY2)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.stackedExtendTargetKey], ['firstName', 'v'])})
   );
 }
@@ -147,7 +147,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testSelectedTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID + 1 as "KEY", "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".KEY)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".ID + 1 as "KEY", "firmtable_1".LEGALNAME as LEGALNAME from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".KEY)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.selectedTargetKey], ['firstName', 'v'])})
   );
 }
@@ -155,7 +155,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testFilteredTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1" where "firmtable_1".ID + 1 > 1) as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".KEY)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1" where "firmtable_1".ID + 1 > 1) as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".KEY)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.filteredTargetKey], ['firstName', 'v'])})
   );
 }
@@ -163,7 +163,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testProjectedTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0".KEY as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_0".FIRMID = "firmtable_0".KEY)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0".KEY as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_1".FIRMID = "firmtable_0".KEY)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.projectedTargetKey], ['firstName', 'v'])})
   );
 }
@@ -171,7 +171,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testGatedByTargetKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "persontable_2".FIRSTNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "persontable_3".ID as "ID", "persontable_3".FIRSTNAME as "FIRSTNAME", "persontable_3".FIRMID as "FIRMID" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" inner join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_3".FIRMID = "firmtable_0".KEY)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    'select "persontable_1".FIRSTNAME as "firstName", "persontable_2".FIRSTNAME as "v" from PersonTable as "persontable_1" left outer join (select "persontable_4".ID as relJoinKey_ID, "persontable_4".FIRSTNAME as "FIRSTNAME" from PersonTable as "persontable_4" inner join (select "firmtable_1".ID + 1 as "KEY" from FirmTable as "firmtable_1") as "firmtable_0" on ("persontable_4".FIRMID = "firmtable_0".KEY)) as "persontable_2" on ("persontable_1".ID is not distinct from "persontable_2".relJoinKey_ID)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.gatedByTargetKey], ['firstName', 'v'])})
   );
 }
@@ -179,7 +179,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testCountryOfExtendedFirmKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID, "chainfirmtable_1".ID + 1 as "KEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_3".FIRMID = "chainfirmtable_0".KEY) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".ID)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    'select "persontable_1".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from PersonTable as "persontable_1" left outer join (select "persontable_4".ID as relJoinKey_ID, "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from PersonTable as "persontable_4" left outer join (select "chainfirmtable_1".COUNTRYID as COUNTRYID, "chainfirmtable_1".ID + 1 as "KEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_4".FIRMID = "chainfirmtable_0".KEY) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".ID)) as "persontable_2" on ("persontable_1".ID is not distinct from "persontable_2".relJoinKey_ID)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.countryOfExtendedFirmKey], ['firstName', 'v'])})
   );
 }
@@ -187,7 +187,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testExtendedCountryKeyOfFirmReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME", "countrytable_0".KEY as "KEY" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_3".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "KEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".KEY)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    'select "persontable_1".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from PersonTable as "persontable_1" left outer join (select "persontable_4".ID as relJoinKey_ID, "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from PersonTable as "persontable_4" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".COUNTRYID as COUNTRYID from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_4".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "KEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".KEY)) as "persontable_2" on ("persontable_1".ID is not distinct from "persontable_2".relJoinKey_ID)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.extendedCountryKeyOfFirm], ['firstName', 'v'])})
   );
 }
@@ -195,7 +195,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testCountryThroughBothKeysReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME", "countrytable_0".CKEY as "CKEY" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID, "chainfirmtable_1".ID + 1 as "KEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_3".FIRMID = "chainfirmtable_0".KEY) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "CKEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".CKEY)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    'select "persontable_1".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from PersonTable as "persontable_1" left outer join (select "persontable_4".ID as relJoinKey_ID, "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from PersonTable as "persontable_4" left outer join (select "chainfirmtable_1".COUNTRYID as COUNTRYID, "chainfirmtable_1".ID + 1 as "KEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_4".FIRMID = "chainfirmtable_0".KEY) left outer join (select "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "CKEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0".COUNTRYID = "countrytable_0".CKEY)) as "persontable_2" on ("persontable_1".ID is not distinct from "persontable_2".relJoinKey_ID)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.countryThroughBothKeys], ['firstName', 'v'])})
   );
 }
@@ -203,7 +203,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testCountryThroughFirstHopKeyReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME", "countrytable_0".KEY as "KEY" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID, "chainfirmtable_1".COUNTRYID + 1 as "CKEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_3".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "KEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0"."CKEY" = "countrytable_0".KEY)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    'select "persontable_1".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from PersonTable as "persontable_1" left outer join (select "persontable_4".ID as relJoinKey_ID, "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from PersonTable as "persontable_4" left outer join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".COUNTRYID + 1 as "CKEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_4".FIRMID = "chainfirmtable_0".ID) left outer join (select "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "KEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("chainfirmtable_0"."CKEY" = "countrytable_0".KEY)) as "persontable_2" on ("persontable_1".ID is not distinct from "persontable_2".relJoinKey_ID)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.countryThroughFirstHopKey], ['firstName', 'v'])})
   );
 }
@@ -211,7 +211,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testGatedCountryThroughKeysReadsTheExposedColumnInTheJoinCondition():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "persontable_3".ID as relJoinKey_ID, "countrytable_0".ID as "ID", "countrytable_0".COUNTRYNAME as "COUNTRYNAME", "countrytable_0".CKEY as "CKEY" from (select "persontable_4".ID as ID, "persontable_4".FIRSTNAME as FIRSTNAME, "persontable_4".FIRMID as FIRMID from PersonTable as "persontable_4") as "persontable_3" inner join (select "chainfirmtable_1".ID as ID, "chainfirmtable_1".LEGALNAME as LEGALNAME, "chainfirmtable_1".COUNTRYID as COUNTRYID, "chainfirmtable_1".ID + 1 as "KEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_3".FIRMID = "chainfirmtable_0".KEY) left outer join (select "countrytable_1".ID as ID, "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "CKEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("persontable_3".FIRMID = "countrytable_0".CKEY)) as "persontable_2" on ("persontable_0".ID is not distinct from "persontable_2".relJoinKey_ID)',
+    'select "persontable_1".FIRSTNAME as "firstName", "persontable_2".COUNTRYNAME as "v" from PersonTable as "persontable_1" left outer join (select "persontable_4".ID as relJoinKey_ID, "countrytable_0".COUNTRYNAME as "COUNTRYNAME" from PersonTable as "persontable_4" inner join (select "chainfirmtable_1".ID + 1 as "KEY" from ChainFirmTable as "chainfirmtable_1") as "chainfirmtable_0" on ("persontable_4".FIRMID = "chainfirmtable_0".KEY) left outer join (select "countrytable_1".COUNTRYNAME as COUNTRYNAME, "countrytable_1".ID + 1 as "CKEY" from CountryTable as "countrytable_1") as "countrytable_0" on ("persontable_4".FIRMID = "countrytable_0".CKEY)) as "persontable_2" on ("persontable_1".ID is not distinct from "persontable_2".relJoinKey_ID)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.gatedCountryThroughKeys], ['firstName', 'v'])})
   );
 }
@@ -219,7 +219,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testModelJoinOnAComputedTargetPropertyComparesTheExpression():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0"."LEGALNAME" as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as "ID", "firmtable_1".LEGALNAME as "LEGALNAME" from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME from FirmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" on ("persontable_0"."FIRMID" is not distinct from "firmtable_0"."ID" + 1)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0"."LEGALNAME" as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_2".ID as "ID", "firmtable_2".LEGALNAME as "LEGALNAME" from FirmTable as "firmtable_2") as "firmtable_0" on ("persontable_1".FIRMID is not distinct from "firmtable_0"."ID" + 1)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.firmRef.legalName], ['firstName', 'v'])})
   );
 }
@@ -227,7 +227,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::inlineJoin::computedTarget::testModelJoinOnAConditionalTargetPropertyComparesTheExpression():Boolean[1]
 {
   assertSameSQL(
-    'select "persontable_0".FIRSTNAME as "firstName", "firmtable_0"."LEGALNAME" as "v" from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".FIRMID as FIRMID from PersonTable as "persontable_1") as "persontable_0" left outer join (select "firmtable_1".ID as "ID", "firmtable_1".LEGALNAME as "LEGALNAME" from (select "firmtable_2".ID as ID, "firmtable_2".LEGALNAME as LEGALNAME from FirmTable as "firmtable_2") as "firmtable_1") as "firmtable_0" on ("persontable_0"."FIRMID" is not distinct from case when "firmtable_0"."ID" > 0 then "firmtable_0"."ID" else 0 end)',
+    'select "persontable_1".FIRSTNAME as "firstName", "firmtable_0"."LEGALNAME" as "v" from PersonTable as "persontable_1" left outer join (select "firmtable_2".ID as "ID", "firmtable_2".LEGALNAME as "LEGALNAME" from FirmTable as "firmtable_2") as "firmtable_0" on ("persontable_1".FIRMID is not distinct from case when "firmtable_0"."ID" > 0 then "firmtable_0"."ID" else 0 end)',
     computedTargetSql({|ComputedTargetPerson.all()->project([p | $p.firstName, p | $p.firmRefByCondition.legalName], ['firstName', 'v'])})
   );
 }

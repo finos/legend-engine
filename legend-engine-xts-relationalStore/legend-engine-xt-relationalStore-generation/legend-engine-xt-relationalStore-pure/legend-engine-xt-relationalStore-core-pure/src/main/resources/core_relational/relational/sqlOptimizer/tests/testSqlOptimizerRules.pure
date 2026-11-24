@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::external::store::relational::tests::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::sqlOptimizer::*;
+import meta::relational::tests::sqlOptimizer::rules::*;
+
+function <<test.BeforePackage>> meta::relational::tests::sqlOptimizer::rules::setUp():Boolean[1]
+{
+  createTablesAndFillDb();
+}
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::rules::rows(result:Result<Any|*>[1]):String[*]
+{
+  $result.values->cast(@TabularDataSet).rows->map(r | $r.values->map(v | $v->toString())->joinStrings('|'))->sort()
+}
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::rules::assertOptimizedSql(expectedSql:String[1], query:FunctionDefinition<{->Any[*]}>[1], runtime:Runtime[1]):Boolean[1]
+{
+  let unoptimized = execute($query, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+  let optimized = execute($query, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+  assertSameSQL($expectedSql, $optimized);
+  assertEquals($unoptimized->rows(), $optimized->rows());
+}
+
+function <<access.private>> meta::relational::tests::sqlOptimizer::rules::enabling(features:String[*]):Runtime[1]
+{
+  testRuntime()->withGenerationFeatures($features, [])
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testTrimmingDropsSubSelectColumnsTheParentNeverReads():Boolean[1]
+{
+  assertOptimizedSql(
+    'select distinct "subselect"."firstName" as "firstName" from (select top 1000 "root".FIRSTNAME as "firstName" from personTable as "root") as "subselect"',
+    |Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.firm.legalName, 'firmName')])->take(1000)->restrictDistinct(['firstName']),
+    enabling('SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testTrimmingKeepsColumnsTheSubSelectOrdersBy():Boolean[1]
+{
+  assertOptimizedSql(
+    'select "subselect"."first" as "first" from (select top 3 "root".FIRSTNAME as "first", "root".AGE as "age" from personTable as "root" order by "age" asc) as "subselect" where "subselect"."first" like \'J%\'',
+    |Person.all()->project([col(p|$p.firstName, 'first'), col(p|$p.lastName, 'last'), col(p|$p.age, 'age')])->sort('age')->limit(3)->restrict(['first'])->filter(r | $r.getString('first')->startsWith('J')),
+    enabling('SQL_OPTIMIZATION_ALL')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testDistinctSubSelectKeepsEveryColumn():Boolean[1]
+{
+  assertOptimizedSql(
+    'select "subselect"."first" as "first" from (select top 10 distinct "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root") as "subselect"',
+    |Person.all()->project([col(p|$p.firstName, 'first'), col(p|$p.lastName, 'last')])->distinct()->limit(10)->restrict('first'),
+    enabling('SQL_OPTIMIZATION_ALL')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testEliminationCollapsesPassThroughWrapper():Boolean[1]
+{
+  assertOptimizedSql(
+    'select top 5 "root".FIRSTNAME as "first" from personTable as "root"',
+    |Person.all()->project([col(p|$p.firstName, 'first'), col(p|$p.lastName, 'last')])->limit(5)->restrict('first'),
+    enabling('SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testEliminationMergesFilteredSubSelectWithoutRepeatingPushedFilter():Boolean[1]
+{
+  assertOptimizedSql(
+    'select "root".FIRSTNAME as "f", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME = \'John\'',
+    |Person.all()->project([col(p|$p.firstName, 'first'), col(p|$p.lastName, 'last')])->renameColumns(^Pair<String,String>(first = 'first', second = 'f'))->filter(r | $r.getString('f') == 'John'),
+    enabling('SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testSelectAllOverJoinedSubSelectsIsLeftUntouched():Boolean[1]
+{
+  assertOptimizedSql(
+    'select "persontable_0"."first" as "first", "persontable_0"."fid" as "fid" from (select * from (select "root".FIRSTNAME as "first", "firmtable_0".LEGALNAME as "firm" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "persontable_1" inner join (select "root".LEGALNAME as "name", "firmtable_3".aggCol as "fid" from firmTable as "root" left outer join (select "firmtable_4".ID as ID, count(*) as aggCol from firmTable as "firmtable_4" left outer join personTable as "persontable_3" on ("firmtable_4".ID = "persontable_3".FIRMID) group by "firmtable_4".ID) as "firmtable_3" on ("root".ID = "firmtable_3".ID)) as "firmtable_1" on ("persontable_1"."firm" = "firmtable_1"."name")) as "persontable_0"',
+    |Person.all()->project([col(p|$p.firstName, 'first'), col(p|$p.firm.legalName, 'firm')])->join(Firm.all()->project([col(f|$f.legalName, 'name'), col(f|$f.employees->count(), 'fid')]), meta::relational::metamodel::join::JoinType.INNER, {x, y | $x.getString('firm') == $y.getString('name')})->restrict(['first', 'fid']),
+    enabling('SQL_OPTIMIZATION_ALL')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testQueryLevelFeatureFlagEnablesRule():Boolean[1]
+{
+  assertOptimizedSql(
+    'select top 5 "root".FIRSTNAME as "first" from personTable as "root"',
+    |Person.all()->project([col(p|$p.firstName, 'first'), col(p|$p.lastName, 'last')])->limit(5)->restrict('first')->withFeatureFlags(EnableSqlOptimization.REDUNDANT_SUB_SELECT_ELIMINATION),
+    testRuntime()
+  );
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::rules::testDisablingSubQueryPushDownAtConnectionLevel():Boolean[1]
+{
+  let query = {|Person.all()->project([col(p|$p.firstName, 'first'), col(p|$p.lastName, 'last')])->renameColumns(^Pair<String,String>(first = 'first', second = 'f'))->filter(r | $r.getString('f') == 'John')};
+  let result = execute($query, simpleRelationalMapping, testRuntime()->withGenerationFeatures([], 'SQL_OPTIMIZATION_SUB_QUERY_FILTER_PUSH_DOWN'), meta::relational::extension::relationalExtensions());
+  assertSameSQL('select "root".FIRSTNAME as "f", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result);
+}

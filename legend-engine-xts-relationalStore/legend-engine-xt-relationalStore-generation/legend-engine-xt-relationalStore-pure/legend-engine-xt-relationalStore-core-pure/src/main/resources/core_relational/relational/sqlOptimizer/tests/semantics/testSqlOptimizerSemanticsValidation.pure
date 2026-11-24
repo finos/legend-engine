@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+import meta::relational::tests::sqlOptimizer::semantics::validation::*;
+
+function meta::relational::tests::sqlOptimizer::semantics::validation::subSelectOverT(f:Fixture[1]):TableAlias[1]
+{
+  let t = tableAlias('t', $f.t);
+  tableAlias('s', sel([named(ref($t, 'ID'), 'id'), named(ref($t, 'G'), 'g')], root($t)));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::validation::ruleRewriting(rewrite:Function<{SelectSQLQuery[1]->SelectSQLQuery[1]}>[1]):SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'Rewriting',
+    featureName = 'REWRITING',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {q:SelectSQLQuery[1], c:SqlOptimizerContext[1] | ^OptimizedQuery(hasChanged = true, query = $rewrite->eval($q))}
+  )
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::validation::appliedTo(rule:SqlOptimizationRule[1], query:SelectSQLQuery[1]):String[1]
+{
+  applySqlOptimizationRules($query, $rule, h2Context())->printed()
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::validation::twoBranchUnion(f:Fixture[1]):TableAlias[1]
+{
+  let t = tableAlias('t1', $f.t);
+  let u = tableAlias('u1', $f.u);
+  unionAll('u', [sel([named(ref($t, 'ID'), 'A'), named(ref($t, 'G'), 'B')], root($t)), sel([named(ref($u, 'ID'), 'A'), named(ref($u, 'G'), 'B')], root($u))]);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testValidatorReportsAColumnTheSubSelectDoesNotExpose():Boolean[1]
+{
+  let s = subSelectOverT(fixture('validation'));
+  assertEquals('unexposed:s.zz', sel(named(ref($s, 'zz'), 'zz'), root($s))->danglingReferences());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testValidatorReportsAReferenceToAnAliasDefinedNowhere():Boolean[1]
+{
+  let f = fixture('validation');
+  let s = subSelectOverT($f);
+  let ghost = tableAlias('ghost', $f.t);
+  assertEquals('undefined-alias:ghost', sel([named(ref($s, 'id'), 'id'), named(ref($ghost, 'ID'), 'gid')], root($s))->danglingReferences());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testValidatorReportsSetOperationBranchesOfDifferentWidths():Boolean[1]
+{
+  let f = fixture('validation');
+  let u = twoBranchUnion($f);
+  let union = $u.relationalElement->cast(@UnionAll);
+  let narrowed = ^$union(queries = [$union.queries->at(0), $union.queries->at(1)->map(b | ^$b(columns = $b.columns->take(1)))]);
+  let alias = tableAlias('u', $narrowed);
+  assertEquals('set-operation-width:2,1', sel(named(ref($alias, 'A'), 'A'), root($alias))->danglingReferences());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testValidatorAcceptsUnionBranchesWhoseLaterNamesDiffer():Boolean[1]
+{
+  let f = fixture('validation');
+  let t = tableAlias('t1', $f.t);
+  let union = unionAll('u', [sel([named(ref($t, 'ID'), 'A'), named(ref($t, 'G'), 'B')], root($t)), sel([named(ref($t, 'ID'), 'X'), named(ref($t, 'V'), 'Y')], root($t))]);
+  assertEmpty(sel(named(ref($union, 'B'), 'B'), root($union))->danglingReferences());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testValidatorAcceptsAReferenceThatDiffersOnlyInCaseFromAnUnquotedName():Boolean[1]
+{
+  let s = subSelectOverT(fixture('validation'));
+  assertEmpty(sel([named(ref($s, '"ID"'), '"ID"'), named(ref($s, 'G'), 'G')], root($s))->danglingReferences());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testValidatorAcceptsCorrelatedAndLateralReferencesToExposedColumns():Boolean[1]
+{
+  let f = fixture('validation');
+  let s = subSelectOverT($f);
+  let u = tableAlias('u', $f.u);
+  let l = tableAlias('l', ^SelectSQLQuery(columns = named(ref($u, 'X'), 'x'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, 'id'))));
+  let u2 = tableAlias('u2', $f.u);
+  let correlated = ^SelectSQLQuery(columns = named(lit(1), 'one'), data = root($u2), filteringOperation = sqlEquals(ref($u2, 'G'), ref($s, 'g')));
+  let query = ^SelectSQLQuery(columns = [named(ref($s, 'g'), 'g'), named(ref($l, 'x'), 'x')], data = root($s, lateral($s, $l)), filteringOperation = fn('exists', $correlated));
+  assertEmpty($query->danglingReferences());
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testOptimizerDiscardsARuleResultThatLeavesAReferenceToARenamedAlias():Boolean[1]
+{
+  let f = fixture('validation');
+  let s = subSelectOverT($f);
+  let query = sel(named(ref($s, 'id'), 'id'), root($s));
+  let renamingRoot = ruleRewriting({q:SelectSQLQuery[1] | let r = $q.data->toOne(); let a = $r.alias; ^$q(data = ^$r(alias = ^$a(name = 'renamed')));});
+  assertEquals($query->printed(), $renamingRoot->appliedTo($query));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testOptimizerDiscardsARuleResultThatChangesASetOperationWidth():Boolean[1]
+{
+  let f = fixture('validation');
+  let u = twoBranchUnion($f);
+  let query = sel([named(ref($u, 'A'), 'A'), named(ref($u, 'B'), 'B')], root($u));
+  let narrowingSecondBranch = ruleRewriting({q:SelectSQLQuery[1] |
+    let r = $q.data->toOne();
+    let a = $r.alias;
+    let union = $a.relationalElement->cast(@UnionAll);
+    ^$q(columns = $q.columns->take(1), data = ^$r(alias = ^$a(relationalElement = ^$union(queries = [$union.queries->at(0), $union.queries->at(1)->map(b | ^$b(columns = $b.columns->take(1)))]))));
+  });
+  assertEquals($query->printed(), $narrowingSecondBranch->appliedTo($query));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testOptimizerDiscardsARuleResultThatMovesOrderingOntoASetOperationBranch():Boolean[1]
+{
+  let f = fixture('validation');
+  let u = twoBranchUnion($f);
+  let query = sel([named(ref($u, 'A'), 'A'), named(ref($u, 'B'), 'B')], root($u));
+  let orderingSecondBranch = ruleRewriting({q:SelectSQLQuery[1] |
+    let r = $q.data->toOne();
+    let a = $r.alias;
+    let union = $a.relationalElement->cast(@UnionAll);
+    ^$q(data = ^$r(alias = ^$a(relationalElement = ^$union(queries = [$union.queries->at(0), $union.queries->at(1)->map(b | ^$b(orderBy = orderAsc(columnName('A')), toRow = lit(1)))]))));
+  });
+  assertEquals($query->printed(), $orderingSecondBranch->appliedTo($query));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testOptimizerRejectsANewProblemEvenWhenTheInputAlreadyHasOne():Boolean[1]
+{
+  let f = fixture('validation');
+  let s = subSelectOverT($f);
+  let alreadyBroken = sel([named(ref($s, 'id'), 'id'), named(ref($s, 'zz'), 'zz')], root($s));
+  let renamingRoot = ruleRewriting({q:SelectSQLQuery[1] | let r = $q.data->toOne(); let a = $r.alias; ^$q(data = ^$r(alias = ^$a(name = 'renamed')));});
+  assertEquals($alreadyBroken->printed(), $renamingRoot->appliedTo($alreadyBroken));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::validation::testOptimizerAcceptsAChangeThatKeepsAPreExistingProblemAsItWas():Boolean[1]
+{
+  let f = fixture('validation');
+  let s = subSelectOverT($f);
+  let alreadyBroken = sel([named(ref($s, 'id'), 'id'), named(ref($s, 'zz'), 'zz')], root($s));
+  let distinctOnce = ruleRewriting({q:SelectSQLQuery[1] | ^$q(distinct = true)});
+  assertSameSQL('select distinct "s".id as id, "s".zz as zz from (select "t".ID as id, "t".G as g from SQLOPT.SQLOPT_T_validation as "t") as "s"', $distinctOnce->appliedTo($alreadyBroken));
+}

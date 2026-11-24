@@ -186,6 +186,7 @@ public class PipelineBench
         result.put("coldMs", phaseValues(cold));
         result.put("warmMedianMs", medians(measured));
         result.put("planJsonChars", cold == null ? null : cold.get("planJsonChars"));
+        result.put("sql", cold == null ? null : cold.get("sql"));
         this.rows = measured;
         return result;
     }
@@ -296,6 +297,7 @@ public class PipelineBench
         long t7 = System.nanoTime();
         row.put("serialize", millis(t6, t7));
         row.put("planJsonChars", json.length());
+        row.put("sql", SqlMetrics.of(json));
 
         SingleExecutionPlan plan = PlanGenerator.stringToPlan(json);
         long t8 = System.nanoTime();

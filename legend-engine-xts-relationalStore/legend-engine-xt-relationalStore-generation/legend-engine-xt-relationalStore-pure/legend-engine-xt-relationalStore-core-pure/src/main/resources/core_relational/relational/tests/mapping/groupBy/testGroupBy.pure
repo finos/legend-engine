@@ -69,7 +69,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
    assertEquals(1, $result.values->first().rows->size());
    assertEquals('EA4GNY',$result.values->first().rows->first()->toOne().getString('gsn'));
    assertEquals(300,$result.values->first().rows->first()->toOne().getInteger('quantity'));
-   assertSameSQL('select "root".GSN as "gsn", "root"."quantity" as "quantity" from (select "trade_1".ACC_NUM as ACC_NUM, "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity", "trade_1".PRODUCT_ID as PRODUCT_ID from TRADE as "trade_1" group by "trade_1".ACC_NUM, "trade_1".PRODUCT_ID, "trade_1".GSN) as "root" where ("root"."quantity" > 100 and "root"."quantity" < 1000) or "root".GSN = \'EA4GNY\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".GSN as "gsn", "root"."quantity" as "quantity" from (select "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity" from TRADE as "trade_1" group by "trade_1".ACC_NUM, "trade_1".PRODUCT_ID, "trade_1".GSN) as "root" where ("root"."quantity" > 100 and "root"."quantity" < 1000) or "root".GSN = \'EA4GNY\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProject():Boolean[1]
@@ -100,7 +100,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
    assertSameElements(['gsn,description\nYU2EF5,Firm D\nEA4GNY,Gold\n'], $result.values->at(0)->toCSV());
 
    //TODO, remove some columns from the group by
-   assertSameSQL('select "trade_0".GSN as "gsn", "root".DESCRIPTION as "description" from PRODUCT as "root" left outer join (select "root".ACC_NUM, "root".GSN, sum("root".QTY) as "quantity", "root".PRODUCT_ID from TRADE as "root" group by "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN) as "trade_0" on ("trade_0".PRODUCT_ID = "root".ID)', $result->sqlRemoveFormatting());
+   assertSameSQL('select "trade_0".GSN as "gsn", "root".DESCRIPTION as "description" from PRODUCT as "root" left outer join (select "root".GSN, "root".PRODUCT_ID from TRADE as "root" group by "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN) as "trade_0" on ("trade_0".PRODUCT_ID = "root".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.ToFix>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectAggregateWithGroupByInJoin():Boolean[1]

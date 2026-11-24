@@ -11,6 +11,11 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder ext
    multiplicity: Multiplicity [0..1];
 }
 
+// Prints like any DynaFunction; marks a call that reduces its group to one value, which a DynaFunction's name alone does not tell.
+Class meta::relational::functions::pureToSqlQuery::metamodel::AggregateDynaFunction extends DynaFunction
+{
+}
+
 Class meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder extends TdsSelectSqlQuery
 {
    varName:String[1];
