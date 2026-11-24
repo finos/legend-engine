@@ -29,6 +29,8 @@ on:
       - master
       - 'legend-release-*'
       - 'release-legend-release-*'
+  schedule:
+    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       pure_ref:
@@ -44,9 +46,10 @@ on:
 
 # Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
 # NOTE: we don't want this behavior on default branch
+# The event name keeps the daily scheduled run from cancelling a push run of the same commit
 # See https://stackoverflow.com/a/68422069
 concurrency:
-  group: ${{ github.ref == 'refs/heads/master' && format('ci-default-branch-{0}-{1}', github.sha, github.workflow) || format('ci-pr-{0}-{1}', github.ref, github.workflow) }}
+  group: ${{ github.ref == 'refs/heads/master' && format('ci-default-branch-{0}-{1}-{2}', github.sha, github.workflow, github.event_name) || format('ci-pr-{0}-{1}', github.ref, github.workflow) }}
   cancel-in-progress: true
 
 jobs:
@@ -113,7 +116,8 @@ jobs:
       - build-pure
     outputs:
       testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
-      profiles: ${{ steps.requiredSecrets.outputs.PROFILES }}
+      profiles: ${{ steps.cloudTests.outputs.PROFILES }}
+      cloudTests: ${{ steps.cloudTests.outputs.enabled }}
       pureVersionArg: ${{ steps.pureVersion.outputs.arg }}
 
     steps:
@@ -168,10 +172,12 @@ jobs:
             echo "arg=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set profiles that required github secrets
-        id: requiredSecrets
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
+      - name: Enable cloud PCT tests
+        id: cloudTests
+        if: github.event_name == 'schedule'
+        run: |
+          echo enabled=true >> $GITHUB_OUTPUT
+          echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
       - name: Purge stale legend-engine artifacts from local Maven repo
         # The Maven cache restore (via restore-keys fall-through) brings in
@@ -179,20 +185,20 @@ jobs:
         # runs that share this cache key prefix.
         run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
-      - name: Build (PR)
-        if: github.ref != 'refs/heads/master'
+      - name: Build
+        if: github.ref != 'refs/heads/master' || github.event_name == 'schedule'
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} ${{ steps.requiredSecrets.outputs.PROFILES }}
+          mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} ${{ steps.cloudTests.outputs.PROFILES }}
 
       - name: Build (Master + Docker Snapshot)
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && github.event_name != 'schedule'
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: "-Xmx8g"
-        run: mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} -P docker-snapshot,pct-cloud-test
+        run: mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} -P docker-snapshot
 
       - name: Upload build output
         uses: actions/upload-artifact@v7
@@ -261,8 +267,8 @@ jobs:
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ needs.build.outputs.cloudTests == 'true' && secrets.AWS_ACCESS_KEY_ID || '' }}
+          AWS_SECRET_ACCESS_KEY: ${{ needs.build.outputs.cloudTests == 'true' && secrets.AWS_SECRET_ACCESS_KEY || '' }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
         run: |
           mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
@@ -308,8 +314,8 @@ jobs:
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ needs.build.outputs.cloudTests == 'true' && secrets.AWS_ACCESS_KEY_ID || '' }}
+          AWS_SECRET_ACCESS_KEY: ${{ needs.build.outputs.cloudTests == 'true' && secrets.AWS_SECRET_ACCESS_KEY || '' }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
         run: |
           mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
@@ -476,7 +482,7 @@ jobs:
   pct-report:
     name: PCT Report
     runs-on: ubuntu-latest
-    if: "!cancelled() && needs.build.result == 'success' && needs.test.result == 'success' && needs.test-modules.result == 'success' && github.ref == 'refs/heads/master'"
+    if: "!cancelled() && needs.build.result == 'success' && needs.test.result == 'success' && needs.test-modules.result == 'success' && needs.build.outputs.cloudTests == 'true'"
     needs:
       - build
       - test

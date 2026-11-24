@@ -179,8 +179,12 @@ mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-
 mvn test -P pct-cloud-test
 ```
 
-This profile is only active in CI when the PR is from the `finos/legend-engine` repo itself
-(secrets are not available on fork PRs).
+The profile does two separate things: it enables the cloud PCT suites under surefire, and it generates
+those adapters' PCT reports, which are derived from the expected-failure manifests rather than from test
+results. Pull requests and master pushes do not activate it. Release builds activate it for the build
+job only, so the released jars carry the cloud adapters' reports while the cloud PCT suites do not run.
+The cloud PCT suites run in CI only on the daily scheduled `Build CI` run of `master`, which also
+generates the PCT report and publishes it, together with the SQL parity docs, to the Legend docs site.
 
 **Run a single PCT test function across all registered stores:**
 
@@ -259,6 +263,10 @@ flowchart TD
     Build -->|"matrix fan-out"| Tests
     Tests --> Aggregate
     Aggregate -->|"master branch only"| Docker
+    Schedule["Daily schedule\n(adds pct-cloud-test profile)"]
+    Report["pct-report + legend-docs jobs\nPublish PCT report and SQL docs"]
+    Schedule --> Build
+    Tests -->|"scheduled runs only"| Report
 ```
 
 ### Test matrix groups (from `modulesToTest.json`)
