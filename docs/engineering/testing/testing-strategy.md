@@ -179,8 +179,9 @@ mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-
 mvn test -P pct-cloud-test
 ```
 
-This profile is only active in CI when the PR is from the `finos/legend-engine` repo itself
-(secrets are not available on fork PRs).
+Pull requests and master pushes do not activate this profile. It runs in CI on release builds and on the
+daily scheduled `Build CI` run of `master`. The scheduled run also generates the PCT report and publishes it, together with the SQL
+parity docs, to the Legend docs site.
 
 **Run a single PCT test function across all registered stores:**
 
@@ -259,6 +260,10 @@ flowchart TD
     Build -->|"matrix fan-out"| Tests
     Tests --> Aggregate
     Aggregate -->|"master branch only"| Docker
+    Schedule["Daily schedule\n(adds pct-cloud-test profile)"]
+    Report["pct-report + legend-docs jobs\nPublish PCT report and SQL docs"]
+    Schedule --> Build
+    Tests -->|"scheduled runs only"| Report
 ```
 
 ### Test matrix groups (from `modulesToTest.json`)

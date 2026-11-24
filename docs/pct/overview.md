@@ -34,7 +34,8 @@ to run the tests and record expected failures in the adapter's JSON manifest fil
 -------------
 # Published Reports
 Two reports are generated from the same aggregated data (`DocumentationGeneration.buildDocumentation()`, served as
-`pct-docs.json`), and both are published to the Legend docs site by the `pct-report` job in `.github/workflows/build.yml`:
+`pct-docs.json`), and both are published to the Legend docs site by the `pct-report` and `legend-docs` jobs in `.github/workflows/build.yml`.
+Those jobs run only on the daily scheduled build of `master`, which is the one run that includes the cloud stores:
 
 | Report | Served at | Reads best as |
 |---|---|---|
