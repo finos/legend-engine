@@ -14,29 +14,23 @@
 
 package org.finos.legend.engine.sql.compiler;
 
-import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
-import org.finos.legend.engine.protocol.sql.visitors.BaseNodeCollectorVisitor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-class TableFunctionElementExtractor extends BaseNodeCollectorVisitor<Set<? extends PackageableElement>>
+class TableFunctionElementExtractor extends TableFunctionCollector<PackageableElement>
 {
     private final PureModel pureModel;
 
     public TableFunctionElementExtractor(PureModel pureModel)
     {
-        super(values -> values.stream().flatMap(Collection::stream).collect(Collectors.toSet()), Sets.mutable.empty());
-
         this.pureModel = pureModel;
     }
 
     @Override
-    public Set<? extends PackageableElement> visit(TableFunction tableFunction)
+    protected Set<? extends PackageableElement> collectFrom(TableFunction tableFunction)
     {
         return TableFunctionCompilerExtensionLoader.extensions().flatCollect(x -> x.extractElements(tableFunction, pureModel)).toSet();
     }

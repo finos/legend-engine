@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::mapping::*;
+import meta::external::query::sql::expression::tests::*;
 
 function <<test.Test>> meta::external::query::sql::expression::tests::testSimpleFilter():Boolean[1]
 {
@@ -46,4 +47,34 @@ function <<test.Test>> meta::external::query::sql::expression::tests::testMultiL
   );
   assertEquals('with q as (select "mytab_0".name as "name" from myTab as "mytab_0") select "q_0"."name" as "name" from q as "q_0" where "q_0"."name" = \'www\'', $plan.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery);
 
+}
+function meta::external::query::sql::expression::tests::planSql(functionName:String[1]):String[1]
+{
+  let res = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/query.legend')->toOne());
+  let plan = meta::pure::executionPlan::executionPlan(
+    $res->filter(p|$p.name == $functionName)->toOne()->cast(@FunctionDefinition<Any>),
+    meta::pure::extension::runtime::getExtensions(),
+    noDebug()
+  );
+  $plan.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery->toOne();
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::testServiceSourceFilter():Boolean[1]
+{
+  meta::relational::functions::asserts::assertSameSQL('select "mytab_0".name as "name" from myTab as "mytab_0" where "mytab_0".name = \'www\'', planSql('serviceFilter__Any_MANY_'));
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::testServiceSourceWithParameter():Boolean[1]
+{
+  meta::relational::functions::asserts::assertSameSQL('select "mytab_0".name as "name" from myTab as "mytab_0" where "mytab_0".name is distinct from \'www\'', planSql('serviceWithParameter__Any_MANY_'));
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::testTabularDataSetServiceSourceFilter():Boolean[1]
+{
+  meta::relational::functions::asserts::assertSameSQL('select "root".name as "name" from people as "root" where "root".name = \'www\'', planSql('tdsServiceFilter__Any_MANY_'));
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::testMultiExecutionServiceSource():Boolean[1]
+{
+  meta::relational::functions::asserts::assertSameSQL('select "mytab_0".name as "name" from myTab as "mytab_0"', planSql('multiExecutionService__Any_MANY_'));
 }

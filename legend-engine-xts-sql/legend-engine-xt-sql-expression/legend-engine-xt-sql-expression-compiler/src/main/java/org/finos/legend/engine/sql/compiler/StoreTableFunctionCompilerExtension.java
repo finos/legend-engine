@@ -14,12 +14,26 @@
 
 package org.finos.legend.engine.sql.compiler;
 
+import org.eclipse.collections.api.factory.Sets;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+
+import java.util.Set;
 
 public class StoreTableFunctionCompilerExtension extends TableFunctionSimpleElementExtractor<Store>
 {
     public StoreTableFunctionCompilerExtension()
     {
         super(Store.class, "tb");
+    }
+
+    @Override
+    public Set<PackageableElementPointer> extractPrerequisiteElements(TableFunction tableFunction, CompileContext context)
+    {
+        Store store = findPrerequisiteElement(tableFunction, context);
+        return store == null ? Sets.mutable.empty() : Sets.mutable.with(new PackageableElementPointer(PackageableElementType.STORE, org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(store)));
     }
 }

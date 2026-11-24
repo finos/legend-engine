@@ -4620,12 +4620,14 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::require
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateSubSelectIfNotLastOperation(select:SelectSQLQuery[1], query:SelectWithCursor[1], f:FunctionExpression[1], parents:FunctionExpression[*], extensions:Extension[*]):SelectWithCursor[1]
 {
-   let p = $parents->evaluateAndDeactivate();
-   if ($p->size() > 1,
-    | let fe = $p->at($p->size()-2);
-      let ft = $fe.func->functionType();
+   // eval of a lambda and cast pass their input through unchanged, so the operation that decides isolation is the
+   // nearest parent that isn't one of them (e.g. a filter applied to {|...->limit(2)}->eval())
+   let passThrough = [eval_Function_1__V_m_, cast_Any_m__T_1__T_m_];
+   let parent = $parents->evaluateAndDeactivate()->init()->reverse()->filter(fe | !$fe.func->in($passThrough))->first();
+   if ($parent->isNotEmpty(),
+    | let ft = $parent->toOne().func->functionType();
       if($ft.parameters->head().genericType->concatenate($ft.returnType)->forAll(x|
-      $x.rawType->toOne()->_subTypeOf(TabularDataSet) || $x.rawType->toOne()->_subTypeOf(meta::pure::metamodel::relation::Relation);),
+      $x.rawType->isNotEmpty() && ($x.rawType->toOne()->_subTypeOf(TabularDataSet) || $x.rawType->toOne()->_subTypeOf(meta::pure::metamodel::relation::Relation));),
                   | isolateTdsSelect($select, $query, $extensions);,
                   | ^$query(select=$select)
       );,

@@ -99,6 +99,23 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Maps.mutable.empty();
     }
 
+    /**
+     * Prerequisite elements of a ClassInstance island that can only be found through the model, for example an
+     * element the island names by something other than its path. Applied together with
+     * {@link #getExtraClassInstancePrerequisiteElementsPassProcessors()} for the same island type.
+     * <p>
+     * Runs in the prerequisite elements pass, after the first and second passes of every element: implementations may
+     * read names, signatures and first-pass attributes through the {@link CompileContext}, but never another element's
+     * third-pass output. They must be thread-safe and must not throw: this pass runs outside the per-element error
+     * handling, so an exception aborts the whole compilation, partial compilation included. Return nothing for
+     * references that cannot be resolved; the island's third-pass processor reports them. Inside function bodies,
+     * FUNCTION pointers are dropped as for calls. See ADR-004.
+     */
+    default Map<String, Procedure3<Object, CompileContext, Set<PackageableElementPointer>>> getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext()
+    {
+        return Maps.mutable.empty();
+    }
+
     default List<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> getExtraLambdaPostProcessor()
     {
         return Collections.emptyList();

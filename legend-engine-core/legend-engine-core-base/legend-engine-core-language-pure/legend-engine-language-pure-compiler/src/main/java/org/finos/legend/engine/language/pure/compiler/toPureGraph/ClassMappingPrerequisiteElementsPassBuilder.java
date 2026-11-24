@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -103,13 +104,21 @@ public class ClassMappingPrerequisiteElementsPassBuilder implements ClassMapping
     {
         this.prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, classMapping._class, classMapping.classSourceInformation));
         // Ensure the function is compiled before this mapping so expressionSequence is available for PK resolution.
-        // Only ~func has an external function reference to declare as prerequisite; ~src carries an inline lambda.
         if (classMapping.relationFunction != null)
         {
             this.prerequisiteElements.add(new PackageableElementPointer(
                     PackageableElementType.FUNCTION,
                     classMapping.relationFunction.path,
                     classMapping.relationFunction.sourceInformation));
+        }
+        if (classMapping.sourceLambda != null)
+        {
+            Set<PackageableElementPointer> sourcePrerequisites = Sets.mutable.empty();
+            ValueSpecificationPrerequisiteElementsPassBuilder sourceBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(this.context, sourcePrerequisites);
+            classMapping.sourceLambda.accept(sourceBuilder);
+            // only islands add edges: other references in ~src (a from() runtime, the mapping itself) would close cycles
+            sourcePrerequisites.removeIf(p -> !sourceBuilder.getIslandPrerequisitePaths().contains(p.path));
+            this.prerequisiteElements.addAll(sourcePrerequisites);
         }
         PropertyMappingPrerequisiteElementsBuilder propertyMappingPrerequisiteElementsBuilder = new PropertyMappingPrerequisiteElementsBuilder(this.context, this.prerequisiteElements);
         ListIterate.forEach(classMapping.propertyMappings, pm -> pm.accept(propertyMappingPrerequisiteElementsBuilder));

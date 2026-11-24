@@ -131,6 +131,7 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<Set<PackageableElementPointer>, TestAssertion, CompileContext>> extraTestAssertionPrerequisiteElementsPassProcessors;
     private final Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> extraClassInstanceProcessors;
     private final Map<String, Procedure2<Object, Set<PackageableElementPointer>>> extraClassInstancePrerequisiteElementsPassProcessors;
+    private final Map<String, Procedure3<Object, CompileContext, Set<PackageableElementPointer>>> extraClassInstancePrerequisiteElementsPassProcessorsWithContext;
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
@@ -181,6 +182,8 @@ public class CompilerExtensions
         this.extensions.forEach(e -> extraClassInstanceProcessors.putAll(e.getExtraClassInstanceProcessors()));
         this.extraClassInstancePrerequisiteElementsPassProcessors = Maps.mutable.empty();
         this.extensions.forEach(e -> extraClassInstancePrerequisiteElementsPassProcessors.putAll(e.getExtraClassInstancePrerequisiteElementsPassProcessors()));
+        this.extraClassInstancePrerequisiteElementsPassProcessorsWithContext = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraClassInstancePrerequisiteElementsPassProcessorsWithContext.putAll(e.getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext()));
         this.extraMappingPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraMappingPostValidators);
         this.extraValueSpecificationBuilderForFuncExpr = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationBuilderForFuncExpr);
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
@@ -581,6 +584,11 @@ public class CompilerExtensions
     public Map<String, Procedure2<Object, Set<PackageableElementPointer>>> getExtraClassInstancePrerequisiteElementsPassProcessors()
     {
         return extraClassInstancePrerequisiteElementsPassProcessors;
+    }
+
+    public Map<String, Procedure3<Object, CompileContext, Set<PackageableElementPointer>>> getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext()
+    {
+        return extraClassInstancePrerequisiteElementsPassProcessorsWithContext;
     }
 
     public IncludedMappingHandler getExtraIncludedMappingHandlers(String classType)

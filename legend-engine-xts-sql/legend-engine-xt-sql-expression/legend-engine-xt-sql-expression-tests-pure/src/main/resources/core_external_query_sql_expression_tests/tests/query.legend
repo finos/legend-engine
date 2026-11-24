@@ -2,6 +2,7 @@
 Database pack::DB
 (
   Table myTab(name VARCHAR(200))
+  Table people(id INT PRIMARY KEY, name VARCHAR(200))
 )
 
 ###Pure
@@ -18,6 +19,103 @@ function pack::mixedExpression():Any[*]
 function pack::fmultiExpressions():Any[*]
 {
   #SQL{with q as (select name from tb('pack::DB.myTab')) select name from q as t where t.name = 'www'}#->from(test::test);
+}
+
+###Pure
+Class pack::Named
+{
+  name: String[0..1];
+}
+
+function pack::serviceFilter():Any[*]
+{
+  #SQL{select name from service('/names') as t where t.name = 'www'}#;
+}
+
+function pack::serviceWithParameter():Any[*]
+{
+  #SQL{select name from service('/namesExcept', excluded => 'www')}#;
+}
+
+function pack::tdsServiceFilter():Any[*]
+{
+  #SQL{select name from service('/namesTds') as t where t.name = 'www'}#;
+}
+
+function pack::multiExecutionService():Any[*]
+{
+  #SQL{select name from service('/namesMulti', env => 'PROD')}#;
+}
+
+###Mapping
+Mapping pack::M
+(
+  pack::Named: Relational
+  {
+    ~mainTable [pack::DB]people
+    name: [pack::DB]people.name
+  }
+)
+
+###Service
+Service pack::NamesService
+{
+  pattern: '/names';
+  owners: ['owner'];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |#>{pack::DB.myTab}#->select(~[name]);
+    mapping: pack::M;
+    runtime: test::test;
+  }
+}
+
+Service pack::NamesExceptService
+{
+  pattern: '/namesExcept';
+  owners: ['owner'];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: excluded: String[1]|#>{pack::DB.myTab}#->filter(r|$r.name->toOne() != $excluded)->select(~[name]);
+    mapping: pack::M;
+    runtime: test::test;
+  }
+}
+
+Service pack::NamesTdsService
+{
+  pattern: '/namesTds';
+  owners: ['owner'];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |pack::Named.all()->project([n|$n.name], ['name']);
+    mapping: pack::M;
+    runtime: test::test;
+  }
+}
+
+Service pack::NamesMultiService
+{
+  pattern: '/namesMulti';
+  owners: ['owner'];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |#>{pack::DB.myTab}#->select(~[name]);
+    key: 'env';
+    executions['PROD']:
+    {
+      mapping: pack::M;
+      runtime: test::test;
+    }
+  }
 }
 
 ###Runtime

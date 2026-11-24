@@ -15,12 +15,16 @@
 package org.finos.legend.engine.sql.compiler;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_TableFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.List;
+import java.util.Set;
 
 public interface TableFunctionCompilerExtension
 {
@@ -34,5 +38,16 @@ public interface TableFunctionCompilerExtension
     default List<PackageableElement> extractElements(TableFunction tableFunction, PureModel pureModel)
     {
         return Lists.mutable.empty();
+    }
+
+    /**
+     * Elements whose compiled state this table function reads, so they are compiled before the function holding the
+     * #SQL. Same contract as CompilerExtension#getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext: runs
+     * in the prerequisite elements pass, may read only first and second pass state, must be thread-safe, and must not
+     * throw for references it cannot resolve.
+     */
+    default Set<PackageableElementPointer> extractPrerequisiteElements(TableFunction tableFunction, CompileContext context)
+    {
+        return Sets.mutable.empty();
     }
 }

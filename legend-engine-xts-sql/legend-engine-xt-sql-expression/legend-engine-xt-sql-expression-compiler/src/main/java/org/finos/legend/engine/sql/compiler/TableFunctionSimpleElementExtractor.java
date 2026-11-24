@@ -15,6 +15,7 @@
 package org.finos.legend.engine.sql.compiler;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.sql.metamodel.StringLiteral;
@@ -58,5 +59,29 @@ public class TableFunctionSimpleElementExtractor<T extends PackageableElement> i
         }
 
         return Lists.mutable.empty();
+    }
+
+    /**
+     * The element named by the first argument, for subclasses that declare it as a prerequisite. Null when the
+     * argument names no user-defined element of this type; never throws.
+     */
+    protected T findPrerequisiteElement(TableFunction tableFunction, CompileContext context)
+    {
+        if (!typeName.equals(tableFunction.functionCall.name.parts.get(0)))
+        {
+            return null;
+        }
+        String path;
+        try
+        {
+            path = extractElementPath(tableFunction).split("\\.")[0];
+        }
+        catch (RuntimeException e)
+        {
+            // unexpected arguments; extractElements reports them in the third pass, where errors are handled per element
+            return null;
+        }
+        PackageableElement element = context.pureModel.getUserDefinedPackageableElement_safe(path);
+        return type.isInstance(element) ? type.cast(element) : null;
     }
 }

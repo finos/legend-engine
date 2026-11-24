@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.sql.expression.grammar.test;
 
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TestSQLExpression extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
@@ -25,6 +25,16 @@ public class TestSQLExpression extends TestGrammarRoundtrip.TestGrammarRoundtrip
         test("function pack::f(): String[1]\n" +
                 "{\n" +
                 "  #SQL{select a,b from csv('a,b\\n1,2')}#;\n" +
+                "  '';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testSQLExpressionWithServiceSource()
+    {
+        test("function pack::f(): String[1]\n" +
+                "{\n" +
+                "  #SQL{select name from service('/my/service', since => '2024-01-01')}#;\n" +
                 "  '';\n" +
                 "}\n");
     }

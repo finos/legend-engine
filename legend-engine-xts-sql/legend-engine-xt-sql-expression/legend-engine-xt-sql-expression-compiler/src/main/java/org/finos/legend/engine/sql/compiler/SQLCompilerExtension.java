@@ -34,7 +34,9 @@ import org.finos.legend.engine.language.sql.expression.protocol.SQLExpressionPro
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.SQLParserException;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
+import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.PureCompiledLambda;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_expression_SQLExpression_Impl;
@@ -55,6 +57,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Map;
+import java.util.Set;
 
 public class SQLCompilerExtension implements CompilerExtension
 {
@@ -99,8 +102,8 @@ public class SQLCompilerExtension implements CompilerExtension
                         });
 
                         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object> x = useCompile ?
-                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, SOURCES, extraElements, scopedVariables, compile, context.pureModel.getExecutionSupport()) :
-                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, SOURCES, extraElements, scopedVariables, context.pureModel.getExecutionSupport());
+                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1__Boolean_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, SOURCES, extraElements, scopedVariables, compile, false, context.pureModel.getExecutionSupport()) :
+                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Boolean_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, SOURCES, extraElements, scopedVariables, false, context.pureModel.getExecutionSupport());
 
                         GenericType returnType = ((FunctionType) x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType();
                         if (!Type.subTypeOf(returnType._rawType(), context.pureModel.getClass("meta::pure::metamodel::relation::Relation"), context.pureModel.getExecutionSupport().getProcessorSupport()))
@@ -138,6 +141,25 @@ public class SQLCompilerExtension implements CompilerExtension
 
                 }
         );
+    }
+
+    @Override
+    public Map<String, Procedure3<Object, CompileContext, Set<PackageableElementPointer>>> getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext()
+    {
+        return Maps.mutable.with("SQL", (obj, context, prerequisiteElements) ->
+        {
+            // this pass runs outside the compiler's per-element error handling, so a throw would abort the whole
+            // compilation (partial compilation included); the third pass reports the same problem against the element
+            try
+            {
+                Statement parsed = SQLGrammarParser.newInstance().parseStatement(((SQLExpressionProtocol) obj).sql);
+                prerequisiteElements.addAll(new TableFunctionPrerequisiteExtractor(context).visit(parsed));
+            }
+            catch (Exception e)
+            {
+                return;
+            }
+        });
     }
 
     @Override
