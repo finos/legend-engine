@@ -40,9 +40,6 @@
     "test" : "meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
-    "test" : "meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_NanoSecondPrecision_Function_1__Boolean_1_",
-    "expectedError" : "Error running query: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] org.apache.spark.SparkRuntimeException: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] Unrecognized datetime pattern: 'yyyy-MM-ddTHH:mm:ss.SSSSSSSSS'."
-  }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""
   }, {
