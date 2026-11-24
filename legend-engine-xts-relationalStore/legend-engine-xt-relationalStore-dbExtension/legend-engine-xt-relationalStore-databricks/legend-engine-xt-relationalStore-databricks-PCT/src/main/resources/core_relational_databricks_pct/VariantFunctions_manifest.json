@@ -44,9 +44,6 @@
     "expectedError" : "actual:   '[1]'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
+    "expectedError" : "[INVALID_VARIANT_CAST] The variant value `{\"world\":2}` cannot be cast into `\"ARRAY<MAP<STRING, BIGINT>>\"`. Please use `try_variant_get` instead."
   } ]
 }
