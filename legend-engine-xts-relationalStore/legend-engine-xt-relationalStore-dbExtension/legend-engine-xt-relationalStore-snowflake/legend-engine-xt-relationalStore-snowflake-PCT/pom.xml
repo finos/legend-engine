@@ -432,7 +432,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <!-- TEST -->
     </dependencies>

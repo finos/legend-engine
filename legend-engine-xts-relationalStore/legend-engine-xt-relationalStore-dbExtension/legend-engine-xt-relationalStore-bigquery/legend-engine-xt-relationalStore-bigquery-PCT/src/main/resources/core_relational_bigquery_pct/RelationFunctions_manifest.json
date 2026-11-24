@@ -662,88 +662,8 @@
       "expectedError": "Not supported data type :'LONG' for Pure type: 'String'"
     },
     {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
       "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
       "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-      "expectedError": "#TDS\n   p:Integer[0..1],o:Integer[0..1],i:Integer[0..1],newCol:Integer[0..1]\n   300,2,20,30\n   300,1,10,30\n   200,null,20,30\n   200,null,10,30\n   200,3,30,90\n   200,3,30,90\n   200,1,10,110\n   200,1,10,110\n   100,null,30,50\n   100,null,20,50\n   100,3,30,100\n   100,2,20,110\n   100,1,10,110\n   0,null,30,30\n   0,1,10,50\n   0,1,10,50\n#\n is not equivalent to:\n#TDS\n   p:Integer[0..1],o:Integer[0..1],i:Integer[0..1],newCol:Integer[0..1]\n   300,2,20,30\n   300,1,10,30\n   200,null,20,110\n   200,null,10,110\n   200,3,30,60\n   200,3,30,60\n   200,1,10,80\n   200,1,10,80\n   100,null,30,110\n   100,null,20,110\n   100,3,30,50\n   100,2,20,60\n   100,1,10,60\n   0,null,30,50\n   0,1,10,20\n   0,1,10,20\n#"
     },
     {
       "test": "meta::pure::functions::relation::tests::slice::testSimpleSliceShared_Function_1__Boolean_1_",

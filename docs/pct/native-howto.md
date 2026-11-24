@@ -174,7 +174,6 @@ function go():Any[*]
   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities($inmemoryadapter);
   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Integers($inmemoryadapter);
   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats($inmemoryadapter);
-  meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval($inmemoryadapter);
   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig($inmemoryadapter);
 }
 ```

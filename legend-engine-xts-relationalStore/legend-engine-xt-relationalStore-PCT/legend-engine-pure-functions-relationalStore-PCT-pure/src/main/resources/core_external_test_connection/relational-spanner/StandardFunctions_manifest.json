@@ -377,9 +377,6 @@
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_",
     "expectedError" : "Postgres function cosh(double precision) is not supported"
   }, {
-    "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_",
-    "expectedError" : "Postgres function cosh(double precision) is not supported"
-  }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats_Function_1__Boolean_1_",
     "expectedError" : "Postgres function cosh(double precision) is not supported"
   }, {
@@ -392,9 +389,6 @@
     "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_",
     "expectedError" : "Postgres function sinh(double precision) is not supported"
   }, {
-    "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_",
-    "expectedError" : "Postgres function sinh(double precision) is not supported"
-  }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats_Function_1__Boolean_1_",
     "expectedError" : "Postgres function sinh(double precision) is not supported"
   }, {
@@ -405,9 +399,6 @@
     "expectedError" : "Postgres function sinh(double precision) is not supported"
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_",
-    "expectedError" : "Postgres function tanh(double precision) is not supported"
-  }, {
-    "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_",
     "expectedError" : "Postgres function tanh(double precision) is not supported"
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats_Function_1__Boolean_1_",
