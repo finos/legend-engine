@@ -234,7 +234,34 @@ function meta::relational::tests::sqlOptimizer::semantics::setUpNodes(connection
   $setupDatabase->eval($data->map(d | csvBlock($d.first, $d.second)), $database, $runtime, meta::pure::tools::noDebug());
 }
 
+// Shared databases such as BigQuery cap the writes to one table name per day, and concurrent builds share their tables, so every
+// load goes to tables of its own: the query's references are renamed only for execution, leaving the SQL the tests assert untouched.
 function meta::relational::tests::sqlOptimizer::semantics::queryResult(sql:String[1], connection:DatabaseConnection[1], data:Pair<Table,String>[*]):String[*]
+{
+  let suffix = '_' + (random() * 100000000)->floor()->toString();
+  let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($connection.type);
+  let runnableSql = $data.first->fold({t, s | $s->replaceTableReference($t->meta::relational::functions::sqlQueryToString::tableToString($dbConfig), $t->withSuffix($suffix)->meta::relational::functions::sqlQueryToString::tableToString($dbConfig))}, $sql);
+  assert($data->isEmpty() || $runnableSql != $sql, | 'none of the loaded tables is referenced as ' + $connection.type->toString() + ' prints it, so the query would read tables it did not load\n  ' + $sql);
+  runQuery($runnableSql, $connection, $data->map(d | pair($d.first->withSuffix($suffix), $d.second)));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::withSuffix(table:Table[1], suffix:String[1]):Table[1]
+{
+  ^$table(name = $table.name + $suffix)
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::replaceTableReference(sql:String[1], from:String[1], to:String[1]):String[1]
+{
+  let at = $sql->indexOf($from);
+  if($at < 0,
+    | $sql,
+    | let end = $at + $from->length();
+      let continuesAnotherName = if($end < $sql->length(), | $sql->substring($end, $end + 1)->matches('[A-Za-z0-9_]'), | false);
+      $sql->substring(0, $at) + if($continuesAnotherName, | $from, | $to) + $sql->substring($end, $sql->length())->replaceTableReference($from, $to);
+  );
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::runQuery(sql:String[1], connection:DatabaseConnection[1], data:Pair<Table,String>[*]):String[*]
 {
   let query = ^RelationalTdsInstantiationExecutionNode(
     resultType = ^TDSResultType(genericType = ^GenericType(rawType = meta::pure::tds::TabularDataSet), tdsColumns = []),
@@ -355,8 +382,9 @@ function meta::relational::tests::sqlOptimizer::semantics::assertSameRows(fixtur
   assert($changed->isNotEmpty(), | 'no rule changed the query on ' + $fixture.connection.type->toString() + ', so its rows were never compared; use assertUnchanged if that is the intent\n  ' + $before);
   $variants->map({variant |
     let expected = $before->resultRows($fixture, $variant);
+    let resultsBySql = $changed.second->removeDuplicates()->map(sql | pair($sql, list($sql->resultRows($fixture, $variant))));
     $changed->map({c |
-      let actual = $c.second->resultRows($fixture, $variant);
+      let actual = $resultsBySql->filter(r | $r.first == $c.second)->toOne().second.values;
       assertEquals($expected->sameRowsForm($ordered), $actual->sameRowsForm($ordered),
         | $c.first + ' changed the result on ' + $variant + ' data (' + $fixture.connection.type->toString() + ')\n  before: ' + $before + '\n  after:  ' + $c.second);
     });
