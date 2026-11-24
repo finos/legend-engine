@@ -38,8 +38,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
       // ClickHouse quirks (https://clickhouse.com/docs/reference/statements/select/{union,except,intersect}):
       //   - UNION without a qualifier is an error; map union -> 'UNION DISTINCT'.
       //   - bare EXCEPT keeps duplicates (ALL-semantics); the ANSI distinct form is 'EXCEPT DISTINCT'.
-      //   - bare INTERSECT keeps duplicates likewise; ClickHouse has no distinct INTERSECT, so leave `intersect` unset.
-      setOperationSupport = ^SetOperationSupport(union = 'UNION DISTINCT', unionAll = 'UNION ALL', except = 'EXCEPT DISTINCT', exceptAll = 'EXCEPT', intersectAll = 'INTERSECT'),
+      //   - bare INTERSECT keeps duplicates likewise; the ANSI distinct form is 'INTERSECT DISTINCT'.
+      setOperationSupport = ^SetOperationSupport(union = 'UNION DISTINCT', unionAll = 'UNION ALL', except = 'EXCEPT DISTINCT', exceptAll = 'EXCEPT', intersect = 'INTERSECT DISTINCT', intersectAll = 'INTERSECT'),
       nullOrderingSupport = nullsLastWithClauseSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},

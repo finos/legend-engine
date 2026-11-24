@@ -30,7 +30,7 @@ function meta::external::store::relational::runtime::knownGenerationFeatures(): 
   [
     meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName(),
     meta::external::store::relational::runtime::useDbNativeImplicitNullOrderingGenerationFeatureName()
-  ]
+  ]->concatenate(meta::relational::sqlOptimizer::sqlOptimizationGenerationFeatureNames())
 }
 
 // Feature is off by default: implicit sorts render a canonical NULLS clause (or CASE shim) whenever

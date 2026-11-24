@@ -1,0 +1,401 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::core::runtime::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+import meta::relational::tests::sqlOptimizer::semantics::trimming::*;
+
+function meta::relational::tests::sqlOptimizer::semantics::trimming::armOverT(f:Fixture[1]):SelectSQLQuery[1]
+{
+  let t = tableAlias('t1', $f.t);
+  sel([named(ref($t, 'ID'), 'A'), named(ref($t, 'G'), 'B'), named(ref($t, 'V'), 'C')], root($t));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::trimming::armOverU(f:Fixture[1]):SelectSQLQuery[1]
+{
+  let u = tableAlias('u1', $f.u);
+  sel([named(ref($u, 'ID'), 'A'), named(ref($u, 'G'), 'B'), named(ref($u, 'X'), 'C')], root($u));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::trimming::readingB(union:TableAlias[1]):SelectSQLQuery[1]
+{
+  sel(named(ref($union, 'B'), 'B'), root($union))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::trimming::assertNotTrimmed(query:SelectSQLQuery[1]):Boolean[1]
+{
+  assertEquals($query->printed(), $query->optimizedSql(trimming()))
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsTheAggregateOfAnUngroupedAggregateSubSelect(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_agg', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(fn('count', ref($t, 'ID')), '"c"'), named(lit('k'), '"k"')], root($t)));
+  let query = sel(named(ref($s, '"k"'), '"k"'), root($s));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsTheAggregateWhenTheParentReadsNoColumn(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_aggnone', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(lit('k'), '"k"'), named(fn('count', ref($t, 'ID')), '"c"')], root($t)));
+  let query = sel(named(lit(1), '"one"'), root($s));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAHavingClauseThatMakesTheSubSelectAnAggregate(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_having', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(lit('k'), '"k"'), named(lit('j'), '"j"')], data = root($t), havingOperation = fn('greaterThan', [fn('count', ref($t, 'ID')), lit(1)])));
+  let query = sel(named(ref($s, '"k"'), '"k"'), root($s));
+  assertSameSQL('select "s"."k" as "k" from (select \'k\' as "k" from SQLOPT.SQLOPT_T_trim_having as "t" having count("t".ID) > 1) as "s"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsGroupByWhenTheGroupingColumnIsUnread(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_groupby', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'G'), '"g"'), named(fn('sum', ref($t, 'V')), '"s"'), named(fn('count', ref($t, 'ID')), '"n"')], data = root($t), groupBy = ref($t, 'G')));
+  let query = sel(named(ref($s, '"n"'), '"n"'), root($s));
+  assertSameSQL('select "s"."n" as "n" from (select count("t".ID) as "n" from SQLOPT.SQLOPT_T_trim_groupby as "t" group by "t".G) as "s"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingRefusesASubSelectOrderedByOrdinals(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_ordinal', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"'), named(ref($t, 'W'), '"w"')], data = root($t), orderBy = [orderDesc(lit(3)), orderAsc(lit(1))], toRow = lit(3)));
+  let query = sel(named(ref($s, '"id"'), '"id"'), root($s));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingRefusesASubSelectGroupedByAnOrdinal():Boolean[1]
+{
+  let f = fixture('trim_groupordinal');
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'G'), '"g"'), named(fn('count', ref($t, 'ID')), '"n"'), named(ref($t, 'G'), '"g2"')], data = root($t), groupBy = lit(1)));
+  assertNotTrimmed(sel(named(ref($s, '"n"'), '"n"'), root($s)));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingMatchesAnUnquotedInnerNameToAQuotedOuterReferenceOfAnotherCase(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_case', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), 'id'), named(ref($t, 'V'), 'v'), named(ref($t, 'W'), '"w"')], root($t)));
+  let query = sel([named(ref($s, '"V"'), '"V"'), named(ref($s, '"w"'), '"w"')], root($s));
+  assertSameSQL('select "s"."V" as "V", "s"."w" as "w" from (select "t".V as v, "t".W as "w" from SQLOPT.SQLOPT_T_trim_case as "t") as "s"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAnOutputAliasThatShadowsABaseColumnInOrderBy(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_shadow', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), 'A'), named(ref($t, 'W'), 'V')], data = root($t), orderBy = [orderDesc(columnName('V')), orderAsc(columnName('A'))], toRow = lit(2)));
+  let query = sel(named(ref($s, 'A'), 'A'), root($s));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAColumnReadByACorrelatedExistsFilter(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_exists', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"'), named(ref($t, 'W'), '"w"')], root($t)));
+  let u = tableAlias('u', $f.u);
+  let correlated = ^SelectSQLQuery(columns = named(lit(1), '"one"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"')));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), filteringOperation = fn('exists', $correlated));
+  assertSameSQL('select "s"."id" as "id" from (select "t".ID as "id", "t".V as "v" from SQLOPT.SQLOPT_T_trim_exists as "t") as "s" where exists (select 1 as "one" from SQLOPT.SQLOPT_U_trim_exists as "u" where "u".TID is not distinct from "s"."v")', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAColumnReadFromAFromSubSelectNestedInExists():Boolean[1]
+{
+  let f = fixture('trim_existsfrom');
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"')], root($t)));
+  let u = tableAlias('u', $f.u);
+  let q = tableAlias('q', ^SelectSQLQuery(columns = named(ref($u, 'X'), '"x"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"'))));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), filteringOperation = fn('exists', sel(named(lit(1), '"one"'), root($q))));
+  assertNotTrimmed($query);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAColumnReadOnlyByTheSubSelectsOwnWhereClause():Boolean[1]
+{
+  let f = fixture('trim_ownwhere');
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), 'A'), named(fn('plus', [ref($t, 'V'), lit(1)]), 'Q')], data = root($t), filteringOperation = fn('greaterThan', [columnName('Q'), lit(2)])));
+  assertNotTrimmed(sel(named(ref($s, 'A'), 'A'), root($s)));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingKeepsAColumnReadOnlyByALateralSibling():Boolean[1]
+{
+  let f = fixture('trim_lateral');
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"')], root($t)));
+  let u = tableAlias('u', $f.u);
+  let l = tableAlias('l', ^SelectSQLQuery(columns = named(ref($u, 'X'), '"x"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"'))));
+  let query = sel([named(ref($s, '"g"'), '"g"'), named(ref($l, '"x"'), '"x"')], root($s, lateral($s, $l)));
+  assertEquals(['"g"', '"v"'], $query->optimized(trimming()).data.alias.relationalElement->cast(@SelectSQLQuery).columns->cast(@Alias).name);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testTrimmingDropsUnreadColumnsBesideAWindowColumnTheParentReads(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_window', $conn);
+  let t = tableAlias('t', $f.t);
+  let rank = ^WindowColumn(columnName = 'rk', func = fn('rank', []), window = ^meta::relational::metamodel::Window(partition = ref($t, 'G'), sortBy = ^SortByInfo(sortByElement = ref($t, 'ID'), sortDirection = meta::relational::metamodel::SortDirection.ASC)));
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"'), named($rank, '"rk"')], root($t)));
+  let query = sel([named(ref($s, '"id"'), '"id"'), named(ref($s, '"rk"'), '"rk"')], root($s));
+  assertSameSQL('select "s"."id" as "id", "s"."rk" as "rk" from (select "t".ID as "id", rank() over (partition by "t".G order by "t".ID asc) as "rk" from SQLOPT.SQLOPT_T_trim_window as "t") as "s"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllPruningDropsPositionsNoReaderNeeds(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_basic', $conn);
+  let query = readingB(unionAll('u', [armOverT($f), armOverU($f)]));
+  assertSameSQL('select "u".B as B from (select "t1".G as B from SQLOPT.SQLOPT_T_union_basic as "t1" union all select "u1".G as B from SQLOPT.SQLOPT_U_union_basic as "u1") as "u"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllPruningResolvesNamesFromTheFirstBranchOnly(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_swapped', $conn);
+  let u = tableAlias('u1', $f.u);
+  let swapped = sel([named(ref($u, 'ID'), 'B'), named(ref($u, 'G'), 'A'), named(ref($u, 'X'), 'C')], root($u));
+  let union = unionAll('u', [armOverT($f), $swapped]);
+  let query = sel(named(ref($union, 'A'), 'A'), root($union));
+  assertSameSQL('select "u".A as A from (select "t1".ID as A from SQLOPT.SQLOPT_T_union_swapped as "t1" union all select "u1".ID as B from SQLOPT.SQLOPT_U_union_swapped as "u1") as "u"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllPruningKeepsPositionsReadByTheParentsClauses(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_clauses', $conn);
+  let t = tableAlias('t1', $f.t);
+  let u = tableAlias('u1', $f.u);
+  let first = sel([named(ref($t, 'ID'), 'A'), named(ref($t, 'G'), 'B'), named(ref($t, 'V'), 'C'), named(ref($t, 'W'), 'D'), named(lit('e'), 'E'), named(ref($t, 'ID'), 'F')], root($t));
+  let second = sel([named(ref($u, 'ID'), 'A'), named(ref($u, 'G'), 'B'), named(ref($u, 'X'), 'C'), named(ref($u, 'TID'), 'D'), named(lit('e2'), 'E'), named(ref($u, 'ID'), 'F')], root($u));
+  let union = unionAll('u', [$first, $second]);
+  let query = ^SelectSQLQuery(columns = [named(ref($union, 'B'), 'B'), named(fn('sum', ref($union, 'C')), 'S')], data = root($union),
+                              filteringOperation = fn('isNotNull', ref($union, 'D')), groupBy = ref($union, 'B'),
+                              havingOperation = fn('greaterThan', [fn('max', ref($union, 'A')), lit(0)]), orderBy = orderAsc(ref($union, 'B')));
+  assertEquals([4, 4], $query->optimized(trimming()).data.alias.relationalElement->cast(@UnionAll).queries->map(b | $b.columns->size()));
+  assertSameRows($f, $query, true);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllOnTheNullableSideOfALeftJoinIsPrunedWithoutChangingRows(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_leftjoin', $conn);
+  let t0 = tableAlias('t0', $f.t);
+  let union = unionAll('u', [armOverT($f), armOverU($f)]);
+  let query = sel([named(ref($t0, 'ID'), 'I'), named(ref($union, 'B'), 'B')], root($t0, joined($t0, $union, sqlEquals(ref($t0, 'ID'), ref($union, 'A')), JoinType.LEFT_OUTER)));
+  assertSameSQL('select "t0".ID as I, "u".B as B from SQLOPT.SQLOPT_T_union_leftjoin as "t0" left outer join (select "t1".ID as A, "t1".G as B from SQLOPT.SQLOPT_T_union_leftjoin as "t1" union all select "u1".ID as A, "u1".G as B from SQLOPT.SQLOPT_U_union_leftjoin as "u1") as "u" on ("t0".ID = "u".A)', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testNestedUnionAllIsPrunedAtEveryLevel(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_nested', $conn);
+  let inner = unionAll('v', [armOverT($f), armOverU($f)]);
+  let wrapped = sel([named(ref($inner, 'A'), 'A'), named(ref($inner, 'B'), 'B'), named(ref($inner, 'C'), 'C')], root($inner));
+  let query = readingB(unionAll('u', [$wrapped, armOverU($f)]));
+  assertEquals([1], $query->optimized(trimming())->subSelects()->map(s | $s.columns->size())->removeDuplicates());
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllPruningSeesTableAliasColumnNameReferences(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_tacname', $conn);
+  let union = unionAll('u', [armOverT($f), armOverU($f)]);
+  let query = sel([named(ref($union, 'A'), 'A'), named(^TableAliasColumnName(alias = $union, columnName = 'C'), 'C')], root($union));
+  assertSameSQL('select "u".A as A, "u".C as C from (select "t1".ID as A, "t1".V as C from SQLOPT.SQLOPT_T_union_tacname as "t1" union all select "u1".ID as A, "u1".X as C from SQLOPT.SQLOPT_U_union_tacname as "u1") as "u"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllPruningMatchesAReferenceOfAnotherCaseToAnUnquotedFirstBranchName(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_case', $conn);
+  let t = tableAlias('t1', $f.t);
+  let lowerCaseArm = sel([named(ref($t, 'ID'), 'a'), named(ref($t, 'G'), 'b'), named(ref($t, 'V'), 'c')], root($t));
+  let query = readingB(unionAll('u', [$lowerCaseArm, armOverU($f)]));
+  assertSameSQL('select "u".B as B from (select "t1".G as b from SQLOPT.SQLOPT_T_union_case as "t1" union all select "u1".G as B from SQLOPT.SQLOPT_U_union_case as "u1") as "u"', $query->optimizedSql(trimming()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllWithADistinctBranchIsNotPruned(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_distinct', $conn);
+  let distinctArm = armOverT($f);
+  let query = readingB(unionAll('u', [^$distinctArm(distinct = true), armOverU($f)]));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllWithUngroupedAggregateBranchesIsNotPruned(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_aggregate', $conn);
+  let t = tableAlias('t1', $f.t);
+  let u = tableAlias('u1', $f.u);
+  let query = readingB(unionAll('u', [sel([named(fn('count', ref($t, 'ID')), 'A'), named(lit('k1'), 'B')], root($t)), sel([named(fn('count', ref($u, 'ID')), 'A'), named(lit('k2'), 'B')], root($u))]));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllWithOneUngroupedAggregateBranchIsNotPruned(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_oneaggregate', $conn);
+  let t = tableAlias('t1', $f.t);
+  let u = tableAlias('u1', $f.u);
+  let query = readingB(unionAll('u', [sel([named(fn('sum', ref($t, 'V')), 'A'), named(lit('agg'), 'B')], root($t)), sel([named(ref($u, 'X'), 'A'), named(ref($u, 'G'), 'B')], root($u))]));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllWithAnOrdinalOrderedBranchIsNotPruned():Boolean[1]
+{
+  let f = fixture('union_ordinal');
+  let u = tableAlias('u1', $f.u);
+  let ordered = ^SelectSQLQuery(columns = [named(ref($u, 'ID'), 'A'), named(ref($u, 'X'), 'B'), named(ref($u, 'TID'), 'C')], data = root($u), orderBy = [orderDesc(lit(2)), orderAsc(lit(1))], toRow = lit(2));
+  let union = unionAll('u', [armOverT($f), $ordered]);
+  assertNotTrimmed(sel([named(ref($union, 'A'), 'A'), named(ref($union, 'C'), 'C')], root($union)));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testSetOperationsOtherThanUnionAllAreNeverPruned(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('setops', $conn);
+  [^Union(queries = [armOverT($f), armOverU($f)]), ^Except(queries = [armOverT($f), armOverU($f)]), ^Intersect(queries = [armOverT($f), armOverU($f)])]->map({setOperation |
+    let query = readingB(tableAlias('u', $setOperation));
+    assertNotTrimmed($query);
+    assertUnchanged($f, $query);
+  });
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllWithAnUnnamedBranchColumnIsNotPruned(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('union_unnamed', $conn);
+  let u = tableAlias('u1', $f.u);
+  let unnamed = sel([named(ref($u, 'ID'), 'A'), named(ref($u, 'G'), 'B'), fn('plus', [ref($u, 'X'), lit(1)])], root($u));
+  let query = readingB(unionAll('u', [armOverT($f), $unnamed]));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testUnionAllWithBranchesOfDifferentWidthsIsNotPruned():Boolean[1]
+{
+  let f = fixture('union_widths');
+  let narrow = armOverU($f);
+  assertNotTrimmed(readingB(unionAll('u', [armOverT($f), ^$narrow(columns = $narrow.columns->take(2))])));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testCountOverADistinctSubSelectKeepsEveryDistinctColumn(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_countdistinct', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"')], data = root($t), distinct = true));
+  let query = sel(named(fn('count', lit(1)), '"n"'), root($s));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testExistsOverAnUngroupedAggregateStaysTrueOnEmptyInput(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_existsaggregate', $conn);
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(fn('count', ref($u, 'ID')), '"c"'), named(lit('k'), '"k"')], data = root($u), filteringOperation = fn('greaterThan', [ref($u, 'ID'), lit(100)])));
+  let query = ^SelectSQLQuery(columns = named(ref($t, 'ID'), '"id"'), data = root($t), filteringOperation = fn('exists', sel(named(ref($s, '"k"'), '"k"'), root($s))));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testJoinToAnUngroupedAggregateKeepsItsSingleRow(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('trim_joinaggregate', $conn);
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(fn('count', ref($u, 'ID')), '"c"'), named(lit('k'), '"k"')], data = root($u), filteringOperation = fn('greaterThan', [ref($u, 'ID'), lit(100)])));
+  let query = sel([named(ref($t, 'ID'), '"id"'), named(ref($s, '"k"'), '"k"')], root($t, joined($t, $s, sqlEquals(lit(1), lit(1)), JoinType.INNER)));
+  assertNotTrimmed($query);
+  assertUnchanged($f, $query);
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::trimming::subSelectOverT(f:Fixture[1]):TableAlias[1]
+{
+  let t = tableAlias('t', $f.t);
+  tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"')], root($t)));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::trimming::filteredByItsOwnOutputAlias(f:Fixture[1]):SelectSQLQuery[1]
+{
+  let t = tableAlias('t1', $f.t);
+  ^SelectSQLQuery(columns = [named(ref($t, 'ID'), 'A'), named(ref($t, 'G'), 'B'), named(fn('plus', [ref($t, 'V'), lit(1)]), 'Q')], data = root($t), filteringOperation = fn('greaterThan', [columnName('Q'), lit(2)]));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByALateralSibling(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('every_lateral', $conn);
+  let s = subSelectOverT($f);
+  let u = tableAlias('u', $f.u);
+  let l = tableAlias('l', ^SelectSQLQuery(columns = named(ref($u, 'X'), '"x"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"'))));
+  assertSameRows($f, sel([named(ref($s, '"g"'), '"g"'), named(ref($l, '"x"'), '"x"')], root($s, lateral($s, $l))), false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadFromAFromSubSelectNestedInExists(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('every_existsfrom', $conn);
+  let s = subSelectOverT($f);
+  let u = tableAlias('u', $f.u);
+  let q = tableAlias('q', ^SelectSQLQuery(columns = named(ref($u, 'X'), '"x"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"'))));
+  assertSameRows($f, ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), filteringOperation = fn('exists', sel(named(lit(1), '"one"'), root($q)))), false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByTheSubSelectsOwnWhereClause(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('every_ownwhere', $conn);
+  let s = tableAlias('s', filteredByItsOwnOutputAlias($f));
+  assertSameRows($f, sel(named(ref($s, 'A'), 'A'), root($s)), false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByAUnionBranchsOwnWhereClause(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('every_ownwhereunion', $conn);
+  let u = tableAlias('u1', $f.u);
+  let union = unionAll('u', [filteredByItsOwnOutputAlias($f), sel([named(ref($u, 'ID'), 'A'), named(ref($u, 'G'), 'B'), named(ref($u, 'X'), 'Q')], root($u))]);
+  assertSameRows($f, sel(named(ref($union, 'A'), 'A'), root($union)), false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsTheOrdinalsOfAUnionBranchMeaningful(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('every_unionordinal', $conn);
+  let t = tableAlias('t1', $f.t);
+  let u = tableAlias('u1', $f.u);
+  let ordered = tableAlias('o', ^SelectSQLQuery(columns = [named(ref($u, 'ID'), 'A'), named(ref($u, 'X'), 'B'), named(ref($u, 'TID'), 'C')], data = root($u), orderBy = [orderDesc(lit(2)), orderAsc(lit(1))], toRow = lit(2)));
+  let union = unionAll('u', [sel([named(ref($t, 'ID'), 'A'), named(ref($t, 'V'), 'B'), named(ref($t, 'W'), 'C')], root($t)), sel([named(ref($ordered, 'A'), 'A'), named(ref($ordered, 'B'), 'B'), named(ref($ordered, 'C'), 'C')], root($ordered))]);
+  assertSameRows($f, sel([named(ref($union, 'A'), 'A'), named(ref($union, 'C'), 'C')], root($union)), false);
+}

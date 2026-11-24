@@ -47,6 +47,7 @@ class DatabricksFixtureSchemaReset extends DatabricksCleanupResource
     //   default            - the database the JDBC URL connects to
     //   leschema           - the PCT suite's, and it sweeps its own leaked tables by age. Dropping
     //                        it here would race the tables that suite creates in a parallel fork.
+    //   sqlopt             - the SQL optimizer suite's, for the same reason: it runs in the other fork.
     //   information_schema - metastore-owned
     //   inflows/lcr/legend - unknown provenance, no reference anywhere in this repo. Quarantined
     //                        until someone claims them; delete these three entries once they are
@@ -54,6 +55,7 @@ class DatabricksFixtureSchemaReset extends DatabricksCleanupResource
     private static final MutableList<String> PROTECTED_SCHEMAS = Lists.mutable.with(
             "default",
             "leschema",
+            "sqlopt",
             "information_schema",
             "inflows",
             "lcr",

@@ -23,7 +23,6 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
-import meta::relational::tests::postProcessor::cteExtraction::*;
 import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
@@ -32,7 +31,7 @@ import meta::relational::functions::asserts::*;
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCTESQLGeneration(): Boolean[1]
 {
    let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') == 100)};
-   let pp = testRuntimeWithCTEPP().connectionStores->at(0).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection).sqlQueryPostProcessors;
+   let pp = meta::relational::sqlOptimizer::rules::extractSubQueriesAsCTEsSqlQueryPostProcessor_SelectSQLQuery_1__Result_1_;
    let result = toSQLString($func, simpleRelationalMapping, DatabaseType.DuckDB, []->cast(@String), $pp, ^Format(newLine='', indent=''), duckDBExtensions(), noDebug());
    assertSameSQL(
       'WITH subquery_cte_1_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" limit 10) \n' +

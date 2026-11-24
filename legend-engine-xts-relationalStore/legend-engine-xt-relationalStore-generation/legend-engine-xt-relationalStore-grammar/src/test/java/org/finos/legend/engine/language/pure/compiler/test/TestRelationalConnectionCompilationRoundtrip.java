@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_GenerationFeaturesConfig;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_relational_sqlOptimizer_rules_ExtractSubQueriesAsCTEsPostProcessor;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,6 +36,33 @@ import static org.junit.Assert.assertEquals;
 
 public class TestRelationalConnectionCompilationRoundtrip
 {
+    @Test
+    public void testCTEExtractionPostProcessorMarksTheConnectionAndAddsTheLegacyPlanPostProcessor()
+    {
+        Pair<PureModelContextData, PureModel> result = test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::CTEConnection\n" +
+                "{\n" +
+                "  store: model::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "  postProcessors:\n" +
+                "  [\n" +
+                "    ExtractSubQueriesAsCTEsPostProcessor\n" +
+                "    {\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) result.getTwo().getConnection("simple::CTEConnection", SourceInformation.getUnknownSourceInformation());
+        assertEquals(1, connection._postProcessors().size());
+        Assert.assertTrue(connection._postProcessors().getFirst() instanceof Root_meta_relational_sqlOptimizer_rules_ExtractSubQueriesAsCTEsPostProcessor);
+        assertEquals(1, connection._queryPostProcessorsWithParameter().size());
+    }
+
     @Test
     public void testMemSqlConnectionPropertiesPropagatedToCompiledGraph()
     {
@@ -175,7 +203,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "      enabled: ['FEAT_1'];\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [80:5-83:5]: Unknown relational generation feature: FEAT_1. Known features are: [REMOVE_UNION_OR_JOINS, USE_DB_NATIVE_IMPLICIT_NULL_ORDERING]");
+                "}\n", "COMPILATION error at [80:5-83:5]: Unknown relational generation feature: FEAT_1. Known features are: [REMOVE_UNION_OR_JOINS, USE_DB_NATIVE_IMPLICIT_NULL_ORDERING, SQL_OPTIMIZATION_ALL, SQL_OPTIMIZATION_JOIN_FILTER_PUSH_DOWN, SQL_OPTIMIZATION_SUB_QUERY_FILTER_PUSH_DOWN, SQL_OPTIMIZATION_REDUNDANT_SUB_SELECT_ELIMINATION, SQL_OPTIMIZATION_UNUSED_COLUMN_TRIMMING, SQL_OPTIMIZATION_DUPLICATE_LEFT_JOIN_MERGE, SQL_OPTIMIZATION_UNREAD_LEFT_JOIN_ELIMINATION, SQL_OPTIMIZATION_EXTRACT_SUB_QUERIES_AS_CTES]");
 
         Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +

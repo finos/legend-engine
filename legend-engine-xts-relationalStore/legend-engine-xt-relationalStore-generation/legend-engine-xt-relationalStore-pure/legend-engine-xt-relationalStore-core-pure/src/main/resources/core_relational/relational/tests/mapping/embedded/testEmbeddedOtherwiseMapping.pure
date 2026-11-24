@@ -249,7 +249,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
                                  , testMappingEmbeddedOtherwise, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('name\n' + 'test\ntest\ntest\n', $result.values->toOne()->toCSV());
-  assertSameSQL('select \'test\' as "name" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID)', $result);
+  assertSameSQL('select \'test\' as "name" from PRODUCT_DENORM as "root"', $result);
 
 } 
 

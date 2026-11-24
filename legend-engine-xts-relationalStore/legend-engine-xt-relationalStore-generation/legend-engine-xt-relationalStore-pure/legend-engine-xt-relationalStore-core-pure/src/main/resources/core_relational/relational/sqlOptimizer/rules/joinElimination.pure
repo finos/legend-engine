@@ -1,0 +1,459 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::sqlOptimizer::tree::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+
+function meta::relational::sqlOptimizer::rules::unreadLeftJoinEliminationRule():SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'UnreadLeftJoinElimination',
+    featureName = 'UNREAD_LEFT_JOIN_ELIMINATION',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {query:SelectSQLQuery[1], ctx:SqlOptimizerContext[1] | $query->eliminateUnreadLeftJoins()}
+  )
+}
+
+function meta::relational::sqlOptimizer::rules::duplicateLeftJoinMergeRule():SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'DuplicateLeftJoinMerge',
+    featureName = 'DUPLICATE_LEFT_JOIN_MERGE',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {query:SelectSQLQuery[1], ctx:SqlOptimizerContext[1] | $query->mergeDuplicateLeftJoins()}
+  )
+}
+
+function meta::relational::sqlOptimizer::rules::eliminateUnreadLeftJoins(query:SelectSQLQuery[1]):OptimizedQuery[1]
+{
+  let result = $query->transformIfChanged({r:RelationalOperationElement[1] |
+    $r->match([
+      s:SelectSQLQuery[1] | $s->withoutUnreadLeftJoins(),
+      a:RelationalOperationElement[1] | $a
+    ])
+  })->cast(@SelectSQLQuery);
+  $result->changedIfNotSame($query, | $result->joinCount() < $query->joinCount());
+}
+
+function meta::relational::sqlOptimizer::rules::mergeDuplicateLeftJoins(query:SelectSQLQuery[1]):OptimizedQuery[1]
+{
+  let result = $query->transformIfChanged({r:RelationalOperationElement[1] |
+    $r->match([
+      s:SelectSQLQuery[1] | $s->withDuplicateLeftJoinsMerged(),
+      a:RelationalOperationElement[1] | $a
+    ])
+  })->cast(@SelectSQLQuery);
+  $result->changedIfNotSame($query, | $result->joinCount() < $query->joinCount());
+}
+
+function meta::relational::sqlOptimizer::rules::joinCount(query:SelectSQLQuery[1]):Integer[1]
+{
+  $query->extractRelationalElements(true).elements->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)
+    ->map(s | $s.data->map(d | $d->joinNodesInTree())->size())->sum()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::joinNodesInTree(node:RelationalTreeNode[1]):JoinTreeNode[*]
+{
+  $node.childrenData->cast(@JoinTreeNode)->map(c | $c->concatenate($c->joinNodesInTree()))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::withoutUnreadLeftJoins(select:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  let removable = if($select.data->isEmpty() || !$select.data->toOne()->joinNodesInTree()->exists(j | $j->isPlainLeftJoin() && $j.childrenData->isEmpty()), | [], | $select->unreadLeftJoins());
+  if($removable->isEmpty(),
+    | $select,
+    | $select->withoutJoinNodes($removable)->withoutUnreadLeftJoins()
+  );
+}
+
+// One walk counts every reference in the select; a join is unread when every reference to its alias sits inside the join
+// itself, which takes a walk of that join rather than a walk of the whole select without it.
+function <<access.private>> meta::relational::sqlOptimizer::rules::unreadLeftJoins(select:SelectSQLQuery[1]):JoinTreeNode[*]
+{
+  let all = $select->extractRelationalElements(true);
+  let joins = $select.data->toOne()->joinNodesInTree();
+  if(!$all.noUnknownElement,
+    | $joins->filter(j | $select->canDropLeftJoin($j)),
+    | let references = $all.elements->referenceKeys()->groupBy(k | $k);
+      $joins->filter(j | $select->canDropUnreadLeftJoin($j, $references));
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::canDropUnreadLeftJoin(select:SelectSQLQuery[1], node:JoinTreeNode[1], references:Map<String, List<String>>[1]):Boolean[1]
+{
+  $node->isPlainLeftJoin()
+    && $node.childrenData->isEmpty()
+    && $select.columns->isNotEmpty()
+    && !$select.leftSideOfFilter->exists(l | $l.alias.name == $node.alias.name)
+    && $node.join.operation->extractRelationalElements(true).noUnknownElement
+    && $node->isReadOnlyByItself($references)
+    && ($node->matchesAtMostOneRow() || $select->discardsDuplicateRows());
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isReadOnlyByItself(node:JoinTreeNode[1], references:Map<String, List<String>>[1]):Boolean[1]
+{
+  let aliasColumnNames = $node.alias->exposedColumnNames();
+  let own = $node->extractRelationalElements(true).elements->referenceKeys()->groupBy(k | $k);
+  let keys = aliasReferenceKey($node.alias.name)->concatenate($aliasColumnNames->map(n | columnReferenceKey($n)));
+  $aliasColumnNames->isNotEmpty() && $keys->forAll(k | $references->referenceCount($k) == $own->referenceCount($k));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::referenceKeys(elements:RelationalOperationElement[*]):String[*]
+{
+  $elements->map(e | $e->match([
+    t:TableAliasColumn[1] | aliasReferenceKey($t.alias.name),
+    t:TableAliasColumnName[1] | aliasReferenceKey($t.alias.name),
+    c:ColumnName[1] | columnReferenceKey($c.name->keepKey()),
+    a:Any[1] | []
+  ]))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::aliasReferenceKey(aliasName:String[1]):String[1]
+{
+  'alias ' + $aliasName
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::columnReferenceKey(columnName:String[1]):String[1]
+{
+  'column ' + $columnName
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::referenceCount(references:Map<String, List<String>>[1], key:String[1]):Integer[1]
+{
+  let found = $references->get($key);
+  if($found->isEmpty(), | 0, | $found->toOne().values->size());
+}
+
+// A LEFT join whose right side is read nowhere but its own ON keeps every left row; it changes nothing when each left row
+// matches at most one right row, or when the select discards the duplicates it adds.
+function meta::relational::sqlOptimizer::rules::canDropLeftJoin(select:SelectSQLQuery[1], node:JoinTreeNode[1]):Boolean[1]
+{
+  $node->isPlainLeftJoin()
+    && $node.childrenData->isEmpty()
+    && $select.columns->isNotEmpty()
+    && !$select.leftSideOfFilter->exists(l | $l.alias.name == $node.alias.name)
+    && $node.join.operation->extractRelationalElements(true).noUnknownElement
+    && $select->withoutJoinNode($node)->readsNothingOf($node.alias)
+    && ($node->matchesAtMostOneRow() || $select->discardsDuplicateRows());
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isPlainLeftJoin(node:JoinTreeNode[1]):Boolean[1]
+{
+  ($node.joinType == JoinType.LEFT_OUTER) && ($node.lateral != true) && !$node.join->instanceOf(AsOfJoin)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::readsNothingOf(query:SelectSQLQuery[1], alias:TableAlias[1]):Boolean[1]
+{
+  let remaining = $query->extractRelationalElements(true);
+  let aliasColumnNames = $alias->exposedColumnNames();
+  $remaining.noUnknownElement
+    && $aliasColumnNames->isNotEmpty()
+    && !$remaining.elements->exists(e | $e->referencesAliasNamed($alias.name))
+    && !$remaining.elements->exists(e | $e->instanceOf(ColumnName) && $e->cast(@ColumnName).name->keepKey()->in($aliasColumnNames));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::exposedColumnNames(alias:TableAlias[1]):String[*]
+{
+  $alias.relationalElement->match([
+    v:ViewSelectSQLQuery[1] | [],
+    t:Table[1] | $t.columns->filter(c | $c->instanceOf(Column))->cast(@Column).name,
+    s:SelectSQLQuery[1] | $s.columns->map(c | $c->outputName()),
+    a:Any[1] | []
+  ])->map(n | $n->keepKey())
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::referencesAliasNamed(element:RelationalOperationElement[1], aliasName:String[1]):Boolean[1]
+{
+  $element->match([
+    t:TableAliasColumn[1] | $t.alias.name == $aliasName,
+    t:TableAliasColumnName[1] | $t.alias.name == $aliasName,
+    a:Any[1] | false
+  ])
+}
+
+// DISTINCT runs after the joins, so duplicates of preserved rows vanish again, unless something counts them first.
+function meta::relational::sqlOptimizer::rules::discardsDuplicateRows(select:SelectSQLQuery[1]):Boolean[1]
+{
+  ($select.distinct == true)
+    && $select.groupBy->isEmpty() && $select.havingOperation->isEmpty() && $select.qualifyOperation->isEmpty()
+    && !$select->definesCardinality()
+    && !$select.columns->extractRelationalElements(false).elements->exists(e | $e->instanceOf(WindowColumn))
+}
+
+function meta::relational::sqlOptimizer::rules::matchesAtMostOneRow(node:JoinTreeNode[1]):Boolean[1]
+{
+  let keys = $node->typedEquiJoinKeys();
+  let keyNames = $keys.first.column.name->map(n | $n->keepKey());
+  $keys->isNotEmpty() && $node.alias.relationalElement->match([
+    v:ViewSelectSQLQuery[1] | false,
+    t:Table[1] | $t->isUniqueOnKeyedTable($keyNames),
+    s:SelectSQLQuery[1] | $s->isUniqueOn($keyNames),
+    a:Any[1] | false
+  ]);
+}
+
+// A declared primary key is trusted as a uniqueness contract on every database, including those that do not enforce it.
+// Declared keys of milestoned tables hold per point in time only: the table keeps one row per version of each key.
+function <<access.private>> meta::relational::sqlOptimizer::rules::isUniqueOnKeyedTable(table:Table[1], keyNames:String[*]):Boolean[1]
+{
+  ($table->type() == Table) && $table.milestoning->isEmpty() && $table.primaryKey->isNotEmpty() && $table.primaryKey.name->forAll(k | $k->keepKey()->in($keyNames))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isUniqueOn(select:SelectSQLQuery[1], keyNames:String[*]):Boolean[1]
+{
+  let elements = $select->extractRelationalElements(false);
+  !$select->instanceOf(VarSetPlaceHolder) && !$select->instanceOf(RelationDataSelectSqlQuery)
+    && $select.data->isNotEmpty() && $select.pivot->isEmpty() && $select.fromRow->isEmpty() && $select.toRow->isEmpty()
+    && $elements.noUnknownElement && !$elements.elements->exists(e | $e->instanceOf(WindowColumn))
+    && if($select.groupBy->isNotEmpty(),
+          | $select.groupBy->forAll(g | $g->groupKeyColumn()->exists(k | $keyNames->exists(n | $select->projectedColumn($n)->exists(p | $p->isSameColumnAs($k))))),
+          | ($select.distinct == true) && $select.columns->forAll(c | $c->outputName()->exists(o | $o->keepKey()->in($keyNames))));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::groupKeyColumn(key:RelationalOperationElement[1]):TableAliasColumn[0..1]
+{
+  $key->match([
+    a:Alias[1] | $a.relationalElement->groupKeyColumn(),
+    d:DynaFunction[1] | if(($d.name == 'group') && ($d.parameters->size() == 1), | $d.parameters->at(0)->groupKeyColumn(), | []),
+    t:TableAliasColumn[1] | $t,
+    a:Any[1] | []
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::projectedColumn(select:SelectSQLQuery[1], keyName:String[1]):RelationalOperationElement[*]
+{
+  $select.columns->filter(c | $c->outputName()->exists(o | $o->keepKey() == $keyName))->map(c | $c->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isSameColumnAs(element:RelationalOperationElement[1], column:TableAliasColumn[1]):Boolean[1]
+{
+  $element->match([
+    t:TableAliasColumn[1] | ($t.alias.name == $column.alias.name) && ($t.column.name == $column.column.name),
+    a:Any[1] | false
+  ])
+}
+
+// Every ON conjunct must equate a right-side column with another alias's column under an equality that identifies values,
+// or a coercing (VARCHAR = INTEGER) or float comparison could match several right rows that are distinct under the key.
+function meta::relational::sqlOptimizer::rules::typedEquiJoinKeys(node:JoinTreeNode[1]):Pair<TableAliasColumn,TableAliasColumn>[*]
+{
+  let conjuncts = $node.join.operation->onConjuncts();
+  let keys = $conjuncts->map(c | $c->equiJoinKey($node.alias.name));
+  if(($keys->size() == $conjuncts->size()) && $keys->forAll(k | $k.second->comparedType()->equalityIdentifiesValues($k.first->comparedType())), | $keys, | []);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::onConjuncts(operation:RelationalOperationElement[1]):RelationalOperationElement[*]
+{
+  $operation->match([
+    d:DynaFunction[1] | if(($d.name == 'and') || (($d.name == 'group') && ($d.parameters->size() == 1)), | $d.parameters->map(p | $p->onConjuncts()), | $d),
+    r:RelationalOperationElement[1] | $r
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::equiJoinKey(conjunct:RelationalOperationElement[1], rightAliasName:String[1]):Pair<TableAliasColumn,TableAliasColumn>[0..1]
+{
+  $conjunct->match([
+    d:DynaFunction[1] |
+      if(($d.name == 'equal') && ($d.parameters->size() == 2) && $d.parameters->forAll(p | $p->instanceOf(TableAliasColumn)),
+        | let a = $d.parameters->at(0)->cast(@TableAliasColumn);
+          let b = $d.parameters->at(1)->cast(@TableAliasColumn);
+          if(($b.alias.name == $rightAliasName) && ($a.alias.name != $rightAliasName),
+            | pair($b, $a),
+            | if(($a.alias.name == $rightAliasName) && ($b.alias.name != $rightAliasName), | pair($a, $b), | [])
+          );,
+        | []
+      ),
+    a:Any[1] | []
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::withoutJoinNode(select:SelectSQLQuery[1], node:JoinTreeNode[1]):SelectSQLQuery[1]
+{
+  $select->withoutJoinNodes($node)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::withoutJoinNodes(select:SelectSQLQuery[1], nodes:JoinTreeNode[*]):SelectSQLQuery[1]
+{
+  let newRoot = $select.data->toOne()->withoutChildren($nodes)->cast(@RootJoinTreeNode);
+  let pruned = ^$select(data = $newRoot);
+  if($select.leftSideOfFilter->isNotEmpty(),
+    | ^$pruned(leftSideOfFilter = $select.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($select.data->toOne(), $newRoot)),
+    | $pruned
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::withoutChildren(node:RelationalTreeNode[1], targets:JoinTreeNode[*]):RelationalTreeNode[1]
+{
+  let children = $node.childrenData->cast(@JoinTreeNode)->filter(c | !$targets->exists(t | is($c, $t)))->map(c | $c->withoutChildren($targets));
+  $node->match([
+    j:JoinTreeNode[1] | ^$j(childrenData = $children),
+    r:RootJoinTreeNode[1] | ^$r(childrenData = $children)
+  ]);
+}
+
+// Every merge is planned from join signatures computed once and applied in one rename; a rename can make two more joins
+// repeat each other, so the result is merged again until nothing repeats. If any planned merge is refused, the joins are
+// merged one pair at a time as before.
+function <<access.private>> meta::relational::sqlOptimizer::rules::withDuplicateLeftJoinsMerged(select:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  let joins = if($select.data->isEmpty() || $select.columns->isEmpty(), | [], | $select.data->toOne()->joinNodesInTree());
+  let merges = if($joins->size() < 2, | [], | $joins->plannedMerges($select->definedAliasNames()->groupBy(n | $n), $select.leftSideOfFilter.alias.name));
+  if($merges->isEmpty(),
+    | $select,
+    | let merged = $select->mergedAllInto($merges);
+      if($merged->isEmpty(), | $select->withDuplicateLeftJoinsMergedOnePairAtATime(), | $merged->toOne()->withDuplicateLeftJoinsMerged());
+  );
+}
+
+// In the order the pairwise search takes them: each later leaf join merges into the first earlier join of its signature that
+// matches at most one row and is not itself merged away. A join the pairwise search could never merge or keep (its alias
+// is defined more than once, or a dropped join is the filter's left side) is left out here rather than refused later.
+function <<access.private>> meta::relational::sqlOptimizer::rules::plannedMerges(joins:JoinTreeNode[*], definedNames:Map<String, List<String>>[1], leftSideOfFilterName:String[0..1]):Pair<JoinTreeNode, JoinTreeNode>[*]
+{
+  let signed = $joins->mapOnce(j | pair($j, $j->duplicateSignature()->joinStrings('')))->filter(p | ($p.second != '') && ($definedNames->referenceCount($p.first.alias.name) == 1));
+  $signed->groupBy(p | $p.second)->keyValues()
+    ->fold({kv, acc | ^$acc(values = $acc.values->concatenate($kv.second.values.first->mergesWithinSignature($leftSideOfFilterName)))}, ^List<Pair<JoinTreeNode, JoinTreeNode>>()).values;
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::mergesWithinSignature(members:JoinTreeNode[*], leftSideOfFilterName:String[0..1]):Pair<JoinTreeNode, JoinTreeNode>[*]
+{
+  $members->fold({j, acc |
+    let keeps = $acc.first.values;
+    if($j.childrenData->isEmpty() && $keeps->isNotEmpty() && !$leftSideOfFilterName->contains($j.alias.name),
+      | pair($acc.first, list($acc.second.values->concatenate(pair($keeps->at(0), $j)))),
+      | if($j->matchesAtMostOneRow(), | pair(list($keeps->concatenate($j)), $acc.second), | $acc)
+    );
+  }, pair(list([]->cast(@JoinTreeNode)), list([]->cast(@Pair<JoinTreeNode, JoinTreeNode>)))).second.values
+}
+
+// Two joins repeat each other when both are plain LEFT joins to the same table with the same normalized ON keys.
+function <<access.private>> meta::relational::sqlOptimizer::rules::duplicateSignature(node:JoinTreeNode[1]):String[0..1]
+{
+  let table = $node.alias.relationalElement;
+  if($node->isPlainLeftJoin() && $table->instanceOf(Table) && ($table->type() == Table),
+    | let keys = $node->normalizedJoinKeys();
+      if($keys->isEmpty(), | [], | $table->cast(@Table)->tableIdentity() + ' | ' + $keys->joinStrings(' and '));,
+    | []
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::tableIdentity(table:Table[1]):String[1]
+{
+  $table.schema.database->elementToPath() + ' | ' + $table.schema.name + ' | ' + $table.name
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::mergedAllInto(select:SelectSQLQuery[1], merges:Pair<JoinTreeNode, JoinTreeNode>[*]):SelectSQLQuery[0..1]
+{
+  let drops = $merges->mapOnce(m | $m.second);
+  let keepAliases = $merges->map(m | pair($m.second.alias.name, $m.first.alias))->newMap();
+  let renamed = $select->withoutJoinNodes($drops)->transformNonCached({r:RelationalOperationElement[1] |
+        $r->match([
+          t:TableAliasColumn[1] | let keep = $keepAliases->get($t.alias.name); if($keep->isEmpty(), | $t, | ^$t(alias = $keep->toOne()));,
+          t:TableAliasColumnName[1] | let keep = $keepAliases->get($t.alias.name); if($keep->isEmpty(), | $t, | ^$t(alias = $keep->toOne()));,
+          a:RelationalOperationElement[1] | $a
+        ])
+      })->cast(@SelectSQLQuery);
+  let remaining = $renamed->extractRelationalElements(true);
+  if($remaining.noUnknownElement && !$remaining.elements->exists(e | $e->referencedAliasName()->exists(n | $keepAliases->get($n)->isNotEmpty())), | $renamed, | []);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::referencedAliasName(element:RelationalOperationElement[1]):String[0..1]
+{
+  $element->match([
+    t:TableAliasColumn[1] | $t.alias.name,
+    t:TableAliasColumnName[1] | $t.alias.name,
+    a:Any[1] | []
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::withDuplicateLeftJoinsMergedOnePairAtATime(select:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  let joins = if($select.data->isEmpty(), | [], | $select.data->toOne()->joinNodesInTree());
+  let repeatedPairs = range($joins->size())->map(later |
+    range($later)->filter(earlier | $joins->at($later)->repeats($joins->at($earlier)))->map(earlier | pair($joins->at($earlier), $joins->at($later)))
+  );
+  let merged = $select->firstMerge($repeatedPairs);
+  if($merged->isEmpty(), | $select, | $merged->toOne()->withDuplicateLeftJoinsMergedOnePairAtATime());
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::firstMerge(select:SelectSQLQuery[1], repeatedPairs:Pair<JoinTreeNode, JoinTreeNode>[*]):SelectSQLQuery[0..1]
+{
+  if($repeatedPairs->isEmpty(),
+    | [],
+    | let merged = $select->mergedInto($repeatedPairs->at(0).first, $repeatedPairs->at(0).second);
+      if($merged->isEmpty(), | $select->firstMerge($repeatedPairs->tail()), | $merged);
+  );
+}
+
+// With the same ON over a unique key of the same table both joins bind the same row (or both none), so the later
+// alias's columns are the earlier alias's columns of that row.
+function meta::relational::sqlOptimizer::rules::repeats(later:JoinTreeNode[1], earlier:JoinTreeNode[1]):Boolean[1]
+{
+  $later.childrenData->isEmpty()
+    && $earlier->isPlainLeftJoin() && $later->isPlainLeftJoin()
+    && $earlier.alias.relationalElement->isSameTableAs($later.alias.relationalElement)
+    && $earlier->matchesAtMostOneRow()
+    && $earlier->normalizedJoinKeys()->isNotEmpty()
+    && ($earlier->normalizedJoinKeys()->joinStrings(' and ') == $later->normalizedJoinKeys()->joinStrings(' and '));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isSameTableAs(a:RelationalOperationElement[1], b:RelationalOperationElement[1]):Boolean[1]
+{
+  $a->instanceOf(Table) && $b->instanceOf(Table) && ($a->type() == Table) && ($b->type() == Table)
+    && ($a->cast(@Table).name == $b->cast(@Table).name)
+    && ($a->cast(@Table).schema.name == $b->cast(@Table).schema.name)
+    && ($a->cast(@Table).schema.database->elementToPath() == $b->cast(@Table).schema.database->elementToPath())
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::normalizedJoinKeys(node:JoinTreeNode[1]):String[*]
+{
+  $node->typedEquiJoinKeys()->map(k | $k.second.alias.name + '.' + $k.second.column.name + '=' + $k.first.column.name)->removeDuplicates()->sort()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::mergedInto(select:SelectSQLQuery[1], keep:JoinTreeNode[1], drop:JoinTreeNode[1]):SelectSQLQuery[0..1]
+{
+  let dropName = $drop.alias.name;
+  let keepAlias = $keep.alias;
+  let definedNames = $select->definedAliasNames();
+  if($select.columns->isEmpty()
+       || $select.leftSideOfFilter->exists(l | $l.alias.name == $dropName)
+       || ($definedNames->filter(n | $n == $dropName)->size() != 1)
+       || ($definedNames->filter(n | $n == $keepAlias.name)->size() != 1),
+    | [],
+    | let renamed = $select->withoutJoinNode($drop)->transformNonCached({r:RelationalOperationElement[1] |
+        $r->match([
+          t:TableAliasColumn[1] | if($t.alias.name == $dropName, | ^$t(alias = $keepAlias), | $t),
+          t:TableAliasColumnName[1] | if($t.alias.name == $dropName, | ^$t(alias = $keepAlias), | $t),
+          a:RelationalOperationElement[1] | $a
+        ])
+      })->cast(@SelectSQLQuery);
+      let remaining = $renamed->extractRelationalElements(true);
+      if($remaining.noUnknownElement && !$remaining.elements->exists(e | $e->referencesAliasNamed($dropName)), | $renamed, | []);
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::definedAliasNames(select:SelectSQLQuery[1]):String[*]
+{
+  $select->extractRelationalElements(true).elements->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)
+    ->map(s | $s.data->map(d | $d.alias->concatenate($d->joinNodesInTree().alias)))->map(a | $a.name)
+}

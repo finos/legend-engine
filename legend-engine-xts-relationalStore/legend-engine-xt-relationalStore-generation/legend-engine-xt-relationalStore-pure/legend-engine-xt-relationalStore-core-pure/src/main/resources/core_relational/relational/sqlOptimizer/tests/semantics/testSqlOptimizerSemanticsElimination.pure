@@ -1,0 +1,336 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::core::runtime::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::tests::sqlOptimizer::semantics::*;
+import meta::relational::tests::sqlOptimizer::semantics::elimination::*;
+
+function meta::relational::tests::sqlOptimizer::semantics::elimination::literalColumns(f:Fixture[1]):SelectSQLQuery[1]
+{
+  let t = tableAlias('t', $f.t);
+  sel([named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"'), named(ref($t, 'ID'), '"id"'), named(lit(1), '"one"'), named(lit('k'), '"k"')], root($t));
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::elimination::assertNotEliminated(query:SelectSQLQuery[1]):Boolean[1]
+{
+  assertEquals($query->printed(), $query->optimizedSql(elimination()))
+}
+
+function meta::relational::tests::sqlOptimizer::semantics::elimination::assertEliminated(query:SelectSQLQuery[1]):Boolean[1]
+{
+  assertEmpty($query->optimized(elimination())->subSelects())
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationMergesARootSubSelectUnderAnOuterLeftJoinKeepingItsFilter(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_leftjoin', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"'), named(lit('k'), '"k"')], data = root($t), filteringOperation = fn('greaterThan', [ref($t, 'V'), lit(1)])));
+  let u = tableAlias('u', $f.u);
+  let query = ^SelectSQLQuery(columns = [named(ref($s, '"id"'), '"id"'), named(fn('concat', [ref($s, '"k"'), lit('!')]), '"k2"'), named(ref($u, 'X'), '"x"')],
+                              data = root($s, joined($s, $u, sqlEquals(ref($u, 'TID'), ref($s, '"id"')), JoinType.LEFT_OUTER)),
+                              filteringOperation = sqlEquals(ref($s, '"k"'), lit('k')));
+  assertEliminated($query);
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationKeepsTheNullExtensionOfAnInnerLeftJoinFilteredOnIsNull(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_isnull', $conn);
+  let t = tableAlias('t', $f.t);
+  let iu = tableAlias('iu', $f.u);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($iu, 'X'), '"x"'), named(ref($t, 'V'), '"v"')],
+                                          data = root($t, joined($t, $iu, sqlEquals(ref($iu, 'TID'), ref($t, 'ID')), JoinType.LEFT_OUTER)),
+                                          filteringOperation = fn('isNull', ref($iu, 'X'))));
+  let ou = tableAlias('ou', $f.u);
+  let query = sel([named(ref($s, '"id"'), '"id"'), named(ref($s, '"x"'), '"x"'), named(ref($ou, 'ID'), '"ouid"')], root($s, joined($s, $ou, sqlEquals(ref($ou, 'X'), ref($s, '"v"')), JoinType.LEFT_OUTER)));
+  assertEliminated($query);
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationSubstitutesALiteralIntoAnOuterJoinCondition(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_literalon', $conn);
+  let s = tableAlias('s', literalColumns($f));
+  let u = tableAlias('u', $f.u);
+  let query = sel([named(ref($s, '"id"'), '"id"'), named(ref($u, 'X'), '"x"')],
+                  root($s, joined($s, $u, fn('and', [sqlEquals(ref($u, 'TID'), ref($s, '"one"')), sqlEquals(ref($u, 'G'), ref($s, '"g"'))]), JoinType.LEFT_OUTER)));
+  assertEliminated($query);
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationDropsAConstantOrderByKeyInsteadOfSubstitutingIt(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_literalorder', $conn);
+  let s = tableAlias('s', literalColumns($f));
+  let query = ^SelectSQLQuery(columns = [named(ref($s, '"g"'), '"g"'), named(ref($s, '"id"'), '"id"')], data = root($s), orderBy = [orderAsc(ref($s, '"one"')), orderDesc(ref($s, '"id"'))]);
+  assertSameSQL('select "t".G as "g", "t".ID as "id" from SQLOPT.SQLOPT_T_elim_literalorder as "t" order by "t".ID desc', $query->optimizedSql(elimination()));
+  assertSameRows($f, $query, true);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationRefusesToSubstituteALiteralIntoGroupBy(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_literalgroup', $conn);
+  let s = tableAlias('s', literalColumns($f));
+  let query = ^SelectSQLQuery(columns = named(fn('max', ref($s, '"v"')), '"m"'), data = root($s), groupBy = ref($s, '"one"'));
+  assertNotEliminated($query);
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testTrimmingThenEliminationDoesNotPutALiteralIntoOrderBy(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_trimorder', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'G'), '"g"'), named(ref($t, 'ID'), '"id"'), named(lit(1), '"one"')], root($t)));
+  let w = tableAlias('w', ^SelectSQLQuery(columns = [named(ref($s, '"g"'), '"g"'), named(ref($s, '"id"'), '"id"'), named(ref($s, '"one"'), '"one"')], data = root($s), orderBy = [orderAsc(ref($s, '"one"')), orderDesc(ref($s, '"id"'))], toRow = lit(100)));
+  let query = sel([named(ref($w, '"g"'), '"g"'), named(ref($w, '"id"'), '"id"')], root($w));
+  assertSQLDoesNotContain('order by 1', $query->optimizedSql(defaultSqlOptimizationRules()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testTrimmingThenEliminationDoesNotPutALiteralIntoGroupBy(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_trimgroup', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'V'), '"v"'), named(lit(1), '"one"')], root($t)));
+  let w = tableAlias('w', ^SelectSQLQuery(columns = [named(fn('max', ref($s, '"v"')), '"m"'), named(ref($s, '"one"'), '"one"')], data = root($s), groupBy = ref($s, '"one"')));
+  let query = sel(named(ref($w, '"m"'), '"m"'), root($w));
+  assertSQLDoesNotContain('group by 1', $query->optimizedSql(defaultSqlOptimizationRules()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testPassThroughCollapseKeepsDistinctOverDuplicatedReferences(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_distinct', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'V'), '"v"'), named(ref($t, 'G'), '"g"')], data = root($t), distinct = true));
+  let query = sel([named(ref($s, '"v"'), '"a"'), named(ref($s, '"g"'), '"g"'), named(ref($s, '"v"'), '"b"')], root($s));
+  assertSameSQL('select distinct "t".V as "a", "t".G as "g", "t".V as "b" from SQLOPT.SQLOPT_T_elim_distinct as "t"', $query->optimizedSql(elimination()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testPassThroughCollapseKeepsAnOrderedLimit(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_orderedlimit', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"')], data = root($t), orderBy = orderDesc(columnName('"id"')), toRow = lit(3)));
+  let query = sel([named(ref($s, '"v"'), '"v"'), named(ref($s, '"id"'), '"id"')], root($s));
+  assertEliminated($query);
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testPassThroughCollapseRefusesASubSelectOrderedByOrdinals(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_ordinal', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"'), named(ref($t, 'W'), '"w"')], data = root($t), orderBy = [orderDesc(lit(3)), orderAsc(lit(1))], toRow = lit(3)));
+  let query = sel(named(ref($s, '"id"'), '"id"'), root($s));
+  assertNotEliminated($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationRewritesTheWindowOfAMergedSubSelect(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_window', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"')], root($t)));
+  let rank = ^WindowColumn(columnName = 'rk', func = fn('rank', []), window = ^meta::relational::metamodel::Window(partition = ref($s, '"g"'), sortBy = ^SortByInfo(sortByElement = ref($s, '"id"'), sortDirection = meta::relational::metamodel::SortDirection.ASC)));
+  let query = sel([named(ref($s, '"id"'), '"id"'), named($rank, '"rk"')], root($s));
+  assertSameSQL('select "t".ID as "id", rank() over (partition by "t".G order by "t".ID asc) as "rk" from SQLOPT.SQLOPT_T_elim_window as "t"', $query->optimizedSql(elimination()));
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationDoesNotCollapseAnOrderedLimitedArmIntoASetOperationBranch(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_unionarm', $conn);
+  let t = tableAlias('t', $f.t);
+  let v = tableAlias('v', $f.u);
+  let plain = tableAlias('s1', sel([named(ref($v, 'ID'), 'A'), named(ref($v, 'G'), 'B')], root($v)));
+  let limited = tableAlias('s0', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), 'A'), named(ref($t, 'G'), 'B')], data = root($t), orderBy = orderAsc(ref($t, 'ID')), toRow = lit(2)));
+  let branchOver = {s:TableAlias[1] | sel([named(ref($s, 'A'), 'A'), named(ref($s, 'B'), 'B')], root($s))};
+  [list([$branchOver->eval($plain), $branchOver->eval($limited)]), list([$branchOver->eval($limited), $branchOver->eval($plain)])]->map({branches |
+    let union = unionAll('u', $branches.values);
+    let query = sel([named(ref($union, 'A'), 'A'), named(ref($union, 'B'), 'B')], root($union));
+    assertEquals(0, $query->optimized(elimination())->orderedSetOperandCount());
+    assertUnchanged($f, $query);
+  });
+  true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testAnOuterOrderByOverAnInnerOrderedLimitIsNotMerged(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_reorder', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = named(ref($t, 'ID'), '"id"'), data = root($t), distinct = true, orderBy = orderDesc(ref($t, 'ID')), toRow = lit(3)));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), orderBy = orderAsc(ref($s, '"id"')));
+  assertNotEliminated($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationRefusesToMergeFiltersWhenTheOuterPredicateCanFailOnRowsTheInnerFilterRemoves(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_throwing', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"')], data = root($t), filteringOperation = fn('notEqual', [fn('concat', [ref($t, 'G'), ref($t, 'G')]), lit('xx')])));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), filteringOperation = fn('greaterThan', [fn('parseInteger', ref($s, '"g"')), lit(10)]));
+  assertNotEliminated($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationRefusesToMergeWhenTheOuterJoinConditionCanFailOnRowsTheInnerFilterRemoves(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_throwing_on', $conn);
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"')], data = root($t), filteringOperation = fn('notEqual', [fn('concat', [ref($t, 'G'), ref($t, 'G')]), lit('xx')])));
+  let query = ^SelectSQLQuery(columns = [named(ref($s, '"id"'), '"id"'), named(ref($u, 'X'), '"x"')],
+                              data = root($s, joined($s, $u, sqlEquals(ref($u, 'X'), fn('parseInteger', ref($s, '"g"'))), JoinType.LEFT_OUTER)),
+                              filteringOperation = fn('greaterThan', [ref($s, '"id"'), lit(0)]));
+  assertNotEliminated($query);
+  assertSameRows($f, $query, false, 'numericStrings');
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationMergesANonThrowingOuterFilterWithTheInnerFilter(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_filterorder', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"')], data = root($t), filteringOperation = fn('notEqual', [ref($t, 'G'), lit('x')])));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), filteringOperation = fn('greaterThan', [ref($s, '"id"'), lit(1)]));
+  assertEliminated($query);
+  assertSameRows($f, $query, false, dataVariants()->concatenate('numericStrings'));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationLeavesASubSelectWhoseNamesDifferOnlyInCase(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_quotedcase', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'V'), '"v"'), named(ref($t, 'W'), '"V"'), named(ref($t, 'ID'), '"Row Id"')], root($t)));
+  let query = ^SelectSQLQuery(columns = [named(ref($s, '"V"'), '"V"'), named(ref($s, '"Row Id"'), '"Row Id"')], data = root($s), filteringOperation = fn('greaterThan', [ref($s, '"v"'), lit(0)]));
+  assertNotEliminated($query);
+  assertSameRows($f, $query, false);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationLeavesASubSelectWhoseUnquotedNameMatchesAQuotedNameOfAnotherCase():Boolean[1]
+{
+  let t = tableAlias('t', fixture('elim_foldcase').t);
+  let s = tableAlias('s', sel([named(ref($t, 'V'), 'v'), named(ref($t, 'W'), '"V"'), named(ref($t, 'ID'), '"id"')], root($t)));
+  assertNotEliminated(sel([named(ref($s, '"id"'), '"id"')], root($s)));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationLeavesASubSelectWhoseUnquotedAndQuotedNamesAreSpelledAlike():Boolean[1]
+{
+  let f = fixture('elim_quotedspelling');
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let s = tableAlias('s', sel([named(ref($t, 'V'), 'g'), named(ref($u, 'X'), '"g"'), named(ref($t, 'ID'), '"id"')], root($t, joined($t, $u, sqlEquals(ref($u, 'TID'), ref($t, 'ID')), JoinType.LEFT_OUTER))));
+  assertNotEliminated(sel([named(ref($s, '"id"'), '"id"'), named(ref($s, '"g"'), '"x"')], root($s)));
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationDoesNotMergeASubSelectThatALateralJoinReads():Boolean[1]
+{
+  let f = fixture('elim_lateral');
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'G'), '"g"'), named(ref($t, 'V'), '"v"')], root($t)));
+  let u = tableAlias('u', $f.u);
+  let l = tableAlias('l', ^SelectSQLQuery(columns = named(ref($u, 'X'), '"x"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"'))));
+  let query = sel([named(ref($s, '"g"'), '"g"'), named(ref($l, '"x"'), '"x"')], root($s, lateral($s, $l)));
+  let root = $query->optimized(elimination()).data->toOne();
+  assertEquals('s', $root.alias.name);
+  assert($root.alias.relationalElement->instanceOf(SelectSQLQuery));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationDoesNotMergeAnAliasThatACorrelatedSubqueryWouldCapture(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_capture', $conn);
+  let t = tableAlias('u', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"')], root($t)));
+  let u = tableAlias('u', $f.u);
+  let correlated = ^SelectSQLQuery(columns = named(lit(1), '"one"'), data = root($u), filteringOperation = sqlEquals(ref($u, 'TID'), ref($s, '"v"')));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), filteringOperation = fn('exists', $correlated));
+  assertNotEliminated($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationKeepsAnOrderByBoundToOutputAliasesThatSwapNames(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_swappedorder', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named(ref($t, 'V'), '"v"')], root($t)));
+  let query = ^SelectSQLQuery(columns = [named(ref($s, '"v"'), '"id"'), named(ref($s, '"id"'), '"v"')], data = root($s), orderBy = [orderAsc(columnName('"id"')), orderAsc(columnName('"v"'))]);
+  assertSameSQL('select "t".V as "id", "t".ID as "v" from SQLOPT.SQLOPT_T_elim_swappedorder as "t" order by "id" asc, "v" asc', $query->optimizedSql(elimination()));
+  assertSameRows($f, $query, true);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationDoesNotInlineAComputedColumnIntoTheOuterQuery(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_computed', $conn);
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', sel([named(fn('plus', [ref($t, 'V'), lit(1)]), '"i"'), named(ref($t, 'ID'), '"id"')], root($t)));
+  let query = ^SelectSQLQuery(columns = [named(ref($s, '"i"'), '"i"'), named(fn('plus', [ref($s, '"i"'), lit(1)]), '"b"')], data = root($s), filteringOperation = fn('greaterThan', [ref($s, '"i"'), lit(2)]));
+  assertNotEliminated($query);
+  assertSameRows($f, $query, false);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationDoesNotMergeAWindowColumnIntoTheOuterWhere(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_windowfilter', $conn);
+  let t = tableAlias('t', $f.t);
+  let rank = ^WindowColumn(columnName = 'rk', func = fn('rank', []), window = ^meta::relational::metamodel::Window(partition = ref($t, 'G'), sortBy = ^SortByInfo(sortByElement = ref($t, 'ID'), sortDirection = meta::relational::metamodel::SortDirection.ASC)));
+  let s = tableAlias('s', sel([named(ref($t, 'ID'), '"id"'), named($rank, '"rk"')], root($t)));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), filteringOperation = sqlEquals(ref($s, '"rk"'), lit(1)));
+  assertNotEliminated($query);
+  assertUnchanged($f, $query);
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testALiteralOnTheNullableSideOfALeftJoinStaysNullExtended(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('elim_nullableliteral', $conn);
+  let t = tableAlias('t', $f.t);
+  let u = tableAlias('u', $f.u);
+  let r = tableAlias('r', sel([named(lit(7), '"k"'), named(ref($u, 'TID'), '"i"')], root($u)));
+  let query = sel([named(ref($t, 'ID'), '"id"'), named(ref($r, '"k"'), '"k"')], root($t, joined($t, $r, sqlEquals(ref($r, '"i"'), ref($t, 'ID')), JoinType.LEFT_OUTER)));
+  assertUnchanged($f, $query);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testAnInnerOrderByFeedingAnOuterLimitIsNotMerged():Boolean[1]
+{
+  let f = fixture('elim_orderfeedslimit');
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = named(ref($t, 'ID'), '"id"'), data = root($t), orderBy = orderDesc(ref($t, 'ID'))));
+  let query = ^SelectSQLQuery(columns = named(ref($s, '"id"'), '"id"'), data = root($s), toRow = lit(2));
+  assertNotEliminated($query);
+}
+
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testPassThroughCollapseKeepsAnOutputAliasTheInnerWhereClauseReads():Boolean[1]
+{
+  let f = fixture('elim_ownwhere');
+  let t = tableAlias('t', $f.t);
+  let s = tableAlias('s', ^SelectSQLQuery(columns = [named(ref($t, 'ID'), 'A'), named(fn('plus', [ref($t, 'V'), lit(1)]), 'Q')], data = root($t), filteringOperation = fn('greaterThan', [columnName('Q'), lit(2)])));
+  assertNotEliminated(sel(named(ref($s, 'A'), 'A'), root($s)));
+}
+
+function <<paramTest.Test>> meta::relational::tests::sqlOptimizer::semantics::elimination::testEveryRuleKeepsLiteralsOutOfGroupByAndOrderBy(conn:Connection[1]):Boolean[1]
+{
+  let f = fixture('every_literalkeys', $conn);
+  let s = tableAlias('s', literalColumns($f));
+  assertSameRows($f, ^SelectSQLQuery(columns = named(fn('max', ref($s, '"v"')), '"m"'), data = root($s), groupBy = ref($s, '"one"')), false);
+  assertSameRows($f, ^SelectSQLQuery(columns = named(fn('count', ref($s, '"id"')), '"n"'), data = root($s), groupBy = ref($s, '"k"')), false);
+  assertSameRows($f, ^SelectSQLQuery(columns = [named(ref($s, '"g"'), '"g"'), named(ref($s, '"id"'), '"id"')], data = root($s), orderBy = [orderAsc(ref($s, '"k"')), orderDesc(ref($s, '"id"'))]), true);
+}

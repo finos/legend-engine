@@ -49,8 +49,9 @@ function meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->A
    let postProcessors = meta::relational::mapping::sqlQueryDefaultPostProcessors()->map(pp | {select:SelectSQLQuery[*] | $pp->eval($select, $databaseConnection, ^meta::pure::runtime::ExecutionContext(), $extensions)})->concatenate($databaseConnection.sqlQueryPostProcessors);
    let sql = toSQL($f, $mapping, $databaseConnection.type, $databaseConnection.timeZone, $postProcessors, $extensions, noDebug());
 
-   if ($databaseConnection.sqlQueryPostProcessorsConnectionAware->isEmpty(), | $sql, | let newSql = $sql.sqlQueries->map(s | $databaseConnection.sqlQueryPostProcessorsConnectionAware->fold({pp,q|$pp->eval($q, $databaseConnection->cast(@DatabaseConnection)).values->toOne()}, $s->cast(@SelectSQLQuery)));
+   let postProcessedSql = if ($databaseConnection.sqlQueryPostProcessorsConnectionAware->isEmpty(), | $sql, | let newSql = $sql.sqlQueries->map(s | $databaseConnection.sqlQueryPostProcessorsConnectionAware->fold({pp,q|$pp->eval($q, $databaseConnection->cast(@DatabaseConnection)).values->toOne()}, $s->cast(@SelectSQLQuery)));
                                                                                        ^$sql(sqlQueries=$newSql););
+   $postProcessedSql->optimize(meta::relational::sqlOptimizer::sqlOptimizerContext($databaseConnection.type, $databaseConnection, ^meta::pure::runtime::ExecutionContext(), $extensions));
 
 }
 
@@ -130,6 +131,11 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
   );
 }
 
+
+function <<access.private>> meta::relational::functions::sqlstring::optimize(sqlResult:SQLResult[1], ctx:meta::relational::sqlOptimizer::SqlOptimizerContext[1]):SQLResult[1]
+{
+   ^$sqlResult(sqlQueries = $sqlResult.sqlQueries->map(q | $q->meta::relational::sqlOptimizer::optimizeSqlQuery($ctx)));
+}
 
 function <<access.private>> meta::relational::functions::sqlstring::findDBCluster(v:ValueSpecification[1], current:StoreMappingClusteredValueSpecification[*]):StoreMappingClusteredValueSpecification[*]
 {

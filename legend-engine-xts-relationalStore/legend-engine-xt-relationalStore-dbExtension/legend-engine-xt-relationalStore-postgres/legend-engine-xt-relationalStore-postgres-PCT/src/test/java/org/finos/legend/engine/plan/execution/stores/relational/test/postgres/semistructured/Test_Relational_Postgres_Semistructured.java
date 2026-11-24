@@ -47,7 +47,7 @@ public class Test_Relational_Postgres_Semistructured
         // previously wired up for Postgres - these fall into three groups:
         //  - Most ModelJoin-based tests hit a SQL alias-numbering bug specific to this
         //    code path: the generated query references e.g. "person_table_0.FIRM_DETAILS"
-        //    or "...MANAGERID" but the actual FROM-clause alias is numbered differently
+        //    but the actual FROM-clause alias is numbered differently
         //    ("person_table_2"), so Postgres rejects the column reference outright. Root
         //    cause not yet investigated - needs real Postgres dialect work, not a one-line
         //    fix. The two `arrayscalar` lambda-routing tests below (added later, exercising
@@ -61,20 +61,6 @@ public class Test_Relational_Postgres_Semistructured
         //    in Postgres, same as Spark/Databricks) or a missing jsonb-to-text unwrap -
         //    both fixed directly in postgresExtension.pure, nothing left to skip here.
         MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
-            .withKeyValue("meta::relational::tests::mapping::relation::semistructured::misc::multibinding::testSemiStructuredRelOpWithJoinPropertyAccessFromMultipleBindingMapping_Connection_1__Boolean_1_",
-                          "column person_table_0.MANAGERID does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::semistructured::misc::parsejson::testParseJsonInMapping_Connection_1__Boolean_1_",
-                          "column person_table_varchar_0.MANAGERID does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccess_Connection_1__Boolean_1_",
-                          "column person_table_0.MANAGERID does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccessParallel_Connection_1__Boolean_1_",
-                          "column person_table_0.MANAGERID does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::semistructured::simple::testFilterWithSemiStructuredPropertyAccessAtNestedProperty_Connection_1__Boolean_1_",
-                          "column person_table_0.MANAGERID does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::semistructured::simple::testSemiStructuredPropertyAccessAtNestedProperty_Connection_1__Boolean_1_",
-                          "column person_table_0.MANAGERID does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::semistructured::simple::testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions_Connection_1__Boolean_1_",
-                          "column person_table_0.MANAGERID does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testArithmeticAndConcatOfCollapses_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testCardinalityAndDistinct_Connection_1__Boolean_1_",
@@ -93,8 +79,6 @@ public class Test_Relational_Postgres_Semistructured
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testFanOutOneToMany_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testFilterByCrossMappedFirm_Connection_1__Boolean_1_",
-                          "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testFilterOnFirmWithDeptExists_Connection_1__Boolean_1_",
                           "column firm_table_0.ID does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenCardinality_Connection_1__Boolean_1_",
@@ -109,8 +93,6 @@ public class Test_Relational_Postgres_Semistructured
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testIfThenElseOverCollapse_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testIfWithSemiStructuredConditionAndModelJoinBranch_Connection_1__Boolean_1_",
-                          "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testIndexedAccess_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testInequalityGtAndGe_Connection_1__Boolean_1_",
@@ -119,19 +101,11 @@ public class Test_Relational_Postgres_Semistructured
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testMembership_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testMissingJsonKey_Connection_1__Boolean_1_",
-                          "column person_table_0.FIRM_DETAILS does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testNavOnOptionalProp_Connection_1__Boolean_1_",
-                          "column person_table_0.FIRM_DETAILS does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testNavScalarAndNested_Connection_1__Boolean_1_",
-                          "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testNestedAtNAndScalarFn_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testNestedDirectCollapse_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testNestedFilterWithPredicateOnOptional_Connection_1__Boolean_1_",
-                          "column person_table_0.FIRM_DETAILS does not exist")
-            .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testNullOnFirmSide_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")
             .withKeyValue("meta::relational::tests::mapping::relation::variant::modelJoin::testNumericAggregations_Connection_1__Boolean_1_",
                           "column person_table_0.FIRM_DETAILS does not exist")

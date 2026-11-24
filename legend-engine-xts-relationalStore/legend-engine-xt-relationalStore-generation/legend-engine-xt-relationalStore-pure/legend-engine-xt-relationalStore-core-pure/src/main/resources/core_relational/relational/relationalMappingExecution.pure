@@ -447,7 +447,7 @@ function meta::relational::mapping::toSqlString(s:SQLQuery[1], connection:meta::
   let useDbNative = meta::relational::functions::sqlQueryToString::useDbNativeImplicitNullOrdering($connection, []);
   if(useDialectTranslation($s, $connection.type),
     | let query = $s->convertSqlQuery($extensions);
-      let optimizedQuery = $query->planSqlStatement(^SqlPlanningConfig(dbType = $connection.type->toString()), $extensions);
+      let optimizedQuery = $query->meta::relational::postProcessor::legacy::planSqlStatementIfLegacy($connection.type, $extensions);
       // TODO: Not using pretty format processing here now as it leads to lots of SQL assert diffs.
       $optimizedQuery->toSqlDialect($connection, false, $useDbNative, $extensions);,
     | if($pretty,
@@ -462,7 +462,7 @@ function meta::relational::mapping::toSqlString(s:SQLQuery[1], connection:meta::
   let useDbNative = meta::relational::functions::sqlQueryToString::useDbNativeImplicitNullOrdering($connection, $exeCtx);
   if(useDialectTranslation($s, $connection.type),
     | let query = $s->convertSqlQuery($extensions);
-      let optimizedQuery = $query->planSqlStatement(^SqlPlanningConfig(dbType = $connection.type->toString()), $extensions);
+      let optimizedQuery = $query->meta::relational::postProcessor::legacy::planSqlStatementIfLegacy($connection.type, $extensions);
       // TODO: Not using pretty format processing here now as it leads to lots of SQL assert diffs.
       $optimizedQuery->toSqlDialect($connection, false, $useDbNative, $extensions);,
     | if($pretty,
