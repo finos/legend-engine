@@ -54,7 +54,7 @@ function meta::relational::sqlOptimizer::rules::subQueryFilterPushDownRule():Sql
 function <<access.private>> meta::relational::sqlOptimizer::rules::pushDownFiltersTrackingChanges(selectSQLQuery:SelectSQLQuery[1], intoJoins:Boolean[1], intoSubQueries:Boolean[1], extensions:Extension[*]):OptimizedQuery[1]
 {
   let pushed = $selectSQLQuery->pushDownFilters($intoJoins, $intoSubQueries, $extensions);
-  $pushed->changedIf($pushed->filterConjunctCount() > $selectSQLQuery->filterConjunctCount());
+  $pushed->changedIfNotSame($selectSQLQuery, | $pushed->filterConjunctCount() > $selectSQLQuery->filterConjunctCount());
 }
 
 function <<access.private>> meta::relational::sqlOptimizer::rules::pushDownFilters(selectSQLQuery:SelectSQLQuery[1], intoJoins:Boolean[1], intoSubQueries:Boolean[1], extensions:Extension[*]):SelectSQLQuery[1]

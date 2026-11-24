@@ -239,10 +239,15 @@ function meta::relational::sqlOptimizer::optimizeSqlQuery(query: SQLQuery[1], ct
 {
   $query->match([
     s: SelectSQLQuery[1] |
-      let rules = $ctx->inScopeRules();
+      let rules = if($ctx->isLegacySqlPostProcessing(), | [], | $ctx->inScopeRules());
       if($rules->isEmpty(), | $s, | $s->applySqlOptimizationRules($rules, ^$ctx(inScopeRuleNames = list($rules.name))));,
     q: SQLQuery[1] | $q
   ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::isLegacySqlPostProcessing(ctx: SqlOptimizerContext[1]): Boolean[1]
+{
+  $ctx->isPlatformOptionSet(meta::relational::postProcessor::legacy::legacySqlPostProcessingOptionName())
 }
 
 function meta::relational::sqlOptimizer::optimizePostProcessedQuery(result: PostProcessorResult[1], connection: Connection[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*]): PostProcessorResult[1]
@@ -275,17 +280,36 @@ function <<access.private>> meta::relational::sqlOptimizer::applyRule(current: V
   );
 }
 
+// A pass applies every rule and validates the result once, so the cost of validating does not grow with the number of rules. A pass
+// that introduces a problem is applied again one rule at a time, validating after each, which discards only the rule that did it.
 function <<access.private>> meta::relational::sqlOptimizer::optimizeTillFixedPoint(current: ValidatedQuery[1], rules: SqlOptimizationRule[*], ctx: SqlOptimizerContext[1], iteration: Integer[1], maxIterations: Integer[1]): ValidatedQuery[1]
 {
-  let pass = $rules->fold({rule, agg |
-    let result = $agg.second->applyRule($rule, $ctx);
-    pair($agg.first || $result.first, $result.second);
-  }, pair(false, $current));
+  let applied = $rules->fold({rule, agg |
+    let result = $rule.transform->eval($agg.second, $ctx);
+    pair($agg.first || $result.hasChanged, $result.query);
+  }, pair(false, $current.query));
+
+  let pass = if(is($applied.second, $current.query),
+    | pair(false, $current),
+    | let candidate = $applied.second->validated();
+      if($candidate->introducesProblemsOver($current),
+        | $current->applyRulesOneAtATime($rules, $ctx),
+        | pair($applied.first, $candidate)
+      );
+  );
 
   if($pass.first && ($iteration < $maxIterations),
     | $pass.second->optimizeTillFixedPoint($rules, $ctx, $iteration + 1, $maxIterations),
     | $pass.second
   );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::applyRulesOneAtATime(current: ValidatedQuery[1], rules: SqlOptimizationRule[*], ctx: SqlOptimizerContext[1]): Pair<Boolean, ValidatedQuery>[1]
+{
+  $rules->fold({rule, agg |
+    let result = $agg.second->applyRule($rule, $ctx);
+    pair($agg.first || $result.first, $result.second);
+  }, pair(false, $current));
 }
 
 function meta::relational::sqlOptimizer::unchanged(query: SelectSQLQuery[1]): OptimizedQuery[1]
@@ -296,4 +320,10 @@ function meta::relational::sqlOptimizer::unchanged(query: SelectSQLQuery[1]): Op
 function meta::relational::sqlOptimizer::changedIf(query: SelectSQLQuery[1], hasChanged: Boolean[1]): OptimizedQuery[1]
 {
   ^OptimizedQuery(hasChanged = $hasChanged, query = $query)
+}
+
+// Measuring a rewrite walks both trees, so a rule that handed back its input is not measured.
+function meta::relational::sqlOptimizer::changedIfNotSame(query: SelectSQLQuery[1], previous: SelectSQLQuery[1], hasChanged: meta::pure::metamodel::function::Function<{->Boolean[1]}>[1]): OptimizedQuery[1]
+{
+  if(is($query, $previous), | $previous->unchanged(), | $query->changedIf($hasChanged->eval()))
 }

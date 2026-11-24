@@ -38,6 +38,7 @@ public class BenchConfig
     public int aggregateViews = 0;
     public int starJoins = 0;
     public int hops = 0;
+    public int width = 20;
     public String sqlOptimizer = "all";
     public String dbType = "H2";
 
@@ -84,6 +85,7 @@ public class BenchConfig
         config.aggregateViews = Integer.parseInt(opts.getOrDefault("aggviews", "0"));
         config.starJoins = Integer.parseInt(opts.getOrDefault("star", "0"));
         config.hops = Integer.parseInt(opts.getOrDefault("hops", "0"));
+        config.width = Integer.parseInt(opts.getOrDefault("width", "20"));
         config.sqlOptimizer = opts.getOrDefault("sqlopt", "all");
         config.dbType = opts.getOrDefault("dbtype", "H2");
         config.fileList = opts.get("filelist");
@@ -121,6 +123,10 @@ public class BenchConfig
         {
             b.append("+hops").append(this.hops);
         }
+        if (this.width != 20)
+        {
+            b.append("+width").append(this.width);
+        }
         if (!"all".equals(this.sqlOptimizer))
         {
             b.append("+sqlopt-").append(this.sqlOptimizer);
@@ -157,6 +163,7 @@ public class BenchConfig
         map.put("aggregateViews", this.aggregateViews);
         map.put("starJoins", this.starJoins);
         map.put("hops", this.hops);
+        map.put("width", this.width);
         map.put("sqlOptimizer", this.sqlOptimizer);
         map.put("milestoned", this.milestoned);
         map.put("relationFunction", this.relationFunction);
@@ -193,6 +200,10 @@ public class BenchConfig
         if (this.hops > 0)
         {
             b.append(" hops=").append(this.hops);
+        }
+        if (this.width != 20)
+        {
+            b.append(" width=").append(this.width);
         }
         if (!"all".equals(this.sqlOptimizer))
         {

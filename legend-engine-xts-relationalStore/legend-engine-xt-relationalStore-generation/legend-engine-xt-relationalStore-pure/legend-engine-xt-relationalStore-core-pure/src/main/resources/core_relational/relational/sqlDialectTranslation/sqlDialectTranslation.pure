@@ -120,8 +120,13 @@ function meta::relational::functions::sqlDialectTranslation::relOpToString(r:Rel
   let config = getDialectTranslationConfig($dbType, $format, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering, $extensions);
   // Conversion is dialect-agnostic -- it produces a Postgres-spec AST. Null ordering is realised per
   // dialect during rendering below, off $config.dbConfig.
-  // shouldOptimize is kept for compatibility only: queries are optimized by the relational SQL optimizer stage before printing.
-  $r->convertRelationalOperationElement($extensions)->generateSqlDialect($config, $extensions);
+  let node = $r->convertRelationalOperationElement($extensions);
+  // Outside legacy SQL post-processing, the relational SQL optimizer stage has optimized the query before printing.
+  let optimizedNode = if($shouldOptimize && $node->instanceOf(Query),
+    | $node->cast(@Query)->meta::relational::postProcessor::legacy::planSqlStatementIfLegacy($dbType, $extensions),
+    | $node
+  );
+  $optimizedNode->generateSqlDialect($config, $extensions);
 }
 
 function meta::relational::functions::sqlDialectTranslation::toSqlDialect(n:Node[1], connection:DatabaseConnection[1], pretty:Boolean[1], extensions:Extension[*]):String[1]

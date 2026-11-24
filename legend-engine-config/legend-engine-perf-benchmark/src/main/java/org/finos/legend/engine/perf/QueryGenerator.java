@@ -20,6 +20,14 @@ package org.finos.legend.engine.perf;
  * aggregate count (aggK), graph-fetch tree depth (graphK), semi-structured path depth (semiK) and
  * access width (semiwK), alias length (longprojW), and the number of root filter conjuncts copied into
  * aggregating view subqueries (conjK, with --aggviews).
+ *
+ * The SQL optimizer's cost grows with the size of the query tree it walks, so three shapes build that tree directly:
+ * towerN stacks N wrapper selects, each re-filtering the one below, over --width columns and no joins; towerstarN puts the same
+ * tower over a star of --star left joins; andK is one filter of K conjuncts over --width columns. Four more are taken from the
+ * query mix the optimizer was slowest on: orandK (a filter of K OR-ed pairs of conjuncts, one flat predicate of tens of thousands of
+ * nodes), caseK (K columns each a conditional over OR-ed comparisons), inK (a filter on membership of a list of K values),
+ * winK (K nested olapGroupBy window layers) and trimW (a limited subselect of W columns of which the outer select keeps one, the
+ * case the optimizer shrinks by dropping columns).
  */
 public class QueryGenerator
 {
@@ -86,6 +94,38 @@ public class QueryGenerator
         {
             return this.semiDeep(Integer.parseInt(query.substring(4)), all);
         }
+        if (query.startsWith("trim"))
+        {
+            return this.restrictedWideSubSelect(Integer.parseInt(query.substring(4)), all);
+        }
+        if (query.startsWith("orand"))
+        {
+            return this.orOfConjunctPairs(Integer.parseInt(query.substring(5)), all);
+        }
+        if (query.startsWith("case"))
+        {
+            return this.conditionalColumns(Integer.parseInt(query.substring(4)), all);
+        }
+        if (query.startsWith("in"))
+        {
+            return this.membership(Integer.parseInt(query.substring(2)), all);
+        }
+        if (query.startsWith("win"))
+        {
+            return this.windowLayers(Integer.parseInt(query.substring(3)), all);
+        }
+        if (query.startsWith("towerstar"))
+        {
+            return this.tower(Integer.parseInt(query.substring(9)), this.starJoins(this.config.starJoins, all, false));
+        }
+        if (query.startsWith("tower"))
+        {
+            return this.tower(Integer.parseInt(query.substring(5)), this.widthProjection(all));
+        }
+        if (query.startsWith("and"))
+        {
+            return this.conjunctsOverColumns(Integer.parseInt(query.substring(3)), all);
+        }
         if (query.startsWith("conj"))
         {
             return this.conjunctsOverSubQuery(Integer.parseInt(query.substring(4)), all);
@@ -136,6 +176,94 @@ public class QueryGenerator
             return all + "->groupBy([x|$x.p0], [agg(x|$x.p3, y|$y->sum())], ['k','s'])";
         }
         throw new IllegalArgumentException("Unknown query shape: " + query);
+    }
+
+    private String restrictedWideSubSelect(int width, String all)
+    {
+        int saved = this.config.width;
+        this.config.width = width;
+        try
+        {
+            return this.widthProjection(all) + "->limit(1000000)->restrict(['c0'])";
+        }
+        finally
+        {
+            this.config.width = saved;
+        }
+    }
+
+    private String widthProjection(String all)
+    {
+        StringBuilder columns = new StringBuilder();
+        StringBuilder names = new StringBuilder();
+        for (int i = 0; i < this.config.width; i++)
+        {
+            columns.append(i > 0 ? ", " : "").append("x|$x.p").append(i % 4);
+            names.append(i > 0 ? ", " : "").append("'c").append(i).append("'");
+        }
+        return all + "->project([" + columns + "], [" + names + "])";
+    }
+
+    private String orOfConjunctPairs(int count, String all)
+    {
+        StringBuilder predicate = new StringBuilder();
+        for (int i = 0; i < count; i++)
+        {
+            predicate.append(i > 0 ? " || " : "").append("($x.id == ").append(i).append(" && $x.p0 == 'a").append(i).append("')");
+        }
+        return this.widthProjection(all + "->filter(x|" + predicate + ")");
+    }
+
+    private String conditionalColumns(int count, String all)
+    {
+        StringBuilder columns = new StringBuilder("x|$x.p0");
+        StringBuilder names = new StringBuilder("'c0'");
+        for (int i = 1; i <= count; i++)
+        {
+            columns.append(", x|if($x.p0 == 'a").append(i).append("' || $x.p1 == 'b").append(i).append("' || $x.p2 == 'c").append(i).append("', |1, |0)");
+            names.append(", 'k").append(i).append("'");
+        }
+        return all + "->project([" + columns + "], [" + names + "])";
+    }
+
+    private String membership(int count, String all)
+    {
+        StringBuilder values = new StringBuilder();
+        for (int i = 0; i < count; i++)
+        {
+            values.append(i > 0 ? ", " : "").append(i);
+        }
+        return this.widthProjection(all + "->filter(x|$x.id->in([" + values + "]))");
+    }
+
+    private String windowLayers(int layers, String all)
+    {
+        StringBuilder query = new StringBuilder(all + "->project([x|$x.p0, x|$x.p3], ['c0', 'c3'])");
+        for (int i = 0; i < layers; i++)
+        {
+            query.append("->olapGroupBy(['c0'], func('c3', y | $y->sum()), 'w").append(i).append("')");
+        }
+        return query.toString();
+    }
+
+    private String tower(int layers, String base)
+    {
+        StringBuilder query = new StringBuilder(base);
+        for (int i = 0; i < layers; i++)
+        {
+            query.append("->limit(").append(1000000 + i).append(")->filter(r|$r.getString('c0') != 'v").append(i).append("')");
+        }
+        return query.toString();
+    }
+
+    private String conjunctsOverColumns(int count, String all)
+    {
+        StringBuilder conjuncts = new StringBuilder();
+        for (int i = 0; i < count; i++)
+        {
+            conjuncts.append(i > 0 ? " && " : "").append("$x.id != ").append(i);
+        }
+        return this.widthProjection(all + "->filter(x|" + conjuncts + ")");
     }
 
     private String joinChain(int depth, String all)

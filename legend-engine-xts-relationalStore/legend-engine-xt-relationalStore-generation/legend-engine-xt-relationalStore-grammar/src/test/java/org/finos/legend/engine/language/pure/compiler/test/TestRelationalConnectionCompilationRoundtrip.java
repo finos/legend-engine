@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 public class TestRelationalConnectionCompilationRoundtrip
 {
     @Test
-    public void testCTEExtractionPostProcessorOnlyMarksTheConnection()
+    public void testCTEExtractionPostProcessorMarksTheConnectionAndAddsTheLegacyPlanPostProcessor()
     {
         Pair<PureModelContextData, PureModel> result = test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +
@@ -60,7 +60,7 @@ public class TestRelationalConnectionCompilationRoundtrip
         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) result.getTwo().getConnection("simple::CTEConnection", SourceInformation.getUnknownSourceInformation());
         assertEquals(1, connection._postProcessors().size());
         Assert.assertTrue(connection._postProcessors().getFirst() instanceof Root_meta_relational_sqlOptimizer_rules_ExtractSubQueriesAsCTEsPostProcessor);
-        assertEquals(0, connection._queryPostProcessorsWithParameter().size());
+        assertEquals(1, connection._queryPostProcessorsWithParameter().size());
     }
 
     @Test

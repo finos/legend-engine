@@ -39,7 +39,17 @@ public class Test_Relational_Oracle_SqlOptimizer
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
         // Fully-qualified Pure test -> a substring that must appear in its failure.
-        MutableMap<String, String> pathToReason = Maps.mutable.empty();
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
+                // The dialect's SQL printer has no lateral join, so the query under test cannot be printed.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByALateralSibling_Connection_1__Boolean_1_",
+                        "Lateral operation not supported")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::mappings::testEveryFeatureKeepsLateralRelationQueriesRunnable_Connection_1__Boolean_1_",
+                        "Lateral operation not supported")
+                // The query under test filters on its own SELECT alias, which standard SQL does not resolve in WHERE.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByTheSubSelectsOwnWhereClause_Connection_1__Boolean_1_",
+                        "ORA-00904: \"Q\": invalid identifier")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByAUnionBranchsOwnWhereClause_Connection_1__Boolean_1_",
+                        "ORA-00904: \"Q\": invalid identifier");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));

@@ -52,7 +52,7 @@ function meta::relational::sqlOptimizer::rules::eliminateUnreadLeftJoins(query:S
       a:RelationalOperationElement[1] | $a
     ])
   })->cast(@SelectSQLQuery);
-  $result->changedIf($result->joinCount() < $query->joinCount());
+  $result->changedIfNotSame($query, | $result->joinCount() < $query->joinCount());
 }
 
 function meta::relational::sqlOptimizer::rules::mergeDuplicateLeftJoins(query:SelectSQLQuery[1]):OptimizedQuery[1]
@@ -63,7 +63,7 @@ function meta::relational::sqlOptimizer::rules::mergeDuplicateLeftJoins(query:Se
       a:RelationalOperationElement[1] | $a
     ])
   })->cast(@SelectSQLQuery);
-  $result->changedIf($result->joinCount() < $query->joinCount());
+  $result->changedIfNotSame($query, | $result->joinCount() < $query->joinCount());
 }
 
 function meta::relational::sqlOptimizer::rules::joinCount(query:SelectSQLQuery[1]):Integer[1]
@@ -79,7 +79,7 @@ function <<access.private>> meta::relational::sqlOptimizer::rules::joinNodesInTr
 
 function <<access.private>> meta::relational::sqlOptimizer::rules::withoutUnreadLeftJoins(select:SelectSQLQuery[1]):SelectSQLQuery[1]
 {
-  let removable = if($select.data->isEmpty(), | [], | $select->unreadLeftJoins());
+  let removable = if($select.data->isEmpty() || !$select.data->toOne()->joinNodesInTree()->exists(j | $j->isPlainLeftJoin() && $j.childrenData->isEmpty()), | [], | $select->unreadLeftJoins());
   if($removable->isEmpty(),
     | $select,
     | $select->withoutJoinNodes($removable)->withoutUnreadLeftJoins()
@@ -317,7 +317,7 @@ function <<access.private>> meta::relational::sqlOptimizer::rules::withoutChildr
 function <<access.private>> meta::relational::sqlOptimizer::rules::withDuplicateLeftJoinsMerged(select:SelectSQLQuery[1]):SelectSQLQuery[1]
 {
   let joins = if($select.data->isEmpty() || $select.columns->isEmpty(), | [], | $select.data->toOne()->joinNodesInTree());
-  let merges = $joins->plannedMerges($select->definedAliasNames()->groupBy(n | $n), $select.leftSideOfFilter.alias.name);
+  let merges = if($joins->size() < 2, | [], | $joins->plannedMerges($select->definedAliasNames()->groupBy(n | $n), $select.leftSideOfFilter.alias.name));
   if($merges->isEmpty(),
     | $select,
     | let merged = $select->mergedAllInto($merges);

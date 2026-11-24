@@ -494,6 +494,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 {
    $columnType->match([
       b : meta::relational::metamodel::datatype::Bit[1] | 'NUMBER(1)',
+      t : meta::relational::metamodel::datatype::TinyInt[1] | 'NUMBER(3)',
+      b : meta::relational::metamodel::datatype::BigInt[1] | 'NUMBER(19)',
+      d : meta::relational::metamodel::datatype::Double[1] | 'DOUBLE PRECISION',
       a : Any[*] | getColumnTypeSqlTextDefault($columnType)
    ])
 }

@@ -80,11 +80,13 @@ function meta::relational::sqlOptimizer::tree::collection(noUnknownElement: Bool
   ^RelationalElementCollection(noUnknownElement = $noUnknownElement, elements = $elements)
 }
 
-// Folded so each child is extracted once: a mapped collection over a lazy input stays lazy in compiled mode, and reading it
-// twice (once per property) would extract every child twice per level.
+// Each child is extracted once, into a list of collections that is then read twice: a mapped collection over a lazy input stays
+// lazy in compiled mode, so reading it directly would extract every child twice per level. The elements are joined in one pass,
+// because concatenating them child by child copies the elements gathered so far once per child.
 function <<access.private>> meta::relational::sqlOptimizer::tree::combined(results: RelationalElementCollection[*]): RelationalElementCollection[1]
 {
-  $results->fold({r, acc | collection($acc.noUnknownElement && $r.noUnknownElement, $acc.elements->concatenate($r.elements))}, collection(true, []))
+  let extracted = $results->mapOnce(r | $r);
+  collection($extracted.noUnknownElement->forAll(known | $known), $extracted.elements);
 }
 
 function meta::relational::sqlOptimizer::tree::extractRelationalElements(elements: RelationalOperationElement[*], recurseSubQueries: Boolean[1]): RelationalElementCollection[1]
@@ -133,25 +135,25 @@ function <<access.private>> meta::relational::sqlOptimizer::tree::extractRelatio
 function <<access.private>> meta::relational::sqlOptimizer::tree::extractRelationalElements(el: RelationalOperationElement[1], recurseSubQueries: Boolean[1], expandNestedSelects: Boolean[1]): RelationalElementCollection[1]
 {
   let results = $el->match([
+    {t: TableAliasColumn[1] | $t.column->extractRelationalElements($recurseSubQueries, true)}, // Not recursing on alias, as it will happen from data
+    {d: DynaFunction[1] | $d.parameters->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {wc: Literal[1] | collection(true, [])},
+    {wc: Column[1] | collection(true, [])},
+    {a: TableAlias[1] | collection(true, [])}, // Not recursing on relational element, as it will happen from data
+    {a: Alias[1] | $a.relationalElement->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
     {s: SelectSQLQuery[1] | if($s->isParameterValueSet() || !$expandNestedSelects, | collection(true, []), | $s->selectElements($recurseSubQueries, $expandNestedSelects))},
     {v: ViewSelectSQLQuery[1] | collection(true, [])},
     {u: SetOperationQuery[1] | collection(true, [])},
-    {a: TableAlias[1] | collection(true, [])}, // Not recursing on relational element, as it will happen from data
-    {a: Alias[1] | $a.relationalElement->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
     {t: Table[1] | collection(true, [])},
     {c: CommonTableExpression[1] | $c.sqlQuery->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
     {t: CommonTableExpressionReference[1] | collection(true, [])},
-    {t: TableAliasColumn[1] | $t.column->extractRelationalElements($recurseSubQueries, true)}, // Not recursing on alias, as it will happen from data
     {a: TableAliasColumnName[1] | collection(true, [])}, // Not recursing on alias, as it will happen from data
     {u: UnaryOperation[1] | $u.nested->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
     {b: BinaryOperation[1] | $b.left->concatenate($b.right)->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
     {va: VariableArityOperation[1] |$va.args->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
-    {d: DynaFunction[1] | $d.parameters->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
     {f: FreeMarkerOperationHolder[1] | $f.parameters->extractRelationalElements($recurseSubQueries, true)},
-    {wc: Column[1] | collection(true, [])},
     {wc: ColumnName[1] | collection(true, [])},
     {wc: WindowColumn[1] | $wc.window->concatenate($wc.func)->extractRelationalElements($recurseSubQueries, true)},
-    {wc: Literal[1] | collection(true, [])},
     {wc: LiteralList[1] | collection(true, [])},
     {wc: VarPlaceHolder[1] | collection(true, [])},
     {t: TableFunctionParamPlaceHolder[1] | $t.var->extractRelationalElements($recurseSubQueries, true)},

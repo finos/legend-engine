@@ -60,6 +60,11 @@ model size. Query shapes vary one dimension each:
 | `starK` / `ustarK` | K sibling left joins from the root, all read / all unread after a `restrict` (needs `--star`) |
 | `dupK` | K pairs of left joins that repeat each other: same table, same condition, two join names (needs `--star`) |
 | `hop` / `uhop` | one property mapped through a `--hops`-long join chain, read / unread after a `restrict` |
+| `towerN` / `towerstarN` | N wrapper selects stacked by `limit` + `filter` layers over `--width` columns (default 20), alone / over a `--star` of left joins; the optimizer has nothing to shrink, so this measures its cost on a deep tree |
+| `winK` | K nested `olapGroupBy` window layers |
+| `caseK` | K select-list columns, each a conditional over three OR-ed comparisons |
+| `andK` / `orandK` / `inK` | one filter of K conjuncts / K OR-ed pairs of conjuncts / membership of a list of K values, over `--width` columns |
+| `trimW` | a limited subselect of W columns of which the outer select keeps one: the optimizer drops the wrapper and W-1 columns |
 
 Mapping shape flags: `--nextmult 1|0..1` (chain multiplicity), `--union K` (Operation union over K
 set implementations), `--includes K` (K-deep mapping include chain), `--milestoning`
@@ -120,7 +125,10 @@ Flags: `--baseline <path>` (default `perf-baseline.json`), `--out <path>`, `--re
 re-running the suite),
 `--margin 0.5` (allowed deviation for absolute phase medians), `--canary-margin 0.3` (allowed
 deviation for ratios), `--min-delta-ms 25` (absolute deltas smaller than this are treated as noise),
-`--allow-improvement` (only enforce the slower side), `--iters`, `--warmup`.
+`--allow-improvement` (only enforce the slower side), `--iters`, `--warmup`, `--rounds 3` (run the
+whole suite three times in one JVM and take each phase's median over the rounds; use it when recording a
+baseline and in CI, since a single round on a shared machine moves some canaries by 30-60%), `--only <text>` (run only
+the workloads whose id contains the text, to try one shape; the checks then see the rest as missing).
 
 The results file records the environment, every workload's cold and warm phase timings, and the
 computed canary ratios:
@@ -175,6 +183,17 @@ plainly do not. Ratios travel better but not far enough to trust: the same commi
 Apple M4 Max and in a Linux container on the same host put the compile-cliff canary at 30.0 and
 36.7, a 22% gap from environment alone. A single shared baseline would have spent that budget on
 hardware instead of on code.
+
+SQL sizes are enforced the same way. Every workload records the size of the SQL in its plan (statements,
+characters, selects, joins, left joins and aliased columns, summed over all statements). Unlike a
+timing it is deterministic, so a plan more than 2% larger fails, and so does one more than 2% smaller
+until the new size is recorded. That is what notices a rule that has stopped shrinking a query it used
+to shrink, which no timing shows: a guard that is too tight, or a pass that skips a rewrite, makes
+plan generation faster and the SQL larger. Compare a workload with its `+sqlopt-none` twin to see what
+the optimizer removes.
+
+A machine with no entry of its own still gets the size check, against the first entry that holds sizes, since
+sizes do not depend on the machine; its timings are only reported.
 
 Recording is additive. `--rebase` writes the entry for the machine it runs on and leaves every other
 entry untouched, so a laptop baseline and a CI baseline live in the same committed file without
@@ -261,6 +280,24 @@ Suggested canaries, with the shape each one guards:
 | `planPure(dup40) / planPure(dup10)` with `--star 40` | SQL optimization superlinearity in the number of repeated left joins merged |
 | `planPure(star40) / planPure(star10)` with `--star 40` | SQL optimization superlinearity in the number of read left joins checked for elimination |
 | `planPure(uhop)` with `--hops 40` / with `--hops 10` | SQL optimization superlinearity in the depth of an unread left-join chain |
+| `planPure(tower80) / planPure(tower20)` | SQL optimization superlinearity in the number of nested wrapper selects |
+| `planPure(towerstar25) / planPure(towerstar8)` with `--star 40` | SQL optimization superlinearity in the depth of a wrapper tower over a star of left joins |
+| `planPure(win20) / planPure(win5)` | SQL optimization superlinearity in the number of nested window layers |
+| `planPure(case200) / planPure(case50)` | SQL optimization superlinearity in the number of conditional select-list columns |
+| `planPure(and300) / planPure(and100)` | SQL optimization superlinearity in the number of conjuncts of one filter |
+| `planPure(orand200) / planPure(orand50)` | SQL optimization superlinearity in the size of one flat OR-of-AND predicate |
+| `planPure(trim200) / planPure(trim20)` | SQL optimization superlinearity in the number of columns trimmed from a subselect |
+| `planPure(towerN) / planPure(towerN, --sqlopt none)`, likewise `towerstar25`, `win20`, `case200`, `and300`, `orand200`, `trim200` | what the optimizer adds to plan generation for a shape, measured against the same query with the optimizer off in the same JVM |
+
+The last group guards the cost of the optimizer itself, so that a new rule, or a change to an existing
+one, cannot make these shapes much more expensive to plan. The shapes are modelled on the services where
+the optimizer added the most plan-generation time in a run over every service at HEAD. Over 91 of them,
+the optimizer's relative cost (plan time with it on divided by plan time with it off) rose steadily with
+the nesting depth of the SQL, from a median of 1.26 for depth up to 3 to 1.66 for depth 15 and over (the
+deepest real statements nest 28 selects), and was highest for statements with thousands of CASE
+expressions (1.73). It did not depend on the number of joins: statements with fewer than 50 joins and
+with more than 1000 had the same median, about 1.3. The towers, window layers and conditional columns
+therefore carry most of the guarding; the join shapes stay because the join rules once scaled badly.
 
 Baselines belong in a checked-in file updated by pull request, so an intentional performance change
 is reviewed alongside the code that causes it.

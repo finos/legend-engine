@@ -1,0 +1,102 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::core::runtime::*;
+import meta::pure::functions::collection::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::cteExtraction::*;
+
+function meta::relational::postProcessor::cteExtraction::extractSubQueriesAsCTEsPostProcessor(s: meta::relational::sqlOptimizer::rules::ExtractSubQueriesAsCTEsPostProcessor[1]): PostProcessorWithParameter[1]
+{
+   ^PostProcessorWithParameter(parameters = [], postProcessor = extractSubQueriesAsCTEsPostProcessor__PostProcessor_1_);
+}
+
+function meta::relational::postProcessor::cteExtraction::extractSubQueriesAsCTEsPostProcessor(): PostProcessor[1]
+{
+   ^PostProcessor
+   (
+      sqlQueryPostProcessorForExecution = {|''},
+      sqlQueryPostProcessorForPlan = extractSubQueriesAsCTEsPostProcessor_SQLQuery_1__Mapping_$0_1$__Runtime_1__Database_$0_1$__ExecutionContext_1__PostProcessorParameter_MANY__PostProcessorResult_1_
+   )
+}
+
+function meta::relational::postProcessor::cteExtraction::extractSubQueriesAsCTEsPostProcessor(sql: SQLQuery[1], m: Mapping[0..1], runtime: Runtime[1], store: Database[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], params:	meta::relational::runtime::PostProcessorParameter[*]): PostProcessorResult[1]
+{
+  ^PostProcessorResult(query = if(meta::relational::postProcessor::legacy::isLegacySqlPostProcessing(), | $sql->match([select: SelectSQLQuery[1] | $select->extractSubqueriesAsCTEs(), a: Any[*] | $sql]), | $sql))
+}
+
+function meta::relational::postProcessor::cteExtraction::extractSubqueriesAsCTEs(select: SelectSQLQuery[1]): SelectSQLQuery[1]
+{
+   let levelCountMap = $select->countSubqueriesAtDifferentLevels(1, ^Map<Integer, Integer>());
+   let subQueryTotalCount = $levelCountMap->keyValues().second->sum();
+
+   if ($subQueryTotalCount == 0,
+       | $select,
+       | let cteResultHolder = ^CTEExtractionResultHolder(currentSelect = $select, levelIndexMap = $levelCountMap->keyValues()->map(p | pair($p.first, 0))->newMap());
+         let processedResult = $cteResultHolder->extractSubqueriesAsCTEsRecursively(1);
+         let transformedSelect = $processedResult.currentSelect;
+         ^$transformedSelect(commonTableExpressions += $processedResult.extractedCTEs);
+   );
+}
+
+function <<access.private>> meta::relational::postProcessor::cteExtraction::countSubqueriesAtDifferentLevels(select: SelectSQLQuery[1], level: Integer[1], levelCountMap: Map<Integer, Integer>[1]): Map<Integer, Integer>[1]
+{
+   if ($select.data->isNotEmpty(),
+       | let subSelects = $select.data->toOne()->allNodes()->map(n | $n.alias.relationalElement->match([s: SelectSQLQuery[1] | $s, a: Any[*] | []]));
+         let updatedLevelCountMap = $levelCountMap->put($level, $levelCountMap->get($level)->defaultIfEmpty(0)->toOne() + $subSelects->size());
+         $subSelects->fold({sub, agg | $sub->countSubqueriesAtDifferentLevels($level + 1, $agg)}, $updatedLevelCountMap);,
+       | $levelCountMap
+   )
+}
+
+Class <<access.private>> meta::relational::postProcessor::cteExtraction::CTEExtractionResultHolder
+{
+   currentSelect: SelectSQLQuery[1];
+   levelIndexMap: Map<Integer, Integer>[1];
+   extractedCTEs: CommonTableExpression[*];
+}
+
+function <<access.private>> meta::relational::postProcessor::cteExtraction::extractSubqueriesAsCTEsRecursively(input: CTEExtractionResultHolder[1], level: Integer[1]): CTEExtractionResultHolder[1]
+{
+   let select = $input.currentSelect;
+   if ($select.data->isNotEmpty(),
+       | let subSelectNodes = $select.data->toOne()->allNodes()->filter(n | $n.alias.relationalElement->instanceOf(SelectSQLQuery));
+         $subSelectNodes->fold({node, agg |
+            let currentSelect = $agg.currentSelect;
+            let nodeAlias = $node.alias;
+            let cteName = 'subquery_cte_' + toString($level) + '_' + toString($agg.levelIndexMap->get($level)->toOne() + 1);
+            let processedCteResult  = ^$agg(currentSelect = $nodeAlias.relationalElement->cast(@SelectSQLQuery))->extractSubqueriesAsCTEsRecursively($level + 1);
+            let cte = ^CommonTableExpression(name = $cteName, sqlQuery = $processedCteResult.currentSelect);
+            let cteReference = ^CommonTableExpressionReference(name = $cteName);
+            ^$agg
+            (
+               currentSelect = ^$currentSelect(data = $currentSelect.data->toOne()->replaceTreeNode($node->meta::relational::functions::pureToSqlQuery::findOneNode($select.data->toOne(), $currentSelect.data->toOne()), ^$node(alias = ^$nodeAlias(relationalElement = $cteReference)))->cast(@RootJoinTreeNode)),
+               extractedCTEs = $processedCteResult.extractedCTEs->concatenate($cte),
+               levelIndexMap = $processedCteResult.levelIndexMap->put($level, $processedCteResult.levelIndexMap->get($level)->toOne() + 1)  
+            );
+         }, $input);,
+       | $input
+   );
+}
+
+function <<access.private>> meta::relational::postProcessor::cteExtraction::allNodes(r: RelationalTreeNode[1]): RelationalTreeNode[*]
+{
+   $r->concatenate($r->children()->map(x | $x->allNodes()))
+}

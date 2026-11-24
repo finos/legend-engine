@@ -115,6 +115,35 @@ function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testO
   assertEquals($query->printed(), $optimized->printed());
 }
 
+function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testARuleResultThatIsDiscardedDoesNotTakeTheOtherRulesOfItsPassWithIt():Boolean[1]
+{
+  let query = meta::relational::functions::sqlstring::toSQL({|meta::relational::tests::model::simple::Person.all()->project([col(p | $p.firstName, 'first'), col(p | $p.lastName, 'last')])->limit(5)->restrict('first')}, meta::relational::tests::simpleRelationalMapping, testRuntime()->withGenerationFeatures([], 'SQL_OPTIMIZATION_ALL'), meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery);
+  let breakingRule = ^SqlOptimizationRule(
+    name = 'Breaking',
+    featureName = 'BREAKING',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {q:SelectSQLQuery[1], c:SqlOptimizerContext[1] |
+      let root = $q.data->toOne();
+      let rootAlias = $root.alias;
+      $rootAlias.relationalElement->match([
+        inner:SelectSQLQuery[1] |
+          let brokenInner = ^$inner(columns = $inner.columns->tail());
+          let brokenAlias = ^$rootAlias(relationalElement = $brokenInner);
+          let brokenRoot = ^$root(alias = $brokenAlias);
+          ^OptimizedQuery(hasChanged = true, query = ^$q(data = $brokenRoot));,
+        other:Any[1] | $q->unchanged()
+      ]);
+    }
+  );
+  let goodRules = [meta::relational::sqlOptimizer::rules::unusedColumnTrimmingRule(), meta::relational::sqlOptimizer::rules::redundantSubSelectEliminationRule()];
+  let context = sqlOptimizerContext(DatabaseType.H2, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+  let withoutBreaking = applySqlOptimizationRules($query, $goodRules, $context);
+  assertNotEquals($query->printed(), $withoutBreaking->printed());
+  assertEquals($withoutBreaking->printed(), applySqlOptimizationRules($query, $goodRules->concatenate($breakingRule), $context)->printed());
+  assertEquals($withoutBreaking->printed(), applySqlOptimizationRules($query, $breakingRule->concatenate($goodRules), $context)->printed());
+}
+
 function <<test.Test>> meta::relational::tests::sqlOptimizer::regressions::testMergingFiltersRefusesAnOuterPredicateThatCanFailOnRowsTheInnerFilterRemoves():Boolean[1]
 {
   let column = ^meta::relational::metamodel::TableAliasColumn(alias = ^meta::relational::metamodel::TableAlias(name = 't', relationalElement = ^SelectSQLQuery()), column = ^meta::relational::metamodel::Column(name = 'v', type = ^meta::relational::metamodel::datatype::Varchar(size = 10)));

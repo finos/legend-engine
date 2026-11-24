@@ -76,6 +76,16 @@ function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSup
   assert($query->optimizeSqlQuery(^$h2(dbType = DatabaseType.Snowflake))->cast(@SelectSQLQuery).distinct->isTrue());
 }
 
+function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testLegacySqlPostProcessingRunsNoRuleEvenWhenEnabled():Boolean[1]
+{
+  let t = tableAlias('t', fixture('rule_support').t);
+  let query = sel(named(ref($t, 'G'), 'G'), root($t));
+  let ctx = ^SqlOptimizerContext(dbType = DatabaseType.H2, exeCtx = ^meta::pure::runtime::ExecutionContext()->addFlagToContext(EnableSqlOptimization.ALL), extensions = extensionContributing(distinctEverywhere('H2')));
+  assert($query->optimizeSqlQuery($ctx)->cast(@SelectSQLQuery).distinct->isTrue());
+  let legacy = ^$ctx(platformOptionsOverride = list(meta::relational::postProcessor::legacy::legacySqlPostProcessingOptionName()));
+  assertEquals($query->printed(), $query->optimizeSqlQuery($legacy)->cast(@SelectSQLQuery)->printed());
+}
+
 function <<test.Test>> meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testCTEExtractionLeavesALateralSubSelectInline():Boolean[1]
 {
   let f = fixture('cte_lateral');

@@ -42,7 +42,7 @@ function meta::relational::sqlOptimizer::rules::eliminateRedundantSubSelects(que
       a:RelationalOperationElement[1] | $a
     ])
   })->cast(@SelectSQLQuery);
-  $result->changedIf($result->selectCount() < $query->selectCount());
+  $result->changedIfNotSame($query, | $result->selectCount() < $query->selectCount());
 }
 
 function <<access.private>> meta::relational::sqlOptimizer::rules::selectCount(query:SelectSQLQuery[1]):Integer[1]

@@ -473,12 +473,12 @@ Filter push-down exists **twice** in this codebase, at two different layers:
 | | `sqlOptimizer::rules::joinFilterPushDownRule` / `subQueryFilterPushDownRule` | `sqlPlanning` rules |
 |---|---|---|
 | AST | Relational metamodel (`SelectSQLQuery`, `JoinTreeNode`) | Postgres SQL metamodel (`Query`, `Join`) |
-| Runs | Every dialect, as SQL optimizer rules after the post-processors | No longer run: `shouldOptimize` is kept for compatibility only |
+| Runs | Every dialect, as SQL optimizer rules after the post-processors | Only under legacy SQL post-processing (below) |
 | Registration | `defaultSqlOptimizationRules()` + the `relational_sqlOptimizationRules` extension slot | Default list + extension-contributed rules |
 | Scope | Join `ON` clauses and `FROM` subselects | Same two transformations, re-expressed |
 
-They are independent implementations of overlapping ideas. Only the relational-AST rules run now; the
-SQL-AST planner rules stay in the codebase but `shouldOptimize` no longer invokes them. This is the
+They are independent implementations of overlapping ideas. Only the relational-AST rules run by default; the
+SQL-AST planner rules run only under legacy SQL post-processing. This is the
 same "two frameworks, one concept" hazard called out in the dialect-translation doc: when a filter
 appears somewhere unexpected in generated SQL, establish *which layer* put it there before changing
 anything.
@@ -488,6 +488,15 @@ Other members of the legacy family worth knowing, because §11.3 proposes SQL-AS
 already implements the dbType + connection-feature gating that the SQL planner still has as a TODO),
 `reAliasQuery`, `trimColumnNamePostProcessor`. CTE extraction, once a member, is now the last SQL optimizer rule
 (`sqlOptimizer::rules::extractSubQueriesAsCTEsRule`); its connection post-processor only enables it.
+
+**Legacy SQL post-processing (kill switch).** Starting a JVM with `-Dpure.options.LegacySqlPostProcessing=true`
+turns the relational SQL optimizer off entirely and restores the post-processing that ran before it, unchanged:
+`postProcessor::filterPushDown::pushFiltersDownToJoins` second in `sqlQueryDefaultPostProcessors()`, CTE
+extraction as a plan-time connection post-processor (`postProcessor::cteExtraction`), and the H2 `planSqlStatement`
+pass above. It exists to roll production back to the previous SQL quickly; the legacy code is frozen, and
+`Test_Pure_Relational_LegacySqlPostProcessing` pins its SQL. The guards the optimizer's push-down has and the
+legacy one lacks (no comparison copied across a coercing join, no pattern across a CHAR/VARCHAR join, no expression
+that can fail moved into a subselect) do not apply in this mode.
 
 ---
 
